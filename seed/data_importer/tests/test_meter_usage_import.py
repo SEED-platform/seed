@@ -21,8 +21,12 @@ from pytz import timezone
 from quantityfield import ureg
 
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import match_buildings
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_MAPPING,
+    DATA_STATE_DELETE,
     Meter,
     MeterReading,
     Property,
@@ -34,6 +38,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -423,3 +428,84 @@ class MeterUsageImportTest(TestCase):
 
         self.assertCountEqual(result_summary['message'], expected_import_summary)
         self.assertEqual(total_meters_count, 2)
+
+
+class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record, self.cycle = selfvars
+
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+    def test_property_states_not_associated_to_properties_are_not_targetted_on_meter_import(self):
+        # Create three pm_property_id = 5766973 properties that are exact duplicates
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'pm_property_id': '5766973',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # Create 1 property with a duplicate in the first ImportFile
+        self.property_state_factory.get_property_state(**base_details)
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        import_record_2, import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle
+        )
+
+        # Create another duplicate property coming from second ImportFile
+        base_details['import_file_id'] = import_file_2.id
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        match_buildings(import_file_2.id)
+
+        # Import the PM Meters
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        pm_meter_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        # Check that meters pre-upload confirmation runs without problems
+        confirmation_url = reverse('api:v2:meters-parsed-meters-confirmation')
+        confirmation_post_params = json.dumps({
+            'file_id': pm_meter_file.id,
+            'organization_id': self.org.pk,
+        })
+        self.client.post(confirmation_url, confirmation_post_params, content_type="application/json")
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[pm_meter_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        # Check that Meters have been uploaded successfully (there's only 2 since only pm_property_id 5766973 exists)
+        self.assertEqual(Meter.objects.count(), 2)
+
+        # Ensure that no meters were associated to the duplicate PropertyStates via PropertyViews
+        delete_flagged_ids = PropertyState.objects.filter(data_state=DATA_STATE_DELETE).values_list('id', flat=True)
+        for meter in Meter.objects.all():
+            self.assertEqual(meter.property.views.filter(state_id__in=delete_flagged_ids).count(), 0)

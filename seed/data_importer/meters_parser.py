@@ -12,6 +12,7 @@ from datetime import (
     timedelta,
 )
 
+from django.db.models import Subquery
 from django.utils.timezone import make_aware
 
 from pytz import timezone
@@ -20,6 +21,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Meter,
     PropertyState,
+    PropertyView,
 )
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
@@ -202,14 +204,18 @@ class MetersParser(object):
         else:
             try:
                 """
-                Filter used because multiple PropertyStates will be found, but the
-                underlying Property should be the same, so take the first.
+                QuerySet filters() used to find resulting property_id because
+                multiple PropertyStates can be found, but the underlying
+                Property amongst them should be the same. So take the first.
                 """
-                property_id = PropertyState.objects \
-                    .filter(pm_property_id__exact=source_id, organization_id__exact=self._org_id)[0] \
-                    .propertyview_set \
-                    .first() \
-                    .property_id
+                possible_matches = PropertyState.objects.filter(
+                    pm_property_id__exact=source_id,
+                    organization_id__exact=self._org_id
+                )
+
+                property_id = PropertyView.objects.filter(
+                    state_id__in=Subquery(possible_matches.values('pk'))
+                )[0].property_id
 
                 shared_details['property_id'] = property_id
                 self._source_to_property_ids[source_id] = property_id
