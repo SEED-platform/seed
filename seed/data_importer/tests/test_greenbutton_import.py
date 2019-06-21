@@ -17,8 +17,6 @@ from django.utils.timezone import (
 
 from pytz import timezone
 
-from quantityfield import ureg
-
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -101,13 +99,13 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
 
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2011, 3, 5, 21, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000)
         self.assertEqual(meter_reading_10.source_unit, 'kWh (thousand Watt-hours)')
         self.assertEqual(meter_reading_10.conversion_factor, 3.41)
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000)
         self.assertEqual(meter_reading_11.source_unit, 'kWh (thousand Watt-hours)')
         self.assertEqual(meter_reading_11.conversion_factor, 3.41)
 
@@ -154,8 +152,8 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
 
         meter_reading_10, meter_reading_11, meter_reading_12 = list(refreshed_meter.meter_readings.order_by('start_time').all())
-        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
-        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.reading, 1790 * 3.41 / 1000)
+        self.assertEqual(meter_reading_11.reading, 1791 * 3.41 / 1000)
 
         # Sanity check to be sure, nothing was changed with existing meter reading
         self.assertEqual(meter_reading_12, existing_meter_reading)
@@ -202,7 +200,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         meter_reading = refreshed_meter.meter_readings.get(start_time=start_time)
 
         self.assertEqual(meter_reading.end_time, end_time)
-        self.assertEqual(meter_reading.reading, 1790 * 3.41 / 1000 * ureg('kBtu'))
+        self.assertEqual(meter_reading.reading, 1790 * 3.41 / 1000)
         self.assertEqual(meter_reading.source_unit, 'kWh (thousand Watt-hours)')
         self.assertEqual(meter_reading.conversion_factor, 3.41)
 

@@ -7,8 +7,6 @@ from django.db import models
 
 from seed.models import Property
 
-from quantityfield.fields import QuantityField
-
 
 class Meter(models.Model):
     COAL_ANTHRACITE = 1
@@ -100,7 +98,7 @@ class MeterReading(models.Model):
     start_time = models.DateTimeField(db_index=True, primary_key=True)
     end_time = models.DateTimeField(db_index=True)
 
-    reading = QuantityField('kBtu')
+    reading = models.FloatField(null=True)
 
     # The following two fields are tracked for historical purposes
     source_unit = models.CharField(max_length=255, null=True, blank=True)

@@ -94,7 +94,7 @@ class PropertyMeterReadingsExporter():
 
                 start_end_times[times_key]['start_time'] = start_time
                 start_end_times[times_key]['end_time'] = end_time
-                start_end_times[times_key][field_name] = meter_reading.reading.magnitude / conversion_factor
+                start_end_times[times_key][field_name] = meter_reading.reading / conversion_factor
 
         return {
             'readings': list(start_end_times.values()),
@@ -261,11 +261,11 @@ class PropertyMeterReadingsExporter():
         # Create list to track running maximum and prefill first entry
         n = len(sorted_readings)
         running_max = [0 for _ in range(n)]
-        running_max[0] = sorted_readings[0].reading.magnitude
+        running_max[0] = sorted_readings[0].reading
 
         # Fill the remaining entries in running_max
         for i in range(1, n):
-            curr_max = sorted_readings[i].reading.magnitude
+            curr_max = sorted_readings[i].reading
 
             latest_index = self._latest_nonintersecting_index(sorted_readings, i)
 
