@@ -28,7 +28,8 @@ from seed.models import (
     Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note,
+    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
+    ColumnListSettingColumn,
 )
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
@@ -738,6 +739,49 @@ class FakeTaxLotViewFactory(BaseFake):
                 organization=organization, **kwargs)
         }
         return TaxLotView.objects.create(**property_view_details)
+
+
+class FakeColumnListSettingsFactory(BaseFake):
+    """
+    Factory Class for producing ColumnList Settings
+
+    * This is faker, its predictable based on seed passed to fake factory.
+    """
+
+    def __init__(self, organization=None):
+        super(FakeColumnListSettingsFactory, self).__init__()
+        self.organization = organization
+
+    def get_columnlistsettings(self, organization=None,
+                               inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY,
+                               location=ColumnListSetting.VIEW_LIST, **kw):
+        """Get columnlistsettings instance."""
+        if not organization:
+            organization = self.organization
+
+        cls_details = {
+            'organization_id': organization.pk,
+            'name': 'test column list setting',
+            'settings_location': location,
+            'inventory_type': inventory_type,
+        }
+        cls = ColumnListSetting.objects.create(**cls_details)
+
+        columns = []
+        if 'columns' in kw:
+            # add the columns to the list of items
+            for c in kw.pop('columns'):
+                columns.append(Column.objects.get(organization=organization, column_name=c, table_name='PropertyState'))
+        else:
+            # use all the columns
+            for c in Column.objects.filter(organization=organization):
+                columns.append(c)
+
+        # associate all the columns
+        for idx, c in enumerate(columns):
+            ColumnListSettingColumn.objects.create(column=c, column_list_setting=cls, order=idx)
+
+        return cls
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

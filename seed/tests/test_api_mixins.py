@@ -6,18 +6,33 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
+:author Nicholas Long <nicholas.long@nrel.gov>
 """
+from datetime import datetime
+
 # pylint:disable=no-name-in-module
 import mock
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     Organization,
 )
+from seed.models import (
+    Column,
+    PropertyView,
+)
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakeColumnListSettingsFactory
+)
 from seed.utils.api import (
     OrgMixin,
+    ProfileIdMixin,
     OrgCreateMixin,
     OrgQuerySetMixin,
     OrgUpdateMixin,
@@ -308,6 +323,77 @@ class TestOrgQuerySetMixin(TestCase):
         mixin_class = OrgQuerySetMixinClass()
         mixin_class.get_queryset()
         mock_model.objects.filter.assert_called_with(organization_id=self.org.id)
+
+
+class TestProfileIdMixin(TestCase):
+    """Test OrgMixin -- provides get_organization_id method"""
+
+    def setUp(self):
+        self.maxDiff = None
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
+        )
+
+        class ProfileIdMixInclass(ProfileIdMixin):
+            pass
+
+        self.mixin_class = ProfileIdMixInclass()
+
+    def tearDown(self):
+        PropertyView.objects.all().delete()
+        self.user.delete()
+        self.org.delete()
+        self.org_user.delete()
+
+    def test_get_profile_id(self):
+        """test get_organization method"""
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+
+        columns = self.mixin_class.get_show_columns(self.org.id, None)
+        self.assertGreater(len(columns['fields']), 10)
+        self.assertListEqual(columns['extra_data'], ['field_1'])
+
+        columns = self.mixin_class.get_show_columns(self.org.id, -1)
+        self.assertGreater(len(columns['fields']), 10)
+        self.assertListEqual(columns['extra_data'], ['field_1'])
+
+        columns = self.mixin_class.get_show_columns(self.org.id, 1000000)
+        self.assertGreater(len(columns['fields']), 10)
+        self.assertListEqual(columns['extra_data'], ['field_1'])
+
+        # no extra data
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+            columns=['address_line_1', 'site_eui']
+        )
+        columns = self.mixin_class.get_show_columns(self.org.id, columnlistsetting.id)
+        self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
+        self.assertListEqual(columns['extra_data'], [])
+
+        # with extra data
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+            columns=['address_line_1', 'site_eui', 'field_1']
+        )
+        columns = self.mixin_class.get_show_columns(self.org.id, columnlistsetting.id)
+        self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
+        self.assertListEqual(columns['extra_data'], ['field_1'])
 
 
 class TestHelpers(TestCase):
