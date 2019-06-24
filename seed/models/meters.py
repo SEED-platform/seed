@@ -31,6 +31,7 @@ class Meter(models.Model):
     OTHER = 20
     PROPANE = 21
     WOOD = 22
+    COST = 23
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
@@ -56,6 +57,7 @@ class Meter(models.Model):
         (OTHER, 'Other:'),
         (PROPANE, 'Propane'),
         (WOOD, 'Wood'),
+        (COST, 'Cost'),
     )
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))

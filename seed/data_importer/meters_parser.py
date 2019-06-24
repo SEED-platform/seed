@@ -5,8 +5,6 @@ from calendar import monthrange
 
 from config.settings.common import TIME_ZONE
 
-from collections import defaultdict
-
 from datetime import (
     datetime,
     timedelta,
@@ -67,7 +65,7 @@ class MetersParser(object):
     def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None):
         # defaulted to None to show it hasn't been cached yet
         self._cache_meter_and_reading_objs = None
-        self._cache_validated_type_units = None
+        self._cache_org_country = None
         self._cache_kbtu_thermal_conversion_factors = None
 
         self._meters_and_readings_details = meters_and_readings_details
@@ -85,10 +83,16 @@ class MetersParser(object):
     @property
     def _kbtu_thermal_conversion_factors(self):
         if self._cache_kbtu_thermal_conversion_factors is None:
-            org_preference = Organization.objects.get(pk=self._org_id).get_thermal_conversion_assumption_display()
-            self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(org_preference)
+            self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors(self._org_country)
 
         return self._cache_kbtu_thermal_conversion_factors
+
+    @property
+    def _org_country(self):
+        if self._cache_org_country is None:
+            self._cache_org_country = Organization.objects.get(pk=self._org_id).get_thermal_conversion_assumption_display()
+
+        return self._cache_org_country
 
     @property
     def unlinkable_pm_ids(self):
@@ -174,6 +178,12 @@ class MetersParser(object):
 
             self._parse_meter_readings(details, meter_details, start_time, end_time)
 
+            # If available, create Cost Meter and MeterReading
+            if details.get('Cost ($)', 'Not Available') != 'Not Available':
+                carry_overs = ['property_id', 'source', 'source_id', 'type']
+                meter_details_copy = {k: meter_details[k] for k in carry_overs}
+                self._parse_cost_meter_reading(details, meter_details_copy, start_time, end_time)
+
     def _parse_gb_meter_details(self):
         for details in self._meters_and_readings_details:
             meter_details = {
@@ -257,35 +267,63 @@ class MetersParser(object):
         else:
             existing_property_meter['readings'].append(meter_reading)
 
+    def _parse_cost_meter_reading(self, details, meter_details, start_time, end_time):
+        """
+        Creates details for Meter and MeterReading cost objects.
+
+        The logic is very similar to _parse_pm_meter_details, except this is
+        specifically for cost. Also, it's assumed all meter_details are
+        populated except for type.
+        """
+        meter_details['type'] = Meter.COST
+
+        unit = '{} Dollars'.format(self._org_country)
+
+        meter_reading = {
+            'start_time': start_time,
+            'end_time': end_time,
+            'reading': float(details['Cost ($)']),
+            'source_unit': unit,
+            'conversion_factor': 1
+        }
+
+        meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
+
+        existing_property_meter = self._unique_meters.get(meter_identifier, None)
+
+        if existing_property_meter is None:
+            meter_details['readings'] = [meter_reading]
+
+            self._unique_meters[meter_identifier] = meter_details
+        else:
+            existing_property_meter['readings'].append(meter_reading)
+
     def validated_type_units(self):
         """
         Creates/returns the validated type and unit combinations given in the
         import file.
 
-        This is done by creating a set of tuples containing type and unit
-        combinations found in the import file. Since a set is used, these are
-        deduplicated. Those combinations are checked to be valid and, if so, are
-        returned in a dictionary format.
+        This is done by building a set of tuples containing type and unit
+        combinations found in the parsed meter details. Since a set is used,
+        these are deduplicated.
         """
-        if self._cache_validated_type_units is None:
+        type_unit_combinations = set()
+        energy_type_lookup = dict(Meter.ENERGY_TYPES)
+
+        for meter in self.meter_and_reading_objs:
+            type = energy_type_lookup[meter['type']]
             type_units = {
-                (details['Meter Type'], details['Usage Units'])
-                for details
-                in self._meters_and_readings_details
+                (type, reading['source_unit'])
+                for reading
+                in meter['readings']
             }
-            self._cache_validated_type_units = [
-                {'parsed_type': type_unit[0], 'parsed_unit': type_unit[1]}
-                for type_unit
-                in type_units
-                if self._valid_type_unit(type_unit)
-            ]
+            type_unit_combinations = type_unit_combinations.union(type_units)
 
-        return self._cache_validated_type_units
-
-    def _valid_type_unit(self, type_unit):
-        return self._kbtu_thermal_conversion_factors.\
-            get(type_unit[0], []).\
-            get(type_unit[1], None) is not None
+        return [
+            {'parsed_type': type_unit[0], 'parsed_unit': type_unit[1]}
+            for type_unit
+            in type_unit_combinations
+        ]
 
     def proposed_imports(self):
         """
@@ -293,18 +331,19 @@ class MetersParser(object):
 
         If this is a GreenButton import, take the UsagePoint as the source_id.
         """
-        id_counts = defaultdict(lambda: 0)
+        summaries = []
+        energy_type_lookup = dict(Meter.ENERGY_TYPES)
 
-        for obj in self.meter_and_reading_objs:
-            id = obj.get("source_id")
+        for meter in self.meter_and_reading_objs:
+            id = meter.get("source_id")
 
-            if obj['source'] == Meter.GREENBUTTON:
+            if meter['source'] == Meter.GREENBUTTON:
                 id = usage_point_id(id)
 
-            id_counts[id] += len(obj.get("readings"))
+            summaries.append({
+                'source_id': id,
+                'type': energy_type_lookup[meter['type']],
+                'incoming': len(meter.get("readings")),
+            })
 
-        return [
-            {"source_id": id, "incoming": reading_count}
-            for id, reading_count
-            in id_counts.items()
-        ]
+        return summaries

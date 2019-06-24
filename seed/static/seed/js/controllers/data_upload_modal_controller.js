@@ -204,6 +204,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             enableHiding: false,
             type: 'string'
           }, {
+            field: 'type',
+            enableHiding: false
+          }, {
             field: 'incoming',
             enableHiding: false
           }],
@@ -435,6 +438,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         var column_defs = [{
           field: 'source_id',
           displayName: 'Portfolio Manager Meter ID',
+          enableHiding: false
+        }, {
+          field: 'type',
           enableHiding: false
         }, {
           field: 'incoming',

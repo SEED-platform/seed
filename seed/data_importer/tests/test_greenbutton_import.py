@@ -218,6 +218,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             {
                 "source_id": "409483",
                 "incoming": 2,
+                "type": "Electric - Grid",
                 "successfully_imported": 2,
             },
         ]
@@ -248,6 +249,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "409483",
+                "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,
                 "errors": 'Overlapping readings.',

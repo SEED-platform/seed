@@ -80,13 +80,13 @@ class MeterUsageImportTest(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
-            import_record=import_record,
+            import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
@@ -182,6 +182,41 @@ class MeterUsageImportTest(TestCase):
         # file should be disassociated from cycle too
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
         self.assertEqual(refreshed_import_file.cycle_id, None)
+
+    def test_import_meter_usage_file_including_2_cost_meters(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_meter_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        cost_meters = Meter.objects.filter(type=Meter.COST)
+
+        self.assertEqual(2, cost_meters.count())
+
+        electric_cost_meter = cost_meters.get(source_id='5766973-0')
+        gas_cost_meter = cost_meters.get(source_id='5766973-1')
+
+        self.assertEqual(2, electric_cost_meter.meter_readings.count())
+        self.assertEqual(2, gas_cost_meter.meter_readings.count())
+
+        electric_reading_values = electric_cost_meter.meter_readings.values_list('reading', flat=True)
+        self.assertCountEqual([100, 200], electric_reading_values)
+
+        gas_reading_values = gas_cost_meter.meter_readings.values_list('reading', flat=True)
+        self.assertCountEqual([300, 400], gas_reading_values)
 
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
@@ -343,21 +378,87 @@ class MeterUsageImportTest(TestCase):
         expectation = [
             {
                 "source_id": "5766973-0",
+                "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
                 "source_id": "5766973-1",
+                "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
                 "source_id": "5766975-0",
+                "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
                 "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+        ]
+
+        self.assertCountEqual(result['message'], expectation)
+
+    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids_with_costs(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_meter_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+
+        result = json.loads(response.content)
+
+        expectation = [
+            {
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-0",
+                "type": "Cost",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-1",
+                "type": "Cost",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
@@ -400,24 +501,28 @@ class MeterUsageImportTest(TestCase):
         expected_import_summary = [
             {
                 "source_id": "5766973-0",
+                "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
                 "errors": "",
             },
             {
                 "source_id": "5766973-1",
+                "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
                 "errors": "",
             },
             {
                 "source_id": "5766975-0",
+                "type": "Electric - Grid",
                 "incoming": 4,
                 "successfully_imported": 0,
                 "errors": "Overlapping readings.",
             },
             {
                 "source_id": "5766975-1",
+                "type": "Natural Gas",
                 "incoming": 4,
                 "successfully_imported": 0,
                 "errors": "Overlapping readings.",

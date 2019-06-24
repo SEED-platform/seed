@@ -734,8 +734,6 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
 
-    meter_id = meter.id
-
     meter_usage_point_id = usage_point_id(meter.source_id)
 
     chunk_size = 1000
@@ -744,7 +742,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     tasks = [
-        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
+        _save_greenbutton_data_task.s(batch_readings, meter, meter_usage_point_id, progress_data.key)
         for batch_readings
         in batch(readings, chunk_size)
     ]
@@ -753,7 +751,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
 
 @shared_task
-def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progress_key):
+def _save_greenbutton_data_task(readings, meter, meter_usage_point_id, progress_key):
     """
     This method defines an individual task to save MeterReadings for a single
     Meter. Each task returns the results of the import.
@@ -772,7 +770,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     try:
         with transaction.atomic():
             reading_strings = [
-                f"({meter_id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
+                f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
                 for reading
                 in readings
             ]
@@ -786,12 +784,12 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                result['source_id'] = meter_usage_point_id
-                result['count'] = len(cursor.fetchall())
+                key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-            result['source_id'] = meter_usage_point_id
-            result['error'] = "Overlapping readings."
+            key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+            result[key] = {"error": "Overlapping readings."}
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -843,12 +841,13 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                result['source_id'] = meter.source_id
-                result['count'] = len(cursor.fetchall())
+                key = "{} - {}".format(meter.source_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-            result['source_id'] = meter_readings.get("source_id")
-            result['error'] = "Overlapping readings."
+            type_lookup = dict(Meter.ENERGY_TYPES)
+            key = "{} - {}".format(meter_readings.get("source_id"), type_lookup[meter_readings['type']])
+            result[key] = {"error": "Overlapping readings."}
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -894,30 +893,34 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     return tasks, proposed_imports
 
 
-def _append_meter_import_results_to_summary(import_results, summary):
+def _append_meter_import_results_to_summary(import_results, incoming_summary):
     """
     This appends meter import result counts and, if applicable, error messages.
     """
     agg_results_summary = collections.defaultdict(lambda: 0)
     error_comments = collections.defaultdict(lambda: set())
 
-    for id_count in import_results:
-        success_count = id_count.get("count")
+    # First aggregate import_results by key = tuple (source_id/usage_point_id, type)
+    for result in import_results:
+        key = list(result.keys())[0]
 
-        if success_count:
-            agg_results_summary[id_count["source_id"]] += success_count
+        success_count = result[key].get('count')
+
+        if success_count is None:
+            error_comments[key].add(result[key].get("error"))
         else:
-            error_comments[id_count["source_id"]].add(id_count.get("error"))
+            agg_results_summary[key] += success_count
 
-    for import_info in summary:
-        pm_id = import_info["source_id"]
+    # Next update summary of incoming meters imports with aggregated results.
+    for import_info in incoming_summary:
+        key = "{} - {}".format(import_info['source_id'], import_info['type'])
 
-        import_info["successfully_imported"] = agg_results_summary.get(pm_id, 0)
+        import_info["successfully_imported"] = agg_results_summary.get(key, 0)
 
         if error_comments:
-            import_info["errors"] = " ".join(list(error_comments.get(pm_id, "")))
+            import_info["errors"] = " ".join(list(error_comments.get(key, "")))
 
-    return summary
+    return incoming_summary
 
 
 def _save_raw_data_create_tasks(file_pk, progress_key):

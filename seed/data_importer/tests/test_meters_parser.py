@@ -146,6 +146,97 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
+    def test_parse_meter_details_splits_monthly_info_including_cost_into_meter_data_and_readings(self):
+        raw_meters = [
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID-el',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Meter Type': 'Electric - Grid',
+                'Usage/Quantity': 100,
+                'Cost ($)': 100,
+            },
+            {
+                'Portfolio Manager ID': self.pm_property_id,
+                'Portfolio Manager Meter ID': '123-PMMeterID-gas',
+                'Start Date': '2016-03-01 00:00:00',
+                'End Date': '2016-04-01 00:00:00',
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'kBtu (thousand Btu)',
+                'Usage/Quantity': 200,
+                'Cost ($)': 50,
+            }
+        ]
+
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-el',
+                'type': Meter.ELECTRICITY_GRID,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 100,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-el',
+                'type': Meter.COST,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 100,
+                        'source_unit': 'US Dollars',
+                        'conversion_factor': 1
+                    }
+                ]
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-gas',
+                'type': Meter.NATURAL_GAS,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 200,
+                        'source_unit': 'kBtu (thousand Btu)',
+                        'conversion_factor': 1
+                    }
+                ]
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-gas',
+                'type': Meter.COST,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 50,
+                        'source_unit': 'US Dollars',
+                        'conversion_factor': 1
+                    }
+                ]
+            },
+        ]
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
+
     def test_parser_uses_canadian_thermal_conversion_assumptions_if_org_specifies_it(self):
         self.org.thermal_conversion_assumption = Organization.CAN
         self.org.save()
@@ -153,27 +244,52 @@ class MeterUtilTests(TestCase):
         raw_meters = [
             {
                 'Portfolio Manager ID': self.pm_property_id,
-                'Portfolio Manager Meter ID': '123-PMMeterID',
+                'Portfolio Manager Meter ID': '123-PMMeterID-gas',
                 'Start Date': '2016-03-01 00:00:00',
                 'End Date': '2016-04-01 00:00:00',
                 'Meter Type': 'Natural Gas',
                 'Usage Units': 'cm (cubic meters)',
                 'Usage/Quantity': 1000,
+                'Cost ($)': 100,
             }
         ]
 
+        expected = [
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-gas',
+                'type': Meter.NATURAL_GAS,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 36420.0,
+                        'source_unit': 'cm (cubic meters)',
+                        'conversion_factor': 36.42,
+                    }
+                ],
+            },
+            {
+                'property_id': self.property.id,
+                'source': Meter.PORTFOLIO_MANAGER,
+                'source_id': '123-PMMeterID-gas',
+                'type': Meter.COST,
+                'readings': [
+                    {
+                        'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
+                        'reading': 100,
+                        'source_unit': 'CAN Dollars',
+                        'conversion_factor': 1,
+                    }
+                ],
+            },
+        ]
+
         meters_parser = MetersParser(self.org.id, raw_meters)
-        actual = meters_parser.meter_and_reading_objs[0]['readings'][0]
 
-        expected = {
-            'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj),
-            'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=self.tz_obj),
-            'reading': 36420.0,
-            'source_unit': 'cm (cubic meters)',
-            'conversion_factor': 36.42,
-        }
-
-        self.assertEqual(actual, expected)
+        self.assertEqual(meters_parser.meter_and_reading_objs, expected)
 
     def test_parse_meter_details_works_with_multiple_meters_impacted_by_a_leap_year(self):
         raw_meters = [

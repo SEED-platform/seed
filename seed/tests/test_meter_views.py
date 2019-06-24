@@ -95,7 +95,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle
         )
 
-    def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_column_defs(self):
+    def test_parsed_meters_confirmation_verifies_energy_type_and_units(self):
         url = reverse('api:v2:meters-parsed-meters-confirmation')
 
         post_params = json.dumps({
@@ -131,20 +131,106 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "5766973-0",
+                "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
                 "source_id": "5766973-1",
+                "type": 'Natural Gas',
                 "incoming": 2,
             }, {
                 "source_id": "5766975-0",
+                "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
                 "source_id": "5766975-1",
+                "type": 'Natural Gas',
                 "incoming": 2,
             },
         ]
 
         self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
+
+    def test_parsed_meters_confirmation_also_verifies_cost_type_and_units_and_counts(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': cost_import_file.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        validated_type_units = [
+            {
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+            {
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+            {
+                "parsed_type": "Cost",
+                "parsed_unit": "US Dollars",
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("validated_type_units"), validated_type_units)
+
+        proposed_imports = [
+            {
+                "source_id": "5766973-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-0",
+                "type": 'Cost',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-1",
+                "type": 'Cost',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("proposed_imports"), proposed_imports)
+
+        # Verify this works for Org with CAN thermal conversions
+        self.org.thermal_conversion_assumption = Organization.CAN
+        self.org.save()
+
+        can_result = self.client.post(url, post_params, content_type="application/json")
+        can_result_dict = ast.literal_eval(can_result.content.decode("utf-8"))
+
+        validated_type_units[2] = {
+            "parsed_type": "Cost",
+            "parsed_unit": "CAN Dollars",
+        }
+
+        self.assertCountEqual(can_result_dict.get("validated_type_units"), validated_type_units)
 
     def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units_and_saves_property_id_to_file_cache(self):
         filename = "example-GreenButton-data.xml"
@@ -171,6 +257,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         proposed_imports = [
             {
                 "source_id": '409483',
+                "type": 'Electric - Grid',
                 "incoming": 2,
             },
         ]
