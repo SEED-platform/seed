@@ -103,7 +103,7 @@ class MetersParser(object):
     @property
     def meter_and_reading_objs(self):
         """
-        Raw meter usage data is converted into a format that is accepted by the
+        Raw meter usage data are converted into a format that is accepted by the
         two models. The following dictionary is generated, and it's values are
         returned as details of several objects:
         {
@@ -125,7 +125,7 @@ class MetersParser(object):
 
         This is used to be able to group and associate MeterReadings to the
         appropriate Meters without duplicates being created. The logic for this
-        lives in _parse_meter_readings().
+        lives in _parse_<type>_meter_readings().
 
         The unique identifier of a meter is composed of the values of it's details
         which include property_id, type, etc. This is used to easily associate
@@ -178,7 +178,7 @@ class MetersParser(object):
 
             self._parse_meter_readings(details, meter_details, start_time, end_time)
 
-            # If available, create Cost Meter and MeterReading
+            # If Cost field is present and value is available, create Cost Meter and MeterReading
             if details.get('Cost ($)', 'Not Available') != 'Not Available':
                 carry_overs = ['property_id', 'source', 'source_id', 'type']
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
@@ -208,6 +208,10 @@ class MetersParser(object):
         PM ID as unlinkable, and False is returned.
         """
         property_id = self._source_to_property_ids.get(source_id, None)
+
+        # If the PM ID has been previously found to be unlinkable, return False
+        if source_id in self._unlinkable_pm_ids:
+            return False
 
         if property_id is not None:
             shared_details['property_id'] = property_id

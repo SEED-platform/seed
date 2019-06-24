@@ -898,11 +898,19 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
 def _append_meter_import_results_to_summary(import_results, incoming_summary):
     """
     This appends meter import result counts and, if applicable, error messages.
+
+    Note, import_results will be of the form:
+        [
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+        ]
     """
     agg_results_summary = collections.defaultdict(lambda: 0)
     error_comments = collections.defaultdict(lambda: set())
 
-    # First aggregate import_results by key = tuple (source_id/usage_point_id, type)
+    # First aggregate import_results by key
     for result in import_results:
         key = list(result.keys())[0]
 

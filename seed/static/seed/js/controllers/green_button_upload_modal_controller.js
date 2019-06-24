@@ -95,6 +95,9 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         enableHiding: false,
         type: 'string'
       }, {
+        field: 'type',
+        enableHiding: false
+      }, {
         field: 'incoming',
         enableHiding: false
       }];
