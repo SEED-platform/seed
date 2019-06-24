@@ -272,23 +272,11 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
         )
         result = response.json()
-        self.assertFalse(result['success'])
+        # self.assertFalse(result['success'])
         self.assertEqual(
+            'Cannot find column in org=%s with pk=%s' % (self.org.id, self.cross_org_column.pk),
             result['message'],
-            'Cannot find column in org=%s with pk=%s' % (self.org.id, self.cross_org_column.pk)
         )
-
-        # try setting the org id explicity -- it should still fail with permission denied
-        response = self.client.post(
-            reverse('api:v2:columns-rename', args=[self.cross_org_column.pk]),
-            data=json.dumps({
-                'organization_id': self.org_2.pk
-            }),
-            content_type='application/json'
-        )
-        self.assertEqual(response.status_code, 403)
-        result = response.json()
-        self.assertEqual(result['detail'], 'No relationship to organization')
 
     def test_rename_column_dne(self):
         # test building list columns
