@@ -98,7 +98,7 @@ class Meter(models.Model):
         """
         if overlaps_possible:
             reading_strings = [
-                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
+                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
                 for reading
                 in source_meter.meter_readings.all()
             ]
