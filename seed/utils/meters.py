@@ -19,6 +19,7 @@ from django.utils.timezone import make_aware
 
 from pytz import timezone
 
+from seed.models import Meter
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
     usage_point_id,
@@ -38,6 +39,7 @@ class PropertyMeterReadingsExporter():
 
     def __init__(self, property_id, org_id, excluded_meter_ids):
         self._cache_factors = None
+        self._cache_org_country = None
 
         self.meters = Property.objects.get(pk=property_id).meters.exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
@@ -47,10 +49,16 @@ class PropertyMeterReadingsExporter():
     @property
     def factors(self):
         if self._cache_factors is None:
-            thermal_conv_pref = Organization.objects.get(pk=self.org_id).get_thermal_conversion_assumption_display()
-            self._cache_factors = kbtu_thermal_conversion_factors(thermal_conv_pref)
+            self._cache_factors = kbtu_thermal_conversion_factors(self._org_country)
 
         return self._cache_factors
+
+    @property
+    def _org_country(self):
+        if self._cache_org_country is None:
+            self._cache_org_country = Organization.objects.get(pk=self.org_id).get_thermal_conversion_assumption_display()
+
+        return self._cache_org_country
 
     def readings_and_column_defs(self, interval):
         if interval == 'Exact':
@@ -202,13 +210,17 @@ class PropertyMeterReadingsExporter():
         }
 
     def _build_column_def(self, meter, column_defs):
-        type = dict(meter.ENERGY_TYPES)[meter.type]
+        type_text = meter.get_type_display()
         source = 'PM' if meter.source == meter.PORTFOLIO_MANAGER else 'GB'
         source_id = meter.source_id if source == 'PM' else usage_point_id(meter.source_id)
-        field_name = '{} - {} - {}'.format(type, source, source_id)
+        field_name = '{} - {} - {}'.format(type_text, source, source_id)
 
-        display_unit = self.org_meter_display_settings[type]
-        conversion_factor = self.factors[type][display_unit]
+        if meter.type == Meter.COST:
+            display_unit = "{} Dollars".format(self._org_country)
+            conversion_factor = 1
+        else:
+            display_unit = self.org_meter_display_settings[type_text]
+            conversion_factor = self.factors[type_text][display_unit]
 
         column_defs[field_name] = {
             'field': field_name,

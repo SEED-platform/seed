@@ -428,6 +428,86 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
+    def test_property_energy_usage_returns_meter_readings_and_column_defs_when_cost_meter_included(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        # add meters and readings to property associated to property_view_1
+        save_raw_data(cost_import_file.id)
+
+        url = reverse('api:v2:meters-property-energy-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Exact',
+            'excluded_meter_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'start_time': '2016-01-01 00:00:00',
+                    'end_time': '2016-02-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': 597478.9,
+                    'Cost - PM - 5766973-0': 100,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Cost - PM - 5766973-1': 300,
+                },
+                {
+                    'start_time': '2016-02-01 00:00:00',
+                    'end_time': '2016-03-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Cost - PM - 5766973-0': 200,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Cost - PM - 5766973-1': 400,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'start_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'end_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Cost - PM - 5766973-0',
+                    'displayName': 'Cost - PM - 5766973-0 (US Dollars)',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Cost - PM - 5766973-1',
+                    'displayName': 'Cost - PM - 5766973-1 (US Dollars)',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
     def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
         # update the org settings thermal preference and display preference
         self.org.thermal_conversion_assumption = Organization.CAN
