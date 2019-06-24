@@ -733,6 +733,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     readings = meter_readings['readings']
     meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
+    meter_id = meter.id
 
     meter_usage_point_id = usage_point_id(meter.source_id)
 
@@ -742,7 +743,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     tasks = [
-        _save_greenbutton_data_task.s(batch_readings, meter, meter_usage_point_id, progress_data.key)
+        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
         for batch_readings
         in batch(readings, chunk_size)
     ]
@@ -751,7 +752,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
 
 @shared_task
-def _save_greenbutton_data_task(readings, meter, meter_usage_point_id, progress_key):
+def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progress_key):
     """
     This method defines an individual task to save MeterReadings for a single
     Meter. Each task returns the results of the import.
@@ -765,12 +766,13 @@ def _save_greenbutton_data_task(readings, meter, meter_usage_point_id, progress_
     readings for that batch are saved.
     """
     progress_data = ProgressData.from_key(progress_key)
+    meter = Meter.objects.get(pk=meter_id)
 
     result = {}
     try:
         with transaction.atomic():
             reading_strings = [
-                f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
+                f"({meter_id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
                 for reading
                 in readings
             ]
