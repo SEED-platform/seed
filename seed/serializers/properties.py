@@ -6,13 +6,13 @@ through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
+:author Nicholas Long  <nicholas.long@nrel.gov>
 """
 import json
 from collections import OrderedDict
 
-from django.apps import apps
+import pytz
 from django.db import models
-from django.utils.timezone import make_naive
 from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
@@ -20,7 +20,6 @@ from rest_framework.fields import empty
 from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,
-    Column,
     GreenAssessmentProperty,
     PropertyAuditLog,
     Property,
@@ -38,9 +37,7 @@ from seed.serializers.measures import PropertyMeasureSerializer
 from seed.serializers.pint import PintQuantitySerializerField
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
-
-# expose internal model
-PropertyLabel = apps.get_model('seed', 'Property_labels')
+from seed.utils.api import OrgMixin, ProfileIdMixin
 
 CYCLE_FIELDS = ['id', 'name', 'start', 'end', 'created']
 
@@ -100,23 +97,17 @@ class PropertyListSerializer(serializers.ListSerializer):
             iterable = data.all().prefetch_related('parent_property')
         else:
             iterable = data
-        property_ids = [item.id for item in iterable]
-        labels = PropertyLabel.objects.filter(property_id__in=property_ids)
-        labelset = {}
-        for label in labels:
-            record = labelset.setdefault(label.property_id, [])
-            record.append(label.statuslabel_id)
         result = []
         for item in iterable:
             representation = self.child.to_representation(item)
-            representation['labels'] = labelset.get(item.id, None)
             result.append(representation)
         return result
 
 
 class PropertySerializer(serializers.ModelSerializer):
-    # list of status labels (rather than the join field)
-    labels = PropertyLabelsField(read_only=True, many=True)
+    # The created and updated fields are in UTC time and need to be casted accordingly in this format
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
 
     class Meta:
         model = Property
@@ -160,6 +151,13 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     source_eui_modeled = PintQuantitySerializerField(allow_null=True)
     site_eui_weather_normalized = PintQuantitySerializerField(allow_null=True)
 
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
@@ -171,40 +169,43 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             'organization': {'read_only': True}
         }
 
-    def __init__(self, instance=None, data=empty, all_extra_data_columns=None, **kwargs):
-        """Override __init__ for the optional all_extra_data_columns argument"""
-        self.all_extra_data_columns = all_extra_data_columns
+    def __init__(self, instance=None, data=empty, all_extra_data_columns=None, show_columns=None, **kwargs):
+        """
+        If show_columns is passed, then all_extra_data_columns is not needed since the extra_data columns are embedded
+        in the show_columns.
+
+        TODO: remove the use of all_extra_data_columns.
+
+        :param instance: instance to serialize
+        :param data: initial data
+        :param all_extra_data_columns:
+        :param show_columns: dict of list, Which columns to show in the form of c['fields']=[] and c['extra_data'].
+        """
+        if show_columns is not None:
+            self.all_extra_data_columns = show_columns['extra_data']
+        else:
+            self.all_extra_data_columns = all_extra_data_columns
+
         super(PropertyStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
+
+        # remove the fields to display based on the show_columns list.
+        if show_columns is not None:
+            for field_name in set(self.fields) - set(show_columns['fields']):
+                self.fields.pop(field_name)
 
     def to_representation(self, data):
         """Overwritten to handle time conversion and extra_data null fields"""
         result = super(PropertyStateSerializer, self).to_representation(data)
 
         # Prepopulate the extra_data columns with a default of None so that they will appear in the result
+        # This will also handle the passing of the show_columns extra data list. If the show_columns isn't
+        # requiring a column, then it won't show up here.
         if self.all_extra_data_columns and data.extra_data:
             prepopulated_extra_data = {
-                col_name: data.extra_data.get(col_name, None)
-                for col_name
-                in self.all_extra_data_columns
+                col_name: data.extra_data.get(col_name, None) for col_name in self.all_extra_data_columns
             }
 
             result['extra_data'] = prepopulated_extra_data
-
-        # for datetime to be isoformat and remove timezone data
-        if data.generation_date:
-            result['generation_date'] = make_naive(data.generation_date).isoformat()
-
-        if data.recent_sale_date:
-            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
-
-        if data.release_date:
-            result['release_date'] = make_naive(data.release_date).isoformat()
-
-        if data.analysis_start_time:
-            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
-
-        if data.analysis_end_time:
-            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
 
         return result
 
@@ -227,6 +228,14 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField(read_only=True)
 
+    # support naive datetime objects
+    # support naive datetime objects
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
     gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
@@ -242,38 +251,21 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = PropertyState
 
-    def to_representation(self, data):
-        """Overwritten to handle time conversion"""
-        result = super(PropertyStateWritableSerializer, self).to_representation(data)
-        # for datetime to be isoformat and remove timezone data
-        if data.generation_date:
-            result['generation_date'] = make_naive(data.generation_date).isoformat()
-
-        if data.recent_sale_date:
-            result['recent_sale_date'] = make_naive(data.recent_sale_date).isoformat()
-
-        if data.release_date:
-            result['release_date'] = make_naive(data.release_date).isoformat()
-
-        if data.analysis_start_time:
-            result['analysis_start_time'] = make_naive(data.analysis_start_time).isoformat()
-
-        if data.analysis_end_time:
-            result['analysis_end_time'] = make_naive(data.analysis_end_time).isoformat()
-
-        return result
-
 
 class PropertyViewSerializer(serializers.ModelSerializer):
+    # list of status labels (rather than the join field)
+    labels = PropertyLabelsField(read_only=True, many=True)
+
     state = PropertyStateSerializer()
+    property = PropertySerializer()
 
     class Meta:
         model = PropertyView
         depth = 1
-        fields = ('id', 'cycle', 'state', 'property')
+        fields = ('id', 'cycle', 'state', 'property', 'labels')
 
 
-class PropertyViewListSerializer(serializers.ListSerializer):
+class PropertyViewListSerializer(serializers.ListSerializer, OrgMixin, ProfileIdMixin):
     """When serializing Property View as a list, omit history."""
 
     def to_representation(self, data):
@@ -282,6 +274,7 @@ class PropertyViewListSerializer(serializers.ListSerializer):
         # Not sure when the data is a models.Manager or a QuerySet. It seems
         # like this method, in general, is going to cause a bunch of issues as we
         # extend the data model.
+        # NL: Extending this method to add in profile_id lookup
         if isinstance(data, (models.Manager, models.QuerySet)):
             iterable = data.all().values(*PVFIELDS)
             view_ids = []
@@ -294,21 +287,23 @@ class PropertyViewListSerializer(serializers.ListSerializer):
             view_ids = [view.id for view in iterable]
             results = []
 
-            # If data is provided, grab extra_data columns to be shown in the result
-            if iterable:
-                organization_id = data[0].state.organization_id
-
-                all_extra_data_columns = Column.objects.filter(
-                    organization_id=organization_id,
-                    is_extra_data=True,
-                    table_name='PropertyState').values_list('column_name', flat=True)
+            # grab the organization and profile_id. In testing the context is none in some cases.
+            if self.context.get('request') is not None:
+                org_id = self.get_organization(self.context['request'])
+                profile_id = self.context['request'].query_params.get('profile_id', None)
+                show_columns = self.get_show_columns(org_id, profile_id)
+            else:
+                show_columns = None
 
             for item in iterable:
                 cycle = [
                     (field, getattr(item.cycle, field, None)) for field in CYCLE_FIELDS
                 ]
                 cycle = OrderedDict(cycle)
-                state = PropertyStateSerializer(item.state, all_extra_data_columns=all_extra_data_columns).data
+                state = PropertyStateSerializer(
+                    item.state,
+                    show_columns=show_columns
+                ).data
                 representation = OrderedDict((
                     ('id', item.id),
                     ('property', item.property_id),
@@ -325,9 +320,7 @@ class PropertyViewListSerializer(serializers.ListSerializer):
         for certification in certifications:
             record = certset.setdefault(certification.view_id, [])
             record.append(
-                GreenAssessmentPropertyReadOnlySerializer(
-                    certification
-                ).data
+                GreenAssessmentPropertyReadOnlySerializer(certification).data
             )
         for row in results:
             row['certifications'] = certset.get(row['id'], None)
@@ -623,7 +616,8 @@ def unflatten_values(vdict, fkeys):
     :param fkeys: field names for foreign key (e.g. state for state__city)
     :type fkeys: list
     """
-    assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict, fkeys)
+    assert set(list(vdict.keys())).isdisjoint(set(fkeys)), "unflatten_values: {} has fields named in {}".format(vdict,
+                                                                                                                fkeys)
     idents = tuple(["{}__".format(fkey) for fkey in fkeys])
     newdict = vdict.copy()
     for key, val in vdict.items():

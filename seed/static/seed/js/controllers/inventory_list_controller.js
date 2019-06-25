@@ -265,7 +265,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), 'id');
+              var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -328,7 +329,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             has_meters: function() {
               if ($scope.inventory_type === 'properties') {
                 var inventory_ids = $scope.selectedOrder.slice().reverse();
-                return inventory_service.properties_meter_check(inventory_ids).then(function (has_meters) {
+                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
                   return has_meters;
                 });
               } else {

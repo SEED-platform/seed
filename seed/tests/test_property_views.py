@@ -28,11 +28,11 @@ from seed.data_importer.models import (
 from seed.models import (
     Meter,
     MeterReading,
-    Property,
     PropertyState,
     PropertyView,
     TaxLotView,
     TaxLotProperty,
+    Column,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -43,6 +43,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
+    FakeColumnListSettingsFactory,
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -76,6 +77,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
         self.client.login(**user_details)
 
     def test_get_and_edit_properties(self):
@@ -121,11 +123,37 @@ class PropertyViewTests(DeleteModelsTestCase):
         # make sure the address was updated and that the datetimes were modified
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['state']['address_line_1'], '742 Evergreen Terrace')
-        self.assertEqual(datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
-                         datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(
-                             microsecond=0))
+        self.assertEqual(
+            datetime.strptime(db_created_time, "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0),
+            datetime.strptime(data['property']['created'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+        )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_list_properties_with_profile_id(self):
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+        # get the columnlistsetting (default) for all columns
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+
+        params = {
+            'organization_id': self.org.pk,
+            'profile_id': columnlistsetting.id,
+        }
+        url = reverse('api:v2.1:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
+        response = self.client.get(url, params)
+        data = response.json()
+        self.assertEqual(len(data['properties']), 1)
+        result = data['properties'][0]
+        self.assertEqual(result['state']['address_line_1'], state.address_line_1)
+        self.assertEqual(result['state']['extra_data']['field_1'], 'value_1')
+        self.assertFalse(result['state'].get('city', None))
 
     def test_search_identifier(self):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
@@ -202,7 +230,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         results = result['properties']
         self.assertEqual(len(results), 1)
 
-    def test_meters_check(self):
+    def test_meters_exist(self):
         # Create a property set with meters
         state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
@@ -235,7 +263,7 @@ class PropertyViewTests(DeleteModelsTestCase):
             property=property_2, cycle=self.cycle, state=state_2
         )
 
-        url = reverse('api:v2:properties-meter-check')
+        url = reverse('api:v2:properties-meters-exist')
 
         true_post_params = json.dumps({
             'inventory_ids': [property_2.pk, property_1.pk]
@@ -628,7 +656,7 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
     def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
         # Capture old property_ids
         view = PropertyView.objects.first()  # There's only one PropertyView
-        old_property_ids = [
+        existing_property_ids = [
             view.property_id,
             self.property_1.id,
             self.property_2.id,
@@ -638,8 +666,7 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
         url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(url, content_type='application/json')
 
-        self.assertFalse(PropertyView.objects.filter(property_id__in=old_property_ids).exists())
-        self.assertFalse(Property.objects.filter(pk__in=old_property_ids).exists())
+        self.assertFalse(PropertyView.objects.filter(property_id__in=existing_property_ids).exists())
 
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties

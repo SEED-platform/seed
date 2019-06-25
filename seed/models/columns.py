@@ -645,7 +645,8 @@ class Column(models.Model):
         try:
             with transaction.atomic():
                 # check if the new_column already exists
-                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name)
+                new_column = Column.objects.filter(table_name=self.table_name, column_name=new_column_name,
+                                                   organization=self.organization)
                 if len(new_column) > 0:
                     if not force:
                         return [False, 'New column already exists, specify overwrite data if desired']
@@ -682,14 +683,14 @@ class Column(models.Model):
                 # go through the data and move it to the new field. I'm not sure yet on how long this is
                 # going to take to run, so we may have to move this to a background task
                 orig_data = STR_TO_CLASS[self.table_name].objects.filter(
-                    organization=new_column.organization,
+                    organization=self.organization,
                     data_state=DATA_STATE_MATCHING
                 )
                 if new_column.is_extra_data:
                     if self.is_extra_data:
                         for datum in orig_data:
-                            datum.extra_data[new_column.column_name] = datum.extra_data[self.column_name]
-                            del datum.extra_data[self.column_name]
+                            datum.extra_data[new_column.column_name] = datum.extra_data.get(self.column_name, None)
+                            datum.extra_data.pop(self.column_name, None)
                             datum.save()
                     else:
                         for datum in orig_data:
@@ -700,8 +701,8 @@ class Column(models.Model):
                 else:
                     if self.is_extra_data:
                         for datum in orig_data:
-                            setattr(datum, new_column.column_name, datum.extra_data[self.column_name])
-                            del datum.extra_data[self.column_name]
+                            setattr(datum, new_column.column_name, datum.extra_data.get(self.column_name, None))
+                            datum.extra_data.pop(self.column_name, None)
                             datum.save()
                     else:
                         for datum in orig_data:
@@ -1314,7 +1315,7 @@ class Column(models.Model):
     @staticmethod
     def retrieve_priorities(org_id):
         """
-        Return the list of priorties for the columns. Result will be in the form of:
+        Return the list of priorities for the columns. Result will be in the form of:
 
         .. code-block:: json
 

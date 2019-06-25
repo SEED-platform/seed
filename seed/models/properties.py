@@ -70,7 +70,6 @@ class Property(models.Model):
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
-    labels = models.ManyToManyField(StatusLabel)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -729,6 +728,8 @@ class PropertyView(models.Model):
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
+    labels = models.ManyToManyField(StatusLabel)
+
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
@@ -852,4 +853,4 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
             instance.geocoding_confidence = None
 
 
-m2m_changed.connect(compare_orgs_between_label_and_target, sender=Property.labels.through)
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=PropertyView.labels.through)
