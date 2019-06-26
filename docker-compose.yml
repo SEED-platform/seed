@@ -29,6 +29,7 @@ services:
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
       # - REDIS_PASSWORD=optional-need-to-configure-redis
@@ -53,6 +54,7 @@ services:
     command: /seed/docker/start_celery_docker.sh
     environment:
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
       # - REDIS_PASSWORD=optional-need-to-configure-redis

@@ -1,6 +1,7 @@
 # Docker Compose for deployment using a local registry.
 # Must set the following environment variables
 #   POSTGRES_DB
+#   POSTGRES_PORT
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -50,6 +51,7 @@ services:
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
       - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       # - REDIS_PASSWORD
@@ -80,6 +82,7 @@ services:
     image: 127.0.0.1:5000/seed
     environment:
       - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY

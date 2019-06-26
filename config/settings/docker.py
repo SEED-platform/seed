@@ -9,7 +9,7 @@ from __future__ import absolute_import
 from config.settings.common import *  # noqa
 
 # Gather all the settings from the docker environment variables
-ENV_VARS = ['POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
+ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
@@ -47,7 +47,7 @@ DATABASES = {
         'USER': POSTGRES_USER,
         'PASSWORD': POSTGRES_PASSWORD,
         'HOST': "db-postgres",
-        'PORT': 5432,
+        'PORT': POSTGRES_PORT,
     }
 }
 
