@@ -45,6 +45,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Simulation,
+    StatusLabel,
     TaxLotProperty,
     TaxLotView,
 )
@@ -550,12 +551,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
             label_ids = list(set(label_ids))
 
-            # Create new labels and view
+            # Create new view
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             property_id=inventory_record.id)
             new_view.save()
-            for label_id in label_ids:
-                label(propertyview_id=new_view.id, statuslabel_id=label_id).save()
+
+            # Associate labels
+            new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
 
             # Assign notes to the new view
             for note in notes:
@@ -607,6 +609,9 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'status': 'error',
                 'message': 'property view with id {} does not exist'.format(pk)
             }
+
+        # Capture previous associated labels
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
 
         notes = old_view.notes.all()
         for note in notes:
@@ -663,13 +668,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             state=state2
         )
 
-        # Save old labels to both views
-        label_ids = list(old_view.labels.all().values_list('id', flat=True))
-
-        for label_id in label_ids:
-            label(propertyview_id=new_view1.id, statuslabel_id=label_id).save()
-            label(propertyview_id=new_view2.id, statuslabel_id=label_id).save()
-
         # Mark the merged state as deleted
         merged_state.merge_state = MERGE_STATE_DELETE
         merged_state.save()
@@ -704,6 +702,11 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Asssociate labels
+        label_objs = StatusLabel.objects.filter(pk__in=label_ids)
+        new_view1.labels.set(label_objs)
+        new_view2.labels.set(label_objs)
 
         # Duplicate notes to the new views
         for note in notes:

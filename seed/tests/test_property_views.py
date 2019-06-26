@@ -41,6 +41,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeNoteFactory,
+    FakeStatusLabelFactory,
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
@@ -313,6 +314,31 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         )
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+    def test_properties_merge_without_losing_labels(self):
+        # Create 3 Labels
+        label_factory = FakeStatusLabelFactory(organization=self.org)
+
+        label_1 = label_factory.get_statuslabel()
+        label_2 = label_factory.get_statuslabel()
+        label_3 = label_factory.get_statuslabel()
+
+        self.view_1.labels.add(label_1, label_2)
+        self.view_2.labels.add(label_2, label_3)
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # The resulting -View should have 3 labels
+        view = PropertyView.objects.first()
+
+        self.assertEqual(view.labels.count(), 3)
+        label_names = list(view.labels.values_list('name', flat=True))
+        self.assertCountEqual(label_names, [label_1.name, label_2.name, label_3.name])
 
     def test_properties_merge_without_losing_notes(self):
         note_factory = FakeNoteFactory(organization=self.org, user=self.user)
@@ -678,6 +704,25 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
             'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
         })
         self.client.post(url, post_params, content_type='application/json')
+
+    def test_properties_unmerge_without_losing_labels(self):
+        # Create 3 Labels - add 2 to view
+        label_factory = FakeStatusLabelFactory(organization=self.org)
+
+        label_1 = label_factory.get_statuslabel()
+        label_2 = label_factory.get_statuslabel()
+
+        view = PropertyView.objects.first()  # There's only one PropertyView
+        view.labels.add(label_1, label_2)
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        for new_view in PropertyView.objects.all():
+            self.assertEqual(new_view.labels.count(), 2)
+            label_names = list(new_view.labels.values_list('name', flat=True))
+            self.assertCountEqual(label_names, [label_1.name, label_2.name])
 
     def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
         # Capture old property_ids
