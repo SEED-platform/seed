@@ -28,6 +28,7 @@ from seed.data_importer.models import (
 from seed.models import (
     Meter,
     MeterReading,
+    Property,
     PropertyState,
     PropertyView,
     TaxLotView,
@@ -288,11 +289,11 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = cycle_factory.get_cycle(
+        self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
@@ -592,6 +593,31 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
 
+    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_if_associated_to_views(self):
+        # Capture old property_ids
+        persisting_property_id = self.property_1.id
+        deleted_property_id = self.property_2.id
+
+        new_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
+        )
+        new_property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(
+            property_id=persisting_property_id, cycle=new_cycle, state=new_property_state
+        )
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        self.assertFalse(PropertyView.objects.filter(property_id=deleted_property_id).exists())
+        self.assertFalse(Property.objects.filter(pk=deleted_property_id).exists())
+
+        self.assertEqual(PropertyView.objects.filter(property_id=persisting_property_id).count(), 1)
+
 
 class PropertyUnmergeViewTests(DeleteModelsTestCase):
     def setUp(self):
@@ -603,11 +629,11 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = cycle_factory.get_cycle(
+        self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
@@ -695,3 +721,35 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
             ])
 
         self.assertEqual(reading_sets[0], reading_sets[1])
+
+    def test_unmerge_results_in_the_use_of_new_canonical_records_and_deletion_of_old_canonical_state_if_unrelated_to_any_views(self):
+        # Capture "old" property_id - there's only one PropertyView
+        view = PropertyView.objects.first()
+        property_id = view.property_id
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertFalse(Property.objects.filter(pk=property_id).exists())
+        self.assertEqual(Property.objects.count(), 2)
+
+    def test_unmerge_results_in_the_persistence_of_old_canonical_state_if_related_to_any_views(self):
+        # Associate only canonical property with records across Cycle
+        view = PropertyView.objects.first()
+        property_id = view.property_id
+
+        new_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
+        )
+        new_property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(
+            property_id=property_id, cycle=new_cycle, state=new_property_state
+        )
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
+        self.assertEqual(Property.objects.count(), 3)

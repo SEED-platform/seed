@@ -541,7 +541,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
             for v in views:
                 label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
-                v.property.delete()
+
+                # If canonical Property is NOT associated to a different -View
+                if not view.objects.filter(property_id=v.property_id).exclude(pk=v.pk).exists():
+                    v.property.delete()  # This deletes both -View and canonical records
+                else:
+                    v.delete()
+
             label_ids = list(set(label_ids))
 
             # Create new labels and view
@@ -640,6 +646,10 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
         Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
         Property.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
+
+        # If canonical Property is NOT associated to a different -View, delete it
+        if not PropertyView.objects.filter(property_id=old_view.property_id).exclude(id=old_view.id).exists():
+            Property.objects.get(pk=old_view.property_id).delete()
 
         # Create the views
         new_view1 = PropertyView(

@@ -345,7 +345,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                                    .values_list('property_view_id', flat=True))
             for v in views:
                 label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
-                v.taxlot.delete()
+
+                # If the canonical TaxLot is NOT associated to another -View
+                if not view.objects.filter(taxlot_id=v.taxlot_id).exclude(pk=v.id).exists():
+                    v.taxlot.delete()  # This deletes both the View and canonical record
+                else:
+                    v.delete()
+
             label_ids = list(set(label_ids))
 
             # Create new inventory record
@@ -446,7 +452,9 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         new_taxlot_2.id = None
         new_taxlot_2.save()
 
-        TaxLot.objects.get(pk=old_view.taxlot_id).delete()
+        # If the canonical TaxLot is NOT associated to another -View
+        if not TaxLotView.objects.filter(taxlot_id=old_view.taxlot_id).exclude(pk=old_view.id).exists():
+            TaxLot.objects.get(pk=old_view.taxlot_id).delete()
 
         # Create the views
         new_view1 = TaxLotView(
