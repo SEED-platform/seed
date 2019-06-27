@@ -26,6 +26,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLot,
+    TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
 )
@@ -506,6 +507,61 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         self.assertEqual(rps_3.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rps_3.merge_state, MERGE_STATE_NEW)
 
+    def test_match_properties_rolls_up_multiple_existing_matches_in_id_order_if_they_exist(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 3 non-matching properties in first ImportFile
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['pm_property_id'] = '789DifferentID'
+        base_details['city'] = 'Denver'
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['pm_property_id'] = '1337AnotherDifferentID'
+        base_details['city'] = 'Philadelphia'
+        ps_3 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Make all those states match
+        PropertyState.objects.filter(pk__in=[ps_2.id, ps_3.id]).update(
+            pm_property_id='123MatchID'
+        )
+
+        # Verify that none of the 3 have been merged
+        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(PropertyState.objects.count(), 3)
+        self.assertEqual(PropertyView.objects.count(), 3)
+
+        # Import a property that will identify the first 3 as matches.
+        base_details['import_file_id'] = self.import_file_2.id
+        base_details['pm_property_id'] = '123MatchID'
+        del base_details['city']
+        ps_4 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # There should only be one PropertyView which is associated to new, merged -State
+        self.assertEqual(PropertyView.objects.count(), 1)
+        view = PropertyView.objects.first()
+        self.assertNotIn(view.state_id, [ps_1.id, ps_2.id, ps_3.id, ps_4.id])
+
+        # It will have a -State having city as Philadelphia
+        self.assertEqual(view.state.city, 'Philadelphia')
+
+        # The corresponding log should be a System Match
+        audit_log = PropertyAuditLog.objects.get(state_id=view.state_id)
+        self.assertEqual(audit_log.name, 'System Match')
+
     def test_match_taxlots_if_all_default_fields_match(self):
         base_details = {
             'address_line_1': '123 Match Street',
@@ -575,6 +631,61 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         rtls_3 = TaxLotState.objects.get(pk=tls_3.id)
         self.assertEqual(rtls_3.data_state, DATA_STATE_MATCHING)
         self.assertEqual(rtls_3.merge_state, MERGE_STATE_NEW)
+
+    def test_match_taxlots_rolls_up_multiple_existing_matches_in_id_order_if_they_exist(self):
+        base_details = {
+            'jurisdiction_tax_lot_id': '123MatchID',
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 3 non-matching taxlots in first ImportFile
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['jurisdiction_tax_lot_id'] = '789DifferentID'
+        base_details['city'] = 'Denver'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['jurisdiction_tax_lot_id'] = '1337AnotherDifferentID'
+        base_details['city'] = 'Philadelphia'
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Make all those states match
+        TaxLotState.objects.filter(pk__in=[tls_2.id, tls_3.id]).update(
+            jurisdiction_tax_lot_id='123MatchID'
+        )
+
+        # Verify that none of the 3 have been merged
+        self.assertEqual(TaxLot.objects.count(), 3)
+        self.assertEqual(TaxLotState.objects.count(), 3)
+        self.assertEqual(TaxLotView.objects.count(), 3)
+
+        # Import a property that will identify the first 3 as matches.
+        base_details['import_file_id'] = self.import_file_2.id
+        base_details['jurisdiction_tax_lot_id'] = '123MatchID'
+        del base_details['city']
+        tls_4 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # There should only be one TaxLotView which is associated to new, merged -State
+        self.assertEqual(TaxLotView.objects.count(), 1)
+        view = TaxLotView.objects.first()
+        self.assertNotIn(view.state_id, [tls_1.id, tls_2.id, tls_3.id, tls_4.id])
+
+        # It will have a -State having city as Philadelphia
+        self.assertEqual(view.state.city, 'Philadelphia')
+
+        # The corresponding log should be a System Match
+        audit_log = TaxLotAuditLog.objects.get(state_id=view.state_id)
+        self.assertEqual(audit_log.name, 'System Match')
 
 
 class TestMatchingIntegration(DataMappingBaseTestCase):

@@ -32,6 +32,13 @@ from seed.models import (
 )
 
 
+def merge_states_with_views(state_ids, org_id, log_name, StateClass):
+    if StateClass == PropertyState:
+        return merge_properties(state_ids, org_id, log_name)
+    else:
+        return merge_taxlots(state_ids, org_id, log_name)
+
+
 def merge_properties(state_ids, org_id, log_name):
     index = 1
     merged_state = None
@@ -44,7 +51,7 @@ def merge_properties(state_ids, org_id, log_name):
             state_1 = merged_state
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
-        merged_state_id = _merge_log_states(org_id, state_1, state_2, log_name)
+        merged_state = _merge_log_states(org_id, state_1, state_2, log_name)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -57,7 +64,7 @@ def merge_properties(state_ids, org_id, log_name):
         cycle_id = views.first().cycle_id
         new_view = PropertyView(
             cycle_id=cycle_id,
-            state_id=merged_state_id,
+            state_id=merged_state.id,
             property_id=new_property.id
         )
         new_view.save()
@@ -77,6 +84,8 @@ def merge_properties(state_ids, org_id, log_name):
 
         index += 1
 
+    return merged_state
+
 
 def merge_taxlots(state_ids, org_id, log_name):
     index = 1
@@ -90,7 +99,7 @@ def merge_taxlots(state_ids, org_id, log_name):
             state_1 = merged_state
         state_2 = TaxLotState.objects.get(id=state_ids[index])
 
-        merged_state_id = _merge_log_states(org_id, state_1, state_2, log_name)
+        merged_state = _merge_log_states(org_id, state_1, state_2, log_name)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -103,7 +112,7 @@ def merge_taxlots(state_ids, org_id, log_name):
         cycle_id = views.first().cycle_id
         new_view = TaxLotView(
             cycle_id=cycle_id,
-            state_id=merged_state_id,
+            state_id=merged_state.id,
             taxlot_id=new_taxlot.id
         )
         new_view.save()
@@ -122,6 +131,8 @@ def merge_taxlots(state_ids, org_id, log_name):
 
         index += 1
 
+    return merged_state
+
 
 def _merge_log_states(org_id, state_1, state_2, log_name):
     if isinstance(state_1, PropertyState):
@@ -133,7 +144,7 @@ def _merge_log_states(org_id, state_1, state_2, log_name):
     priorities = Column.retrieve_priorities(org_id)
     merged_state = StateClass.objects.create(organization_id=org_id)
     merged_state = merging.merge_state(
-        merged_state, state_1, state_2, priorities['PropertyState']
+        merged_state, state_1, state_2, priorities[StateClass.__name__]
     )
 
     state_1_audit_log = AuditLogClass.objects.filter(state=state_1).first()
@@ -161,7 +172,7 @@ def _merge_log_states(org_id, state_1, state_2, log_name):
     state_2.merge_state = MERGE_STATE_UNKNOWN
     state_2.save()
 
-    return merged_state.id
+    return merged_state
 
 
 def _copy_meters_in_order(state_1_id, state_2_id, new_property):

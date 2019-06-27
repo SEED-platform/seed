@@ -41,6 +41,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.models.auditlog import AUDIT_IMPORT
+from seed.utils.merge import merge_states_with_views
 
 _log = get_task_logger(__name__)
 
@@ -306,13 +307,18 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     merge_state_pairs = []
     for state in unmatched_states:
         matching_criteria = _matching_filter_criteria(org.id, table_name, state)
-        state_match = ObjectStateClass.objects.filter(
+        state_matches = ObjectStateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria
         )
+        count = state_matches.count()
 
-        if state_match.exists():
-            merge_state_pairs.append((state_match.first(), state))
+        if count > 1:
+            state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
+            merged_state = merge_states_with_views(state_ids, org.id, 'System Match', ObjectStateClass)
+            merge_state_pairs.append((merged_state, state))
+        elif count == 1:
+            merge_state_pairs.append((state_matches.first(), state))
         else:
             promote_states = promote_states | ObjectStateClass.objects.filter(pk=state.id)
 
