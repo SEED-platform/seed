@@ -18,16 +18,13 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
-from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization
 )
 from seed.models import (
-    AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
-    MERGE_STATE_UNKNOWN,
     MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
     MERGE_STATE_DELETE,
@@ -57,6 +54,7 @@ from seed.serializers.taxlots import (
     TaxLotViewSerializer
 )
 from seed.utils.api import api_endpoint_class, ProfileIdMixin
+from seed.utils.merge import merge_taxlots
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
@@ -282,110 +280,112 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                     'message': 'Source state [' + state_id + '] is already matched'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        audit_log = TaxLotAuditLog
-        inventory = TaxLot
-        label = apps.get_model('seed', 'TaxLotView_labels')
-        state = TaxLotState
-        view = TaxLotView
+        merge_taxlots(state_ids, organization_id, 'Manual Match')
 
-        index = 1
-        merged_state = None
-        while index < len(state_ids):
-            # state 1 is the base, state 2 is merged on top of state 1
-            # Use index 0 the first time through, merged_state from then on
-            if index == 1:
-                state1 = state.objects.get(id=state_ids[index - 1])
-            else:
-                state1 = merged_state
-            state2 = state.objects.get(id=state_ids[index])
-
-            priorities = Column.retrieve_priorities(organization_id)
-            merged_state = state.objects.create(organization_id=organization_id)
-            merged_state = merging.merge_state(
-                merged_state, state1, state2, priorities['PropertyState']
-            )
-
-            state_1_audit_log = audit_log.objects.filter(state=state1).first()
-            state_2_audit_log = audit_log.objects.filter(state=state2).first()
-
-            audit_log.objects.create(organization=state1.organization,
-                                     parent1=state_1_audit_log,
-                                     parent2=state_2_audit_log,
-                                     parent_state1=state1,
-                                     parent_state2=state2,
-                                     state=merged_state,
-                                     name='Manual Match',
-                                     description='Automatic Merge',
-                                     import_filename=None,
-                                     record_type=AUDIT_IMPORT)
-
-            # Set the merged_state to merged
-            merged_state.data_state = DATA_STATE_MATCHING
-            merged_state.merge_state = MERGE_STATE_MERGED
-            merged_state.save()
-            state1.merge_state = MERGE_STATE_UNKNOWN
-            state1.save()
-            state2.merge_state = MERGE_STATE_UNKNOWN
-            state2.save()
-
-            # Delete existing views and inventory records
-            views = view.objects.filter(state_id__in=[state1.id, state2.id])
-            view_ids = list(views.values_list('id', flat=True))
-
-            # Find unique notes
-            notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
-                'user_id'
-            ).filter(taxlot_view_id__in=view_ids).distinct())
-
-            cycle_id = views.first().cycle_id
-            label_ids = []
-            # Get paired view ids
-            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids)
-                                   .order_by('property_view_id').distinct('property_view_id')
-                                   .values_list('property_view_id', flat=True))
-            for v in views:
-                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
-
-                # If the canonical TaxLot is NOT associated to another -View
-                if not view.objects.filter(taxlot_id=v.taxlot_id).exclude(pk=v.id).exists():
-                    v.taxlot.delete()  # This deletes both the View and canonical record
-                else:
-                    v.delete()
-
-            label_ids = list(set(label_ids))
-
-            # Create new inventory record
-            inventory_record = inventory(organization_id=organization_id)
-            inventory_record.save()
-
-            # Create new view
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
-                            taxlot_id=inventory_record.id)
-            new_view.save()
-
-            # Associate labels
-            new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
-
-            # Assign notes to the new view
-            for note in notes:
-                note['taxlot_view'] = new_view
-                n = Note(**note)
-                n.save()
-                # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'],
-                                                    updated=note['updated'])
-
-            # Delete existing pairs and re-pair all to new view
-            # Probably already deleted by cascade
-            TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=paired_view_id,
-                               taxlot_view_id=new_view.id).save()
-
-            index += 1
+        # audit_log = TaxLotAuditLog
+        # inventory = TaxLot
+        # label = apps.get_model('seed', 'TaxLotView_labels')
+        # state = TaxLotState
+        # view = TaxLotView
+        #
+        # index = 1
+        # merged_state = None
+        # while index < len(state_ids):
+        #     # state 1 is the base, state 2 is merged on top of state 1
+        #     # Use index 0 the first time through, merged_state from then on
+        #     if index == 1:
+        #         state1 = state.objects.get(id=state_ids[index - 1])
+        #     else:
+        #         state1 = merged_state
+        #     state2 = state.objects.get(id=state_ids[index])
+        #
+        #     priorities = Column.retrieve_priorities(organization_id)
+        #     merged_state = state.objects.create(organization_id=organization_id)
+        #     merged_state = merging.merge_state(
+        #         merged_state, state1, state2, priorities['PropertyState']
+        #     )
+        #
+        #     state_1_audit_log = audit_log.objects.filter(state=state1).first()
+        #     state_2_audit_log = audit_log.objects.filter(state=state2).first()
+        #
+        #     audit_log.objects.create(organization=state1.organization,
+        #                              parent1=state_1_audit_log,
+        #                              parent2=state_2_audit_log,
+        #                              parent_state1=state1,
+        #                              parent_state2=state2,
+        #                              state=merged_state,
+        #                              name='Manual Match',
+        #                              description='Automatic Merge',
+        #                              import_filename=None,
+        #                              record_type=AUDIT_IMPORT)
+        #
+        #     # Set the merged_state to merged
+        #     merged_state.data_state = DATA_STATE_MATCHING
+        #     merged_state.merge_state = MERGE_STATE_MERGED
+        #     merged_state.save()
+        #     state1.merge_state = MERGE_STATE_UNKNOWN
+        #     state1.save()
+        #     state2.merge_state = MERGE_STATE_UNKNOWN
+        #     state2.save()
+        #
+        #     # Delete existing views and inventory records
+        #     views = view.objects.filter(state_id__in=[state1.id, state2.id])
+        #     view_ids = list(views.values_list('id', flat=True))
+        #
+        #     # Find unique notes
+        #     notes = list(Note.objects.values(
+        #         'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id',
+        #         'user_id'
+        #     ).filter(taxlot_view_id__in=view_ids).distinct())
+        #
+        #     cycle_id = views.first().cycle_id
+        #     label_ids = []
+        #     # Get paired view ids
+        #     paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids)
+        #                            .order_by('property_view_id').distinct('property_view_id')
+        #                            .values_list('property_view_id', flat=True))
+        #     for v in views:
+        #         label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
+        #
+        #         # If the canonical TaxLot is NOT associated to another -View
+        #         if not view.objects.filter(taxlot_id=v.taxlot_id).exclude(pk=v.id).exists():
+        #             v.taxlot.delete()  # This deletes both the View and canonical record
+        #         else:
+        #             v.delete()
+        #
+        #     label_ids = list(set(label_ids))
+        #
+        #     # Create new inventory record
+        #     inventory_record = inventory(organization_id=organization_id)
+        #     inventory_record.save()
+        #
+        #     # Create new view
+        #     new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+        #                     taxlot_id=inventory_record.id)
+        #     new_view.save()
+        #
+        #     # Associate labels
+        #     new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
+        #
+        #     # Assign notes to the new view
+        #     for note in notes:
+        #         note['taxlot_view'] = new_view
+        #         n = Note(**note)
+        #         n.save()
+        #         # Correct the created and updated times to match the original note
+        #         Note.objects.filter(id=n.id).update(created=note['created'],
+        #                                             updated=note['updated'])
+        #
+        #     # Delete existing pairs and re-pair all to new view
+        #     # Probably already deleted by cascade
+        #     TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
+        #     for paired_view_id in paired_view_ids:
+        #         TaxLotProperty(primary=True,
+        #                        cycle_id=cycle_id,
+        #                        property_view_id=paired_view_id,
+        #                        taxlot_view_id=new_view.id).save()
+        #
+        #     index += 1
 
         return {
             'status': 'success'

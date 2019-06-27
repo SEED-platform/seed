@@ -619,7 +619,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
 
-    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_if_associated_to_views(self):
+    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_NOT_associated_to_other_views(self):
         # Capture old property_ids
         persisting_property_id = self.property_1.id
         deleted_property_id = self.property_2.id
