@@ -360,6 +360,34 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     return list(set(processed_views)), duplicate_count, new_count + matched_count
 
 
+def merge_in_cycle_matches(view_id, StateClassName):
+    if StateClassName == 'PropertyState':
+        StateClass = PropertyState
+        ViewClass = PropertyView
+    elif StateClassName == 'TaxLotState':
+        StateClass = TaxLotState
+        ViewClass = TaxLotView
+
+    view = ViewClass.objects.get(pk=view_id)
+    org_id = view.state.organization_id
+    matching_criteria = _matching_filter_criteria(org_id, StateClassName, view.state)
+    views_in_cycle = ViewClass.objects.filter(cycle_id=view.cycle_id)
+    state_matches = StateClass.objects.filter(
+        pk__in=Subquery(views_in_cycle.values('state_id')),
+        **matching_criteria
+    ).exclude(pk=view.state_id)
+
+    state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
+    state_ids.append(view.state_id)
+    count = len(state_ids)
+
+    if count > 1:
+        merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+        return count
+    elif count == 1:
+        return 0
+
+
 def save_state_match(state1, state2, priorities):
     """
     Merge the contents of state2 into state1
