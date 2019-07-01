@@ -33,7 +33,11 @@
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
                 <li ng-repeat="meter in meter_selections">
-                    <div class="btn btn-default" ng-model="meter.selected" uib-btn-checkbox style="width: 100%; text-align: left;" >{$:: meter.label $}</div>
+                    <div>
+                        <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                            {$:: meter.label $}<input type="checkbox" ng-model="meter.selected" name="meter.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                        </label>
+                    </div>
                 </li>
             </ul>
         </div>
