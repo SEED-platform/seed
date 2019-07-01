@@ -11,7 +11,6 @@ from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
-from django.test import TestCase
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,
@@ -36,9 +35,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
+from seed.tests.util import DataMappingBaseTestCase
 
 
-class TestMeterViewSet(TestCase):
+class TestMeterViewSet(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',
@@ -48,6 +48,10 @@ class TestMeterViewSet(TestCase):
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
+
+        # For some reason, defaults weren't established consistently for each test.
+        self.org.display_meter_units = Organization._default_display_meter_units.copy()
+        self.org.save()
         self.client.login(**self.user_details)
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -91,7 +95,7 @@ class TestMeterViewSet(TestCase):
             cycle=self.cycle
         )
 
-    def test_parsed_meters_confirmation_verifies_energy_type_and_unit_parsed_from_column_column_defs(self):
+    def test_parsed_meters_confirmation_verifies_energy_type_and_units(self):
         url = reverse('api:v2:meters-parsed-meters-confirmation')
 
         post_params = json.dumps({
@@ -103,18 +107,16 @@ class TestMeterViewSet(TestCase):
 
         expectation = [
             {
-                "column_header": "Electricity Use  (kBtu)",
-                "parsed_type": "Electricity",
-                "parsed_unit": "kBtu",
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
             {
-                "column_header": "Natural Gas Use  (GJ)",
                 "parsed_type": "Natural Gas",
-                "parsed_unit": "GJ",
+                "parsed_unit": "kBtu (thousand Btu)",
             },
         ]
 
-        self.assertEqual(result_dict.get("validated_type_units"), expectation)
+        self.assertCountEqual(result_dict.get("validated_type_units"), expectation)
 
     def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_incoming_counts(self):
         url = reverse('api:v2:meters-parsed-meters-confirmation')
@@ -128,16 +130,107 @@ class TestMeterViewSet(TestCase):
 
         expectation = [
             {
-                "source_id": "5766973",
-                "incoming": 4,
-            },
-            {
-                "source_id": "5766975",
-                "incoming": 4,
+                "source_id": "5766973-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
             },
         ]
 
-        self.assertEqual(result_dict.get("proposed_imports"), expectation)
+        self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
+
+    def test_parsed_meters_confirmation_also_verifies_cost_type_and_units_and_counts(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': cost_import_file.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        validated_type_units = [
+            {
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+            {
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+            {
+                "parsed_type": "Cost",
+                "parsed_unit": "US Dollars",
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("validated_type_units"), validated_type_units)
+
+        proposed_imports = [
+            {
+                "source_id": "5766973-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-0",
+                "type": 'Cost',
+                "incoming": 2,
+            }, {
+                "source_id": "5766973-1",
+                "type": 'Cost',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-0",
+                "type": 'Electric - Grid',
+                "incoming": 2,
+            }, {
+                "source_id": "5766975-1",
+                "type": 'Natural Gas',
+                "incoming": 2,
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("proposed_imports"), proposed_imports)
+
+        # Verify this works for Org with CAN thermal conversions
+        self.org.thermal_conversion_assumption = Organization.CAN
+        self.org.save()
+
+        can_result = self.client.post(url, post_params, content_type="application/json")
+        can_result_dict = ast.literal_eval(can_result.content.decode("utf-8"))
+
+        validated_type_units[2] = {
+            "parsed_type": "Cost",
+            "parsed_unit": "CAN Dollars",
+        }
+
+        self.assertCountEqual(can_result_dict.get("validated_type_units"), validated_type_units)
 
     def test_green_button_parsed_meters_confirmation_returns_a_green_button_id_incoming_counts_and_parsed_type_units_and_saves_property_id_to_file_cache(self):
         filename = "example-GreenButton-data.xml"
@@ -145,7 +238,7 @@ class TestMeterViewSet(TestCase):
 
         xml_import_file = ImportFile.objects.create(
             import_record=self.import_record,
-            source_type="PM Meter Usage",
+            source_type="GreenButton",
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=self.cycle
@@ -164,14 +257,15 @@ class TestMeterViewSet(TestCase):
         proposed_imports = [
             {
                 "source_id": '409483',
+                "type": 'Electric - Grid',
                 "incoming": 2,
             },
         ]
 
         validated_type_units = [
             {
-                "parsed_type": "Electricity",
-                "parsed_unit": "kWh",
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kWh (thousand Watt-hours)",
             },
         ]
 
@@ -204,41 +298,86 @@ class TestMeterViewSet(TestCase):
 
         self.assertCountEqual(result_dict.get("unlinkable_pm_ids"), expectation)
 
-    def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
+    def test_property_meters_endpoint_returns_a_list_of_meters_of_a_view(self):
+        # add meters and readings to property associated to property_view_1
+        save_raw_data(self.import_file.id)
+
+        # create GB gas meter
+        meter_details = {
+            'source': Meter.GREENBUTTON,
+            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
+            'type': Meter.NATURAL_GAS,
+            'property_id': self.property_view_1.property.id,
+        }
+        gb_gas_meter = Meter.objects.create(**meter_details)
+
+        url = reverse('api:v2:meters-property-meters')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+        })
+
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        electric_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.ELECTRICITY_GRID)
+        gas_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.NATURAL_GAS, source=Meter.PORTFOLIO_MANAGER)
+        expectation = [
+            {
+                'id': electric_meter.id,
+                'type': 'Electric - Grid',
+                'source': 'PM',
+                'source_id': '5766973-0',
+            }, {
+                'id': gas_meter.id,
+                'type': 'Natural Gas',
+                'source': 'PM',
+                'source_id': '5766973-1',
+            }, {
+                'id': gb_gas_meter.id,
+                'type': 'Natural Gas',
+                'source': 'GB',
+                'source_id': '123fakeID',
+            },
+        ]
+
+        self.assertCountEqual(result_dict, expectation)
+
+    def test_property_meter_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
         # Update settings for display meter units to change it from the default values.
-        self.org.display_meter_units['Electricity'] = 'kWh'
-        self.org.display_meter_units['Fuel Oil (No. 5 & No. 6)'] = 'Gallons (US)'
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
+        self.org.display_meter_units['Natural Gas'] = 'kcf (thousand cubic feet)'
         self.org.save()
 
         # add meters and readings to property associated to property_view_1
         save_raw_data(self.import_file.id)
 
-        # add meter with parenthesis in type name: FUEL_OIL_NO_5_AND_NO_6
         meter_details = {
-            'source': Meter.PORTFOLIO_MANAGER,
-            'source_id': self.property_view_1.state.pm_property_id,
-            'type': Meter.FUEL_OIL_NO_5_AND_NO_6,
+            'source': Meter.GREENBUTTON,
+            'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
+            'type': Meter.NATURAL_GAS,
             'property_id': self.property_view_1.property.id,
         }
-        fuel_meter = Meter.objects.create(**meter_details)
+        gb_gas_meter = Meter.objects.create(**meter_details)
 
         tz_obj = timezone(TIME_ZONE)
-        fuel_reading_details = {
+        gb_gas_reading_details = {
             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
-            'reading': 10,
-            'source_unit': 'kBtu',
+            'reading': 1000,
+            'source_unit': 'kBtu (thousand Btu)',
             'conversion_factor': 1,
-            'meter_id': fuel_meter.id,
+            'meter_id': gb_gas_meter.id,
         }
-        MeterReading.objects.create(**fuel_reading_details)
+        MeterReading.objects.create(**gb_gas_reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Exact',
+            'excluded_meter_ids': [],
         })
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
@@ -248,15 +387,15 @@ class TestMeterViewSet(TestCase):
                 {
                     'start_time': '2016-01-01 00:00:00',
                     'end_time': '2016-02-01 00:00:00',
-                    'Electricity': (597478.9 / 3.412),
-                    'Natural Gas': 545942781.5634,
-                    'Fuel Oil (No. 5 & No. 6)': 10 / 150,
+                    'Electric - Grid - PM - 5766973-0': (597478.9 / 3.41),
+                    'Natural Gas - PM - 5766973-1': 576000.2 / 1026,
+                    'Natural Gas - GB - 123fakeID': 1000 / 1026,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
                     'end_time': '2016-03-01 00:00:00',
-                    'Electricity': (548603.7 / 3.412),
-                    'Natural Gas': 462534790.7817,
+                    'Electric - Grid - PM - 5766973-0': (548603.7 / 3.41),
+                    'Natural Gas - PM - 5766973-1': 488000.1 / 1026,
                 },
             ],
             'column_defs': [
@@ -269,18 +408,18 @@ class TestMeterViewSet(TestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electricity',
-                    'displayName': 'Electricity (kWh)',
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas',
-                    'displayName': 'Natural Gas (kBtu)',
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kcf (thousand cubic feet))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Fuel Oil (No. 5 & No. 6)',
-                    'displayName': 'Fuel Oil (No. 5 & No. 6) (Gallons (US))',
+                    'field': 'Natural Gas - GB - 123fakeID',
+                    'displayName': 'Natural Gas - GB - 123fakeID (kcf (thousand cubic feet))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -289,41 +428,122 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
+    def test_property_meter_usage_returns_meter_readings_and_column_defs_when_cost_meter_included(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        # add meters and readings to property associated to property_view_1
+        save_raw_data(cost_import_file.id)
+
+        url = reverse('api:v2:meters-property-meter-usage')
+
+        post_params = json.dumps({
+            'property_view_id': self.property_view_1.id,
+            'organization_id': self.org.pk,
+            'interval': 'Exact',
+            'excluded_meter_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'start_time': '2016-01-01 00:00:00',
+                    'end_time': '2016-02-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': 597478.9,
+                    'Cost - PM - 5766973-0': 100,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Cost - PM - 5766973-1': 300,
+                },
+                {
+                    'start_time': '2016-02-01 00:00:00',
+                    'end_time': '2016-03-01 00:00:00',
+                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Cost - PM - 5766973-0': 200,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Cost - PM - 5766973-1': 400,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'start_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'end_time',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Cost - PM - 5766973-0',
+                    'displayName': 'Cost - PM - 5766973-0 (US Dollars)',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Cost - PM - 5766973-1',
+                    'displayName': 'Cost - PM - 5766973-1 (US Dollars)',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_meter_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
         # update the org settings thermal preference and display preference
         self.org.thermal_conversion_assumption = Organization.CAN
-        self.org.display_meter_units["Diesel"] = "liters"
-        self.org.display_meter_units["Coke"] = "Lbs"
+        self.org.display_meter_units["Diesel"] = "Liters"
+        self.org.display_meter_units["Coke"] = "Lbs. (pounds)"
         self.org.save()
 
         # add meters and readings to property associated to property_view_1
         meter_details = {
             'source': Meter.PORTFOLIO_MANAGER,
-            'source_id': self.property_view_1.state.pm_property_id,
+            'source_id': '123fakeID',
             'type': Meter.DIESEL,
             'property_id': self.property_view_1.property.id,
         }
         diesel_meter = Meter.objects.create(**meter_details)
-
-        meter_details['type'] = Meter.COKE
-        coke_meter = Meter.objects.create(**meter_details)
 
         tz_obj = timezone(TIME_ZONE)
         diesel_reading_details = {
             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
             'reading': 10,
-            'source_unit': 'kBtu',
+            'source_unit': 'kBtu (thousand Btu)',
             'conversion_factor': 1,
             'meter_id': diesel_meter.id,
         }
         MeterReading.objects.create(**diesel_reading_details)
 
+        meter_details['type'] = Meter.COKE
+        meter_details['source_id'] = '456fakeID'
+        coke_meter = Meter.objects.create(**meter_details)
+
         coke_reading_details = {
             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             'end_time': make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
             'reading': 100,
-            'source_unit': 'kBtu',
+            'source_unit': 'kBtu (thousand Btu)',
             'conversion_factor': 1,
             'meter_id': coke_meter.id,
         }
@@ -333,9 +553,10 @@ class TestMeterViewSet(TestCase):
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Exact',
+            'excluded_meter_ids': [],
         })
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
@@ -343,16 +564,16 @@ class TestMeterViewSet(TestCase):
             {
                 'start_time': '2016-01-01 00:00:00',
                 'end_time': '2016-02-01 00:00:00',
-                'Diesel': 10 / 36.301,
-                'Coke': 100 / 12.395,
+                'Diesel - PM - 123fakeID': 10 / 36.30,
+                'Coke - PM - 456fakeID': 100 / 12.39,
             },
         ]
 
         self.assertCountEqual(result_dict['readings'], display_readings)
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_while_handling_a_DST_change_and_nondefault_display_setting(self):
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_with_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
-        self.org.display_meter_units['Electricity'] = 'kWh'
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.save()
 
         # add initial meters and readings
@@ -367,7 +588,7 @@ class TestMeterViewSet(TestCase):
                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
                 'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
-                'source_unit': 'kBtu',
+                'source_unit': 'kBtu (thousand Btu)',
                 'conversion_factor': 1
             }
             MeterReading.objects.create(**reading_details)
@@ -378,12 +599,13 @@ class TestMeterViewSet(TestCase):
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Month',
+            'excluded_meter_ids': [],
         })
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
@@ -392,23 +614,23 @@ class TestMeterViewSet(TestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electricity': 597478.9 / 3.412,
-                    'Natural Gas': 545942781.5634,
+                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electricity': 548603.7 / 3.412,
-                    'Natural Gas': 462534790.7817,
+                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electricity': 100 / 3.412,
-                    'Natural Gas': 100,
+                    'Electric - Grid - PM - 5766973-0': 100 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 100,
                 },
                 {
                     'month': 'May 2016',
-                    'Electricity': 200 / 3.412,
-                    'Natural Gas': 200,
+                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Natural Gas - PM - 5766973-1': 200,
                 },
             ],
             'column_defs': [
@@ -417,13 +639,13 @@ class TestMeterViewSet(TestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electricity',
-                    'displayName': 'Electricity (kWh)',
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas',
-                    'displayName': 'Natural Gas (kBtu)',
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -432,14 +654,11 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions(self):
-        # Update settings for display meter units to change back to default
-        self.org.display_meter_units['Electricity'] = 'kBtu'
-        self.org.save()
-
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
+        property_1_electric_meter = Meter.objects.get(source_id='5766973-0')
         # add additional sub-montly entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
         for meter in Meter.objects.all():
@@ -449,7 +668,7 @@ class TestMeterViewSet(TestCase):
                 'start_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=True),
                 'end_time': make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
                 'reading': 100,
-                'source_unit': 'kBtu',
+                'source_unit': 'kBtu (thousand Btu)',
                 'conversion_factor': 1
             }
             MeterReading.objects.create(**reading_details)
@@ -460,12 +679,20 @@ class TestMeterViewSet(TestCase):
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+            # Create a reading for only one of the meters that will be filtered out completely
+            if meter.source_id == property_1_electric_meter.id:
+                reading_details['start_time'] = make_aware(datetime(2020, 11, 3, 2, 0, 0), timezone=tz_obj)
+                reading_details['end_time'] = make_aware(datetime(2020, 11, 3, 3, 0, 0), timezone=tz_obj)
+                reading_details['reading'] = 10000000
+                MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Month',
+            'excluded_meter_ids': [property_1_electric_meter.id],
         })
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
@@ -474,18 +701,15 @@ class TestMeterViewSet(TestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electricity': 597478.9,
-                    'Natural Gas': 545942781.5634,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electricity': 548603.7,
-                    'Natural Gas': 462534790.7817,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'November 2019',
-                    'Electricity': 300,
-                    'Natural Gas': 300,
+                    'Natural Gas - PM - 5766973-1': 300,
                 },
             ],
             'column_defs': [
@@ -494,13 +718,8 @@ class TestMeterViewSet(TestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electricity',
-                    'displayName': 'Electricity (kBtu)',
-                    '_filter_type': 'reading',
-                },
-                {
-                    'field': 'Natural Gas',
-                    'displayName': 'Natural Gas (kBtu)',
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -509,24 +728,20 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
-        # Update settings for display meter units to change back to default
-        self.org.display_meter_units['Electricity'] = 'kBtu'
-        self.org.save()
-
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
         # add additional entries for the Electricity meter
         tz_obj = timezone(TIME_ZONE)
-        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electricity'])
+        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
         # 2016 January reading that should override the existing reading
         reading_details = {
             'meter_id': meter.id,
             'start_time': make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             'end_time': make_aware(datetime(2016, 1, 20, 23, 59, 59), timezone=tz_obj),
             'reading': 100000000000000,
-            'source_unit': 'kBtu',
+            'source_unit': 'kBtu (thousand Btu)',
             'conversion_factor': 1
         }
         MeterReading.objects.create(**reading_details)
@@ -581,12 +796,13 @@ class TestMeterViewSet(TestCase):
         reading_details['reading'] = 200
         MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Month',
+            'excluded_meter_ids': [],
         })
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
@@ -595,21 +811,21 @@ class TestMeterViewSet(TestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electricity': 100000000000000,
-                    'Natural Gas': 545942781.5634,
+                    'Electric - Grid - PM - 5766973-0': 100000000000000,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electricity': 548603.7,
-                    'Natural Gas': 462534790.7817,
+                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electricity': 1100,
+                    'Electric - Grid - PM - 5766973-0': 1100,
                 },
                 {
                     'month': 'April 2016',
-                    'Electricity': 200,
+                    'Electric - Grid - PM - 5766973-0': 200,
                 },
             ],
             'column_defs': [
@@ -618,13 +834,13 @@ class TestMeterViewSet(TestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electricity',
-                    'displayName': 'Electricity (kBtu)',
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas',
-                    'displayName': 'Natural Gas (kBtu)',
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -633,9 +849,9 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
+    def test_property_meter_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
-        self.org.display_meter_units['Electricity'] = 'kWh'
+        self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.save()
 
         # add initial meters and readings
@@ -650,7 +866,7 @@ class TestMeterViewSet(TestCase):
                 'start_time': make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
                 'end_time': make_aware(datetime(2018, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
-                'source_unit': 'kBtu',
+                'source_unit': 'kBtu (thousand Btu)',
                 'conversion_factor': 1
             }
             MeterReading.objects.create(**reading_details)
@@ -661,12 +877,13 @@ class TestMeterViewSet(TestCase):
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
             'organization_id': self.org.pk,
             'interval': 'Year',
+            'excluded_meter_ids': [],
         })
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
@@ -675,13 +892,13 @@ class TestMeterViewSet(TestCase):
             'readings': [
                 {
                     'year': 2016,
-                    'Electricity': (597478.9 + 548603.7) / 3.412,
-                    'Natural Gas': 545942781.5634 + 462534790.7817,
+                    'Electric - Grid - PM - 5766973-0': (597478.9 + 548603.7) / 3.41,
+                    'Natural Gas - PM - 5766973-1': 576000.2 + 488000.1,
                 },
                 {
                     'year': 2018,
-                    'Electricity': (100 + 200) / 3.412,
-                    'Natural Gas': 100 + 200,
+                    'Electric - Grid - PM - 5766973-0': (100 + 200) / 3.41,
+                    'Natural Gas - PM - 5766973-1': 100 + 200,
                 },
             ],
             'column_defs': [
@@ -690,13 +907,13 @@ class TestMeterViewSet(TestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electricity',
-                    'displayName': 'Electricity (kWh)',
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas',
-                    'displayName': 'Natural Gas (kBtu)',
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -706,7 +923,7 @@ class TestMeterViewSet(TestCase):
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
 
-class TestMeterValidTypesUnits(TestCase):
+class TestMeterValidTypesUnits(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
             'username': 'test_user@demo.com',

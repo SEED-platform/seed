@@ -38,6 +38,7 @@ from seed.data_importer.models import (
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
+from seed.data_importer.utils import usage_point_id
 from seed.decorators import lock_and_track
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
@@ -732,10 +733,9 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     readings = meter_readings['readings']
     meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
-
     meter_id = meter.id
 
-    meter_usage_point_id = meters_parser.usage_point_id(meter.source_id)
+    meter_usage_point_id = usage_point_id(meter.source_id)
 
     chunk_size = 1000
 
@@ -766,6 +766,7 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     readings for that batch are saved.
     """
     progress_data = ProgressData.from_key(progress_key)
+    meter = Meter.objects.get(pk=meter_id)
 
     result = {}
     try:
@@ -785,14 +786,15 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                result['source_id'] = meter_usage_point_id
-                result['count'] = len(cursor.fetchall())
+                key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-            result['source_id'] = meter_usage_point_id
-            result['error'] = "Overlapping readings."
-    except Exception:
-        return progress_data.finish_with_error('data failed to import')
+            key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+            result[key] = {"error": "Overlapping readings."}
+    except Exception as e:
+        progress_data.finish_with_error('data failed to import')
+        raise e
 
     # Indicate progress
     progress_data.step()
@@ -841,14 +843,16 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                result['source_id'] = meter.source_id
-                result['count'] = len(cursor.fetchall())
+                key = "{} - {}".format(meter.source_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-            result['source_id'] = meter_readings.get("source_id")
-            result['error'] = "Overlapping readings."
-    except Exception:
-        return progress_data.finish_with_error('data failed to import')
+            type_lookup = dict(Meter.ENERGY_TYPES)
+            key = "{} - {}".format(meter_readings.get("source_id"), type_lookup[meter_readings['type']])
+            result[key] = {"error": "Overlapping readings."}
+    except Exception as e:
+        progress_data.finish_with_error('data failed to import')
+        raise e
 
     # Indicate progress
     progress_data.step()
@@ -891,30 +895,42 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     return tasks, proposed_imports
 
 
-def _append_meter_import_results_to_summary(import_results, summary):
+def _append_meter_import_results_to_summary(import_results, incoming_summary):
     """
     This appends meter import result counts and, if applicable, error messages.
+
+    Note, import_results will be of the form:
+        [
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+        ]
     """
     agg_results_summary = collections.defaultdict(lambda: 0)
     error_comments = collections.defaultdict(lambda: set())
 
-    for id_count in import_results:
-        success_count = id_count.get("count")
+    # First aggregate import_results by key
+    for result in import_results:
+        key = list(result.keys())[0]
 
-        if success_count:
-            agg_results_summary[id_count["source_id"]] += success_count
+        success_count = result[key].get('count')
+
+        if success_count is None:
+            error_comments[key].add(result[key].get("error"))
         else:
-            error_comments[id_count["source_id"]].add(id_count.get("error"))
+            agg_results_summary[key] += success_count
 
-    for import_info in summary:
-        pm_id = import_info["source_id"]
+    # Next update summary of incoming meters imports with aggregated results.
+    for import_info in incoming_summary:
+        key = "{} - {}".format(import_info['source_id'], import_info['type'])
 
-        import_info["successfully_imported"] = agg_results_summary.get(pm_id, 0)
+        import_info["successfully_imported"] = agg_results_summary.get(key, 0)
 
         if error_comments:
-            import_info["errors"] = " ".join(list(error_comments.get(pm_id, "")))
+            import_info["errors"] = " ".join(list(error_comments.get(key, "")))
 
-    return summary
+    return incoming_summary
 
 
 def _save_raw_data_create_tasks(file_pk, progress_key):

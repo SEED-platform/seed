@@ -56,7 +56,7 @@ class GreenButtonParser(object):
 
         # Codes taken from https://bedes.lbl.gov/sites/default/files/Green%20Button%20V0.7.2%20to%20BEDES%20V2.1%20Mapping%2020170927.pdf
         self.kind_codes = {
-            0: 'Electricity',  # listed as 'electricity'
+            0: 'Electric - Grid',  # listed as 'electricity'
             1: 'Natural Gas',  # listed as 'gas'
         }
         self.uom_codes = {
@@ -65,7 +65,7 @@ class GreenButtonParser(object):
             72: 'Wh',
             119: 'cf',  # listed as 'ft3'
             132: 'Btu',  # listed as 'btu'
-            169: 'Therms',  # listed as 'therm'
+            169: 'therms',  # listed as 'therm'
         }
         self.power_of_ten_codes = {
             -12: 'p',      # Pico: 10^-12
@@ -90,8 +90,7 @@ class GreenButtonParser(object):
             'k': 3,
             'M': 6,
             'G': 9,
-            'C': 2,
-            'K': 3,
+            'c': 2,
         }
 
     @property
@@ -121,7 +120,9 @@ class GreenButtonParser(object):
                         'start_time': int(reading['timePeriod']['start']),
                         'source_id': source_id,
                         'duration': int(reading['timePeriod']['duration']),
-                        "{} Use  ({})".format(type, unit): float(reading['value']) * multiplier,
+                        'Meter Type': type,
+                        'Usage Units': unit,
+                        'Usage/Quantity': float(reading['value']) * multiplier,
                     }
                     for reading
                     in readings

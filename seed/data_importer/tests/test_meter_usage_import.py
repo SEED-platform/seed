@@ -18,11 +18,13 @@ from django.utils.timezone import (
 
 from pytz import timezone
 
-from quantityfield import ureg
-
 from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import match_buildings
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_MAPPING,
+    DATA_STATE_DELETE,
     Meter,
     MeterReading,
     Property,
@@ -34,6 +36,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -77,13 +80,13 @@ class MeterUsageImportTest(TestCase):
         self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
-        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         self.import_file = ImportFile.objects.create(
-            import_record=import_record,
+            import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
@@ -96,7 +99,7 @@ class MeterUsageImportTest(TestCase):
         """
         Expect to have 4 meters - 2 for each property - 1 for gas and 1 for electricity.
         Each meter will have 2 readings, for a total of 8 readings.
-        These come from 4 meter usage rows in the .xlsx file, each with 2 meter readings.
+        These come from 8 meter usage rows in the .xlsx file - 1 per reading.
         """
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
         post_params = {
@@ -108,9 +111,9 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
-        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        meter_1 = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
         self.assertEqual(meter_1.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_1.source_id, '5766973')
+        self.assertEqual(meter_1.source_id, '5766973-0')
         self.assertEqual(meter_1.is_virtual, False)
         self.assertEqual(meter_1.meter_readings.all().count(), 2)
 
@@ -118,67 +121,102 @@ class MeterUsageImportTest(TestCase):
 
         self.assertEqual(meter_reading_10.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
-        self.assertEqual(meter_reading_10.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_10.reading, 597478.9)
+        self.assertEqual(meter_reading_10.source_unit, "kBtu (thousand Btu)")  # spot check
         self.assertEqual(meter_reading_10.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
+        self.assertEqual(meter_reading_11.reading, 548603.7)
 
         meter_2 = refreshed_property_1.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_2.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_2.source_id, '5766973')
+        self.assertEqual(meter_2.source_id, '5766973-1')
         self.assertEqual(meter_2.meter_readings.all().count(), 2)
 
         meter_reading_20, meter_reading_21 = list(meter_2.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_20.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_20.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_20.reading, 576000.2 * ureg('kBtu'))
+        self.assertEqual(meter_reading_20.reading, 576000.2)
 
         self.assertEqual(meter_reading_21.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_21.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_21.reading, 488000.1 * ureg('kBtu'))
+        self.assertEqual(meter_reading_21.reading, 488000.1)
 
         refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
         self.assertEqual(refreshed_property_2.meters.all().count(), 2)
 
-        meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY)
+        meter_3 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY_GRID)
         self.assertEqual(meter_3.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_3.source_id, '5766975')
+        self.assertEqual(meter_3.source_id, '5766975-0')
         self.assertEqual(meter_3.meter_readings.all().count(), 2)
 
         meter_reading_30, meter_reading_40 = list(meter_3.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_30.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_30.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_30.reading, 154572.2 * ureg('kBtu'))
-        self.assertEqual(meter_reading_30.source_unit, "kBtu")  # spot check
+        self.assertEqual(meter_reading_30.reading, 154572.2)
+        self.assertEqual(meter_reading_30.source_unit, "kBtu (thousand Btu)")  # spot check
         self.assertEqual(meter_reading_30.conversion_factor, 1)  # spot check
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.reading, 141437.5 * ureg('kBtu'))
+        self.assertEqual(meter_reading_40.reading, 141437.5)
 
         meter_4 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
         self.assertEqual(meter_4.source, Meter.PORTFOLIO_MANAGER)
-        self.assertEqual(meter_4.source_id, '5766975')
+        self.assertEqual(meter_4.source_id, '5766975-1')
         self.assertEqual(meter_4.meter_readings.all().count(), 2)
 
         meter_reading_40, meter_reading_41 = list(meter_4.meter_readings.order_by('start_time').all())
 
         self.assertEqual(meter_reading_40.start_time, make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_40.end_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_40.reading, 299915 * ureg('kBtu'))
+        self.assertEqual(meter_reading_40.reading, 299915)
 
         self.assertEqual(meter_reading_41.start_time, make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_41.end_time, make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=self.tz_obj))
-        self.assertEqual(meter_reading_41.reading, 496310.9 * ureg('kBtu'))
+        self.assertEqual(meter_reading_41.reading, 496310.9)
 
         # file should be disassociated from cycle too
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
         self.assertEqual(refreshed_import_file.cycle_id, None)
+
+    def test_import_meter_usage_file_including_2_cost_meters(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_meter_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        cost_meters = Meter.objects.filter(type=Meter.COST)
+
+        self.assertEqual(2, cost_meters.count())
+
+        electric_cost_meter = cost_meters.get(source_id='5766973-0')
+        gas_cost_meter = cost_meters.get(source_id='5766973-1')
+
+        self.assertEqual(2, electric_cost_meter.meter_readings.count())
+        self.assertEqual(2, gas_cost_meter.meter_readings.count())
+
+        electric_reading_values = electric_cost_meter.meter_readings.values_list('reading', flat=True)
+        self.assertCountEqual([100, 200], electric_reading_values)
+
+        gas_reading_values = gas_cost_meter.meter_readings.values_list('reading', flat=True)
+        self.assertCountEqual([300, 400], gas_reading_values)
 
     def test_existing_meter_is_found_and_used_if_import_file_should_reference_it(self):
         property = Property.objects.get(pk=self.property_1.id)
@@ -187,8 +225,8 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id='5766973',
-            type=Meter.ELECTRICITY,
+            source_id='5766973-0',
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -213,11 +251,11 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
-        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property_1.meters.get(type=Meter.ELECTRICITY_GRID)
 
         meter_reading_10, meter_reading_11, meter_reading_12 = list(refreshed_meter.meter_readings.order_by('start_time').all())
-        self.assertEqual(meter_reading_10.reading, 597478.9 * ureg('kBtu'))
-        self.assertEqual(meter_reading_11.reading, 548603.7 * ureg('kBtu'))
+        self.assertEqual(meter_reading_10.reading, 597478.9)
+        self.assertEqual(meter_reading_11.reading, 548603.7)
 
         # Sanity check to be sure, nothing was changed with existing meter reading
         self.assertEqual(meter_reading_12, existing_meter_reading)
@@ -229,8 +267,8 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter = Meter(
             property=property,
             source=Meter.PORTFOLIO_MANAGER,
-            source_id='5766973',
-            type=Meter.ELECTRICITY,
+            source_id='5766973-0',
+            type=Meter.ELECTRICITY_GRID,
         )
         unsaved_meter.save()
         existing_meter = Meter.objects.get(pk=unsaved_meter.id)
@@ -245,7 +283,7 @@ class MeterUsageImportTest(TestCase):
             end_time=end_time,
             reading=12345,
             source_unit="GJ",
-            conversion_factor=947.817
+            conversion_factor=947.82
         )
         unsaved_meter_reading.save()
 
@@ -260,12 +298,12 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(MeterReading.objects.all().count(), 8)
 
         refreshed_property = Property.objects.get(pk=self.property_1.id)
-        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY)
+        refreshed_meter = refreshed_property.meters.get(type=Meter.ELECTRICITY_GRID)
         meter_reading = refreshed_meter.meter_readings.get(start_time=start_time)
 
         self.assertEqual(meter_reading.end_time, end_time)
-        self.assertEqual(meter_reading.reading, 597478.9 * ureg('kBtu'))
-        self.assertEqual(meter_reading.source_unit, "kBtu")
+        self.assertEqual(meter_reading.reading, 597478.9)
+        self.assertEqual(meter_reading.source_unit, "kBtu (thousand Btu)")
         self.assertEqual(meter_reading.conversion_factor, 1)
 
     def test_property_existing_in_multiple_cycles_can_have_meters_and_readings_associated_to_it(self):
@@ -339,18 +377,94 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
-                "source_id": "5766973",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
             },
             {
-                "source_id": "5766975",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
             },
         ]
 
-        self.assertEqual(result['message'], expectation)
+        self.assertCountEqual(result['message'], expectation)
+
+    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids_with_costs(self):
+        filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        cost_meter_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+
+        result = json.loads(response.content)
+
+        expectation = [
+            {
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-0",
+                "type": "Cost",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766973-1",
+                "type": "Cost",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+        ]
+
+        self.assertCountEqual(result['message'], expectation)
 
     def test_error_noted_in_response_if_meter_has_overlapping_readings(self):
         """
@@ -386,18 +500,115 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
-                "source_id": "5766973",
-                "incoming": 4,
-                "successfully_imported": 4,
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
                 "errors": "",
             },
             {
-                "source_id": "5766975",
-                "incoming": 8,
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+                "errors": "",
+            },
+            {
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 4,
+                "successfully_imported": 0,
+                "errors": "Overlapping readings.",
+            },
+            {
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 4,
                 "successfully_imported": 0,
                 "errors": "Overlapping readings.",
             },
         ]
 
-        self.assertEqual(result_summary['message'], expected_import_summary)
+        self.assertCountEqual(result_summary['message'], expected_import_summary)
         self.assertEqual(total_meters_count, 2)
+
+
+class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record, self.cycle = selfvars
+
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+    def test_property_states_not_associated_to_properties_are_not_targetted_on_meter_import(self):
+        # Create three pm_property_id = 5766973 properties that are exact duplicates
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'pm_property_id': '5766973',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+
+        # Create 1 property with a duplicate in the first ImportFile
+        self.property_state_factory.get_property_state(**base_details)
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        import_record_2, import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle
+        )
+
+        # Create another duplicate property coming from second ImportFile
+        base_details['import_file_id'] = import_file_2.id
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file mapping done so that matching can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        match_buildings(import_file_2.id)
+
+        # Import the PM Meters
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        pm_meter_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        # Check that meters pre-upload confirmation runs without problems
+        confirmation_url = reverse('api:v2:meters-parsed-meters-confirmation')
+        confirmation_post_params = json.dumps({
+            'file_id': pm_meter_file.id,
+            'organization_id': self.org.pk,
+        })
+        self.client.post(confirmation_url, confirmation_post_params, content_type="application/json")
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[pm_meter_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        # Check that Meters have been uploaded successfully (there's only 2 since only pm_property_id 5766973 exists)
+        self.assertEqual(Meter.objects.count(), 2)
+
+        # Ensure that no meters were associated to the duplicate PropertyStates via PropertyViews
+        delete_flagged_ids = PropertyState.objects.filter(data_state=DATA_STATE_DELETE).values_list('id', flat=True)
+        for meter in Meter.objects.all():
+            self.assertEqual(meter.property.views.filter(state_id__in=delete_flagged_ids).count(), 0)
