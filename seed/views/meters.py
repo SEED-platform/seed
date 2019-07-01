@@ -89,7 +89,7 @@ class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
     @list_route(methods=['POST'])
-    def property_energy_usage(self, request):
+    def property_meter_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
         org_id = body['organization_id']

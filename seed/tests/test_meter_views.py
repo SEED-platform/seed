@@ -343,7 +343,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         self.assertCountEqual(result_dict, expectation)
 
-    def test_property_energy_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
+    def test_property_meter_usage_returns_meter_readings_and_column_defs_given_property_view_and_nondefault_meter_display_org_settings(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.display_meter_units['Natural Gas'] = 'kcf (thousand cubic feet)'
@@ -371,7 +371,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         }
         MeterReading.objects.create(**gb_gas_reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
@@ -428,7 +428,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_returns_meter_readings_and_column_defs_when_cost_meter_included(self):
+    def test_property_meter_usage_returns_meter_readings_and_column_defs_when_cost_meter_included(self):
         filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -443,7 +443,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         # add meters and readings to property associated to property_view_1
         save_raw_data(cost_import_file.id)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
@@ -508,7 +508,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
+    def test_property_meter_usage_returns_meter_readings_according_to_thermal_conversion_preferences_of_an_org_if_applicable_for_display_settings(self):
         # update the org settings thermal preference and display preference
         self.org.thermal_conversion_assumption = Organization.CAN
         self.org.display_meter_units["Diesel"] = "Liters"
@@ -556,7 +556,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             'excluded_meter_ids': [],
         })
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
@@ -571,7 +571,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         self.assertCountEqual(result_dict['readings'], display_readings)
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_with_nondefault_display_setting(self):
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_with_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.save()
@@ -599,7 +599,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
@@ -654,7 +654,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(self):
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_for_submonthly_data_with_DST_transitions_and_specific_meters(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
@@ -686,7 +686,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 reading_details['reading'] = 10000000
                 MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
@@ -728,7 +728,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
+    def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
 
@@ -796,7 +796,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         reading_details['reading'] = 200
         MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
@@ -849,7 +849,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
-    def test_property_energy_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
+    def test_property_meter_usage_can_return_annual_meter_readings_and_column_defs_while_handling_a_nondefault_display_setting(self):
         # Update settings for display meter units to change it from the default values.
         self.org.display_meter_units['Electric - Grid'] = 'kWh (thousand Watt-hours)'
         self.org.save()
@@ -877,7 +877,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
-        url = reverse('api:v2:meters-property-energy-usage')
+        url = reverse('api:v2:meters-property-meter-usage')
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,

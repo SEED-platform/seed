@@ -1,16 +1,16 @@
-angular.module('BE.seed.controller.inventory_detail_energy', [])
-  .controller('inventory_detail_energy_controller', [
+angular.module('BE.seed.controller.inventory_detail_meters', [])
+  .controller('inventory_detail_meters_controller', [
     '$state',
     '$scope',
     '$stateParams',
     '$uibModal',
     '$window',
-    'energy_service',
+    'meter_service',
     'cycles',
     'dataset_service',
     'inventory_service',
     'meters',
-    'property_energy_usage',
+    'property_meter_usage',
     'spinner_utility',
     'urls',
     'user_service',
@@ -20,12 +20,12 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
       $stateParams,
       $uibModal,
       $window,
-      energy_service,
+      meter_service,
       cycles,
       dataset_service,
       inventory_service,
       meters,
-      property_energy_usage,
+      property_meter_usage,
       spinner_utility,
       urls,
       user_service
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       // On page load, all meters and readings
       $scope.excluded_meter_ids = [];
-      $scope.data = property_energy_usage.readings;
+      $scope.data = property_meter_usage.readings;
       $scope.has_readings = $scope.data.length > 0;
 
       $scope.meter_selections = _.map(meters, function(meter) {
@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       $scope.gridOptions = {
         data: 'data',
-        columnDefs: property_energy_usage.column_defs,
+        columnDefs: property_meter_usage.column_defs,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
@@ -116,7 +116,7 @@ angular.module('BE.seed.controller.inventory_detail_energy', [])
 
       $scope.refresh_readings = function () {
         spinner_utility.show();
-        energy_service.property_energy_usage(
+        meter_service.property_meter_usage(
           $scope.inventory.view_id,
           $scope.organization.id,
           $scope.interval.selected,
