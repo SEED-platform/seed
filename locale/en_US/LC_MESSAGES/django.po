@@ -984,6 +984,9 @@ msgstr "Include in your Properties List all properties shared with you."
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
 
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
+
 msgid "INTERNAL"
 msgstr "INTERNAL"
 

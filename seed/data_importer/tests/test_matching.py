@@ -1000,10 +1000,11 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.import_file_1.save()
         match_buildings(self.import_file_1.id)
 
+        # Verify no matches exist
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
-        no_matches_result = merge_in_cycle_matches(ps_1_view.id, 'PropertyState')
-
-        self.assertEqual(no_matches_result, 0)
+        count_result, no_match_indicator = merge_in_cycle_matches(ps_1_view.id, 'PropertyState')
+        self.assertEqual(count_result, 0)
+        self.assertIsNone(no_match_indicator)
 
         # Make all those states match
         PropertyState.objects.filter(pk__in=[ps_2.id, ps_3.id]).update(
@@ -1016,12 +1017,13 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.count(), 3)
 
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
-        result = merge_in_cycle_matches(ps_1_view.id, 'PropertyState')
-        self.assertEqual(result, 3)
+        count_result, view_id_result = merge_in_cycle_matches(ps_1_view.id, 'PropertyState')
+        self.assertEqual(count_result, 3)
 
         # There should only be one PropertyView which is associated to new, merged -State
         self.assertEqual(PropertyView.objects.count(), 1)
         view = PropertyView.objects.first()
+        self.assertEqual(view_id_result, view.id)
         self.assertNotIn(view.state_id, [ps_1.id, ps_2.id, ps_3.id])
 
         # It will have a -State having city as Philadelphia
@@ -1056,8 +1058,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no matches exist
         tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
-        no_matches_result = merge_in_cycle_matches(tls_1_view.id, 'TaxLotState')
-        self.assertEqual(no_matches_result, 0)
+        count_result, no_match_indicator = merge_in_cycle_matches(tls_1_view.id, 'TaxLotState')
+        self.assertEqual(count_result, 0)
+        self.assertIsNone(no_match_indicator)
 
         # Make all those states match
         TaxLotState.objects.filter(pk__in=[tls_2.id, tls_3.id]).update(
@@ -1069,12 +1072,13 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.assertEqual(TaxLotState.objects.count(), 3)
         self.assertEqual(TaxLotView.objects.count(), 3)
 
-        result = merge_in_cycle_matches(tls_1_view.id, 'TaxLotState')
-        self.assertEqual(result, 3)
+        count_result, view_id_result = merge_in_cycle_matches(tls_1_view.id, 'TaxLotState')
+        self.assertEqual(count_result, 3)
 
         # There should only be one TaxLotView which is associated to new, merged -State
         self.assertEqual(TaxLotView.objects.count(), 1)
         view = TaxLotView.objects.first()
+        self.assertEqual(view_id_result, view.id)
         self.assertNotIn(view.state_id, [tls_1.id, tls_2.id, tls_3.id])
 
         # It will have a -State having city as Philadelphia

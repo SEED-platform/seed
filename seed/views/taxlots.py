@@ -16,6 +16,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
+from seed.data_importer.match import merge_in_cycle_matches
 from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -837,6 +838,11 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
+                        _count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
+
+                        if view_id is not None:
+                            result.update({'view_id': view_id})
+
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
@@ -867,6 +873,11 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
+
+                        _count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
+
+                        if view_id is not None:
+                            result.update({'view_id': view_id})
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:

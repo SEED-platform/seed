@@ -382,10 +382,11 @@ def merge_in_cycle_matches(view_id, StateClassName):
     count = len(state_ids)
 
     if count > 1:
-        merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
-        return count
+        merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+        view_id = ViewClass.objects.get(state_id=merged_state.id).id
+        return count, view_id
     elif count == 1:
-        return 0
+        return 0, None
 
 
 def save_state_match(state1, state2, priorities):
