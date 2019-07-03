@@ -89,8 +89,12 @@
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
                             </td>
-                            <td ng-click="change_is_matching_criteria(column)" class="text-center">
+
+                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
                                 <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
+                            </td>
+                            <td class="text-center" ng-if="column.is_extra_data">
+                                <span ng-if="column.is_extra_data" translate>Not Eligible</span>
                             </td>
                         </tr>
                     </tbody>
