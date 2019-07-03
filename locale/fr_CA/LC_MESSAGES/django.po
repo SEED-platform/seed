@@ -991,6 +991,9 @@ msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partag�
 msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
 msgstr "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés."
 
+msgid "Ineligible"
+msgstr "Inéligible"
+
 msgid "INTERNAL"
 msgstr "INTERNE"
 

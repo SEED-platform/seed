@@ -309,6 +309,7 @@
     "INCLUDE_SHARED_PROPERTIES": "Inclure dans vos Liste de Propriétés toutes les propriétés partagées avec vous.",
     "INCLUDE_SHARED_TAXLOTS": "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous.",
     "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT": "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés.",
+    "Ineligible": "Inéligible",
     "INTERNAL": "INTERNE",
     "Interval": "Intervalle",
     "INVALID_EXTENSION_ALERT": "<strong>Désolée!<\/strong> SEED ne supporte actuellement pas ce format de fichier. Seuls les fichiers <strong>.csv<\/strong>, <strong>.xls<\/strong>, <strong>.xlsx<\/strong>, et <strong>.xml<\/strong> sont pris en charge.",
