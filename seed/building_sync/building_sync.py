@@ -577,7 +577,7 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Report.auc:Scenarios.auc:Scenario',
+        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Reports.auc:Report.auc:Scenarios.auc:Scenario',
                                    data, [])
 
         # check that this is a list; if not, make it a list or the loop won't work correctly
@@ -599,8 +599,62 @@ class BuildingSync(object):
                     ref_case = self._get_node('auc:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    new_data['annual_savings_site_energy'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    # fixed naming of existing scenario fields    
+                    new_data['annual_site_energy_savings'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    new_data['annual_cost_savings'] = node.get('auc:AnnualSavingsCost')
 
+                    # new scenario fields
+                    fuel_savings = node.get('auc:AnnualSavingsByFuels')
+                    if fuel_savings:
+                        fuel_nodes = fuel_savings.get('auc:AnnualSavingsByFuel')
+                        if isinstance(fuel_nodes, dict):
+                            fuel_savings_arr = []
+                            fuel_savings_arr.append(fuel_nodes)
+                            fuel_nodes = fuel_savings_arr
+
+                        for f in fuel_nodes:
+                            # print("F: {}".format(f))
+                            if f.get('auc:EnergyResource') == 'Electricity':
+                                new_data['annual_electricity_savings'] = f.get('auc:AnnualSavingsNativeUnits')
+                                # print("ELECTRICITY: {}".format(new_data['annual_electricity_savings']))
+                            elif f.get('auc:EnergyResource') == 'Natural gas':
+                                new_data['annual_natural_gas_savings'] = f.get('auc:AnnualSavingsNativeUnits')
+                                # print("GAS: {}".format(new_data['annual_natural_gas_savings']))
+
+                    all_resources = s.get('auc:AllResourceTotals')
+                    if all_resources:
+                        resource_nodes = all_resources.get('auc:AllResourceTotal')
+                        # print("ANNUAL ENERGY: {}".format(resource_nodes))
+                        # make it an array
+                        if isinstance(resource_nodes, dict):
+                            resource_nodes_arr = []
+                            resource_nodes_arr.append(resource_nodes)
+                            resource_nodes = resource_nodes_arr
+
+                        for rn in resource_nodes:
+                            # print("RN: {}".format(rn))
+                            if rn.get('auc:EndUse') == 'All end uses':
+                                new_data['annual_site_energy'] = rn.get('auc:SiteEnergyUse')
+                                # print("SITE ENERGY USE: {}".format(new_data['annual_site_energy']))
+
+                    resource_uses = s.get('auc:ResourceUses')
+                    if resource_uses:
+                        ru_nodes = resource_uses.get('auc:ResourceUse')
+                        # print("ResourceUse: {}".format(ru_nodes))
+
+                        if isinstance(ru_nodes, dict):  
+                            ru_nodes_arr = []
+                            ru_nodes_arr.append(ru_nodes)
+                            ru_nodes = ru_nodes_arr
+
+                        for ru in ru_nodes:
+
+                            if ru.get('auc:EnergyResource') == 'Electricity':
+                                new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
+                            elif ru.get('auc:EnergyResource') == 'Natural gas':
+                                new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
+
+                    # measures
                     new_data['measures'] = []
                     measures = self._get_node('auc:MeasureIDs.auc:MeasureID', node, [])
                     if isinstance(measures, list):
@@ -616,6 +670,8 @@ class BuildingSync(object):
                                 new_data['measures'].append(measures.get('@IDref'))
 
             res['scenarios'].append(new_data)
+
+        # print("SCENARIOS: {}".format(res['scenarios']))
 
         return res, messages
 

@@ -7,7 +7,7 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
-
+import inspect
 import csv
 import datetime
 import io
@@ -217,7 +217,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
         scenario_keys = (
             'id', 'name', 'description', 'annual_site_energy_savings',
             'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction',
-            'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message'
+            'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message',
+            'annual_electricity_savings', 'annual_natural_gas_savings', 'annual_site_energy', 'annual_natural_gas_energy', 
+            'annual_electricity_energy', 'annual_peak_demand'
         )
         property_measure_keys = (
             'id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first',
@@ -305,6 +307,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('B1', 'Scenario ID', bold)
             ws4.write('C1', 'Measure ID', bold)
             for index, s in enumerate(datum['scenarios']):
+                print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
                 if index == 0:
                     # grab headers

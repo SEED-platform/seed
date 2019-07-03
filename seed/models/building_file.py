@@ -209,6 +209,12 @@ class BuildingFile(models.Model):
             scenario.hdd_base_temperature = s.get('hdd_base_temperature')
             scenario.cdd = s.get('cdd')
             scenario.cdd_base_temperature = s.get('cdd_base_temperature')
+            scenario.annual_electricity_savings = s.get('annual_electricity_savings')
+            scenario.annual_natural_gas_savings = s.get('annual_natural_gas_savings')
+            scenario.annual_site_energy = s.get('annual_site_energy')
+            scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
+            scenario.annual_electricity_energy = s.get('annual_electricity_energy')
+            scenario.annual_peak_demand = s.get('annual_peak_demand')
 
             # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
             #                                       default=TEMPORAL_STATUS_CURRENT)
