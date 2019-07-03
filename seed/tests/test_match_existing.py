@@ -53,7 +53,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
-        # Create 3 non-matching properties in first ImportFile
+        # Create 3 non-matching properties
         ps_1 = self.property_state_factory.get_property_state(**base_details)
 
         base_details['pm_property_id'] = '123MatchID'
@@ -125,7 +125,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
-        # Create 3 non-matching taxlots in first ImportFile
+        # Create 3 non-matching taxlots
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
         base_details['jurisdiction_tax_lot_id'] = '123MatchID'
@@ -188,3 +188,135 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
 
         # Check that city is still Golden, since the edited -State takes precedence
         self.assertEqual(view.state.city, 'Golden')
+
+
+class TestMatchingPostMerge(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.client.login(**user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_match_merge_happens_after_property_merge(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'city': 'Golden',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 4 non-matching properties where merging 1 and 2, will match 4
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        del base_details['pm_property_id']
+        base_details['address_line_1'] = '123 Match Street'
+        base_details['city'] = 'Denver'
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        # Property 3 is here to be sure it remains unchanged
+        del base_details['address_line_1']
+        base_details['pm_property_id'] = '1337AnotherDifferentID'
+        base_details['city'] = 'Philadelphia'
+        ps_3 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['address_line_1'] = '123 Match Street'
+        base_details['pm_property_id'] = '123MatchID'
+        base_details['city'] = 'Colorado Springs'
+        self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # Make sure all 4 are separate
+        self.assertEqual(Property.objects.count(), 4)
+        self.assertEqual(PropertyState.objects.count(), 4)
+        self.assertEqual(PropertyView.objects.count(), 4)
+
+        # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [ps_2.pk, ps_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # Verify that 3 -States have been merged and 2 remain
+        self.assertEqual(Property.objects.count(), 2)
+        self.assertEqual(PropertyState.objects.count(), 6)  # Original 4 + 1 initial merge + 1 post merge
+        self.assertEqual(PropertyView.objects.count(), 2)
+
+        # Note, the success of the .get() implies the other View had state_id=ps_3
+        changed_view = PropertyView.objects.exclude(state_id=ps_3).get()
+
+        # It will have a -State having city as Golden
+        self.assertEqual(changed_view.state.city, 'Golden')
+
+        # The corresponding log should be a System Match
+        audit_log = PropertyAuditLog.objects.get(state_id=changed_view.state_id)
+        self.assertEqual(audit_log.name, 'System Match')
+
+    def test_match_merge_happens_after_taxlot_merge(self):
+        base_details = {
+            'jurisdiction_tax_lot_id': '123MatchID',
+            'city': 'Golden',
+            'import_file_id': self.import_file.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 4 non-matching taxlots where merging 1 and 2, will match 4
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        del base_details['jurisdiction_tax_lot_id']
+        base_details['address_line_1'] = '123 Match Street'
+        base_details['city'] = 'Denver'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        # TaxLot 3 is here to be sure it remains unchanged
+        del base_details['address_line_1']
+        base_details['jurisdiction_tax_lot_id'] = '1337AnotherDifferentID'
+        base_details['city'] = 'Philadelphia'
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['address_line_1'] = '123 Match Street'
+        base_details['jurisdiction_tax_lot_id'] = '123MatchID'
+        base_details['city'] = 'Colorado Springs'
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file.mapping_done = True
+        self.import_file.save()
+        match_buildings(self.import_file.id)
+
+        # Make sure all 4 are separate
+        self.assertEqual(TaxLot.objects.count(), 4)
+        self.assertEqual(TaxLotState.objects.count(), 4)
+        self.assertEqual(TaxLotView.objects.count(), 4)
+
+        # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
+        url = reverse('api:v2:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [tls_2.pk, tls_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # Verify that 3 -States have been merged and 2 remain
+        self.assertEqual(TaxLot.objects.count(), 2)
+        self.assertEqual(TaxLotState.objects.count(), 6)  # Original 4 + 1 initial merge + 1 post merge
+        self.assertEqual(TaxLotView.objects.count(), 2)
+
+        # Note, the success of the .get() implies the other View had state_id=tls_3
+        changed_view = TaxLotView.objects.exclude(state_id=tls_3).get()
+
+        # It will have a -State having city as Golden
+        self.assertEqual(changed_view.state.city, 'Golden')
+
+        # The corresponding log should be a System Match
+        audit_log = TaxLotAuditLog.objects.get(state_id=changed_view.state_id)
+        self.assertEqual(audit_log.name, 'System Match')

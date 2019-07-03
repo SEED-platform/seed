@@ -463,7 +463,9 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                     'message': 'Source state [' + state_id + '] is already matched'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        merge_properties(state_ids, organization_id, 'Manual Match')
+        merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
+
+        merge_in_cycle_matches(merged_state.propertyview_set.first().id, 'PropertyState')
 
         return {
             'status': 'success'
