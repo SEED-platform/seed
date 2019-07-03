@@ -200,9 +200,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           data: result.proposed_imports,
           columnDefs: [{
             field: 'source_id',
-            displayName: 'Portfolio Manager ID',
+            displayName: 'Portfolio Manager Meter ID',
             enableHiding: false,
             type: 'string'
+          }, {
+            field: 'type',
+            enableHiding: false
           }, {
             field: 'incoming',
             enableHiding: false
@@ -434,6 +437,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       var meter_import_results = function (results) {
         var column_defs = [{
           field: 'source_id',
+          displayName: 'Portfolio Manager Meter ID',
+          enableHiding: false
+        }, {
+          field: 'type',
           enableHiding: false
         }, {
           field: 'incoming',

@@ -527,8 +527,8 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         meters = PropertyView.objects.first().property.meters
 
         self.assertEqual(meters.count(), 3)
-        self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.GREENBUTTON).meter_readings.count(), 2)
-        self.assertEqual(meters.get(type=Meter.ELECTRICITY, source=Meter.PORTFOLIO_MANAGER).meter_readings.count(), 2)
+        self.assertEqual(meters.get(type=Meter.ELECTRICITY_GRID, source=Meter.GREENBUTTON).meter_readings.count(), 2)
+        self.assertEqual(meters.get(type=Meter.ELECTRICITY_GRID, source=Meter.PORTFOLIO_MANAGER).meter_readings.count(), 2)
         self.assertEqual(meters.get(type=Meter.NATURAL_GAS).meter_readings.count(), 2)
 
         # Old meters deleted, so only merged meters exist

@@ -59,7 +59,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
-  'BE.seed.controller.inventory_detail_energy',
+  'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
@@ -112,7 +112,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.columns',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
-  'BE.seed.service.energy',
+  'BE.seed.service.meter',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
   'BE.seed.service.httpParamSerializerSeed',
@@ -1186,14 +1186,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_detail_energy',
-        url: '/{inventory_type:properties|taxlots}/{view_id:int}/energy',
-        templateUrl: static_url + 'seed/partials/inventory_detail_energy.html',
-        controller: 'inventory_detail_energy_controller',
+        name: 'inventory_detail_meters',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/meters',
+        templateUrl: static_url + 'seed/partials/inventory_detail_meters.html',
+        controller: 'inventory_detail_meters_controller',
         resolve: {
-          property_energy_usage: ['$stateParams', 'user_service', 'energy_service', function ($stateParams, user_service, energy_service) {
+          property_meter_usage: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
             var organization_id = user_service.get_organization().id;
-            return energy_service.property_energy_usage($stateParams.view_id, organization_id, 'Exact');
+            return meter_service.property_meter_usage($stateParams.view_id, organization_id, 'Exact');
+          }],
+          meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            var organization_id = user_service.get_organization().id;
+            return meter_service.get_meters($stateParams.view_id, organization_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

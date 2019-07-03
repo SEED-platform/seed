@@ -19,13 +19,17 @@ class GreenButtonParserTest(TestCase):
                 'start_time': 1299387600,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Electricity Use  (kWh)': 1.79,
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kWh (thousand Watt-hours)',
+                'Usage/Quantity': 1.79,
             },
             {
                 'start_time': 1299388500,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Electricity Use  (kWh)': 1.792,
+                'Meter Type': 'Electric - Grid',
+                'Usage Units': 'kWh (thousand Watt-hours)',
+                'Usage/Quantity': 1.792,
             }
         ]
 
@@ -41,13 +45,17 @@ class GreenButtonParserTest(TestCase):
                 'start_time': 1299387600,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Natural Gas Use  (MBtu/MMBtu (million Btu))': 1790.0,  # No conversion/multiplier
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'MBtu/MMBtu (million Btu)',
+                'Usage/Quantity': 1790.0,  # No conversion/multiplier
             },
             {
                 'start_time': 1299388500,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Natural Gas Use  (MBtu/MMBtu (million Btu))': 1792.0,  # No conversion/multiplier
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'MBtu/MMBtu (million Btu)',
+                'Usage/Quantity': 1792.0,  # No conversion/multiplier
             }
         ]
 
@@ -63,13 +71,17 @@ class GreenButtonParserTest(TestCase):
                 'start_time': 1299387600,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Natural Gas Use  (GJ)': 1790.0 / 10**12,
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'GJ',
+                'Usage/Quantity': 1790.0 / 10**12,
             },
             {
                 'start_time': 1299388500,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
-                'Natural Gas Use  (GJ)': 1792.0 / 10**12,
+                'Meter Type': 'Natural Gas',
+                'Usage Units': 'GJ',
+                'Usage/Quantity': 1792.0 / 10**12,
             }
         ]
 
