@@ -259,6 +259,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 ws1.write(row, index, val, bold)
 
         # iterate over the results to preserve column order and write row.
+        add_m_headers = True
+        add_s_headers = True
         for datum in data:
             row += 1
             id = None
@@ -283,7 +285,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
             # measures
             for index, m in enumerate(datum['measures']):
-                if index == 0:
+                if add_m_headers:
                     # grab headers
                     for key in property_measure_keys:
                         ws2.write(row2, col2, key, bold)
@@ -291,6 +293,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     for key in measure_keys:
                         ws2.write(row2, col2, 'measure ' + key, bold)
                         col2 += 1
+                    add_m_headers = False    
 
                 row2 += 1
                 col2 = 0
@@ -306,14 +309,16 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('A1', 'Property ID', bold)
             ws4.write('B1', 'Scenario ID', bold)
             ws4.write('C1', 'Measure ID', bold)
+            add_headers = True
             for index, s in enumerate(datum['scenarios']):
                 print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
-                if index == 0:
+                if add_s_headers:
                     # grab headers
                     for key in scenario_keys:
                         ws3.write(row3, col3, key, bold)
                         col3 += 1
+                    add_s_headers = False
                 row3 += 1
                 col3 = 0
                 for key in scenario_keys:
