@@ -465,11 +465,16 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        merge_in_cycle_matches(merged_state.propertyview_set.first().id, 'PropertyState')
+        count, view_id = merge_in_cycle_matches(merged_state.propertyview_set.first().id, 'PropertyState')
 
-        return {
+        result = {
             'status': 'success'
         }
+
+        if view_id is not None:
+            result.update({'match_merged_count': count})
+
+        return result
 
     @api_endpoint_class
     @ajax_request_class
@@ -975,10 +980,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        _count, view_id = merge_in_cycle_matches(property_view.id, 'PropertyState')
+                        count, view_id = merge_in_cycle_matches(property_view.id, 'PropertyState')
 
                         if view_id is not None:
-                            result.update({'view_id': view_id})
+                            result.update({
+                                'view_id': view_id,
+                                'match_merged_count': count,
+                            })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_200_OK)
@@ -1013,10 +1021,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        _count, view_id = merge_in_cycle_matches(property_view.id, 'PropertyState')
+                        count, view_id = merge_in_cycle_matches(property_view.id, 'PropertyState')
 
                         if view_id is not None:
-                            result.update({'view_id': view_id})
+                            result.update({
+                                'view_id': view_id,
+                                'match_merged_count': count,
+                            })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_200_OK)

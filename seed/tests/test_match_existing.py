@@ -79,6 +79,8 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
+        self.assertEqual(response['match_merged_count'], 2)
+
         changed_view = PropertyView.objects.exclude(state_id=ps_3).get()
         self.assertEqual(response['view_id'], changed_view.id)
 
@@ -176,6 +178,8 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
+        self.assertEqual(response['match_merged_count'], 2)
+
         # Verify that there's only 1 canonical TaxLot and View left
         self.assertEqual(TaxLot.objects.count(), 1)
         # 6 -States since, 5 from 1st round + 1 from merge
@@ -246,7 +250,10 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         post_params = json.dumps({
             'state_ids': [ps_2.pk, ps_1.pk]
         })
-        self.client.post(url, post_params, content_type='application/json')
+        raw_response = self.client.post(url, post_params, content_type='application/json')
+        response = json.loads(raw_response.content)
+
+        self.assertEqual(response['match_merged_count'], 2)
 
         # Verify that 3 -States have been merged and 2 remain
         self.assertEqual(Property.objects.count(), 2)
@@ -304,7 +311,10 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         post_params = json.dumps({
             'state_ids': [tls_2.pk, tls_1.pk]
         })
-        self.client.post(url, post_params, content_type='application/json')
+        raw_response = self.client.post(url, post_params, content_type='application/json')
+        response = json.loads(raw_response.content)
+
+        self.assertEqual(response['match_merged_count'], 2)
 
         # Verify that 3 -States have been merged and 2 remain
         self.assertEqual(TaxLot.objects.count(), 2)

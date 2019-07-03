@@ -88,8 +88,14 @@ angular.module('BE.seed.controller.merge_modal', [])
         var state_ids;
         if ($scope.inventory_type === 'properties') {
           state_ids = _.map($scope.data, 'property_state_id').reverse();
-          return matching_service.mergeProperties(state_ids).then(function () {
+          return matching_service.mergeProperties(state_ids).then(function (data) {
             Notification.success('Successfully merged ' + state_ids.length + ' properties');
+            if (_.has(data, 'match_merged_count')) {
+              Notification.info({
+                message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
+                delay: 10000,
+              });
+            }
             $scope.close();
           }, function (err) {
             $log.error(err);
@@ -99,8 +105,14 @@ angular.module('BE.seed.controller.merge_modal', [])
           });
         } else {
           state_ids = _.map($scope.data, 'taxlot_state_id').reverse();
-          return matching_service.mergeTaxlots(state_ids).then(function () {
+          return matching_service.mergeTaxlots(state_ids).then(function (data) {
             Notification.success('Successfully merged ' + state_ids.length + ' tax lots');
+            if (_.has(data, 'match_merged_count')) {
+              Notification.info({
+                message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
+                delay: 10000,
+              });
+            }
             $scope.close();
           }, function (err) {
             $log.error(err);

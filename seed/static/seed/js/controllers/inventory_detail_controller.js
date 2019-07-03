@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$anchorScroll',
     '$location',
     '$window',
+    'Notification',
     'urls',
     'spinner_utility',
     'label_service',
@@ -37,6 +38,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $anchorScroll,
       $location,
       $window,
+      Notification,
       urls,
       spinner_utility,
       label_service,
@@ -290,7 +292,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 $state.go('inventory_detail', {
                   inventory_type: 'properties',
                   view_id: data.view_id,
-                })
+                });
+                Notification.info({
+                  message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
+                  delay: 10000,
+                });
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
@@ -311,7 +317,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 $state.go('inventory_detail', {
                   inventory_type: 'taxlots',
                   view_id: data.view_id,
-                })
+                });
+                Notification.info({
+                  message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
+                  delay: 10000,
+                });
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.

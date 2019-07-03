@@ -283,11 +283,16 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
-        merge_in_cycle_matches(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        count, view_id = merge_in_cycle_matches(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
-        return {
+        result = {
             'status': 'success'
         }
+
+        if view_id is not None:
+            result.update({'match_merged_count': count})
+
+        return result
 
     @api_endpoint_class
     @ajax_request_class
@@ -735,10 +740,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        _count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
+                        count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
-                            result.update({'view_id': view_id})
+                            result.update({
+                                'view_id': view_id,
+                                'match_merged_count': count,
+                            })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -771,10 +779,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        _count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
+                        count, view_id = merge_in_cycle_matches(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
-                            result.update({'view_id': view_id})
+                            result.update({
+                                'view_id': view_id,
+                                'match_merged_count': count,
+                            })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
