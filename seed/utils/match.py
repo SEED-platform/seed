@@ -65,7 +65,7 @@ def matching_criteria_column_names(organization_id, table_name):
     }
 
 
-def match_merge_in_cycle(view_id, StateClassName):# TODO: add check for all empty.
+def match_merge_in_cycle(view_id, StateClassName):
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
@@ -75,6 +75,10 @@ def match_merge_in_cycle(view_id, StateClassName):# TODO: add check for all empt
 
     view = ViewClass.objects.get(pk=view_id)
     org_id = view.state.organization_id
+
+    if empty_criteria_states_qs([view.state_id], org_id, StateClass).exists():
+        return 0, None
+
     matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
     views_in_cycle = ViewClass.objects.filter(cycle_id=view.cycle_id)
     state_matches = StateClass.objects.filter(

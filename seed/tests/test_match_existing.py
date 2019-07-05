@@ -397,6 +397,39 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         audit_log = PropertyAuditLog.objects.get(state_id=view.state_id)
         self.assertEqual(audit_log.name, 'System Match')
 
+    def test_match_merge_in_cycle_ignores_properties_with_unpopulated_matching_criteria(self):
+        base_details = {
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 3 non-duplicate properties with unpopulated matching criteria
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['city'] = 'Denver'
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+
+        base_details['city'] = 'Philadelphia'
+        ps_3 = self.property_state_factory.get_property_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Verify no match merges happen
+        ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
+        count_result, no_match_indicator = match_merge_in_cycle(ps_1_view.id, 'PropertyState')
+        self.assertEqual(count_result, 0)
+        self.assertIsNone(no_match_indicator)
+
+        self.assertEqual(Property.objects.count(), 3)
+        self.assertEqual(PropertyState.objects.count(), 3)
+        self.assertEqual(PropertyView.objects.count(), 3)
+
+        state_ids = list(PropertyView.objects.all().values_list('state_id', flat=True))
+        self.assertCountEqual([ps_1.id, ps_2.id, ps_3.id], state_ids)
+
     def test_match_merge_in_cycle_rolls_up_existing_taxlot_matches_in_id_order_if_they_exist_with_priority_given_to_selected_property(self):
         base_details = {
             'jurisdiction_tax_lot_id': '123MatchID',
@@ -451,3 +484,36 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         # The corresponding log should be a System Match
         audit_log = TaxLotAuditLog.objects.get(state_id=view.state_id)
         self.assertEqual(audit_log.name, 'System Match')
+
+    def test_match_merge_in_cycle_ignores_taxlots_with_unpopulated_matching_criteria(self):
+        base_details = {
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 3 non-duplicate taxlots with unpopulated matching criteria
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['city'] = 'Denver'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        base_details['city'] = 'Philadelphia'
+        tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Verify no match merges happen
+        tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
+        count_result, no_match_indicator = match_merge_in_cycle(tls_1_view.id, 'TaxLotState')
+        self.assertEqual(count_result, 0)
+        self.assertIsNone(no_match_indicator)
+
+        self.assertEqual(TaxLot.objects.count(), 3)
+        self.assertEqual(TaxLotState.objects.count(), 3)
+        self.assertEqual(TaxLotView.objects.count(), 3)
+
+        state_ids = list(TaxLotView.objects.all().values_list('state_id', flat=True))
+        self.assertCountEqual([tls_1.id, tls_2.id, tls_3.id], state_ids)
