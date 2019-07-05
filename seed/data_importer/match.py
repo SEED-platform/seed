@@ -41,6 +41,11 @@ from seed.models import (
     TaxLotView,
 )
 from seed.models.auditlog import AUDIT_IMPORT
+from seed.utils.match import (
+    empty_criteria_states_qs,
+    matching_filter_criteria,
+    matching_criteria_column_names,
+)
 from seed.utils.merge import merge_states_with_views
 
 _log = get_task_logger(__name__)
@@ -52,7 +57,7 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-def match_properties_and_taxlots(file_pk, progress_key):
+def match_incoming_properties_and_taxlots(file_pk, progress_key):
     """
     Match the properties and taxlots.
 
@@ -206,7 +211,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
     # IDs of -States with all matching criteria equal to None are intially promoted
     # as they're not eligible for matching.
     promoted_ids = list(
-        _empty_criteria_states_qs(
+        empty_criteria_states_qs(
             unmatched_state_ids,
             org.id,
             ObjectStateClass
@@ -219,7 +224,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, ObjectStateClass):
     )
 
     # Group IDs by -States that match each other
-    column_names = _matching_criteria_column_names(org.id, table_name)
+    column_names = matching_criteria_column_names(org.id, table_name)
     matched_id_groups = ObjectStateClass.objects.\
         filter(id__in=unmatched_state_ids).\
         values(*column_names).\
@@ -290,7 +295,7 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
 
     # For the remaining incoming -States (filtering those duplicates), identify
     # -States with all matching criteria being None. These aren't eligible for matching.
-    promote_states = _empty_criteria_states_qs(
+    promote_states = empty_criteria_states_qs(
         unmatched_state_ids,
         org.id,
         ObjectStateClass
@@ -306,7 +311,7 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     # If matches are found, take the first match. Otherwise, add current -State to be promoted as is.
     merge_state_pairs = []
     for state in unmatched_states:
-        matching_criteria = _matching_filter_criteria(org.id, table_name, state)
+        matching_criteria = matching_filter_criteria(org.id, table_name, state)
         state_matches = ObjectStateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria
@@ -358,35 +363,6 @@ def states_to_views(unmatched_state_ids, org, cycle, ObjectStateClass):
     )
 
     return list(set(processed_views)), duplicate_count, new_count + matched_count
-
-
-def merge_in_cycle_matches(view_id, StateClassName):
-    if StateClassName == 'PropertyState':
-        StateClass = PropertyState
-        ViewClass = PropertyView
-    elif StateClassName == 'TaxLotState':
-        StateClass = TaxLotState
-        ViewClass = TaxLotView
-
-    view = ViewClass.objects.get(pk=view_id)
-    org_id = view.state.organization_id
-    matching_criteria = _matching_filter_criteria(org_id, StateClassName, view.state)
-    views_in_cycle = ViewClass.objects.filter(cycle_id=view.cycle_id)
-    state_matches = StateClass.objects.filter(
-        pk__in=Subquery(views_in_cycle.values('state_id')),
-        **matching_criteria
-    ).exclude(pk=view.state_id)
-
-    state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
-    state_ids.append(view.state_id)
-    count = len(state_ids)
-
-    if count > 1:
-        merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
-        view_id = ViewClass.objects.get(state_id=merged_state.id).id
-        return count, view_id
-    elif count == 1:
-        return 0, None
 
 
 def save_state_match(state1, state2, priorities):
@@ -453,47 +429,3 @@ def save_state_match(state1, state2, priorities):
     merged_state.save()
 
     return merged_state
-
-
-def _empty_criteria_states_qs(state_ids, organization_id, ObjectStateClass):
-    """
-    Using an empty -State, return a QS that searches for -States within a given
-    group that where all matching criteria values are None.
-    """
-    empty_state = ObjectStateClass()
-    empty_criteria_filter = _matching_filter_criteria(
-        organization_id,
-        ObjectStateClass.__name__,
-        empty_state
-    )
-
-    return ObjectStateClass.objects.filter(
-        pk__in=state_ids,
-        **empty_criteria_filter
-    )
-
-
-def _matching_filter_criteria(organization_id, table_name, state):
-    return {
-        column_name: getattr(state, column_name, None)
-        for column_name
-        in _matching_criteria_column_names(organization_id, table_name)
-    }
-
-
-def _matching_criteria_column_names(organization_id, table_name):
-    """
-    Collect matching criteria columns while replacing address_line_1 with
-    normalized_address if applicable. A Python set is returned to handle the
-    case where normalized_address might show up twice, which shouldn't really
-    happen anyway.
-    """
-    return {
-        'normalized_address' if c.column_name == "address_line_1" else c.column_name
-        for c
-        in Column.objects.filter(
-            organization_id=organization_id,
-            is_matching_criteria=True,
-            table_name=table_name
-        )
-    }
