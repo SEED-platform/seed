@@ -8,7 +8,6 @@ All rights reserved.  # NOQA
 :author
 """
 
-from django.apps import apps
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
@@ -528,7 +527,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'property view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'PropertyView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
