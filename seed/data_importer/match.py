@@ -42,7 +42,7 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
-    empty_criteria_states_qs,
+    empty_criteria_filter,
     matching_filter_criteria,
     matching_criteria_column_names,
 )
@@ -211,10 +211,9 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     # IDs of -States with all matching criteria equal to None are intially promoted
     # as they're not eligible for matching.
     promoted_ids = list(
-        empty_criteria_states_qs(
-            unmatched_state_ids,
-            org.id,
-            StateClass
+        StateClass.objects.filter(
+            pk__in=unmatched_state_ids,
+            **empty_criteria_filter(org.id, StateClass)
         ).values_list('id', flat=True)
     )
 
@@ -295,10 +294,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
 
     # For the remaining incoming -States (filtering those duplicates), identify
     # -States with all matching criteria being None. These aren't eligible for matching.
-    promote_states = empty_criteria_states_qs(
-        unmatched_state_ids,
-        org.id,
-        StateClass
+    promote_states = StateClass.objects.filter(
+        pk__in=unmatched_state_ids,
+        **empty_criteria_filter(org.id, StateClass)
     ).exclude(pk__in=Subquery(duplicate_states.values('id')))
 
     # Identify and filter out -States that have been "handled".

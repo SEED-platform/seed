@@ -21,22 +21,16 @@ from seed.models import (
 from seed.utils.merge import merge_states_with_views
 
 
-def empty_criteria_states_qs(state_ids, organization_id, StateClass):
+def empty_criteria_filter(organization_id, StateClass):
     """
-    Using an empty -State and a list of -State IDs, return a QS that searches
-    for -States within a given group where all matching criteria values are
-    None.
+    Using an empty -State, return a dict that can be used as a QS filter
+    to search for -States where all matching criteria values are None.
     """
     empty_state = StateClass()
-    empty_criteria_filter = matching_filter_criteria(
+    return matching_filter_criteria(
         organization_id,
         StateClass.__name__,
         empty_state
-    )
-
-    return StateClass.objects.filter(
-        pk__in=state_ids,
-        **empty_criteria_filter
     )
 
 
@@ -90,7 +84,8 @@ def match_merge_in_cycle(view_id, StateClassName):
     view = ViewClass.objects.get(pk=view_id)
     org_id = view.state.organization_id
 
-    if empty_criteria_states_qs([view.state_id], org_id, StateClass).exists():
+    # Check if associated -State has empty matching criteria.
+    if StateClass.objects.filter(pk=view.state_id, **empty_criteria_filter(org_id, StateClass)).exists():
         return 0, None
 
     matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
