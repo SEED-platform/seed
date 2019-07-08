@@ -378,8 +378,8 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 state = PropertyStateWritableSerializer(
                     instance=state_obj
                 ).data
-            except ValueError:
-                state = json.loads(state)
+            except TypeError:
+                pass  # already a PropertyStateWritableSerializer object
             required = True if self.context['request'].method in ['PUT', 'POST'] else False
             org = state.get('organization')
             org_id = org if org else org_id
@@ -413,8 +413,9 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                     missing.append(field)
         # type validation
         for field in required_fields:
-            if data.get(field) and not isinstance(data[field], (basestring, int)):
-                wrong_type.append((field, type(field)))
+            if field != 'state':  # state is a writeable serializer field
+                if data.get(field) and not isinstance(data[field], (basestring, int)):
+                    wrong_type.append((field, type(field)))
         for fields in unique_together:
             field_vals = {}
             for field in fields:
