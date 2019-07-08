@@ -8,6 +8,7 @@
 import json
 
 from django.core.urlresolvers import reverse
+from django.db.models import Subquery
 
 from seed.data_importer.tasks import match_buildings
 
@@ -23,8 +24,12 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
-from seed.utils.match import match_merge_in_cycle
+from seed.utils.match import (
+    match_merge_in_cycle,
+    whole_org_match_merge,
+)
 from seed.test_helpers.fake import (
+    FakeCycleFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
 )
@@ -517,3 +522,275 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         state_ids = list(TaxLotView.objects.all().values_list('state_id', flat=True))
         self.assertCountEqual([tls_1.id, tls_2.id, tls_3.id], state_ids)
+
+
+class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle_2
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_whole_org_match_merge(self):
+        """
+        The set up for this test is lengthy and includes multiple Property sets
+        and TaxLot sets across multiple Cycles. In this context, a "set"
+        includes a -State, -View, and canonical record.
+
+        Cycle 1 - 5 property & 5 taxlot sets - 2 & 2 sets match, 1 set doesn't match
+        Cycle 2 - 5 property & 5 taxlot sets - 3 sets match, 2 sets w/ null fields
+        """
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': '1st Match Set',
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 5 initially non-matching properties in first Cycle
+        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'To be updated - 1st Match Set'
+        base_property_details['city'] = 'Denver'
+        ps_12 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = '2nd Match Set'
+        base_property_details['city'] = 'Philadelphia'
+        ps_13 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'To be updated - 2nd Match Set'
+        base_property_details['city'] = 'Colorado Springs'
+        ps_14 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'Single Unmatched'
+        base_property_details['city'] = 'Grand Junction'
+        ps_15 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_taxlot_details = {
+            'jurisdiction_tax_lot_id': '1st Match Set',
+            'city': 'Golden',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 5 initially non-matching taxlots in first Cycle
+        tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 1st Match Set'
+        base_taxlot_details['city'] = 'Denver'
+        tls_12 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = '2nd Match Set'
+        base_taxlot_details['city'] = 'Philadelphia'
+        tls_13 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 2nd Match Set'
+        base_taxlot_details['city'] = 'Colorado Springs'
+        tls_14 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single Unmatched'
+        base_taxlot_details['city'] = 'Grand Junction'
+        tls_15 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Make some match but don't trigger matching round
+        PropertyState.objects.filter(pk=ps_12.id).update(pm_property_id='1st Match Set')
+        PropertyState.objects.filter(pk=ps_14.id).update(pm_property_id='2nd Match Set')
+        TaxLotState.objects.filter(pk=tls_12.id).update(jurisdiction_tax_lot_id='1st Match Set')
+        TaxLotState.objects.filter(pk=tls_14.id).update(jurisdiction_tax_lot_id='2nd Match Set')
+
+        # Check all property and taxlot sets were created without match merges
+        self.assertEqual(5, Property.objects.count())
+        self.assertEqual(5, PropertyState.objects.count())
+        self.assertEqual(5, PropertyView.objects.count())
+        self.assertEqual(5, TaxLot.objects.count())
+        self.assertEqual(5, TaxLotState.objects.count())
+        self.assertEqual(5, TaxLotView.objects.count())
+
+        # Cycle 2 / ImportFile 2
+        base_property_details = {
+            'pm_property_id': '1st Match Set',
+            'city': 'Golden',
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 5 initially non-matching properties in second Cycle
+        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'To be updated 1 - 1st Match Set'
+        base_property_details['city'] = 'Denver'
+        ps_22 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'To be updated 2 - 1st Match Set'
+        base_property_details['city'] = 'Philadelphia'
+        ps_23 = self.property_state_factory.get_property_state(**base_property_details)
+
+        del base_property_details['pm_property_id']
+        base_property_details['city'] = 'Null Fields 1'
+        ps_24 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['city'] = 'Null Fields 2'
+        ps_25 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_taxlot_details = {
+            'jurisdiction_tax_lot_id': '1st Match Set',
+            'city': 'Golden',
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create 5 initially non-matching taxlots in second Cycle
+        tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 1 - 1st Match Set'
+        base_taxlot_details['city'] = 'Denver'
+        tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 2 - 1st Match Set'
+        base_taxlot_details['city'] = 'Philadelphia'
+        tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        del base_taxlot_details['jurisdiction_tax_lot_id']
+        base_taxlot_details['city'] = 'Null Fields 1'
+        tls_24 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        base_taxlot_details['city'] = 'Null Fields 2'
+        tls_25 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Make some match but don't trigger matching round
+        PropertyState.objects.filter(pk__in=[ps_22.id, ps_23.id]).update(pm_property_id='1st Match Set')
+        TaxLotState.objects.filter(pk__in=[tls_22.id, tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+
+        # Check all property and taxlot sets were created without match merges
+        self.assertEqual(10, Property.objects.count())
+        self.assertEqual(10, PropertyState.objects.count())
+        self.assertEqual(10, PropertyView.objects.count())
+        self.assertEqual(10, TaxLot.objects.count())
+        self.assertEqual(10, TaxLotState.objects.count())
+        self.assertEqual(10, TaxLotView.objects.count())
+
+        # Set up complete - run method
+        summary = whole_org_match_merge(self.org.id)
+
+        # Check -View and canonical counts
+        self.assertEqual(6, PropertyView.objects.count())
+        self.assertEqual(6, TaxLotView.objects.count())
+        self.assertEqual(6, Property.objects.count())
+        self.assertEqual(6, TaxLot.objects.count())
+
+        # For each -State model, there should be 14
+        # 14 = 10 + 2 from Cycle-1 merges + 2 from Cycle-2 merges
+        self.assertEqual(14, TaxLotState.objects.count())
+        self.assertEqual(14, PropertyState.objects.count())
+
+        # Check -States part of merges are no longer associated to -Views
+        merged_ps_ids = [
+            ps_11.id, ps_12.id,  # Cycle 1
+            ps_13.id, ps_14.id,  # Cycle 1
+            ps_21.id, ps_22.id, ps_23.id  # Cycle 2
+        ]
+        self.assertFalse(PropertyView.objects.filter(state_id__in=merged_ps_ids).exists())
+
+        merged_tls_ids = [
+            tls_11.id, tls_12.id,  # Cycle 1
+            tls_13.id, tls_14.id,  # Cycle 1
+            tls_21.id, tls_22.id, tls_23.id  # Cycle 2
+        ]
+        self.assertFalse(TaxLotView.objects.filter(state_id__in=merged_tls_ids).exists())
+
+        # Check -States NOT part of merges are still associated to -Views
+        self.assertTrue(PropertyView.objects.filter(state_id=ps_15).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=ps_24).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=ps_25).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=tls_15).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=tls_24).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=tls_25).exists())
+
+        # Check Merges occurred correctly, with priority given to newer -States as evidenced by 'city' values
+        cycle_1_pviews = PropertyView.objects.filter(cycle_id=self.cycle_1.id)
+        cycle_1_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_1_pviews.values('state_id')))
+
+        self.assertEqual(3, cycle_1_pstates.count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='Denver').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='Colorado Springs').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='Grand Junction').count())
+
+        cycle_2_pviews = PropertyView.objects.filter(cycle_id=self.cycle_2.id)
+        cycle_2_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_2_pviews.values('state_id')))
+
+        self.assertEqual(3, cycle_2_pstates.count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='Philadelphia').count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 1').count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 2').count())
+
+        cycle_1_tlviews = TaxLotView.objects.filter(cycle_id=self.cycle_1.id)
+        cycle_1_tlstates = TaxLotState.objects.filter(pk__in=Subquery(cycle_1_tlviews.values('state_id')))
+
+        self.assertEqual(3, cycle_1_tlstates.count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='Denver').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='Colorado Springs').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='Grand Junction').count())
+
+        cycle_2_tlviews = TaxLotView.objects.filter(cycle_id=self.cycle_2.id)
+        cycle_2_tlstates = TaxLotState.objects.filter(pk__in=Subquery(cycle_2_tlviews.values('state_id')))
+
+        self.assertEqual(3, cycle_2_tlstates.count())
+        self.assertEqual(1, cycle_2_tlstates.filter(city='Philadelphia').count())
+        self.assertEqual(1, cycle_2_tlstates.filter(city='Null Fields 1').count())
+        self.assertEqual(1, cycle_2_tlstates.filter(city='Null Fields 2').count())
+
+        # Finally, check method returned expected summary
+        expected_summary = {
+            'PropertyState': {
+                'merged_count': 7,
+                'new_merged_state_ids': [
+                    cycle_1_pstates.filter(city='Denver').get().id,
+                    cycle_1_pstates.filter(city='Colorado Springs').get().id,
+                    cycle_2_pstates.filter(city='Philadelphia').get().id,
+                ]
+            },
+            'TaxLotState': {
+                'merged_count': 7,
+                'new_merged_state_ids': [
+                    cycle_1_tlstates.filter(city='Denver').get().id,
+                    cycle_1_tlstates.filter(city='Colorado Springs').get().id,
+                    cycle_2_tlstates.filter(city='Philadelphia').get().id,
+                ]
+            },
+        }
+
+        self.assertEqual(
+            summary['PropertyState']['merged_count'],
+            expected_summary['PropertyState']['merged_count']
+        )
+        self.assertEqual(
+            summary['TaxLotState']['merged_count'],
+            expected_summary['TaxLotState']['merged_count']
+        )
+
+        self.assertCountEqual(
+            summary['PropertyState']['new_merged_state_ids'],
+            expected_summary['PropertyState']['new_merged_state_ids']
+        )
+        self.assertCountEqual(
+            summary['TaxLotState']['new_merged_state_ids'],
+            expected_summary['TaxLotState']['new_merged_state_ids']
+        )

@@ -107,29 +107,49 @@ def match_merge_in_cycle(view_id, StateClassName):
         return 0, None
 
 
-def org_level_match_merge(organization_id):
+def whole_org_match_merge(org_id):
     """
-    Scope: all PropertyViews and TaxLotViews for an Org
+    Scope: all PropertyViews and TaxLotViews for an Org.
     Algorithm:
         - Start with PropertyViews then repeat for TaxLotViews
             - For each Cycle,
             - Looking at the corresponding -States attached to these -Views,...
-            - Disregard/ignore any -States where all matching criteria is None (likely a subquery or extra exclude)
-            - Group together -States that match each other.
-            - For each group, run manual merging logic so that there's only one
-            record left but make the -AuditLog a "System Match"
+            - Disregard/ignore any -States where all matching criteria is None (likely a subquery or extra exclude).
+            - Group together IDs of -States that match each other.
+            - For each group of size larger than 1, run manual merging logic so
+            that there's only one record left but make the -AuditLog a "System Match".
     """
+    summary = {
+        'PropertyState': {
+            'merged_count': 0,
+            'new_merged_state_ids': []
+        },
+        'TaxLotState': {
+            'merged_count': 0,
+            'new_merged_state_ids': []
+        },
+    }
+
     for StateClass in (PropertyState, TaxLotState):
-        table_name = StateClass.__name__
-        column_names = matching_criteria_column_names(organization_id, table_name)
-        cycle_ids = Cycle.objects.filter(organization_id=organization_id).values_list('id', flat=True)
+        ViewClass = PropertyView if StateClass == PropertyState else TaxLotView
+
+        column_names = matching_criteria_column_names(org_id, StateClass.__name__)
+        cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list('id', flat=True)
         for cycle_id in cycle_ids:
-            existing_cycle_views = PropertyView.objects.filter(cycle_id=cycle_id)
+            existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle_id)
             matched_id_groups = StateClass.objects.\
                 filter(id__in=Subquery(existing_cycle_views.values('state_id'))).\
+                exclude(**empty_criteria_filter(org_id, StateClass)).\
                 values(*column_names).\
                 annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\
                 values_list('matched_ids', flat=True).\
                 filter(matched_count__gt=1)
-            # for id_group in matched_id_groups:
-            #     match_merge_in_cycle(id_group)
+
+            for state_ids in matched_id_groups:
+                state_ids.sort()  # Ensures priority given to most recently uploaded record
+                merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+
+                summary[StateClass.__name__]['merged_count'] += len(state_ids)
+                summary[StateClass.__name__]['new_merged_state_ids'].append(merged_state.id)
+
+    return summary
