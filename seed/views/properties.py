@@ -432,7 +432,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @list_route(methods=['POST'])
     def merge(self, request):
         """
-        Merge multiple property records into a single new record
+        Merge multiple property records into a single new record, and run this
+        new record through a match and merge round within it's current Cycle.
         ---
         parameters:
             - name: organization_id
@@ -886,7 +887,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @ajax_request_class
     def update(self, request, pk=None):
         """
-        Update a property.
+        Update a property and run the updated record through a match and merge
+        round within it's current Cycle.
 
         - looks up the property view
         - casts it as a PropertyState

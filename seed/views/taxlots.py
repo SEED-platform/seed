@@ -250,7 +250,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @list_route(methods=['POST'])
     def merge(self, request):
         """
-        Merge multiple tax lot records into a single new record
+        Merge multiple tax lot records into a single new record, and run this
+        new record through a match and merge round within it's current Cycle.
         ---
         parameters:
             - name: organization_id
@@ -668,7 +669,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @ajax_request_class
     def update(self, request, pk):
         """
-        Update a taxlot
+        Update a taxlot and run the updated record through a match and merge
+        round within it's current Cycle.
         ---
         parameters:
             - name: organization_id

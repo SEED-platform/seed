@@ -21,25 +21,31 @@ from seed.models import (
 from seed.utils.merge import merge_states_with_views
 
 
-def empty_criteria_states_qs(state_ids, organization_id, ObjectStateClass):
+def empty_criteria_states_qs(state_ids, organization_id, StateClass):
     """
-    Using an empty -State, return a QS that searches for -States within a given
-    group that where all matching criteria values are None.
+    Using an empty -State and a list of -State IDs, return a QS that searches
+    for -States within a given group where all matching criteria values are
+    None.
     """
-    empty_state = ObjectStateClass()
+    empty_state = StateClass()
     empty_criteria_filter = matching_filter_criteria(
         organization_id,
-        ObjectStateClass.__name__,
+        StateClass.__name__,
         empty_state
     )
 
-    return ObjectStateClass.objects.filter(
+    return StateClass.objects.filter(
         pk__in=state_ids,
         **empty_criteria_filter
     )
 
 
 def matching_filter_criteria(organization_id, table_name, state):
+    """
+    For a given -State, returns a dictionary of it's matching criteria values.
+
+    This dictionary is frequently unpacked for a QuerySet filter or exclude.
+    """
     return {
         column_name: getattr(state, column_name, None)
         for column_name
@@ -66,6 +72,14 @@ def matching_criteria_column_names(organization_id, table_name):
 
 
 def match_merge_in_cycle(view_id, StateClassName):
+    """
+    Given a -View ID, this method matches and merges for the related -State.
+    Match-eligible -States are scoped to those associated with -Views within
+    the same Cycle.
+
+    If the -State associated with the -View doesn't have any matching criteria
+    values populated, the -State is not eligible for a match merge.
+    """
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
@@ -110,13 +124,13 @@ def org_level_match_merge(organization_id):
             - For each group, run manual merging logic so that there's only one
             record left but make the -AuditLog a "System Match"
     """
-    for ObjectStateClass in (PropertyState, TaxLotState):
-        table_name = ObjectStateClass.__name__
+    for StateClass in (PropertyState, TaxLotState):
+        table_name = StateClass.__name__
         column_names = matching_criteria_column_names(organization_id, table_name)
         cycle_ids = Cycle.objects.filter(organization_id=organization_id).values_list('id', flat=True)
         for cycle_id in cycle_ids:
             existing_cycle_views = PropertyView.objects.filter(cycle_id=cycle_id)
-            matched_id_groups = ObjectStateClass.objects.\
+            matched_id_groups = StateClass.objects.\
                 filter(id__in=Subquery(existing_cycle_views.values('state_id'))).\
                 values(*column_names).\
                 annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\

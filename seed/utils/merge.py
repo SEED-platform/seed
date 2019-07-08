@@ -188,6 +188,11 @@ def _copy_meters_in_order(state_1_id, state_2_id, new_property):
 
 
 def _copy_propertyview_relationships(view_ids, new_view):
+    """
+    Currently, PropertyView relationships include notes, labels, and pairings
+    with TaxLotViews. Each of these are copied from given -View IDs and
+    associated with a new PropertyView.
+    """
     # Assign notes to the new view
     notes = list(Note.objects.values(
         'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
@@ -220,6 +225,11 @@ def _copy_propertyview_relationships(view_ids, new_view):
 
 
 def _copy_taxlotview_relationships(view_ids, new_view):
+    """
+    Currently, TaxLotView relationships include notes, labels, and pairings
+    with PropertyViews. Each of these are copied from given -View IDs and
+    associated with a new TaxLotView.
+    """
     # Assign notes to the new view
     notes = list(Note.objects.values(
         'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
