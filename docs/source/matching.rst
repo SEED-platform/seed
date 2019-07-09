@@ -64,6 +64,6 @@ process is as follows:
 1. Amongst only the incoming records, duplicates are flagged and ignored.
 2. Amongst only the incoming records, matching records are merged together.
 3. Amongst all records in the same Cycle, incoming records that match an existing record gets merged with priority to that existing record.
-    - If the incoming record has multiple existing matches, the existing matches are merged together in ID order
-      first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases.
-    - Since the incoming record is new, it doesn't have any of the other associations.
+  - If the incoming record has multiple existing matches, the existing matches are merged together in ID order
+    first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases.
+  - Since the incoming record is new, it doesn't have any of the other associations.
