@@ -6,6 +6,10 @@
 """
 
 import copy
+from datetime import datetime
+from pytz import timezone
+import pytz
+from django.utils.dateparse import parse_date
 import json
 import logging
 import os
@@ -704,8 +708,9 @@ class BuildingSync(object):
 
                             # add reading connected to meter (use resourceID/source_id for matching)        
                             reading = {}
-                            reading['start_time'] = ts.get('auc:StartTimeStamp')
-                            reading['end_time'] = ts.get('auc:EndTimeStamp')
+                            # ignoring timezones...pretending all is in UTC for DB and Excel export
+                            reading['start_time'] = pytz.utc.localize(datetime.strptime(ts.get('auc:StartTimeStamp'), "%Y-%m-%dT%H:%M:%S"))
+                            reading['end_time'] = pytz.utc.localize(datetime.strptime(ts.get('auc:EndTimeStamp'), "%Y-%m-%dT%H:%M:%S"))
                             reading['reading'] = ts.get('auc:IntervalReading')
                             reading['source_id'] = source_id
                             reading['source_unit'] = source_unit
@@ -714,7 +719,7 @@ class BuildingSync(object):
                             if the_meter is not None:
                                 the_meter['readings'].append(reading)
                             
-                        print("METERS: {}".format(new_data['meters']))
+                        # print("METERS: {}".format(new_data['meters']))
 
                     # measures
                     new_data['measures'] = []

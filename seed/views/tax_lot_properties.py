@@ -11,6 +11,7 @@ import inspect
 import csv
 import datetime
 import io
+import re
 from collections import OrderedDict
 
 import xlsxwriter
@@ -27,6 +28,10 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
     ColumnListSetting,
+)
+from seed.models.meters import (
+    Meter,
+    MeterReading
 )
 from seed.models.property_measures import (
     PropertyMeasure
@@ -235,13 +240,14 @@ class TaxLotPropertyViewSet(GenericViewSet):
             record['scenarios'] = scenarios
 
         output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
+        wb = xlsxwriter.Workbook(output, {'remove_timezone': True})
 
         # add tabs
         ws1 = wb.add_worksheet('Properties')
         ws2 = wb.add_worksheet('Measures')
         ws3 = wb.add_worksheet('Scenarios')
         ws4 = wb.add_worksheet('Scenario Measure Join Table')
+        ws5 = wb.add_worksheet('Meter Readings')
         bold = wb.add_format({'bold': True})
 
         row = 0
@@ -250,6 +256,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         row3 = 0
         col3 = 0
         row4 = 0
+        row5 = 0
 
         for index, val in enumerate(list(column_name_mappings.values())):
             # Do not write the first element as ID, this causes weird issues with Excel.
@@ -311,7 +318,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('C1', 'Measure ID', bold)
             add_headers = True
             for index, s in enumerate(datum['scenarios']):
-                print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
+                # print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
                 if add_s_headers:
                     # grab headers
@@ -330,6 +337,40 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     ws4.write(row4, 0, id)
                     ws4.write(row4, 1, scenario_id)
                     ws4.write(row4, 2, sm.id)
+
+            # scenario meter readings
+            ws5.write('A1', 'Scenario ID', bold)
+            ws5.write('B1', 'Meter ID', bold)
+            ws5.write('C1', 'Type', bold)
+            ws5.write('D1', 'Start Time', bold)
+            ws5.write('E1', 'End Time', bold)
+            ws5.write('F1', 'Reading', bold)
+            ws5.write('G1', 'Units', bold)   
+            # datetime formatting
+            date_format = wb.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
+
+            add_headers = True
+            for index, s in enumerate(datum['scenarios']):
+                scenario_id = s.id
+                # retrieve meters
+                meters = Meter.objects.filter(scenario_id=scenario_id)
+                for m in meters:
+                    # retrieve readings
+                    readings = MeterReading.objects.filter(meter_id=m.id)
+                    for r in readings:
+                        row5 += 1
+                        ws5.write(row5, 0, scenario_id)
+                        ws5.write(row5, 1, m.id)
+                        the_type = next((item for item in Meter.ENERGY_TYPES if item[0] == m.type), None)
+                        the_type = the_type[1] if the_type is not None else None
+                        ws5.write(row5, 2, the_type) # use energy type enum to determine reading type
+                        # ws5.write_datetime(row5, 3, r.start_time.replace(tzinfo=None), date_format)
+                        # ws5.write_datetime(row5, 4, r.end_time.replace(tzinfo=None), date_format)
+                        ws5.write_datetime(row5, 3, r.start_time, date_format)
+                        ws5.write_datetime(row5, 4, r.end_time, date_format)
+                        ws5.write(row5, 5, r.reading.magnitude)
+                        ws5.write(row5, 6, str(r.reading.units).replace('kilobtu', 'kBtu'))
+
 
         wb.close()
 

@@ -261,6 +261,7 @@ class BuildingFile(models.Model):
                 meter.save()
 
                 # meterreadings
+                # TODO: need to check that these are in kBtu already?
                 readings = {
                     MeterReading(
                         start_time=mr.get('start_time'),
