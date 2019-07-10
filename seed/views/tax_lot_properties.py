@@ -7,11 +7,9 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
-import inspect
 import csv
 import datetime
 import io
-import re
 from collections import OrderedDict
 
 import xlsxwriter
@@ -223,7 +221,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             'id', 'name', 'description', 'annual_site_energy_savings',
             'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction',
             'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message',
-            'annual_electricity_savings', 'annual_natural_gas_savings', 'annual_site_energy', 'annual_natural_gas_energy', 
+            'annual_electricity_savings', 'annual_natural_gas_savings', 'annual_site_energy', 'annual_natural_gas_energy',
             'annual_electricity_energy', 'annual_peak_demand'
         )
         property_measure_keys = (
@@ -300,7 +298,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     for key in measure_keys:
                         ws2.write(row2, col2, 'measure ' + key, bold)
                         col2 += 1
-                    add_m_headers = False    
+                    add_m_headers = False
 
                 row2 += 1
                 col2 = 0
@@ -316,7 +314,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('A1', 'Property ID', bold)
             ws4.write('B1', 'Scenario ID', bold)
             ws4.write('C1', 'Measure ID', bold)
-            add_headers = True
             for index, s in enumerate(datum['scenarios']):
                 # print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
@@ -345,11 +342,11 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws5.write('D1', 'Start Time', bold)
             ws5.write('E1', 'End Time', bold)
             ws5.write('F1', 'Reading', bold)
-            ws5.write('G1', 'Units', bold)   
+            ws5.write('G1', 'Units', bold)
+            ws5.write('H1', 'Is Virtual', bold)
             # datetime formatting
             date_format = wb.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
 
-            add_headers = True
             for index, s in enumerate(datum['scenarios']):
                 scenario_id = s.id
                 # retrieve meters
@@ -363,14 +360,12 @@ class TaxLotPropertyViewSet(GenericViewSet):
                         ws5.write(row5, 1, m.id)
                         the_type = next((item for item in Meter.ENERGY_TYPES if item[0] == m.type), None)
                         the_type = the_type[1] if the_type is not None else None
-                        ws5.write(row5, 2, the_type) # use energy type enum to determine reading type
-                        # ws5.write_datetime(row5, 3, r.start_time.replace(tzinfo=None), date_format)
-                        # ws5.write_datetime(row5, 4, r.end_time.replace(tzinfo=None), date_format)
+                        ws5.write(row5, 2, the_type)  # use energy type enum to determine reading type
                         ws5.write_datetime(row5, 3, r.start_time, date_format)
                         ws5.write_datetime(row5, 4, r.end_time, date_format)
                         ws5.write(row5, 5, r.reading.magnitude)
                         ws5.write(row5, 6, str(r.reading.units).replace('kilobtu', 'kBtu'))
-
+                        ws5.write(row5, 7, m.is_virtual)
 
         wb.close()
 

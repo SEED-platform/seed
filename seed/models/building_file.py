@@ -195,7 +195,7 @@ class BuildingFile(models.Model):
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
                 messages['warnings'].append('Scenario does not have a name. ID = %s' % s.get('id'))
-                continue  
+                continue
 
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),
@@ -252,8 +252,8 @@ class BuildingFile(models.Model):
                 # print("BUILDING FILE METER: {}".format(m))
                 # check by scenario_id and source_id
                 meter, _ = Meter.objects.get_or_create(
-                    scenario_id = scenario.id,
-                    source_id = m.get('source_id'),
+                    scenario_id=scenario.id,
+                    source_id=m.get('source_id'),
                 )
                 meter.source = m.get('source')
                 meter.type = m.get('type')
@@ -275,7 +275,6 @@ class BuildingFile(models.Model):
                 }
 
                 MeterReading.objects.bulk_create(readings)
-    
 
         if property_view:
             # create a new blank state to merge the two together

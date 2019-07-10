@@ -7,9 +7,7 @@
 
 import copy
 from datetime import datetime
-from pytz import timezone
 import pytz
-from django.utils.dateparse import parse_date
 import json
 import logging
 import os
@@ -604,7 +602,7 @@ class BuildingSync(object):
                     ref_case = self._get_node('auc:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    # fixed naming of existing scenario fields    
+                    # fixed naming of existing scenario fields
                     new_data['annual_site_energy_savings'] = node.get('auc:AnnualSavingsSiteEnergy')
                     new_data['annual_cost_savings'] = node.get('auc:AnnualSavingsCost')
 
@@ -618,7 +616,6 @@ class BuildingSync(object):
                             fuel_nodes = fuel_savings_arr
 
                         for f in fuel_nodes:
-                            # print("F: {}".format(f))
                             if f.get('auc:EnergyResource') == 'Electricity':
                                 new_data['annual_electricity_savings'] = f.get('auc:AnnualSavingsNativeUnits')
                                 # print("ELECTRICITY: {}".format(new_data['annual_electricity_savings']))
@@ -648,7 +645,7 @@ class BuildingSync(object):
                         ru_nodes = resource_uses.get('auc:ResourceUse')
                         # print("ResourceUse: {}".format(ru_nodes))
 
-                        if isinstance(ru_nodes, dict):  
+                        if isinstance(ru_nodes, dict):
                             ru_nodes_arr = []
                             ru_nodes_arr.append(ru_nodes)
                             ru_nodes = ru_nodes_arr
@@ -663,18 +660,24 @@ class BuildingSync(object):
                             resources.append(r)
 
                             if ru.get('auc:EnergyResource') == 'Electricity':
-                                new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
+                                new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
                             elif ru.get('auc:EnergyResource') == 'Natural gas':
-                                new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
-
-                    # print("RESOURCES: {}".format(resources))            
+                                new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
 
                     # timeseries
                     timeseriesdata = s.get('auc:TimeSeriesData')
 
+                    # need to know if CalculationMethod is modeled (for meters)
+                    isVirtual = False
+                    calcMethod = node.get('auc:CalculationMethod')
+                    if calcMethod is not None:
+                        isModeled = calcMethod.get('auc:Modeled')
+                        if isModeled is not None:
+                            isVirtual = True
+
                     if timeseriesdata:
                         timeseries = timeseriesdata.get('auc:TimeSeries')
-                        
+
                         if isinstance(timeseries, dict):
                             ts_nodes_arr = []
                             ts_nodes_arr.append(timeseries)
@@ -686,27 +689,26 @@ class BuildingSync(object):
                             # print("SOURCE ID: {}".format(source_id))
                             source_unit = next((item for item in resources if item['id'] == source_id), None)
                             source_unit = source_unit['units'] if source_unit is not None else None
-                            match = next((item for item in new_data['meters'] if item['source_id'] == source_id), None) 
+                            match = next((item for item in new_data['meters'] if item['source_id'] == source_id), None)
                             if match is None:
                                 # this source_id is not yet in meters, add it
                                 meter = {}
                                 meter['source_id'] = source_id
                                 source = next((item for item in Meter.SOURCES if item[1] == 'BuildingSync'), None)
-                                meter['source'] = source[0] # for BuildingSync
-                                # TODO: figure out if virtual or not in calculationMethod
-                                meter['is_virtual'] = True  # for simulated
-                                # Electricity = 8, Natural Gas = 15
-                                type_match = next((item for item in resources if item['id'] == source_id), None)
-                                type_match = type_match['type'].title() if type_match is not None else None
+                                meter['source'] = source[0]  # for BuildingSync
+                                meter['is_virtual'] = isVirtual
+
+                                typeMatch = next((item for item in resources if item['id'] == source_id), None)
+                                typeMatch = typeMatch['type'].title() if typeMatch is not None else None
                                 # print("TYPE MATCH: {}".format(type_match))
-                                the_type = next((item for item in Meter.ENERGY_TYPES if item[1] == type_match), None)
+                                theType = next((item for item in Meter.ENERGY_TYPES if item[1] == typeMatch), None)
                                 # print("the type: {}".format(the_type))
-                                the_type = the_type[0] if the_type is not None else None
-                                meter['type'] = the_type
+                                theType = theType[0] if theType is not None else None
+                                meter['type'] = theType
                                 meter['readings'] = []
                                 new_data['meters'].append(meter)
 
-                            # add reading connected to meter (use resourceID/source_id for matching)        
+                            # add reading connected to meter (use resourceID/source_id for matching)
                             reading = {}
                             # ignoring timezones...pretending all is in UTC for DB and Excel export
                             reading['start_time'] = pytz.utc.localize(datetime.strptime(ts.get('auc:StartTimeStamp'), "%Y-%m-%dT%H:%M:%S"))
@@ -718,7 +720,7 @@ class BuildingSync(object):
                             the_meter = next((item for item in new_data['meters'] if item['source_id'] == source_id), None)
                             if the_meter is not None:
                                 the_meter['readings'].append(reading)
-                            
+
                         # print("METERS: {}".format(new_data['meters']))
 
                     # measures
