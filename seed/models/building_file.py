@@ -21,6 +21,8 @@ from seed.models import (
     PropertyAuditLog,
     AUDIT_IMPORT,
     Scenario,
+    Meter,
+    MeterReading,
     MERGE_STATE_MERGED,
 )
 
@@ -193,7 +195,7 @@ class BuildingFile(models.Model):
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
                 messages['warnings'].append('Scenario does not have a name. ID = %s' % s.get('id'))
-                continue
+                continue  
 
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),
@@ -244,6 +246,35 @@ class BuildingFile(models.Model):
                 scenario.measures.add(measure)
 
             scenario.save()
+
+            # meters
+            for m in s.get('meters', []):
+                # print("BUILDING FILE METER: {}".format(m))
+                # check by scenario_id and source_id
+                meter, _ = Meter.objects.get_or_create(
+                    scenario_id = scenario.id,
+                    source_id = m.get('source_id'),
+                )
+                meter.source = m.get('source')
+                meter.type = m.get('type')
+                meter.is_virtual = m.get('is_virtual')
+                meter.save()
+
+                # meterreadings
+                readings = {
+                    MeterReading(
+                        start_time=mr.get('start_time'),
+                        end_time=mr.get('end_time'),
+                        reading=mr.get('reading'),
+                        source_unit=mr.get('source_unit'),
+                        meter_id=meter.id,
+                    )
+                    for mr
+                    in m.get('readings', [])
+                }
+
+                MeterReading.objects.bulk_create(readings)
+    
 
         if property_view:
             # create a new blank state to merge the two together

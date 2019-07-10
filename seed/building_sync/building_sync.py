@@ -18,6 +18,7 @@ from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.models.measures import _snake_case
+from seed.models.meters import Meter
 
 _log = logging.getLogger(__name__)
 
@@ -637,6 +638,7 @@ class BuildingSync(object):
                                 new_data['annual_site_energy'] = rn.get('auc:SiteEnergyUse')
                                 # print("SITE ENERGY USE: {}".format(new_data['annual_site_energy']))
 
+                    resources = []
                     resource_uses = s.get('auc:ResourceUses')
                     if resource_uses:
                         ru_nodes = resource_uses.get('auc:ResourceUse')
@@ -649,10 +651,70 @@ class BuildingSync(object):
 
                         for ru in ru_nodes:
 
+                            # store resourceID and EnergyResource  -- needed for TimeSeries
+                            r = {}
+                            r['id'] = ru.get('@ID')
+                            r['type'] = ru.get('auc:EnergyResource')
+                            r['units'] = ru.get('auc:ResourceUnits')
+                            resources.append(r)
+
                             if ru.get('auc:EnergyResource') == 'Electricity':
                                 new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
                             elif ru.get('auc:EnergyResource') == 'Natural gas':
                                 new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits') # in MMBtu
+
+                    # print("RESOURCES: {}".format(resources))            
+
+                    # timeseries
+                    timeseriesdata = s.get('auc:TimeSeriesData')
+
+                    if timeseriesdata:
+                        timeseries = timeseriesdata.get('auc:TimeSeries')
+                        
+                        if isinstance(timeseries, dict):
+                            ts_nodes_arr = []
+                            ts_nodes_arr.append(timeseries)
+                            timeseries = ts_nodes_arr
+
+                        new_data['meters'] = []
+                        for ts in timeseries:
+                            source_id = ts.get('auc:ResourceUseID').get('@IDref')
+                            # print("SOURCE ID: {}".format(source_id))
+                            source_unit = next((item for item in resources if item['id'] == source_id), None)
+                            source_unit = source_unit['units'] if source_unit is not None else None
+                            match = next((item for item in new_data['meters'] if item['source_id'] == source_id), None) 
+                            if match is None:
+                                # this source_id is not yet in meters, add it
+                                meter = {}
+                                meter['source_id'] = source_id
+                                source = next((item for item in Meter.SOURCES if item[1] == 'BuildingSync'), None)
+                                meter['source'] = source[0] # for BuildingSync
+                                # TODO: figure out if virtual or not in calculationMethod
+                                meter['is_virtual'] = True  # for simulated
+                                # Electricity = 8, Natural Gas = 15
+                                type_match = next((item for item in resources if item['id'] == source_id), None)
+                                type_match = type_match['type'].title() if type_match is not None else None
+                                # print("TYPE MATCH: {}".format(type_match))
+                                the_type = next((item for item in Meter.ENERGY_TYPES if item[1] == type_match), None)
+                                # print("the type: {}".format(the_type))
+                                the_type = the_type[0] if the_type is not None else None
+                                meter['type'] = the_type
+                                meter['readings'] = []
+                                new_data['meters'].append(meter)
+
+                            # add reading connected to meter (use resourceID/source_id for matching)        
+                            reading = {}
+                            reading['start_time'] = ts.get('auc:StartTimeStamp')
+                            reading['end_time'] = ts.get('auc:EndTimeStamp')
+                            reading['reading'] = ts.get('auc:IntervalReading')
+                            reading['source_id'] = source_id
+                            reading['source_unit'] = source_unit
+                            # append to appropriate meter (or don't import)
+                            the_meter = next((item for item in new_data['meters'] if item['source_id'] == source_id), None)
+                            if the_meter is not None:
+                                the_meter['readings'].append(reading)
+                            
+                        print("METERS: {}".format(new_data['meters']))
 
                     # measures
                     new_data['measures'] = []
