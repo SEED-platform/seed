@@ -134,57 +134,94 @@ class GreenButtonParser(object):
 
     def _parse_type_and_unit(self, raw_data):
         """
-        Uses the kind and uom/powerOfTenMultiplier to parse type and
-        raw unit, respectively.
+        Parses raw XML to read the kind and uom/powerOfTenMultiplier. Using
+        those, an attempt is made to validate the type and unit as a combination
+        that the application accepts.
 
-        For the given type, it first scans the valid units for that type to see
-        if the raw unit (including prefix) can be matched exactly to one of those
-        valid units.
-
-        If an exact match is not found, it scans those valid units again to find
-        an approximate match for the raw base unit (without the prefix). If an
-        approximate match is found, the prefix/powerOfTenMultiplier is used to
-        calculate the multiplier needed to convert readings from the
-        raw unit (including prefix) to the valid unit found as an approximate match.
+        The if the type and unit are parsable and valid, they are returned,
+        otherwise, None is returned as applicable.
         """
         kind_entry = raw_data['feed']['entry'][0]
         kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
         type = self.kind_codes.get(int(kind), None)
 
-        uom_entry = raw_data['feed']['entry'][2]
-        uom = uom_entry['content']['ReadingType']['uom']
+        if type is None:
+            return None, None, 1
+
+        uom_entry = raw_data['feed']['entry'][2]['content']['ReadingType']
+        uom = uom_entry['uom']
         raw_base_unit = self.uom_codes.get(int(uom), '')
 
-        power_of_ten_multiplier = int(uom_entry['content']['ReadingType']['powerOfTenMultiplier'])
-        raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
+        power_of_ten_multiplier = int(uom_entry['powerOfTenMultiplier'])
 
-        raw_unit = "{}{}".format(raw_prefix_unit, raw_base_unit)
-
-        valid_units_for_type = self._thermal_factors[type].keys()
-
-        exact_match_unit = next(
-            (key for key in valid_units_for_type if key.startswith(raw_unit)),
-            None
+        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(
+            type,
+            power_of_ten_multiplier,
+            raw_base_unit
         )
 
-        resulting_unit = None
-        multiplier = 1
-        if exact_match_unit is not None:
-            resulting_unit = exact_match_unit
-        else:
-            approx_base_unit_match = next(
-                (key for key in valid_units_for_type if raw_base_unit in key),
-                None
-            )
-            if approx_base_unit_match is not None:
-                factor_prefix = approx_base_unit_match[0]
-
-                # an exact match is expected for factor_prefix - if not, this should error
-                multiplier = 10**(power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
-
-                resulting_unit = approx_base_unit_match
-
         return type, resulting_unit, multiplier
+
+    def _parse_valid_unit_and_multiplier(self, type, power_of_ten_multiplier, raw_base_unit):
+        """
+        Parses valid/accepted unit and multiplier using the given type and raw
+        base unit. The powerOfTenMultiplier is used to find the raw unit prefix
+        which is used along with the raw base unit to try to accomplish this.
+
+        The 3 scenarios accounted for are the following in order:
+        - prefix and base == valid unit (or "starts with")
+        - base == valid unit
+        - base similar to a valid unit
+
+        In the first scenario, no multiplier is needed since the provided readings
+        are already given in a unit that's understood by the application.
+
+        In the second scenario, the multiplier is generated directly from the
+        powerOfTenMultiplier without any adjustments.
+
+        In the last scenario, the multiplier is generated directly from the
+        powerOfTenMultiplier with an adjustment made to convert the readings
+        into a unit understood by the application.
+
+        If none of these scenarios return a validated unit, None, 1 is returned.
+        """
+        valid_units_for_type = self._thermal_factors[type].keys()
+
+        raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
+        raw_full_unit = "{}{}".format(raw_prefix_unit, raw_base_unit)
+
+        # Check if the raw full unit is an exact match (or left match) with a known valid unit
+        exact_match_full_unit = next(
+            (key for key in valid_units_for_type if key.startswith(raw_full_unit)),
+            None
+        )
+        if exact_match_full_unit is not None:
+            return exact_match_full_unit, 1
+
+        # Check if just the base unit is an exact match with a known valid unit
+        base_unit_only_match = next(
+            (key for key in valid_units_for_type if raw_base_unit == key),
+            None
+        )
+        if base_unit_only_match is not None:
+            multiplier = 10**(power_of_ten_multiplier)
+            return base_unit_only_match, multiplier
+
+        # Check if just the base unit is similar to a known valid unit
+        approx_match_base_unit = next(
+            (key for key in valid_units_for_type if raw_base_unit in key),
+            None
+        )
+        if approx_match_base_unit is not None:
+            # this assumes the prefix is one character long
+            factor_prefix = approx_match_base_unit[0]
+
+            # an exact match is expected for factor_prefix - if not, this should error
+            multiplier = 10**(power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
+
+            return approx_match_base_unit, multiplier
+
+        return None, 1
 
 
 class GeoJSONParser(object):
