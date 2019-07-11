@@ -311,9 +311,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
             # scenarios (and join table)
             # join table
-            ws4.write('A1', 'Property ID', bold)
-            ws4.write('B1', 'Scenario ID', bold)
-            ws4.write('C1', 'Measure ID', bold)
+            ws4.write('A1', 'property_id', bold)
+            ws4.write('B1', 'scenario_id', bold)
+            ws4.write('C1', 'measure_id', bold)
             for index, s in enumerate(datum['scenarios']):
                 # print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
@@ -336,14 +336,14 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     ws4.write(row4, 2, sm.id)
 
             # scenario meter readings
-            ws5.write('A1', 'Scenario ID', bold)
-            ws5.write('B1', 'Meter ID', bold)
-            ws5.write('C1', 'Type', bold)
-            ws5.write('D1', 'Start Time', bold)
-            ws5.write('E1', 'End Time', bold)
-            ws5.write('F1', 'Reading', bold)
-            ws5.write('G1', 'Units', bold)
-            ws5.write('H1', 'Is Virtual', bold)
+            ws5.write('A1', 'scenario_id', bold)
+            ws5.write('B1', 'meter_id', bold)
+            ws5.write('C1', 'type', bold)
+            ws5.write('D1', 'start_time', bold)
+            ws5.write('E1', 'end_time', bold)
+            ws5.write('F1', 'reading', bold)
+            ws5.write('G1', 'units', bold)
+            ws5.write('H1', 'is_virtual', bold)
             # datetime formatting
             date_format = wb.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
 
