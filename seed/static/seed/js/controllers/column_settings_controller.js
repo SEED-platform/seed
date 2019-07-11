@@ -113,6 +113,11 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.save_settings = function () {
         $scope.columns_updated = false;
 
+        if (_.filter($scope.columns, 'is_matching_criteria').length == 0) {
+          Notification.error('Error: There must be at least one matching criteria column.');
+          return;
+        }
+
         var missingDisplayNames = _.filter(columns, {displayName: undefined});
         if (missingDisplayNames.length) {
           Notification.error('Error: ' + missingDisplayNames.length + ' required display name' + (missingDisplayNames.length > 1 ? 's are' : ' is') + ' empty');
