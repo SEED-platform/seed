@@ -580,8 +580,11 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Reports.auc:Report.auc:Scenarios.auc:Scenario',
-                                   data, [])
+
+        # KAF: for now, handle both Reports.Report and Report
+        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Reports.auc:Report.auc:Scenarios.auc:Scenario', data, [])
+        if not scenarios:
+            scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Report.auc:Scenarios.auc:Scenario', data, [])
 
         # check that this is a list; if not, make it a list or the loop won't work correctly
         if isinstance(scenarios, dict):
