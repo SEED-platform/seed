@@ -9,49 +9,57 @@ from django.db import (
 )
 from seed.models import Property, Scenario
 
-from quantityfield.fields import QuantityField
-
 
 class Meter(models.Model):
     COAL_ANTHRACITE = 1
     COAL_BITUMINOUS = 2
     COKE = 3
     DIESEL = 4
-    DISTRICT_CHILLED_WATER = 5
-    DISTRICT_HOT_WATER = 6
-    DISTRICT_STEAM = 7
-    ELECTRICITY = 8
-    ELECTRICITY_ON_SITE_RENEWABLE = 9
-    FUEL_OIL_NO_1 = 10
-    FUEL_OIL_NO_2 = 11
-    FUEL_OIL_NO_4 = 12
+    DISTRICT_CHILLED_WATER_ABSORPTION = 5
+    DISTRICT_CHILLED_WATER_ELECTRIC = 6
+    DISTRICT_CHILLED_WATER_ENGINE = 7
+    DISTRICT_CHILLED_WATER_OTHER = 8
+    DISTRICT_HOT_WATER = 9
+    DISTRICT_STEAM = 10
+    ELECTRICITY_GRID = 11
+    ELECTRICITY_SOLAR = 12
+    ELECTRICITY_WIND = 13
+    FUEL_OIL_NO_1 = 14
+    FUEL_OIL_NO_2 = 15
+    FUEL_OIL_NO_4 = 16
     FUEL_OIL_NO_5_AND_NO_6 = 13
-    KEROSENE = 14
-    NATURAL_GAS = 15
-    OTHER = 16
-    PROPANE = 17
-    WOOD = 18
+    KEROSENE = 18
+    NATURAL_GAS = 19
+    OTHER = 20
+    PROPANE = 21
+    WOOD = 22
+    COST = 23
 
-    # Taken from https://portfoliomanager.zendesk.com/hc/en-us/articles/211025388-Is-there-a-list-of-valid-property-level-energy-meter-types-and-unit-of-measure-combinations-
+    # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
         (COAL_ANTHRACITE, 'Coal (anthracite)'),
         (COAL_BITUMINOUS, 'Coal (bituminous)'),
         (COKE, 'Coke'),
         (DIESEL, 'Diesel'),
-        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),  # This isn't copied exactly
+        (DISTRICT_CHILLED_WATER_ABSORPTION, 'District Chilled Water - Absorption'),
+        (DISTRICT_CHILLED_WATER_ELECTRIC, 'District Chilled Water - Electric'),
+        (DISTRICT_CHILLED_WATER_ENGINE, 'District Chilled Water - Engine'),
+        (DISTRICT_CHILLED_WATER_OTHER, 'District Chilled Water - Other'),
         (DISTRICT_HOT_WATER, 'District Hot Water'),
         (DISTRICT_STEAM, 'District Steam'),
-        (ELECTRICITY, 'Electricity'),
-        (ELECTRICITY_ON_SITE_RENEWABLE, 'Electricity - on site renewable'),
+        (ELECTRICITY_GRID, 'Electric - Grid'),
+        (ELECTRICITY_SOLAR, 'Electric - Solar'),
+        (ELECTRICITY_WIND, 'Electric - Wind'),
         (FUEL_OIL_NO_1, 'Fuel Oil (No. 1)'),
         (FUEL_OIL_NO_2, 'Fuel Oil (No. 2)'),
         (FUEL_OIL_NO_4, 'Fuel Oil (No. 4)'),
-        (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil (No. 5 & No. 6)'),
+        (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil (No. 5 and No. 6)'),
         (KEROSENE, 'Kerosene'),
         (NATURAL_GAS, 'Natural Gas'),
-        (OTHER, 'Other'),
-        (PROPANE, 'Propane and Liquid Propane'),
+        (OTHER, 'Other:'),
+        (PROPANE, 'Propane'),
         (WOOD, 'Wood'),
+        (COST, 'Cost'),
     )
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
@@ -97,7 +105,7 @@ class Meter(models.Model):
         """
         if overlaps_possible:
             reading_strings = [
-                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading.magnitude}, '{reading.source_unit}', {reading.conversion_factor})"
+                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
                 for reading
                 in source_meter.meter_readings.all()
             ]
@@ -141,7 +149,7 @@ class MeterReading(models.Model):
     start_time = models.DateTimeField(db_index=True, primary_key=True)
     end_time = models.DateTimeField(db_index=True)
 
-    reading = QuantityField('kBtu')
+    reading = models.FloatField(null=True)
 
     # The following two fields are tracked for historical purposes
     source_unit = models.CharField(max_length=255, null=True, blank=True)

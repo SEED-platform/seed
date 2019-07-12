@@ -19,8 +19,11 @@ from django.utils.timezone import make_aware
 
 from pytz import timezone
 
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
-
+from seed.models import Meter
+from seed.data_importer.utils import (
+    kbtu_thermal_conversion_factors,
+    usage_point_id,
+)
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Property
 
@@ -34,10 +37,11 @@ class PropertyMeterReadingsExporter():
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id):
+    def __init__(self, property_id, org_id, excluded_meter_ids):
         self._cache_factors = None
+        self._cache_org_country = None
 
-        self.meters = Property.objects.get(pk=property_id).meters.all()
+        self.meters = Property.objects.get(pk=property_id).meters.exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
         self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
         self.tz = timezone(TIME_ZONE)
@@ -45,10 +49,16 @@ class PropertyMeterReadingsExporter():
     @property
     def factors(self):
         if self._cache_factors is None:
-            thermal_conv_pref = Organization.objects.get(pk=self.org_id).get_thermal_conversion_assumption_display()
-            self._cache_factors = kbtu_thermal_conversion_factors(thermal_conv_pref)
+            self._cache_factors = kbtu_thermal_conversion_factors(self._org_country)
 
         return self._cache_factors
+
+    @property
+    def _org_country(self):
+        if self._cache_org_country is None:
+            self._cache_org_country = Organization.objects.get(pk=self.org_id).get_thermal_conversion_assumption_display()
+
+        return self._cache_org_country
 
     def readings_and_column_defs(self, interval):
         if interval == 'Exact':
@@ -82,7 +92,7 @@ class PropertyMeterReadingsExporter():
         time_format = "%Y-%m-%d %H:%M:%S"
 
         for meter in self.meters:
-            type, conversion_factor = self._build_column_def(meter, column_defs)
+            field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
             for meter_reading in meter.meter_readings.all():
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
@@ -92,7 +102,7 @@ class PropertyMeterReadingsExporter():
 
                 start_end_times[times_key]['start_time'] = start_time
                 start_end_times[times_key]['end_time'] = end_time
-                start_end_times[times_key][type] = meter_reading.reading.magnitude / conversion_factor
+                start_end_times[times_key][field_name] = meter_reading.reading / conversion_factor
 
         return {
             'readings': list(start_end_times.values()),
@@ -122,7 +132,7 @@ class PropertyMeterReadingsExporter():
         }
 
         for meter in self.meters:
-            type, conversion_factor = self._build_column_def(meter, column_defs)
+            field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
             min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
             max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
@@ -144,7 +154,7 @@ class PropertyMeterReadingsExporter():
                     if reading_month_total > 0:
                         month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
                         monthly_readings[month_year]['month'] = month_year
-                        monthly_readings[month_year][type] = reading_month_total / conversion_factor
+                        monthly_readings[month_year][field_name] = reading_month_total / conversion_factor
 
                 current_month_time = end_of_month
 
@@ -170,7 +180,7 @@ class PropertyMeterReadingsExporter():
         }
 
         for meter in self.meters:
-            type, conversion_factor = self._build_column_def(meter, column_defs)
+            field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
             min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
             max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
@@ -190,7 +200,7 @@ class PropertyMeterReadingsExporter():
                     if reading_year_total > 0:
                         year = current_year_time.year
                         yearly_readings[year]['year'] = year
-                        yearly_readings[year][type] = reading_year_total / conversion_factor
+                        yearly_readings[year][field_name] = reading_year_total / conversion_factor
 
                 current_year_time = end_of_year
 
@@ -200,17 +210,25 @@ class PropertyMeterReadingsExporter():
         }
 
     def _build_column_def(self, meter, column_defs):
-        type = dict(meter.ENERGY_TYPES)[meter.type]
-        display_unit = self.org_meter_display_settings[type]
-        conversion_factor = self.factors[type][display_unit]
+        type_text = meter.get_type_display()
+        source = 'PM' if meter.source == meter.PORTFOLIO_MANAGER else 'GB'
+        source_id = meter.source_id if source == 'PM' else usage_point_id(meter.source_id)
+        field_name = '{} - {} - {}'.format(type_text, source, source_id)
 
-        column_defs[type] = {
-            'field': type,
-            'displayName': '{} ({})'.format(type, display_unit),
+        if meter.type == Meter.COST:
+            display_unit = "{} Dollars".format(self._org_country)
+            conversion_factor = 1
+        else:
+            display_unit = self.org_meter_display_settings[type_text]
+            conversion_factor = self.factors[type_text][display_unit]
+
+        column_defs[field_name] = {
+            'field': field_name,
+            'displayName': '{} ({})'.format(field_name, display_unit),
             '_filter_type': 'reading',
         }
 
-        return type, conversion_factor
+        return field_name, conversion_factor
 
     def _latest_nonintersecting_index(self, sorted_readings, start_index):
         """
@@ -255,11 +273,11 @@ class PropertyMeterReadingsExporter():
         # Create list to track running maximum and prefill first entry
         n = len(sorted_readings)
         running_max = [0 for _ in range(n)]
-        running_max[0] = sorted_readings[0].reading.magnitude
+        running_max[0] = sorted_readings[0].reading
 
         # Fill the remaining entries in running_max
         for i in range(1, n):
-            curr_max = sorted_readings[i].reading.magnitude
+            curr_max = sorted_readings[i].reading
 
             latest_index = self._latest_nonintersecting_index(sorted_readings, i)
 

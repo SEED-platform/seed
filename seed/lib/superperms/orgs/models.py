@@ -106,7 +106,7 @@ class Organization(models.Model):
 
     # US factors are usable here as the type-unit combinations are the same (though actual factors differ).
     _default_display_meter_units = {
-        type: 'kBtu'
+        type: 'kBtu (thousand Btu)'
         for type, _units
         in kbtu_thermal_conversion_factors("US").items()
     }
@@ -137,7 +137,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = JSONField(default=_default_display_meter_units)
+    display_meter_units = JSONField(default=_default_display_meter_units.copy())
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.

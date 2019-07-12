@@ -144,7 +144,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
     metric = serializers.FloatField(required=False, allow_null=True)
     rating = serializers.CharField(
         required=False, allow_null=True, max_length=100)
-    expiration_date = serializers.DateField()
+    expiration_date = serializers.DateField(allow_null=True, required=False)
     # ensure reuqest.users org matches that of view and assessment
     org_validators = [ASSESSMENT_VALIDATOR, PROPERTY_VIEW_VALIDATOR]
 
