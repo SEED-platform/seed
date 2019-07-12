@@ -6,6 +6,7 @@
 """
 import logging
 
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
@@ -805,3 +806,37 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': mess_or_org
             }, status=status.HTTP_409_CONFLICT)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def matching_criteria_columns(self, request, pk=None):
+        """
+        Retrieve all matching criteria columns for an org.
+        ---
+        response_serializer: OrganizationUsersSerializer
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        matching_criteria_column_names = dict(
+            org.column_set.
+            filter(is_matching_criteria=True).
+            values('table_name').
+            annotate(display_names=ArrayAgg('display_name')).
+            values_list('table_name', 'display_names')
+        )
+
+        return JsonResponse(matching_criteria_column_names)

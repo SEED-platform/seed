@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.mapping', [])
     'suggested_mappings_payload',
     'raw_columns_payload',
     'first_five_rows_payload',
+    'matching_criteria_columns_payload',
     'cycles',
     'mapping_service',
     'spinner_utility',
@@ -32,6 +33,7 @@ angular.module('BE.seed.controller.mapping', [])
       suggested_mappings_payload,
       raw_columns_payload,
       first_five_rows_payload,
+      matching_criteria_columns_payload,
       cycles,
       mapping_service,
       spinner_utility,
@@ -77,6 +79,19 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.show_mapped_buildings = false;
 
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
+
+      $scope.matching_criteria_columns = _.join(
+        _.uniq(matching_criteria_columns_payload.PropertyState.concat(matching_criteria_columns_payload.TaxLotState)),
+        ', '
+      );
+      $scope.property_matching_criteria_columns = _.join(
+        matching_criteria_columns_payload.PropertyState,
+        ', '
+      );
+      $scope.taxlot_matching_criteria_columns = _.join(
+        matching_criteria_columns_payload.TaxLotState,
+        ', '
+      );
 
       $scope.setAllFields = '';
       $scope.setAllFieldsOptions = [{
