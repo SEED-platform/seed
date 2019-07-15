@@ -375,7 +375,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -447,7 +446,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -551,7 +549,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -603,7 +600,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [],
         })
@@ -690,7 +686,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [property_1_electric_meter.id],
         })
@@ -800,7 +795,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [],
         })
@@ -881,7 +875,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Year',
             'excluded_meter_ids': [],
         })

@@ -92,10 +92,12 @@ class MeterViewSet(viewsets.ViewSet):
     def property_meter_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
-        org_id = body['organization_id']
         interval = body['interval']
         excluded_meter_ids = body['excluded_meter_ids']
-        property_id = PropertyView.objects.get(pk=property_view_id).property.id
+
+        property_view = PropertyView.objects.get(pk=property_view_id)
+        property_id = property_view.property.id
+        org_id = property_view.cycle.organization_id
 
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids)
 
