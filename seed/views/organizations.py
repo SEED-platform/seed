@@ -835,8 +835,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.column_set.
             filter(is_matching_criteria=True).
             values('table_name').
-            annotate(display_names=ArrayAgg('display_name')).
-            values_list('table_name', 'display_names')
+            annotate(column_names=ArrayAgg('column_name')).
+            values_list('table_name', 'column_names')
         )
 
         return JsonResponse(matching_criteria_column_names)

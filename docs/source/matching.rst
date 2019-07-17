@@ -5,7 +5,7 @@ What is it?
 -----------
 Within SEED, matching refers to a possible relationship between at least 2 properties or at least 2 tax lots.
 Two properties **match** if they have the same values for some specified field(s).
-These specified fields are called **matching criteria**, and each SEED organization has it's
+These specified fields are called **matching criteria**, and each SEED organization has its
 own set of matching criteria which is customizable by users.
 
 Why does it exist?

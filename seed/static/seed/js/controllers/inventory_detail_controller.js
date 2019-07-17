@@ -291,11 +291,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
               if (_.has(data, 'view_id')) {
                 $state.go('inventory_detail', {
                   inventory_type: 'properties',
-                  view_id: data.view_id,
+                  view_id: data.view_id
                 });
+                var otherMergedRecords = data.match_merged_count - 1;
                 Notification.info({
-                  message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
-                  delay: 10000,
+                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  delay: 10000
                 });
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
@@ -316,11 +317,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
               if (_.has(data, 'view_id')) {
                 $state.go('inventory_detail', {
                   inventory_type: 'taxlots',
-                  view_id: data.view_id,
+                  view_id: data.view_id
                 });
+                var otherMergedRecords = data.match_merged_count - 1;
                 Notification.info({
-                  message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
-                  delay: 10000,
+                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  delay: 10000
                 });
               } else {
                 // In the short term, we're just refreshing the page after a save so the table

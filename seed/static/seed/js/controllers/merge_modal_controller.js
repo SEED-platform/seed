@@ -55,7 +55,10 @@ angular.module('BE.seed.controller.merge_modal', [])
 
         // Concatenate Jurisdiction Tax Lot IDs if inventory_type is property
         if ($scope.inventory_type === 'properties') {
-          var jurisdiction_tax_lot_col = _.find($scope.columns, {column_name: 'jurisdiction_tax_lot_id', table_name: 'TaxLotState'});
+          var jurisdiction_tax_lot_col = _.find($scope.columns, {
+            column_name: 'jurisdiction_tax_lot_id',
+            table_name: 'TaxLotState'
+          });
           if (jurisdiction_tax_lot_col) {
             var values = [];
             _.forEach(cleanedData, function (datum) {
@@ -91,9 +94,10 @@ angular.module('BE.seed.controller.merge_modal', [])
           return matching_service.mergeProperties(state_ids).then(function (data) {
             Notification.success('Successfully merged ' + state_ids.length + ' properties');
             if (_.has(data, 'match_merged_count')) {
+              var otherMergedRecords = data.match_merged_count - 1;
               Notification.info({
-                message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
-                delay: 10000,
+                message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                delay: 10000
               });
             }
             $scope.close();
@@ -108,9 +112,10 @@ angular.module('BE.seed.controller.merge_modal', [])
           return matching_service.mergeTaxlots(state_ids).then(function (data) {
             Notification.success('Successfully merged ' + state_ids.length + ' tax lots');
             if (_.has(data, 'match_merged_count')) {
+              var otherMergedRecords = data.match_merged_count - 1;
               Notification.info({
-                message: data.match_merged_count - 1 + ' other record(s) were matched and merged.',
-                delay: 10000,
+                message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                delay: 10000
               });
             }
             $scope.close();
