@@ -177,10 +177,10 @@ class MetersParser(object):
             start_time = make_aware(unaware_start, timezone=self._tz)
             end_time = make_aware(unaware_end, timezone=self._tz)
 
-            self._parse_meter_readings(details, meter_details, start_time, end_time)
+            successful_parse = self._parse_meter_readings(details, meter_details, start_time, end_time)
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
-            if details.get('Cost ($)', 'Not Available') != 'Not Available':
+            if successful_parse and details.get('Cost ($)', 'Not Available') != 'Not Available':
                 carry_overs = ['property_id', 'source', 'source_id', 'type']
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
                 self._parse_cost_meter_reading(details, meter_details_copy, start_time, end_time)
@@ -249,7 +249,10 @@ class MetersParser(object):
         """
         type_name = details['Meter Type']
         unit = details['Usage Units']
-        conversion_factor = self._kbtu_thermal_conversion_factors[type_name][unit]
+        conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+
+        if conversion_factor is None:
+            return False
 
         meter_details['type'] = Meter.type_lookup[type_name]
 
@@ -271,6 +274,8 @@ class MetersParser(object):
             self._unique_meters[meter_identifier] = meter_details
         else:
             existing_property_meter['readings'].append(meter_reading)
+
+        return True
 
     def _parse_cost_meter_reading(self, details, meter_details, start_time, end_time):
         """

@@ -84,7 +84,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
-         # This file has multiple tabs
+        # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -101,6 +101,40 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'file_id': self.import_file.id,
+            'organization_id': self.org.pk,
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {
+                "parsed_type": "Electric - Grid",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+            {
+                "parsed_type": "Natural Gas",
+                "parsed_unit": "kBtu (thousand Btu)",
+            },
+        ]
+
+        self.assertCountEqual(result_dict.get("validated_type_units"), expectation)
+
+    def test_parsed_meters_confirmation_verifies_energy_type_and_units_and_ignores_invalid_types_and_units(self):
+        filename = "example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file_with_invalids = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse('api:v2:meters-parsed-meters-confirmation')
+
+        post_params = json.dumps({
+            'file_id': import_file_with_invalids.id,
             'organization_id': self.org.pk,
         })
         result = self.client.post(url, post_params, content_type="application/json")
