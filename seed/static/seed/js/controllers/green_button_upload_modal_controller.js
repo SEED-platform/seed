@@ -116,6 +116,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
           $scope.proposed_imports_options = {
             data: result.proposed_imports,
             columnDefs: base_green_button_col_defs,
+            enableColumnResizing: true,
             enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
             enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
             minRowsToShow: grid_rows_to_display(result.proposed_imports)
@@ -130,10 +131,14 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
               field: 'parsed_unit',
               enableHiding: false
             }],
+            enableColumnResizing: true,
             enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
             enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
             minRowsToShow: grid_rows_to_display(result.validated_type_units)
           };
+
+          var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
+          modal_element.addClass('modal-lg');
 
           $scope.step.number = 2;
         }).catch(saveFailure);
@@ -164,6 +169,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
         $scope.import_result_options = {
           data: message,
           columnDefs: col_defs,
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(message)

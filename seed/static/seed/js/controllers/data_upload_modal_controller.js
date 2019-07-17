@@ -210,6 +210,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             field: 'incoming',
             enableHiding: false
           }],
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.proposed_imports)
@@ -224,6 +225,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             field: 'parsed_unit',
             enableHiding: false
           }],
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: result.validated_type_units.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.validated_type_units)
@@ -243,6 +245,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
+
+        var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
+        modal_element.addClass('modal-lg');
 
         $scope.step.number = 15;
       };
@@ -460,6 +465,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         return {
           data: results,
           columnDefs: column_defs,
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: results.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(results)
