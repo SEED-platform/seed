@@ -48,7 +48,9 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.data = property_meter_usage.readings;
       $scope.has_readings = $scope.data.length > 0;
 
-      $scope.meter_selections = _.map(meters, function(meter) {
+      var sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
+
+      $scope.meter_selections = _.map(sorted_meters, function(meter) {
         return {
           selected: true,
           label: meter.type + ' - ' + meter.source + ' - ' + meter.source_id,
