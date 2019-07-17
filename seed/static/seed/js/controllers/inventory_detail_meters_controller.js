@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     'cycles',
     'dataset_service',
     'inventory_service',
+    'inventory_payload',
     'meters',
     'property_meter_usage',
     'spinner_utility',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       cycles,
       dataset_service,
       inventory_service,
+      inventory_payload,
       meters,
       property_meter_usage,
       spinner_utility,
@@ -32,6 +34,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     ) {
       spinner_utility.show();
 
+      $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
       $scope.filler_cycle = cycles.cycles[0].id;
