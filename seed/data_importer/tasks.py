@@ -876,7 +876,7 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
 
-    parser = reader.MCMParser(import_file.local_file)
+    parser = reader.MCMParser(import_file.local_file, 'Meter Entries')
     raw_meter_data = list(parser.data)
 
     meters_parser = MetersParser(org_id, raw_meter_data)
