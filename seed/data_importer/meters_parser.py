@@ -74,10 +74,11 @@ class MetersParser(object):
         self._source_type = source_type
         self._unique_meters = {}
 
+        self._source_to_property_ids = {}  # tracked to reduce the number of database queries
+
         # The following are only relevant/used if property_id isn't explicitly specified
         if property_id is None:
             self._property_link = 'Portfolio Manager ID'
-            self._source_to_property_ids = {}  # tracked to reduce the number of database queries
             self._unlinkable_pm_ids = set()  # to avoid duplicates
 
     @property
@@ -337,17 +338,21 @@ class MetersParser(object):
         """
         summaries = []
         energy_type_lookup = dict(Meter.ENERGY_TYPES)
+        property_ids_to_pm_ids = {v: k for k, v in self._source_to_property_ids.items()}
 
         for meter in self.meter_and_reading_objs:
-            id = meter.get("source_id")
-
-            if meter['source'] == Meter.GREENBUTTON:
-                id = usage_point_id(id)
-
-            summaries.append({
-                'source_id': id,
+            meter_summary = {
                 'type': energy_type_lookup[meter['type']],
                 'incoming': len(meter.get("readings")),
-            })
+            }
+
+            id = meter.get("source_id")
+            if meter['source'] == Meter.PORTFOLIO_MANAGER:
+                meter_summary['source_id'] = id
+                meter_summary['pm_property_id'] = property_ids_to_pm_ids[meter.get("property_id")]
+            else:
+                meter_summary['source_id'] = usage_point_id(id)
+
+            summaries.append(meter_summary)
 
         return summaries

@@ -130,18 +130,22 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         expectation = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
@@ -190,26 +194,32 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         proposed_imports = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
                 "incoming": 2,

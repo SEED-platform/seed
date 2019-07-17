@@ -199,8 +199,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [{
+            field: 'pm_property_id',
+            displayName: 'PM Property ID',
+            enableHiding: false,
+            type: 'string'
+          }, {
             field: 'source_id',
-            displayName: 'Portfolio Manager Meter ID',
+            displayName: 'PM Meter ID',
             enableHiding: false,
             type: 'string'
           }, {
@@ -235,7 +240,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           data: result.unlinkable_pm_ids,
           columnDefs: [{
             field: 'portfolio_manager_id',
-            displayName: 'Portfolio Manager ID',
+            displayName: 'PM Property ID',
             enableHiding: false
           }],
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
@@ -441,6 +446,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       var meter_import_results = function (results) {
         var column_defs = [{
+          field: 'pm_property_id',
+          displayName: 'PM Property ID',
+          enableHiding: false,
+          type: 'string'
+        }, {
           field: 'source_id',
           displayName: 'Portfolio Manager Meter ID',
           enableHiding: false

@@ -377,24 +377,28 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -427,36 +431,42 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Cost",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Cost",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -500,6 +510,7 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
@@ -507,6 +518,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -514,6 +526,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 4,
@@ -521,6 +534,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "Overlapping readings.",
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 4,
