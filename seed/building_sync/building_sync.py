@@ -662,6 +662,7 @@ class BuildingSync(object):
                             r['units'] = ru.get('auc:ResourceUnits')
                             resources.append(r)
 
+                            # just do these 2 types for now
                             if ru.get('auc:EnergyResource') == 'Electricity':
                                 new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
                             elif ru.get('auc:EnergyResource') == 'Natural gas':
@@ -704,7 +705,9 @@ class BuildingSync(object):
                                 typeMatch = next((item for item in resources if item['id'] == source_id), None)
                                 typeMatch = typeMatch['type'].title() if typeMatch is not None else None
                                 # print("TYPE MATCH: {}".format(type_match))
-                                theType = next((item for item in Meter.ENERGY_TYPES if item[1] == typeMatch), None)
+                                # For "Electricity", match on 'Electric - Grid'
+                                tmp_type = "Electric - Grid" if typeMatch == 'Electricity' else typeMatch
+                                theType = next((item for item in Meter.ENERGY_TYPES if item[1] == tmp_type), None)
                                 # print("the type: {}".format(the_type))
                                 theType = theType[0] if theType is not None else None
                                 meter['type'] = theType

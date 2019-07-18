@@ -353,7 +353,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 meters = Meter.objects.filter(scenario_id=scenario_id)
                 for m in meters:
                     # retrieve readings
-                    readings = MeterReading.objects.filter(meter_id=m.id)
+                    readings = MeterReading.objects.filter(meter_id=m.id).order_by('start_time')
                     for r in readings:
                         row5 += 1
                         ws5.write(row5, 0, scenario_id)
@@ -363,8 +363,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
                         ws5.write(row5, 2, the_type)  # use energy type enum to determine reading type
                         ws5.write_datetime(row5, 3, r.start_time, date_format)
                         ws5.write_datetime(row5, 4, r.end_time, date_format)
-                        ws5.write(row5, 5, r.reading.magnitude)
-                        ws5.write(row5, 6, str(r.reading.units).replace('kilobtu', 'kBtu'))
+                        ws5.write(row5, 5, r.reading)  # this is now a float field
+                        ws5.write(row5, 6, r.source_unit)
                         ws5.write(row5, 7, m.is_virtual)
 
         wb.close()
