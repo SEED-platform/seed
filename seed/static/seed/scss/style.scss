@@ -1030,6 +1030,7 @@ a:not([href]) {
           font-family: $font-family-base-narrow;
           white-space: nowrap;
           padding: 6px 10px 5px;
+
           &:not(:last-child) {
             border-right: 1px solid $gray_lighter;
           }
@@ -1112,6 +1113,7 @@ a:not([href]) {
           background: darken($gray_lightest, 13%);
           text-shadow: 0 1px 0 white;
           border-bottom: 1px solid darken($gray_lighter, 10%);
+
           &:not(:last-child) {
             border-right: 1px solid darken($gray_lighter, 10%);
           }
@@ -1525,8 +1527,6 @@ a:not([href]) {
 
       /* Dataset List */
       &.dataset_list {
-        overflow-x: auto;
-
         .replace_file_button {
           float: right;
         }
@@ -2240,7 +2240,7 @@ select {
 
 /* Holds inline form for creating new labels */
 .newLabelInput {
-  margin: 20px 0;
+  margin: 20px;
   border: 1px solid #EEE;
   padding: 10px 10px 5px 10px;
   border-radius: 5px;
@@ -2248,11 +2248,6 @@ select {
 }
 
 #label_admin {
-
-  .table_list_container {
-    border: 1px solid #cdcdcd;
-  }
-
   .sectionLabel {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
   }
@@ -2361,15 +2356,11 @@ select {
 #cycle_admin {
 
   .newCycleInput {
-    margin: 20px 0;
-    border: 1px solid #EEE;
+    margin: 20px;
+    border: 1px solid #eee;
     padding: 10px 10px 5px 10px;
     border-radius: 5px;
-    background-color: #F1F1F1;
-  }
-
-  .table_list_container {
-    border: 1px solid #cdcdcd;
+    background-color: #f1f1f1;
   }
 
   .sectionCycle {
@@ -3055,40 +3046,42 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
   }
 }
 
-#data-quality-admin-table {
+#data-quality-admin-table, #admin-organizations-table, #data-set-list-table, #data-set-detail-table, #organizations-table, #my-organizations-table, #labels-table, #sub-organizations-table {
   tr.disabled {
     opacity: 0.4;
   }
 
-  th {
-    position: sticky;
-    z-index: 1;
+  thead {
+    th {
+      position: sticky;
+      z-index: 1;
 
-    // This is necessary for sticky headers, https://stackoverflow.com/a/45042852
-    &:after {
-      border-bottom: 1px solid darken($gray_lighter, 10%);
-      border-right: 1px solid darken($gray_lighter, 10%);
-      bottom: -1px;
-      content: '';
-      height: 100%;
-      left: 0;
-      pointer-events: none;
-      position: absolute;
-      width: calc(100% + 1px);
+      // This is necessary for sticky headers, https://stackoverflow.com/a/45042852
+      &:after {
+        border-bottom: 1px solid darken($gray_lighter, 10%);
+        border-right: 1px solid darken($gray_lighter, 10%);
+        bottom: -1px;
+        content: '';
+        height: 100%;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        width: calc(100% + 1px);
+      }
+
+      &:last-child:after {
+        border-right: 0 none;
+        width: 100%;
+      }
     }
 
-    &:last-child:after {
-      border-right: 0 none;
-      width: 100%;
+    tr:first-child th {
+      top: 0;
     }
-  }
-
-  tr:first-child th {
-    top: 0;
   }
 }
 
-#column-table {
+#column-table, #members-table {
   input.ng-invalid-required {
     border-color: #dd2c00;
   }
