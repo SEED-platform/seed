@@ -7,7 +7,7 @@ from django.db import (
     connection,
     models,
 )
-from seed.models import Property
+from seed.models import Property, Scenario
 
 
 class Meter(models.Model):
@@ -88,6 +88,13 @@ class Meter(models.Model):
     source_id = models.CharField(max_length=255, null=True, blank=True)
 
     type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
+
+    scenario = models.ForeignKey(
+        Scenario,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
     def copy_readings(self, source_meter, overlaps_possible=True):
         """

@@ -7,7 +7,6 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
-
 import csv
 import datetime
 import io
@@ -27,6 +26,10 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
     ColumnListSetting,
+)
+from seed.models.meters import (
+    Meter,
+    MeterReading
 )
 from seed.models.property_measures import (
     PropertyMeasure
@@ -217,7 +220,9 @@ class TaxLotPropertyViewSet(GenericViewSet):
         scenario_keys = (
             'id', 'name', 'description', 'annual_site_energy_savings',
             'annual_source_energy_savings', 'annual_cost_savings', 'summer_peak_load_reduction',
-            'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message'
+            'winter_peak_load_reduction', 'hdd', 'cdd', 'analysis_state', 'analysis_state_message',
+            'annual_electricity_savings', 'annual_natural_gas_savings', 'annual_site_energy', 'annual_natural_gas_energy',
+            'annual_electricity_energy', 'annual_peak_demand'
         )
         property_measure_keys = (
             'id', 'property_measure_name', 'measure_id', 'cost_mv', 'cost_total_first',
@@ -233,13 +238,14 @@ class TaxLotPropertyViewSet(GenericViewSet):
             record['scenarios'] = scenarios
 
         output = io.BytesIO()
-        wb = xlsxwriter.Workbook(output)
+        wb = xlsxwriter.Workbook(output, {'remove_timezone': True})
 
         # add tabs
         ws1 = wb.add_worksheet('Properties')
         ws2 = wb.add_worksheet('Measures')
         ws3 = wb.add_worksheet('Scenarios')
         ws4 = wb.add_worksheet('Scenario Measure Join Table')
+        ws5 = wb.add_worksheet('Meter Readings')
         bold = wb.add_format({'bold': True})
 
         row = 0
@@ -248,6 +254,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         row3 = 0
         col3 = 0
         row4 = 0
+        row5 = 0
 
         for index, val in enumerate(list(column_name_mappings.values())):
             # Do not write the first element as ID, this causes weird issues with Excel.
@@ -257,6 +264,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 ws1.write(row, index, val, bold)
 
         # iterate over the results to preserve column order and write row.
+        add_m_headers = True
+        add_s_headers = True
         for datum in data:
             row += 1
             id = None
@@ -281,7 +290,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
             # measures
             for index, m in enumerate(datum['measures']):
-                if index == 0:
+                if add_m_headers:
                     # grab headers
                     for key in property_measure_keys:
                         ws2.write(row2, col2, key, bold)
@@ -289,6 +298,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     for key in measure_keys:
                         ws2.write(row2, col2, 'measure ' + key, bold)
                         col2 += 1
+                    add_m_headers = False
 
                 row2 += 1
                 col2 = 0
@@ -301,16 +311,18 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
             # scenarios (and join table)
             # join table
-            ws4.write('A1', 'Property ID', bold)
-            ws4.write('B1', 'Scenario ID', bold)
-            ws4.write('C1', 'Measure ID', bold)
+            ws4.write('A1', 'property_id', bold)
+            ws4.write('B1', 'scenario_id', bold)
+            ws4.write('C1', 'measure_id', bold)
             for index, s in enumerate(datum['scenarios']):
+                # print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
-                if index == 0:
+                if add_s_headers:
                     # grab headers
                     for key in scenario_keys:
                         ws3.write(row3, col3, key, bold)
                         col3 += 1
+                    add_s_headers = False
                 row3 += 1
                 col3 = 0
                 for key in scenario_keys:
@@ -322,6 +334,38 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     ws4.write(row4, 0, id)
                     ws4.write(row4, 1, scenario_id)
                     ws4.write(row4, 2, sm.id)
+
+            # scenario meter readings
+            ws5.write('A1', 'scenario_id', bold)
+            ws5.write('B1', 'meter_id', bold)
+            ws5.write('C1', 'type', bold)
+            ws5.write('D1', 'start_time', bold)
+            ws5.write('E1', 'end_time', bold)
+            ws5.write('F1', 'reading', bold)
+            ws5.write('G1', 'units', bold)
+            ws5.write('H1', 'is_virtual', bold)
+            # datetime formatting
+            date_format = wb.add_format({'num_format': 'yyyy-mm-dd hh:mm:ss'})
+
+            for index, s in enumerate(datum['scenarios']):
+                scenario_id = s.id
+                # retrieve meters
+                meters = Meter.objects.filter(scenario_id=scenario_id)
+                for m in meters:
+                    # retrieve readings
+                    readings = MeterReading.objects.filter(meter_id=m.id).order_by('start_time')
+                    for r in readings:
+                        row5 += 1
+                        ws5.write(row5, 0, scenario_id)
+                        ws5.write(row5, 1, m.id)
+                        the_type = next((item for item in Meter.ENERGY_TYPES if item[0] == m.type), None)
+                        the_type = the_type[1] if the_type is not None else None
+                        ws5.write(row5, 2, the_type)  # use energy type enum to determine reading type
+                        ws5.write_datetime(row5, 3, r.start_time, date_format)
+                        ws5.write_datetime(row5, 4, r.end_time, date_format)
+                        ws5.write(row5, 5, r.reading)  # this is now a float field
+                        ws5.write(row5, 6, r.source_unit)
+                        ws5.write(row5, 7, m.is_virtual)
 
         wb.close()
 
