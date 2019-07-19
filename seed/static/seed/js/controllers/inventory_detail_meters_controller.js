@@ -49,17 +49,16 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.has_readings = $scope.data.length > 0;
 
       var sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
-
       $scope.meter_selections = _.map(sorted_meters, function(meter) {
         return {
           selected: true,
           label: meter.type + ' - ' + meter.source + ' - ' + meter.source_id,
-          value: meter.id,
+          value: meter.id
         };
       });
       $scope.has_meters = $scope.meter_selections.length > 0;
 
-      $scope.meter_selection_toggled = function(is_open) {
+      $scope.meter_selection_toggled = function (is_open) {
         if (!is_open) {
           var updated_selections = _.map(_.filter($scope.meter_selections, ['selected', false]), 'value');
           if (!_.isEqual($scope.excluded_meter_ids, updated_selections)) {

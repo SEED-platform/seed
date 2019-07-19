@@ -25,6 +25,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -36,6 +37,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -72,6 +74,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -100,6 +103,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure

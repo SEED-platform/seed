@@ -149,8 +149,7 @@ var SEED_app = angular.module('BE.seed', [
   $interpolateProvider.startSymbol('{$');
   $interpolateProvider.endSymbol('$}');
   $qProvider.errorOnUnhandledRejections(false);
-}]
-);
+}]);
 
 /**
  * Adds the Django CSRF token to all $http requests
@@ -1119,7 +1118,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
+          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             // if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_properties(1, undefined, undefined, undefined);
             // } else if ($stateParams.inventory_type === 'taxlots') {
@@ -1192,7 +1191,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
           }],
-          labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
+          labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
             return label_service.get_labels([$stateParams.view_id], {
               inventory_type: $stateParams.inventory_type
             });
