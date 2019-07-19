@@ -275,14 +275,14 @@ class ExcelParser(object):
             # rows.next() will return the first row
     """
 
-    def __init__(self, excel_file, *args, **kwargs):
+    def __init__(self, excel_file, sheet_name=None, *args, **kwargs):
         self.cache_headers = []
         self.excel_file = excel_file
-        self.sheet = self._get_sheet(excel_file)
+        self.sheet = self._get_sheet(excel_file, sheet_name)
         self.header_row = self._get_header_row(self.sheet)
         self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
 
-    def _get_sheet(self, f, sheet_index=0):
+    def _get_sheet(self, f, sheet_name=None, sheet_index=0):
         """returns a xlrd sheet
 
         :param f: an open file of type ``file``
@@ -292,7 +292,11 @@ class ExcelParser(object):
         data = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         book = open_workbook(file_contents=data, on_demand=True)
         self._workbook = book  # needed to determine datemode
-        return book.sheet_by_index(sheet_index)
+
+        if sheet_name is None:
+            return book.sheet_by_index(sheet_index)
+        else:
+            return book.sheet_by_name(sheet_name)
 
     def _get_header_row(self, sheet):
         """returns the best guess for the header row
@@ -475,8 +479,8 @@ class MCMParser(object):
 
     """
 
-    def __init__(self, import_file, *args, **kwargs):
-        self.reader = self._get_reader(import_file)
+    def __init__(self, import_file, sheet_name=None, *args, **kwargs):
+        self.reader = self._get_reader(import_file, sheet_name)
         self.seek_to_beginning()
 
         self.import_file = import_file
@@ -488,10 +492,10 @@ class MCMParser(object):
         else:
             self.matching_func = kwargs.get('matching_func')
 
-    def _get_reader(self, import_file):
+    def _get_reader(self, import_file, sheet_name=None):
         """returns a CSV or XLS/XLSX reader or raises an exception"""
         try:
-            return ExcelParser(import_file)
+            return ExcelParser(import_file, sheet_name)
         except XLRDError as e:
             if 'Unsupported format' in str(e):
                 return CSVParser(import_file)

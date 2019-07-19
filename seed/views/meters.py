@@ -29,7 +29,7 @@ class MeterViewSet(viewsets.ViewSet):
         org_id = body['organization_id']
 
         import_file = ImportFile.objects.get(pk=file_id)
-        parser = reader.MCMParser(import_file.local_file)
+        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
         raw_meter_data = list(parser.data)
 
         meters_parser = MetersParser(org_id, raw_meter_data)
