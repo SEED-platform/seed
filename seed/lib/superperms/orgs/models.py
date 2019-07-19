@@ -12,7 +12,6 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import pre_delete
 
-from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.superperms.orgs.exceptions import TooManyNestedOrgs
 
 _log = logging.getLogger(__name__)
@@ -104,11 +103,29 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
-    # US factors are usable here as the type-unit combinations are the same (though actual factors differ).
     _default_display_meter_units = {
-        type: 'kBtu (thousand Btu)'
-        for type, _units
-        in kbtu_thermal_conversion_factors("US").items()
+        'Coal (anthracite)': 'kBtu (thousand Btu)',
+        'Coal (bituminous)': 'kBtu (thousand Btu)',
+        'Coke': 'kBtu (thousand Btu)',
+        'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
+        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
+        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
+        'District Chilled Water - Other': 'kBtu (thousand Btu)',
+        'District Hot Water': 'kBtu (thousand Btu)',
+        'District Steam': 'kBtu (thousand Btu)',
+        'Electric - Grid': 'kWh (thousand Watt-hours)',
+        'Electric - Solar': 'kWh (thousand Watt-hours)',
+        'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
+        'Kerosene': 'kBtu (thousand Btu)',
+        'Natural Gas': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',
+        'Propane': 'kBtu (thousand Btu)',
+        'Wood': 'kBtu (thousand Btu)'
     }
 
     class Meta:

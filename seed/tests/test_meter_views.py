@@ -375,7 +375,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -447,7 +446,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -459,7 +457,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 {
                     'start_time': '2016-01-01 00:00:00',
                     'end_time': '2016-02-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': 597478.9,
+                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
                     'Cost - PM - 5766973-0': 100,
                     'Natural Gas - PM - 5766973-1': 576000.2,
                     'Cost - PM - 5766973-1': 300,
@@ -467,7 +465,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 {
                     'start_time': '2016-02-01 00:00:00',
                     'end_time': '2016-03-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
                     'Cost - PM - 5766973-0': 200,
                     'Natural Gas - PM - 5766973-1': 488000.1,
                     'Cost - PM - 5766973-1': 400,
@@ -484,7 +482,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 },
                 {
                     'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
@@ -551,7 +549,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Exact',
             'excluded_meter_ids': [],
         })
@@ -603,7 +600,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [],
         })
@@ -690,7 +686,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [property_1_electric_meter.id],
         })
@@ -800,7 +795,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Month',
             'excluded_meter_ids': [],
         })
@@ -811,21 +805,21 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': 100000000000000,
+                    'Electric - Grid - PM - 5766973-0': 100000000000000 / 3.41,
                     'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': 548603.7,
+                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
                     'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': 1100,
+                    'Electric - Grid - PM - 5766973-0': 1100 / 3.41,
                 },
                 {
                     'month': 'April 2016',
-                    'Electric - Grid - PM - 5766973-0': 200,
+                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
                 },
             ],
             'column_defs': [
@@ -835,7 +829,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 },
                 {
                     'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kBtu (thousand Btu))',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
@@ -881,7 +875,6 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         post_params = json.dumps({
             'property_view_id': self.property_view_1.id,
-            'organization_id': self.org.pk,
             'interval': 'Year',
             'excluded_meter_ids': [],
         })
