@@ -82,6 +82,7 @@ class MeterUsageImportTest(TestCase):
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
 
+        # This file has multiple tabs
         filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
@@ -182,6 +183,52 @@ class MeterUsageImportTest(TestCase):
         # file should be disassociated from cycle too
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
         self.assertEqual(refreshed_import_file.cycle_id, None)
+
+    def test_import_meter_usage_file_ignores_unknown_types_or_units(self):
+        """
+        Expect to have 3 meters.
+        The first meter belongs to the first property and should have 2 readings.
+        The second meter belongs to the second property and should have 1 reading.
+        The last meter belongs to the second property and should have 1 reading.
+
+        These come from 8 meter usage rows in the .xlsx file (1 per reading)
+        where 4 of them have either an invalid type or unit.
+        """
+        filename = "example-pm-monthly-meter-usage-with-unknown-types-and-units.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file_with_invalids = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle
+        )
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[import_file_with_invalids.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        self.assertEqual(3, Meter.objects.count())
+        self.assertEqual(4, MeterReading.objects.count())
+
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
+        self.assertEqual(refreshed_property_1.meters.all().count(), 1)
+
+        meter_1 = refreshed_property_1.meters.first()
+        self.assertEqual(meter_1.meter_readings.all().count(), 2)
+
+        refreshed_property_2 = Property.objects.get(pk=self.property_2.id)
+        self.assertEqual(refreshed_property_2.meters.all().count(), 2)
+
+        meter_2 = refreshed_property_2.meters.get(type=Meter.ELECTRICITY_GRID)
+        self.assertEqual(meter_2.meter_readings.all().count(), 1)
+
+        meter_3 = refreshed_property_2.meters.get(type=Meter.NATURAL_GAS)
+        self.assertEqual(meter_3.meter_readings.all().count(), 1)
 
     def test_import_meter_usage_file_including_2_cost_meters(self):
         filename = "example-pm-monthly-meter-usage-2-cost-meters.xlsx"
@@ -377,24 +424,28 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -427,36 +478,42 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Cost",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Cost",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
                 "successfully_imported": 2,
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -500,6 +557,7 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
                 "incoming": 2,
@@ -507,6 +565,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
                 "incoming": 2,
@@ -514,6 +573,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
                 "incoming": 4,
@@ -521,6 +581,7 @@ class MeterUsageImportTest(TestCase):
                 "errors": "Overlapping readings.",
             },
             {
+                "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
                 "incoming": 4,
