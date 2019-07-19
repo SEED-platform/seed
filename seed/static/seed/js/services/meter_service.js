@@ -16,7 +16,6 @@ angular.module('BE.seed.service.meter', [])
         if (_.isUndefined(excluded_meter_ids)) excluded_meter_ids = [];
         return $http.post('/api/v2/meters/property_meter_usage/', {
           property_view_id: property_view_id,
-          organization_id: organization_id,
           interval: interval,
           excluded_meter_ids: excluded_meter_ids
         }).then(function (response) {
