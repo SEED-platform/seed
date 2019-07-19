@@ -76,5 +76,5 @@ angular.module('BE.seed.controller.rename_column_modal', [])
         } else {
           return $scope.settings.user_acknowledgement;
         }
-      }
+      };
     }]);
