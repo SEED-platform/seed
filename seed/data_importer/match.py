@@ -318,6 +318,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
 
         if count > 1:
             state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
+            # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(state_ids, org.id, 'System Match', StateClass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:

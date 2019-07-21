@@ -13,8 +13,10 @@ from django.db.models.aggregates import Count
 from seed.models import (
     Column,
     Cycle,
+    PropertyAuditLog,
     PropertyState,
     PropertyView,
+    TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
 )
@@ -77,9 +79,11 @@ def match_merge_in_cycle(view_id, StateClassName):
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
         ViewClass = PropertyView
+        AuditLogClass = PropertyAuditLog
     elif StateClassName == 'TaxLotState':
         StateClass = TaxLotState
         ViewClass = TaxLotView
+        AuditLogClass = TaxLotAuditLog
 
     view = ViewClass.objects.get(pk=view_id)
     org_id = view.state.organization_id
@@ -95,11 +99,17 @@ def match_merge_in_cycle(view_id, StateClassName):
         **matching_criteria
     ).exclude(pk=view.state_id)
 
-    state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
+    state_ids = list(
+        AuditLogClass.objects.
+        filter(state_id__in=Subquery(state_matches.values('id'))).
+        order_by('created').
+        values_list('state_id', flat=True)
+    )
     state_ids.append(view.state_id)  # Excluded above and appended to give merge precedence
     count = len(state_ids)
 
     if count > 1:
+        # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
         merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
         view_id = ViewClass.objects.get(state_id=merged_state.id).id
         return count, view_id

@@ -33,13 +33,21 @@ from seed.models import (
 
 
 def merge_states_with_views(state_ids, org_id, log_name, StateClass):
+    """
+    This merge ultimately ignores merge protection settings and orders merge
+    priority -States by most recent AuditLog.
+
+    Calling the submethods below without the 'ignore_merge_protection' flag or with
+    it set to false is how to specify that merge protection settings should be
+    used.
+    """
     if StateClass == PropertyState:
-        return merge_properties(state_ids, org_id, log_name)
+        return merge_properties(state_ids, org_id, log_name, True)
     else:
-        return merge_taxlots(state_ids, org_id, log_name)
+        return merge_taxlots(state_ids, org_id, log_name, True)
 
 
-def merge_properties(state_ids, org_id, log_name):
+def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False):
     index = 1
     merged_state = None
     while index < len(state_ids):
@@ -51,7 +59,7 @@ def merge_properties(state_ids, org_id, log_name):
             state_1 = merged_state
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
-        merged_state = _merge_log_states(org_id, state_1, state_2, log_name)
+        merged_state = _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -87,7 +95,7 @@ def merge_properties(state_ids, org_id, log_name):
     return merged_state
 
 
-def merge_taxlots(state_ids, org_id, log_name):
+def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
     index = 1
     merged_state = None
     while index < len(state_ids):
@@ -99,7 +107,7 @@ def merge_taxlots(state_ids, org_id, log_name):
             state_1 = merged_state
         state_2 = TaxLotState.objects.get(id=state_ids[index])
 
-        merged_state = _merge_log_states(org_id, state_1, state_2, log_name)
+        merged_state = _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -134,7 +142,7 @@ def merge_taxlots(state_ids, org_id, log_name):
     return merged_state
 
 
-def _merge_log_states(org_id, state_1, state_2, log_name):
+def _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection):
     if isinstance(state_1, PropertyState):
         StateClass = PropertyState
         AuditLogClass = PropertyAuditLog
@@ -144,7 +152,7 @@ def _merge_log_states(org_id, state_1, state_2, log_name):
     priorities = Column.retrieve_priorities(org_id)
     merged_state = StateClass.objects.create(organization_id=org_id)
     merged_state = merging.merge_state(
-        merged_state, state_1, state_2, priorities[StateClass.__name__]
+        merged_state, state_1, state_2, priorities[StateClass.__name__], ignore_merge_protection
     )
 
     state_1_audit_log = AuditLogClass.objects.filter(state=state_1).first()
