@@ -7,6 +7,7 @@
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
 
+from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
 
@@ -15,6 +16,10 @@ from seed.models import (
     Cycle,
     PropertyState,
     PropertyView,
+    Property,
+    PropertyState,
+    PropertyView,
+    TaxLot,
     TaxLotState,
     TaxLotView,
 )
@@ -111,48 +116,116 @@ def match_merge_in_cycle(view_id, StateClassName):
 
 
 def whole_org_match_merge(org_id):
+    # Need to revisit these comments
     """
     Scope: all PropertyViews and TaxLotViews for an Org.
     Algorithm:
         - Start with PropertyViews then repeat for TaxLotViews
-            - For each Cycle,
+        For each Cycle, run match and merges.
             - Looking at the corresponding -States attached to these -Views,...
             - Disregard/ignore any -States where all matching criteria is None (likely a subquery or extra exclude).
             - Group together IDs of -States that match each other.
             - For each group of size larger than 1, run manual merging logic so
             that there's only one record left but make the -AuditLog a "System Match".
+        Across all Cycles, run match and links.
+            -
     """
-    summary = {
-        'PropertyState': {
-            'merged_count': 0,
-            'new_merged_state_ids': []
-        },
-        'TaxLotState': {
-            'merged_count': 0,
-            'new_merged_state_ids': []
-        },
-    }
+    # summary = {
+    #     'PropertyState': {
+    #         'merged_count': 0,
+    #         'new_merged_state_ids': []
+    #     },
+    #     'TaxLotState': {
+    #         'merged_count': 0,
+    #         'new_merged_state_ids': []
+    #     },
+    # }
+
+    cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list('id', flat=True)
 
     for StateClass in (PropertyState, TaxLotState):
         ViewClass = PropertyView if StateClass == PropertyState else TaxLotView
+        CanonicalClass = Property if StateClass == PropertyState else TaxLot
 
         column_names = matching_criteria_column_names(org_id, StateClass.__name__)
-        cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list('id', flat=True)
-        for cycle_id in cycle_ids:
-            existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle_id)
-            matched_id_groups = StateClass.objects.\
-                filter(id__in=Subquery(existing_cycle_views.values('state_id'))).\
-                exclude(**empty_criteria_filter(org_id, StateClass)).\
-                values(*column_names).\
-                annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\
-                values_list('matched_ids', flat=True).\
-                filter(matched_count__gt=1)
+        empty_matching_criteria = empty_criteria_filter(org_id, StateClass)
 
-            for state_ids in matched_id_groups:
-                state_ids.sort()  # Ensures priority given to most recently uploaded record
-                merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+        # Match merge within each Cycle
+        with transaction.atomic():
+            for cycle_id in cycle_ids:
+                # Identify relevant -Views to correctly scope -States
+                existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle_id)
 
-                summary[StateClass.__name__]['merged_count'] += len(state_ids)
-                summary[StateClass.__name__]['new_merged_state_ids'].append(merged_state.id)
+                matched_id_groups = StateClass.objects.\
+                    filter(id__in=Subquery(existing_cycle_views.values('state_id'))).\
+                    exclude(**empty_matching_criteria).\
+                    values(*column_names).\
+                    annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\
+                    values_list('matched_ids', flat=True).\
+                    filter(matched_count__gt=1)
 
-    return summary
+                for state_ids in matched_id_groups:
+                    state_ids.sort()# This should be sorted by auditlog  # Ensures priority given to most recently uploaded record
+                    merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+                    # merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+
+                    # summary[StateClass.__name__]['merged_count'] += len(state_ids)
+                    # summary[StateClass.__name__]['new_merged_state_ids'].append(merged_state.id)
+
+        # Match link across the whole Organization
+        with transaction.atomic():
+            # Append 'state__' to dict keys used for filtering so that filtering can be done across associations
+            state_appended_col_names = {'state__' + col_name for col_name in column_names}
+            state_appended_empty_matching_criteria = {
+                'state__' + col_name: v
+                for col_name, v
+                in empty_matching_criteria.items()
+            }
+
+            # Scope -Views. Those associated to -States with empty critieria are ignored.
+            org_views = ViewClass.objects.\
+                filter(cycle_id__in=cycle_ids).\
+                select_related('state').\
+                exclude(**state_appended_empty_matching_criteria)
+
+            canonical_id_col = 'property_id' if StateClass == PropertyState else 'taxlot_id'
+
+            # Identify all canonical_ids that are only used once.
+            # These are reusable if they remain unlinked.
+            reusable_canonical_ids = org_views.\
+                values(canonical_id_col).\
+                annotate(use_count=Count(canonical_id_col)).\
+                values_list(canonical_id_col, flat=True).\
+                filter(use_count=1)
+
+            link_groups = org_views.\
+                values(*state_appended_col_names).\
+                annotate(
+                    canonical_ids=ArrayAgg(canonical_id_col),
+                    view_ids=ArrayAgg('id'),
+                    link_count=Count('id')
+                ).\
+                values_list('canonical_ids', 'view_ids', 'link_count')
+
+            unused_canonical_ids = []
+            for canonical_ids, view_ids, link_count in link_groups:
+                # If the canonical record was unlinked and is still unlinked, do nothing
+                if link_count == 1 and canonical_ids[0] in reusable_canonical_ids:
+                    continue
+
+                # Otherwise, create a new canonical record, copy meters if applicable, and apply the new record to old -Views
+                new_record = CanonicalClass.objects.create(organization_id=org_id)
+
+                if CanonicalClass == Property:
+                    canonical_ids.sort(reverse=True)  # Ensures priority given to most recently created record
+                    for canonical_id in canonical_ids:
+                        new_record.copy_meters(canonical_id, source_persists=True)
+
+                ViewClass.objects.filter(id__in=view_ids).update(**{canonical_id_col: new_record.id})
+
+                unused_canonical_ids += canonical_ids
+
+            # Delete canonical records that are no longer used.
+            CanonicalClass.objects.filter(id__in=unused_canonical_ids).delete()
+
+    # return summary
