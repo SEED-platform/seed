@@ -408,10 +408,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.export_building_sync_xlsx = function () {
         var filename = 'buildingsync_property_' + $stateParams.view_id + '.xlsx';
-        var profileId = null;
-        if ($scope.currentProfile) {
-          profileId = $scope.currentProfile.id;
-        }
+        // var profileId = null;
+        // if ($scope.currentProfile) {
+        //   profileId = $scope.currentProfile.id;
+        // }
 
         $http.post('/api/v2.1/tax_lot_properties/export/', {
           ids: [$stateParams.view_id],

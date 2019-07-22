@@ -149,8 +149,7 @@ var SEED_app = angular.module('BE.seed', [
   $interpolateProvider.startSymbol('{$');
   $interpolateProvider.endSymbol('$}');
   $qProvider.errorOnUnhandledRejections(false);
-}]
-);
+}]);
 
 /**
  * Adds the Django CSRF token to all $http requests
@@ -487,6 +486,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
         controller: 'inventory_detail_notes_controller',
         resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise;
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
+            });
+            return promise;
+          }],
           notes: ['$stateParams', 'note_service', 'user_service', function ($stateParams, note_service, user_service) {
             var organization_id = user_service.get_organization().id;
             return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
@@ -1108,7 +1121,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service ) {
+          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             // if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_properties(1, undefined, undefined, undefined);
             // } else if ($stateParams.inventory_type === 'taxlots') {
@@ -1181,7 +1194,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
           }],
-          labels_payload: ['$stateParams', 'label_service', 'inventory_payload', function ($stateParams, label_service, inventory_payload) {
+          labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
             return label_service.get_labels([$stateParams.view_id], {
               inventory_type: $stateParams.inventory_type
             });
@@ -1194,6 +1207,18 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_detail_meters.html',
         controller: 'inventory_detail_meters_controller',
         resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise = inventory_service.get_property(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
+            });
+            return promise;
+          }],
           property_meter_usage: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
             var organization_id = user_service.get_organization().id;
             return meter_service.property_meter_usage($stateParams.view_id, organization_id, 'Exact');

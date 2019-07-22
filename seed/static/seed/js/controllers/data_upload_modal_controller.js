@@ -199,8 +199,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [{
+            field: 'pm_property_id',
+            displayName: 'PM Property ID',
+            enableHiding: false,
+            type: 'string'
+          }, {
             field: 'source_id',
-            displayName: 'Portfolio Manager Meter ID',
+            displayName: 'PM Meter ID',
             enableHiding: false,
             type: 'string'
           }, {
@@ -210,6 +215,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             field: 'incoming',
             enableHiding: false
           }],
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: result.proposed_imports.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.proposed_imports)
@@ -224,6 +230,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             field: 'parsed_unit',
             enableHiding: false
           }],
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: result.validated_type_units.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(result.validated_type_units)
@@ -233,7 +240,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           data: result.unlinkable_pm_ids,
           columnDefs: [{
             field: 'portfolio_manager_id',
-            displayName: 'Portfolio Manager ID',
+            displayName: 'PM Property ID',
             enableHiding: false
           }],
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
@@ -243,6 +250,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
         $scope.uploader.in_progress = false;
         $scope.uploader.progress = 0;
+
+        var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
+        modal_element.addClass('modal-lg');
 
         $scope.step.number = 15;
       };
@@ -436,6 +446,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       var meter_import_results = function (results) {
         var column_defs = [{
+          field: 'pm_property_id',
+          displayName: 'PM Property ID',
+          enableHiding: false,
+          type: 'string'
+        }, {
           field: 'source_id',
           displayName: 'Portfolio Manager Meter ID',
           enableHiding: false
@@ -460,6 +475,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         return {
           data: results,
           columnDefs: column_defs,
+          enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: results.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: grid_rows_to_display(results)

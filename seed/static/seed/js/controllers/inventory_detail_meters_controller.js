@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     'cycles',
     'dataset_service',
     'inventory_service',
+    'inventory_payload',
     'meters',
     'property_meter_usage',
     'spinner_utility',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       cycles,
       dataset_service,
       inventory_service,
+      inventory_payload,
       meters,
       property_meter_usage,
       spinner_utility,
@@ -32,6 +34,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     ) {
       spinner_utility.show();
 
+      $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
       $scope.filler_cycle = cycles.cycles[0].id;
@@ -45,16 +48,17 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.data = property_meter_usage.readings;
       $scope.has_readings = $scope.data.length > 0;
 
-      $scope.meter_selections = _.map(meters, function(meter) {
+      var sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
+      $scope.meter_selections = _.map(sorted_meters, function(meter) {
         return {
           selected: true,
           label: meter.type + ' - ' + meter.source + ' - ' + meter.source_id,
-          value: meter.id,
+          value: meter.id
         };
       });
       $scope.has_meters = $scope.meter_selections.length > 0;
 
-      $scope.meter_selection_toggled = function(is_open) {
+      $scope.meter_selection_toggled = function (is_open) {
         if (!is_open) {
           var updated_selections = _.map(_.filter($scope.meter_selections, ['selected', false]), 'value');
           if (!_.isEqual($scope.excluded_meter_ids, updated_selections)) {

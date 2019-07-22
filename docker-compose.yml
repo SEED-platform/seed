@@ -17,7 +17,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: 5
+        max-file: '5'
   db-redis:
     image: redis:5.0.1
   web:
@@ -49,7 +49,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: 5
+        max-file: '5'
   web-celery:
     image: seedplatform/seed:latest
     build: .
@@ -72,7 +72,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: 5
+        max-file: '5'
   oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
     image: seedplatform/oep:1.2
@@ -83,7 +83,7 @@ services:
     logging:
       options:
         max-size: 50m
-        max-file: 5
+        max-file: '5'
 volumes:
   seed_pgdata:
     external: true

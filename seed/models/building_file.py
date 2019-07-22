@@ -21,6 +21,8 @@ from seed.models import (
     PropertyAuditLog,
     AUDIT_IMPORT,
     Scenario,
+    Meter,
+    MeterReading,
     MERGE_STATE_MERGED,
 )
 
@@ -209,6 +211,12 @@ class BuildingFile(models.Model):
             scenario.hdd_base_temperature = s.get('hdd_base_temperature')
             scenario.cdd = s.get('cdd')
             scenario.cdd_base_temperature = s.get('cdd_base_temperature')
+            scenario.annual_electricity_savings = s.get('annual_electricity_savings')
+            scenario.annual_natural_gas_savings = s.get('annual_natural_gas_savings')
+            scenario.annual_site_energy = s.get('annual_site_energy')
+            scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
+            scenario.annual_electricity_energy = s.get('annual_electricity_energy')
+            scenario.annual_peak_demand = s.get('annual_peak_demand')
 
             # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
             #                                       default=TEMPORAL_STATUS_CURRENT)
@@ -238,6 +246,35 @@ class BuildingFile(models.Model):
                 scenario.measures.add(measure)
 
             scenario.save()
+
+            # meters
+            for m in s.get('meters', []):
+                # print("BUILDING FILE METER: {}".format(m))
+                # check by scenario_id and source_id
+                meter, _ = Meter.objects.get_or_create(
+                    scenario_id=scenario.id,
+                    source_id=m.get('source_id'),
+                )
+                meter.source = m.get('source')
+                meter.type = m.get('type')
+                meter.is_virtual = m.get('is_virtual')
+                meter.save()
+
+                # meterreadings
+                # TODO: need to check that these are in kBtu already?
+                readings = {
+                    MeterReading(
+                        start_time=mr.get('start_time'),
+                        end_time=mr.get('end_time'),
+                        reading=mr.get('reading'),
+                        source_unit=mr.get('source_unit'),
+                        meter_id=meter.id,
+                    )
+                    for mr
+                    in m.get('readings', [])
+                }
+
+                MeterReading.objects.bulk_create(readings)
 
         if property_view:
             # create a new blank state to merge the two together

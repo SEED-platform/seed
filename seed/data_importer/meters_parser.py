@@ -74,10 +74,11 @@ class MetersParser(object):
         self._source_type = source_type
         self._unique_meters = {}
 
+        self._source_to_property_ids = {}  # tracked to reduce the number of database queries
+
         # The following are only relevant/used if property_id isn't explicitly specified
         if property_id is None:
             self._property_link = 'Portfolio Manager ID'
-            self._source_to_property_ids = {}  # tracked to reduce the number of database queries
             self._unlinkable_pm_ids = set()  # to avoid duplicates
 
     @property
@@ -176,10 +177,10 @@ class MetersParser(object):
             start_time = make_aware(unaware_start, timezone=self._tz)
             end_time = make_aware(unaware_end, timezone=self._tz)
 
-            self._parse_meter_readings(details, meter_details, start_time, end_time)
+            successful_parse = self._parse_meter_readings(details, meter_details, start_time, end_time)
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
-            if details.get('Cost ($)', 'Not Available') != 'Not Available':
+            if successful_parse and details.get('Cost ($)', 'Not Available') != 'Not Available':
                 carry_overs = ['property_id', 'source', 'source_id', 'type']
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
                 self._parse_cost_meter_reading(details, meter_details_copy, start_time, end_time)
@@ -248,7 +249,10 @@ class MetersParser(object):
         """
         type_name = details['Meter Type']
         unit = details['Usage Units']
-        conversion_factor = self._kbtu_thermal_conversion_factors[type_name][unit]
+        conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+
+        if conversion_factor is None:
+            return False
 
         meter_details['type'] = Meter.type_lookup[type_name]
 
@@ -270,6 +274,8 @@ class MetersParser(object):
             self._unique_meters[meter_identifier] = meter_details
         else:
             existing_property_meter['readings'].append(meter_reading)
+
+        return True
 
     def _parse_cost_meter_reading(self, details, meter_details, start_time, end_time):
         """
@@ -337,17 +343,21 @@ class MetersParser(object):
         """
         summaries = []
         energy_type_lookup = dict(Meter.ENERGY_TYPES)
+        property_ids_to_pm_ids = {v: k for k, v in self._source_to_property_ids.items()}
 
         for meter in self.meter_and_reading_objs:
-            id = meter.get("source_id")
-
-            if meter['source'] == Meter.GREENBUTTON:
-                id = usage_point_id(id)
-
-            summaries.append({
-                'source_id': id,
+            meter_summary = {
                 'type': energy_type_lookup[meter['type']],
                 'incoming': len(meter.get("readings")),
-            })
+            }
+
+            id = meter.get("source_id")
+            if meter['source'] == Meter.PORTFOLIO_MANAGER:
+                meter_summary['source_id'] = id
+                meter_summary['pm_property_id'] = property_ids_to_pm_ids[meter.get("property_id")]
+            else:
+                meter_summary['source_id'] = usage_point_id(id)
+
+            summaries.append(meter_summary)
 
         return summaries

@@ -13,6 +13,8 @@ from django.test import TestCase
 from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
+from seed.models.scenarios import Scenario
+from seed.models.meters import Meter, MeterReading
 from seed.utils.organizations import create_organization
 
 
@@ -84,6 +86,30 @@ class TestBuildingFiles(TestCase):
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+    def test_buildingsync_bricr_import(self):
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status)
+        self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        # look for scenarios, meters, and meterreadings
+        scenarios = Scenario.objects.filter(property_state_id=property_state.id)
+        self.assertTrue(len(scenarios) > 0)
+        meters = Meter.objects.filter(scenario_id=scenarios[0].id)
+        self.assertTrue(len(meters) > 0)
+        readings = MeterReading.objects.filter(meter_id=meters[0].id)
+        self.assertTrue(len(readings) > 0)
 
     def test_hpxml_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')

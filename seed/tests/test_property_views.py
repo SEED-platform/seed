@@ -479,6 +479,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
 
     def test_properties_merge_without_losing_meters_from_different_sources_nonoverlapping(self):
         # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # This file has multiple tabs
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
         pm_import_file = ImportFile.objects.create(
