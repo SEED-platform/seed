@@ -3,12 +3,13 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0104_auto_20190509_1854'),
+        ('seed', '0105_auto_20190613_1251'),
     ]
 
     operations = [
@@ -41,5 +42,10 @@ class Migration(migrations.Migration):
             model_name='scenario',
             name='annual_site_energy',
             field=models.FloatField(null=True),
+        ),
+        migrations.AddField(
+            model_name='meter',
+            name='scenario',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.Scenario'),
         ),
     ]
