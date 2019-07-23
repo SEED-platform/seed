@@ -1,0 +1,21 @@
+<div class="modal-header" ng-switch on="step.number">
+    <h4 class="modal-title" translate>Review Changes</h4>
+</div>
+
+<div class="modal-body no_bottom_padding">
+    <div class="container-fluid">
+        <div class="row" style="padding-bottom: 30px;">
+            <div ui-grid="change_summary" ui-grid-resize-columns></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer container-fluid">
+    <div class="row text-center">
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" translate>Confirm</button>
+    </div>
+
+    <div class="row text-center">
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Cancel</button>
+    </div>
+</div>

@@ -139,22 +139,43 @@ angular.module('BE.seed.controller.column_settings', [])
           return;
         }
 
-        var promises = [];
-        _.forOwn(diff, function (delta, column_id) {
-          promises.push(columns_service.patch_column_for_org($scope.org.id, column_id, delta));
-        });
+        var modal_instance = $scope.open_confirm_column_settings_modal();
+        modal_instance.result.then(function () {  // User confirmed
+          var promises = [];
+          _.forOwn(diff, function (delta, column_id) {
+            promises.push(columns_service.patch_column_for_org($scope.org.id, column_id, delta));
+          });
 
-        spinner_utility.show();
-        $q.all(promises).then(function (/*results*/) {
-          $scope.columns_updated = true;
-          modified_service.resetModified();
-          var totalChanged = _.keys(diff).length;
-          Notification.success('Successfully updated ' + totalChanged + ' column' + (totalChanged === 1 ? '' : 's'));
-          $state.reload();
-        }, function (data) {
-          $scope.$emit('app_error', data);
-        }).finally(function () {
-          spinner_utility.hide();
+          spinner_utility.show();
+          $q.all(promises).then(function (/*results*/) {
+            $scope.columns_updated = true;
+            modified_service.resetModified();
+            var totalChanged = _.keys(diff).length;
+            Notification.success('Successfully updated ' + totalChanged + ' column' + (totalChanged === 1 ? '' : 's'));
+            $state.reload();
+          }, function (data) {
+            $scope.$emit('app_error', data);
+          }).finally(function () {
+            spinner_utility.hide();
+          });
+        }).catch(function () {  // User cancelled
+          return;
+        });
+      };
+
+      $scope.open_confirm_column_settings_modal = function() {
+        return $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/confirm_column_settings_modal.html',
+          controller: 'confirm_column_settings_modal_controller',
+          size: "lg",
+          resolve: {
+              proposed_changes: function () {
+                return diff;
+              },
+              all_columns: function () {
+                return $scope.columns;
+              },
+          },
         });
       };
 

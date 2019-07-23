@@ -40,6 +40,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.api',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
+  'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.data_quality_admin',
