@@ -115,31 +115,48 @@ def match_merge_in_cycle(view_id, StateClassName):
         return 0, None
 
 
-def whole_org_match_merge(org_id):
-    # Need to revisit these comments
+def whole_org_match_merge_link(org_id):
     """
-    Scope: all PropertyViews and TaxLotViews for an Org.
-    Algorithm:
-        - Start with PropertyViews then repeat for TaxLotViews
+    For a given organization, run a match merge round for each cycle in
+    isolation. Afterwards, run a match link round across all cycles at once.
+
+    In this context, a Property/TaxLot Set refers to the -State, canonical
+    record, and -View records associated by the -View.
+
+    Algorithm - Run for Property Sets then for TaxLot Sets:
         For each Cycle, run match and merges.
-            - Looking at the corresponding -States attached to these -Views,...
-            - Disregard/ignore any -States where all matching criteria is None (likely a subquery or extra exclude).
-            - Group together IDs of -States that match each other.
-            - For each group of size larger than 1, run manual merging logic so
-            that there's only one record left but make the -AuditLog a "System Match".
+            - Focus on -States associated with -Views in this Cycle.
+            - Ignore -States where all matching criteria is None.
+            - Group -State IDs by whether they match each other.
+            - Ignore each groups of size size 1 (not matched).
+            - For each remaining group, run merge logic so that there's only one
+            Set left. Any labels, notes, pairings, and meters are transferred to
+            and persisted in this Set.
+
         Across all Cycles, run match and links.
-            -
+            - Focus on all -States and canonical records associated to -Views
+            in this organization.
+            - Ignore -Views with -States where all matching criteria is None.
+            - Identify canonical records that currently have no links. These are
+            unaffected during this process if the record remains unlinked.
+            - Group canonical IDs and -View IDs according to whether their
+            associated -States match each other.
+            - Ignore groups of size 1 where the single member was previously
+            unlinked as well.
+            - For each remaining group, apply a new canonical record to the
+            each of -Views in this group. Any meters are transferred to this
+            new canonical record.
     """
-    # summary = {
-    #     'PropertyState': {
-    #         'merged_count': 0,
-    #         'new_merged_state_ids': []
-    #     },
-    #     'TaxLotState': {
-    #         'merged_count': 0,
-    #         'new_merged_state_ids': []
-    #     },
-    # }
+    summary = {
+        'PropertyState': {
+            'merged_count': 0,
+            'linked_sets_count': 0,
+        },
+        'TaxLotState': {
+            'merged_count': 0,
+            'linked_sets_count': 0,
+        },
+    }
 
     cycle_ids = Cycle.objects.filter(organization_id=org_id).values_list('id', flat=True)
 
@@ -153,11 +170,10 @@ def whole_org_match_merge(org_id):
         # Match merge within each Cycle
         with transaction.atomic():
             for cycle_id in cycle_ids:
-                # Identify relevant -Views to correctly scope -States
-                existing_cycle_views = ViewClass.objects.filter(cycle_id=cycle_id)
+                view_in_cycle = ViewClass.objects.filter(cycle_id=cycle_id)
 
                 matched_id_groups = StateClass.objects.\
-                    filter(id__in=Subquery(existing_cycle_views.values('state_id'))).\
+                    filter(id__in=Subquery(view_in_cycle.values('state_id'))).\
                     exclude(**empty_matching_criteria).\
                     values(*column_names).\
                     annotate(matched_ids=ArrayAgg('id'), matched_count=Count('id')).\
@@ -165,12 +181,9 @@ def whole_org_match_merge(org_id):
                     filter(matched_count__gt=1)
 
                 for state_ids in matched_id_groups:
-                    state_ids.sort()# This should be sorted by auditlog  # Ensures priority given to most recently uploaded record
                     merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
-                    # merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
 
-                    # summary[StateClass.__name__]['merged_count'] += len(state_ids)
-                    # summary[StateClass.__name__]['new_merged_state_ids'].append(merged_state.id)
+                    summary[StateClass.__name__]['merged_count'] += len(state_ids)
 
         # Match link across the whole Organization
         with transaction.atomic():
@@ -182,7 +195,7 @@ def whole_org_match_merge(org_id):
                 in empty_matching_criteria.items()
             }
 
-            # Scope -Views. Those associated to -States with empty critieria are ignored.
+            # Scope -View - ignoring those associated to -States with empty matching critieria.
             org_views = ViewClass.objects.\
                 filter(cycle_id__in=cycle_ids).\
                 select_related('state').\
@@ -190,8 +203,7 @@ def whole_org_match_merge(org_id):
 
             canonical_id_col = 'property_id' if StateClass == PropertyState else 'taxlot_id'
 
-            # Identify all canonical_ids that are only used once.
-            # These are reusable if they remain unlinked.
+            # Identify all canonical_ids that are used once and are potentially reusable
             reusable_canonical_ids = org_views.\
                 values(canonical_id_col).\
                 annotate(use_count=Count(canonical_id_col)).\
@@ -217,15 +229,17 @@ def whole_org_match_merge(org_id):
                 new_record = CanonicalClass.objects.create(organization_id=org_id)
 
                 if CanonicalClass == Property:
-                    canonical_ids.sort(reverse=True)  # Ensures priority given to most recently created record
+                    canonical_ids.sort(reverse=True)  # Ensures priority given by most recently created canonical record
                     for canonical_id in canonical_ids:
                         new_record.copy_meters(canonical_id, source_persists=True)
 
                 ViewClass.objects.filter(id__in=view_ids).update(**{canonical_id_col: new_record.id})
+
+                summary[StateClass.__name__]['linked_sets_count'] += 1
 
                 unused_canonical_ids += canonical_ids
 
             # Delete canonical records that are no longer used.
             CanonicalClass.objects.filter(id__in=unused_canonical_ids).delete()
 
-    # return summary
+    return summary

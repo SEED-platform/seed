@@ -27,7 +27,7 @@ from seed.models import (
 )
 from seed.utils.match import (
     match_merge_in_cycle,
-    whole_org_match_merge,
+    whole_org_match_merge_link,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -647,7 +647,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_whole_org_match_merge(self):
+    def test_whole_org_match_merge_link(self):
         """
         The set up for this test is lengthy and includes multiple Property sets
         and TaxLot sets across multiple Cycles. In this context, a "set"
@@ -838,8 +838,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
             values_list('taxlot_id', flat=True)
         )
 
-        whole_org_match_merge(self.org.id)
-        # summary = whole_org_match_merge(self.org.id)
+        summary = whole_org_match_merge_link(self.org.id)
 
         """
         Now that the set up is complete, test the state of both property and
@@ -936,8 +935,11 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         self.assertTrue(TaxLotView.objects.filter(state_id=tls_25.id).exists())
         self.assertTrue(TaxLotView.objects.filter(state_id=tls_26.id).exists())
 
-        # Check Merges occurred correctly, with priority given to newer -States as evidenced by 'city' values
-        # Each Cycle should have 4 PropertyStates and 4 TaxLotStates with unique cities in each Cycle.
+        """
+        Check Merges occurred correctly, with priority given to most recently
+        updated or, in this case, newer -States as evidenced by 'city' values
+        Each Cycle should have 4 PropertyStates and 4 TaxLotStates with unique cities in each Cycle.
+        """
         cycle_1_pviews = PropertyView.objects.filter(cycle_id=self.cycle_1.id)
         cycle_1_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_1_pviews.values('state_id')))
 
@@ -974,41 +976,32 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         self.assertEqual(1, cycle_2_tlstates.filter(city='Null Fields 2').count())
         self.assertEqual(1, cycle_2_tlstates.filter(city='Estes Park').count())
 
-        # # Need to revisit this
-        # # Finally, check method returned expected summary
-        # expected_summary = {
-        #     'PropertyState': {
-        #         'merged_count': 7,
-        #         'new_merged_state_ids': [
-        #             cycle_1_pstates.filter(city='Denver').get().id,
-        #             cycle_1_pstates.filter(city='Colorado Springs').get().id,
-        #             cycle_2_pstates.filter(city='Philadelphia').get().id,
-        #         ]
-        #     },
-        #     'TaxLotState': {
-        #         'merged_count': 7,
-        #         'new_merged_state_ids': [
-        #             cycle_1_tlstates.filter(city='Denver').get().id,
-        #             cycle_1_tlstates.filter(city='Colorado Springs').get().id,
-        #             cycle_2_tlstates.filter(city='Philadelphia').get().id,
-        #         ]
-        #     },
-        # }
-        #
-        # self.assertEqual(
-        #     summary['PropertyState']['merged_count'],
-        #     expected_summary['PropertyState']['merged_count']
-        # )
-        # self.assertEqual(
-        #     summary['TaxLotState']['merged_count'],
-        #     expected_summary['TaxLotState']['merged_count']
-        # )
-        #
-        # self.assertCountEqual(
-        #     summary['PropertyState']['new_merged_state_ids'],
-        #     expected_summary['PropertyState']['new_merged_state_ids']
-        # )
-        # self.assertCountEqual(
-        #     summary['TaxLotState']['new_merged_state_ids'],
-        #     expected_summary['TaxLotState']['new_merged_state_ids']
-        # )
+        # Finally, check method returned expected summary
+        expected_summary = {
+            'PropertyState': {
+                'merged_count': 7,
+                'linked_sets_count': 2,
+            },
+            'TaxLotState': {
+                'merged_count': 7,
+                'linked_sets_count': 2,
+            },
+        }
+
+        self.assertEqual(
+            summary['PropertyState']['merged_count'],
+            expected_summary['PropertyState']['merged_count']
+        )
+        self.assertEqual(
+            summary['TaxLotState']['merged_count'],
+            expected_summary['TaxLotState']['merged_count']
+        )
+
+        self.assertEqual(
+            summary['PropertyState']['linked_sets_count'],
+            expected_summary['PropertyState']['linked_sets_count']
+        )
+        self.assertEqual(
+            summary['TaxLotState']['linked_sets_count'],
+            expected_summary['TaxLotState']['linked_sets_count']
+        )
