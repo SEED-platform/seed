@@ -617,18 +617,20 @@ class PropertyState(models.Model):
         SimulationClass = apps.get_model('seed', 'Simulation')
         ScenarioClass = apps.get_model('seed', 'Scenario')
         PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
+        MeterClass = apps.get_model('seed', 'Meter')
+        MeterReadingClass = apps.get_model('seed', 'MeterReading')
 
         # TODO: get some items off of this property view - labels and eventually notes
 
         # collect the relationships
-        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
-                               [x for x in state1.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()] + [x for x in
-                                                                     state1.building_files.all()]
+        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
+
+        building_files = [x for x in state2.building_files.all()]
+
         simulations = [x for x in
-                       SimulationClass.objects.filter(property_state__in=[state1, state2])]
+                       SimulationClass.objects.filter(property_state=state2)]
         measures = [x for x in
-                    PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
+                    PropertyMeasureClass.objects.filter(property_state=state2)]
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -693,11 +695,42 @@ class PropertyState(models.Model):
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
+
                 # create a new scenario from the old one
                 scenario = ScenarioClass.objects.get(pk=scenario_id)
+
+                # first get meters and meterreadings
+                meters = MeterClass.objects.filter(scenario_id=scenario_id)
+
                 scenario.pk = None
                 scenario.property_state = merged_state
                 scenario.save()  # save to get new id
+
+                # this feels wasteful but I guess it is the pattern...
+                for m in meters:
+
+                    # first get all readings
+                    readings = MeterReadingClass.objects.filter(meter_id=m.id)
+
+                    # then duplicate
+                    meter = MeterClass.objects.get(pk=m.id)
+                    meter.pk = None
+                    meter.scenario_id = scenario.id
+                    meter.save()  # save to get new id / association
+
+                    new_readings = {
+                        MeterReadingClass(
+                            start_time=mr.start_time,
+                            end_time=mr.end_time,
+                            reading=mr.reading,
+                            source_unit=mr.source_unit,
+                            meter_id=meter.id,
+                        )
+                        for mr
+                        in readings
+                    }
+
+                    MeterReadingClass.objects.bulk_create(new_readings)
 
                 # get the measures
                 measures = PropertyMeasureClass.objects.filter(pk__in=measure_list)

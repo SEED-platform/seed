@@ -668,7 +668,7 @@ class BuildingSync(object):
                             if ru.get('auc:EnergyResource') == 'Electricity':
                                 new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
                                 # get demand as well
-                                new_data['annual_peak_demand'] = ru.get('auc:AnnualPeakConsistentUnits') # in KW
+                                new_data['annual_peak_demand'] = ru.get('auc:AnnualPeakConsistentUnits')  # in KW
                             elif ru.get('auc:EnergyResource') == 'Natural gas':
                                 new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
 
