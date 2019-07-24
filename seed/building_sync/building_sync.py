@@ -637,10 +637,11 @@ class BuildingSync(object):
                             resource_nodes = resource_nodes_arr
 
                         for rn in resource_nodes:
-                            # print("RN: {}".format(rn))
                             if rn.get('auc:EndUse') == 'All end uses':
                                 new_data['annual_site_energy'] = rn.get('auc:SiteEnergyUse')
-                                # print("SITE ENERGY USE: {}".format(new_data['annual_site_energy']))
+                                new_data['annual_site_energy_use_intensity'] = rn.get('auc:SiteEnergyUseIntensity')
+                                new_data['annual_source_energy'] = rn.get('auc:SourceEnergyUse')
+                                new_data['annual_source_energy_use_intensity'] = rn.get('auc:SourceEnergyUseIntensity')
 
                     resources = []
                     resource_uses = s.get('auc:ResourceUses')
@@ -665,6 +666,8 @@ class BuildingSync(object):
                             # just do these 2 types for now
                             if ru.get('auc:EnergyResource') == 'Electricity':
                                 new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
+                                # get demand as well
+                                new_data['annual_peak_demand'] = ru.get('auc:AnnualPeakConsistentUnits') # in KW
                             elif ru.get('auc:EnergyResource') == 'Natural gas':
                                 new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
 
