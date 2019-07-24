@@ -607,6 +607,7 @@ class BuildingSync(object):
                         new_data['reference_case'] = ref_case.get('@IDref')
                     # fixed naming of existing scenario fields
                     new_data['annual_site_energy_savings'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    new_data['annual_source_energy_savings'] = node.get('auc:AnnualSavingsSourceEnergy')
                     new_data['annual_cost_savings'] = node.get('auc:AnnualSavingsCost')
 
                     # new scenario fields

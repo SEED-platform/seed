@@ -228,7 +228,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         'annual_site_energy': 'annual_site_energy_kbtu', 'annual_site_energy_use_intensity': 'annual_site_energy_use_intensity_kbtu_ft2', 
         'annual_source_energy': 'annual_source_energy_kbtu', 'annual_source_energy_use_intensity': 'annual_source_energy_use_intensity_kbtu_ft2', 
         'annual_natural_gas_energy': 'annual_natural_gas_energy_mmbtu', 'annual_electricity_energy': 'annual_electricity_energy_mmbtu', 
-        'annual_peak_demand': 'annual_peak_demand_kw'
+        'annual_peak_demand': 'annual_peak_demand_kw', 'annual_electricity_savings': 'annual_electricity_savings_kbtu', 'annual_natural_gas_savings': 'annual_natural_gas_savings_kbtu'
         }
 
         property_measure_keys = (
