@@ -115,6 +115,106 @@ def match_merge_in_cycle(view_id, StateClassName):
         return 0, None
 
 
+def match_merge_link(view_id, StateClassName):
+    if StateClassName == 'PropertyState':
+        CanonicalClass = Property
+        StateClass = PropertyState
+        ViewClass = PropertyView
+        AuditLogClass = PropertyAuditLog
+        canonical_id_col = 'property_id'
+    elif StateClassName == 'TaxLotState':
+        CanonicalClass = TaxLot
+        StateClass = TaxLotState
+        ViewClass = TaxLotView
+        AuditLogClass = TaxLotAuditLog
+        canonical_id_col = 'taxlot_id'
+
+    view = ViewClass.objects.get(pk=view_id)
+    org_id = view.state.organization_id
+    view_cycle_id = view.cycle_id
+
+    # Check if associated -State has empty matching criteria.
+    if StateClass.objects.filter(pk=view.state_id, **empty_criteria_filter(org_id, StateClass)).exists():
+        return
+
+    matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
+    state_appended_matching_criteria = {
+        'state__' + col_name: v
+        for col_name, v
+        in matching_criteria.items()
+    }
+
+    # Get all matching views
+    matching_views = ViewClass.objects.\
+        prefetch_related('state').\
+        filter(**state_appended_matching_criteria)
+
+    # Group them by cycle and capture state_ids to be merged
+    states_to_merge = matching_views.values('cycle_id').\
+        annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id')).\
+        filter(match_count__gt=1).\
+        values_list('state_ids', flat=True)
+
+    for state_ids in states_to_merge:
+        ordered_ids = list(
+            AuditLogClass.objects.
+            filter(state_id__in=state_ids).
+            order_by('created').
+            values_list('state_id', flat=True)
+        )
+        merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+
+    # Account for case when incoming view was part of in-Cycle merges...
+    refreshed_view = matching_views.get(cycle_id=view_cycle_id)
+
+    """
+    Amongst the matched views excluding the target view, run through the following cases:
+    - No matches found - check for links and diassociate if necessary
+    - All matches are linked already - use the linking ID
+    - All matches are NOT linked already - use new canonical record to link
+    """
+
+    # If no matches found - check for past links and diassociate if necessary
+    if matching_views.exclude(id=refreshed_view.id).exists() is False:
+        canonical_id_dict = {canonical_id_col: getattr(refreshed_view, canonical_id_col)}
+        previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=refreshed_view.id)
+        if previous_links.exists():
+            new_record = CanonicalClass.objects.create(organization_id=org_id)
+
+            if CanonicalClass == Property:
+                new_record.copy_meters(refreshed_view.property_id)
+
+            setattr(refreshed_view, canonical_id_col, new_record.id)
+            refreshed_view.save()
+
+        return
+
+    # Exclude target and capture ordered, unique canonical IDs
+    # Ordered to prioritize most recently created records when copying Meters
+    unique_canonical_ids = matching_views.\
+        exclude(id=refreshed_view.id).\
+        order_by('id').\
+        values(canonical_id_col).\
+        annotate().\
+        values_list(canonical_id_col, flat=True)
+
+    if unique_canonical_ids.count() == 1:
+        # If all matches are linked already - use the linking ID
+        setattr(refreshed_view, canonical_id_col, unique_canonical_ids.first())
+        refreshed_view.save()
+    else:
+        # All matches are NOT linked already - use new canonical record to link
+        new_record = CanonicalClass.objects.create(organization_id=org_id)
+
+        if CanonicalClass == Property:
+            for id in unique_canonical_ids:
+                new_record.copy_meters(id)
+
+        canonical_id_dict = {canonical_id_col: new_record.id}
+
+        matching_views.update(**canonical_id_dict)
+
+
 def whole_org_match_merge_link(org_id):
     """
     For a given organization, run a match merge round for each cycle in

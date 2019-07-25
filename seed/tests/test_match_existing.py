@@ -7,7 +7,9 @@
 
 import json
 
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.urlresolvers import reverse
+from django.db.models.aggregates import Count
 from django.db.models import Subquery
 
 from seed.data_importer.tasks import match_buildings
@@ -26,6 +28,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.utils.match import (
+    match_merge_link,
     match_merge_in_cycle,
     whole_org_match_merge_link,
 )
@@ -631,6 +634,183 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         state_ids = list(TaxLotView.objects.all().values_list('state_id', flat=True))
         self.assertCountEqual([tls_1.id, tls_2.id, tls_3.id], state_ids)
+
+
+class TestMatchLink(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle_2
+        )
+
+        self.cycle_3 = cycle_factory.get_cycle(name="Cycle 3")
+        self.import_record_3, self.import_file_3 = self.create_import_file(
+            self.user, self.org, self.cycle_3
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_match_merge_link_for_properties(self):
+        """
+        In this context, a "set" includes a -State, -View, and canonical record.
+
+        Set up consists of: (None will be merged or linked on import)
+        Cycle 1 - 3 property sets will be created.
+            - 2 sets match each other but unmerged
+            - 1 set doesn't match any others
+        Cycle 2 - 4 property sets will be created.
+            - 3 sets match but unmerged, all will merge then link to 2 sets in Cycle 1
+            - 1 set doesn't match any others
+        Cycle 3 - 2 property sets will be created.
+            - 1 set will match link to sets from Cycles 1 and 2
+            - 1 set doesn't match any others
+        """
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': '1st Match Set',
+            'city': '1st Match - Cycle 1 - City 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 1 - 1st Match Set'
+        base_property_details['city'] = '1st Match - Cycle 1 - City 2'
+        ps_12 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'Single Unmatched - 1'
+        base_property_details['city'] = 'Unmatched City - Cycle 1'
+        ps_13 = self.property_state_factory.get_property_state(**base_property_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_property_details['import_file_id'] = self.import_file_2.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 2 - 1st Match Set'
+        base_property_details['city'] = '1st Match - Cycle 2 - City 1'
+        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = '2nd to be updated - Cycle 2 - 1st Match Set'
+        base_property_details['city'] = '1st Match - Cycle 2 - City 2'
+        ps_22 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = '3rd to be updated - Cycle 2 - 1st Match Set'
+        base_property_details['city'] = '1st Match - Cycle 2 - City 3'
+        ps_23 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'Single Unmatched - 2'
+        base_property_details['city'] = 'Unmatched City - Cycle 2'
+        ps_24 = self.property_state_factory.get_property_state(**base_property_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_property_details['import_file_id'] = self.import_file_3.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 3 - 1st Match Set'
+        base_property_details['city'] = '1st Match - Cycle 3 - City 1'
+        ps_31 = self.property_state_factory.get_property_state(**base_property_details)
+
+        base_property_details['pm_property_id'] = 'Single Unmatched - 3'
+        base_property_details['city'] = 'Unmatched City - Cycle 3'
+        ps_32 = self.property_state_factory.get_property_state(**base_property_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        # Verify no matches or links
+        self.assertEqual(9, PropertyView.objects.count())
+        self.assertEqual(9, PropertyState.objects.count())
+        self.assertEqual(9, Property.objects.count())
+
+        # At the moment, no two -Views have the same canonical records
+        views_with_same_canonical_records = PropertyView.objects.\
+            values('property_id').\
+            annotate(times_used=Count('id')).\
+            filter(times_used__gt=1)
+        self.assertFalse(views_with_same_canonical_records.exists())
+
+        # (Unrealistically) Make some match
+        to_be_matched_ids = [
+            ps_12.id,  # Cycle 1
+            ps_21.id, ps_22.id, ps_23.id,  # Cycle 2
+            ps_31.id,  # Cycle 3
+        ]
+        PropertyState.objects.filter(id__in=to_be_matched_ids).update(pm_property_id='1st Match Set')
+
+        # run match_merge_link on Sets that WON'T trigger merges or linkings
+        match_merge_link(PropertyView.objects.get(state_id=ps_13.id).id, 'PropertyState')
+        match_merge_link(PropertyView.objects.get(state_id=ps_24.id).id, 'PropertyState')
+        match_merge_link(PropertyView.objects.get(state_id=ps_32.id).id, 'PropertyState')
+        self.assertEqual(9, PropertyView.objects.count())
+        self.assertEqual(9, PropertyState.objects.count())
+        self.assertEqual(9, Property.objects.count())
+
+        # run match_merge_link on a Set that WILL trigger merges and linkings
+        target_view = PropertyView.objects.get(state_id=ps_11.id)
+        match_merge_link(target_view.id, 'PropertyState')
+
+        # Check merges by Cycle
+        # Cycle 1
+        cycle_1_views = PropertyView.objects.filter(cycle_id=self.cycle_1.id)
+        self.assertEqual(2, cycle_1_views.count())
+
+        cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
+        expected_cities_1 = [
+            '1st Match - Cycle 1 - City 2',  # ps_12 took precedence over ps_11
+            'Unmatched City - Cycle 1'
+        ]
+        self.assertCountEqual(expected_cities_1, cycle_1_cities)
+
+        # Cycle 2
+        cycle_2_views = PropertyView.objects.filter(cycle_id=self.cycle_2.id)
+        self.assertEqual(2, cycle_2_views.count())
+
+        cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
+        expected_cities_2 = [
+            '1st Match - Cycle 2 - City 3',  # ps_23 took precedence
+            'Unmatched City - Cycle 2'
+        ]
+        self.assertCountEqual(expected_cities_2, cycle_2_cities)
+
+        # Cycle 3 - No merges
+        cycle_3_views = PropertyView.objects.filter(cycle_id=self.cycle_3.id)
+        self.assertEqual(2, cycle_3_views.count())
+
+        # Check links
+        views_by_canonical_record = PropertyView.objects.\
+            values('property_id').\
+            annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
+        self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
+
+        # For linked views, the corresponding -States should match
+        # In this case, all should have the same pm_property_id.
+        for view_ids in views_by_canonical_record.values_list('view_ids', flat=True):
+            base_state = PropertyView.objects.get(id=view_ids[0]).state
+            matching_view_ids = list(
+                PropertyView.objects.
+                prefetch_related('state').
+                filter(state__pm_property_id=base_state.pm_property_id).
+                values_list('id', flat=True)
+            )
+            self.assertCountEqual(view_ids, matching_view_ids)
+
+    # TEST - property_id is reused when all results are linked
+    # TEST - meters persist during diassociations
+    # TEST - works for taxlots as well
 
 
 class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
