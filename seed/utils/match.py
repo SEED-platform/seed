@@ -115,41 +115,22 @@ def match_merge_in_cycle(view_id, StateClassName):
         return 0, None
 
 
-def match_merge_link(view_id, StateClassName):
-    if StateClassName == 'PropertyState':
-        CanonicalClass = Property
-        StateClass = PropertyState
-        ViewClass = PropertyView
+def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass):
+    """
+    This is a helper method for match_merge_link().
+
+    Given a QS of matching -Views, group them by Cycle. Merge the corresponding
+    -States of each group with priority given based on most recent AuditLog.
+
+    If the given -View has matches in it's own Cycle, these are merged by
+    AuditLog but with final precedence given to the given -View's -State.
+    """
+    if StateClass == PropertyState:
         AuditLogClass = PropertyAuditLog
-        canonical_id_col = 'property_id'
-    elif StateClassName == 'TaxLotState':
-        CanonicalClass = TaxLot
-        StateClass = TaxLotState
-        ViewClass = TaxLotView
+    elif StateClass == TaxLotState:
         AuditLogClass = TaxLotAuditLog
-        canonical_id_col = 'taxlot_id'
 
-    view = ViewClass.objects.get(pk=view_id)
-    org_id = view.state.organization_id
-    view_cycle_id = view.cycle_id
-
-    # Check if associated -State has empty matching criteria.
-    if StateClass.objects.filter(pk=view.state_id, **empty_criteria_filter(org_id, StateClass)).exists():
-        return
-
-    matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
-    state_appended_matching_criteria = {
-        'state__' + col_name: v
-        for col_name, v
-        in matching_criteria.items()
-    }
-
-    # Get all matching views
-    matching_views = ViewClass.objects.\
-        prefetch_related('state').\
-        filter(**state_appended_matching_criteria)
-
-    # Group them by cycle and capture state_ids to be merged
+    # Group matching -Views by Cycle and capture state_ids to be merged
     states_to_merge = matching_views.values('cycle_id').\
         annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id')).\
         filter(match_count__gt=1).\
@@ -163,70 +144,121 @@ def match_merge_link(view_id, StateClassName):
             values_list('state_id', flat=True)
         )
 
-        if view.state_id in ordered_ids:
-            # If the current Set's -State ID is included, give it precedence
-            ordered_ids.remove(view.state_id)
-            ordered_ids.append(view.state_id)
+        if given_state_id in ordered_ids:
+            # If the given -State ID is included, give it precedence
+            ordered_ids.remove(given_state_id)
+            ordered_ids.append(given_state_id)
 
         merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
 
-    # Account for case when incoming view was part of in-Cycle merges...
-    refreshed_view = matching_views.get(cycle_id=view_cycle_id)
 
+def _link_matches(matching_views, org_id, given_cycle_id, ViewClass):
     """
-    Amongst the matched views excluding the target view, run through the following cases:
-    - No matches found - check for links and diassociate if necessary
-    - All matches are linked already - use the linking ID
-    - All matches are NOT linked already - use new canonical record to link
+    This is a helper method for match_merge_link() and is intended to be called
+    after match merges have occurred.
+
+    Given a QS of matching -Views, the following cases are handled:
+    1. No matches found - check for pre-existing links and, if necessary,
+    diassociate the given -View
+    2. All matches are linked already - use the currently existing linking ID to
+    link the given -View
+    3. All matches are NOT linked already - use new canonical record to link the
+    matching and given -Views
     """
+    if ViewClass == PropertyView:
+        CanonicalClass = Property
+        canonical_id_col = 'property_id'
+    elif ViewClass == TaxLotView:
+        CanonicalClass = TaxLot
+        canonical_id_col = 'taxlot_id'
 
-    # If no matches found - check for past links and diassociate if necessary
-    if matching_views.exclude(id=refreshed_view.id).exists() is False:
-        canonical_id_dict = {canonical_id_col: getattr(refreshed_view, canonical_id_col)}
-        previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=refreshed_view.id)
-        if previous_links.exists():
-            new_record = CanonicalClass.objects.create(organization_id=org_id)
+    # .get() works since this method should only be called after merges happened
+    view = matching_views.get(cycle_id=given_cycle_id)
 
-            if CanonicalClass == Property:
-                new_record.copy_meters(refreshed_view.property_id)
-
-            setattr(refreshed_view, canonical_id_col, new_record.id)
-            refreshed_view.save()
-
-        return
-
-    # Exclude target and capture ordered, unique canonical IDs
+    # Exclude target and capture unique canonical IDs
     unique_canonical_ids = matching_views.\
-        exclude(id=refreshed_view.id).\
+        exclude(id=view.id).\
         values(canonical_id_col).\
         annotate(state_ids=ArrayAgg(canonical_id_col)).\
         values_list(canonical_id_col, flat=True)
 
-    if unique_canonical_ids.count() == 1:
+    if unique_canonical_ids.exists() is False:
+        # If no matches found - check for past links and diassociate if necessary
+        canonical_id_dict = {canonical_id_col: getattr(view, canonical_id_col)}
+        previous_links = ViewClass.objects.filter(**canonical_id_dict).exclude(id=view.id)
+        if previous_links.exists():
+            new_record = CanonicalClass.objects.create(organization_id=org_id)
+
+            if CanonicalClass == Property:
+                new_record.copy_meters(view.property_id)
+
+            setattr(view, canonical_id_col, new_record.id)
+            view.save()
+    elif unique_canonical_ids.count() == 1:
         # If all matches are linked already - use the linking ID
         linking_id = unique_canonical_ids.first()
 
         if CanonicalClass == Property:
             linking_property = Property.objects.get(id=linking_id)
-            linking_property.copy_meters(refreshed_view.property_id)
+            linking_property.copy_meters(view.property_id)
 
-        setattr(refreshed_view, canonical_id_col, linking_id)
+        setattr(view, canonical_id_col, linking_id)
 
-        refreshed_view.save()
+        view.save()
     else:
-        # All matches are NOT linked already - use new canonical record to link
+        # In this case, all matches are NOT linked already - use new canonical record to link
         new_record = CanonicalClass.objects.create(organization_id=org_id)
 
         if CanonicalClass == Property:
             # Copy meters by highest ID order and lastly for the given Property
             sorted_canonical_ids = sorted(list(unique_canonical_ids))
-            sorted_canonical_ids.append(refreshed_view.property_id)
+            sorted_canonical_ids.append(view.property_id)
             for id in sorted_canonical_ids:
                 new_record.copy_meters(id)
 
         canonical_id_dict = {canonical_id_col: new_record.id}
 
         matching_views.update(**canonical_id_dict)
+
+
+def match_merge_link(view_id, StateClassName):
+    """
+    This method receives a -View's ID, checks for matches for that -View's
+    -State across Cycles, merges matches where there are multiple in a Cycle,
+    and finally after there are at most one match in any Cycle, creates links
+    between the matching -Views.
+    """
+    if StateClassName == 'PropertyState':
+        StateClass = PropertyState
+        ViewClass = PropertyView
+    elif StateClassName == 'TaxLotState':
+        StateClass = TaxLotState
+        ViewClass = TaxLotView
+
+    view = ViewClass.objects.get(pk=view_id)
+    given_state_id = view.state_id
+    org_id = view.state.organization_id
+    given_cycle_id = view.cycle_id
+
+    # If associated -State has empty matching criteria, do nothing
+    if StateClass.objects.filter(pk=given_state_id, **empty_criteria_filter(org_id, StateClass)).exists():
+        return
+
+    matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
+    state_appended_matching_criteria = {
+        'state__' + col_name: v
+        for col_name, v
+        in matching_criteria.items()
+    }
+
+    # Get all matching views (across Cycles)
+    matching_views = ViewClass.objects.\
+        prefetch_related('state').\
+        filter(**state_appended_matching_criteria)
+
+    _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
+
+    _link_matches(matching_views, org_id, given_cycle_id, ViewClass)
 
 
 def whole_org_match_merge_link(org_id):
