@@ -190,24 +190,32 @@ def match_merge_link(view_id, StateClassName):
         return
 
     # Exclude target and capture ordered, unique canonical IDs
-    # Ordered to prioritize most recently created records when copying Meters
     unique_canonical_ids = matching_views.\
         exclude(id=refreshed_view.id).\
-        order_by('id').\
         values(canonical_id_col).\
-        annotate().\
+        annotate(state_ids=ArrayAgg(canonical_id_col)).\
         values_list(canonical_id_col, flat=True)
 
     if unique_canonical_ids.count() == 1:
         # If all matches are linked already - use the linking ID
-        setattr(refreshed_view, canonical_id_col, unique_canonical_ids.first())
+        linking_id = unique_canonical_ids.first()
+
+        if CanonicalClass == Property:
+            linking_property = Property.objects.get(id=linking_id)
+            linking_property.copy_meters(refreshed_view.property_id)
+
+        setattr(refreshed_view, canonical_id_col, linking_id)
+
         refreshed_view.save()
     else:
         # All matches are NOT linked already - use new canonical record to link
         new_record = CanonicalClass.objects.create(organization_id=org_id)
 
         if CanonicalClass == Property:
-            for id in unique_canonical_ids:
+            # Copy meters by highest ID order and lastly for the given Property
+            sorted_canonical_ids = sorted(list(unique_canonical_ids))
+            sorted_canonical_ids.append(refreshed_view.property_id)
+            for id in sorted_canonical_ids:
                 new_record.copy_meters(id)
 
         canonical_id_dict = {canonical_id_col: new_record.id}

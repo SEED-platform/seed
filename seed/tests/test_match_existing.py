@@ -7,10 +7,17 @@
 
 import json
 
+from config.settings.common import TIME_ZONE
+
+from datetime import datetime
+
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.urlresolvers import reverse
 from django.db.models.aggregates import Count
 from django.db.models import Subquery
+from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+
+from pytz import timezone
 
 from seed.data_importer.tasks import match_buildings
 
@@ -18,6 +25,8 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
     Column,
+    Meter,
+    MeterReading,
     Property,
     PropertyAuditLog,
     PropertyState,
@@ -636,7 +645,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.assertCountEqual([tls_1.id, tls_2.id, tls_3.id], state_ids)
 
 
-class TestMatchLink(DataMappingBaseTestCase):
+class TestMatchMergeLink(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
@@ -763,7 +772,7 @@ class TestMatchLink(DataMappingBaseTestCase):
         target_view = PropertyView.objects.get(state_id=ps_11.id)
         match_merge_link(target_view.id, 'PropertyState')
 
-        # Check merges by Cycle
+        # Check merges by Cycle - use cities to check merge precedence order
         # Cycle 1
         cycle_1_views = PropertyView.objects.filter(cycle_id=self.cycle_1.id)
         self.assertEqual(2, cycle_1_views.count())
@@ -808,9 +817,282 @@ class TestMatchLink(DataMappingBaseTestCase):
             )
             self.assertCountEqual(view_ids, matching_view_ids)
 
-    # TEST - property_id is reused when all results are linked
-    # TEST - meters persist during diassociations
-    # TEST - works for taxlots as well
+    def test_match_merge_link_for_properties_resuses_canonical_records_when_possible_and_maintains_any_meters(self):
+        """
+        3 Cycles - 1 Property Set in each - all 3 will match after import
+        2 Sets will be linked first. The last will be linked afterwards and will
+        inherit the canonical record establish the link with the other 2 Sets.
+        """
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': 'To be update - Cycle 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_property_details['import_file_id'] = self.import_file_2.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 2'
+        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_property_details['import_file_id'] = self.import_file_3.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 3'
+        ps_31 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        self.assertEqual(3, PropertyView.objects.count())
+        self.assertEqual(3, PropertyState.objects.count())
+        self.assertEqual(3, Property.objects.count())
+
+        # Update Sets 2 and 3 to match
+        PropertyState.objects.filter(id__in=[ps_21.id, ps_31.id]).update(pm_property_id='Match Set')
+        # Third Set's canonical record/ID should be linking ID.
+        linking_id = PropertyView.objects.get(state_id=ps_31.id).property_id
+        view_21 = PropertyView.objects.get(state_id=ps_21.id)
+
+        match_merge_link(view_21.id, 'PropertyState')
+
+        self.assertEqual(2, PropertyView.objects.filter(property_id=linking_id).count())
+        self.assertEqual(linking_id, PropertyView.objects.get(state_id=ps_21.id).property_id)
+        self.assertEqual(linking_id, PropertyView.objects.get(state_id=ps_31.id).property_id)
+
+        # Update Set 1 to match
+        PropertyState.objects.filter(id__in=[ps_11.id]).update(pm_property_id='Match Set')
+
+        view_11 = PropertyView.objects.get(state_id=ps_11.id)
+        match_merge_link(view_11.id, 'PropertyState')
+
+        # All 3 sets should be linked using the first linking ID
+        self.assertEqual(3, PropertyView.objects.count())
+        self.assertEqual(3, PropertyView.objects.filter(property_id=linking_id).count())
+
+    def test_match_merge_link_for_properties_diassociated_records_if_no_longer_valid(self):
+        """
+        3 Cycles - 1 Property Set in each - all 3 are match linked after import.
+        Make one not match anymore and rerun match merge link to unlink it.
+        """
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': 'Match Set',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_property_details['import_file_id'] = self.import_file_2.id
+        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_property_details['import_file_id'] = self.import_file_3.id
+        ps_31 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        # Once updates are made to import process, these will correctly fail and be removed
+        self.assertEqual(3, PropertyView.objects.count())
+        self.assertEqual(3, PropertyState.objects.count())
+        self.assertEqual(3, Property.objects.count())
+
+        # Link all 3
+        view_21 = PropertyView.objects.get(state_id=ps_21.id)
+        match_merge_link(view_21.id, 'PropertyState')
+
+        # Capture linked ID
+        view_11 = PropertyView.objects.get(state_id=ps_11.id)
+        initial_linked_id = view_11.property_id
+
+        # Unlink the first
+        PropertyState.objects.filter(id__in=[ps_11.id]).update(pm_property_id='No longer matches')
+        match_merge_link(view_11.id, 'PropertyState')
+
+        refreshed_view_11 = PropertyView.objects.get(state_id=ps_11.id)
+
+        view_21 = PropertyView.objects.get(state_id=ps_21.id)
+        view_31 = PropertyView.objects.get(state_id=ps_31.id)
+
+        self.assertNotEqual(initial_linked_id, refreshed_view_11.property_id)
+        self.assertEqual(initial_linked_id, view_21.property_id)
+        self.assertEqual(initial_linked_id, view_31.property_id)
+
+    def test_match_merge_link_for_properties_meters_persist_in_different_situations(self):
+        """
+        In the following order, check that meters persist in each scenario:
+            - a new Property is used to link. Meters are merged in ID order with
+            final priority given to target Property
+            - unlinking happens. Meters are copied over.
+            - an existing Property is used to link. Meters from the target
+            Property are copied to the existing Property.
+        """
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': 'To be update - Cycle 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_property_details['import_file_id'] = self.import_file_2.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 2'
+        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_property_details['import_file_id'] = self.import_file_3.id
+        base_property_details['pm_property_id'] = 'To be updated - Cycle 3'
+        ps_31 = self.property_state_factory.get_property_state(**base_property_details)
+
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        self.assertEqual(3, PropertyView.objects.count())
+        self.assertEqual(3, PropertyState.objects.count())
+        self.assertEqual(3, Property.objects.count())
+
+        """
+        First case - The following is set up:
+            - 3 overlapping readings are created between 3 Sets
+            - 2 overlapping readings are created between the last 2 Sets
+            - The 1st Set is targetted in the match_merge_link method
+
+        Outcome:
+            - The 3 overlapping readings should have the 1st Set's reading
+            - The 2 overlapping readings should have the 3rd Set's reading
+        """
+        # Apply the same meter and an overlapping meter reading to each Property
+        tz_obj = timezone(TIME_ZONE)
+        for i, property in enumerate(Property.objects.all()):
+            meter = Meter.objects.create(
+                property=property,
+                source=Meter.PORTFOLIO_MANAGER,
+                source_id="same source ID",
+                type=Meter.ELECTRICITY_GRID,
+            )
+            MeterReading.objects.create(
+                meter=meter,
+                start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2018, 1, 2, 0, 0, 0), timezone=tz_obj),
+                reading=(i + 1) * 100,
+                source_unit='kBtu (thousand Btu)',
+                conversion_factor=1.00
+            )
+
+        # Create overlapping readings for meters associated to 2nd and 3rd Set
+        meter_21 = Meter.objects.get(property_id=PropertyView.objects.get(state_id=ps_21.id).property_id)
+        meter_31 = Meter.objects.get(property_id=PropertyView.objects.get(state_id=ps_31.id).property_id)
+        MeterReading.objects.create(
+            meter=meter_21,
+            start_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=tz_obj),
+            end_time=make_aware(datetime(2018, 2, 2, 0, 0, 0), timezone=tz_obj),
+            reading=212121,
+            source_unit='kBtu (thousand Btu)',
+            conversion_factor=1.00
+        )
+        MeterReading.objects.create(
+            meter=meter_31,
+            start_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=tz_obj),
+            end_time=make_aware(datetime(2018, 2, 2, 0, 0, 0), timezone=tz_obj),
+            reading=313131,
+            source_unit='kBtu (thousand Btu)',
+            conversion_factor=1.00
+        )
+
+        # Update all Sets to match and run match merge link
+        PropertyState.objects.update(pm_property_id='Match Set')
+        view_11 = PropertyView.objects.get(state_id=ps_11.id)
+        match_merge_link(view_11.id, 'PropertyState')
+
+        # Check Meters and MeterReadings
+        linking_property = PropertyView.objects.first().property
+        self.assertEqual(1, linking_property.meters.count())
+        agg_meter = linking_property.meters.first()
+        self.assertEqual(2, agg_meter.meter_readings.count())
+
+        self.assertTrue(agg_meter.meter_readings.filter(reading=100).exists())
+        self.assertTrue(agg_meter.meter_readings.filter(reading=313131).exists())
+
+        """
+        Second Case - The following is set up:
+            - 3 Sets linked with 2 readings shared amongst them.
+            - Make 1st Set no longer match
+            - Run match_merge_link method on 1st Set
+        Outcome:
+            - The 2 readings were copied over to the 1st Set's Property
+        """
+        PropertyState.objects.filter(id=ps_11.id).update(pm_property_id='No longer matches')
+        view_11 = PropertyView.objects.get(state_id=ps_11.id)
+        match_merge_link(view_11.id, 'PropertyState')
+
+        # Check meter was copied
+        view_11_unlinked_property = PropertyView.objects.get(state_id=ps_11.id).property
+
+        self.assertEqual(1, view_11_unlinked_property.meters.count())
+
+        copied_meter = view_11_unlinked_property.meters.first()
+        self.assertNotEqual(agg_meter.id, copied_meter.id)
+        self.assertEqual(2, copied_meter.meter_readings.count())
+
+        """
+        Third Case - The following is set up:
+            - Create a new, unique reading for the newly created/copied Meter
+            - Make 1st Set match again
+            - Run match_merge_link method on 1st Set
+        Outcome:
+            - The newly created reading was copied over to the existing linking Property
+        """
+        MeterReading.objects.create(
+            meter=copied_meter,
+            start_time=make_aware(datetime(2018, 3, 1, 0, 0, 0), timezone=tz_obj),
+            end_time=make_aware(datetime(2018, 3, 2, 0, 0, 0), timezone=tz_obj),
+            reading=321,
+            source_unit='kBtu (thousand Btu)',
+            conversion_factor=1.00
+        )
+
+        PropertyState.objects.filter(id=ps_11.id).update(pm_property_id='Match Set')
+        view_11 = PropertyView.objects.get(state_id=ps_11.id)
+        match_merge_link(view_11.id, 'PropertyState')
+
+        # Check MeterReadings - latest created reading was copied over
+        self.assertEqual(3, agg_meter.meter_readings.count())
+        self.assertTrue(agg_meter.meter_readings.filter(reading=100).exists())
+        self.assertTrue(agg_meter.meter_readings.filter(reading=321).exists())
+        self.assertTrue(agg_meter.meter_readings.filter(reading=313131).exists())
 
 
 class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
