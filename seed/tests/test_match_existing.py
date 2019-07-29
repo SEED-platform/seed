@@ -779,7 +779,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
-            '1st Match - Cycle 1 - City 2',  # ps_12 took precedence over ps_11
+            '1st Match - Cycle 1 - City 1',  # ps_11 took precedence over ps_12, since ps_11's -View took precedence
             'Unmatched City - Cycle 1'
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
@@ -932,7 +932,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
-            '1st Match - Cycle 1 - City 2',  # tls_12 took precedence over tls_11
+            '1st Match - Cycle 1 - City 1',  # tls_11 took precedence over tls_12, since tls_11's -View took precedence
             'Unmatched City - Cycle 1'
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)

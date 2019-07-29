@@ -162,6 +162,12 @@ def match_merge_link(view_id, StateClassName):
             order_by('created').
             values_list('state_id', flat=True)
         )
+
+        if view.state_id in ordered_ids:
+            # If the current Set's -State ID is included, give it precedence
+            ordered_ids.remove(view.state_id)
+            ordered_ids.append(view.state_id)
+
         merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
 
     # Account for case when incoming view was part of in-Cycle merges...
