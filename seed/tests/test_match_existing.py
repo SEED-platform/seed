@@ -817,11 +817,164 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             )
             self.assertCountEqual(view_ids, matching_view_ids)
 
-    def test_match_merge_link_for_properties_resuses_canonical_records_when_possible_and_maintains_any_meters(self):
+    def test_match_merge_link_for_taxlots(self):
+        """
+        In this context, a "set" includes a -State, -View, and canonical record.
+
+        Set up consists of: (None will be merged or linked on import)
+        Cycle 1 - 3 taxlot sets will be created.
+            - 2 sets match each other but unmerged
+            - 1 set doesn't match any others
+        Cycle 2 - 4 taxlot sets will be created.
+            - 3 sets match but unmerged, all will merge then link to 2 sets in Cycle 1
+            - 1 set doesn't match any others
+        Cycle 3 - 2 taxlot sets will be created.
+            - 1 set will match link to sets from Cycles 1 and 2
+            - 1 set doesn't match any others
+        """
+        # Cycle 1 / ImportFile 1
+        base_state_details = {
+            'jurisdiction_tax_lot_id': '1st Match Set',
+            'city': '1st Match - Cycle 1 - City 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = 'To be updated - Cycle 1 - 1st Match Set'
+        base_state_details['city'] = '1st Match - Cycle 1 - City 2'
+        tls_12 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = 'Single Unmatched - 1'
+        base_state_details['city'] = 'Unmatched City - Cycle 1'
+        tls_13 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_state_details['import_file_id'] = self.import_file_2.id
+        base_state_details['jurisdiction_tax_lot_id'] = 'To be updated - Cycle 2 - 1st Match Set'
+        base_state_details['city'] = '1st Match - Cycle 2 - City 1'
+        tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = '2nd to be updated - Cycle 2 - 1st Match Set'
+        base_state_details['city'] = '1st Match - Cycle 2 - City 2'
+        tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = '3rd to be updated - Cycle 2 - 1st Match Set'
+        base_state_details['city'] = '1st Match - Cycle 2 - City 3'
+        tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = 'Single Unmatched - 2'
+        base_state_details['city'] = 'Unmatched City - Cycle 2'
+        tls_24 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_state_details['import_file_id'] = self.import_file_3.id
+        base_state_details['jurisdiction_tax_lot_id'] = 'To be updated - Cycle 3 - 1st Match Set'
+        base_state_details['city'] = '1st Match - Cycle 3 - City 1'
+        tls_31 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        base_state_details['jurisdiction_tax_lot_id'] = 'Single Unmatched - 3'
+        base_state_details['city'] = 'Unmatched City - Cycle 3'
+        tls_32 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        # Verify no matches or links
+        self.assertEqual(9, TaxLotView.objects.count())
+        self.assertEqual(9, TaxLotState.objects.count())
+        self.assertEqual(9, TaxLot.objects.count())
+
+        # At the moment, no two -Views have the same canonical records
+        views_with_same_canonical_records = TaxLotView.objects.\
+            values('taxlot_id').\
+            annotate(times_used=Count('id')).\
+            filter(times_used__gt=1)
+        self.assertFalse(views_with_same_canonical_records.exists())
+
+        # (Unrealistically) Make some match
+        to_be_matched_ids = [
+            tls_12.id,  # Cycle 1
+            tls_21.id, tls_22.id, tls_23.id,  # Cycle 2
+            tls_31.id,  # Cycle 3
+        ]
+        TaxLotState.objects.filter(id__in=to_be_matched_ids).update(jurisdiction_tax_lot_id='1st Match Set')
+
+        # run match_merge_link on Sets that WON'T trigger merges or linkings
+        match_merge_link(TaxLotView.objects.get(state_id=tls_13.id).id, 'TaxLotState')
+        match_merge_link(TaxLotView.objects.get(state_id=tls_24.id).id, 'TaxLotState')
+        match_merge_link(TaxLotView.objects.get(state_id=tls_32.id).id, 'TaxLotState')
+        self.assertEqual(9, TaxLotView.objects.count())
+        self.assertEqual(9, TaxLotState.objects.count())
+        self.assertEqual(9, TaxLot.objects.count())
+
+        # run match_merge_link on a Set that WILL trigger merges and linkings
+        target_view = TaxLotView.objects.get(state_id=tls_11.id)
+        match_merge_link(target_view.id, 'TaxLotState')
+
+        # Check merges by Cycle - use cities to check merge precedence order
+        # Cycle 1
+        cycle_1_views = TaxLotView.objects.filter(cycle_id=self.cycle_1.id)
+        self.assertEqual(2, cycle_1_views.count())
+
+        cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
+        expected_cities_1 = [
+            '1st Match - Cycle 1 - City 2',  # tls_12 took precedence over tls_11
+            'Unmatched City - Cycle 1'
+        ]
+        self.assertCountEqual(expected_cities_1, cycle_1_cities)
+
+        # Cycle 2
+        cycle_2_views = TaxLotView.objects.filter(cycle_id=self.cycle_2.id)
+        self.assertEqual(2, cycle_2_views.count())
+
+        cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
+        expected_cities_2 = [
+            '1st Match - Cycle 2 - City 3',  # tls_23 took precedence
+            'Unmatched City - Cycle 2'
+        ]
+        self.assertCountEqual(expected_cities_2, cycle_2_cities)
+
+        # Cycle 3 - No merges
+        cycle_3_views = TaxLotView.objects.filter(cycle_id=self.cycle_3.id)
+        self.assertEqual(2, cycle_3_views.count())
+
+        # Check links
+        views_by_canonical_record = TaxLotView.objects.\
+            values('taxlot_id').\
+            annotate(view_ids=ArrayAgg('id'), times_used=Count('id'))
+        self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
+
+        # For linked views, the corresponding -States should match
+        # In this case, all should have the same jurisdiction_tax_lot_id.
+        for view_ids in views_by_canonical_record.values_list('view_ids', flat=True):
+            base_state = TaxLotView.objects.get(id=view_ids[0]).state
+            matching_view_ids = list(
+                TaxLotView.objects.
+                prefetch_related('state').
+                filter(state__jurisdiction_tax_lot_id=base_state.jurisdiction_tax_lot_id).
+                values_list('id', flat=True)
+            )
+            self.assertCountEqual(view_ids, matching_view_ids)
+
+    def test_match_merge_link_for_properties_resuses_canonical_records_when_possible(self):
         """
         3 Cycles - 1 Property Set in each - all 3 will match after import
         2 Sets will be linked first. The last will be linked afterwards and will
-        inherit the canonical record establish the link with the other 2 Sets.
+        inherit the canonical record to establish the link with the other 2 Sets.
         """
         # Cycle 1 / ImportFile 1
         base_property_details = {
@@ -879,6 +1032,69 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # All 3 sets should be linked using the first linking ID
         self.assertEqual(3, PropertyView.objects.count())
         self.assertEqual(3, PropertyView.objects.filter(property_id=linking_id).count())
+
+    def test_match_merge_link_for_taxlots_resuses_canonical_records_when_possible(self):
+        """
+        3 Cycles - 1 TaxLot Set in each - all 3 will match after import
+        2 Sets will be linked first. The last will be linked afterwards and will
+        inherit the canonical record to establish the link with the other 2 Sets.
+        """
+        # Cycle 1 / ImportFile 1
+        base_state_details = {
+            'jurisdiction_tax_lot_id': 'To be update - Cycle 1',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_state_details['import_file_id'] = self.import_file_2.id
+        base_state_details['jurisdiction_tax_lot_id'] = 'To be updated - Cycle 2'
+        tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_state_details['import_file_id'] = self.import_file_3.id
+        base_state_details['jurisdiction_tax_lot_id'] = 'To be updated - Cycle 3'
+        tls_31 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        self.assertEqual(3, TaxLotView.objects.count())
+        self.assertEqual(3, TaxLotState.objects.count())
+        self.assertEqual(3, TaxLot.objects.count())
+
+        # Update Sets 2 and 3 to match
+        TaxLotState.objects.filter(id__in=[tls_21.id, tls_31.id]).update(jurisdiction_tax_lot_id='Match Set')
+        # Third Set's canonical record/ID should be linking ID.
+        linking_id = TaxLotView.objects.get(state_id=tls_31.id).taxlot_id
+        view_21 = TaxLotView.objects.get(state_id=tls_21.id)
+
+        match_merge_link(view_21.id, 'TaxLotState')
+
+        self.assertEqual(2, TaxLotView.objects.filter(taxlot_id=linking_id).count())
+        self.assertEqual(linking_id, TaxLotView.objects.get(state_id=tls_21.id).taxlot_id)
+        self.assertEqual(linking_id, TaxLotView.objects.get(state_id=tls_31.id).taxlot_id)
+
+        # Update Set 1 to match
+        TaxLotState.objects.filter(id__in=[tls_11.id]).update(jurisdiction_tax_lot_id='Match Set')
+
+        view_11 = TaxLotView.objects.get(state_id=tls_11.id)
+        match_merge_link(view_11.id, 'TaxLotState')
+
+        # All 3 sets should be linked using the first linking ID
+        self.assertEqual(3, TaxLotView.objects.count())
+        self.assertEqual(3, TaxLotView.objects.filter(taxlot_id=linking_id).count())
 
     def test_match_merge_link_for_properties_diassociated_records_if_no_longer_valid(self):
         """
@@ -939,6 +1155,66 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertNotEqual(initial_linked_id, refreshed_view_11.property_id)
         self.assertEqual(initial_linked_id, view_21.property_id)
         self.assertEqual(initial_linked_id, view_31.property_id)
+
+    def test_match_merge_link_for_taxlots_diassociated_records_if_no_longer_valid(self):
+        """
+        3 Cycles - 1 TaxLot Set in each - all 3 are match linked after import.
+        Make one not match anymore and rerun match merge link to unlink it.
+        """
+        # Cycle 1 / ImportFile 1
+        base_state_details = {
+            'jurisdiction_tax_lot_id': 'Match Set',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_state_details['import_file_id'] = self.import_file_2.id
+        tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Cycle 3 / ImportFile 3
+        base_state_details['import_file_id'] = self.import_file_3.id
+        tls_31 = self.taxlot_state_factory.get_taxlot_state(**base_state_details)
+
+        self.import_file_3.mapping_done = True
+        self.import_file_3.save()
+        match_buildings(self.import_file_3.id)
+
+        # Once updates are made to import process, these will correctly fail and be removed
+        self.assertEqual(3, TaxLotView.objects.count())
+        self.assertEqual(3, TaxLotState.objects.count())
+        self.assertEqual(3, TaxLot.objects.count())
+
+        # Link all 3
+        view_21 = TaxLotView.objects.get(state_id=tls_21.id)
+        match_merge_link(view_21.id, 'TaxLotState')
+
+        # Capture linked ID
+        view_11 = TaxLotView.objects.get(state_id=tls_11.id)
+        initial_linked_id = view_11.taxlot_id
+
+        # Unlink the first
+        TaxLotState.objects.filter(id__in=[tls_11.id]).update(jurisdiction_tax_lot_id='No longer matches')
+        match_merge_link(view_11.id, 'TaxLotState')
+
+        refreshed_view_11 = TaxLotView.objects.get(state_id=tls_11.id)
+
+        view_21 = TaxLotView.objects.get(state_id=tls_21.id)
+        view_31 = TaxLotView.objects.get(state_id=tls_31.id)
+
+        self.assertNotEqual(initial_linked_id, refreshed_view_11.taxlot_id)
+        self.assertEqual(initial_linked_id, view_21.taxlot_id)
+        self.assertEqual(initial_linked_id, view_31.taxlot_id)
 
     def test_match_merge_link_for_properties_meters_persist_in_different_situations(self):
         """
