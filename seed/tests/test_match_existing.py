@@ -354,28 +354,21 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_match_merge_in_cycle_rolls_up_existing_property_matches_in_latest_audit_log_order_with_final_priority_given_to_selected_property(self):
+    def test_match_merge_in_cycle_rolls_up_existing_property_matches_in_updated_state_order_with_final_priority_given_to_selected_property(self):
         """
-        For this test, setup is long because updating audit log dates were done
-        "organically". Specifically, edit & manual merge/unmerge endpoints are
-        used to mimic possible user actions that would change/create audit log
-        records while creating unmerged records that match each other. The
-        unrealistic, albiet shorter path, would be to import records, update
-        -State values via direct model interaction (bypassing rollups), and
-        updating the "created" dates on the audit logs.
-        """
+        Import 4 non-matching records each with different cities and
+        state_orders (extra data field).
 
-        """
-        Import 4 non-matching records each with different cities, with some
-        combination of 2 base matching criteria values. Cities will be used to
-        target and identify post-merge -States.
-        - 1st has completely different criteria values from the base values.
-        - 2nd has both base criteria values.
-        - 3rd and 4th each have one but not the other base value.
+        Create a Column record for state_orders, and update merge protection
+        setting for the city column.
+
+        Change the 'updated' field's datetime value for each -State. Use
+        update() to make the records match to avoid changing the 'updated'
+        values. Run merging and unmerge records to unravel and reveal the merge
+        order.
         """
         base_details = {
-            'pm_property_id': '789DifferentID',
-            'address_line_1': '789 Different Street',
+            'pm_property_id': '123MatchID',
             'city': '1st Oldest City',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
@@ -386,19 +379,17 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         }
         ps_1 = self.property_state_factory.get_property_state(**base_details)
 
-        base_details['pm_property_id'] = '123MatchID'
-        base_details['address_line_1'] = '123 Match Street'
+        base_details['pm_property_id'] = '123DifferentID'
         base_details['city'] = '2nd Oldest City'
         base_details['extra_data']['state_order'] = 'second'
-        self.property_state_factory.get_property_state(**base_details)
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
 
-        del base_details['address_line_1']
+        base_details['pm_property_id'] = '456DifferentID'
         base_details['city'] = '3rd Oldest City'
         base_details['extra_data']['state_order'] = 'third'
         ps_3 = self.property_state_factory.get_property_state(**base_details)
 
-        del base_details['pm_property_id']
-        base_details['address_line_1'] = '123 Match Street'
+        base_details['pm_property_id'] = '789DifferentID'
         base_details['city'] = '4th Oldest City'
         base_details['extra_data']['state_order'] = 'fourth'
         ps_4 = self.property_state_factory.get_property_state(**base_details)
@@ -419,74 +410,55 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
             table_name='PropertyState'
         ).update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
 
-        # 1st record is edited via endpoint to match 2nd record - rollup occurs
-        new_data = {
-            "state": {
-                "pm_property_id": "123MatchID",
-                "address_line_1": "123 Match Street"
-            }
-        }
-        target_view_id = ps_1.propertyview_set.first().id
-        edit_url = reverse('api:v2:properties-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.put(edit_url, json.dumps(new_data), content_type='application/json')
+        # Update -States to make the roll up order be 4, 2, 3
+        refreshed_ps_4 = PropertyState.objects.get(id=ps_4.id)
+        refreshed_ps_4.pm_property_id = '123MatchID'
+        refreshed_ps_4.save()
 
-        """
-        3rd and 4th record are manually merged via endpoint to match rolled up
-        -State. Note that manual merges still make use of Merge Protection
-        settings. The resulting -State will have 3rd Oldest City since -State
-        level precedence is given to the 4th record. Then, everything gets
-        rolled up into one -State.
-        """
-        merge_url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'state_ids': [ps_3.pk, ps_4.pk]
-        })
-        self.client.post(merge_url, post_params, content_type='application/json')
+        refreshed_ps_2 = PropertyState.objects.get(id=ps_2.id)
+        refreshed_ps_2.pm_property_id = '123MatchID'
+        refreshed_ps_2.save()
 
-        # Unmerge twice - 3 record sets should remain
-        # 1st - target only -View remaining and undo the last system roll up
-        # -States produced: -State from (3+4) manual merge and -State from (1+2) edit merge
-        unmerge_1_view = PropertyView.objects.first()
-        unmerge_1_url = reverse('api:v2:properties-unmerge', args=[unmerge_1_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(unmerge_1_url, content_type='application/json')
+        refreshed_ps_3 = PropertyState.objects.get(id=ps_3.id)
+        refreshed_ps_3.pm_property_id = '123MatchID'
+        refreshed_ps_3.save()
 
-        # 2nd - target -View with '1st Oldest City' and undo post-edit system roll up
-        # Note that this is first evidence that merge protection is ignored on roll ups
-        # -States produced: -State from edit of #1 and original -State #2
-        unmerge_2_view = PropertyView.objects.prefetch_related('state').filter(state__city='1st Oldest City').get()
-        unmerge_2_url = reverse('api:v2:properties-unmerge', args=[unmerge_2_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(unmerge_2_url, content_type='application/json')
-
-        # run match_merge_in_cycle - effectively rolling everything up again.
-        manual_merge_view = PropertyView.objects.prefetch_related('state').filter(state__city='3rd Oldest City').get()
+        # run match_merge_in_cycle giving
+        manual_merge_view = PropertyView.objects.get(state_id=ps_1.id)
         count_result, view_id_result = match_merge_in_cycle(manual_merge_view.id, 'PropertyState')
-        self.assertEqual(count_result, 3)
+        self.assertEqual(count_result, 4)
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        manual merge -View with '3rd Oldest City'. '3rd Oldest City' is expected
+        manual merge -View with '1st Oldest City'. '1st Oldest City' is expected
         to be final City value since this rollup should ignore Merge Protection.
         """
         self.assertEqual(PropertyView.objects.count(), 1)
         only_view = PropertyView.objects.get()
-        self.assertEqual(only_view.state.city, '3rd Oldest City')
-
-        # The corresponding log should be a System Match
-        audit_log = PropertyAuditLog.objects.get(state_id=only_view.state_id)
-        self.assertEqual(audit_log.name, 'System Match')
+        self.assertEqual(only_view.state.city, '1st Oldest City')
+        self.assertEqual(only_view.state.extra_data['state_order'], 'first')
 
         """
-        Undoing 1 rollup merge should expose a set with -State having
-        '1st Oldest City' and state_order 'first'. This is expected since this
-        is the City value of the edited -State. This edit should have created a
-        more recent audit log than the originally imported, "2nd" -State.
+        Undoing 1 rollup merge should expose a set -State having
+        '3rd Oldest City' and state_order of 'third'.
         """
-        rollback_unmerge_url = reverse('api:v2:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(rollback_unmerge_url, content_type='application/json')
+        rollback_unmerge_url_1 = reverse('api:v2:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(rollback_unmerge_url_1, content_type='application/json')
 
-        first_rollback_view = PropertyView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
-        self.assertEqual(first_rollback_view.state.city, '1st Oldest City')
-        self.assertEqual(first_rollback_view.state.extra_data['state_order'], 'first')
+        rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
+        self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
+        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'third')
+
+        """
+        Undoing another rollup merge should expose a set -State having
+        '2nd Oldest City' and state_order of 'second'.
+        """
+        rollback_unmerge_url_2 = reverse('api:v2:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(rollback_unmerge_url_2, content_type='application/json')
+
+        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
+        self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
+        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
 
     def test_match_merge_in_cycle_ignores_properties_with_unpopulated_matching_criteria(self):
         base_details = {
@@ -521,126 +493,111 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         state_ids = list(PropertyView.objects.all().values_list('state_id', flat=True))
         self.assertCountEqual([ps_1.id, ps_2.id, ps_3.id], state_ids)
 
-    def test_match_merge_in_cycle_rolls_up_existing_taxlot_matches_in_latest_audit_log_order_with_final_priority_given_to_selected_taxlot(self):
+    def test_match_merge_in_cycle_rolls_up_existing_taxlot_matches_in_updated_state_order_with_final_priority_given_to_selected_taxlot(self):
         """
-        For this test, setup is long because updating audit log dates were done
-        "organically". Specifically, edit & manual merge/unmerge endpoints are
-        used to mimic possible user actions that would change/create audit log
-        records while creating unmerged records that match each other. The
-        unrealistic, albiet shorter path, would be to import records, update
-        -State values via direct model interaction (bypassing rollups), and
-        updating the "created" dates on the audit logs.
-        """
+        Import 4 non-matching records each with different cities and
+        state_orders (extra data field).
 
-        # Update merge protection column for 'city' column.
-        self.org.column_set.filter(
-            column_name='city',
-            table_name='TaxLotState'
-        ).update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
+        Create a Column record for state_orders, and update merge protection
+        setting for the city column.
 
-        """
-        Import 4 non-matching records each with different cities, with some
-        combination of 2 base matching criteria values. Cities will be used to
-        target and identify post-merge -States.
-        - 1st has completely different criteria values from the base values.
-        - 2nd has both base criteria values.
-        - 3rd and 4th each have one but not the other base value.
+        Change the 'updated' field's datetime value for each -State. Use
+        update() to make the records match to avoid changing the 'updated'
+        values. Run merging and unmerge records to unravel and reveal the merge
+        order.
         """
         base_details = {
-            'jurisdiction_tax_lot_id': '789DifferentID',
-            'address_line_1': '789 Different Street',
+            'jurisdiction_tax_lot_id': '123MatchID',
             'city': '1st Oldest City',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
+            'extra_data': {
+                'state_order': 'first',
+            },
         }
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
-        base_details['jurisdiction_tax_lot_id'] = '123MatchID'
-        base_details['address_line_1'] = '123 Match Street'
+        base_details['jurisdiction_tax_lot_id'] = '123DifferentID'
         base_details['city'] = '2nd Oldest City'
-        self.taxlot_state_factory.get_taxlot_state(**base_details)
+        base_details['extra_data']['state_order'] = 'second'
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
-        del base_details['address_line_1']
+        base_details['jurisdiction_tax_lot_id'] = '456DifferentID'
         base_details['city'] = '3rd Oldest City'
+        base_details['extra_data']['state_order'] = 'third'
         tls_3 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
-        del base_details['jurisdiction_tax_lot_id']
-        base_details['address_line_1'] = '123 Match Street'
+        base_details['jurisdiction_tax_lot_id'] = '789DifferentID'
         base_details['city'] = '4th Oldest City'
+        base_details['extra_data']['state_order'] = 'fourth'
         tls_4 = self.taxlot_state_factory.get_taxlot_state(**base_details)
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
         match_buildings(self.import_file_1.id)
 
-        # 1st record is edited via endpoint to match 2nd record - rollup occurs
-        new_data = {
-            "state": {
-                "jurisdiction_tax_lot_id": "123MatchID",
-                "address_line_1": "123 Match Street"
-            }
-        }
-        target_view_id = tls_1.taxlotview_set.first().id
-        edit_url = reverse('api:v2:taxlots-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.put(edit_url, json.dumps(new_data), content_type='application/json')
+        # Create (ED) 'state_order' column and update merge protection column for 'city'
+        self.org.column_set.create(
+            column_name='state_order',
+            is_extra_data=True,
+            table_name='TaxLotState',
+            merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING
+        )
+        self.org.column_set.filter(
+            column_name='city',
+            table_name='TaxLotState'
+        ).update(merge_protection=Column.COLUMN_MERGE_FAVOR_EXISTING)
 
-        """
-        3rd and 4th record are manually merged via endpoint to match rolled up
-        -State. Note that manual merges still make use of Merge Protection
-        settings. The resulting -State will have 3rd Oldest City since -State
-        level precedence is given to the 4th record. Then, everything gets
-        rolled up into one -State.
-        """
-        merge_url = reverse('api:v2:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
-        post_params = json.dumps({
-            'state_ids': [tls_3.pk, tls_4.pk]
-        })
-        self.client.post(merge_url, post_params, content_type='application/json')
+        # Update -States to make the roll up order be 4, 2, 3
+        refreshed_tls_4 = TaxLotState.objects.get(id=tls_4.id)
+        refreshed_tls_4.jurisdiction_tax_lot_id = '123MatchID'
+        refreshed_tls_4.save()
 
-        # Unmerge twice - 3 record sets should remain
-        # 1st - target only -View remaining and undo the last system roll up
-        # -States produced: -State from (3+4) manual merge and -State from (1+2) edit merge
-        unmerge_1_view = TaxLotView.objects.first()
-        unmerge_1_url = reverse('api:v2:taxlots-unmerge', args=[unmerge_1_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(unmerge_1_url, content_type='application/json')
+        refreshed_tls_2 = TaxLotState.objects.get(id=tls_2.id)
+        refreshed_tls_2.jurisdiction_tax_lot_id = '123MatchID'
+        refreshed_tls_2.save()
 
-        # 2nd - target -View with '1st Oldest City' and undo post-edit system roll up
-        # Note that this is first evidence that merge protection is ignored on roll ups
-        # -States produced: -State from edit of #1 and original -State #2
-        unmerge_2_view = TaxLotView.objects.prefetch_related('state').filter(state__city='1st Oldest City').get()
-        unmerge_2_url = reverse('api:v2:taxlots-unmerge', args=[unmerge_2_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(unmerge_2_url, content_type='application/json')
+        refreshed_tls_3 = TaxLotState.objects.get(id=tls_3.id)
+        refreshed_tls_3.jurisdiction_tax_lot_id = '123MatchID'
+        refreshed_tls_3.save()
 
-        # run match_merge_in_cycle - effectively rolling everything up again.
-        manual_merge_view = TaxLotView.objects.prefetch_related('state').filter(state__city='3rd Oldest City').get()
+        # run match_merge_in_cycle giving
+        manual_merge_view = TaxLotView.objects.get(state_id=tls_1.id)
         count_result, view_id_result = match_merge_in_cycle(manual_merge_view.id, 'TaxLotState')
-        self.assertEqual(count_result, 3)
+        self.assertEqual(count_result, 4)
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        manual merge -View with '3rd Oldest City'. '3rd Oldest City' is expected
+        manual merge -View with '1st Oldest City'. '1st Oldest City' is expected
         to be final City value since this rollup should ignore Merge Protection.
         """
         self.assertEqual(TaxLotView.objects.count(), 1)
         only_view = TaxLotView.objects.get()
-        self.assertEqual(only_view.state.city, '3rd Oldest City')
-
-        # The corresponding log should be a System Match
-        audit_log = TaxLotAuditLog.objects.get(state_id=only_view.state_id)
-        self.assertEqual(audit_log.name, 'System Match')
+        self.assertEqual(only_view.state.city, '1st Oldest City')
+        self.assertEqual(only_view.state.extra_data['state_order'], 'first')
 
         """
-        Undoing 1 rollup merge should expose a set with -State having
-        '1st Oldest City'. This is expected since this is the City value of the
-        edited -State. This edit should have created a more recent audit log than
-        the originally imported, "2nd" -State.
+        Undoing 1 rollup merge should expose a set -State having
+        '3rd Oldest City' and state_order of 'third'.
         """
-        rollback_unmerge_url = reverse('api:v2:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(rollback_unmerge_url, content_type='application/json')
+        rollback_unmerge_url_1 = reverse('api:v2:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(rollback_unmerge_url_1, content_type='application/json')
 
-        first_rollback_view = TaxLotView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
-        self.assertEqual(first_rollback_view.state.city, '1st Oldest City')
+        rollback_view_1 = TaxLotView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
+        self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
+        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'third')
+
+        """
+        Undoing another rollup merge should expose a set -State having
+        '2nd Oldest City' and state_order of 'second'.
+        """
+        rollback_unmerge_url_2 = reverse('api:v2:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(rollback_unmerge_url_2, content_type='application/json')
+
+        rollback_view_2 = TaxLotView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
+        self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
+        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
 
     def test_match_merge_in_cycle_ignores_taxlots_with_unpopulated_matching_criteria(self):
         base_details = {
