@@ -268,6 +268,9 @@ class PropertyState(models.Model):
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         index_together = [
             ['hash_object'],

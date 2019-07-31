@@ -53,8 +53,10 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties
     # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
+        'created',
         'hash_object',
         'normalized_address',
+        'updated',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -97,6 +99,7 @@ class Column(models.Model):
         'analysis_state',
         'bounding_box',
         'centroid',
+        'created',
         'data_state',
         'extra_data',
         'geocoding_confidence',
@@ -105,6 +108,7 @@ class Column(models.Model):
         'long_lat',
         'merge_state',
         'source_type',
+        'updated',
     ] + EXCLUDED_COLUMN_RETURN_FIELDS
 
     EXCLUDED_RENAME_TO_FIELDS = [
@@ -128,9 +132,11 @@ class Column(models.Model):
 
     # These are fields that should not be mapped to, ever.
     EXCLUDED_MAPPING_FIELDS = [
+        'created',
         'extra_data',
         'lot_number',
         'normalized_address',
+        'updated',
     ]
 
     # These are columns that should not be offered as suggestions during mapping

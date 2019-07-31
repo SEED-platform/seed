@@ -1088,7 +1088,7 @@ class TestColumnsByInventory(TestCase):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""
         expected = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time',
                     'analysis_state_message', 'block_number', 'building_certification',
-                    'building_count', 'campus', 'city', 'conditioned_floor_area', 'created',
+                    'building_count', 'campus', 'city', 'conditioned_floor_area',
                     'custom_id_1', 'district', 'energy_alerts', 'energy_score', 'generation_date',
                     'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
                     'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
@@ -1100,7 +1100,7 @@ class TestColumnsByInventory(TestCase):
                     'site_eui', 'site_eui_modeled', 'site_eui_weather_normalized', 'source_eui',
                     'source_eui_modeled', 'source_eui_weather_normalized', 'space_alerts', 'state',
                     'taxlot_footprint',
-                    'ubid', 'ulid', 'updated', 'use_description', 'year_built', 'year_ending']
+                    'ubid', 'ulid', 'use_description', 'year_built', 'year_ending']
 
         method_columns = Column.retrieve_db_field_name_for_hash_comparison()
         self.assertListEqual(method_columns, expected)
