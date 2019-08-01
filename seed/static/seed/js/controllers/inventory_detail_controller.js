@@ -293,9 +293,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
                   inventory_type: 'properties',
                   view_id: data.view_id
                 });
-                var otherMergedRecords = data.match_merged_count - 1;
                 Notification.info({
-                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  message: data.match_merged_count + ' records were matched and merged automatically.',
                   delay: 10000
                 });
               } else {
@@ -319,9 +318,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
                   inventory_type: 'taxlots',
                   view_id: data.view_id
                 });
-                var otherMergedRecords = data.match_merged_count - 1;
                 Notification.info({
-                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  message: data.match_merged_count + ' records were matched and merged automatically.',
                   delay: 10000
                 });
               } else {

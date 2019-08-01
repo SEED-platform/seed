@@ -15,7 +15,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.utils.match import match_merge_in_cycle
+from seed.utils.match import match_merge_link
 from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -283,7 +283,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
-        count, view_id = match_merge_in_cycle(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
         result = {
             'status': 'success'
@@ -740,7 +740,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        count, view_id = match_merge_in_cycle(taxlot_view.id, 'TaxLotState')
+                        count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
                             result.update({
@@ -779,7 +779,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        count, view_id = match_merge_in_cycle(taxlot_view.id, 'TaxLotState')
+                        count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
                             result.update({

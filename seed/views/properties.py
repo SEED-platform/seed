@@ -15,7 +15,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.utils.match import match_merge_in_cycle
+from seed.utils.match import match_merge_link
 from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
@@ -465,14 +465,14 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        count, view_id = match_merge_in_cycle(merged_state.propertyview_set.first().id, 'PropertyState')
+        merg_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
         result = {
             'status': 'success'
         }
 
         if view_id is not None:
-            result.update({'match_merged_count': count})
+            result.update({'match_merged_count': merg_count})
 
         return result
 
@@ -980,12 +980,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        count, view_id = match_merge_in_cycle(property_view.id, 'PropertyState')
+                        merge_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
-                                'match_merged_count': count,
+                                'match_merged_count': merge_count,
                             })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,
@@ -1021,12 +1021,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        count, view_id = match_merge_in_cycle(property_view.id, 'PropertyState')
+                        merge_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
-                                'match_merged_count': count,
+                                'match_merged_count': merge_count,
                             })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,

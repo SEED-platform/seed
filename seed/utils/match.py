@@ -68,51 +68,6 @@ def matching_criteria_column_names(organization_id, table_name):
     }
 
 
-def match_merge_in_cycle(view_id, StateClassName):
-    """
-    Given a -View ID, this method matches and merges for the related -State.
-    Match-eligible -States are scoped to those associated with -Views within
-    the same Cycle.
-
-    If the -State associated with the -View doesn't have any matching criteria
-    values populated, the -State is not eligible for a match merge.
-    """
-    if StateClassName == 'PropertyState':
-        StateClass = PropertyState
-        ViewClass = PropertyView
-    elif StateClassName == 'TaxLotState':
-        StateClass = TaxLotState
-        ViewClass = TaxLotView
-
-    view = ViewClass.objects.get(pk=view_id)
-    org_id = view.state.organization_id
-
-    # Check if associated -State has empty matching criteria.
-    if StateClass.objects.filter(pk=view.state_id, **empty_criteria_filter(org_id, StateClass)).exists():
-        return 0, None
-
-    matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
-    views_in_cycle = ViewClass.objects.filter(cycle_id=view.cycle_id)
-    state_matches = StateClass.objects.filter(
-        pk__in=Subquery(views_in_cycle.values('state_id')),
-        **matching_criteria
-    ).exclude(pk=view.state_id)
-
-    state_ids = list(
-        state_matches.order_by('updated').values_list('id', flat=True)
-    )
-    state_ids.append(view.state_id)  # Excluded above and appended to give merge precedence
-    count = len(state_ids)
-
-    if count > 1:
-        # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
-        merged_state = merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
-        view_id = ViewClass.objects.get(state_id=merged_state.id).id
-        return count, view_id
-    elif count == 1:
-        return 0, None
-
-
 def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass):
     """
     This is a helper method for match_merge_link().
@@ -129,6 +84,9 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
         filter(match_count__gt=1).\
         values_list('state_ids', flat=True)
 
+    target_state_id = given_state_id
+    count = 0
+
     for state_ids in states_to_merge:
         ordered_ids = list(
             StateClass.objects.
@@ -138,14 +96,21 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
         )
 
         if given_state_id in ordered_ids:
-            # If the given -State ID is included, give it precedence
+            # If the given -State ID is included, give it precedence and
+            # capture resulting merged_state
             ordered_ids.remove(given_state_id)
             ordered_ids.append(given_state_id)
+            merged_state = merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+            target_state_id = merged_state.id
+        else:
+            merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
 
-        merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
+        count += len(ordered_ids)
+
+    return count, target_state_id
 
 
-def _link_matches(matching_views, org_id, given_cycle_id, ViewClass):
+def _link_matches(matching_views, org_id, view, ViewClass):
     """
     This is a helper method for match_merge_link() and is intended to be called
     after match merges have occurred.
@@ -164,9 +129,6 @@ def _link_matches(matching_views, org_id, given_cycle_id, ViewClass):
     elif ViewClass == TaxLotView:
         CanonicalClass = TaxLot
         canonical_id_col = 'taxlot_id'
-
-    # .get() works since this method should only be called after merges happened
-    view = matching_views.get(cycle_id=given_cycle_id)
 
     # Exclude target and capture unique canonical IDs
     unique_canonical_ids = matching_views.\
@@ -220,6 +182,9 @@ def match_merge_link(view_id, StateClassName):
     -State across Cycles, merges matches where there are multiple in a Cycle,
     and finally after there are at most one match in any Cycle, creates links
     between the matching -Views.
+
+    This method returns the total count of merged -States as well as the
+    target -View if merges did occur (whether it was updated or not).
     """
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
@@ -231,11 +196,10 @@ def match_merge_link(view_id, StateClassName):
     view = ViewClass.objects.get(pk=view_id)
     given_state_id = view.state_id
     org_id = view.state.organization_id
-    given_cycle_id = view.cycle_id
 
     # If associated -State has empty matching criteria, do nothing
     if StateClass.objects.filter(pk=given_state_id, **empty_criteria_filter(org_id, StateClass)).exists():
-        return
+        return 0, None
 
     matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
     state_appended_matching_criteria = {
@@ -252,9 +216,17 @@ def match_merge_link(view_id, StateClassName):
             **state_appended_matching_criteria
         )
 
-    _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
+    count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
 
-    _link_matches(matching_views, org_id, given_cycle_id, ViewClass)
+    # Refresh target_view in case merges changed the target -View in last step.
+    target_view = ViewClass.objects.get(state_id=target_state_id)
+
+    _link_matches(matching_views, org_id, target_view, ViewClass)
+
+    if count > 0:
+        return count, target_view.id
+    else:
+        return 0, None
 
 
 def whole_org_match_merge_link(org_id):

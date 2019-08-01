@@ -38,7 +38,6 @@ from seed.models import (
 )
 from seed.utils.match import (
     match_merge_link,
-    match_merge_in_cycle,
     whole_org_match_merge_link,
 )
 from seed.test_helpers.fake import (
@@ -366,7 +365,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_match_merge_in_cycle_rolls_up_existing_property_matches_in_updated_state_order_with_final_priority_given_to_selected_property(self):
+    def test_match_merge_link_rolls_up_existing_property_matches_in_updated_state_order_with_final_priority_given_to_selected_property(self):
         """
         Import 4 non-matching records each with different cities and
         state_orders (extra data field).
@@ -435,9 +434,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         refreshed_ps_3.pm_property_id = '123MatchID'
         refreshed_ps_3.save()
 
-        # run match_merge_in_cycle giving
+        # run match_merge_link giving
         manual_merge_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, view_id_result = match_merge_in_cycle(manual_merge_view.id, 'PropertyState')
+        count_result, view_id_result = match_merge_link(manual_merge_view.id, 'PropertyState')
         self.assertEqual(count_result, 4)
 
         """
@@ -472,7 +471,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
         self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
 
-    def test_match_merge_in_cycle_ignores_properties_with_unpopulated_matching_criteria(self):
+    def test_match_merge_link_ignores_properties_with_unpopulated_matching_criteria(self):
         base_details = {
             'city': 'Golden',
             'import_file_id': self.import_file_1.id,
@@ -494,7 +493,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
-        count_result, no_match_indicator = match_merge_in_cycle(ps_1_view.id, 'PropertyState')
+        count_result, no_match_indicator = match_merge_link(ps_1_view.id, 'PropertyState')
         self.assertEqual(count_result, 0)
         self.assertIsNone(no_match_indicator)
 
@@ -505,7 +504,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         state_ids = list(PropertyView.objects.all().values_list('state_id', flat=True))
         self.assertCountEqual([ps_1.id, ps_2.id, ps_3.id], state_ids)
 
-    def test_match_merge_in_cycle_rolls_up_existing_taxlot_matches_in_updated_state_order_with_final_priority_given_to_selected_taxlot(self):
+    def test_match_merge_link_rolls_up_existing_taxlot_matches_in_updated_state_order_with_final_priority_given_to_selected_taxlot(self):
         """
         Import 4 non-matching records each with different cities and
         state_orders (extra data field).
@@ -574,9 +573,9 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         refreshed_tls_3.jurisdiction_tax_lot_id = '123MatchID'
         refreshed_tls_3.save()
 
-        # run match_merge_in_cycle giving
+        # run match_merge_link giving
         manual_merge_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, view_id_result = match_merge_in_cycle(manual_merge_view.id, 'TaxLotState')
+        count_result, view_id_result = match_merge_link(manual_merge_view.id, 'TaxLotState')
         self.assertEqual(count_result, 4)
 
         """
@@ -611,7 +610,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
         self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
 
-    def test_match_merge_in_cycle_ignores_taxlots_with_unpopulated_matching_criteria(self):
+    def test_match_merge_link_ignores_taxlots_with_unpopulated_matching_criteria(self):
         base_details = {
             'city': 'Golden',
             'import_file_id': self.import_file_1.id,
@@ -633,7 +632,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         # Verify no match merges happen
         tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
-        count_result, no_match_indicator = match_merge_in_cycle(tls_1_view.id, 'TaxLotState')
+        count_result, no_match_indicator = match_merge_link(tls_1_view.id, 'TaxLotState')
         self.assertEqual(count_result, 0)
         self.assertIsNone(no_match_indicator)
 
