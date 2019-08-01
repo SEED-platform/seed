@@ -760,6 +760,10 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         ]
         PropertyState.objects.filter(id__in=to_be_matched_ids).update(pm_property_id='1st Match Set')
 
+        # Give ps_22 priority in Cycle 2
+        refreshed_ps_22 = PropertyState.objects.get(id=ps_22.id)
+        refreshed_ps_22.save()
+
         # run match_merge_link on Sets that WON'T trigger merges or linkings
         match_merge_link(PropertyView.objects.get(state_id=ps_13.id).id, 'PropertyState')
         match_merge_link(PropertyView.objects.get(state_id=ps_24.id).id, 'PropertyState')
@@ -779,7 +783,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
-            '1st Match - Cycle 1 - City 1',  # ps_11 took precedence over ps_12, since ps_11's -View took precedence
+            '1st Match - Cycle 1 - City 1',  # ps_11 took precedence over ps_12, since the provided -View was ps_11's -View
             'Unmatched City - Cycle 1'
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
@@ -790,7 +794,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
-            '1st Match - Cycle 2 - City 3',  # ps_23 took precedence
+            '1st Match - Cycle 2 - City 2',  # ps_22 was explicitly given precedence
             'Unmatched City - Cycle 2'
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
@@ -1406,7 +1410,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         # Cycle 1 / ImportFile 1
         base_property_details = {
             'pm_property_id': '1st Match Set',
-            'city': 'Golden',
+            'city': 'City 1',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1415,28 +1419,28 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated - 1st Match Set'
-        base_property_details['city'] = 'Denver'
+        base_property_details['city'] = 'City 2'
         ps_12 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = '2nd Match Set'
-        base_property_details['city'] = 'Philadelphia'
+        base_property_details['city'] = 'City 3'
         ps_13 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated - 2nd Match Set'
-        base_property_details['city'] = 'Colorado Springs'
+        base_property_details['city'] = 'City 4'
         ps_14 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single Unmatched'
-        base_property_details['city'] = 'Grand Junction'
+        base_property_details['city'] = 'City 5'
         ps_15 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single to be Linked!'
-        base_property_details['city'] = 'Estes Park'
+        base_property_details['city'] = 'City 6'
         ps_16 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_taxlot_details = {
             'jurisdiction_tax_lot_id': '1st Match Set',
-            'city': 'Golden',
+            'city': 'City 1',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1445,23 +1449,23 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 1st Match Set'
-        base_taxlot_details['city'] = 'Denver'
+        base_taxlot_details['city'] = 'City 2'
         tls_12 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = '2nd Match Set'
-        base_taxlot_details['city'] = 'Philadelphia'
+        base_taxlot_details['city'] = 'City 3'
         tls_13 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 2nd Match Set'
-        base_taxlot_details['city'] = 'Colorado Springs'
+        base_taxlot_details['city'] = 'City 4'
         tls_14 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single Unmatched'
-        base_taxlot_details['city'] = 'Grand Junction'
+        base_taxlot_details['city'] = 'City 5'
         tls_15 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked!'
-        base_taxlot_details['city'] = 'Estes Park'
+        base_taxlot_details['city'] = 'City 6'
         tls_16 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         # Import file and create -Views and canonical records.
@@ -1486,7 +1490,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         # Cycle 2 / ImportFile 2
         base_property_details = {
             'pm_property_id': '1st Match Set',
-            'city': 'Golden',
+            'city': 'City 1',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1495,11 +1499,11 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         ps_21 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated 1 - 1st Match Set'
-        base_property_details['city'] = 'Denver'
+        base_property_details['city'] = 'City 2'
         ps_22 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated 2 - 1st Match Set'
-        base_property_details['city'] = 'Philadelphia'
+        base_property_details['city'] = 'City 3'
         ps_23 = self.property_state_factory.get_property_state(**base_property_details)
 
         del base_property_details['pm_property_id']
@@ -1510,12 +1514,12 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         ps_25 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single to be Linked! - will be updated later'
-        base_property_details['city'] = 'Estes Park'
+        base_property_details['city'] = 'City 6'
         ps_26 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_taxlot_details = {
             'jurisdiction_tax_lot_id': '1st Match Set',
-            'city': 'Golden',
+            'city': 'City 1',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
@@ -1524,11 +1528,11 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 1 - 1st Match Set'
-        base_taxlot_details['city'] = 'Denver'
+        base_taxlot_details['city'] = 'City 2'
         tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 2 - 1st Match Set'
-        base_taxlot_details['city'] = 'Philadelphia'
+        base_taxlot_details['city'] = 'City 3'
         tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         del base_taxlot_details['jurisdiction_tax_lot_id']
@@ -1539,7 +1543,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         tls_25 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked! - will be updated later'
-        base_taxlot_details['city'] = 'Estes Park'
+        base_taxlot_details['city'] = 'City 6'
         tls_26 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         # Import file and create -Views and canonical records.
@@ -1548,8 +1552,16 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file_2.id)
 
         # Make some match but don't trigger matching round
-        PropertyState.objects.filter(pk__in=[ps_22.id, ps_23.id]).update(pm_property_id='1st Match Set')
-        TaxLotState.objects.filter(pk__in=[tls_22.id, tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+        PropertyState.objects.filter(pk__in=[ps_23.id]).update(pm_property_id='1st Match Set')
+        TaxLotState.objects.filter(pk__in=[tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+
+        # Give merge priority to -States with City 2
+        prioritized_property = PropertyState.objects.get(id=ps_22.id)
+        prioritized_property.pm_property_id = '1st Match Set'
+        prioritized_property.save()
+        prioritized_taxlot = TaxLotState.objects.get(id=tls_22.id)
+        prioritized_taxlot.jurisdiction_tax_lot_id = '1st Match Set'
+        prioritized_taxlot.save()
 
         PropertyState.objects.filter(pk=ps_26.id).update(pm_property_id='Single to be Linked!')
         TaxLotState.objects.filter(pk=tls_26.id).update(jurisdiction_tax_lot_id='Single to be Linked!')
@@ -1682,37 +1694,39 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         cycle_1_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_1_pviews.values('state_id')))
 
         self.assertEqual(4, cycle_1_pstates.count())
-        self.assertEqual(1, cycle_1_pstates.filter(city='Denver').count())
-        self.assertEqual(1, cycle_1_pstates.filter(city='Colorado Springs').count())
-        self.assertEqual(1, cycle_1_pstates.filter(city='Grand Junction').count())
-        self.assertEqual(1, cycle_1_pstates.filter(city='Estes Park').count())
-
-        cycle_2_pviews = PropertyView.objects.filter(cycle_id=self.cycle_2.id)
-        cycle_2_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_2_pviews.values('state_id')))
-
-        self.assertEqual(4, cycle_2_pstates.count())
-        self.assertEqual(1, cycle_2_pstates.filter(city='Philadelphia').count())
-        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 1').count())
-        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 2').count())
-        self.assertEqual(1, cycle_2_pstates.filter(city='Estes Park').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='City 2').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='City 4').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='City 5').count())
+        self.assertEqual(1, cycle_1_pstates.filter(city='City 6').count())
 
         cycle_1_tlviews = TaxLotView.objects.filter(cycle_id=self.cycle_1.id)
         cycle_1_tlstates = TaxLotState.objects.filter(pk__in=Subquery(cycle_1_tlviews.values('state_id')))
 
         self.assertEqual(4, cycle_1_tlstates.count())
-        self.assertEqual(1, cycle_1_tlstates.filter(city='Denver').count())
-        self.assertEqual(1, cycle_1_tlstates.filter(city='Colorado Springs').count())
-        self.assertEqual(1, cycle_1_tlstates.filter(city='Grand Junction').count())
-        self.assertEqual(1, cycle_1_tlstates.filter(city='Estes Park').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='City 2').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='City 4').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='City 5').count())
+        self.assertEqual(1, cycle_1_tlstates.filter(city='City 6').count())
+
+        cycle_2_pviews = PropertyView.objects.filter(cycle_id=self.cycle_2.id)
+        cycle_2_pstates = PropertyState.objects.filter(pk__in=Subquery(cycle_2_pviews.values('state_id')))
+
+        self.assertEqual(4, cycle_2_pstates.count())
+        # Note: merge priority was explicitly given to -State with City 2
+        self.assertEqual(1, cycle_2_pstates.filter(city='City 2').count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 1').count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='Null Fields 2').count())
+        self.assertEqual(1, cycle_2_pstates.filter(city='City 6').count())
 
         cycle_2_tlviews = TaxLotView.objects.filter(cycle_id=self.cycle_2.id)
         cycle_2_tlstates = TaxLotState.objects.filter(pk__in=Subquery(cycle_2_tlviews.values('state_id')))
 
         self.assertEqual(4, cycle_2_tlstates.count())
-        self.assertEqual(1, cycle_2_tlstates.filter(city='Philadelphia').count())
+        # Note: merge priority was explicitly given to -State with City 2
+        self.assertEqual(1, cycle_2_tlstates.filter(city='City 2').count())
         self.assertEqual(1, cycle_2_tlstates.filter(city='Null Fields 1').count())
         self.assertEqual(1, cycle_2_tlstates.filter(city='Null Fields 2').count())
-        self.assertEqual(1, cycle_2_tlstates.filter(city='Estes Park').count())
+        self.assertEqual(1, cycle_2_tlstates.filter(city='City 6').count())
 
         # Finally, check method returned expected summary
         expected_summary = {

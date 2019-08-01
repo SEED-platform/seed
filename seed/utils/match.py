@@ -14,8 +14,6 @@ from django.db.models.aggregates import Count
 from seed.models import (
     Column,
     Cycle,
-    PropertyState,
-    PropertyView,
     Property,
     PropertyState,
     PropertyView,
@@ -125,11 +123,6 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     If the given -View has matches in it's own Cycle, these are merged by
     AuditLog but with final precedence given to the given -View's -State.
     """
-    if StateClass == PropertyState:
-        AuditLogClass = PropertyAuditLog
-    elif StateClass == TaxLotState:
-        AuditLogClass = TaxLotAuditLog
-
     # Group matching -Views by Cycle and capture state_ids to be merged
     states_to_merge = matching_views.values('cycle_id').\
         annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id')).\
@@ -138,10 +131,10 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
 
     for state_ids in states_to_merge:
         ordered_ids = list(
-            AuditLogClass.objects.
-            filter(state_id__in=state_ids).
-            order_by('created').
-            values_list('state_id', flat=True)
+            StateClass.objects.
+            filter(id__in=state_ids).
+            order_by('updated').
+            values_list('id', flat=True)
         )
 
         if given_state_id in ordered_ids:
@@ -327,7 +320,14 @@ def whole_org_match_merge_link(org_id):
                     filter(matched_count__gt=1)
 
                 for state_ids in matched_id_groups:
-                    merge_states_with_views(state_ids, org_id, 'System Match', StateClass)
+                    ordered_ids = list(
+                        StateClass.objects.
+                        filter(id__in=state_ids).
+                        order_by('updated').
+                        values_list('id', flat=True)
+                    )
+
+                    merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
 
                     summary[StateClass.__name__]['merged_count'] += len(state_ids)
 
