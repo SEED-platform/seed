@@ -15,7 +15,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0107_column_is_matching_criteria'),
+        ('seed', '0108_auto_20190730_1212'),
     ]
 
     operations = [
