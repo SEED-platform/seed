@@ -244,10 +244,13 @@ def match_merge_link(view_id, StateClassName):
         in matching_criteria.items()
     }
 
-    # Get all matching views (across Cycles)
+    # Get all matching views (across Cycles in this Organization)
     matching_views = ViewClass.objects.\
         prefetch_related('state').\
-        filter(**state_appended_matching_criteria)
+        filter(
+            state__organization_id=org_id,
+            **state_appended_matching_criteria
+        )
 
     _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
 
