@@ -67,8 +67,8 @@
               <other_ns:Perimeter>977</other_ns:Perimeter>
               <other_ns:YearOfConstruction>1889</other_ns:YearOfConstruction>
               <other_ns:YearOfLastMajorRemodel>2018</other_ns:YearOfLastMajorRemodel>
-              <other_ns:Subsections>
-                <other_ns:Subsection ID="Default_Subsection">
+              <other_ns:Sections>
+                <other_ns:Section ID="Default_Subsection">
                   <other_ns:OccupancyClassification>Restaurant</other_ns:OccupancyClassification>
                   <other_ns:TypicalOccupantUsages>
                     <other_ns:TypicalOccupantUsage>
@@ -90,8 +90,8 @@
                       <other_ns:FloorAreaValue>55000</other_ns:FloorAreaValue>
                     </other_ns:FloorArea>
                   </other_ns:FloorAreas>
-                </other_ns:Subsection>
-              </other_ns:Subsections>
+                </other_ns:Section>
+              </other_ns:Sections>
             </other_ns:Building>
           </other_ns:Buildings>
         </other_ns:Site>
