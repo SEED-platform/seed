@@ -218,18 +218,25 @@ class TaxLotPropertyViewSet(GenericViewSet):
         response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
 
         scenario_keys = (
-            'id', 'name', 'description', 'annual_site_energy_savings',
-            'annual_source_energy_savings', 'annual_cost_savings', 'analysis_state', 'analysis_state_message',
-            'annual_electricity_savings', 'annual_natural_gas_savings', 'annual_site_energy', 'annual_source_energy', 'annual_natural_gas_energy',
-            'annual_electricity_energy', 'annual_peak_demand', 'annual_site_energy_use_intensity', 'annual_source_energy_use_intensity'
+            'id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings',
+            'annual_cost_savings', 'analysis_state', 'analysis_state_message', 'annual_electricity_savings',
+            'annual_natural_gas_savings', 'annual_site_energy', 'annual_source_energy', 'annual_natural_gas_energy',
+            'annual_electricity_energy', 'annual_peak_demand', 'annual_site_energy_use_intensity',
+            'annual_source_energy_use_intensity'
         )
         scenario_key_mappings = {
             'annual_site_energy_savings': 'annual_site_energy_savings_mmbtu',
-            'annual_source_energy_savings': 'annual_source_energy_savings_mmbtu', 'annual_cost_savings': 'annual_cost_savings_dollars',
-            'annual_site_energy': 'annual_site_energy_kbtu', 'annual_site_energy_use_intensity': 'annual_site_energy_use_intensity_kbtu_ft2',
-            'annual_source_energy': 'annual_source_energy_kbtu', 'annual_source_energy_use_intensity': 'annual_source_energy_use_intensity_kbtu_ft2',
-            'annual_natural_gas_energy': 'annual_natural_gas_energy_mmbtu', 'annual_electricity_energy': 'annual_electricity_energy_mmbtu',
-            'annual_peak_demand': 'annual_peak_demand_kw', 'annual_electricity_savings': 'annual_electricity_savings_kbtu', 'annual_natural_gas_savings': 'annual_natural_gas_savings_kbtu'
+            'annual_source_energy_savings': 'annual_source_energy_savings_mmbtu',
+            'annual_cost_savings': 'annual_cost_savings_dollars',
+            'annual_site_energy': 'annual_site_energy_kbtu',
+            'annual_site_energy_use_intensity': 'annual_site_energy_use_intensity_kbtu_ft2',
+            'annual_source_energy': 'annual_source_energy_kbtu',
+            'annual_source_energy_use_intensity': 'annual_source_energy_use_intensity_kbtu_ft2',
+            'annual_natural_gas_energy': 'annual_natural_gas_energy_mmbtu',
+            'annual_electricity_energy': 'annual_electricity_energy_mmbtu',
+            'annual_peak_demand': 'annual_peak_demand_kw',
+            'annual_electricity_savings': 'annual_electricity_savings_kbtu',
+            'annual_natural_gas_savings': 'annual_natural_gas_savings_kbtu'
         }
 
         property_measure_keys = (
@@ -387,8 +394,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         return response
 
     def _json_response(self, filename, data, column_name_mappings):
-        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint",
-                          "long_lat"]
+        polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
         features = []
 
         # extract related records

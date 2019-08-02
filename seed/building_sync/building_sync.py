@@ -85,6 +85,11 @@ class BuildingSync(object):
                 "required": True,
                 "type": "string",
             },
+            "property_type": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:Sections.auc:Section.auc:OccupancyClassification",
+                "required": True,
+                "type": "string",
+            },
             "year_built": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:YearOfConstruction",
                 "required": True,
