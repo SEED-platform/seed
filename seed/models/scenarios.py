@@ -81,4 +81,21 @@ class Scenario(models.Model):
 
     measures = models.ManyToManyField(PropertyMeasure)
 
-    # TODO: add in meters -- meters are linked from Class Meter
+    def copy_initial_meters(self, source_scenario_id):
+        """
+        Copy meters from another scenario.
+
+        As hinted by the name, this method is meant to be used when there are no
+        meters currently associated to this scenario.
+        """
+        from seed.models.meters import Meter
+
+        source_scenario = Scenario.objects.get(pk=source_scenario_id)
+
+        for source_meter in source_scenario.meters:
+            # create new meter and copy over the readings from the source_meter
+            meter = Meter.objects.get(pk=source_meter.id)
+            meter.pk = None
+            meter.scenario_id = self.id
+            meter.copy_readings(source_meter, overlaps_possible=False)
+            meter.save()  # save to get new id / association

@@ -613,7 +613,6 @@ class PropertyState(models.Model):
         """
         Merge together the old relationships with the new.
         """
-        from seed.models.meters import Meter
         from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure
         from seed.models.scenarios import Scenario
@@ -693,20 +692,11 @@ class PropertyState(models.Model):
                 # create a new scenario from the old one
                 scenario = Scenario.objects.get(pk=scenario_id)
 
-                # first get meters and meterreadings
-                meters = Meter.objects.filter(scenario_id=scenario_id)
-
                 scenario.pk = None
                 scenario.property_state = merged_state
                 scenario.save()  # save to get new id
 
-                for source_meter in meters:
-                    # create new meter and copy over the readings from the source_meter
-                    meter = Meter.objects.get(pk=source_meter.id)
-                    meter.pk = None
-                    meter.scenario_id = scenario.id
-                    meter.copy_readings(source_meter, overlaps_possible=False)
-                    meter.save()  # save to get new id / association
+                scenario.copy_initial_meters(scenario_id)
 
                 # get the measures
                 measures = PropertyMeasure.objects.filter(pk__in=measure_list)
