@@ -92,7 +92,7 @@ class Scenario(models.Model):
 
         source_scenario = Scenario.objects.get(pk=source_scenario_id)
 
-        for source_meter in source_scenario.meters:
+        for source_meter in source_scenario.meter_set.all():
             # create new meter and copy over the readings from the source_meter
             meter = Meter.objects.get(pk=source_meter.id)
             meter.pk = None
