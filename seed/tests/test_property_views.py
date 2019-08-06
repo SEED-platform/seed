@@ -157,6 +157,51 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(result['state']['extra_data']['field_1'], 'value_1')
         self.assertFalse(result['state'].get('city', None))
 
+    def test_properties_cycles_list(self):
+        # Create Property set in cycle 1
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
+        prprty_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=state_2
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+        # get the columnlistsetting (default) for all columns
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+
+        post_params = json.dumps({
+            'organization_id': self.org.pk,
+            'profile_id': columnlistsetting.id,
+            'cycle_ids': [self.cycle.id, cycle_2.id]
+        })
+        url = reverse('api:v2:properties-cycles')
+        response = self.client.post(url, post_params, content_type='application/json')
+        data = response.json()
+
+        address_line_1_key = 'address_line_1_' + str(columnlistsetting.columns.get(column_name='address_line_1').id)
+        field_1_key = 'field_1_' + str(columnlistsetting.columns.get(column_name='field_1').id)
+
+        self.assertEqual(len(data), 2)
+
+        result_1 = data[str(self.cycle.id)]
+        self.assertEqual(result_1[0][address_line_1_key], state.address_line_1)
+        self.assertEqual(result_1[0][field_1_key], 'value_1')
+        self.assertEqual(result_1[0]['id'], prprty.id)
+
+        result_2 = data[str(cycle_2.id)]
+        self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
+        self.assertEqual(result_2[0][field_1_key], 'value_2')
+        self.assertEqual(result_2[0]['id'], prprty_2.id)
+
     def test_search_identifier(self):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='987654 Long Street')
