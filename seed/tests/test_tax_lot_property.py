@@ -131,8 +131,6 @@ class TestTaxLotProperty(TestCase):
             content_type='application/x-www-form-urlencoded'
         )
 
-        print(response.content)
-
         # parse the content as array
         data = response.content.decode('utf-8').split('\n')
 

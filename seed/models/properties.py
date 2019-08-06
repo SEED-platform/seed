@@ -4,17 +4,16 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import copy
 import logging
 import re
 from os import path
-from past.builtins import basestring
-from django.apps import apps
-from django.contrib.postgres.fields import JSONField
+
 from django.contrib.gis.db import models as geomodels
+from django.contrib.postgres.fields import JSONField
 from django.db import (
     models,
     transaction,
@@ -23,10 +22,9 @@ from django.db import (
 from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from past.builtins import basestring
 from quantityfield.fields import QuantityField
 
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
@@ -49,6 +47,8 @@ from seed.utils.generic import (
 )
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -448,8 +448,7 @@ class PropertyState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -614,21 +613,17 @@ class PropertyState(models.Model):
         """
         Merge together the old relationships with the new.
         """
-        SimulationClass = apps.get_model('seed', 'Simulation')
-        ScenarioClass = apps.get_model('seed', 'Scenario')
-        PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
+        from seed.models.simulations import Simulation
+        from seed.models.property_measures import PropertyMeasure
+        from seed.models.scenarios import Scenario
 
         # TODO: get some items off of this property view - labels and eventually notes
 
         # collect the relationships
-        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
-                               [x for x in state1.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()] + [x for x in
-                                                                     state1.building_files.all()]
-        simulations = [x for x in
-                       SimulationClass.objects.filter(property_state__in=[state1, state2])]
-        measures = [x for x in
-                    PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
+        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
+        building_files = [x for x in state2.building_files.all()]
+        simulations = [x for x in Simulation.objects.filter(property_state=state2)]
+        measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -693,14 +688,18 @@ class PropertyState(models.Model):
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
+
                 # create a new scenario from the old one
-                scenario = ScenarioClass.objects.get(pk=scenario_id)
+                scenario = Scenario.objects.get(pk=scenario_id)
+
                 scenario.pk = None
                 scenario.property_state = merged_state
                 scenario.save()  # save to get new id
 
+                scenario.copy_initial_meters(scenario_id)
+
                 # get the measures
-                measures = PropertyMeasureClass.objects.filter(pk__in=measure_list)
+                measures = PropertyMeasure.objects.filter(pk__in=measure_list)
                 for measure in measures:
                     scenario.measures.add(measure)
                 scenario.save()

@@ -72,8 +72,8 @@
               <auc:Perimeter>2145</auc:Perimeter>
               <auc:YearOfConstruction>2010</auc:YearOfConstruction>
               <auc:YearOfLastMajorRemodel>2012</auc:YearOfLastMajorRemodel>
-              <auc:Subsections>
-                <auc:Subsection ID="Default_Subsection">
+              <auc:Sections>
+                <auc:Section ID="Default_Subsection">
                   <auc:OccupancyClassification>Retail</auc:OccupancyClassification>
                   <auc:TypicalOccupantUsages>
                     <auc:TypicalOccupantUsage>
@@ -99,8 +99,8 @@
                       <auc:FloorAreaValue>0.0</auc:FloorAreaValue>
                     </auc:FloorArea>
                   </auc:FloorAreas>
-                </auc:Subsection>
-              </auc:Subsections>
+                </auc:Section>
+              </auc:Sections>
             </auc:Building>
           </auc:Buildings>
         </auc:Site>

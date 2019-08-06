@@ -52,6 +52,7 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
+        self.assertEqual(property_state.property_type, 'Office')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_constructor_diff_ns(self):
