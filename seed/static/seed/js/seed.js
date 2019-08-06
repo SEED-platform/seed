@@ -56,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
+  'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
@@ -1140,6 +1141,47 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return !_.isEmpty(label.is_applied);
               });
             });
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_cycles',
+        url: '/{inventory_type:properties|taxlots}/cycles',
+        templateUrl: static_url + 'seed/partials/inventory_cycles.html',
+        controller: 'inventory_cycles_controller',
+        resolve: {
+          inventory: ['$stateParams', 'cycles', 'inventory_service', 'current_profile', function ($stateParams, cycles, inventory_service, current_profile) {
+            var cycle_ids = _.map(cycles.cycles, 'id')
+            var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.properties_cycle(profile_id, cycle_ids);
+            } //else if ($stateParams.inventory_type === 'taxlots') {
+            //   return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
+            // }
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return inventory_service.get_settings_profiles('List View Settings', inventory_type);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
           }]
         }
       })

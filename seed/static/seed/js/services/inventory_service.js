@@ -50,6 +50,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).catch(_.constant('Error fetching cycles'));
     };
 
+    inventory_service.properties_cycle = function (profile_id, cycle_ids) {
+      return $http.post('/api/v2/properties/cycles/', {
+        organization_id: user_service.get_organization().id,
+        profile_id: profile_id,
+        cycle_ids: cycle_ids,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
     /** Get Property information from server for a specified Property and Cycle and Organization.
      *
