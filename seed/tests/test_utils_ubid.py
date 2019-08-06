@@ -162,7 +162,9 @@ class UbidUtilMethods(TestCase):
     def test_decode_ubids_is_successful_when_v2_format_C_NW_SE_UBID_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
-        property_details['ubid'] = '849VQJH6+95J-849VQJH5+VGW-849VQJG6+XV8'
+        # Old format (v2) is not longer supported
+        # property_details['ubid'] = '849VQJH6+95J-849VQJH5+VGW-849VQJG6+XV8'
+        property_details['ubid'] = '849VQJH6+95J-51-58-42-50'
 
         property = PropertyState(**property_details)
         property.save()
@@ -170,12 +172,13 @@ class UbidUtilMethods(TestCase):
 
         decode_unique_ids(properties)
         refreshed_property = PropertyState.objects.get(pk=property.id)
+
         property_bounding_box_wkt = (
-            "POLYGON ((-122.38778125 37.77740000000001, "
-            "-122.38778125 37.77975000000001, "
-            "-122.3911875 37.77975000000001, "
-            "-122.3911875 37.77740000000001, "
-            "-122.38778125 37.77740000000001))"
+            "POLYGON ((-122.3877812499996 37.77739999999996, "
+            "-122.3877812499996 37.77975000000004, "
+            "-122.3911875000003 37.77975000000004, "
+            "-122.3911875000003 37.77739999999996, "
+            "-122.3877812499996 37.77739999999996))"
         )
         property_centroid_wkt = (
             "POLYGON ((-122.38959375 37.77845, "
