@@ -188,19 +188,3 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get(url)
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
                       response.content.decode('utf-8'))
-
-    def test_get_hpxml(self):
-        state = self.property_state_factory.get_property_state()
-        prprty = self.property_factory.get_property()
-        pv = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
-
-        # go to buildingsync endpoint
-        params = {
-            'organization_id': self.org.pk
-        }
-        url = reverse('api:v2.1:properties-hpxml', args=[pv.id])
-        response = self.client.get(url, params)
-        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area,
-                      response.content.decode('utf-8'))
