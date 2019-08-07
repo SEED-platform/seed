@@ -69,8 +69,7 @@ class InventoryViewTests(DeleteModelsTestCase):
                       response.content.decode("utf-8"))
 
     def test_upload_and_get_building_sync(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -97,8 +96,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'valid_xml_ex1_ex2.zip')
+        filename = path.join(path.dirname(__file__), 'data', 'valid_xml_ex1_ex2.zip')
 
         url = '/api/v2/building_file/'
         fsysparams = {
@@ -118,8 +116,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
     def test_upload_with_measure_duplicates(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'buildingsync_ex01_measures.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -162,9 +159,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
 
     def test_upload_and_get_building_sync_diff_ns(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data',
-                             'ex_1_different_namespace.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
 
         url = reverse('api:v2:building_file-list')
 
