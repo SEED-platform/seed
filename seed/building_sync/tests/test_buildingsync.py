@@ -10,7 +10,6 @@ from os import path
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
-from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
 from seed.models.scenarios import Scenario
