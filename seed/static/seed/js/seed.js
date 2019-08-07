@@ -1151,13 +1151,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'inventory_cycles_controller',
         resolve: {
           inventory: ['$stateParams', 'cycles', 'inventory_service', 'current_profile', function ($stateParams, cycles, inventory_service, current_profile) {
-            var cycle_ids = _.map(cycles.cycles, 'id')
+            var cycle_ids = _.map(cycles.cycles, 'id');
             var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.properties_cycle(profile_id, cycle_ids);
             } //else if ($stateParams.inventory_type === 'taxlots') {
             //   return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
             // }
+          }],
+          matching_criteria_columns: ['user_service', 'organization_service', function (user_service, organization_service) {
+            var org_id = user_service.get_organization().id;
+            return organization_service.matching_criteria_columns(org_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
