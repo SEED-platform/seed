@@ -1,9 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-import buildingid.v2
-import buildingid.v3
+from buildingid.code import decode
 from django.contrib.gis.geos import GEOSGeometry
+
+import logging
+
+_log = logging.getLogger(__name__)
 
 
 def centroid_wkt(state):
@@ -33,12 +36,10 @@ def decode_unique_ids(qs):
 
     for item in filtered_qs.iterator():
         try:
-            bounding_box_obj = buildingid.v3.decode(getattr(item, unique_id))
+            bounding_box_obj = decode(getattr(item, unique_id))
         except ValueError:
-            try:
-                bounding_box_obj = buildingid.v2.decode(getattr(item, unique_id))
-            except ValueError:
-                continue  # property with an incorrectly formatted UBID/ULID is skipped
+            _log.error(f'Cound not decode UBID of {getattr(item, unique_id)}')
+            continue  # property with an incorrectly formatted UBID/ULID is skipped
 
         # Starting with the SE point, list the points in counter-clockwise order
         bounding_box_polygon = (
@@ -52,11 +53,11 @@ def decode_unique_ids(qs):
 
         # Starting with the SE point, list the points in counter-clockwise order
         centroid_polygon = (
-            f"POLYGON (({bounding_box_obj.child.longitudeHi} {bounding_box_obj.child.latitudeLo}, "
-            f"{bounding_box_obj.child.longitudeHi} {bounding_box_obj.child.latitudeHi}, "
-            f"{bounding_box_obj.child.longitudeLo} {bounding_box_obj.child.latitudeHi}, "
-            f"{bounding_box_obj.child.longitudeLo} {bounding_box_obj.child.latitudeLo}, "
-            f"{bounding_box_obj.child.longitudeHi} {bounding_box_obj.child.latitudeLo}))"
+            f"POLYGON (({bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}, "
+            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeHi}, "
+            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeHi}, "
+            f"{bounding_box_obj.centroid.longitudeLo} {bounding_box_obj.centroid.latitudeLo}, "
+            f"{bounding_box_obj.centroid.longitudeHi} {bounding_box_obj.centroid.latitudeLo}))"
         )
         item.centroid = centroid_polygon
 
