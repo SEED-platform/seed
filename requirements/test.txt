@@ -22,7 +22,7 @@ pycodestyle==2.5.0
 # documentation and spelling
 Sphinx==1.8.1
 sphinxcontrib-spelling==4.2.0
-sphinx_rtd_theme==0.4.2
+sphinx_rtd_theme==0.4.3
 
 # For running the server
 uWSGI==2.0.17.1
