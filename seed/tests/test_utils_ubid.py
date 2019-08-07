@@ -159,39 +159,6 @@ class UbidUtilMethods(TestCase):
         self.assertIsNone(bounding_box_wkt(refreshed_taxlot))
         self.assertIsNone(centroid_wkt(refreshed_taxlot))
 
-    def test_decode_ubids_is_successful_when_v2_format_C_NW_SE_UBID_provided(self):
-        property_details = self.property_state_factory.get_details()
-        property_details['organization_id'] = self.org.id
-        # Old format (v2) is not longer supported
-        # property_details['ubid'] = '849VQJH6+95J-849VQJH5+VGW-849VQJG6+XV8'
-        property_details['ubid'] = '849VQJH6+95J-51-58-42-50'
-
-        property = PropertyState(**property_details)
-        property.save()
-        properties = PropertyState.objects.filter(pk=property.id)
-
-        decode_unique_ids(properties)
-        refreshed_property = PropertyState.objects.get(pk=property.id)
-
-        property_bounding_box_wkt = (
-            "POLYGON ((-122.3877812499996 37.77739999999996, "
-            "-122.3877812499996 37.77975000000004, "
-            "-122.3911875000003 37.77975000000004, "
-            "-122.3911875000003 37.77739999999996, "
-            "-122.3877812499996 37.77739999999996))"
-        )
-        property_centroid_wkt = (
-            "POLYGON ((-122.38959375 37.77845, "
-            "-122.38959375 37.778475, "
-            "-122.389625 37.778475, "
-            "-122.389625 37.77845, "
-            "-122.38959375 37.77845))"
-        )
-        self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
-        self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
-        self.assertEqual(refreshed_property.latitude, 37.778575)
-        self.assertEqual(refreshed_property.longitude, -122.389484375)
-
     def test_decode_ubids_doesnt_throw_an_error_if_an_invalid_ubid_is_provided(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
