@@ -10,12 +10,14 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
     '$stateParams',
     'urls',
     'inventory_service',
+    'inventory_payload',
     'user_service',
     'note_service',
     '$translate',
     'i18nService', // from ui-grid
     'notes',
-    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, user_service, note_service, $translate, i18nService, notes) {
+    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, inventory_payload, user_service, note_service, $translate, i18nService, notes) {
+      $scope.item_state = inventory_payload.state;
       $scope.notes = notes;
       $scope.translations = {};
 

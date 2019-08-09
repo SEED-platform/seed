@@ -3,7 +3,7 @@
 version: '3'
 services:
   db-postgres:
-    image: seedplatform/postgres-seed:11.1
+    image: seedplatform/postgres-seed:11.2
     build:
       context: ./docker/postgres
     environment:
@@ -17,6 +17,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
   db-redis:
     image: redis:5.0.1
   web:
@@ -29,8 +30,10 @@ services:
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
+      # - REDIS_PASSWORD=optional-need-to-configure-redis
       - SEED_ADMIN_USER=user@seed-platform.org
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default
@@ -46,14 +49,17 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
   web-celery:
     image: seedplatform/seed:latest
     build: .
     command: /seed/docker/start_celery_docker.sh
     environment:
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
+      # - REDIS_PASSWORD=optional-need-to-configure-redis
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
@@ -66,6 +72,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
   oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
     image: seedplatform/oep:1.2
@@ -76,6 +83,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
 volumes:
   seed_pgdata:
     external: true

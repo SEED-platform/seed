@@ -95,7 +95,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.item_state = inventory_payload.state;
 
       // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
-      if($scope.inventory_type === 'properties') {
+      if ($scope.inventory_type === 'properties') {
         $scope.item_parent = inventory_payload.property;
       } else {
         $scope.item_parent = inventory_payload.taxlot;
@@ -322,7 +322,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return [$scope.item_parent.id];
+              return [$scope.inventory.view_id];
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -330,7 +330,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([$scope.item_parent.id], {
+          label_service.get_labels([$scope.inventory.view_id], {
             inventory_type: $scope.inventory_type
           }).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
@@ -371,13 +371,40 @@ angular.module('BE.seed.controller.inventory_detail', [])
         var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
         $http.get(the_url, {})
           .then(function (response) {
-            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;' });
+            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;'});
             var downloadLink = angular.element('<a></a>');
             var filename = 'buildingsync_property_' + $stateParams.view_id + '.xml';
             downloadLink.attr('href', $window.URL.createObjectURL(blob));
             downloadLink.attr('download', filename);
             downloadLink[0].click();
           });
+      };
+
+      $scope.export_building_sync_xlsx = function () {
+        var filename = 'buildingsync_property_' + $stateParams.view_id + '.xlsx';
+        // var profileId = null;
+        // if ($scope.currentProfile) {
+        //   profileId = $scope.currentProfile.id;
+        // }
+
+        $http.post('/api/v2.1/tax_lot_properties/export/', {
+          ids: [$stateParams.view_id],
+          filename: filename,
+          profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
+          export_type: 'xlsx'
+        }, {
+          params: {
+            organization_id: $scope.organization.id,
+            cycle_id: $scope.cycle.id,
+            inventory_type: $scope.inventory_type
+          },
+          responseType: 'arraybuffer'
+        }).then(function (response) {
+          var blob_type = response.headers()['content-type'];
+
+          var blob = new Blob([response.data], {type: blob_type});
+          saveAs(blob, filename);
+        });
       };
 
       $scope.unpair_property_from_taxlot = function (property_id) {

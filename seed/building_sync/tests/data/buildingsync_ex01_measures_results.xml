@@ -1,4 +1,3 @@
-<!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by Dan Macumber (NREL) -->
 <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<auc:Facilities>
     <auc:Facility>
@@ -71,8 +70,8 @@
               <auc:Perimeter>977</auc:Perimeter>
               <auc:YearOfConstruction>1967</auc:YearOfConstruction>
               <auc:YearOfLastMajorRemodel>2009</auc:YearOfLastMajorRemodel>
-              <auc:Subsections>
-                <auc:Subsection ID="Default_Subsection">
+              <auc:Sections>
+                <auc:Section ID="Default_Subsection">
                   <auc:OccupancyClassification>Office</auc:OccupancyClassification>
                   <auc:TypicalOccupantUsages>
                     <auc:TypicalOccupantUsage>
@@ -98,8 +97,8 @@
                       <auc:FloorAreaValue>0.0</auc:FloorAreaValue>
                     </auc:FloorArea>
                   </auc:FloorAreas>
-                </auc:Subsection>
-              </auc:Subsections>
+                </auc:Section>
+              </auc:Sections>
             </auc:Building>
           </auc:Buildings>
         </auc:Site>

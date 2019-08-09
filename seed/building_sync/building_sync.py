@@ -6,6 +6,8 @@
 """
 
 import copy
+from datetime import datetime
+import pytz
 import json
 import logging
 import os
@@ -18,6 +20,7 @@ from past.builtins import basestring
 from quantityfield import ureg
 
 from seed.models.measures import _snake_case
+from seed.models.meters import Meter
 
 _log = logging.getLogger(__name__)
 
@@ -79,6 +82,11 @@ class BuildingSync(object):
             },
             "property_name": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.@ID",
+                "required": True,
+                "type": "string",
+            },
+            "property_type": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:Sections.auc:Section.auc:OccupancyClassification",
                 "required": True,
                 "type": "string",
             },
@@ -577,8 +585,11 @@ class BuildingSync(object):
         #     </auc:PackageOfMeasures>
         #   </auc:ScenarioType>
         # </auc:Scenario>
-        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Report.auc:Scenarios.auc:Scenario',
-                                   data, [])
+
+        # KAF: for now, handle both Reports.Report and Report
+        scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Reports.auc:Report.auc:Scenarios.auc:Scenario', data, [])
+        if not scenarios:
+            scenarios = self._get_node('auc:BuildingSync.auc:Facilities.auc:Facility.auc:Report.auc:Scenarios.auc:Scenario', data, [])
 
         # check that this is a list; if not, make it a list or the loop won't work correctly
         if isinstance(scenarios, dict):
@@ -599,8 +610,135 @@ class BuildingSync(object):
                     ref_case = self._get_node('auc:ReferenceCase', node, [])
                     if ref_case and ref_case.get('@IDref'):
                         new_data['reference_case'] = ref_case.get('@IDref')
-                    new_data['annual_savings_site_energy'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    # fixed naming of existing scenario fields
+                    new_data['annual_site_energy_savings'] = node.get('auc:AnnualSavingsSiteEnergy')
+                    new_data['annual_source_energy_savings'] = node.get('auc:AnnualSavingsSourceEnergy')
+                    new_data['annual_cost_savings'] = node.get('auc:AnnualSavingsCost')
 
+                    # new scenario fields
+                    fuel_savings = node.get('auc:AnnualSavingsByFuels')
+                    if fuel_savings:
+                        fuel_nodes = fuel_savings.get('auc:AnnualSavingsByFuel')
+                        if isinstance(fuel_nodes, dict):
+                            fuel_savings_arr = []
+                            fuel_savings_arr.append(fuel_nodes)
+                            fuel_nodes = fuel_savings_arr
+
+                        for f in fuel_nodes:
+                            if f.get('auc:EnergyResource') == 'Electricity':
+                                new_data['annual_electricity_savings'] = f.get('auc:AnnualSavingsNativeUnits')
+                                # print("ELECTRICITY: {}".format(new_data['annual_electricity_savings']))
+                            elif f.get('auc:EnergyResource') == 'Natural gas':
+                                new_data['annual_natural_gas_savings'] = f.get('auc:AnnualSavingsNativeUnits')
+                                # print("GAS: {}".format(new_data['annual_natural_gas_savings']))
+
+                    all_resources = s.get('auc:AllResourceTotals')
+                    if all_resources:
+                        resource_nodes = all_resources.get('auc:AllResourceTotal')
+                        # print("ANNUAL ENERGY: {}".format(resource_nodes))
+                        # make it an array
+                        if isinstance(resource_nodes, dict):
+                            resource_nodes_arr = []
+                            resource_nodes_arr.append(resource_nodes)
+                            resource_nodes = resource_nodes_arr
+
+                        for rn in resource_nodes:
+                            if rn.get('auc:EndUse') == 'All end uses':
+                                new_data['annual_site_energy'] = rn.get('auc:SiteEnergyUse')
+                                new_data['annual_site_energy_use_intensity'] = rn.get('auc:SiteEnergyUseIntensity')
+                                new_data['annual_source_energy'] = rn.get('auc:SourceEnergyUse')
+                                new_data['annual_source_energy_use_intensity'] = rn.get('auc:SourceEnergyUseIntensity')
+
+                    resources = []
+                    resource_uses = s.get('auc:ResourceUses')
+                    if resource_uses:
+                        ru_nodes = resource_uses.get('auc:ResourceUse')
+                        # print("ResourceUse: {}".format(ru_nodes))
+
+                        if isinstance(ru_nodes, dict):
+                            ru_nodes_arr = []
+                            ru_nodes_arr.append(ru_nodes)
+                            ru_nodes = ru_nodes_arr
+
+                        for ru in ru_nodes:
+
+                            # store resourceID and EnergyResource  -- needed for TimeSeries
+                            r = {}
+                            r['id'] = ru.get('@ID')
+                            r['type'] = ru.get('auc:EnergyResource')
+                            r['units'] = ru.get('auc:ResourceUnits')
+                            resources.append(r)
+
+                            # just do these 2 types for now
+                            if ru.get('auc:EnergyResource') == 'Electricity':
+                                new_data['annual_electricity_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
+                                # get demand as well
+                                new_data['annual_peak_demand'] = ru.get('auc:AnnualPeakConsistentUnits')  # in KW
+                            elif ru.get('auc:EnergyResource') == 'Natural gas':
+                                new_data['annual_natural_gas_energy'] = ru.get('auc:AnnualFuelUseConsistentUnits')  # in MMBtu
+
+                    # timeseries
+                    timeseriesdata = s.get('auc:TimeSeriesData')
+
+                    # need to know if CalculationMethod is modeled (for meters)
+                    isVirtual = False
+                    calcMethod = node.get('auc:CalculationMethod')
+                    if calcMethod is not None:
+                        isModeled = calcMethod.get('auc:Modeled')
+                        if isModeled is not None:
+                            isVirtual = True
+
+                    if timeseriesdata:
+                        timeseries = timeseriesdata.get('auc:TimeSeries')
+
+                        if isinstance(timeseries, dict):
+                            ts_nodes_arr = []
+                            ts_nodes_arr.append(timeseries)
+                            timeseries = ts_nodes_arr
+
+                        new_data['meters'] = []
+                        for ts in timeseries:
+                            source_id = ts.get('auc:ResourceUseID').get('@IDref')
+                            # print("SOURCE ID: {}".format(source_id))
+                            source_unit = next((item for item in resources if item['id'] == source_id), None)
+                            source_unit = source_unit['units'] if source_unit is not None else None
+                            match = next((item for item in new_data['meters'] if item['source_id'] == source_id), None)
+                            if match is None:
+                                # this source_id is not yet in meters, add it
+                                meter = {}
+                                meter['source_id'] = source_id
+                                source = next((item for item in Meter.SOURCES if item[1] == 'BuildingSync'), None)
+                                meter['source'] = source[0]  # for BuildingSync
+                                meter['is_virtual'] = isVirtual
+
+                                typeMatch = next((item for item in resources if item['id'] == source_id), None)
+                                typeMatch = typeMatch['type'].title() if typeMatch is not None else None
+                                # print("TYPE MATCH: {}".format(type_match))
+                                # For "Electricity", match on 'Electric - Grid'
+                                tmp_type = "Electric - Grid" if typeMatch == 'Electricity' else typeMatch
+                                theType = next((item for item in Meter.ENERGY_TYPES if item[1] == tmp_type), None)
+                                # print("the type: {}".format(the_type))
+                                theType = theType[0] if theType is not None else None
+                                meter['type'] = theType
+                                meter['readings'] = []
+                                new_data['meters'].append(meter)
+
+                            # add reading connected to meter (use resourceID/source_id for matching)
+                            reading = {}
+                            # ignoring timezones...pretending all is in UTC for DB and Excel export
+                            reading['start_time'] = pytz.utc.localize(datetime.strptime(ts.get('auc:StartTimeStamp'), "%Y-%m-%dT%H:%M:%S"))
+                            reading['end_time'] = pytz.utc.localize(datetime.strptime(ts.get('auc:EndTimeStamp'), "%Y-%m-%dT%H:%M:%S"))
+                            reading['reading'] = ts.get('auc:IntervalReading')
+                            reading['source_id'] = source_id
+                            reading['source_unit'] = source_unit
+                            # append to appropriate meter (or don't import)
+                            the_meter = next((item for item in new_data['meters'] if item['source_id'] == source_id), None)
+                            if the_meter is not None:
+                                the_meter['readings'].append(reading)
+
+                        # print("METERS: {}".format(new_data['meters']))
+
+                    # measures
                     new_data['measures'] = []
                     measures = self._get_node('auc:MeasureIDs.auc:MeasureID', node, [])
                     if isinstance(measures, list):
@@ -616,6 +754,8 @@ class BuildingSync(object):
                                 new_data['measures'].append(measures.get('@IDref'))
 
             res['scenarios'].append(new_data)
+
+        # print("SCENARIOS: {}".format(res['scenarios']))
 
         return res, messages
 

@@ -1,6 +1,7 @@
 # Docker Compose for deployment using a local registry.
 # Must set the following environment variables
 #   POSTGRES_DB
+#   POSTGRES_PORT
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -24,6 +25,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -35,6 +37,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -50,8 +53,10 @@ services:
       - AWS_SES_REGION_ENDPOINT
       - SERVER_EMAIL
       - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+      # - REDIS_PASSWORD
       - SEED_ADMIN_USER
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
@@ -69,6 +74,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -79,6 +85,7 @@ services:
     image: 127.0.0.1:5000/seed
     environment:
       - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
@@ -96,6 +103,7 @@ services:
     logging:
       options:
         max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure

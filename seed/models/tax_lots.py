@@ -14,7 +14,7 @@ from os import path
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
@@ -30,7 +30,11 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_to_js_timestamp
 from .auditlog import AUDIT_IMPORT
 from .auditlog import DATA_UPDATE_TYPE
@@ -42,7 +46,6 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
-    labels = models.ManyToManyField(StatusLabel)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -378,7 +381,7 @@ class TaxLotView(models.Model):
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
-    # labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
         return 'TaxLot View - %s' % self.pk
@@ -480,3 +483,6 @@ class TaxLotAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLotView.labels.through)

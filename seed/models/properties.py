@@ -4,26 +4,27 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import copy
 import logging
 import re
 from os import path
-from past.builtins import basestring
-from django.apps import apps
-from django.contrib.postgres.fields import JSONField
+
 from django.contrib.gis.db import models as geomodels
-from django.db import IntegrityError
-from django.db import models
-from django.db.models.signals import pre_delete, pre_save, post_save
+from django.contrib.postgres.fields import JSONField
+from django.db import (
+    models,
+    transaction,
+    IntegrityError,
+)
+from django.db.models.signals import pre_delete, pre_save, post_save, m2m_changed
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
+from past.builtins import basestring
 from quantityfield.fields import QuantityField
 
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
@@ -39,9 +40,15 @@ from seed.models import (
     TaxLotProperty
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_datestr
 from seed.utils.time import convert_to_js_timestamp
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -63,7 +70,6 @@ class Property(models.Model):
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', blank=True, null=True)
-    labels = models.ManyToManyField(StatusLabel)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -74,6 +80,48 @@ class Property(models.Model):
 
     def __str__(self):
         return 'Property - %s' % (self.pk)
+
+    def copy_meters(self, source_state_id, source_persists=True):
+        """
+        Copies meters from a source Property to the current Property.
+
+        It's most efficient if the persistence of the source Property's readings
+        aren't needed as bulk reassignments can then be used.
+
+        The cases and logic are described in comments throughout.
+        """
+        source_property = Property.objects.get(pk=source_state_id)
+
+        # If the source property has no meters to copy, there's nothing to do.
+        if not source_property.meters.exists():
+            return
+
+        if self.meters.exists() is False and source_persists is False:
+            # In this case, simply copy over the meters and readings from source in bulk.
+            source_property.meters.update(property_id=self.id)
+        else:
+            # In any other case, copy over the readings from source one meter at
+            # a time, checking to see if self has a similar meter each time.
+            for source_meter in source_property.meters.all():
+                with transaction.atomic():
+                    target_meter, created = self.meters.get_or_create(
+                        is_virtual=source_meter.is_virtual,
+                        source=source_meter.source,
+                        source_id=source_meter.source_id,
+                        type=source_meter.type
+                    )
+
+                    if created:
+                        # If self didn't have a similar meter and a new one was created,
+                        # decide what to do depending on whether source meters need to persist.
+                        if source_persists:
+                            # Note, overlaps aren't possible since a new meter was created.
+                            target_meter.copy_readings(source_meter, overlaps_possible=False)
+                        else:
+                            source_meter.meter_readings.update(meter=target_meter)
+                    else:
+                        # If self did have a similar meter, copy readings assuming overlaps are possible.
+                        target_meter.copy_readings(source_meter, overlaps_possible=True)
 
 
 class PropertyState(models.Model):
@@ -400,8 +448,7 @@ class PropertyState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (
-                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -566,21 +613,17 @@ class PropertyState(models.Model):
         """
         Merge together the old relationships with the new.
         """
-        SimulationClass = apps.get_model('seed', 'Simulation')
-        ScenarioClass = apps.get_model('seed', 'Scenario')
-        PropertyMeasureClass = apps.get_model('seed', 'PropertyMeasure')
+        from seed.models.simulations import Simulation
+        from seed.models.property_measures import PropertyMeasure
+        from seed.models.scenarios import Scenario
 
         # TODO: get some items off of this property view - labels and eventually notes
 
         # collect the relationships
-        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)] + \
-                               [x for x in state1.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()] + [x for x in
-                                                                     state1.building_files.all()]
-        simulations = [x for x in
-                       SimulationClass.objects.filter(property_state__in=[state1, state2])]
-        measures = [x for x in
-                    PropertyMeasureClass.objects.filter(property_state__in=[state1, state2])]
+        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
+        building_files = [x for x in state2.building_files.all()]
+        simulations = [x for x in Simulation.objects.filter(property_state=state2)]
+        measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -645,14 +688,18 @@ class PropertyState(models.Model):
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
+
                 # create a new scenario from the old one
-                scenario = ScenarioClass.objects.get(pk=scenario_id)
+                scenario = Scenario.objects.get(pk=scenario_id)
+
                 scenario.pk = None
                 scenario.property_state = merged_state
                 scenario.save()  # save to get new id
 
+                scenario.copy_initial_meters(scenario_id)
+
                 # get the measures
-                measures = PropertyMeasureClass.objects.filter(pk__in=measure_list)
+                measures = PropertyMeasure.objects.filter(pk__in=measure_list)
                 for measure in measures:
                     scenario.measures.add(measure)
                 scenario.save()
@@ -679,6 +726,8 @@ class PropertyView(models.Model):
     property = models.ForeignKey(Property, related_name='views', on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
+
+    labels = models.ManyToManyField(StatusLabel)
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
@@ -801,3 +850,6 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
         elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
             instance.long_lat = None
             instance.geocoding_confidence = None
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=PropertyView.labels.through)

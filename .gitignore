@@ -45,10 +45,9 @@ htmlcov/
 src/
 node_modules/
 
-# JetBrainz tends to suggest a venv directory in the project root for virtual environments
+# JetBrains tends to suggest a venv directory in the project root for virtual environments
 venv/
 
-package-lock.json
 dump.rdb
 log/*.log
 *.log

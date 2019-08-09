@@ -118,6 +118,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
+    inventory_service.properties_meters_exist = function (inventory_ids) {
+      return $http.post('/api/v2/properties/meters_exist/', {
+        inventory_ids: inventory_ids
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     inventory_service.get_property = function (view_id) {
       // Error checks
       if (_.isNil(view_id)) {
@@ -848,17 +856,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.get('/api/v2/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
         params: {
           organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    inventory_service.get_matching_status = function (import_file_id, inventory_type) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_status/', {
-        params: {
-          organization_id: user_service.get_organization().id,
-          inventory_type: inventory_type
         }
       }).then(function (response) {
         return response.data;

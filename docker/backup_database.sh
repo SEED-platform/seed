@@ -39,6 +39,6 @@ docker exec $(docker ps -f "name=db-postgres" --format "{{.ID}}") pg_dump -U ${D
 echo "docker run --rm -it -v seed_media:/backup/media -v $BACKUP_DIR:/backup/dir/ alpine:3.8 tar zcvf $(media_file_name) /backup/media"
 docker run --rm -v seed_media:/backup/media -v $BACKUP_DIR:/backup/dir/ alpine:3.8 tar zcvf $(media_file_name) /backup/media
 
-# Delete files older than 45 days.
-find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
-find ${BACKUP_DIR} -mtime +45 -type f -name '*.tgz' -delete
+# Delete files older than 30 days.
+find ${BACKUP_DIR} -mtime +30 -type f -name '*.dump' -delete
+find ${BACKUP_DIR} -mtime +30 -type f -name '*.tgz' -delete

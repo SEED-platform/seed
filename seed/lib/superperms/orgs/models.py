@@ -8,6 +8,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import pre_delete
 
@@ -94,6 +95,39 @@ class Organization(models.Model):
         ('kBtu/m**2/year', 'kBtu/m²/year'),  # really, Toronto?
     )
 
+    US = 1
+    CAN = 2
+
+    THERMAL_CONVERSION_ASSUMPTION_CHOICES = (
+        (US, 'US'),
+        (CAN, 'CAN'),
+    )
+
+    _default_display_meter_units = {
+        'Coal (anthracite)': 'kBtu (thousand Btu)',
+        'Coal (bituminous)': 'kBtu (thousand Btu)',
+        'Coke': 'kBtu (thousand Btu)',
+        'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
+        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
+        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
+        'District Chilled Water - Other': 'kBtu (thousand Btu)',
+        'District Hot Water': 'kBtu (thousand Btu)',
+        'District Steam': 'kBtu (thousand Btu)',
+        'Electric - Grid': 'kWh (thousand Watt-hours)',
+        'Electric - Solar': 'kWh (thousand Watt-hours)',
+        'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
+        'Kerosene': 'kBtu (thousand Btu)',
+        'Natural Gas': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',
+        'Propane': 'kBtu (thousand Btu)',
+        'Wood': 'kBtu (thousand Btu)'
+    }
+
     class Meta:
         ordering = ['name']
 
@@ -119,11 +153,16 @@ class Organization(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
 
+    # Default preferred all meter units to kBtu
+    display_meter_units = JSONField(default=_default_display_meter_units.copy())
+
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
     query_threshold = models.IntegerField(blank=True, null=True)
 
     mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
+
+    thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""

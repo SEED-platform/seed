@@ -1,0 +1,2715 @@
+<!-- <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v1.0-patch/BuildingSync.xsd"> -->
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019"                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                   xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 BuildingSync.xsd">
+  <auc:Facilities>
+    <auc:Facility>
+      <auc:Sites>
+        <auc:Site>
+          <auc:Address>
+            <auc:StreetAddressDetail>
+              <auc:Simplified>
+                <auc:StreetAddress>123 MAIN BLVD</auc:StreetAddress>
+              </auc:Simplified>
+            </auc:StreetAddressDetail>
+            <auc:City>San Francisco</auc:City>
+            <auc:State>CA</auc:State>
+            <auc:PostalCode>94124</auc:PostalCode>
+          </auc:Address>
+          <auc:ClimateZoneType>
+            <auc:ASHRAE>
+              <auc:ClimateZone>3C</auc:ClimateZone>
+            </auc:ASHRAE>
+            <auc:CaliforniaTitle24>
+              <auc:ClimateZone>Climate Zone 3</auc:ClimateZone>
+            </auc:CaliforniaTitle24>
+          </auc:ClimateZoneType>
+          <auc:WeatherDataStationID>724940</auc:WeatherDataStationID>
+          <auc:WeatherStationName>USA_CA_San.Francisco.Intl.AP</auc:WeatherStationName>
+          <auc:Longitude>-122.38022804260254</auc:Longitude>
+          <auc:Latitude>37.74391054330132</auc:Latitude>
+          <auc:Ownership>Unknown</auc:Ownership>
+          <auc:Buildings>
+            <auc:Building ID="Building1">
+              <auc:PremisesName>EXAMPLE BUILDING [123 MAIN BLVD]</auc:PremisesName>
+              <auc:PremisesNotes/>
+              <auc:PremisesIdentifiers>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Assessor parcel number</auc:IdentifierLabel>
+                  <auc:IdentifierValue>SF000011</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>1</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Custom ID 1</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>1</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>1</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+              </auc:PremisesIdentifiers>
+              <auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
+              <auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
+              <auc:FloorAreas>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                  <auc:FloorAreaValue>77579</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Heated and Cooled</auc:FloorAreaType>
+                  <auc:FloorAreaValue>77579</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Footprint</auc:FloorAreaType>
+                  <auc:FloorAreaValue>215643.97259999998</auc:FloorAreaValue>
+                </auc:FloorArea>
+              </auc:FloorAreas>
+              <auc:AspectRatio>3.0045476571084526</auc:AspectRatio>
+              <auc:Perimeter>2145</auc:Perimeter>
+              <auc:YearOfConstruction>2010</auc:YearOfConstruction>
+              <auc:YearOfLastMajorRemodel>2012</auc:YearOfLastMajorRemodel>
+              <auc:Sections>
+                <auc:Section ID="Default_Subsection">
+                  <auc:OccupancyClassification>Retail</auc:OccupancyClassification>
+                  <auc:TypicalOccupantUsages>
+                    <auc:TypicalOccupantUsage>
+                      <auc:TypicalOccupantUsageValue>40.0</auc:TypicalOccupantUsageValue>
+                      <auc:TypicalOccupantUsageUnits>Hours per week</auc:TypicalOccupantUsageUnits>
+                    </auc:TypicalOccupantUsage>
+                    <auc:TypicalOccupantUsage>
+                      <auc:TypicalOccupantUsageValue>50.0</auc:TypicalOccupantUsageValue>
+                      <auc:TypicalOccupantUsageUnits>Weeks per year</auc:TypicalOccupantUsageUnits>
+                    </auc:TypicalOccupantUsage>
+                  </auc:TypicalOccupantUsages>
+                  <auc:FloorAreas>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                      <auc:FloorAreaValue>77579</auc:FloorAreaValue>
+                    </auc:FloorArea>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Tenant</auc:FloorAreaType>
+                      <auc:FloorAreaValue>77579</auc:FloorAreaValue>
+                    </auc:FloorArea>
+                    <auc:FloorArea>
+                      <auc:FloorAreaType>Common</auc:FloorAreaType>
+                      <auc:FloorAreaValue>0.0</auc:FloorAreaValue>
+                    </auc:FloorArea>
+                  </auc:FloorAreas>
+                </auc:Section>
+              </auc:Sections>
+            </auc:Building>
+          </auc:Buildings>
+        </auc:Site>
+      </auc:Sites>
+      <auc:Measures>
+        <auc:Measure ID="Measure1">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Retrofit with light emitting diode technologies</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure2">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Replace with ENERGY STAR rated</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace with ENERGY STAR rated</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>9</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>39565.29</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure3">
+          <auc:SystemCategoryAffected>Wall</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Air seal envelope</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Air seal envelope</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>181534.86</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure4">
+          <auc:SystemCategoryAffected>Cooling System</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Replace package units</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace package units</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>15</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>324280.22</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure5">
+          <auc:SystemCategoryAffected>Heating System</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Replace burner</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace burner</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>69045.31</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure6">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add daylight controls</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add daylight controls</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>41116.87</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure7">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add occupancy sensors</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add occupancy sensors</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>120247.45</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure8">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Install plug load controls</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install plug load controls</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>5.6</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>63614.78</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure9">
+          <auc:SystemCategoryAffected>Wall</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Increase wall insulation</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Increase wall insulation</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>126453.76999999999</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure10">
+          <auc:SystemCategoryAffected>Wall</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Insulate thermal bypasses</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Insulate thermal bypasses</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure11">
+          <auc:SystemCategoryAffected>Roof</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Increase roof insulation</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Increase roof insulation</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>1121792.34</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure12">
+          <auc:SystemCategoryAffected>Ceiling</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Increase ceiling insulation</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Increase ceiling insulation</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>207135.93</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure13">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Add window films</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add window films</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure14">
+          <auc:SystemCategoryAffected>General Controls and Operations</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Upgrade operating protocols, calibration, and/or sequencing</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Upgrade operating protocols, calibration, and/or sequencing
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>387.895</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure15">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Replace or upgrade water heater</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace or upgrade water heater</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>13188.43</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure16">
+          <auc:SystemCategoryAffected>Refrigeration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:Refrigeration>
+                <auc:MeasureName>Replace ice/refrigeration equipment with high efficiency units</auc:MeasureName>
+              </auc:Refrigeration>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace ice/refrigeration equipment with high efficiency units
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12.5</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>151279.05</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure17">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Replace windows</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace windows</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>173001.17</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure18">
+          <auc:SystemCategoryAffected>Heating System</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BoilerPlantImprovements>
+                <auc:MeasureName>Replace boiler</auc:MeasureName>
+              </auc:BoilerPlantImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace boiler</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>73700.05</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure19">
+          <auc:SystemCategoryAffected>Other HVAC</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Replace AC and heating units with ground coupled heat pump systems</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace AC and heating units with ground coupled heat pump systems
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>15</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>1086106.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure20">
+          <auc:SystemCategoryAffected>Other HVAC</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Other</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>Replace HVAC system type to VRF</auc:CustomMeasureName>
+          <auc:LongDescription>VRF with DOAS</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>1292466.14</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure21">
+          <auc:SystemCategoryAffected>Other HVAC</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Other</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>Replace HVAC system type to PZHP</auc:CustomMeasureName>
+          <auc:LongDescription>Replace HVAC system type to PZHP</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>15</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>330486.54</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure22">
+          <auc:SystemCategoryAffected>Fan</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherElectricMotorsAndDrives>
+                <auc:MeasureName>Replace with higher efficiency</auc:MeasureName>
+              </auc:OtherElectricMotorsAndDrives>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace with higher efficiency</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>15</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>833974.25</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure23">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Improve ventilation fans</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Improve ventilation fans</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>4.4</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure24">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Install demand control ventilation</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install demand control ventilation</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>25601.07</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure25">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Add or repair economizer</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add or repair economizer</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12.5</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>62063.200000000004</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure26">
+          <auc:SystemCategoryAffected>Heat Recovery</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Add energy recovery</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add energy recovery</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>14</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>351432.87</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure27">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Add pipe insulation</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add pipe insulation</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>10861.060000000001</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure28">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Add recirculating pumps</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add recirculating pumps</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>15</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>13964.22</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure29">
+          <auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:WaterAndSewerConservationSystems>
+                <auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+              </auc:WaterAndSewerConservationSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install low-flow faucets and showerheads</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure1_Package0">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Retrofit with light emitting diode technologies Package0
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure2_Package0">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Replace with ENERGY STAR rated</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace with ENERGY STAR rated Package0</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>9</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>39565.29</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure8_Package0">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Install plug load controls</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install plug load controls Package0</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>5.6</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>63614.78</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure14_Package0">
+          <auc:SystemCategoryAffected>General Controls and Operations</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Upgrade operating protocols, calibration, and/or sequencing</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Upgrade operating protocols, calibration, and/or sequencing Package0
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>387.895</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure29_Package0">
+          <auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:WaterAndSewerConservationSystems>
+                <auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+              </auc:WaterAndSewerConservationSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install low-flow faucets and showerheads Package0</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure1_Package1">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Retrofit with light emitting diode technologies Package1
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure2_Package1">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Replace with ENERGY STAR rated</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace with ENERGY STAR rated Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>9</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>39565.29</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure7_Package1">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add occupancy sensors</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add occupancy sensors Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>120247.45</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure8_Package1">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Install plug load controls</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install plug load controls Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>5.6</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>63614.78</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure13_Package1">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Add window films</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add window films Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure14_Package1">
+          <auc:SystemCategoryAffected>General Controls and Operations</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Upgrade operating protocols, calibration, and/or sequencing</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Upgrade operating protocols, calibration, and/or sequencing Package1
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>387.895</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure24_Package1">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Install demand control ventilation</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install demand control ventilation Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>25601.07</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure29_Package1">
+          <auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:WaterAndSewerConservationSystems>
+                <auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+              </auc:WaterAndSewerConservationSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install low-flow faucets and showerheads Package1</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure1_Package2">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Retrofit with light emitting diode technologies Package2
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure7_Package2">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add occupancy sensors</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add occupancy sensors Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>120247.45</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure8_Package2">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Install plug load controls</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install plug load controls Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>5.6</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>63614.78</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure11_Package2">
+          <auc:SystemCategoryAffected>Roof</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Increase roof insulation</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Increase roof insulation Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>1121792.34</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure13_Package2">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Add window films</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add window films Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure14_Package2">
+          <auc:SystemCategoryAffected>General Controls and Operations</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Upgrade operating protocols, calibration, and/or sequencing</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Upgrade operating protocols, calibration, and/or sequencing Package2
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>387.895</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure18_Package2">
+          <auc:SystemCategoryAffected>Heating System</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BoilerPlantImprovements>
+                <auc:MeasureName>Replace boiler</auc:MeasureName>
+              </auc:BoilerPlantImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace boiler Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>73700.05</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure23_Package2">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Improve ventilation fans</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Improve ventilation fans Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>4.4</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure24_Package2">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Install demand control ventilation</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install demand control ventilation Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>25601.07</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure25_Package2">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Add or repair economizer</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add or repair economizer Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12.5</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>62063.200000000004</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure27_Package2">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Add pipe insulation</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add pipe insulation Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>10861.060000000001</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure29_Package2">
+          <auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:WaterAndSewerConservationSystems>
+                <auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+              </auc:WaterAndSewerConservationSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install low-flow faucets and showerheads Package2</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure1_Package3">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Retrofit with light emitting diode technologies Package3
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure2_Package3">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Replace with ENERGY STAR rated</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace with ENERGY STAR rated Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>9</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>39565.29</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure3_Package3">
+          <auc:SystemCategoryAffected>Wall</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Air seal envelope</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Air seal envelope Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>181534.86</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure6_Package3">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add daylight controls</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add daylight controls Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>41116.87</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure7_Package3">
+          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:LightingImprovements>
+                <auc:MeasureName>Add occupancy sensors</auc:MeasureName>
+              </auc:LightingImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add occupancy sensors Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>8</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>120247.45</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure8_Package3">
+          <auc:SystemCategoryAffected>Plug Load</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:PlugLoadReductions>
+                <auc:MeasureName>Install plug load controls</auc:MeasureName>
+              </auc:PlugLoadReductions>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install plug load controls Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>5.6</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>63614.78</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure10_Package3">
+          <auc:SystemCategoryAffected>Wall</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Insulate thermal bypasses</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Insulate thermal bypasses Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure13_Package3">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Add window films</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add window films Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure14_Package3">
+          <auc:SystemCategoryAffected>General Controls and Operations</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Upgrade operating protocols, calibration, and/or sequencing</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Upgrade operating protocols, calibration, and/or sequencing Package3
+          </auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>11</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>387.895</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure15_Package3">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Replace or upgrade water heater</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace or upgrade water heater Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>13188.43</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure17_Package3">
+          <auc:SystemCategoryAffected>Fenestration</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BuildingEnvelopeModifications>
+                <auc:MeasureName>Replace windows</auc:MeasureName>
+              </auc:BuildingEnvelopeModifications>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace windows Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>173001.17</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure18_Package3">
+          <auc:SystemCategoryAffected>Heating System</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:BoilerPlantImprovements>
+                <auc:MeasureName>Replace boiler</auc:MeasureName>
+              </auc:BoilerPlantImprovements>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Replace boiler Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>20</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>73700.05</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure20_Package3">
+          <auc:SystemCategoryAffected>Other HVAC</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Other</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>Replace HVAC system type to VRF</auc:CustomMeasureName>
+          <auc:LongDescription>VRF with DOAS Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>1292466.14</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure23_Package3">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Improve ventilation fans</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Improve ventilation fans Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>4.4</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure24_Package3">
+          <auc:SystemCategoryAffected>Air Distribution</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:OtherHVAC>
+                <auc:MeasureName>Install demand control ventilation</auc:MeasureName>
+              </auc:OtherHVAC>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install demand control ventilation Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>25601.07</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure27_Package3">
+          <auc:SystemCategoryAffected>Domestic Hot Water</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+                <auc:MeasureName>Add pipe insulation</auc:MeasureName>
+              </auc:ChilledWaterHotWaterAndSteamDistributionSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Add pipe insulation Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>12</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>10861.060000000001</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+        <auc:Measure ID="Measure29_Package3">
+          <auc:SystemCategoryAffected>Water Use</auc:SystemCategoryAffected>
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building1"/>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:WaterAndSewerConservationSystems>
+                <auc:MeasureName>Install low-flow faucets and showerheads</auc:MeasureName>
+              </auc:WaterAndSewerConservationSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:MeasureScaleOfApplication>Entire building</auc:MeasureScaleOfApplication>
+          <auc:CustomMeasureName>TBD</auc:CustomMeasureName>
+          <auc:LongDescription>Install low-flow faucets and showerheads Package3</auc:LongDescription>
+          <auc:MVCost>0</auc:MVCost>
+          <auc:UsefulLife>10</auc:UsefulLife>
+          <auc:MeasureTotalFirstCost>77579.0</auc:MeasureTotalFirstCost>
+          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
+          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
+          <auc:Recommended>true</auc:Recommended>
+          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
+        </auc:Measure>
+      </auc:Measures>
+      <auc:Reports>
+        <auc:Report>
+          <auc:Scenarios>
+            <auc:Scenario ID="Baseline">
+              <auc:ScenarioName>Baseline</auc:ScenarioName>
+              <auc:ScenarioType>
+                <auc:PackageOfMeasures>
+                  <auc:ReferenceCase IDref="Baseline"/>
+                  <auc:CalculationMethod>
+                    <auc:Modeled>
+                      <auc:SimulationCompletionStatus>Finished</auc:SimulationCompletionStatus>
+                    </auc:Modeled>
+                  </auc:CalculationMethod>
+                  <auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
+                  <auc:AnnualSavingsByFuels>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Electricity</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>3250216.556293615</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>652439.3929388751</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                  </auc:AnnualSavingsByFuels>
+                </auc:PackageOfMeasures>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="Resource1">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>2235075.9859244428</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>2235.076</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="Resource2">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>909022.9655788932</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>909.023</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:TimeSeriesData>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186000</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+              </auc:TimeSeriesData>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:SiteEnergyUse>3902.655949232491</auc:SiteEnergyUse>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+            </auc:Scenario>
+            <auc:Scenario>
+              <auc:ScenarioName>LED Only</auc:ScenarioName>
+              <auc:ScenarioType>
+                <auc:PackageOfMeasures>
+                  <auc:ReferenceCase IDref="Baseline"/>
+                  <auc:MeasureIDs>
+                    <auc:MeasureID IDref="Measure1"/>
+                  </auc:MeasureIDs>
+                  <auc:CalculationMethod>
+                    <auc:Modeled>
+                      <auc:SimulationCompletionStatus>Finished</auc:SimulationCompletionStatus>
+                    </auc:Modeled>
+                  </auc:CalculationMethod>
+                  <auc:AnnualSavingsSiteEnergy>758.5569977291548</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsCost>15183</auc:AnnualSavingsCost>
+                  <auc:AnnualSavingsByFuels>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Electricity</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>2235075.9859244428</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>909022.9655788932</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                  </auc:AnnualSavingsByFuels>
+                </auc:PackageOfMeasures>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="Resource1">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>3206417.9271639367</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>2064.179</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="Resource2">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>909022.9655788932</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>909.023</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:TimeSeriesData>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>186200</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>75700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+              </auc:TimeSeriesData>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:SiteEnergyUse>3144.098951503336</auc:SiteEnergyUse>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="Building1"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+            </auc:Scenario>
+            <auc:Scenario>
+              <auc:ScenarioName>Electric_Appliance_30%_Reduction Only</auc:ScenarioName>
+              <auc:ScenarioType>
+                <auc:PackageOfMeasures>
+                  <auc:ReferenceCase IDref="Baseline"/>
+                  <auc:MeasureIDs>
+                    <auc:MeasureID IDref="Measure2"/>
+                  </auc:MeasureIDs>
+                  <auc:CalculationMethod>
+                    <auc:Modeled>
+                      <auc:SimulationCompletionStatus>Finished</auc:SimulationCompletionStatus>
+                    </auc:Modeled>
+                  </auc:CalculationMethod>
+                  <auc:AnnualSavingsSiteEnergy>284.11765998512055</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsCost>5194</auc:AnnualSavingsCost>
+                  <auc:AnnualSavingsByFuels>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Electricity</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>2913836.260294419</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                    <auc:AnnualSavingsByFuel>
+                      <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                      <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                      <auc:AnnualSavingsNativeUnits>704692.5507817483</auc:AnnualSavingsNativeUnits>
+                    </auc:AnnualSavingsByFuel>
+                  </auc:AnnualSavingsByFuels>
+                </auc:PackageOfMeasures>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="Resource1">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>2913836.260294419</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>2913.836</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="Resource2">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceUnits>kBtu</auc:ResourceUnits>
+                  <auc:AnnualFuelUseNativeUnits>704692.5507817483</auc:AnnualFuelUseNativeUnits>
+                  <auc:AnnualFuelUseConsistentUnits>704.693</auc:AnnualFuelUseConsistentUnits>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:TimeSeriesData>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>242820</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource1"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries>
+                  <auc:ReadingType>Total</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
+                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:IntervalFrequency>Month</auc:IntervalFrequency>
+                  <auc:IntervalReading>58700</auc:IntervalReading>
+                  <auc:ResourceUseID IDref="Resource2"/>
+                </auc:TimeSeries>
+              </auc:TimeSeriesData>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:SiteEnergyUse>3618.5382892473704</auc:SiteEnergyUse>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="Building1"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+            </auc:Scenario>
+          </auc:Scenarios>
+        </auc:Report>
+      </auc:Reports>
+    </auc:Facility>
+  </auc:Facilities>
+</auc:BuildingSync>

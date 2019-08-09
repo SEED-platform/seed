@@ -110,6 +110,38 @@ class TestTaxLotProperty(TestCase):
         # last row should be blank
         self.assertEqual(data[52], '')
 
+    def test_xlxs_export(self):
+        for i in range(50):
+            p = self.property_view_factory.get_property_view()
+            self.properties.append(p.id)
+
+        columns = []
+        for c in Column.retrieve_all(self.org.id, 'property', False):
+            columns.append(c['name'])
+
+        # call the API
+        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        response = self.client.post(
+            url + '?{}={}&{}={}&{}={}'.format(
+                'organization_id', self.org.pk,
+                'cycle_id', self.cycle,
+                'inventory_type', 'properties'
+            ),
+            data=json.dumps({'columns': columns, 'export_type': 'xlsx'}),
+            content_type='application/x-www-form-urlencoded'
+        )
+
+        # parse the content as array
+        data = response.content.decode('utf-8').split('\n')
+
+        self.assertTrue('Address Line 1' in data[0].split(','))
+        self.assertTrue('Property Labels\r' in data[0].split(','))
+
+        self.assertEqual(len(data), 53)
+
+        # last row should be blank
+        self.assertEqual(data[52], '')
+
     def test_json_export(self):
         """Test to make sure get_related returns the fields"""
         for i in range(50):

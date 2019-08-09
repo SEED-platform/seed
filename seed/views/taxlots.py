@@ -55,7 +55,7 @@ from seed.serializers.taxlots import (
     TaxLotStateSerializer,
     TaxLotViewSerializer
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, ProfileIdMixin
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
@@ -68,7 +68,7 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxLotViewSet(GenericViewSet):
+class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
@@ -77,6 +77,8 @@ class TaxLotViewSet(GenericViewSet):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
+        # check if there is a query paramater for the profile_id. If so, then use that one
+        profile_id = request.query_params.get('profile_id', profile_id)
         if not org_id:
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
@@ -127,6 +129,8 @@ class TaxLotViewSet(GenericViewSet):
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
+        # This uses an old method of returning the show_columns. There is a new method that
+        # is prefered in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -279,7 +283,7 @@ class TaxLotViewSet(GenericViewSet):
 
         audit_log = TaxLotAuditLog
         inventory = TaxLot
-        label = apps.get_model('seed', 'TaxLot_labels')
+        label = apps.get_model('seed', 'TaxLotView_labels')
         state = TaxLotState
         view = TaxLotView
 
@@ -340,7 +344,7 @@ class TaxLotViewSet(GenericViewSet):
                                    .order_by('property_view_id').distinct('property_view_id')
                                    .values_list('property_view_id', flat=True))
             for v in views:
-                label_ids.extend(list(v.taxlot.labels.all().values_list('id', flat=True)))
+                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
                 v.taxlot.delete()
             label_ids = list(set(label_ids))
 
@@ -349,11 +353,11 @@ class TaxLotViewSet(GenericViewSet):
             inventory_record.save()
 
             # Create new labels and view
-            for label_id in label_ids:
-                label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             taxlot_id=inventory_record.id)
             new_view.save()
+            for label_id in label_ids:
+                label(taxlotview_id=new_view.id, statuslabel_id=label_id).save()
 
             # Assign notes to the new view
             for note in notes:
@@ -427,20 +431,17 @@ class TaxLotViewSet(GenericViewSet):
                 'message': 'taxlot view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'TaxLot_labels')
+        label = apps.get_model('seed', 'TaxLotView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the taxlot record, then the labels
+        # Clone the taxlot record
         old_taxlot = old_view.taxlot
-        label_ids = list(old_taxlot.labels.all().values_list('id', flat=True))
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
         new_taxlot = old_taxlot
         new_taxlot.id = None
         new_taxlot.save()
-
-        for label_id in label_ids:
-            label(taxlot_id=new_taxlot.id, statuslabel_id=label_id).save()
 
         # Create the views
         new_view1 = TaxLotView(
@@ -489,6 +490,11 @@ class TaxLotViewSet(GenericViewSet):
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Save old labels to both views
+        for label_id in label_ids:
+            label(taxlotview_id=new_view1.id, statuslabel_id=label_id).save()
+            label(taxlotview_id=new_view2.id, statuslabel_id=label_id).save()
 
         # Duplicate notes to the new views
         for note in notes:
