@@ -1,6 +1,55 @@
 # SEED Version 2.6.0
 
-2.6.0-beta includes support for meters and time series data storage. In order to use this release, you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started). Note that this is a Beta release and should not be used on production datasets until we have completed testing.
+Add time series related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) on the upgrade.
+
+Date Range: 05/04/19 - 08/09/19
+
+New Issues:
+- New Issue [#1939]( https://github.com/SEED-platform/seed/issues/1939 ), Meter Detail page: Changing orgs on this page does not update to show data for the new org
+- New Issue [#1935]( https://github.com/SEED-platform/seed/issues/1935 ), BuildingSync V2.0 Updates
+- New Issue [#1933]( https://github.com/SEED-platform/seed/issues/1933 ), BRICR BuildingSync exports after Update with BuildingSync
+- New Issue [#1932]( https://github.com/SEED-platform/seed/issues/1932 ), BRICR upload/download
+- New Issue [#1931]( https://github.com/SEED-platform/seed/issues/1931 ), Meter Data: if data spans month, program reports No Data for Interval == Month
+- New Issue [#1928]( https://github.com/SEED-platform/seed/issues/1928 ), Intermittent deadlock on Meter and MeterReading imports
+- New Issue [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
+- New Issue [#1904]( https://github.com/SEED-platform/seed/issues/1904 ), Add ability to delete extra data columns in Column Settings
+- New Issue [#1901]( https://github.com/SEED-platform/seed/issues/1901 ), 403 Forbidden error -- trying to remove column mappings
+- New Issue [#1899]( https://github.com/SEED-platform/seed/issues/1899 ), Import fields from BuildingSync reports
+- New Issue [#1883]( https://github.com/SEED-platform/seed/issues/1883 ), Can't create new users (as superuser)
+- New Issue [#1882]( https://github.com/SEED-platform/seed/issues/1882 ), Filter operators ! and "" don't work on PM Generation Date (date fields in general?)
+- New Issue [#1878]( https://github.com/SEED-platform/seed/issues/1878 ), Column without field name in input file causes 500 error
+- New Improvement [#1874]( https://github.com/SEED-platform/seed/issues/1874 ), Move column rename to background task
+- New Issue [#1873]( https://github.com/SEED-platform/seed/issues/1873 ), data quality type error
+- New Issue [#1869]( https://github.com/SEED-platform/seed/issues/1869 ), Geocoding -- allow user to "uncheck" geocoding without deleting API key
+
+Closed Issues and Features:
+- Feature [#835]( https://github.com/SEED-platform/seed/issues/835 ), Expand default Portfolio Manager field mapping to include report for timeseries data
+- Feature [#1861]( https://github.com/SEED-platform/seed/issues/1861 ), Allow renaming of columns
+- Feature [#1871]( https://github.com/SEED-platform/seed/issues/1871 ), Allow redis passwords
+- Feature [#1879]( https://github.com/SEED-platform/seed/issues/1879 ), profile_id as query param and part of v2.1 API
+- Feature [#1888]( https://github.com/SEED-platform/seed/issues/1888 ), Export Measures and Scenario Data in XLSX Format
+- Feature [#1917]( https://github.com/SEED-platform/seed/issues/1917 ), Importing ESPM Meter data for multiple buildings
+- Feature [#1919]( https://github.com/SEED-platform/seed/issues/1919 ), Meter Feature Improvements
+- Feature [#1927]( https://github.com/SEED-platform/seed/issues/1927 ), Make table headers sticky
+- Feature [#1929]( https://github.com/SEED-platform/seed/issues/1929 ), Update BuildingSync to BuildingSync 2.0-pr1
+- Improved [#1930]( https://github.com/SEED-platform/seed/issues/1930 ), Upgrade UBID Dependency to Latest
+- Fixed [#442]( https://github.com/SEED-platform/seed/issues/442 ), Write unit test for simple_modal_service
+- Fixed [#1844]( https://github.com/SEED-platform/seed/issues/1844 ), Can't map a field called Gross Floor Area without units
+- Fixed [#1867]( https://github.com/SEED-platform/seed/issues/1867 ), Allow Bldg to be parsed as part of the normalized address
+- Fixed [#1875]( https://github.com/SEED-platform/seed/issues/1875 ), Extra data not showing up in the pairing page
+- Fixed [#1881]( https://github.com/SEED-platform/seed/issues/1881 ), Problem importing data
+- Fixed [#1887]( https://github.com/SEED-platform/seed/issues/1887 ), Labels can be associated to Properties/TaxLots across Orgs (via Rules)
+- Fixed [#1893]( https://github.com/SEED-platform/seed/issues/1893 ), Labels need to be associated to PropertyViews and TaxLotViews
+- Fixed [#1894]( https://github.com/SEED-platform/seed/issues/1894 ), Meters could be lost during Property Merge and Unmerge
+- Fixed [#1895]( https://github.com/SEED-platform/seed/issues/1895 ), Cannot import ESPM spreadsheets that have meter data
+- Fixed [#1896]( https://github.com/SEED-platform/seed/issues/1896 ), Cannot import Green Button Data -- 500 error clicking on Energy link in Property Detail View
+- Fixed [#1903]( https://github.com/SEED-platform/seed/issues/1903 ), 500 Internal Server Error trying to rename columns in Column Settings if the column already exists
+- Fixed [#1912]( https://github.com/SEED-platform/seed/issues/1912 ), Error importing Green Button meter data
+- Fixed [#1916]( https://github.com/SEED-platform/seed/issues/1916 ), Changed units for meters in Settings doesn't appear in the Inventory Meter view
+- Fixed [#1918]( https://github.com/SEED-platform/seed/issues/1918 ), ESPM Meter Types that SEED doesn't recognize
+- Fixed [#1920]( https://github.com/SEED-platform/seed/issues/1920 ), Incorrect meter display settings being used on Meter Detail Page.
+- Fixed [#1922]( https://github.com/SEED-platform/seed/issues/1922 ), nginx page on staging
+- Fixed [#1923]( https://github.com/SEED-platform/seed/issues/1923 ), Limit log files in Docker
 
 # SEED Version 2.5.2
 
