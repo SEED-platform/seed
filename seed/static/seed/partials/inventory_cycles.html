@@ -19,7 +19,7 @@
           <div uib-dropdown is-open="cycles_options.isopen" auto-close="outsideClick" on-toggle="cycle_selection_toggled(open)">
               <label>{$:: 'Cycle' | translate $}:</label>
               <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                  Select <span class="caret"></span>
+                  Selected  (<span ng-bind='included_cycle_ids.length'></span>) <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
                   <li ng-repeat="cycle in cycle_options">
@@ -45,12 +45,12 @@
     <div class="item-count">
         <span ng-if="::inventory_type === 'properties'">
             <i class="fa fa-building-o"></i>
-            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
+            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (data.length | number: 0) }"></span>
         </span>
 
         <span ng-if="::inventory_type === 'taxlots'">
             <i class="fa fa-map-o"></i>
-            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
+            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (data.length | number: 0) }"></span>
         </span>
     </div>
     <ul class="nav nav-tabs" style="margin-bottom:1px;">
@@ -67,7 +67,6 @@
     <div class="section_content">
         <div id="grid-container">
             <div ui-grid="gridOptions" ui-grid-grouping ui-grid-pinning ui-grid-resize-columns></div>
-            <!-- <div ui-grid="gridOptions" ui-grid-exporter ui-grid-grouping ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-tree-view></div> -->
         </div>
     </div>
 </div>

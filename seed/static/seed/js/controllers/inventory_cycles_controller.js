@@ -65,14 +65,16 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
       // Establish all cycle options and initially included cycles
-      $scope.included_cycle_ids = [];
+      $scope.included_cycle_ids = _.map(_.keys(inventory), function (cycle_id) {
+        return parseInt(cycle_id);
+      });
       $scope.cycle_options = _.map(cycles.cycles, function(cycle) {
-        $scope.included_cycle_ids.push(cycle.id);
-
+        var selected = $scope.included_cycle_ids.includes(cycle.id);
         return {
-          selected: true,
+          selected: selected,
           label: cycle.name,
           value: cycle.id,
+          start: cycle.start,
         };
       });
 
@@ -82,6 +84,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           var updated_selections = _.map(_.filter($scope.cycle_options, ['selected', true]), 'value');
           if (!_.isEqual($scope.included_cycle_ids, updated_selections)) {
             $scope.included_cycle_ids = updated_selections;
+            inventory_service.save_last_selected_cycles(updated_selections);
             $scope.refresh_objects();
           }
         }
@@ -93,6 +96,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           var cycle = _.find($scope.cycle_options, { value: parseInt(cycle_id) });
           _.forEach(records, function(record) {
             record.cycle_name = cycle.label;
+            record.cycle_start = cycle.start;
             all_records.push(record)
           })
           return all_records
@@ -207,18 +211,48 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             minWidth: 75,
             width: 150
           },
+          {
+            name: "cycle_start",
+            displayName: "Cycle Start",
+            cellFilter: 'date:\'yyyy-MM-dd\'',
+            type: 'date',
+            sort: { priority: 1, direction: 'asc' },
+            pinnedLeft: true,
+            minWidth: 75,
+            width: 110
+          },
         )
       };
 
       $scope.build_columns();
 
       $scope.gridOptions = {
-        data: 'data',
         columnDefs: $scope.columns,
+        data: 'data',
         enableColumnResizing: true,
+        enableFiltering: true,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
+
+          _.delay($scope.updateHeight, 150);
+
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
+          });
         },
+      };
+
+      $scope.updateHeight = function () {
+        var height = 0;
+        _.forEach(['.header', '.page_header_container', '.section_nav_container', '.inventory-list-controls'], function (selector) {
+          var element = angular.element(selector)[0];
+          if (element) height += element.offsetHeight;
+        });
+        angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
+        angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
+        $scope.gridApi.core.handleWindowResize();
       };
 
       // console.log("profiles", $scope.profiles);

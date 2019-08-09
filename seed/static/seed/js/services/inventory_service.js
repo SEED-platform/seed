@@ -388,6 +388,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
 
+    inventory_service.get_last_selected_cycles = function () {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('selected_cycles')) || {})[organization_id];
+    };
+
+    inventory_service.save_last_selected_cycles = function (ids) {
+      var organization_id = user_service.get_organization().id;
+      var selected_cycles = JSON.parse(localStorage.getItem('selected_cycles')) || {};
+      selected_cycles[organization_id] = ids;
+      localStorage.setItem('selected_cycles', JSON.stringify(selected_cycles));
+    };
+
     inventory_service.get_last_profile = function (key) {
       var organization_id = user_service.get_organization().id;
       return (JSON.parse(localStorage.getItem('profiles.' + key)) || {})[organization_id];
