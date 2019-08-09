@@ -11,7 +11,6 @@ from os import path
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 
-from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
@@ -69,8 +68,7 @@ class InventoryViewTests(DeleteModelsTestCase):
                       response.content.decode("utf-8"))
 
     def test_upload_and_get_building_sync(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -97,8 +95,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'valid_xml_ex1_ex2.zip')
+        filename = path.join(path.dirname(__file__), 'data', 'valid_xml_ex1_ex2.zip')
 
         url = '/api/v2/building_file/'
         fsysparams = {
@@ -118,8 +115,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
     def test_upload_with_measure_duplicates(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'buildingsync_ex01_measures.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -132,7 +128,14 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
-        expected_message = {'warnings': ['Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency_bad_name', 'Measure category and name is not valid other_hvac:install_demand_control_ventilation_bad_name', 'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22', 'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24']}
+        expected_message = {
+            'warnings': [
+                'Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency_bad_name',
+                'Measure category and name is not valid other_hvac:install_demand_control_ventilation_bad_name',
+                'Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22',
+                'Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24'
+            ]
+        }
         self.assertEqual(result['message'], expected_message)
         self.assertEqual(len(result['data']['property_view']['state']['measures']), 28)
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
@@ -155,9 +158,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
 
     def test_upload_and_get_building_sync_diff_ns(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data',
-                             'ex_1_different_namespace.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
 
         url = reverse('api:v2:building_file-list')
 
@@ -180,20 +181,4 @@ class InventoryViewTests(DeleteModelsTestCase):
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
         response = self.client.get(url)
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
-                      response.content.decode('utf-8'))
-
-    def test_get_hpxml(self):
-        state = self.property_state_factory.get_property_state()
-        prprty = self.property_factory.get_property()
-        pv = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
-
-        # go to buildingsync endpoint
-        params = {
-            'organization_id': self.org.pk
-        }
-        url = reverse('api:v2.1:properties-hpxml', args=[pv.id])
-        response = self.client.get(url, params)
-        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area,
                       response.content.decode('utf-8'))

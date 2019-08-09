@@ -10,7 +10,6 @@ from os import path
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 
-from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
 from seed.models.scenarios import Scenario
@@ -36,10 +35,9 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(BuildingFile.str_to_file_type('BuildingSync'), 1)
         self.assertEqual(BuildingFile.str_to_file_type('BUILDINGSYNC'), 1)
         self.assertEqual(BuildingFile.str_to_file_type('Unknown'), 0)
-        self.assertEqual(BuildingFile.str_to_file_type('hpxml'), 3)
 
     def test_buildingsync_constructor(self):
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -52,10 +50,11 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
+        self.assertEqual(property_state.property_type, 'Office')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_constructor_diff_ns(self):
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_different_namespace.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -72,7 +71,7 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_constructor_single_scenario(self):
         # test having only 1 measure and 1 scenario
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'test_single_scenario.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'test_single_scenario.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -88,7 +87,7 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_bricr_import(self):
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'buildingsync_v2_0_bricr_workflow.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -110,20 +109,3 @@ class TestBuildingFiles(TestCase):
         self.assertTrue(len(meters) > 0)
         readings = MeterReading.objects.filter(meter_id=meters[0].id)
         self.assertTrue(len(readings) > 0)
-
-    def test_hpxml_constructor(self):
-        filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
-
-        bf = BuildingFile.objects.create(
-            file=simple_uploaded_file,
-            filename=filename,
-            file_type=BuildingFile.HPXML
-        )
-
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
-        self.assertTrue(status)
-        self.assertEqual(property_state.owner, 'Jane Customer')
-        self.assertEqual(property_state.energy_score, 8)
-        self.assertEqual(messages, {'errors': [], 'warnings': []})
