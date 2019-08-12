@@ -43,6 +43,7 @@ from seed.models import (
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
     empty_criteria_filter,
+    match_merge_link,
     matching_filter_criteria,
     matching_criteria_column_names,
 )
@@ -57,19 +58,20 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-def match_incoming_properties_and_taxlots(file_pk, progress_key):
+def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
     """
-    Match incoming the properties and taxlots.
+    Match incoming the properties and taxlots. Then, search for links for them.
 
     The process starts by identifying the incoming PropertyStates
     then TaxLotStates of an ImportFile. The steps are exactly the same for each:
-         - Remove duplicates amongst the -States within the ImportFile.
-         - Merge together any matches amongst the -States within the ImportFile.
-         - Parse through the remaining -States to ultimately associate them
-           to -Views of the current Cycle.
+        - Remove duplicates amongst the -States within the ImportFile.
+        - Merge together any matches amongst the -States within the ImportFile.
+        - Parse through the remaining -States to ultimately associate them
+          to -Views of the current Cycle.
             - Filter duplicates of existing -States.
             - Merge incoming -States into existing -States if they match,
               keeping the existing -View.
+        - For these -Views, search for matches across Cycles for linking.
 
     Throughout the process, the results are captured and a summary of this is
     returned as a dict.
@@ -95,8 +97,8 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
     existing_duplicate_tax_lot_count = 0
     new_property_count = 0
     new_tax_lot_count = 0
-    merged_property_views = []
-    merged_taxlot_views = []
+    processed_property_views = []
+    processed_taxlot_views = []
 
     # Get lists and counts of all the properties and tax lots based on the import file.
     incoming_properties = import_file.find_unmatched_property_states()
@@ -124,6 +126,10 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
             PropertyState
         )
 
+        # Look for links across Cycles
+        log_debug('Start Properties link_views')
+        processed_property_views = link_views(merged_property_views, PropertyView)
+
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
@@ -144,9 +150,13 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
             TaxLotState
         )
 
+        # Look for links across Cycles
+        log_debug('Start TaxLots link_views')
+        processed_taxlot_views = link_views(merged_taxlot_views, TaxLotView)
+
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
-    pair_new_states(merged_property_views, merged_taxlot_views)
+    pair_new_states(processed_property_views, processed_taxlot_views)
     log_debug('End pair_new_states')
 
     return {
@@ -362,6 +372,30 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     )
 
     return list(set(processed_views)), duplicate_count, new_count + matched_count
+
+
+def link_views(merged_views, ViewClass):
+    """
+    Run each of the given -Views through a linking round.
+
+    For details on the actual linking logic, please refer to the the
+    match_merge_link() method.
+    """
+    if ViewClass == PropertyView:
+        state_class_name = "PropertyState"
+    else:
+        state_class_name = "TaxLotState"
+
+    processed_views = []
+    for view in merged_views:
+        count, view_id = match_merge_link(view.id, state_class_name)
+
+        if view_id is not None:
+            processed_views.append(ViewClass.objects.get(pk=view_id))
+        else:
+            processed_views.append(view)
+
+    return processed_views
 
 
 def save_state_match(state1, state2, priorities):

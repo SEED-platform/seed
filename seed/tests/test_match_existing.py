@@ -1488,7 +1488,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
 
         # Cycle 2 / ImportFile 2
         base_property_details = {
-            'pm_property_id': '1st Match Set',
+            'pm_property_id': '1st Match Set - 2',
             'city': 'City 1',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
@@ -1497,11 +1497,11 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         # Create 6 initially non-matching properties in second Cycle
         ps_21 = self.property_state_factory.get_property_state(**base_property_details)
 
-        base_property_details['pm_property_id'] = 'To be updated 1 - 1st Match Set'
+        base_property_details['pm_property_id'] = 'To be updated 1 - 1st Match Set - 2'
         base_property_details['city'] = 'City 2'
         ps_22 = self.property_state_factory.get_property_state(**base_property_details)
 
-        base_property_details['pm_property_id'] = 'To be updated 2 - 1st Match Set'
+        base_property_details['pm_property_id'] = 'To be updated 2 - 1st Match Set - 2'
         base_property_details['city'] = 'City 3'
         ps_23 = self.property_state_factory.get_property_state(**base_property_details)
 
@@ -1512,12 +1512,12 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         base_property_details['city'] = 'Null Fields 2'
         ps_25 = self.property_state_factory.get_property_state(**base_property_details)
 
-        base_property_details['pm_property_id'] = 'Single to be Linked! - will be updated later'
+        base_property_details['pm_property_id'] = 'Single to be Linked! - will be updated later - 2'
         base_property_details['city'] = 'City 6'
         ps_26 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_taxlot_details = {
-            'jurisdiction_tax_lot_id': '1st Match Set',
+            'jurisdiction_tax_lot_id': '1st Match Set - 2',
             'city': 'City 1',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
@@ -1526,11 +1526,11 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         # Create 6 initially non-matching taxlots in second Cycle
         tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
-        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 1 - 1st Match Set'
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 1 - 1st Match Set - 2'
         base_taxlot_details['city'] = 'City 2'
         tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
-        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 2 - 1st Match Set'
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 2 - 1st Match Set - 2'
         base_taxlot_details['city'] = 'City 3'
         tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
@@ -1541,7 +1541,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         base_taxlot_details['city'] = 'Null Fields 2'
         tls_25 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
-        base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked! - will be updated later'
+        base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked! - will be updated later - 2'
         base_taxlot_details['city'] = 'City 6'
         tls_26 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
@@ -1551,8 +1551,8 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         match_buildings(self.import_file_2.id)
 
         # Make some match but don't trigger matching round
-        PropertyState.objects.filter(pk__in=[ps_23.id]).update(pm_property_id='1st Match Set')
-        TaxLotState.objects.filter(pk__in=[tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+        PropertyState.objects.filter(pk__in=[ps_21.id, ps_23.id]).update(pm_property_id='1st Match Set')
+        TaxLotState.objects.filter(pk__in=[tls_21.id, tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
 
         # Give merge priority to -States with City 2
         prioritized_property = PropertyState.objects.get(id=ps_22.id)

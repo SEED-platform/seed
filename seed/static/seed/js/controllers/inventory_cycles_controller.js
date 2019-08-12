@@ -52,7 +52,10 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
-      $scope.all_columns = all_columns
+
+      // Scope columns/data to only those of the given inventory_type
+      var state_type = $scope.inventory_type == "properties" ? "PropertyState" : "TaxLotState";
+      $scope.all_columns = _.filter(all_columns, {table_name: state_type});
 
       // set up i18n
       //
