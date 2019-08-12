@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 from django.db import connection, migrations, models
+from seed.data_importer.tasks import hash_state_object
+
 import django.utils.timezone
 
 
@@ -24,6 +26,31 @@ def forwards(apps, schema_editor):
     with connection.cursor() as cursor:
         cursor.execute(property_sql)
         cursor.execute(taxlot_sql)
+
+
+# Go through every property and tax lot and simply save it to create the hash_object
+def recalculate_hash_objects(apps, schema_editor):
+    PropertyState = apps.get_model("seed", "PropertyState")
+    TaxLotState = apps.get_model("seed", "TaxLotState")
+
+    # find which columns are not used in column mappings
+    property_count = PropertyState.objects.all().count()
+    taxlot_count = TaxLotState.objects.all().count()
+    # print("There are %s objects to traverse" % (property_count + taxlot_count))
+
+    # print("Iterating over PropertyStates. Count %s" % PropertyState.objects.all().count())
+    for idx, obj in enumerate(PropertyState.objects.all().iterator()):
+        if idx % 1000 == 0:
+            print("... %s / %s ..." % (idx, property_count))
+        obj.hash_object = hash_state_object(obj)
+        obj.save()
+
+    # print("Iterating over TaxLotStates. Count %s" % TaxLotState.objects.all().count())
+    for idx, obj in enumerate(TaxLotState.objects.all().iterator()):
+        if idx % 1000 == 0:
+            print("... %s / %s ..." % (idx, taxlot_count))
+        obj.hash_object = hash_state_object(obj)
+        obj.save()
 
 
 class Migration(migrations.Migration):
@@ -56,4 +83,5 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.RunPython(forwards),
+        migrations.RunPython(recalculate_hash_objects),
     ]

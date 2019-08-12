@@ -1182,9 +1182,7 @@ class Column(models.Model):
         """
         all_columns = []
         for f in apps.get_model('seed', 'PropertyState')._meta.fields + \
-                apps.get_model('seed', 'TaxLotState')._meta.fields + \
-                apps.get_model('seed', 'Property')._meta.fields + \
-                apps.get_model('seed', 'TaxLot')._meta.fields:
+                apps.get_model('seed', 'TaxLotState')._meta.fields:
 
             # this remove import_file and others
             if f.get_internal_type() == 'ForeignKey':

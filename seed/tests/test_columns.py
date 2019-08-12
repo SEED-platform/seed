@@ -1088,7 +1088,7 @@ class TestColumnsByInventory(TestCase):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""
         expected = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time',
                     'analysis_state_message', 'block_number', 'building_certification',
-                    'building_count', 'campus', 'city', 'conditioned_floor_area',
+                    'building_count', 'city', 'conditioned_floor_area',
                     'custom_id_1', 'district', 'energy_alerts', 'energy_score', 'generation_date',
                     'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
                     'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
@@ -1107,7 +1107,6 @@ class TestColumnsByInventory(TestCase):
 
     def test_retrieve_db_field_table_and_names_from_db_tables(self):
         names = Column.retrieve_db_field_table_and_names_from_db_tables()
-        self.assertIn(('Property', 'campus'), names)
         self.assertIn(('PropertyState', 'gross_floor_area'), names)
         self.assertIn(('TaxLotState', 'address_line_1'), names)
         self.assertNotIn(('PropertyState', 'gross_floor_area_orig'), names)
