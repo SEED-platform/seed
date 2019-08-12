@@ -181,7 +181,11 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           var options = {};
           if (col.data_type === 'datetime') {
             options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
-          } // else if (['eui', 'interger'].includes(col.data_type)) {
+            options.filter = inventory_service.dateFilter();
+          } else {
+            options.filter = inventory_service.combinedFilter();
+          }
+          // else if (['eui', 'interger'].includes(col.data_type)) {
           //   options.cellTemplate = '<div ng-if="row.groupHeader" class="ui-grid-cell-contents" tooltip-append-to-body="true" tooltip-popup-delay="500" title="TOOLTIP">[tooltip-placeholder?]</div>' +
           //     '<div ng-if="!row.groupHeader" class="ui-grid-cell-contents">{{COL_FIELD CUSTOM_FILTERS}}</div>'
           // }
@@ -236,6 +240,9 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         enableFiltering: true,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
+
+          // used to allow filtering for child branches of grouping tree
+          $scope.gridApi.table_category = 'year-over-year';
 
           _.delay($scope.updateHeight, 150);
 
