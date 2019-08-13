@@ -109,6 +109,21 @@ angular.module('BE.seed.controller.column_settings', [])
         });
       };
 
+      // Matching Criteria sorting
+      $scope.column_sort = 'default';
+      $scope.matching_criteria_sort = function() {
+        if ($scope.column_sort === 'default') {
+          $scope.columns = _.sortBy($scope.columns, 'is_matching_criteria');
+          $scope.column_sort = 'is_matching_criteria';
+        } else if ($scope.column_sort === 'is_matching_criteria') {
+          $scope.columns = _.reverse(_.sortBy($scope.columns, 'is_matching_criteria'));
+          $scope.column_sort = 'reversed_is_matching_criteria';
+        } else if ($scope.column_sort === 'reversed_is_matching_criteria') {
+          $scope.columns = _.sortBy($scope.columns, 'id');
+          $scope.column_sort = 'default';
+        }
+      };
+
       // Saves the modified columns
       $scope.save_settings = function () {
         $scope.columns_updated = false;
