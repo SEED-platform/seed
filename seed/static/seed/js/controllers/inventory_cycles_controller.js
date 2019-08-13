@@ -5,13 +5,9 @@
 angular.module('BE.seed.controller.inventory_cycles', [])
   .controller('inventory_cycles_controller', [
     '$scope',
-    '$filter',
     '$window',
-    '$uibModal',
-    '$sce',
     '$stateParams',
     'inventory_service',
-    'user_service',
     'inventory',
     'cycles',
     'profiles',
@@ -19,7 +15,6 @@ angular.module('BE.seed.controller.inventory_cycles', [])
     'all_columns',
     'urls',
     'spinner_utility',
-    'naturalSort',
     'matching_criteria_columns',
     '$translate',
     'uiGridConstants',
@@ -27,13 +22,9 @@ angular.module('BE.seed.controller.inventory_cycles', [])
     'i18nService', // from ui-grid
     function (
       $scope,
-      $filter,
       $window,
-      $uibModal,
-      $sce,
       $stateParams,
       inventory_service,
-      user_service,
       inventory,
       cycles,
       profiles,
@@ -41,7 +32,6 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       all_columns,
       urls,
       spinner_utility,
-      naturalSort,
       matching_criteria_columns,
       $translate,
       uiGridConstants,
@@ -233,6 +223,8 @@ angular.module('BE.seed.controller.inventory_cycles', [])
 
       $scope.build_columns();
 
+      // $scope.expandedRows = [];
+
       $scope.gridOptions = {
         columnDefs: $scope.columns,
         data: 'data',
@@ -243,6 +235,29 @@ angular.module('BE.seed.controller.inventory_cycles', [])
 
           // used to allow filtering for child branches of grouping tree
           $scope.gridApi.table_category = 'year-over-year';
+
+          // $scope.gridApi.treeBase.on.rowExpanded($scope, function(row) {
+          //   $scope.expandedRows.unshift(row);
+          // })
+          //
+          // $scope.gridApi.treeBase.on.rowCollapsed($scope, function(row) {
+          //   _.remove($scope.expandedRows, function(expanded) {
+          //     return expanded == row;
+          //   });
+          // })
+          //
+          // // $scope.gridApi.core.on.rowsRendered($scope, function() {
+          // // $scope.gridApi.core.on.renderingComplete($scope, function() {
+          // $scope.gridApi.core.on.filterChanged($scope, function() {
+          //   console.log('expanded', $scope.expandedRows);
+          //   console.log('visible', $scope.gridApi.core.getVisibleRows());
+          //   debugger;
+          //   _.forEach(_.intersection($scope.gridApi.core.getVisibleRows(), $scope.expandedRows), function(row) {
+          //     $scope.gridApi.treeBase.expandRow(row, true);
+          //   });
+          //   // $scope.gridApi.treeBase.getTreeExpandedState() not available?
+          //   // $scope.gridApi.treeBase.setTreeState() not available?
+          // })
 
           _.delay($scope.updateHeight, 150);
 
@@ -265,11 +280,4 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      // console.log("profiles", $scope.profiles);
-      // console.log("data", $scope.data);
-      // console.log("incoming cycles", cycles.cycles);
-      // console.log("cycle_options", $scope.cycle_options);
-      // console.log('inventory', inventory);
-      // console.log('columns', $scope.columns);
-      // console.log('matching_criteria_columns', $scope.matching_criteria_columns);
     }]);
