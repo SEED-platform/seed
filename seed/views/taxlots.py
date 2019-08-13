@@ -202,6 +202,73 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         """
         return self._get_filtered_results(request, profile_id=-1)
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['POST'])
+    def cycles(self, request):
+        """
+        List all the taxlots with all columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
+            - name: cycle_ids
+              description: The IDs of the cycle to get taxlots
+              required: true
+              paramType: query
+        """
+        org_id = request.data.get('organization_id', None)
+        profile_id = request.data.get('profile_id', -1)
+        cycle_ids = request.data.get('cycle_ids', [])
+
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        # Identify column preferences to be used to scope fields/values
+        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+
+        if profile_id == -1:
+            show_columns = list(Column.objects.filter(
+                organization_id=org_id
+            ).values_list('id', flat=True))
+        else:
+            try:
+                profile = ColumnListSetting.objects.get(
+                    organization_id=org_id,
+                    id=profile_id,
+                    settings_location=ColumnListSetting.VIEW_LIST,
+                    inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
+                )
+                show_columns = list(ColumnListSettingColumn.objects.filter(
+                    column_list_setting_id=profile.id
+                ).values_list('column_id', flat=True))
+            except ColumnListSetting.DoesNotExist:
+                show_columns = None
+
+        response = {}
+        for cycle_id in cycle_ids:
+            # get -Views for this Cycle
+            taxlot_views = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
+                .filter(taxlot__organization_id=org_id, cycle_id=cycle_id) \
+                .order_by('id')
+
+            related_results = TaxLotProperty.get_related(taxlot_views, show_columns, columns_from_database)
+
+            org = Organization.objects.get(pk=org_id)
+            unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+            response[cycle_id] = unit_collapsed_results
+
+        return JsonResponse(response)
+
     # @require_organization_id
     # @require_organization_membership
     @api_endpoint_class

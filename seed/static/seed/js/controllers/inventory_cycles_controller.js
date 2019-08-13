@@ -102,16 +102,17 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       // Refreshes inventory by making API call
       $scope.refresh_objects = function() {
         spinner_utility.show();
+        var profile_id = _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined;
         if ($scope.inventory_type == "properties") {
-          inventory_service.properties_cycle($scope.currentProfile.id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
+          inventory_service.properties_cycle(profile_id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
             $scope.data = $scope.format_records(refreshed_inventory);
             spinner_utility.hide();
           });
         } else {
-          // inventory_service.taxlots_cycle($scope.currentProfile.id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
-          //   $scope.data = $scope.format_records(refreshed_inventory);
-          //   spinner_utility.hide();
-          // });
+          inventory_service.taxlots_cycle(profile_id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
+            $scope.data = $scope.format_records(refreshed_inventory);
+            spinner_utility.hide();
+          });
         }
       };
 
@@ -280,4 +281,5 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
+      spinner_utility.hide();
     }]);

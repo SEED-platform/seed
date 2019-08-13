@@ -13,12 +13,15 @@ from django.utils.timezone import get_current_timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    Column,
+    ColumnListSetting,
     PropertyView,
     TaxLot,
     TaxLotProperty,
     TaxLotView,
 )
 from seed.test_helpers.fake import (
+    FakeColumnListSettingsFactory,
     FakeCycleFactory,
     FakeNoteFactory,
     FakePropertyFactory,
@@ -29,6 +32,77 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
+
+
+class TaxLotViewTests(DeleteModelsTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+
+    def test_taxlots_cycles_list(self):
+        # Create TaxLot set in cycle 1
+        state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})
+        taxlot = self.taxlot_factory.get_taxlot()
+        TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=state
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_2"})
+        taxlot_2 = self.taxlot_factory.get_taxlot()
+        TaxLotView.objects.create(
+            taxlot=taxlot_2, cycle=cycle_2, state=state_2
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+        # get the columnlistsetting (default) for all columns
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT,
+            columns=['address_line_1', 'field_1'],
+            table_name='TaxLotState'
+        )
+
+        post_params = json.dumps({
+            'organization_id': self.org.pk,
+            'profile_id': columnlistsetting.id,
+            'cycle_ids': [self.cycle.id, cycle_2.id]
+        })
+        url = reverse('api:v2:taxlots-cycles')
+        response = self.client.post(url, post_params, content_type='application/json')
+        data = response.json()
+
+        address_line_1_key = 'address_line_1_' + str(columnlistsetting.columns.get(column_name='address_line_1').id)
+        field_1_key = 'field_1_' + str(columnlistsetting.columns.get(column_name='field_1').id)
+
+        self.assertEqual(len(data), 2)
+
+        result_1 = data[str(self.cycle.id)]
+        self.assertEqual(result_1[0][address_line_1_key], state.address_line_1)
+        self.assertEqual(result_1[0][field_1_key], 'value_1')
+        self.assertEqual(result_1[0]['id'], taxlot.id)
+
+        result_2 = data[str(cycle_2.id)]
+        self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
+        self.assertEqual(result_2[0][field_1_key], 'value_2')
+        self.assertEqual(result_2[0]['id'], taxlot_2.id)
 
 
 class TaxLotMergeUnmergeViewTests(DeleteModelsTestCase):

@@ -1155,9 +1155,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.properties_cycle(profile_id, last_selected_cycle_ids);
-            } //else if ($stateParams.inventory_type === 'taxlots') {
-              // return inventory_service.get_taxlots(profile_id, last_selected_cycle_ids);
-            // }
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.taxlots_cycle(profile_id, last_selected_cycle_ids);
+            }
           }],
           matching_criteria_columns: ['user_service', 'organization_service', function (user_service, organization_service) {
             var org_id = user_service.get_organization().id;

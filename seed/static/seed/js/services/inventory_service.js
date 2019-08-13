@@ -252,6 +252,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).catch(_.constant('Error fetching cycles'));
     };
 
+    inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
+      return $http.post('/api/v2/taxlots/cycles/', {
+        organization_id: user_service.get_organization().id,
+        profile_id: profile_id,
+        cycle_ids: cycle_ids,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
     /** Get TaxLot information from server for a specified TaxLot and Cycle and Organization.
      *
