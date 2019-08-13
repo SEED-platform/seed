@@ -52,7 +52,7 @@ and the first 2 cases, manual edit or manual merge.
 
 In the case of manual merging or editing, this process accounts for the fact that these are records that already exist.
 Specifically, they may have associations such as labels, notes, pairings, and for properties, meters.
-So during a subsequent match search leading to a merge of two or more records, all of these "old" associations are be
+So during a subsequent match search leading to a merge of two or more records, all of these "old" associations are
 carried over to the final record once merges are complete.
 
 In the case of importing, considerations must be taken for the fact that, in most cases, multiple records
