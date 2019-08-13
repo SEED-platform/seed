@@ -202,6 +202,24 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             width: 150
           },
           {
+            name: 'inventory detail link icon',
+            displayName: '',
+            cellTemplate: '<div class="ui-grid-row-header-link">' +
+            '  <a class="ui-grid-cell-contents" ng-if="!row.groupHeader" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+            '    <i class="ui-grid-icon-info-circled"></i>' +
+            '  </a>' +
+            '</div>',
+            enableColumnMenu: false,
+            enableColumnMoving: false,
+            enableColumnResizing: false,
+            enableFiltering: false,
+            enableHiding: false,
+            enableSorting: false,
+            pinnedLeft: true,
+            visible: true,
+            width: 30
+          },
+          {
             name: "cycle_name",
             displayName: "Cycle",
             pinnedLeft: true,
