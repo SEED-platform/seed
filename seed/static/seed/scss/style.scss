@@ -612,9 +612,9 @@ a:not([href]) {
       padding: 10px;
 
       &:hover,
-      &:hover,
       &.active {
         background-color: $gray_lightest;
+        text-decoration: none;
       }
     }
   }
