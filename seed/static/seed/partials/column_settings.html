@@ -45,9 +45,12 @@
                         <tr>
                             <th translate>Display Name</th>
                             <th translate>Column Name</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Rename</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
-                            <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="matching_criteria_sort()">
+                                <span>Match Criteria</span> <i class="glyphicon glyphicon-list"></i>
+                            </th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -67,6 +70,7 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,14 +82,21 @@
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+
+                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
+                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
+                            </td>
+                            <td class="text-center" ng-if="column.is_extra_data">
+                                <span ng-if="column.is_extra_data" translate>Ineligible</span>
                             </td>
                         </tr>
                     </tbody>

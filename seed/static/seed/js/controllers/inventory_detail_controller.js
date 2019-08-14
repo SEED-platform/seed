@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$anchorScroll',
     '$location',
     '$window',
+    'Notification',
     'urls',
     'spinner_utility',
     'label_service',
@@ -37,6 +38,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $anchorScroll,
       $location,
       $window,
+      Notification,
       urls,
       spinner_utility,
       label_service,
@@ -285,12 +287,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
-            .then(function () {
-              // In the short term, we're just refreshing the page after a save so the table
-              // shows new history.
-              // TODO: Refactor so that table is dynamically updated with new information
-              $scope.$emit('finished_saving');
-              $state.reload();
+            .then(function (data) {
+              if (_.has(data, 'view_id')) {
+                $state.go('inventory_detail', {
+                  inventory_type: 'properties',
+                  view_id: data.view_id
+                });
+                var otherMergedRecords = data.match_merged_count - 1;
+                Notification.info({
+                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  delay: 10000
+                });
+              } else {
+                // In the short term, we're just refreshing the page after a save so the table
+                // shows new history.
+                // TODO: Refactor so that table is dynamically updated with new information
+                $scope.$emit('finished_saving');
+                $state.reload();
+              }
             }, function () {
               $scope.$emit('finished_saving');
             })
@@ -299,12 +313,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
             });
         } else if ($scope.inventory_type === 'taxlots') {
           inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff())
-            .then(function () {
-              // In the short term, we're just refreshing the page after a save so the table
-              // shows new history.
-              // TODO: Refactor so that table is dynamically updated with new information
-              $scope.$emit('finished_saving');
-              $state.reload();
+            .then(function (data) {
+              if (_.has(data, 'view_id')) {
+                $state.go('inventory_detail', {
+                  inventory_type: 'taxlots',
+                  view_id: data.view_id
+                });
+                var otherMergedRecords = data.match_merged_count - 1;
+                Notification.info({
+                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
+                  delay: 10000
+                });
+              } else {
+                // In the short term, we're just refreshing the page after a save so the table
+                // shows new history.
+                // TODO: Refactor so that table is dynamically updated with new information
+                $scope.$emit('finished_saving');
+                $state.reload();
+              }
             }, function () {
               $scope.$emit('finished_saving');
             })

@@ -89,11 +89,11 @@ class TestProperties(DataMappingBaseTestCase):
     def test_get_history(self):
         # This is the last property state of the object that is in test_coparent test above
         property_state = PropertyState.objects.filter(
-            use_description='Pizza House',
             ubid='86HJX5QV+FJ3-2-3-2-2',
             data_state__in=[DATA_STATE_MATCHING],
             merge_state__in=[MERGE_STATE_MERGED]
         ).first()
+
         self.assertIsNotNone(property_state)
         history, master = property_state.history()
 
@@ -123,7 +123,7 @@ class TestProperties(DataMappingBaseTestCase):
             # grab all the other relationships that this would have merged
             # for now just verify that 3 records were merged.
             self.assertTrue(True)
-            self.assertEqual(len(history), 3)
+            self.assertEqual(len(history), 2)
             self.assertEqual(history[0]['filename'], 'example-data-properties-small-changes.xlsx')
-            self.assertEqual(history[1]['filename'], 'example-data-properties-small-changes.xlsx')
-            self.assertEqual(history[2]['filename'], 'example-data-properties.xlsx')
+            # self.assertEqual(history[1]['filename'], 'example-data-properties-small-changes.xlsx')
+            self.assertEqual(history[1]['filename'], 'example-data-properties.xlsx')

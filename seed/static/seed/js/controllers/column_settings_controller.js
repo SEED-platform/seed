@@ -71,6 +71,11 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+      $scope.change_is_matching_criteria = function (column) {
+        column.is_matching_criteria = !column.is_matching_criteria;
+        $scope.setModified();
+      };
+
       $scope.setModified = function () {
         $scope.columns_updated = false;
         updateDiff();
@@ -104,9 +109,29 @@ angular.module('BE.seed.controller.column_settings', [])
         });
       };
 
+      // Matching Criteria sorting
+      $scope.column_sort = 'default';
+      $scope.matching_criteria_sort = function() {
+        if ($scope.column_sort === 'default') {
+          $scope.columns = _.sortBy($scope.columns, 'is_matching_criteria');
+          $scope.column_sort = 'is_matching_criteria';
+        } else if ($scope.column_sort === 'is_matching_criteria') {
+          $scope.columns = _.reverse(_.sortBy($scope.columns, 'is_matching_criteria'));
+          $scope.column_sort = 'reversed_is_matching_criteria';
+        } else if ($scope.column_sort === 'reversed_is_matching_criteria') {
+          $scope.columns = _.sortBy($scope.columns, 'id');
+          $scope.column_sort = 'default';
+        }
+      };
+
       // Saves the modified columns
       $scope.save_settings = function () {
         $scope.columns_updated = false;
+
+        if (_.filter($scope.columns, 'is_matching_criteria').length == 0) {
+          Notification.error('Error: There must be at least one matching criteria column.');
+          return;
+        }
 
         var missingDisplayNames = _.filter(columns, {displayName: undefined});
         if (missingDisplayNames.length) {

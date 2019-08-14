@@ -84,7 +84,7 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def _merge_extra_data(ed1, ed2, priorities):
+def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -101,7 +101,7 @@ def _merge_extra_data(ed1, ed2, priorities):
         if val1 and val2:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
-            if col_prior == 'Favor New':
+            if ignore_merge_protection or col_prior == 'Favor New':
                 extra_data[key] = val2
             else:  # favor the existing field
                 extra_data[key] = val1
@@ -111,7 +111,7 @@ def _merge_extra_data(ed1, ed2, priorities):
     return extra_data
 
 
-def merge_state(merged_state, state1, state2, priorities):
+def merge_state(merged_state, state1, state2, priorities, ignore_merge_protection=False):
     """
     Set attributes on our Canonical model, saving differences.
 
@@ -135,7 +135,7 @@ def merge_state(merged_state, state1, state2, priorities):
         if len(attr_values) > 1:
             # If we have more than one value for this field, choose based on the column priority
             col_prior = priorities.get(attr, 'Favor New')
-            if col_prior == 'Favor New':
+            if ignore_merge_protection or col_prior == 'Favor New':
                 attr_value = can_attrs[attr][state2]
             else:  # favor the existing field
                 attr_value = can_attrs[attr][state1]
@@ -154,7 +154,12 @@ def merge_state(merged_state, state1, state2, priorities):
         else:
             setattr(merged_state, attr, attr_value)
 
-    merged_state.extra_data = _merge_extra_data(state1.extra_data, state2.extra_data, priorities['extra_data'])
+    merged_state.extra_data = _merge_extra_data(
+        state1.extra_data,
+        state2.extra_data,
+        priorities['extra_data'],
+        ignore_merge_protection
+    )
 
     # merge measures, scenarios, simulations
     if isinstance(merged_state, PropertyState):

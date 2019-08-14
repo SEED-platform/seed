@@ -99,6 +99,9 @@ class TaxLotState(models.Model):
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
     class Meta:
         index_together = [
             ['hash_object'],

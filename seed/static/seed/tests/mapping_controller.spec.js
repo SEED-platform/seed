@@ -58,45 +58,98 @@ describe('controller: mapping_controller', function () {
     };
 
     var fake_property_columns = [{
-      is_extra_data: false,
+      column_name: 'pm_property_id',
+      data_type: 'string',
       display_name: 'PM Property ID',
-      name: 'pm_property_id_1',
-      data_type: 'string',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState',
-      pinnedLeft: true,
       id: 1,
-      column_name: 'pm_property_id'
-    }, {
       is_extra_data: false,
+      name: 'pm_property_id_1',
+      pinnedLeft: true,
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'property_name',
+      data_type: 'string',
       display_name: 'Property Name',
-      name: 'property_name_2',
-      data_type: 'string',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState',
       id: 2,
-      column_name: 'property_name'
-    }, {
       is_extra_data: false,
-      display_name: 'Property Notes',
-      name: 'property_notes_3',
-      data_type: 'string',
+      name: 'property_name_2',
       sharedFieldType: 'None',
-      table_name: 'PropertyState',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'property_notes',
+      data_type: 'string',
+      display_name: 'Property Notes',
       id: 3,
-      column_name: 'property_notes'
+      is_extra_data: false,
+      name: 'property_notes_3',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'address_line_1',
+      data_type: 'string',
+      display_name: 'Address Line 1',
+      id: 4,
+      is_extra_data: false,
+      name: 'address_line_1_4',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'custom_id_1',
+      data_type: 'string',
+      display_name: 'Custom ID 1',
+      id: 5,
+      is_extra_data: false,
+      name: 'custom_id_1_5',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'ubid',
+      data_type: 'string',
+      display_name: 'UBID',
+      id: 6,
+      is_extra_data: false,
+      name: 'ubid_6',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
     }];
 
     var fake_taxlot_columns = [{
-      is_extra_data: false,
-      display_name: 'Jurisdiction Tax Lot ID',
-      name: 'jurisdiction_tax_lot_id_4',
+      column_name: 'address_line_1',
       data_type: 'string',
+      display_name: 'Address Line 1',
+      id: 7,
+      is_extra_data: false,
+      name: 'address_line_1_7',
       sharedFieldType: 'None',
-      table_name: 'TaxLotState',
-      pinnedLeft: true,
-      id: 4,
-      column_name: 'jurisdiction_tax_lot_id'
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'custom_id_1',
+      data_type: 'string',
+      display_name: 'Custom ID 1',
+      id: 8,
+      is_extra_data: false,
+      name: 'custom_id_1_8',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'jurisdiction_tax_lot_id',
+      data_type: 'string',
+      display_name: 'Jurisdiction Tax Lot ID',
+      id: 9,
+      is_extra_data: false,
+      name: 'jurisdiction_tax_lot_id_9',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'ulid',
+      data_type: 'string',
+      display_name: 'ULID',
+      id: 10,
+      is_extra_data: false,
+      name: 'ulid_10',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
     }];
 
     var mock_mapping_suggestions_payload = {
@@ -110,6 +163,11 @@ describe('controller: mapping_controller', function () {
       },
       property_columns: fake_property_columns,
       taxlot_columns: fake_taxlot_columns
+    };
+
+    var mock_matching_criteria_columns_payload = {
+      PropertyState: ['address_line_1', 'custom_id_1', 'pm_property_id', 'ubid'],
+      TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ulid']
     };
 
     var mock_raw_column_names = [
@@ -162,6 +220,7 @@ describe('controller: mapping_controller', function () {
       suggested_mappings_payload: mock_mapping_suggestions_payload,
       raw_columns_payload: raw_columns_payload,
       first_five_rows_payload: first_five_rows_payload,
+      matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
       cycles: mock_cycles,
       inventory_service: mock_inventory_service
     });

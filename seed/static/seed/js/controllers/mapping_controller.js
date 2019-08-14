@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.mapping', [])
     'suggested_mappings_payload',
     'raw_columns_payload',
     'first_five_rows_payload',
+    'matching_criteria_columns_payload',
     'cycles',
     'mapping_service',
     'spinner_utility',
@@ -32,6 +33,7 @@ angular.module('BE.seed.controller.mapping', [])
       suggested_mappings_payload,
       raw_columns_payload,
       first_five_rows_payload,
+      matching_criteria_columns_payload,
       cycles,
       mapping_service,
       spinner_utility,
@@ -77,6 +79,27 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.show_mapped_buildings = false;
 
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
+
+      var matching_criteria_columns = [];
+      matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
+        var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
+        matching_criteria_columns.push(display_name);
+        return {
+          column_name: column_name,
+          display_name: display_name
+        }
+      });
+      matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
+        var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
+        matching_criteria_columns.push(display_name);
+        return {
+          column_name: column_name,
+          display_name: display_name
+        }
+      });
+      $scope.matching_criteria_columns = _.uniq(matching_criteria_columns).sort().join(', ');
+      $scope.property_matching_criteria_columns = _.map(matching_criteria_columns_payload.PropertyState, 'display_name').sort().join(', ');
+      $scope.taxlot_matching_criteria_columns = _.map(matching_criteria_columns_payload.TaxLotState, 'display_name').sort().join(', ');
 
       $scope.setAllFields = '';
       $scope.setAllFieldsOptions = [{
@@ -306,12 +329,10 @@ angular.module('BE.seed.controller.mapping', [])
         return intersections === 4;
       };
 
-      var required_property_fields = [
-        {column_name: 'address_line_1', inventory_type: 'PropertyState'},
-        {column_name: 'custom_id_1', inventory_type: 'PropertyState'},
-        {column_name: 'pm_property_id', inventory_type: 'PropertyState'},
-        {column_name: 'ubid', inventory_type: 'PropertyState'}
-      ];
+      var required_property_fields = [];
+      _.forEach(matching_criteria_columns_payload.PropertyState, function (column) {
+        required_property_fields.push({column_name: column.column_name, inventory_type: 'PropertyState'});
+      });
       /*
        * required_property_fields_present: check for presence of at least one Property field used by SEED to match records
        */
@@ -329,11 +350,10 @@ angular.module('BE.seed.controller.mapping', [])
         return intersections > 0;
       };
 
-      var required_taxlot_fields = [
-        {column_name: 'address_line_1', inventory_type: 'TaxLotState'},
-        {column_name: 'custom_id_1', inventory_type: 'TaxLotState'},
-        {column_name: 'jurisdiction_tax_lot_id', inventory_type: 'TaxLotState'}
-      ];
+      var required_taxlot_fields = [];
+      _.forEach(matching_criteria_columns_payload.TaxLotState, function (column) {
+        required_taxlot_fields.push({column_name: column.column_name, inventory_type: 'TaxLotState'});
+      });
       /*
        * required_taxlot_fields_present: check for presence of at least one Tax Lot field used by SEED to match records
        */
