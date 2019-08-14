@@ -45,7 +45,9 @@ from seed.models import (
     PropertyView,
     Simulation,
     TaxLotProperty,
-    TaxLotView
+    TaxLotView,
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY
 )
 from seed.models import Property as PropertyModel
 from seed.serializers.pint import PintJSONEncoder
@@ -270,8 +272,8 @@ class PropertyViewSet(GenericViewSet):
                 profile = ColumnListSetting.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=ColumnListSetting.VIEW_LIST,
-                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                    settings_location=VIEW_LIST,
+                    inventory_type=VIEW_LIST_PROPERTY
                 )
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id

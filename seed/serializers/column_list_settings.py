@@ -13,7 +13,9 @@ from rest_framework import serializers
 from seed.models import (
     Column,
     ColumnListSetting,
-    ColumnListSettingColumn
+    ColumnListSettingColumn,
+    VIEW_LOCATION_TYPES,
+    VIEW_LIST_INVENTORY_TYPE
 )
 from seed.lib.superperms.orgs.models import Organization
 from seed.serializers.base import ChoiceField
@@ -31,8 +33,8 @@ class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
 
 class ColumnListSettingSerializer(serializers.ModelSerializer):
     columns = ColumnListSettingColumnSerializer(source='columnlistsettingcolumn_set', read_only=True, many=True)
-    settings_location = ChoiceField(choices=ColumnListSetting.VIEW_LOCATION_TYPES)
-    inventory_type = ChoiceField(choices=ColumnListSetting.VIEW_LIST_INVENTORY_TYPE)
+    settings_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
+    inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
     class Meta:
         model = ColumnListSetting

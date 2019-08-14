@@ -9,7 +9,7 @@ import json
 from rest_framework import filters
 
 from seed import search
-from seed.models import ColumnListSetting
+from seed.models import VIEW_LOCATION_TYPES, VIEW_LIST_INVENTORY_TYPE
 
 
 class ColumnListSettingFilterBackend(filters.BaseFilterBackend):
@@ -20,15 +20,13 @@ class ColumnListSettingFilterBackend(filters.BaseFilterBackend):
                 organization_id=request.query_params['organization_id'],
             )
         if 'inventory_type' in request.query_params:
-            result = [k for k, v in ColumnListSetting.VIEW_LIST_INVENTORY_TYPE if
-                      v == request.query_params['inventory_type']]
+            result = [k for k, v in VIEW_LIST_INVENTORY_TYPE if v == request.query_params['inventory_type']]
             if len(result) == 1:
                 queryset = queryset.filter(
                     inventory_type=result[0],
                 )
         if 'settings_location' in request.query_params:
-            result = [k for k, v in ColumnListSetting.VIEW_LOCATION_TYPES if
-                      v == request.query_params['settings_location']]
+            result = [k for k, v in VIEW_LOCATION_TYPES if v == request.query_params['settings_location']]
             if len(result) == 1:
                 queryset = queryset.filter(
                     settings_location=result[0],
