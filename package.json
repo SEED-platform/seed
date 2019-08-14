@@ -20,7 +20,7 @@
     "autoprefixer": "~9.5.1",
     "eslint": "~5.16.0",
     "eslint-plugin-angular": "~4.0.1",
-    "eslint-plugin-lodash": "~5.1.0",
+    "eslint-plugin-lodash": "~6.0.0",
     "eslint-plugin-protractor": "~1.41.1",
     "lodash": "~4.17.14",
     "postcss-cli": "~6.1.2",
