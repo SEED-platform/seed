@@ -898,7 +898,8 @@ a:not([href]) {
     }
 
     .jumbotron {
-      background: url('../../seed/images/kc_2.jpg') no-repeat;
+      background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
+      background-size: cover;
       height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;

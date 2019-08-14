@@ -21,7 +21,6 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.column_mappings import ColumnMapping
-from seed.pagination import NoPagination
 from seed.serializers.column_mappings import ColumnMappingSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.api import api_endpoint_class
@@ -49,7 +48,7 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnMappingSerializer
     renderer_classes = (JSONRenderer,)
     model = ColumnMapping
-    pagination_class = NoPagination
+    pagination_class = None
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnMappingViewSetFilterBackend,)
     orgfilter = 'super_organization_id'

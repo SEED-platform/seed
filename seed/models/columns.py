@@ -1108,7 +1108,7 @@ class Column(models.Model):
                 _log.error("could not find data_type for %s" % c)
                 types[c['column_name']] = ''
 
-        return {"types": types}
+        return {'types': types}
 
     @staticmethod
     def retrieve_db_fields(org_id):
