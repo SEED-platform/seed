@@ -20,8 +20,8 @@
             <div class="section_action_container left" style="width: 50%;">
                 <span>
                     <h2>
-                        <span ng-if="::inventory_type==='properties'"><i class="fa fa-building-o"></i><span translate>Property</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
-                        <span ng-if="::inventory_type==='taxlots'"><i class="fa fa-map-o"></i><span translate>Tax Lot</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                        <span ng-if="::inventory_type==='properties'"><i class="fa fa-building-o"></i><span translate>Property</span> : {$ base_state.address_line_1 ? base_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                        <span ng-if="::inventory_type==='taxlots'"><i class="fa fa-map-o"></i><span translate>Tax Lot</span> : {$ base_state.address_line_1 ? base_state.address_line_1 : ('(no address 1)' | translate) $}</span>
                     </h2>
                 </span>
             </div>
@@ -41,16 +41,19 @@
     </div>
 
     <div class="section_content_container">
-        <div class="table_list_container table_item_detail">
+        <div class="table_list_container table_item_detail" style="overflow-x:auto;">
             <table class="table table-striped table_highlight_first fixed-layout">
                 <thead>
                     <tr>
                         <th sd-resizable id="building-fields">{$:: 'Field' | translate $}</th>
-                        <!-- Historical values -->
-                        <th sd-resizable ng-repeat="historical_item in ::historical_items" class="ellipsis-resizable">
-                            <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}">
-                                {$:: historical_item.filename $}
-                            </div>
+                        <!-- Cycle Names -->
+                        <th sd-resizable ng-repeat="state in ::states" class="ellipsis-resizable">
+                            <span popover-placement="bottom-left" uib-popover="{$:: cycles[state.cycle_id].start | date: 'yyyy-MM-dd' $} to {$:: cycles[state.cycle_id].end | date: 'yyyy-MM-dd' $}">
+                                {$:: cycles[state.cycle_id].name $}
+                            </span>
+                            <a ui-sref="inventory_detail(inventory_type === 'properties' ? {inventory_type: 'properties', view_id: state.view_id} : {inventory_type: 'taxlots', view_id: state.view_id})">
+                                <i class="ui-grid-icon-info-circled"></i>
+                            </a>
                         </th>
                     </tr>
                 </thead>
@@ -59,15 +62,15 @@
                         <!-- Column name -->
                         <td ng-attr-title="{$:: col.column_name $}">{$:: col.displayName | translate $}</td>
 
-                        <!-- Show read-only historical field value. Need to bring back Disabled fields --> 
-                        <td ng-repeat="historical_item in historical_items" ng-class="(!col.is_extra_data && historical_item.changed_fields.extra_data_fields.indexOf(col.column_name)>=0) || historical_item.changed_fields.regular_fields.indexOf(col.column_name)>=0 ? 'highlight' : ''" class="ellipsis">
-                            <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
-                                <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state[col.column_name] $}</span>
-                                <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                        <!-- Column values for each record -->
+                        <td ng-repeat="state in states" class="ellipsis" ng-class="{highlight: col.changed}">
+                            <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state[col.column_name] $}">
+                                <span ng-if="col.data_type !== 'datetime'">{$:: state[col.column_name] $}</span>
+                                <span ng-if="col.data_type === 'datetime'">{$:: state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                             </span>
-                            <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
-                                <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state.extra_data[col.column_name] $}</span>
-                                <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                            <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state.extra_data[col.column_name] $}">
+                                <span ng-if="col.data_type !== 'datetime'">{$:: state.extra_data[col.column_name] $}</span>
+                                <span ng-if="col.data_type === 'datetime'">{$:: state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                             </span>
                         </td>
                     </tr>

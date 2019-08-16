@@ -700,6 +700,62 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def links(self, request, pk=None):
+        """
+        Get property details for each linked property across org cycles
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the PropertyView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = request.data.get('organization_id', None)
+        base_view = PropertyView.objects.select_related('cycle').filter(
+            pk=pk,
+            cycle__organization_id=organization_id
+        )
+
+        if base_view.exists():
+            result = {'data': []}
+
+            # Grab extra_data columns to be shown in the results
+            all_extra_data_columns = Column.objects.filter(
+                organization_id=organization_id,
+                is_extra_data=True,
+                table_name='PropertyState'
+            ).values_list('column_name', flat=True)
+
+            linked_views = PropertyView.objects.select_related('cycle').filter(
+                property_id=base_view.get().property_id,
+                cycle__organization_id=organization_id
+            ).order_by('cycle__start')
+            for linked_view in linked_views:
+                state_data = PropertyStateSerializer(
+                    linked_view.state,
+                    all_extra_data_columns=all_extra_data_columns
+                ).data
+
+                state_data['cycle_id'] = linked_view.cycle.id
+                state_data['view_id'] = linked_view.id
+                result['data'].append(state_data)
+
+            return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
+        else:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist in given organization'.format(pk)
+            }
+            return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """

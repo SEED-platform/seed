@@ -1259,8 +1259,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             // load `get_building` before page is loaded to avoid page flicker.
             var view_id = $stateParams.view_id;
             var promise;
-            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
-            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property_links(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_links(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
@@ -1287,6 +1287,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
@@ -1300,11 +1303,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var currentProfile = _.first(profiles);
             if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
-          }],
-          labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
-            return label_service.get_labels([$stateParams.view_id], {
-              inventory_type: $stateParams.inventory_type
-            });
           }]
         }
       })

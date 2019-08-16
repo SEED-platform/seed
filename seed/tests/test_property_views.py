@@ -202,6 +202,43 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(result_2[0][field_1_key], 'value_2')
         self.assertEqual(result_2[0]['id'], prprty_2.id)
 
+    def test_get_links_for_a_single_property(self):
+        # Create 2 linked property sets
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        earlier_cycle = self.cycle_factory.get_cycle(
+            start=datetime(1990, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
+        view_2 = PropertyView.objects.create(
+            property=prprty, cycle=earlier_cycle, state=state_2
+        )
+
+        url = reverse('api:v2:properties-links', args=[view_1.id])
+        post_params = json.dumps({
+            'organization_id': self.org.pk
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+        data = response.json()['data']
+
+        self.assertEqual(len(data), 2)
+
+        # results should be ordered by
+        result_1 = data[1]
+        self.assertEqual(result_1['address_line_1'], state.address_line_1)
+        self.assertEqual(result_1['extra_data']['field_1'], 'value_1')
+        self.assertEqual(result_1['cycle_id'], self.cycle.id)
+        self.assertEqual(result_1['view_id'], view_1.id)
+
+        result_2 = data[0]
+        self.assertEqual(result_2['address_line_1'], state_2.address_line_1)
+        self.assertEqual(result_2['extra_data']['field_1'], 'value_2')
+        self.assertEqual(result_2['cycle_id'], earlier_cycle.id)
+        self.assertEqual(result_2['view_id'], view_2.id)
+
     def test_search_identifier(self):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='987654 Long Street')

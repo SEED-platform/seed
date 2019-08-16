@@ -4,55 +4,49 @@
  */
 angular.module('BE.seed.controller.inventory_detail_cycles', [])
   .controller('inventory_detail_cycles_controller', [
-    '$http',
-    '$state',
     '$scope',
-    '$uibModal',
-    '$log',
     '$filter',
     '$stateParams',
-    '$anchorScroll',
-    '$location',
     '$window',
-    'Notification',
-    'urls',
+    'cycles',
     'spinner_utility',
-    'label_service',
     'inventory_service',
-    'matching_service',
-    'pairing_service',
-    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
     'current_profile',
-    'labels_payload',
     function (
-      $http,
-      $state,
       $scope,
-      $uibModal,
-      $log,
       $filter,
       $stateParams,
-      $anchorScroll,
-      $location,
       $window,
-      Notification,
-      urls,
+      cycles,
       spinner_utility,
-      label_service,
       inventory_service,
-      matching_service,
-      pairing_service,
-      user_service,
       inventory_payload,
       columns,
       profiles,
-      current_profile,
-      labels_payload
+      current_profile
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.inventory = {
+        view_id: $stateParams.view_id,
+      };
+
+      $scope.states = inventory_payload.data;
+      $scope.base_state = _.find(inventory_payload.data, {view_id: $stateParams.view_id});
+
+      $scope.cycles = _.reduce(cycles.cycles, function(cycles_by_id, cycle) {
+        cycles_by_id[cycle.id] = cycle;
+        return cycles_by_id;
+      }, {});
+
+      // Flag columns whose values have changed between cycles.
+      var changes_check = function(column) {
+        var uniq_column_values = _.uniqBy($scope.states, column.column_name);
+        column['changed'] = uniq_column_values.length > 1;
+        return column;
+      };
 
       // Detail Settings Profile
       $scope.profiles = profiles;
@@ -62,54 +56,12 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         $scope.columns = [];
         _.forEach($scope.currentProfile.columns, function (col) {
           var foundCol = _.find(columns, {id: col.id});
-          if (foundCol) $scope.columns.push(foundCol);
+          if (foundCol) $scope.columns.push(changes_check(foundCol));
         });
       } else {
         // No profiles exist
         $scope.columns = _.reject(columns, 'is_extra_data');
       }
-
-      $scope.isDisabledField = function (name) {
-        return _.includes([
-          'analysis_end_time',
-          'analysis_start_time',
-          'analysis_state',
-          'analysis_state_message',
-          'geocoding_confidence',
-          'campus',
-          'created',
-          'updated'
-        ], name);
-      };
-
-      // $scope.inventory = {
-      //   view_id: $stateParams.view_id,
-      //   related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
-      // };
-
-      /** See service for structure of returned payload */
-      $scope.historical_items = inventory_payload.history;
-      // $scope.item_state = inventory_payload.state;
-
-      // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
-      if ($scope.inventory_type === 'properties') {
-        $scope.item_parent = inventory_payload.property;
-      } else {
-        $scope.item_parent = inventory_payload.taxlot;
-      }
-
-      $scope.changed_fields = inventory_payload.changed_fields;
-
-      // The server provides of *all* extra_data keys (across current state and all historical state)
-      // Let's remember this.
-      $scope.all_extra_data_keys = inventory_payload.extra_data_keys;
-
-      $scope.user = {};
-      $scope.user_role = inventory_payload.user_role;
-
-      /** An array of fields to show to user,
-       *  populated according to settings.*/
-      $scope.data_fields = [];
 
       var ignoreNextChange = true;
       $scope.$watch('currentProfile', function (newProfile) {
@@ -123,39 +75,4 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         $window.location.reload();
       });
 
-      /**
-       * Iterate through all object values and format
-       * those we recognize as a 'date' value
-       */
-      $scope.format_date_values = function (state_obj, date_columns) {
-        if (!state_obj || !state_obj.length) return;
-        if (!date_columns || !date_columns.length) return;
-
-        // Look for each 'date' type value in all Property State values
-        // and update format accordingly.
-        _.forEach(date_columns, function (key) {
-          if (state_obj[key]) {
-            state_obj[key] = $filter('date')(state_obj[key], 'MM/dd/yyyy');
-          }
-        });
-      };
-
-      /**
-       *   init: sets default state of inventory detail page,
-       *   sets the field arrays for each section, performs
-       *   some date string manipulation for better display rendering,
-       *   and gets all the extra_data fields
-       *
-       */
-      var init = function () {
-        if ($scope.inventory_type === 'properties') {
-          $scope.format_date_values($scope.item_state, inventory_service.property_state_date_columns);
-        } else if ($scope.inventory_type === 'taxlots') {
-          $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
-        }
-      };
-
-      init();
-      console.log("$scope.historical_items", $scope.historical_items);
-      console.log("$scope.columns", $scope.columns);
     }]);
