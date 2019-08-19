@@ -516,6 +516,52 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def links(self, request, pk=None):
+        """
+        Get taxlot details for each linked taxlot across org cycles
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the TaxLotView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = request.data.get('organization_id', None)
+        base_view = TaxLotView.objects.select_related('cycle').filter(
+            pk=pk,
+            cycle__organization_id=organization_id
+        )
+
+        if base_view.exists():
+            result = {'data': []}
+
+            linked_views = TaxLotView.objects.select_related('cycle').filter(
+                taxlot_id=base_view.get().taxlot_id,
+                cycle__organization_id=organization_id
+            ).order_by('cycle__start')
+            for linked_view in linked_views:
+                state_data = TaxLotStateSerializer(linked_view.state).data
+
+                state_data['cycle_id'] = linked_view.cycle.id
+                state_data['view_id'] = linked_view.id
+                result['data'].append(state_data)
+
+            return JsonResponse(result, status=status.HTTP_200_OK)
+        else:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist in given organization'.format(pk)
+            }
+            return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """

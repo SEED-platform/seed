@@ -60,7 +60,9 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         });
       } else {
         // No profiles exist
-        $scope.columns = _.reject(columns, 'is_extra_data');
+        $scope.columns = _.map(_.reject(columns, 'is_extra_data'), function(col) {
+          return changes_check(col);
+        });
       }
 
       var ignoreNextChange = true;

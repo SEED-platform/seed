@@ -226,7 +226,7 @@ class PropertyViewTests(DeleteModelsTestCase):
 
         self.assertEqual(len(data), 2)
 
-        # results should be ordered by
+        # results should be ordered by cycle start date
         result_1 = data[1]
         self.assertEqual(result_1['address_line_1'], state.address_line_1)
         self.assertEqual(result_1['extra_data']['field_1'], 'value_1')
