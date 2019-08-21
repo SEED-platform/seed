@@ -75,10 +75,16 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     Given a QS of matching -Views, group them by Cycle. Merge the corresponding
     -States of each group with priority given based on most recent AuditLog.
 
-    If the given -View has matches in it's own Cycle, these are merged by
-    AuditLog but with final precedence given to the given -View's -State.
+    If the given -View/-State has matches in its own Cycle, AuditLogs are still
+    used to determine merge order, but overarching precedence is given to the
+    provided -View's -State.
+
+    The count of merges as well as the target -State ID is returned. The target
+    -State ID is either the given -State ID or the merged -State ID of merges
+    involving the given -State ID.
     """
     # Group matching -Views by Cycle and capture state_ids to be merged
+    # For the purpose of merging, we only care if match_count is greater than 1.
     states_to_merge = matching_views.values('cycle_id').\
         annotate(state_ids=ArrayAgg('state_id'), match_count=Count('id')).\
         filter(match_count__gt=1).\
@@ -97,7 +103,7 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
 
         if given_state_id in ordered_ids:
             # If the given -State ID is included, give it precedence and
-            # capture resulting merged_state
+            # capture resulting merged_state ID to be returned
             ordered_ids.remove(given_state_id)
             ordered_ids.append(given_state_id)
             merged_state = merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
@@ -201,6 +207,7 @@ def match_merge_link(view_id, StateClassName):
     if StateClass.objects.filter(pk=given_state_id, **empty_criteria_filter(org_id, StateClass)).exists():
         return 0, None
 
+    # 'state__' is appended to be able to query from the related -View Class
     matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
     state_appended_matching_criteria = {
         'state__' + col_name: v
