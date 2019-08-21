@@ -756,6 +756,26 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def match_merge_link(self, request, pk=None):
+        """
+        Runs match merge link for an individual property.
+
+        Note that this method can return a view_id of None if the given -View
+        was not involved in a merge.
+        """
+        merge_count, view_id = match_merge_link(pk, 'PropertyState')
+
+        result = {
+            'view_id': view_id,
+            'match_merged_count': merge_count,
+        }
+
+        return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
     @detail_route(methods=['PUT'])
     def pair(self, request, pk=None):
         """

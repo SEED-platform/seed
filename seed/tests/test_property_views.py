@@ -202,6 +202,40 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(result_2[0][field_1_key], 'value_2')
         self.assertEqual(result_2[0]['id'], prprty_2.id)
 
+    def test_property_match_merge_link(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+        prprty = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=ps_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+        prprty_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=ps_2
+        )
+
+        url = reverse('api:v2:properties-match-merge-link', args=[view_1.id])
+        response = self.client.post(url, content_type='application/json')
+        summary = response.json()
+
+        expected_summary = {
+            'view_id': None,
+            'match_merged_count': 0,
+        }
+        self.assertEqual(expected_summary, summary)
+
+        refreshed_view_1 = PropertyView.objects.get(state_id=ps_1.id)
+        view_2 = PropertyView.objects.get(state_id=ps_2.id)
+        self.assertEqual(refreshed_view_1.property_id, view_2.property_id)
+
     def test_get_links_for_a_single_property(self):
         # Create 2 linked property sets
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})

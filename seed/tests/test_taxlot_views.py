@@ -95,6 +95,40 @@ class TaxLotViewTests(DeleteModelsTestCase):
         self.assertEqual(result_2['cycle_id'], earlier_cycle.id)
         self.assertEqual(result_2['view_id'], view_2.id)
 
+    def test_taxlot_match_merge_link(self):
+        base_details = {
+            'jurisdiction_tax_lot_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        taxlot = self.taxlot_factory.get_taxlot()
+        view_1 = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=tls_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        taxlot_2 = self.taxlot_factory.get_taxlot()
+        TaxLotView.objects.create(
+            taxlot=taxlot_2, cycle=cycle_2, state=tls_2
+        )
+
+        url = reverse('api:v2:taxlots-match-merge-link', args=[view_1.id])
+        response = self.client.post(url, content_type='application/json')
+        summary = response.json()
+
+        expected_summary = {
+            'view_id': None,
+            'match_merged_count': 0,
+        }
+        self.assertEqual(expected_summary, summary)
+
+        refreshed_view_1 = TaxLotView.objects.get(state_id=tls_1.id)
+        view_2 = TaxLotView.objects.get(state_id=tls_2.id)
+        self.assertEqual(refreshed_view_1.taxlot_id, view_2.taxlot_id)
+
     def test_taxlots_cycles_list(self):
         # Create TaxLot set in cycle 1
         state = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_1"})
