@@ -242,8 +242,6 @@ angular.module('BE.seed.controller.inventory_cycles', [])
 
       $scope.build_columns();
 
-      // $scope.expandedRows = [];
-
       $scope.gridOptions = {
         columnDefs: $scope.columns,
         data: 'data',
@@ -255,28 +253,10 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           // used to allow filtering for child branches of grouping tree
           $scope.gridApi.table_category = 'year-over-year';
 
-          // $scope.gridApi.treeBase.on.rowExpanded($scope, function(row) {
-          //   $scope.expandedRows.unshift(row);
-          // })
-          //
-          // $scope.gridApi.treeBase.on.rowCollapsed($scope, function(row) {
-          //   _.remove($scope.expandedRows, function(expanded) {
-          //     return expanded == row;
-          //   });
-          // })
-          //
-          // // $scope.gridApi.core.on.rowsRendered($scope, function() {
-          // // $scope.gridApi.core.on.renderingComplete($scope, function() {
-          // $scope.gridApi.core.on.filterChanged($scope, function() {
-          //   console.log('expanded', $scope.expandedRows);
-          //   console.log('visible', $scope.gridApi.core.getVisibleRows());
-          //   debugger;
-          //   _.forEach(_.intersection($scope.gridApi.core.getVisibleRows(), $scope.expandedRows), function(row) {
-          //     $scope.gridApi.treeBase.expandRow(row, true);
-          //   });
-          //   // $scope.gridApi.treeBase.getTreeExpandedState() not available?
-          //   // $scope.gridApi.treeBase.setTreeState() not available?
-          // })
+          $scope.gridApi.core.on.filterChanged($scope, function() {
+          // This is a workaround for losing the state of expanded rows during filtering.
+              _.delay($scope.gridApi.treeBase.expandAllRows, 500);
+          })
 
           _.delay($scope.updateHeight, 150);
 
