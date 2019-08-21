@@ -48,3 +48,14 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         self.assertCountEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
         self.assertCountEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
+
+    def test_whole_org_match_merge_link_endpoint(self):
+        url = reverse('api:v2:organizations-match-merge-link', args=[self.org.id])
+        raw_result = self.client.get(url)
+
+        self.assertEqual(200, raw_result.status_code)
+
+        summary = json.loads(raw_result.content)
+        summary_keys = list(summary.keys())
+
+        self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)

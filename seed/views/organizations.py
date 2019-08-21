@@ -29,6 +29,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
+from seed.utils.match import whole_org_match_merge_link
 from seed.utils.organizations import create_organization, create_suborganization
 
 
@@ -840,3 +841,29 @@ class OrganizationViewSet(viewsets.ViewSet):
         )
 
         return JsonResponse(matching_criteria_column_names)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def match_merge_link(self, request, pk=None):
+        """
+        Run match_merge_link for an org.
+        ---
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        summary = whole_org_match_merge_link(org.id)
+
+        return JsonResponse(summary)

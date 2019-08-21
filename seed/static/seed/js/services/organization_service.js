@@ -161,5 +161,11 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.match_merge_link = function (org_id) {
+      return $http.get('/api/v2/organizations/' + org_id + '/match_merge_link').then(function (response) {
+        return response.data;
+      });
+    };
+
     return organization_factory;
   }]);
