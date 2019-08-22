@@ -140,11 +140,11 @@ angular.module('BE.seed.controller.column_settings', [])
             var merged_count = state_summary.merged_count;
             var linked_sets_count = state_summary.linked_sets_count;
 
-            if (merged_count) Notification.success({
+            if (merged_count) Notification.info({
               message: type + ' merge count: ' + merged_count,
               delay: 10000,
             });
-            if (linked_sets_count) Notification.success({
+            if (linked_sets_count) Notification.info({
               message: type + ' linked sets count: ' + linked_sets_count,
               delay: 10000,
             });

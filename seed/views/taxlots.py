@@ -543,7 +543,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
             linked_views = TaxLotView.objects.select_related('cycle').filter(
                 taxlot_id=base_view.get().taxlot_id,
                 cycle__organization_id=organization_id
-            ).order_by('cycle__start')
+            ).order_by('-cycle__start')
             for linked_view in linked_views:
                 state_data = TaxLotStateSerializer(linked_view.state).data
 

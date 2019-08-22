@@ -55,21 +55,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
 
-      // Detail Settings Profile
-      $scope.profiles = profiles;
-      $scope.currentProfile = current_profile;
-
-      if ($scope.currentProfile) {
-        $scope.columns = [];
-        _.forEach($scope.currentProfile.columns, function (col) {
-          var foundCol = _.find(columns, {id: col.id});
-          if (foundCol) $scope.columns.push(foundCol);
-        });
-      } else {
-        // No profiles exist
-        $scope.columns = _.reject(columns, 'is_extra_data');
-      }
-
       $scope.isDisabledField = function (name) {
         return _.includes([
           'analysis_end_time',
@@ -103,7 +88,29 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      $scope.changed_fields = inventory_payload.changed_fields;
+      // Detail Settings Profile
+      $scope.profiles = profiles;
+      $scope.currentProfile = current_profile;
+
+      // Flag columns whose values have changed between imports and edits.
+      var historical_states = _.map($scope.historical_items, 'state');
+
+      var historical_changes_check = function(column) {
+        var uniq_column_values = _.uniqBy(historical_states.concat($scope.item_state), column.column_name);
+        column['changed'] = uniq_column_values.length > 1;
+        return column;
+      };
+
+      if ($scope.currentProfile) {
+        $scope.columns = [];
+        _.forEach($scope.currentProfile.columns, function (col) {
+          var foundCol = _.find(columns, {id: col.id});
+          if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
+        });
+      } else {
+        // No profiles exist
+        $scope.columns = _.reject(columns, 'is_extra_data');
+      }
 
       // The server provides of *all* extra_data keys (across current state and all historical state)
       // Let's remember this.

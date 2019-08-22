@@ -63,11 +63,11 @@ class TaxLotViewTests(DeleteModelsTestCase):
             taxlot=taxlot, cycle=self.cycle, state=state
         )
 
-        earlier_cycle = self.cycle_factory.get_cycle(
-            start=datetime(1990, 10, 10, tzinfo=get_current_timezone()))
+        later_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2100, 10, 10, tzinfo=get_current_timezone()))
         state_2 = self.taxlot_state_factory.get_taxlot_state(extra_data={"field_1": "value_2"})
         view_2 = TaxLotView.objects.create(
-            taxlot=taxlot, cycle=earlier_cycle, state=state_2
+            taxlot=taxlot, cycle=later_cycle, state=state_2
         )
 
         # save all the columns in the state to the database
@@ -82,7 +82,7 @@ class TaxLotViewTests(DeleteModelsTestCase):
 
         self.assertEqual(len(data), 2)
 
-        # results should be ordered by cycle start date
+        # results should be ordered by descending cycle start date
         result_1 = data[1]
         self.assertEqual(result_1['address_line_1'], state.address_line_1)
         self.assertEqual(result_1['extra_data']['field_1'], 'value_1')
@@ -92,7 +92,7 @@ class TaxLotViewTests(DeleteModelsTestCase):
         result_2 = data[0]
         self.assertEqual(result_2['address_line_1'], state_2.address_line_1)
         self.assertEqual(result_2['extra_data']['field_1'], 'value_2')
-        self.assertEqual(result_2['cycle_id'], earlier_cycle.id)
+        self.assertEqual(result_2['cycle_id'], later_cycle.id)
         self.assertEqual(result_2['view_id'], view_2.id)
 
     def test_taxlot_match_merge_link(self):

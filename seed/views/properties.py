@@ -734,7 +734,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             linked_views = PropertyView.objects.select_related('cycle').filter(
                 property_id=base_view.get().property_id,
                 cycle__organization_id=organization_id
-            ).order_by('cycle__start')
+            ).order_by('-cycle__start')
             for linked_view in linked_views:
                 state_data = PropertyStateSerializer(
                     linked_view.state,

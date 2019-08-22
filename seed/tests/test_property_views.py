@@ -244,11 +244,11 @@ class PropertyViewTests(DeleteModelsTestCase):
             property=prprty, cycle=self.cycle, state=state
         )
 
-        earlier_cycle = self.cycle_factory.get_cycle(
-            start=datetime(1990, 10, 10, tzinfo=get_current_timezone()))
+        later_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2100, 10, 10, tzinfo=get_current_timezone()))
         state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
         view_2 = PropertyView.objects.create(
-            property=prprty, cycle=earlier_cycle, state=state_2
+            property=prprty, cycle=later_cycle, state=state_2
         )
 
         url = reverse('api:v2:properties-links', args=[view_1.id])
@@ -260,7 +260,7 @@ class PropertyViewTests(DeleteModelsTestCase):
 
         self.assertEqual(len(data), 2)
 
-        # results should be ordered by cycle start date
+        # results should be ordered by descending cycle start date
         result_1 = data[1]
         self.assertEqual(result_1['address_line_1'], state.address_line_1)
         self.assertEqual(result_1['extra_data']['field_1'], 'value_1')
@@ -270,7 +270,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         result_2 = data[0]
         self.assertEqual(result_2['address_line_1'], state_2.address_line_1)
         self.assertEqual(result_2['extra_data']['field_1'], 'value_2')
-        self.assertEqual(result_2['cycle_id'], earlier_cycle.id)
+        self.assertEqual(result_2['cycle_id'], later_cycle.id)
         self.assertEqual(result_2['view_id'], view_2.id)
 
     def test_search_identifier(self):
