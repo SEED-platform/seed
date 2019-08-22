@@ -171,6 +171,21 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.property_match_merge_link = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.property_match_merge_link(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/' + view_id + '/match_merge_link/').then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
     /** Update Property State for a specified property view and organization.
      *
      * @param view_id             Property View ID of the property view
@@ -379,6 +394,21 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
         organization_id: user_service.get_organization().id,
       }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.taxlot_match_merge_link = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.taxlot_match_merge_link(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/' + view_id + '/match_merge_link/').then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();

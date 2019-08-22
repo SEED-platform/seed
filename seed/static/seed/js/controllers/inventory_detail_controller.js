@@ -289,10 +289,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
             .then(function (data) {
               if (_.has(data, 'view_id')) {
-                $state.go('inventory_detail', {
-                  inventory_type: 'properties',
-                  view_id: data.view_id
-                });
+                reload_with_view_id(data.view_id);
                 Notification.info({
                   message: data.match_merged_count + ' records were matched and merged automatically.',
                   delay: 10000
@@ -314,10 +311,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff())
             .then(function (data) {
               if (_.has(data, 'view_id')) {
-                $state.go('inventory_detail', {
-                  inventory_type: 'taxlots',
-                  view_id: data.view_id
-                });
+                reload_with_view_id(data.view_id);
                 Notification.info({
                   message: data.match_merged_count + ' records were matched and merged automatically.',
                   delay: 10000
@@ -439,6 +433,49 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.unpair_taxlot_from_property = function (taxlot_id) {
         pairing_service.unpair_taxlot_from_property($scope.inventory.view_id, taxlot_id);
         $state.reload();
+      };
+
+      var reload_with_view_id = function (view_id) {
+        $state.go('inventory_detail', {
+          inventory_type: $scope.inventory_type,
+          view_id: view_id,
+        });
+      }
+
+      $scope.match_merge_link_record = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/record_match_merge_link_modal.html',
+          controller: 'record_match_merge_link_modal_controller',
+          resolve: {
+            inventory_type: function () {
+              return $scope.inventory_type;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+          var new_view_id;
+          if ($scope.inventory_type === 'properties') {
+            inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
+              new_view_id = result.view_id;
+              var merged_count = result.match_merged_count;
+              Notification.info(merged_count + (merged_count === 1 ? ' property' : ' properties') + ' merged')
+              if (new_view_id) reload_with_view_id(new_view_id)
+            });
+          } else if ($scope.inventory_type === 'taxlots') {
+            inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
+              new_view_id = result.view_id;
+              var merged_count = result.match_merged_count;
+               Notification.info(merged_count + ' tax lot' + (merged_count === 1 ? '' : 's') + ' merged')
+              if (new_view_id) reload_with_view_id(new_view_id)
+            });
+          }
+        }, function () {
+          // Do nothing
+        });
       };
 
       $scope.uploader = {

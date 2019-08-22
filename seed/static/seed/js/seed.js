@@ -80,6 +80,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
+  'BE.seed.controller.record_match_merge_link_modal',
   'BE.seed.controller.rename_column_modal',
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
