@@ -493,6 +493,7 @@
     "PM_METER_IMPORT_BUTTON": "Upload Portfolio Manager Meter Usage",
     "PM_METER_IMPORT_NO_ASSOCIATION": "Unable to Import - No associations to previously imported properties",
     "PM_METER_IMPORT_RESULTS": "Portfolio Manager Meter Import Results",
+    "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING": "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports.",
     "Postal Code (Property)": "Postal Code (Property)",
     "Postal Code (Tax Lot)": "Postal Code (Tax Lot)",
     "Potential Matches from Source": "Potential Matches from Source",

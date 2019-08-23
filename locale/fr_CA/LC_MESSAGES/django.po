@@ -1568,6 +1568,9 @@ msgstr "Importation impossible - Aucune association à des propriétés précéd
 msgid "PM_METER_IMPORT_RESULTS"
 msgstr "Résultats d'importation de Portfolio Manager"
 
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
+
 msgid "Postal Code (Property)"
 msgstr "Code postal (propriété)"
 

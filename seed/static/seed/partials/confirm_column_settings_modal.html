@@ -3,6 +3,13 @@
 </div>
 
 <div class="modal-body no_bottom_padding">
+    <div class="container-fluid" ng-show="checks.matching_criteria_excludes_pm_property_id">
+      <div class="alert alert-danger" translate="PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"></div>
+      <div style="margin: 5px;">
+          <input type="checkbox" id="warnings-acknowledged" ng-model="checks.warnings_acknowledged">
+          <label for="warnings-acknowledged" translate>Acknowledge</label>
+      </div>
+    </div>
     <div class="container-fluid">
         <div class="row" style="padding-bottom: 30px;">
             <div ui-grid="change_summary" ui-grid-resize-columns></div>
@@ -12,7 +19,7 @@
 
 <div class="modal-footer container-fluid">
     <div class="row text-center">
-        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" translate>Confirm</button>
+        <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" ng-disabled="!checks.warnings_acknowledged" translate>Confirm</button>
     </div>
 
     <div class="row text-center">

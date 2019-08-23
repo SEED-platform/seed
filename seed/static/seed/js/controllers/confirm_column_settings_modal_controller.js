@@ -68,6 +68,19 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         minRowsToShow: Math.min($scope.change_summary_data.length, 5),
       };
 
+      // By default, assume matching criteria isn't being updated to exclude PM Property ID
+      // And since warning wouldn't be shown in that case, set "acknowledged" to true.
+      $scope.checks = {
+        matching_criteria_excludes_pm_property_id: false,
+        warnings_acknowledged: true,
+      }
+
+      // Check if PM Property ID is actually being removed from matching criteria
+      if (_.find($scope.change_summary_data, {column_name: "pm_property_id", is_matching_criteria: false})) {
+        $scope.checks.matching_criteria_excludes_pm_property_id = true;
+        $scope.checks.warnings_acknowledged = false;
+      }
+
       $scope.confirm = function () {
         $uibModalInstance.close();
       };

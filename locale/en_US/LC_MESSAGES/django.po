@@ -1563,6 +1563,9 @@ msgstr "Unable to Import - No associations to previously imported properties"
 msgid "PM_METER_IMPORT_RESULTS"
 msgstr "Portfolio Manager Meter Import Results"
 
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
+
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
 

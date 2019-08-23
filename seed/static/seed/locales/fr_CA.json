@@ -493,6 +493,7 @@
     "PM_METER_IMPORT_BUTTON": "Consommation d'énergie d'importation de Portfolio Manager",
     "PM_METER_IMPORT_NO_ASSOCIATION": "Importation impossible - Aucune association à des propriétés précédemment importées",
     "PM_METER_IMPORT_RESULTS": "Résultats d'importation de Portfolio Manager",
+    "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING": "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager.",
     "Postal Code (Property)": "Code postal (propriété)",
     "Postal Code (Tax Lot)": "Code postal (lot d'impôt)",
     "Potential Matches from Source": "Correspondances possibles à partir de la source",
