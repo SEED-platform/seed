@@ -287,6 +287,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.save_item();
       };
 
+      var notify_merges_and_links = function (result) {
+        var singular = ($scope.inventory_type === 'properties' ? ' property' : ' tax lot');
+        var plural = ($scope.inventory_type === 'properties' ? ' properties' : ' tax lots');
+        var merged_count = result.match_merged_count;
+        var link_count = result.match_link_count;
+
+        Notification.info({
+          message: (merged_count + (merged_count === 1 ? singular : plural) + ' merged'),
+          delay: 10000,
+        });
+        Notification.info({
+          message: ('Linked with ' + link_count + ' other ' + (link_count === 1 ? singular : plural)),
+          delay: 10000,
+        });
+      };
+
       /**
        * save_item: saves the user's changes to the Property/TaxLot State object.
        */
@@ -297,10 +313,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .then(function (data) {
               if (_.has(data, 'view_id')) {
                 reload_with_view_id(data.view_id);
-                Notification.info({
-                  message: data.match_merged_count + ' records were matched and merged automatically.',
-                  delay: 10000
-                });
+                notify_merges_and_links(data);
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
@@ -319,10 +332,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             .then(function (data) {
               if (_.has(data, 'view_id')) {
                 reload_with_view_id(data.view_id);
-                Notification.info({
-                  message: data.match_merged_count + ' records were matched and merged automatically.',
-                  delay: 10000
-                });
+                notify_merges_and_links(data);
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
@@ -468,15 +478,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
           if ($scope.inventory_type === 'properties') {
             inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
               new_view_id = result.view_id;
-              var merged_count = result.match_merged_count;
-              Notification.info(merged_count + (merged_count === 1 ? ' property' : ' properties') + ' merged')
+              notify_merges_and_links(result);
               if (new_view_id) reload_with_view_id(new_view_id)
             });
           } else if ($scope.inventory_type === 'taxlots') {
             inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
               new_view_id = result.view_id;
-              var merged_count = result.match_merged_count;
-               Notification.info(merged_count + ' tax lot' + (merged_count === 1 ? '' : 's') + ' merged')
+              notify_merges_and_links(result);
               if (new_view_id) reload_with_view_id(new_view_id)
             });
           }

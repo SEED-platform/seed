@@ -532,14 +532,17 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        merg_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+        merg_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
         result = {
             'status': 'success'
         }
 
         if view_id is not None:
-            result.update({'match_merged_count': merg_count})
+            result.update({
+                'match_merged_count': merg_count,
+                'match_link_count': link_count,
+            })
 
         return result
 
@@ -764,11 +767,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, view_id = match_merge_link(pk, 'PropertyState')
+        merge_count, link_count, view_id = match_merge_link(pk, 'PropertyState')
 
         result = {
             'view_id': view_id,
             'match_merged_count': merge_count,
+            'match_link_count': link_count,
         }
 
         return JsonResponse(result)
@@ -1123,12 +1127,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        merge_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
                                 'match_merged_count': merge_count,
+                                'match_link_count': link_count
                             })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,
@@ -1164,12 +1169,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
 
-                        merge_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
                                 'match_merged_count': merge_count,
+                                'match_link_count': link_count,
                             })
 
                         return JsonResponse(result, encoder=PintJSONEncoder,

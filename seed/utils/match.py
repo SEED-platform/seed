@@ -128,6 +128,8 @@ def _link_matches(matching_views, org_id, view, ViewClass):
     link the given -View
     3. All matches are NOT linked already - use new canonical record to link the
     matching and given -Views
+
+    In the end, return the count of matches as this represents the number of links.
     """
     if ViewClass == PropertyView:
         CanonicalClass = Property
@@ -181,6 +183,8 @@ def _link_matches(matching_views, org_id, view, ViewClass):
 
         matching_views.update(**canonical_id_dict)
 
+    return matching_views.count() - 1
+
 
 def match_merge_link(view_id, StateClassName):
     """
@@ -189,8 +193,9 @@ def match_merge_link(view_id, StateClassName):
     and finally after there are at most one match in any Cycle, creates links
     between the matching -Views.
 
-    This method returns the total count of merged -States as well as the
-    target -View if merges did occur (whether it was updated or not).
+    This method returns the total count of merged -States, the number of links
+    as well as the target -View if merges did occur (whether it was
+    updated or not).
     """
     if StateClassName == 'PropertyState':
         StateClass = PropertyState
@@ -205,7 +210,7 @@ def match_merge_link(view_id, StateClassName):
 
     # If associated -State has empty matching criteria, do nothing
     if StateClass.objects.filter(pk=given_state_id, **empty_criteria_filter(org_id, StateClass)).exists():
-        return 0, None
+        return 0, 0, None
 
     # 'state__' is appended to be able to query from the related -View Class
     matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
@@ -223,17 +228,17 @@ def match_merge_link(view_id, StateClassName):
             **state_appended_matching_criteria
         )
 
-    count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
+    merge_count, target_state_id = _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateClass)
 
     # Refresh target_view in case merges changed the target -View in last step.
     target_view = ViewClass.objects.get(state_id=target_state_id)
 
-    _link_matches(matching_views, org_id, target_view, ViewClass)
+    link_count = _link_matches(matching_views, org_id, target_view, ViewClass)
 
-    if count > 0:
-        return count, target_view.id
+    if merge_count > 0:
+        return merge_count, link_count, target_view.id
     else:
-        return 0, None
+        return 0, link_count, None
 
 
 def whole_org_match_merge_link(org_id):

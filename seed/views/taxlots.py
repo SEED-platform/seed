@@ -350,14 +350,17 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
-        count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
         result = {
             'status': 'success'
         }
 
         if view_id is not None:
-            result.update({'match_merged_count': count})
+            result.update({
+                'match_merged_count': merge_count,
+                'match_link_count': link_count,
+            })
 
         return result
 
@@ -570,11 +573,12 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, view_id = match_merge_link(pk, 'TaxLotState')
+        merge_count, link_count, view_id = match_merge_link(pk, 'TaxLotState')
 
         result = {
             'view_id': view_id,
             'match_merged_count': merge_count,
+            'match_link_count': link_count,
         }
 
         return JsonResponse(result)
@@ -873,12 +877,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                        merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
-                                'match_merged_count': count,
+                                'match_merged_count': merge_count,
+                                'match_link_count': link_count
                             })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
@@ -912,12 +917,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
+                        merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
                         if view_id is not None:
                             result.update({
                                 'view_id': view_id,
-                                'match_merged_count': count,
+                                'match_merged_count': merge_count,
+                                'match_link_count': link_count,
                             })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)

@@ -229,6 +229,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         expected_summary = {
             'view_id': None,
             'match_merged_count': 0,
+            'match_link_count': 1,
         }
         self.assertEqual(expected_summary, summary)
 

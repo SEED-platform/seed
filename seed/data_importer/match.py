@@ -388,7 +388,7 @@ def link_views(merged_views, ViewClass):
 
     processed_views = []
     for view in merged_views:
-        count, view_id = match_merge_link(view.id, state_class_name)
+        _merge_count, _link_count, view_id = match_merge_link(view.id, state_class_name)
 
         if view_id is not None:
             processed_views.append(ViewClass.objects.get(pk=view_id))
