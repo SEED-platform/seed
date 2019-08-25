@@ -162,10 +162,12 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         }
 
         // Default Settings
+        var default_min_width = 75;
+        var autopin_width = 125;
         var column_def_defaults = {
           headerCellFilter: 'translate',
-          minWidth: 75,
-          width: 150
+          minWidth: default_min_width,
+          width: 150,
         };
 
         _.map($scope.columns, function (col) {
@@ -185,6 +187,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           if ($scope.matching_criteria_columns.includes(col.column_name)) {
             col.pinnedLeft = true;
             options.customTreeAggregationFn = $scope.matching_field_value;
+            options.width = autopin_width;
           }
           return _.defaults(col, options, column_def_defaults);
         });
@@ -198,8 +201,8 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             sort: { priority: 0, direction: 'desc' },
             pinnedLeft: true,
             visible: false,
-            minWidth: 75,
-            width: 150
+            minWidth: default_min_width,
+            width: autopin_width,
           },
           {
             name: 'inventory detail link icon',
@@ -217,15 +220,15 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             enableSorting: false,
             pinnedLeft: true,
             visible: true,
-            width: 30
+            width: 30,
           },
           {
             name: "cycle_name",
             displayName: "Cycle",
             pinnedLeft: true,
             treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
-            minWidth: 75,
-            width: 150
+            minWidth: default_min_width,
+            width: autopin_width,
           },
           {
             name: "cycle_start",
@@ -234,8 +237,8 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             type: 'date',
             sort: { priority: 1, direction: 'asc' },
             pinnedLeft: true,
-            minWidth: 75,
-            width: 110
+            minWidth: default_min_width,
+            width: autopin_width,
           },
         )
       };
