@@ -18,7 +18,9 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError
 )
+from django.http import JsonResponse
 from past.builtins import basestring
+from rest_framework import status, exceptions
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
@@ -178,8 +180,14 @@ class APIBypassCSRFMiddleware(object):
     def __call__(self, request):
         response = self.get_response(request)
 
-        if get_api_request_user(request):
-            request.csrf_processing_done = True
+        try:
+            if get_api_request_user(request):
+                request.csrf_processing_done = True
+        except exceptions.AuthenticationFailed:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid API key',
+            }, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
 
