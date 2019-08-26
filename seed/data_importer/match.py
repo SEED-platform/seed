@@ -320,19 +320,19 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     merge_state_pairs = []
     for state in unmatched_states:
         matching_criteria = matching_filter_criteria(org.id, table_name, state)
-        state_matches = StateClass.objects.filter(
+        existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria
         )
-        count = state_matches.count()
+        count = existing_state_matches.count()
 
         if count > 1:
-            state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
+            existing_state_ids = list(existing_state_matches.order_by('updated').values_list('id', flat=True))
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
-            merged_state = merge_states_with_views(state_ids, org.id, 'System Match', StateClass)
+            merged_state = merge_states_with_views(existing_state_ids, org.id, 'System Match', StateClass)
             merge_state_pairs.append((merged_state, state))
         elif count == 1:
-            merge_state_pairs.append((state_matches.first(), state))
+            merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
