@@ -4,19 +4,38 @@
  */
 angular.module('BE.seed.controller.merge_modal', [])
   .controller('merge_modal_controller', [
-    '$scope',
     '$log',
-    'matching_service',
+    '$scope',
+    '$uibModal',
     '$uibModalInstance',
-    'Notification',
-    'spinner_utility',
-    'uiGridConstants',
-    'naturalSort',
     'columns',
     'data',
-    'inventory_type',
     'has_meters',
-    function ($scope, $log, matching_service, $uibModalInstance, Notification, spinner_utility, uiGridConstants, naturalSort, columns, data, inventory_type, has_meters) {
+    'inventory_type',
+    'matching_service',
+    'naturalSort',
+    'Notification',
+    'org_id',
+    'spinner_utility',
+    'uiGridConstants',
+    'urls',
+    function (
+      $log,
+      $scope,
+      $uibModal,
+      $uibModalInstance,
+      columns,
+      data,
+      has_meters,
+      inventory_type,
+      matching_service,
+      naturalSort,
+      Notification,
+      org_id,
+      spinner_utility,
+      uiGridConstants,
+      urls
+    ) {
       spinner_utility.hide();
 
       $scope.inventory_type = inventory_type;
@@ -24,6 +43,7 @@ angular.module('BE.seed.controller.merge_modal', [])
       $scope.result = [{}];
       $scope.processing = false;
       $scope.has_meters = has_meters;
+      $scope.org_id = org_id;
 
       // Columns
       $scope.columns = columns;
@@ -93,12 +113,37 @@ angular.module('BE.seed.controller.merge_modal', [])
         var link_count = result.match_link_count;
 
         Notification.info({
-          message: (merged_count + ' other, subsequent ' + (merged_count === 1 ? singular : plural) + ' merged'),
+          message: (merged_count + ' subsequent ' + (merged_count === 1 ? singular : plural) + ' merged'),
           delay: 10000,
         });
         Notification.info({
           message: ('Resulting ' + singular + ' linked with ' + link_count + ' other ' + (link_count === 1 ? singular : plural)),
           delay: 10000,
+        });
+      };
+
+      $scope.open_match_merge_link_warning_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/record_match_merge_link_modal.html',
+          controller: 'record_match_merge_link_modal_controller',
+          resolve: {
+            inventory_type: function () {
+              return $scope.inventory_type;
+            },
+            organization_id: function () {
+              return $scope.org_id;
+            },
+            headers: function () {
+              return {
+                properties: "The resulting property will be further merged & linked with any matching properties.",
+                taxlots: "The resulting tax lot will be further merged & linked with any matching tax lots.",
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then($scope.merge, function () {
+          // Do nothing if cancelled
         });
       };
 

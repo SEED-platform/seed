@@ -284,7 +284,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
        * User clicked 'save' button
        */
       $scope.on_save = function () {
-        $scope.save_item();
+        $scope.open_match_merge_link_warning_modal($scope.save_item, 'edit');
       };
 
       var notify_merges_and_links = function (result) {
@@ -460,6 +460,23 @@ angular.module('BE.seed.controller.inventory_detail', [])
       }
 
       $scope.match_merge_link_record = function () {
+        var new_view_id;
+        if ($scope.inventory_type === 'properties') {
+          inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
+            new_view_id = result.view_id;
+            notify_merges_and_links(result);
+            if (new_view_id) reload_with_view_id(new_view_id)
+          });
+        } else if ($scope.inventory_type === 'taxlots') {
+          inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
+            new_view_id = result.view_id;
+            notify_merges_and_links(result);
+            if (new_view_id) reload_with_view_id(new_view_id)
+          });
+        }
+      };
+
+      $scope.open_match_merge_link_warning_modal = function (accept_action, trigger) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/record_match_merge_link_modal.html',
           controller: 'record_match_merge_link_modal_controller',
@@ -469,27 +486,25 @@ angular.module('BE.seed.controller.inventory_detail', [])
             },
             organization_id: function () {
               return $scope.organization.id;
+            },
+            headers: function () {
+              if (trigger === 'manual') {
+                return {
+                  properties: "Merge and Link Matching Properties",
+                  taxlots: "Merge and Link Matching Tax Lots",
+                };
+              } else if (trigger === 'edit') {
+                return {
+                  properties: "Updating this property will merge & link any matching properties.",
+                  taxlots: "Updating this tax lot will merge & link any matching tax lots.",
+                };
+              }
             }
           }
         });
 
-        modalInstance.result.then(function () {
-          var new_view_id;
-          if ($scope.inventory_type === 'properties') {
-            inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
-              new_view_id = result.view_id;
-              notify_merges_and_links(result);
-              if (new_view_id) reload_with_view_id(new_view_id)
-            });
-          } else if ($scope.inventory_type === 'taxlots') {
-            inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
-              new_view_id = result.view_id;
-              notify_merges_and_links(result);
-              if (new_view_id) reload_with_view_id(new_view_id)
-            });
-          }
-        }, function () {
-          // Do nothing
+        modalInstance.result.then(accept_action, function () {
+          // Do nothing if cancelled
         });
       };
 

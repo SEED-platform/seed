@@ -1,6 +1,6 @@
 <div class="modal-header">
-    <h4 ng-if="::inventory_type === 'properties'" class="modal-title" translate>Merge and Link Matching Properties</h4>
-    <h4 ng-if="::inventory_type === 'taxlots'" class="modal-title" translate>Merge and Link Matching Tax Lots</h4>
+    <h4 ng-if="::inventory_type === 'properties'" class="modal-title">{$:: headers.properties | translate $}</h4>
+    <h4 ng-if="::inventory_type === 'taxlots'" class="modal-title">{$:: headers.taxlots | translate $}</h4>
 </div>
 <div class="modal-body row">
     <div class="col-sm-12" translate>Matches within this cycle will be merged.</div>
@@ -14,8 +14,7 @@
     </ul>
 </div>
 <div class="modal-body row">
-    <div ng-if="::inventory_type === 'properties'" class="col-sm-12" translate>Are you sure you want to match this property?</div>
-    <div ng-if="::inventory_type === 'taxlots'" class="col-sm-12" translate>Are you sure you want to match this tax lot?</div>
+    <div class="col-sm-12" translate>Are you sure you want to continue?</div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>

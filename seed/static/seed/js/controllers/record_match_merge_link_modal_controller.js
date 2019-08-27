@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', [])
     '$scope',
     '$q',
     '$uibModalInstance',
+    'headers',
     'inventory_service',
     'inventory_type',
     'organization_id',
@@ -15,11 +16,14 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', [])
       $scope,
       $q,
       $uibModalInstance,
+      headers,
       inventory_service,
       inventory_type,
       organization_id,
       organization_service
     ) {
+      $scope.headers = headers;
+
       $scope.inventory_type = inventory_type;
       if (inventory_type === 'properties') {
         $scope.table_name = 'PropertyState';
