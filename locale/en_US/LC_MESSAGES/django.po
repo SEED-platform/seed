@@ -391,6 +391,9 @@ msgstr "Continue to data mapping"
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
 
+msgid "CONTINUE_QUESTION"
+msgstr "Are you sure you want to continue?"
+
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
 
@@ -978,9 +981,6 @@ msgstr "Include in your Properties List all properties shared with you."
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
 
-msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
-msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
-
 msgid "Ineligible"
 msgstr "Ineligible"
 
@@ -1079,6 +1079,9 @@ msgstr "Left Half"
 msgid "light blue"
 msgstr "light blue"
 
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Matches outside of this cycle will be linked."
+
 msgid "List Settings"
 msgstr "List Settings"
 
@@ -1093,6 +1096,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lot L
 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
+
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "For this organization, records match if the following fields match:"
 
 msgid "Loading data..."
 msgstr "Loading data..."
@@ -1249,6 +1255,12 @@ msgstr "member role"
 
 msgid "Members"
 msgstr "Members"
+
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Matches within this cycle will be merged."
+
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."
 
 msgid "Merged properties"
 msgstr "Merged properties"

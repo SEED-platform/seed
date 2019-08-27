@@ -3,18 +3,18 @@
     <h4 ng-if="::inventory_type === 'taxlots'" class="modal-title">{$:: headers.taxlots | translate $}</h4>
 </div>
 <div class="modal-body row">
-    <div class="col-sm-12" translate>Matches within this cycle will be merged.</div>
-    <div class="col-sm-12" translate>Matches outside of this cycle will be linked.</div>
-    <div class="col-sm-12" translate>In the event that multiple matches are returned from a single cycle, those matches will be merged together.</div>
+    <div class="col-sm-12" translate>MERGE_IN_CYCLE_MATCHES</div>
+    <div class="col-sm-12" translate>LINK_OUT_CYCLE_MATCHES</div>
+    <div class="col-sm-12" translate>MERGE_MULTIPLE_IN_CYCLE_MATCHES</div>
 </div>
 <div class="modal-body row">
-    <div class="col-sm-12" translate>For this organization, records match if the following fields match:</div>
+    <div class="col-sm-12" translate>LISTING_ORG_MATCHING_CRITERIA</div>
     <ul>
       <li ng-repeat="col_name in matching_criteria_columns">{$:: col_name $}</li>
     </ul>
 </div>
 <div class="modal-body row">
-    <div class="col-sm-12" translate>Are you sure you want to continue?</div>
+    <div class="col-sm-12" translate>CONTINUE_QUESTION</div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>

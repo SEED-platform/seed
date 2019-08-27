@@ -394,6 +394,9 @@ msgstr "Continuer à la mappage de données"
 msgid "Continue to data matching"
 msgstr "Continuer à l'appariement des données"
 
+msgid "CONTINUE_QUESTION"
+msgstr "Es-tu sur de vouloir continuer?"
+
 msgid "Copy Buildings"
 msgstr "Copier des bâtiments"
 
@@ -982,9 +985,6 @@ msgstr "Inclure dans vos Liste de Propriétés toutes les propriétés partagée
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous."
 
-msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
-msgstr "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés."
-
 msgid "Ineligible"
 msgstr "Inéligible"
 
@@ -1084,6 +1084,9 @@ msgstr "Moitié gauche"
 msgid "light blue"
 msgstr "bleu clair"
 
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Les matchs en dehors de ce cycle seront liés."
+
 msgid "List Settings"
 msgstr "Paramètres de la liste"
 
@@ -1098,6 +1101,9 @@ msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire appar
 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Détail des taxes. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "Pour cette organisation, les enregistrements correspondent si les champs suivants correspondent:"
 
 msgid "Loading data..."
 msgstr "Chargeant les données ..."
@@ -1254,6 +1260,12 @@ msgstr "rôle de membre"
 
 msgid "Members"
 msgstr "Membres"
+
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Les matchs de ce cycle seront fusionnés."
+
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "Dans le cas où plusieurs correspondances sont renvoyées d'un seul cycle, ces correspondances seront fusionnées."
 
 msgid "Merged properties"
 msgstr "Propriétés fusionnées"
