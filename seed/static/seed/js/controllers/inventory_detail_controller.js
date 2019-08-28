@@ -306,46 +306,37 @@ angular.module('BE.seed.controller.inventory_detail', [])
       /**
        * save_item: saves the user's changes to the Property/TaxLot State object.
        */
+      var save_item_resolve = function (data) {
+        $scope.$emit('finished_saving');
+        notify_merges_and_links(data);
+        if (data.view_id) {
+          reload_with_view_id(data.view_id);
+        } else {
+          // In the short term, we're just refreshing the page after a save so the table
+          // shows new history.
+          // TODO: Refactor so that table is dynamically updated with new information
+          $state.reload();
+        }
+      };
+
+      var save_item_reject = function () {
+        $scope.$emit('finished_saving');
+      };
+
+      var save_item_catch = function (data) {
+        $log.error(String(data));
+      };
+
       $scope.save_item = function () {
         $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
-            .then(function (data) {
-              notify_merges_and_links(data);
-              if (data.view_id) {
-                reload_with_view_id(data.view_id);
-              } else {
-                // In the short term, we're just refreshing the page after a save so the table
-                // shows new history.
-                // TODO: Refactor so that table is dynamically updated with new information
-                $scope.$emit('finished_saving');
-                $state.reload();
-              }
-            }, function () {
-              $scope.$emit('finished_saving');
-            })
-            .catch(function (data) {
-              $log.error(String(data));
-            });
+            .then(save_item_resolve, save_item_reject)
+            .catch(save_item_catch);
         } else if ($scope.inventory_type === 'taxlots') {
           inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff())
-            .then(function (data) {
-              if (_.has(data, 'view_id')) {
-                reload_with_view_id(data.view_id);
-                notify_merges_and_links(data);
-              } else {
-                // In the short term, we're just refreshing the page after a save so the table
-                // shows new history.
-                // TODO: Refactor so that table is dynamically updated with new information
-                $scope.$emit('finished_saving');
-                $state.reload();
-              }
-            }, function () {
-              $scope.$emit('finished_saving');
-            })
-            .catch(function (data) {
-              $log.error(String(data));
-            });
+            .then(save_item_resolve, save_item_reject)
+            .catch(save_item_catch);
         }
       };
 
