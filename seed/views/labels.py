@@ -92,7 +92,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
             request=self.request,
         )
         kwargs['inventory'] = inventory
-        return super(LabelViewSet, self).get_serializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
 
     def _get_labels(self, request):
         qs = self.get_queryset()
