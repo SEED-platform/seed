@@ -118,12 +118,12 @@ raw_building_file = os.path.relpath(
     os.path.join(location, '..', 'data', 'covered-buildings-sample.csv'))
 assert (os.path.isfile(raw_building_file)), 'Missing file ' + raw_building_file
 raw_map_file = os.path.relpath(
-    os.path.join(location, '..', 'data', 'covered-buildings-mapping.csv'))
+    os.path.join(location, '..', 'data', 'mappings', 'covered-buildings-mapping.csv'))
 assert (os.path.isfile(raw_map_file)), 'Missing file ' + raw_map_file
 pm_building_file = os.path.relpath(
     os.path.join(location, '..', 'data', 'portfolio-manager-sample.csv'))
 assert (os.path.isfile(pm_building_file)), 'Missing file ' + pm_building_file
-pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'portfolio-manager-mapping.csv'))
+pm_map_file = os.path.relpath(os.path.join(location, '..', 'data', 'mappings', 'portfolio-manager-mapping.csv'))
 assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 
 # -- Accounts
