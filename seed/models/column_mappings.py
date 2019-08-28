@@ -168,7 +168,7 @@ class ColumnMapping(models.Model):
             will be removed!
 
         """
-        super(ColumnMapping, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         # Because we need to have saved our ColumnMapping in order to have M2M,
         # We must create it before we prune older references.
         self.remove_duplicates(self.column_raw.all())

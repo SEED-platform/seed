@@ -25,14 +25,14 @@ class EZState(object):
 class PropertyState(EZState):
 
     def __init__(self, **kwds):
-        super(PropertyState, self).__init__("ubid", "pm_property_id", "custom_id_1",
+        super().__init__("ubid", "pm_property_id", "custom_id_1",
                                             "normalized_address", **kwds)
 
 
 class TaxLotState(EZState):
 
     def __init__(self, **kwds):
-        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1",
+        super().__init__("jurisdiction_tax_lot_id", "custom_id_1",
                                           "normalized_address", **kwds)
 
 

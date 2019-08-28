@@ -151,7 +151,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
     def __init__(self, *args, **kwargs):
         """Override to allow dynamic control of view display"""
         no_view = kwargs.pop('no_view', None)
-        super(GreenAssessmentPropertySerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if no_view:
             self.fields.pop('view')
 
@@ -168,7 +168,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         urls = set(validated_data.pop('urls', []))
         request = self.context.get('request', None)
         user = getattr(request, 'user', None)
-        instance = super(GreenAssessmentPropertySerializer, self).create(
+        instance = super().create(
             validated_data
         )
         initial_log = instance.initialize_audit_logs(
@@ -198,9 +198,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         urls = set(validated_data.pop('urls', []))
         request = self.context.get('request', None)
         user = getattr(request, 'user', None)
-        instance = super(GreenAssessmentPropertySerializer, self).update(
-            instance, validated_data
-        )
+        instance = super().update(instance, validated_data)
         log = instance.log(
             user=user,
             changed_fields=str(validated_data),
@@ -287,7 +285,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
             if assessment.is_integer_score and not float(int(metric)) == metric:
                 raise ValidationError('Metric must be an integer.')
         # validate org_ids match
-        return super(GreenAssessmentPropertySerializer, self).validate(data)
+        return super().validate(data)
 
 
 class GreenAssessmentURLSerializer(OrgValidateMixin, serializers.ModelSerializer):

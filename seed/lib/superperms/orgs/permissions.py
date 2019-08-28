@@ -194,5 +194,5 @@ class SEEDPublicPermissions(SEEDOrgPermissions):
         if request.method in self.safe_methods:
             has_perm = True
         elif is_authenticated(request.user):
-            has_perm = super(SEEDPublicPermissions, self).has_perm(request)
+            has_perm = super().has_perm(request)
         return has_perm
