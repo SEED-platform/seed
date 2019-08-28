@@ -294,11 +294,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
         var link_count = result.match_link_count;
 
         Notification.info({
-          message: (merged_count + (merged_count === 1 ? singular : plural) + ' merged'),
+          message: (merged_count + ' total ' + (merged_count === 1 ? singular : plural) + ' merged'),
           delay: 10000,
         });
         Notification.info({
-          message: ('Linked with ' + link_count + ' other ' + (link_count === 1 ? singular : plural)),
+          message: (link_count + ' cross-cycle link' + (link_count === 1 ? '' : 's') + ' established'),
           delay: 10000,
         });
       };
@@ -311,9 +311,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
             .then(function (data) {
-              if (_.has(data, 'view_id')) {
+              notify_merges_and_links(data);
+              if (data.view_id) {
                 reload_with_view_id(data.view_id);
-                notify_merges_and_links(data);
               } else {
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.

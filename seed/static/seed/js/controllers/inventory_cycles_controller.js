@@ -227,6 +227,9 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             displayName: "Cycle",
             pinnedLeft: true,
             treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
+            customTreeAggregationFinalizerFn: function (aggregation) {
+              aggregation.rendered = "total cycles: " + aggregation.value;
+            },
             minWidth: default_min_width,
             width: autopin_width,
           },

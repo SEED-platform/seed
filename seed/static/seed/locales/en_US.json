@@ -146,6 +146,7 @@
     "created": "created",
     "CREATED_LABEL_NAMED": "Created label {label_name}",
     "CREATED_NEW_CYCLE": "Created new Cycle {cycle_name}",
+    "Cross-Cycles": "Cross-Cycles",
     "Current Name": "Current Name",
     "Current password": "Current password",
     "Custom ID 1": "Custom ID 1",

@@ -356,11 +356,10 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
             'status': 'success'
         }
 
-        if view_id is not None:
-            result.update({
-                'match_merged_count': merge_count,
-                'match_link_count': link_count,
-            })
+        result.update({
+            'match_merged_count': merge_count,
+            'match_link_count': link_count,
+        })
 
         return result
 
@@ -879,12 +878,11 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
-                        if view_id is not None:
-                            result.update({
-                                'view_id': view_id,
-                                'match_merged_count': merge_count,
-                                'match_link_count': link_count
-                            })
+                        result.update({
+                            'view_id': view_id,
+                            'match_merged_count': merge_count,
+                            'match_link_count': link_count
+                        })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
@@ -919,12 +917,11 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
-                        if view_id is not None:
-                            result.update({
-                                'view_id': view_id,
-                                'match_merged_count': merge_count,
-                                'match_link_count': link_count,
-                            })
+                        result.update({
+                            'view_id': view_id,
+                            'match_merged_count': merge_count,
+                            'match_link_count': link_count,
+                        })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:

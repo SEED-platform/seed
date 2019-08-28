@@ -477,6 +477,9 @@ msgstr "Created label {label_name}"
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
 
+msgid "Cross-Cycles"
+msgstr "Cross-Cycles"
+
 msgid "Current Name"
 msgstr "Current Name"
 

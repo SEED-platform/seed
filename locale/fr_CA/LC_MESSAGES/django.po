@@ -480,6 +480,9 @@ msgstr "Créé étiquette {label_name}"
 msgid "CREATED_NEW_CYCLE"
 msgstr "Nouveau cycle créé avec nom {cycle_name}"
 
+msgid "Cross-Cycles"
+msgstr "Entre les Cycles"
+
 msgid "Current Name"
 msgstr "Nom Actuel"
 
