@@ -15,7 +15,7 @@
 </div>
 
 <div class="inventory-list-controls" style="display: flex; justify-content: space-between;">
-    <div class="form-group settings_profile" >
+    <div class="form-group settings_profile" style="display:flex; justify-content: space-between;flex-direction: column;">
           <div uib-dropdown is-open="cycles_options.isopen" auto-close="outsideClick" on-toggle="cycle_selection_toggled(open)">
               <label>{$:: 'Cycle' | translate $}:</label>
               <button type="button" class="btn btn-default" uib-dropdown-toggle>
@@ -31,6 +31,8 @@
                   </li>
               </ul>
           </div>
+
+          <div style="font-weight: bold;font-size: smaller;">Matching columns given higher sort priority*</div>
     </div>
 
     <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-end;">

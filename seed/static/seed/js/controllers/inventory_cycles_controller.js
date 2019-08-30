@@ -186,6 +186,11 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           // For matching criteria values, always pin left and show values in aggregate rows.
           if ($scope.matching_criteria_columns.includes(col.column_name)) {
             col.pinnedLeft = true;
+
+            // Help indicate matching columns are given preferred sort priority
+            col.displayName = col.displayName + '*';
+            options.headerCellClass = "matching-column-header";
+
             options.customTreeAggregationFn = $scope.matching_field_value;
             options.width = autopin_width;
           }
@@ -201,6 +206,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             sort: { priority: 0, direction: 'desc' },
             pinnedLeft: true,
             visible: false,
+            suppressRemoveSort: true, // since grouping relies on sorting
             minWidth: default_min_width,
             width: autopin_width,
           },
@@ -237,6 +243,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             name: "cycle_start",
             displayName: "Cycle Start",
             cellFilter: 'date:\'yyyy-MM-dd\'',
+            filter: inventory_service.dateFilter(),
             type: 'date',
             sort: { priority: 1, direction: 'asc' },
             pinnedLeft: true,
@@ -247,6 +254,25 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       };
 
       $scope.build_columns();
+
+      var prioritize_sort = function (grid, sortColumns) {
+        // To maintain grouping while giving users the ability to have some sorting,
+        // matching columns are given top priority followed by the hidden linking ID column.
+        // Lastly, non-matching columns are given next priority so that users can sort within a grouped set.
+        if (sortColumns.length > 1) {
+          var matching_cols = _.filter(sortColumns, function (col) {
+              return col.colDef.is_matching_criteria;
+          });
+          var linking_id_col = _.find(sortColumns, ['name', 'id']);
+          var remaining_cols = _.filter(sortColumns, function (col) {
+            return !col.colDef.is_matching_criteria && !(col.name === 'id');
+          });
+          sortColumns = matching_cols.concat(linking_id_col).concat(remaining_cols);
+          _.forEach(sortColumns, function (col, index) {
+            col.sort.priority = index;
+          })
+        }
+      };
 
       $scope.gridOptions = {
         columnDefs: $scope.columns,
@@ -259,10 +285,13 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           // used to allow filtering for child branches of grouping tree
           $scope.gridApi.table_category = 'year-over-year';
 
-          $scope.gridApi.core.on.filterChanged($scope, function() {
+          $scope.gridApi.core.on.filterChanged($scope, function () {
           // This is a workaround for losing the state of expanded rows during filtering.
               _.delay($scope.gridApi.treeBase.expandAllRows, 500);
           })
+
+          // Prioritized to maintain grouping.
+          $scope.gridApi.core.on.sortChanged($scope, prioritize_sort);
 
           _.delay($scope.updateHeight, 150);
 
