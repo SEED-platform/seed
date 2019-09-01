@@ -71,7 +71,7 @@ class OrganizationUser(models.Model):
                     other_user.save()
                 else:
                     raise UserWarning('Did not find suitable user to promote')
-        super(OrganizationUser, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return 'OrganizationUser: {0} <{1}> ({2})'.format(
@@ -170,7 +170,7 @@ class Organization(models.Model):
         if self.parent_org is not None and self.parent_org.parent_org is not None:
             raise TooManyNestedOrgs
 
-        super(Organization, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle

@@ -186,7 +186,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
         else:
             self.all_extra_data_columns = all_extra_data_columns
 
-        super(PropertyStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
+        super().__init__(instance=instance, data=data, **kwargs)
 
         # remove the fields to display based on the show_columns list.
         if show_columns is not None:
@@ -195,7 +195,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, data):
         """Overwritten to handle time conversion and extra_data null fields"""
-        result = super(PropertyStateSerializer, self).to_representation(data)
+        result = super().to_representation(data)
 
         # Prepopulate the extra_data columns with a default of None so that they will appear in the result
         # This will also handle the passing of the show_columns extra data list. If the show_columns isn't
@@ -361,7 +361,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             self.current = PropertyAuditLogReadOnlySerializer(current).data if current else {}
         else:
             self.current = {}
-        super(PropertyViewAsStateSerializer, self).__init__(instance=instance, data=data, **kwargs)
+        super().__init__(instance=instance, data=data, **kwargs)
 
     def to_internal_value(self, data):
         """Serialize state"""
