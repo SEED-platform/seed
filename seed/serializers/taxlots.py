@@ -37,7 +37,7 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, data):
         """Overwritten to handle extra_data null fields"""
-        result = super(TaxLotStateSerializer, self).to_representation(data)
+        result = super().to_representation(data)
 
         if data.extra_data:
             organization = data.organization
