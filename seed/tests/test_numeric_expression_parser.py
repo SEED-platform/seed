@@ -31,7 +31,7 @@ class TestCaseFactory(type):
             test.__name__ = test_name
             test.__doc__ = doc
             attrs[test_name] = test
-        return super(TestCaseFactory, cls).__new__(cls, name, bases, attrs)
+        return super().__new__(cls, name, bases, attrs)
 
 
 def make_is_numeric_expression_method(value, expected):

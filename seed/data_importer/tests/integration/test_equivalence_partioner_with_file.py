@@ -28,7 +28,7 @@ from seed.tests.util import DataMappingBaseTestCase
 
 class TestEquivalenceWithFile(DataMappingBaseTestCase):
     def setUp(self):
-        super(TestEquivalenceWithFile, self).setUp()
+        super().setUp()
 
         filename = getattr(self, 'filename', 'covered-buildings-sample.csv')
         import_file_source_type = ASSESSED_RAW

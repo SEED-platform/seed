@@ -247,7 +247,7 @@ def DecoratorMixin(decorator):
 
         @classmethod
         def as_view(cls, *args, **kwargs):
-            view = super(Mixin, cls).as_view(*args, **kwargs)
+            view = super().as_view(*args, **kwargs)
             return decorator(view)
 
     Mixin.__name__ = 'DecoratorMixin{0}'.format(decorator.__name__)

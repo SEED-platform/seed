@@ -114,7 +114,7 @@ class PintJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
         if isinstance(obj, ureg.Quantity):
             return to_raw_magnitude(obj)
-        return super(PintJSONEncoder, self).default(obj)
+        return super().default(obj)
 
 
 class PintQuantitySerializerField(serializers.Field):

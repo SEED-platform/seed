@@ -17,7 +17,7 @@ class ChoiceField(serializers.Field):
     def __init__(self, choices, **kwargs):
         """init."""
         self._choices = OrderedDict(choices)
-        super(ChoiceField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
     def to_representation(self, obj):
         return self._choices[obj]
