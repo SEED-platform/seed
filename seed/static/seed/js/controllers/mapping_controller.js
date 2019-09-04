@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.mapping', [])
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
       matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
         var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
@@ -95,7 +95,7 @@ angular.module('BE.seed.controller.mapping', [])
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
       $scope.matching_criteria_columns = _.uniq(matching_criteria_columns).sort().join(', ');
       $scope.property_matching_criteria_columns = _.map(matching_criteria_columns_payload.PropertyState, 'display_name').sort().join(', ');
