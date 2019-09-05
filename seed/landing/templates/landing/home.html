@@ -1,40 +1,36 @@
-{% extends "landing/base.html" %}
-{% load compress %}
-{% load i18n %}
+{% extends "landing/base.html" %}{% load compress %}{% load i18n %}
 
 {% block content %}
-<div class="page">
-    {% include "landing/_header.html" %}
+    <div class="page">
+        <div class="page_section">
+            {% include "landing/_marketing_bullets.html" %}
 
-    <div class="page_section">
-        {% include "landing/_marketing_bullets.html" %}
+            <div class="section_forms">
+                {% include "landing/_browser_supported.html" %}
+                <div class="clearfix"></div>
+                <div class="form_title">
+                    <h2>{% trans "Log in to SEED Platform™" %}</h2>
+                    {% if 'setup_complete' in request.GET %}
+                        <p>{% trans "Thank you for creating your account! Please sign in below." %}
+                    {% endif %}
+                    {% if 'logout' in request.GET %}
+                        <p>{% trans "You have successfully logged out. You may log in again below." %}</p>
+                    {% endif %}
+                    <form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form">{% csrf_token %}
+                        <table class="signup_table">
+                            {{ login_form.as_table }}
+                        </table>
+                        <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
+                        <input type="reset" class="btn btn-default" value="{% trans "Cancel" %}">
+                        <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
+                    </form>
+                    {% include "landing/_password_note.html" %}
+                </div>
+            </div>
+            <!-- END .section_forms -->
+        </div>
+        <!-- END .page_section .content -->
 
-		<div class="section_forms">
-			{% include "landing/_browser_supported.html" %}
-			<div class="clearfix"></div>
-			<div class="form_title">
-				<h2>{% trans "Log in to SEED Platform" %}</h2>
-        {% if 'setup_complete' in request.GET %}
-          <p>{% trans "Thank you for creating your account! Please sign in below." %}
-        {% endif %}
-        {% if 'logout' in request.GET %}
-          <p>{% trans "You have successfully logged out. You may log in again below." %}</p>
-        {% endif %}
-				<form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form">{% csrf_token %}
-				    <table class="signup_table">
-				        {{login_form.as_table}}
-				    </table>
-            <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
-				    <input type="reset" class="btn btn-default" value="{% trans "Cancel" %}">
-				    <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
-				</form>
-                {% include "landing/_password_note.html" %}
-			</div>
-		</div>
-		<!-- END .section_forms -->
-	</div>
-	<!-- END .page_section .content -->
-
-</div>
-<!-- END .page -->
+    </div>
+    <!-- END .page -->
 {% endblock %}
