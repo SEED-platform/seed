@@ -161,8 +161,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
-    organization_factory.match_merge_link = function (org_id) {
-      return $http.get('/api/v2/organizations/' + org_id + '/match_merge_link').then(function (response) {
+    organization_factory.match_merge_link = function (org_id, inventory_type) {
+      return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link/', {
+        inventory_type: inventory_type,
+      }).then(function (response) {
         return response.data;
       });
     };

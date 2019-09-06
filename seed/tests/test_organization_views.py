@@ -49,9 +49,22 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertCountEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
         self.assertCountEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
 
-    def test_whole_org_match_merge_link_endpoint(self):
+    def test_whole_org_match_merge_link_endpoint_properties(self):
         url = reverse('api:v2:organizations-match-merge-link', args=[self.org.id])
-        raw_result = self.client.get(url)
+        post_params = json.dumps({"inventory_type": "properties"})
+        raw_result = self.client.post(url, post_params, content_type='application/json')
+
+        self.assertEqual(200, raw_result.status_code)
+
+        summary = json.loads(raw_result.content)
+        summary_keys = list(summary.keys())
+
+        self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
+
+    def test_whole_org_match_merge_link_endpoint_taxlots(self):
+        url = reverse('api:v2:organizations-match-merge-link', args=[self.org.id])
+        post_params = json.dumps({"inventory_type": "taxlots"})
+        raw_result = self.client.post(url, post_params, content_type='application/json')
 
         self.assertEqual(200, raw_result.status_code)
 

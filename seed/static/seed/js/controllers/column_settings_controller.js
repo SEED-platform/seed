@@ -161,7 +161,7 @@ angular.module('BE.seed.controller.column_settings', [])
         })
 
         if (matching_criteria_changed) {
-          organization_service.match_merge_link($scope.org.id).then(function(match_link_summary) {
+          organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then(function(match_link_summary) {
             $scope.column_change_summary(match_link_summary);
           }).catch(function() {
             Notification.error('There was an error trying to match, merge, link records for this organization.');

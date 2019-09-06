@@ -845,7 +845,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @detail_route(methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Run match_merge_link for an org.
@@ -857,6 +857,12 @@ class OrganizationViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
+        inventory_type = request.data.get('inventory_type', None)
+        if inventory_type not in ['properties', 'taxlots']:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
+                                status=status.HTTP_404_NOT_FOUND)
+
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
@@ -864,6 +870,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                                  'message': 'Could not retrieve organization at pk = ' + str(pk)},
                                 status=status.HTTP_404_NOT_FOUND)
 
-        summary = whole_org_match_merge_link(org.id)
+        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+        summary = whole_org_match_merge_link(org.id, state_class_name)
 
         return JsonResponse(summary)
