@@ -9,7 +9,8 @@ def forwards(apps, schema_editor):
     Organization = apps.get_model("orgs", "organization")
 
     for org in Organization.objects.all():
-        whole_org_match_merge_link(org.id)
+        whole_org_match_merge_link(org.id, 'PropertyState')
+        whole_org_match_merge_link(org.id, 'TaxLotState')
 
 
 class Migration(migrations.Migration):
