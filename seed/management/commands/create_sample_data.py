@@ -64,7 +64,7 @@ class FakePropertyStateExtraDataFactory(BaseFake):
     """
 
     def __init__(self):
-        super(FakePropertyStateExtraDataFactory, self).__init__()
+        super().__init__()
 
     def property_state_extra_data_details(self, id, organization):
         """
@@ -117,7 +117,7 @@ class CreateSampleDataFakePropertyStateFactory(FakePropertyStateFactory):
                 used to generate randomized extra data.
         """
 
-        super(CreateSampleDataFakePropertyStateFactory, self).__init__()
+        super().__init__()
 
         self.organization = organization
         self.year_ending = year_ending
@@ -202,7 +202,7 @@ class FakeTaxLotExtraDataFactory(BaseFake):
     """
 
     def __init__(self):
-        super(FakeTaxLotExtraDataFactory, self).__init__()
+        super().__init__()
 
     def tax_lot_extra_data_details(self, id, year_ending):
         """
@@ -254,7 +254,7 @@ class CreateSampleDataFakeTaxLotFactory(FakeTaxLotStateFactory):
         :param extra_data_factory: FakeTaxLotStateExtraDataFactory,
                 used to generate randomized extra data.
         """
-        super(CreateSampleDataFakeTaxLotFactory, self).__init__()
+        super().__init__()
         self.extra_data_factory = extra_data_factory
 
     def tax_lot_details(self):

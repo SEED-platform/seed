@@ -24,7 +24,7 @@ class ColumnMappingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         """Return only the first items in the column_raw and column_mapped"""
-        result = super(ColumnMappingSerializer, self).to_representation(obj)
+        result = super().to_representation(obj)
 
         if obj.column_raw and obj.column_raw.first():
             result['column_raw'] = ColumnSerializer(obj.column_raw.first()).data

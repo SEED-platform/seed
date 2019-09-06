@@ -83,4 +83,4 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
                 if not Column.objects.filter(pk=column.get("id"), organization_id=org.pk).exists():
                     raise ValidationError('Column does not exist for organization, column id: %s' % column.get("id"))
 
-        return super(ColumnListSettingSerializer, self).validate(data)
+        return super().validate(data)

@@ -163,4 +163,4 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         # correct? Regardless, this code seems problematic
         if self.email.lower() != self.username:
             self.email = self.username
-        return super(SEEDUser, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)

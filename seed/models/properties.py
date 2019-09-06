@@ -390,7 +390,7 @@ class PropertyState(models.Model):
         from seed.data_importer.tasks import hash_state_object
         self.hash_object = hash_state_object(self)
 
-        return super(PropertyState, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def history(self):
         """
@@ -743,7 +743,7 @@ class PropertyView(models.Model):
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
-        super(PropertyView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
         kwargs.update({
