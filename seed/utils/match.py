@@ -22,6 +22,8 @@ from seed.models import (
     TaxLotView,
 )
 from seed.utils.merge import merge_states_with_views
+from seed.utils.properties import properties_across_cycles
+from seed.utils.taxlots import taxlots_across_cycles
 
 
 def empty_criteria_filter(organization_id, StateClass):
@@ -241,7 +243,7 @@ def match_merge_link(view_id, StateClassName):
         return 0, link_count, None
 
 
-def whole_org_match_merge_link(org_id, state_class_name):
+def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
     """
     For a given organization, run a match merge round for each cycle in
     isolation. Afterwards, run a match link round across all cycles at once.
@@ -295,11 +297,17 @@ def whole_org_match_merge_link(org_id, state_class_name):
         ViewClass = TaxLotView
         CanonicalClass = TaxLot
 
-    column_names = matching_criteria_column_names(org_id, state_class_name)
+    if proposed_columns:
+        column_names = proposed_columns
+        preview_run = True
+    else:
+        column_names = matching_criteria_column_names(org_id, state_class_name)
+        preview_run = False
+
     empty_matching_criteria = empty_criteria_filter(org_id, StateClass)
 
-    # Match merge within each Cycle
     with transaction.atomic():
+        # Match merge within each Cycle
         for cycle_id in cycle_ids:
             view_in_cycle = ViewClass.objects.filter(cycle_id=cycle_id)
 
@@ -323,8 +331,7 @@ def whole_org_match_merge_link(org_id, state_class_name):
 
                 summary[StateClass.__name__]['merged_count'] += len(state_ids)
 
-    # Match link across the whole Organization
-    with transaction.atomic():
+        # Match link across the whole Organization
         # Append 'state__' to dict keys used for filtering so that filtering can be done across associations
         state_appended_col_names = {'state__' + col_name for col_name in column_names}
         state_appended_empty_matching_criteria = {
@@ -379,5 +386,13 @@ def whole_org_match_merge_link(org_id, state_class_name):
 
         # Delete canonical records that are no longer used.
         CanonicalClass.objects.filter(id__in=unused_canonical_ids).delete()
+
+        if preview_run:
+            if state_class_name == 'PropertyState':
+                summary = properties_across_cycles(org_id, -1, cycle_ids)
+            else:
+                summary = taxlots_across_cycles(org_id, -1, cycle_ids)
+
+            transaction.set_rollback(True)
 
     return summary

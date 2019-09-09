@@ -25,6 +25,7 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
     Column,
+    ColumnListSetting,
     Meter,
     MeterReading,
     Property,
@@ -41,6 +42,7 @@ from seed.utils.match import (
     whole_org_match_merge_link,
 )
 from seed.test_helpers.fake import (
+    FakeColumnListSettingsFactory,
     FakeCycleFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
@@ -1380,7 +1382,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertTrue(agg_meter.meter_readings.filter(reading=313131).exists())
 
 
-class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
+class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
@@ -1392,11 +1394,9 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         )
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
-    def test_properties_whole_org_match_merge_link(self):
         """
-        The set up for this test includes multiple Property sets
+        The set up for these tests include multiple Property sets
         across multiple Cycles. In this context, a "set" includes a -State,
         -View, and canonical record.
 
@@ -1416,91 +1416,144 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         base_property_details = {
             'pm_property_id': '1st Match Set',
             'city': 'City 1',
+            'property_name': '1st Match Set',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
         # Create 6 initially non-matching properties in first Cycle
-        ps_11 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_11 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated - 1st Match Set'
+        base_property_details['property_name'] = '1st Match Set'
         base_property_details['city'] = 'City 2'
-        ps_12 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_12 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = '2nd Match Set'
+        base_property_details['property_name'] = '2nd Match Set'
         base_property_details['city'] = 'City 3'
-        ps_13 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_13 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated - 2nd Match Set'
+        base_property_details['property_name'] = '2nd Match Set'
         base_property_details['city'] = 'City 4'
-        ps_14 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_14 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single Unmatched'
+        base_property_details['property_name'] = 'Single Unmatched'
         base_property_details['city'] = 'City 5'
-        ps_15 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_15 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single to be Linked!'
+        base_property_details['property_name'] = 'Single to be Linked!'
         base_property_details['city'] = 'City 6'
-        ps_16 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_16 = self.property_state_factory.get_property_state(**base_property_details)
 
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
         match_buildings(self.import_file_1.id)
 
-        # Make some match but don't trigger matching round
-        PropertyState.objects.filter(pk=ps_12.id).update(pm_property_id='1st Match Set')
-        PropertyState.objects.filter(pk=ps_14.id).update(pm_property_id='2nd Match Set')
-
-        # Check all property sets were created without match merges
-        self.assertEqual(6, Property.objects.count())
-        self.assertEqual(6, PropertyState.objects.count())
-        self.assertEqual(6, PropertyView.objects.count())
-
         # Cycle 2 / ImportFile 2
         base_property_details = {
             'pm_property_id': '1st Match Set - 2',
             'city': 'City 1',
+            'property_name': '1st Match Set',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
         # Create 6 initially non-matching properties in second Cycle
-        ps_21 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_21 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated 1 - 1st Match Set - 2'
+        base_property_details['property_name'] = '1st Match Set'
         base_property_details['city'] = 'City 2'
-        ps_22 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_22 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'To be updated 2 - 1st Match Set - 2'
+        base_property_details['property_name'] = '1st Match Set'
         base_property_details['city'] = 'City 3'
-        ps_23 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_23 = self.property_state_factory.get_property_state(**base_property_details)
 
         del base_property_details['pm_property_id']
+        del base_property_details['property_name']
         base_property_details['city'] = 'Null Fields 1'
-        ps_24 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_24 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['city'] = 'Null Fields 2'
-        ps_25 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_25 = self.property_state_factory.get_property_state(**base_property_details)
 
         base_property_details['pm_property_id'] = 'Single to be Linked! - will be updated later - 2'
+        base_property_details['property_name'] = 'Single to be Linked!'
         base_property_details['city'] = 'City 6'
-        ps_26 = self.property_state_factory.get_property_state(**base_property_details)
+        self.ps_26 = self.property_state_factory.get_property_state(**base_property_details)
 
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
         match_buildings(self.import_file_2.id)
 
+    def test_properties_whole_org_match_merge_link_preview(self):
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(self.ps_11)
+        # get the columnlistsetting (default) for all columns
+        column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        columnlistsetting = column_list_factory.get_columnlistsettings(columns=['property_name', 'city'])
+
+        # Check all property sets were created without match merges
+        self.assertEqual(12, Property.objects.count())
+        self.assertEqual(12, PropertyState.objects.count())
+        self.assertEqual(12, PropertyView.objects.count())
+
+        summary = whole_org_match_merge_link(self.org.id, 'PropertyState', ['property_name'])
+
+        property_name_key = 'property_name_' + str(columnlistsetting.columns.get(column_name='property_name').id)
+        city_key = 'city_' + str(columnlistsetting.columns.get(column_name='city').id)
+
+        # Check all property sets were created without match merges
+        self.assertEqual(12, Property.objects.count())
+        self.assertEqual(12, PropertyState.objects.count())
+        self.assertEqual(12, PropertyView.objects.count())
+
+        result_1 = summary[self.cycle_1.id]
+        self.assertEqual(len(result_1), 4)
+        property_name_or_city_ids_1 = {
+            (ps.get(property_name_key) or ps[city_key]): ps['id']
+            for ps
+            in result_1
+        }
+
+        result_2 = summary[self.cycle_2.id]
+        self.assertEqual(len(result_2), 4)
+        property_name_or_city_ids_2 = {
+            (ps.get(property_name_key) or ps[city_key]): ps['id']
+            for ps
+            in result_2
+        }
+
+        # check links
+        self.assertEqual(property_name_or_city_ids_1['Single to be Linked!'], property_name_or_city_ids_2['Single to be Linked!'])
+        self.assertEqual(property_name_or_city_ids_1['1st Match Set'], property_name_or_city_ids_2['1st Match Set'])
+
+        # check not linked from each Cycle
+        self.assertFalse(property_name_or_city_ids_1['Single Unmatched'] in property_name_or_city_ids_2.values())
+        self.assertFalse(property_name_or_city_ids_1['2nd Match Set'] in property_name_or_city_ids_2.values())
+
+        self.assertFalse(property_name_or_city_ids_2['Null Fields 1'] in property_name_or_city_ids_1.values())
+        self.assertFalse(property_name_or_city_ids_2['Null Fields 2'] in property_name_or_city_ids_1.values())
+
+    def test_properties_whole_org_match_merge_link(self):
         # Make some match but don't trigger matching round
-        PropertyState.objects.filter(pk__in=[ps_21.id, ps_23.id]).update(pm_property_id='1st Match Set')
+        PropertyState.objects.filter(pk=self.ps_12.id).update(pm_property_id='1st Match Set')
+        PropertyState.objects.filter(pk=self.ps_14.id).update(pm_property_id='2nd Match Set')
+        PropertyState.objects.filter(pk__in=[self.ps_21.id, self.ps_23.id]).update(pm_property_id='1st Match Set')
+        PropertyState.objects.filter(pk=self.ps_26.id).update(pm_property_id='Single to be Linked!')
 
         # Give merge priority to -States with City 2
-        prioritized_property = PropertyState.objects.get(id=ps_22.id)
+        prioritized_property = PropertyState.objects.get(id=self.ps_22.id)
         prioritized_property.pm_property_id = '1st Match Set'
         prioritized_property.save()
-
-        PropertyState.objects.filter(pk=ps_26.id).update(pm_property_id='Single to be Linked!')
 
         # Check all property sets were created without match merges
         self.assertEqual(12, Property.objects.count())
@@ -1518,7 +1571,7 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         summary = whole_org_match_merge_link(self.org.id, 'PropertyState')
 
         """
-        Now that the set up is complete, test the state of the property records.
+        Check the state of the property records.
 
         The matching field being looked at is pm_property_id.
 
@@ -1567,19 +1620,19 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
 
         # Check -States part of merges are no longer associated to -Views
         merged_ps_ids = [
-            ps_11.id, ps_12.id,  # Cycle 1
-            ps_13.id, ps_14.id,  # Cycle 1
-            ps_21.id, ps_22.id, ps_23.id  # Cycle 2
+            self.ps_11.id, self.ps_12.id,  # Cycle 1
+            self.ps_13.id, self.ps_14.id,  # Cycle 1
+            self.ps_21.id, self.ps_22.id, self.ps_23.id  # Cycle 2
         ]
         self.assertFalse(PropertyView.objects.filter(state_id__in=merged_ps_ids).exists())
 
         # Check -States NOT part of merges are still associated to -Views
-        self.assertTrue(PropertyView.objects.filter(state_id=ps_15.id).exists())
-        self.assertTrue(PropertyView.objects.filter(state_id=ps_16.id).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=self.ps_15.id).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=self.ps_16.id).exists())
 
-        self.assertTrue(PropertyView.objects.filter(state_id=ps_24.id).exists())
-        self.assertTrue(PropertyView.objects.filter(state_id=ps_25.id).exists())
-        self.assertTrue(PropertyView.objects.filter(state_id=ps_26.id).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=self.ps_24.id).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=self.ps_25.id).exists())
+        self.assertTrue(PropertyView.objects.filter(state_id=self.ps_26.id).exists())
 
         """
         Check Merges occurred correctly, with priority given to most recently
@@ -1622,9 +1675,22 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
             expected_summary['PropertyState']['linked_sets_count']
         )
 
-    def test_whole_org_match_merge_link_taxlots(self):
+
+class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle_2
+        )
+
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
         """
-        The set up for this test includes multiple TaxLot sets
+        The set up for these tests include multiple TaxLot sets
         across multiple Cycles. In this context, a "set" includes a -State,
         -View, and canonical record.
 
@@ -1644,41 +1710,43 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         base_taxlot_details = {
             'jurisdiction_tax_lot_id': '1st Match Set',
             'city': 'City 1',
+            'district': '1st Match Set',
             'import_file_id': self.import_file_1.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
         # Create 6 initially non-matching taxlots in first Cycle
-        tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_11 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 1st Match Set'
+        base_taxlot_details['district'] = '1st Match Set'
         base_taxlot_details['city'] = 'City 2'
-        tls_12 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_12 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = '2nd Match Set'
+        base_taxlot_details['district'] = '2nd Match Set'
         base_taxlot_details['city'] = 'City 3'
-        tls_13 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_13 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated - 2nd Match Set'
+        base_taxlot_details['district'] = '2nd Match Set'
         base_taxlot_details['city'] = 'City 4'
-        tls_14 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_14 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single Unmatched'
+        base_taxlot_details['district'] = 'Single Unmatched'
         base_taxlot_details['city'] = 'City 5'
-        tls_15 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_15 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked!'
+        base_taxlot_details['district'] = 'Single to be Linked!'
         base_taxlot_details['city'] = 'City 6'
-        tls_16 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_16 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
         match_buildings(self.import_file_1.id)
-
-        # Make some match but don't trigger matching round
-        TaxLotState.objects.filter(pk=tls_12.id).update(jurisdiction_tax_lot_id='1st Match Set')
-        TaxLotState.objects.filter(pk=tls_14.id).update(jurisdiction_tax_lot_id='2nd Match Set')
 
         # Check all property and taxlot sets were created without match merges
         self.assertEqual(6, TaxLot.objects.count())
@@ -1689,46 +1757,106 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
         base_taxlot_details = {
             'jurisdiction_tax_lot_id': '1st Match Set - 2',
             'city': 'City 1',
+            'district': '1st Match Set',
             'import_file_id': self.import_file_2.id,
             'data_state': DATA_STATE_MAPPING,
             'no_default_data': False,
         }
         # Create 6 initially non-matching taxlots in second Cycle
-        tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_21 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 1 - 1st Match Set - 2'
+        base_taxlot_details['district'] = '1st Match Set'
         base_taxlot_details['city'] = 'City 2'
-        tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_22 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'To be updated 2 - 1st Match Set - 2'
+        base_taxlot_details['district'] = '1st Match Set'
         base_taxlot_details['city'] = 'City 3'
-        tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_23 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         del base_taxlot_details['jurisdiction_tax_lot_id']
+        del base_taxlot_details['district']
         base_taxlot_details['city'] = 'Null Fields 1'
-        tls_24 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_24 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['city'] = 'Null Fields 2'
-        tls_25 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_25 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         base_taxlot_details['jurisdiction_tax_lot_id'] = 'Single to be Linked! - will be updated later - 2'
+        base_taxlot_details['district'] = 'Single to be Linked!'
         base_taxlot_details['city'] = 'City 6'
-        tls_26 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+        self.tls_26 = self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
 
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
         match_buildings(self.import_file_2.id)
 
+    def test_taxlots_whole_org_match_merge_link_preview(self):
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(self.tls_11)
+        # get the columnlistsetting (default) for all columns
+        column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        columnlistsetting = column_list_factory.get_columnlistsettings(
+            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT,
+            columns=['district', 'city'],
+            table_name='TaxLotState'
+        )
+
+        # Check all property sets were created without match merges
+        self.assertEqual(12, TaxLot.objects.count())
+        self.assertEqual(12, TaxLotState.objects.count())
+        self.assertEqual(12, TaxLotView.objects.count())
+
+        summary = whole_org_match_merge_link(self.org.id, 'TaxLotState', ['district'])
+
+        district_key = 'district_' + str(columnlistsetting.columns.get(column_name='district').id)
+        city_key = 'city_' + str(columnlistsetting.columns.get(column_name='city').id)
+
+        # Check all property sets were created without match merges
+        self.assertEqual(12, TaxLot.objects.count())
+        self.assertEqual(12, TaxLotState.objects.count())
+        self.assertEqual(12, TaxLotView.objects.count())
+
+        result_1 = summary[self.cycle_1.id]
+        self.assertEqual(len(result_1), 4)
+        district_or_city_ids_1 = {
+            (tls.get(district_key) or tls[city_key]): tls['id']
+            for tls
+            in result_1
+        }
+
+        result_2 = summary[self.cycle_2.id]
+        self.assertEqual(len(result_2), 4)
+        district_or_city_ids_2 = {
+            (tls.get(district_key) or tls[city_key]): tls['id']
+            for tls
+            in result_2
+        }
+
+        # check links
+        self.assertEqual(district_or_city_ids_1['Single to be Linked!'], district_or_city_ids_2['Single to be Linked!'])
+        self.assertEqual(district_or_city_ids_1['1st Match Set'], district_or_city_ids_2['1st Match Set'])
+
+        # check not linked from each Cycle
+        self.assertFalse(district_or_city_ids_1['Single Unmatched'] in district_or_city_ids_2.values())
+        self.assertFalse(district_or_city_ids_1['2nd Match Set'] in district_or_city_ids_2.values())
+
+        self.assertFalse(district_or_city_ids_2['Null Fields 1'] in district_or_city_ids_1.values())
+        self.assertFalse(district_or_city_ids_2['Null Fields 2'] in district_or_city_ids_1.values())
+
+    def test_whole_org_match_merge_link_taxlots(self):
         # Make some match but don't trigger matching round
-        TaxLotState.objects.filter(pk__in=[tls_21.id, tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+        TaxLotState.objects.filter(pk=self.tls_12.id).update(jurisdiction_tax_lot_id='1st Match Set')
+        TaxLotState.objects.filter(pk=self.tls_14.id).update(jurisdiction_tax_lot_id='2nd Match Set')
+        TaxLotState.objects.filter(pk__in=[self.tls_21.id, self.tls_23.id]).update(jurisdiction_tax_lot_id='1st Match Set')
+        TaxLotState.objects.filter(pk=self.tls_26.id).update(jurisdiction_tax_lot_id='Single to be Linked!')
 
         # Give merge priority to -States with City 2
-        prioritized_taxlot = TaxLotState.objects.get(id=tls_22.id)
+        prioritized_taxlot = TaxLotState.objects.get(id=self.tls_22.id)
         prioritized_taxlot.jurisdiction_tax_lot_id = '1st Match Set'
         prioritized_taxlot.save()
-
-        TaxLotState.objects.filter(pk=tls_26.id).update(jurisdiction_tax_lot_id='Single to be Linked!')
 
         # Check all taxlot sets were created without match merges
         self.assertEqual(12, TaxLot.objects.count())
@@ -1795,19 +1923,19 @@ class TestMatchingExistingViewFullOrgMatching(DataMappingBaseTestCase):
 
         # Check -States part of merges are no longer associated to -Views
         merged_tls_ids = [
-            tls_11.id, tls_12.id,  # Cycle 1
-            tls_13.id, tls_14.id,  # Cycle 1
-            tls_21.id, tls_22.id, tls_23.id  # Cycle 2
+            self.tls_11.id, self.tls_12.id,  # Cycle 1
+            self.tls_13.id, self.tls_14.id,  # Cycle 1
+            self.tls_21.id, self.tls_22.id, self.tls_23.id  # Cycle 2
         ]
         self.assertFalse(TaxLotView.objects.filter(state_id__in=merged_tls_ids).exists())
 
         # Check -States NOT part of merges are still associated to -Views
-        self.assertTrue(TaxLotView.objects.filter(state_id=tls_15.id).exists())
-        self.assertTrue(TaxLotView.objects.filter(state_id=tls_16.id).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=self.tls_15.id).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=self.tls_16.id).exists())
 
-        self.assertTrue(TaxLotView.objects.filter(state_id=tls_24.id).exists())
-        self.assertTrue(TaxLotView.objects.filter(state_id=tls_25.id).exists())
-        self.assertTrue(TaxLotView.objects.filter(state_id=tls_26.id).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=self.tls_24.id).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=self.tls_25.id).exists())
+        self.assertTrue(TaxLotView.objects.filter(state_id=self.tls_26.id).exists())
 
         """
         Check Merges occurred correctly, with priority given to most recently
