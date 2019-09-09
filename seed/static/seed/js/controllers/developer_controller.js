@@ -31,4 +31,8 @@ angular.module('BE.seed.controller.developer', [])
         });
       };
 
+      $scope.getHost = function () {
+        return location.protocol + '//' + location.host;
+      };
+
     }]);
