@@ -70,7 +70,7 @@ class SEEDJSONRenderer(JSONRenderer):
         if pagination:
             data['pagination'] = pagination
 
-        return super(SEEDJSONRenderer, self).render(
+        return super().render(
             data,
             accepted_media_type=accepted_media_type,
             renderer_context=renderer_context

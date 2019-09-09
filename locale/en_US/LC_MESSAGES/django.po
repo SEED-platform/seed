@@ -205,12 +205,6 @@ msgstr "Associated Tax Lot ID"
 msgid "Associated Tax Lot IDs"
 msgstr "Associated Tax Lot IDs"
 
-msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
-msgstr "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
-
-msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
-msgstr "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
-
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Auditing"
@@ -812,8 +806,8 @@ msgstr "Field"
 msgid "Field Name"
 msgstr "Field Name"
 
-msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>, <strong>UBID</strong>, and <strong>ULID</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
+msgid "FIELD_NAMES_FOR_MATCHING"
+msgstr "Field names for matching"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -983,6 +977,12 @@ msgstr "Include in your Properties List all properties shared with you."
 
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
+
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
+
+msgid "Ineligible"
+msgstr "Ineligible"
 
 msgid "INTERNAL"
 msgstr "INTERNAL"
@@ -1210,6 +1210,9 @@ msgstr "Matching List Settings"
 
 msgid "Matching Results for file"
 msgstr "Matching Results for file"
+
+msgid "MATCHING_ADVICE"
+msgstr "If there are fields in the datafile mapped to these names, the program will attempt to match on the corresponding values in existing records. All of these fields must have the same values between records for the records to match."
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
@@ -1681,6 +1684,9 @@ msgstr "Property Type"
 msgid "Property Visibility"
 msgstr "Property Visibility"
 
+msgid "PROPERTY_MATCHING_FIELDS_REQUIREMENT"
+msgstr "At least one of the following Property fields is required"
+
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
@@ -2079,6 +2085,9 @@ msgstr "Tax Lots List"
 
 msgid "Tax Lots List Settings"
 msgstr "Tax Lots List Settings"
+
+msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
+msgstr "At least one of the following Tax Lot fields is required"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44

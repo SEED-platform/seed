@@ -206,12 +206,6 @@ msgstr "ID de lot d'impôt associé"
 msgid "Associated Tax Lot IDs"
 msgstr "IDs des lots d'impôt associé"
 
-msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
-msgstr "Au moins un des champs de propriété suivants est requis: Adresse ligne 1, personnalisée ID 1, UBID ou PM ID de Propriété."
-
-msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
-msgstr "Au moins l'un des domaines fiscal Lot suivants est requis: Adresse ligne 1, sur mesure Id 1, juridiction fiscale Lot Id, ou ULID."
-
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Audit"
@@ -816,8 +810,8 @@ msgstr "Champ"
 msgid "Field Name"
 msgstr "Nom de champ"
 
-msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Noms de zone pour l'appariement:</span> Les champs suivants sont utilisés par SEED pour faire correspondre les enregistrements: <strong>Juridiction Numéro de lot fiscal</strong>, <strong>Numéro de propriété PM</strong>, <strong>ID personnalisé 1</strong>, <strong>Ligne d'adresse 1</strong>, <strong>UBID</strong>, et <strong>ULID</strong>. Si des champs dans un fichier de données sont mappés à ces noms, le programme tentera de faire correspondre ces mêmes noms dans les enregistrements existants."
+msgid "FIELD_NAMES_FOR_MATCHING"
+msgstr "Noms de zone pour l'appariement"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "CHAMPS NÉCESSAIRES POUR ÉTABLIR DES CORRESPONDANCES:"
@@ -987,6 +981,12 @@ msgstr "Inclure dans vos Liste de Propriétés toutes les propriétés partagée
 
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous."
+
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés."
+
+msgid "Ineligible"
+msgstr "Inéligible"
 
 msgid "INTERNAL"
 msgstr "INTERNE"
@@ -1215,6 +1215,9 @@ msgstr "Paramètres de la Liste des Correspondances"
 
 msgid "Matching Results for file"
 msgstr "Résultats correspondants pour le fichier"
+
+msgid "MATCHING_ADVICE"
+msgstr "Si le fichier de données contient des champs mappés à ces noms, le programme tentera de faire correspondre les valeurs correspondantes dans les enregistrements existants. Tous ces champs doivent avoir les mêmes valeurs entre les enregistrements pour que les enregistrements correspondent."
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Résultats correspondants pour le fichier {dataset_filename}"
@@ -1686,6 +1689,9 @@ msgstr "Type de propriété"
 msgid "Property Visibility"
 msgstr "Visibilité de la propriété"
 
+msgid "PROPERTY_MATCHING_FIELDS_REQUIREMENT"
+msgstr "Au moins un des champs de propriété suivants est requis"
+
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
@@ -2086,6 +2092,9 @@ msgstr "Liste des lots d'impôt"
 
 msgid "Tax Lots List Settings"
 msgstr "Paramètres de la Liste des Lots d'impôt"
+
+msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
+msgstr "Au moins l'un des domaines fiscal Lot suivants est requis"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44

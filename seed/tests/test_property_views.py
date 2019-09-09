@@ -28,8 +28,11 @@ from seed.data_importer.models import (
 from seed.models import (
     Meter,
     MeterReading,
+    Property,
     PropertyState,
     PropertyView,
+    TaxLotView,
+    TaxLotProperty,
     Column,
 )
 from seed.test_helpers.fake import (
@@ -37,6 +40,9 @@ from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
+    FakeNoteFactory,
+    FakeStatusLabelFactory,
+    FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
     FakeColumnListSettingsFactory,
@@ -71,7 +77,6 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
@@ -285,11 +290,11 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = cycle_factory.get_cycle(
+        self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
@@ -298,17 +303,115 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
             pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
-        PropertyView.objects.create(
+        self.view_1 = PropertyView.objects.create(
             property=self.property_1, cycle=self.cycle, state=self.state_1
         )
 
         self.state_2 = self.property_state_factory.get_property_state(address_line_1='2 property state')
         self.property_2 = self.property_factory.get_property()
-        PropertyView.objects.create(
+        self.view_2 = PropertyView.objects.create(
             property=self.property_2, cycle=self.cycle, state=self.state_2
         )
 
         self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+    def test_properties_merge_without_losing_labels(self):
+        # Create 3 Labels
+        label_factory = FakeStatusLabelFactory(organization=self.org)
+
+        label_1 = label_factory.get_statuslabel()
+        label_2 = label_factory.get_statuslabel()
+        label_3 = label_factory.get_statuslabel()
+
+        self.view_1.labels.add(label_1, label_2)
+        self.view_2.labels.add(label_2, label_3)
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # The resulting -View should have 3 labels
+        view = PropertyView.objects.first()
+
+        self.assertEqual(view.labels.count(), 3)
+        label_names = list(view.labels.values_list('name', flat=True))
+        self.assertCountEqual(label_names, [label_1.name, label_2.name, label_3.name])
+
+    def test_properties_merge_without_losing_notes(self):
+        note_factory = FakeNoteFactory(organization=self.org, user=self.user)
+
+        # Create 3 Notes and distribute them to the two -Views.
+        note1 = note_factory.get_note(name='non_default_name_1')
+        note2 = note_factory.get_note(name='non_default_name_2')
+        self.view_1.notes.add(note1)
+        self.view_1.notes.add(note2)
+
+        note3 = note_factory.get_note(name='non_default_name_3')
+        self.view_2.notes.add(note2)
+        self.view_2.notes.add(note3)
+
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # The resulting -View should have 3 notes
+        view = PropertyView.objects.first()
+
+        self.assertEqual(view.notes.count(), 3)
+        note_names = list(view.notes.values_list('name', flat=True))
+        self.assertCountEqual(note_names, [note1.name, note2.name, note3.name])
+
+    def test_properties_merge_without_losing_pairings(self):
+        # Create 2 pairings and distribute them to the two -Views.
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        taxlot_1 = taxlot_factory.get_taxlot()
+        state_1 = taxlot_state_factory.get_taxlot_state()
+        taxlot_view_1 = TaxLotView.objects.create(
+            taxlot=taxlot_1, cycle=self.cycle, state=state_1
+        )
+
+        taxlot_2 = taxlot_factory.get_taxlot()
+        state_2 = taxlot_state_factory.get_taxlot_state()
+        taxlot_view_2 = TaxLotView.objects.create(
+            taxlot=taxlot_2, cycle=self.cycle, state=state_2
+        )
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.view_1.id,
+            taxlot_view_id=taxlot_view_1.id
+        ).save()
+
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=self.view_2.id,
+            taxlot_view_id=taxlot_view_2.id
+        ).save()
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # There should still be 2 TaxLotProperties
+        self.assertEqual(TaxLotProperty.objects.count(), 2)
+
+        property_view = PropertyView.objects.first()
+        paired_taxlotview_ids = list(
+            TaxLotProperty.objects.filter(property_view_id=property_view.id).values_list('taxlot_view_id', flat=True)
+        )
+        self.assertCountEqual(paired_taxlotview_ids, [taxlot_view_1.id, taxlot_view_2.id])
 
     def test_properties_merge_without_losing_meters_1st_has_meters(self):
         # Assign meters to the first Property
@@ -517,6 +620,31 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
 
+    def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_NOT_associated_to_other_views(self):
+        # Capture old property_ids
+        persisting_property_id = self.property_1.id
+        deleted_property_id = self.property_2.id
+
+        new_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
+        )
+        new_property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(
+            property_id=persisting_property_id, cycle=new_cycle, state=new_property_state
+        )
+
+        # Merge the properties
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_2.pk, self.state_1.pk]  # priority given to state_1
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        self.assertFalse(PropertyView.objects.filter(property_id=deleted_property_id).exists())
+        self.assertFalse(Property.objects.filter(pk=deleted_property_id).exists())
+
+        self.assertEqual(PropertyView.objects.filter(property_id=persisting_property_id).count(), 1)
+
 
 class PropertyUnmergeViewTests(DeleteModelsTestCase):
     def setUp(self):
@@ -528,11 +656,11 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
         self.user = User.objects.create_superuser(**user_details)
         self.org, self.org_user, _ = create_organization(self.user)
 
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
 
-        self.cycle = cycle_factory.get_cycle(
+        self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
 
@@ -578,6 +706,40 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
         })
         self.client.post(url, post_params, content_type='application/json')
 
+    def test_properties_unmerge_without_losing_labels(self):
+        # Create 3 Labels - add 2 to view
+        label_factory = FakeStatusLabelFactory(organization=self.org)
+
+        label_1 = label_factory.get_statuslabel()
+        label_2 = label_factory.get_statuslabel()
+
+        view = PropertyView.objects.first()  # There's only one PropertyView
+        view.labels.add(label_1, label_2)
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        for new_view in PropertyView.objects.all():
+            self.assertEqual(new_view.labels.count(), 2)
+            label_names = list(new_view.labels.values_list('name', flat=True))
+            self.assertCountEqual(label_names, [label_1.name, label_2.name])
+
+    def test_unmerging_assigns_new_canonical_records_to_each_resulting_records(self):
+        # Capture old property_ids
+        view = PropertyView.objects.first()  # There's only one PropertyView
+        existing_property_ids = [
+            view.property_id,
+            self.property_1.id,
+            self.property_2.id,
+        ]
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertFalse(PropertyView.objects.filter(property_id__in=existing_property_ids).exists())
+
     def test_unmerging_two_properties_with_meters_gives_meters_to_both_of_the_resulting_records(self):
         # Unmerge the properties
         view_id = PropertyView.objects.first().id  # There's only one PropertyView
@@ -605,3 +767,35 @@ class PropertyUnmergeViewTests(DeleteModelsTestCase):
             ])
 
         self.assertEqual(reading_sets[0], reading_sets[1])
+
+    def test_unmerge_results_in_the_use_of_new_canonical_records_and_deletion_of_old_canonical_state_if_unrelated_to_any_views(self):
+        # Capture "old" property_id - there's only one PropertyView
+        view = PropertyView.objects.first()
+        property_id = view.property_id
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertFalse(Property.objects.filter(pk=property_id).exists())
+        self.assertEqual(Property.objects.count(), 2)
+
+    def test_unmerge_results_in_the_persistence_of_old_canonical_state_if_related_to_any_views(self):
+        # Associate only canonical property with records across Cycle
+        view = PropertyView.objects.first()
+        property_id = view.property_id
+
+        new_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2011, 10, 10, tzinfo=get_current_timezone())
+        )
+        new_property_state = self.property_state_factory.get_property_state()
+        PropertyView.objects.create(
+            property_id=property_id, cycle=new_cycle, state=new_property_state
+        )
+
+        # Unmerge the properties
+        url = reverse('api:v2:properties-unmerge', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.post(url, content_type='application/json')
+
+        self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
+        self.assertEqual(Property.objects.count(), 3)
