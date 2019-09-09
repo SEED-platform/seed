@@ -29,7 +29,10 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.utils.match import whole_org_match_merge_link
+from seed.utils.match import (
+    whole_org_match_merge_link,
+    matching_criteria_column_names,
+)
 from seed.utils.organizations import create_organization, create_suborganization
 
 
@@ -872,5 +875,56 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
         summary = whole_org_match_merge_link(org.id, state_class_name)
+
+        return JsonResponse(summary)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['POST'])
+    def match_merge_link_preview(self, request, pk=None):
+        """
+        Run match_merge_link preview for an org and record type.
+        ---
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        inventory_type = request.data.get('inventory_type', None)
+        if inventory_type not in ['properties', 'taxlots']:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+
+        current_columns = matching_criteria_column_names(org.id, state_class_name)
+
+        add = set(request.data.get('add', []))
+        remove = set(request.data.get('remove', []))
+
+        provided_columns = Column.objects.filter(
+            column_name__in=add.union(remove),
+            organization_id=org.id,
+            table_name=state_class_name
+        )
+        if provided_columns.count() != (len(add) + len(remove)):
+            return JsonResponse({'status': 'error',
+                                 'message': 'Invalid column names provided.'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        proposed_columns = current_columns.union(add).difference(remove)
+
+        summary = whole_org_match_merge_link(org.id, state_class_name, proposed_columns)
 
         return JsonResponse(summary)
