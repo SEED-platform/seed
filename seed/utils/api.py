@@ -183,10 +183,10 @@ class APIBypassCSRFMiddleware(object):
         try:
             if get_api_request_user(request):
                 request.csrf_processing_done = True
-        except exceptions.AuthenticationFailed:
+        except exceptions.AuthenticationFailed as e:
             return JsonResponse({
                 'status': 'error',
-                'message': 'Invalid API key',
+                'message': str(e),
             }, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
