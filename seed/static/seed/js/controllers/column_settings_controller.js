@@ -214,6 +214,12 @@ angular.module('BE.seed.controller.column_settings', [])
               all_columns: function () {
                 return $scope.columns;
               },
+              inventory_type: function () {
+                return $scope.inventory_type;
+              },
+              org_id: function () {
+                return $scope.org.id;
+              },
           },
         });
       };

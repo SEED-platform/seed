@@ -169,5 +169,15 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.match_merge_link_preview = function (org_id, inventory_type, criteria_change_columns) {
+      return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link_preview/', {
+        inventory_type: inventory_type,
+        add: criteria_change_columns.add,
+        remove: criteria_change_columns.remove,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     return organization_factory;
   }]);
