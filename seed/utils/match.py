@@ -26,20 +26,16 @@ from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles
 
 
-def empty_criteria_filter(organization_id, StateClass):
+def empty_criteria_filter(StateClass, column_names):
     """
     Using an empty -State, return a dict that can be used as a QS filter
     to search for -States where all matching criteria values are None.
     """
     empty_state = StateClass()
-    return matching_filter_criteria(
-        organization_id,
-        StateClass.__name__,
-        empty_state
-    )
+    return matching_filter_criteria(empty_state, column_names)
 
 
-def matching_filter_criteria(organization_id, table_name, state):
+def matching_filter_criteria(state, column_names):
     """
     For a given -State, returns a dictionary of it's matching criteria values.
 
@@ -48,7 +44,7 @@ def matching_filter_criteria(organization_id, table_name, state):
     return {
         column_name: getattr(state, column_name, None)
         for column_name
-        in matching_criteria_column_names(organization_id, table_name)
+        in column_names
     }
 
 
@@ -210,12 +206,15 @@ def match_merge_link(view_id, StateClassName):
     given_state_id = view.state_id
     org_id = view.state.organization_id
 
+    column_names = matching_criteria_column_names(org_id, StateClassName)
+
     # If associated -State has empty matching criteria, do nothing
-    if StateClass.objects.filter(pk=given_state_id, **empty_criteria_filter(org_id, StateClass)).exists():
+    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
+    if StateClass.objects.filter(pk=given_state_id, **empty_matching_criteria).exists():
         return 0, 0, None
 
     # 'state__' is appended to be able to query from the related -View Class
-    matching_criteria = matching_filter_criteria(org_id, StateClassName, view.state)
+    matching_criteria = matching_filter_criteria(view.state, column_names)
     state_appended_matching_criteria = {
         'state__' + col_name: v
         for col_name, v
@@ -298,13 +297,18 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         CanonicalClass = TaxLot
 
     if proposed_columns:
-        column_names = proposed_columns
+        # Use column names as given (replacing address_line_1 with normalized_address)
+        column_names = [
+            column_name if column_name != 'address_line_1' else 'normalized_address'
+            for column_name
+            in proposed_columns
+        ]
         preview_run = True
     else:
         column_names = matching_criteria_column_names(org_id, state_class_name)
         preview_run = False
 
-    empty_matching_criteria = empty_criteria_filter(org_id, StateClass)
+    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
 
     with transaction.atomic():
         # Match merge within each Cycle

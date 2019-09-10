@@ -216,14 +216,14 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     :param StateClass: PropertyState or TaxLotState
     :return: promoted_ids: list
     """
-    table_name = StateClass.__name__
+    column_names = matching_criteria_column_names(org.id, StateClass.__name__)
 
     # IDs of -States with all matching criteria equal to None are intially promoted
     # as they're not eligible for matching.
     promoted_ids = list(
         StateClass.objects.filter(
             pk__in=unmatched_state_ids,
-            **empty_criteria_filter(org.id, StateClass)
+            **empty_criteria_filter(StateClass, column_names)
         ).values_list('id', flat=True)
     )
 
@@ -233,7 +233,6 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     )
 
     # Group IDs by -States that match each other
-    column_names = matching_criteria_column_names(org.id, table_name)
     matched_id_groups = StateClass.objects.\
         filter(id__in=unmatched_state_ids).\
         values(*column_names).\
@@ -302,11 +301,14 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     )
     duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
 
+    column_names = matching_criteria_column_names(org.id, table_name)
+
     # For the remaining incoming -States (filtering those duplicates), identify
     # -States with all matching criteria being None. These aren't eligible for matching.
+    empty_matching_criteria = empty_criteria_filter(StateClass, column_names)
     promote_states = StateClass.objects.filter(
         pk__in=unmatched_state_ids,
-        **empty_criteria_filter(org.id, StateClass)
+        **empty_matching_criteria
     ).exclude(pk__in=Subquery(duplicate_states.values('id')))
 
     # Identify and filter out -States that have been "handled".
@@ -319,7 +321,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     # If matches are found, take the first match. Otherwise, add current -State to be promoted as is.
     merge_state_pairs = []
     for state in unmatched_states:
-        matching_criteria = matching_filter_criteria(org.id, table_name, state)
+        matching_criteria = matching_filter_criteria(state, column_names)
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
             **matching_criteria
