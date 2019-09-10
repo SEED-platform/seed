@@ -1977,3 +1977,116 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
             summary['TaxLotState']['linked_sets_count'],
             expected_summary['TaxLotState']['linked_sets_count']
         )
+
+
+class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, self.import_file_1, self.import_record_1, self.cycle_1 = selfvars
+
+        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle_2 = cycle_factory.get_cycle(name="Cycle 2")
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle_2
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+    def test_whole_org_match_merge_link_properties_unlink_if_applicable(self):
+        # Cycle 1 / ImportFile 1
+        base_property_details = {
+            'pm_property_id': '1st Match Set',
+            'city': 'City 1',
+            'property_name': '123DifferentName',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create initially matching property in first Cycle
+        self.property_state_factory.get_property_state(**base_property_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_property_details = {
+            'pm_property_id': '1st Match Set',
+            'city': 'City 1',
+            'property_name': '456DifferentName',
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create initially matching property in second Cycle
+        self.property_state_factory.get_property_state(**base_property_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Propose different `property_name` matching - populated
+        summary_1 = whole_org_match_merge_link(self.org.id, 'PropertyState', ['property_name'])
+
+        canonical_ids = [records[0]['id'] for records in summary_1.values() if records]
+
+        self.assertNotEqual(canonical_ids[0], canonical_ids[1])
+
+        # Propose different `owner_address` matching - not-populated
+        summary_2 = whole_org_match_merge_link(self.org.id, 'PropertyState', ['owner_address'])
+
+        canonical_ids = [records[0]['id'] for records in summary_2.values() if records]
+
+        self.assertNotEqual(canonical_ids[0], canonical_ids[1])
+
+    def test_whole_org_match_merge_link_taxlots_unlink_if_applicable(self):
+        # Cycle 1 / ImportFile 1
+        base_taxlot_details = {
+            'jurisdiction_tax_lot_id': '1st Match Set',
+            'city': 'City 1',
+            'district': '123DifferentName',
+            'import_file_id': self.import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create initially matching property in first Cycle
+        self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        match_buildings(self.import_file_1.id)
+
+        # Cycle 2 / ImportFile 2
+        base_taxlot_details = {
+            'jurisdiction_tax_lot_id': '1st Match Set',
+            'city': 'City 1',
+            'district': '456DifferentName',
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create initially matching property in second Cycle
+        self.taxlot_state_factory.get_taxlot_state(**base_taxlot_details)
+
+        # Import file and create -Views and canonical records.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        match_buildings(self.import_file_2.id)
+
+        # Propose different `district` matching - populated
+        summary_1 = whole_org_match_merge_link(self.org.id, 'TaxLotState', ['district'])
+
+        canonical_ids = [records[0]['id'] for records in summary_1.values() if records]
+
+        self.assertNotEqual(canonical_ids[0], canonical_ids[1])
+
+        # Propose different `block_number` matching - not-populated
+        summary_2 = whole_org_match_merge_link(self.org.id, 'TaxLotState', ['block_number'])
+
+        canonical_ids = [records[0]['id'] for records in summary_2.values() if records]
+
+        self.assertNotEqual(canonical_ids[0], canonical_ids[1])

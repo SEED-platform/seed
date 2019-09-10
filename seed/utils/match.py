@@ -344,22 +344,23 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             in empty_matching_criteria.items()
         }
 
-        # Scope -View - ignoring those associated to -States with empty matching critieria.
-        org_views = ViewClass.objects.\
-            filter(cycle_id__in=cycle_ids).\
-            select_related('state').\
-            exclude(**state_appended_empty_matching_criteria)
-
         canonical_id_col = 'property_id' if StateClass == PropertyState else 'taxlot_id'
 
-        # Identify all canonical_ids that are used once and are potentially reusable
+        # Looking at all -Views in Org across Cycles
+        org_views = ViewClass.objects.\
+            filter(cycle_id__in=cycle_ids).\
+            select_related('state')
+
+        # Identify all canonical_ids that are currently used once and are potentially reusable
         reusable_canonical_ids = org_views.\
             values(canonical_id_col).\
             annotate(use_count=Count(canonical_id_col)).\
             values_list(canonical_id_col, flat=True).\
             filter(use_count=1)
 
+        # Ignoring -Views associated to -States with empty matching critieria, group by columns
         link_groups = org_views.\
+            exclude(**state_appended_empty_matching_criteria).\
             values(*state_appended_col_names).\
             annotate(
                 canonical_ids=ArrayAgg(canonical_id_col),
@@ -387,6 +388,25 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             summary[StateClass.__name__]['linked_sets_count'] += 1
 
             unused_canonical_ids += canonical_ids
+
+        # For records with empty criteria and without reusable canonical IDs, apply a new ID.
+        empty_criteria_views = ViewClass.objects.\
+            select_related('state').\
+            filter(cycle_id__in=cycle_ids, **state_appended_empty_matching_criteria).\
+            exclude(**{canonical_id_col + "__in": reusable_canonical_ids})
+
+        for view in empty_criteria_views:
+            # Create a new canonical record, copy meters if applicable, and apply the new record to old -Views
+            new_record = CanonicalClass.objects.create(organization_id=org_id)
+
+            if CanonicalClass == Property:
+                new_record.copy_meters(getattr(view, canonical_id_col), source_persists=False)
+
+            setattr(view, canonical_id_col, new_record.id)
+            view.save()
+
+        # Also delete these unusable canonical records
+        unused_canonical_ids += empty_criteria_views.values_list(canonical_id_col, flat=True)
 
         # Delete canonical records that are no longer used.
         CanonicalClass.objects.filter(id__in=unused_canonical_ids).delete()
