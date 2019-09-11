@@ -102,7 +102,7 @@ class FakeColumnFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeColumnFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_column(self, name, organization=None, is_extra_data=False,
@@ -127,7 +127,7 @@ class FakeCycleFactory(BaseFake):
     """
 
     def __init__(self, organization=None, user=None):
-        super(FakeCycleFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
 
@@ -159,7 +159,7 @@ class FakePropertyFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakePropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_property(self, organization=None, **kw):
@@ -182,7 +182,7 @@ class FakePropertyAuditLogFactory(BaseFake):
         self.view_factory = FakePropertyViewFactory(
             organization=organization, user=user
         )
-        super(FakePropertyAuditLogFactory, self).__init__()
+        super().__init__()
 
     def get_property_audit_log(self, **kw):
         """Get property instance."""
@@ -207,7 +207,7 @@ class FakePropertyStateFactory(BaseFake):
 
     def __init__(self, num_owners=5, organization=None):
         # pylint:disable=unused-variable
-        super(FakePropertyStateFactory, self).__init__()
+        super().__init__()
         # pre-generate a list of owners so they occur more than once.
         self.owners = [self.owner() for i in range(num_owners)]
         self.organization = organization
@@ -298,7 +298,7 @@ class FakePropertyViewFactory(BaseFake):
     """
 
     def __init__(self, prprty=None, cycle=None, organization=None, user=None):
-        super(FakePropertyViewFactory, self).__init__()
+        super().__init__()
         self.prprty = prprty
         self.cycle = cycle
         self.organization = organization
@@ -337,7 +337,7 @@ class FakePropertyMeasureFactory(BaseFake):
                 organization=self.organization).get_property_state()
         else:
             self.property_state = property_state
-        super(FakePropertyMeasureFactory, self).__init__()
+        super().__init__()
 
     def assign_random_measures(self, number_of_measures=5, **kw):
         # remove any existing measures assigned to the property
@@ -377,7 +377,7 @@ class FakeGreenAssessmentFactory(BaseFake):
 
     def __init__(self, organization=None):
         self.organization = organization
-        super(FakeGreenAssessmentFactory, self).__init__()
+        super().__init__()
 
     def get_details(self):
         """Generate details."""
@@ -419,7 +419,7 @@ class FakeGreenAssessmentURLFactory(BaseFake):
     """
 
     def __init__(self):
-        super(FakeGreenAssessmentURLFactory, self).__init__()
+        super().__init__()
 
     def get_url(self, property_assessment, url=None):
         """Generate Instance"""
@@ -436,7 +436,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
     """
 
     def __init__(self, organization=None, user=None):
-        super(FakeGreenAssessmentPropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
         self.green_assessment_factory = FakeGreenAssessmentFactory()
@@ -521,7 +521,7 @@ class FakeStatusLabelFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeStatusLabelFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.colors = [color[0] for color in StatusLabel.COLOR_CHOICES]
         self.label_names = StatusLabel.DEFAULT_LABELS
@@ -551,7 +551,7 @@ class FakeNoteFactory(BaseFake):
     def __init__(self, organization=None, user=None):
         self.organization = organization
         self.user = user
-        super(FakeNoteFactory, self).__init__()
+        super().__init__()
 
     def get_note(self, organization=None, user=None, **kw):
         """Get Note instance."""
@@ -598,7 +598,7 @@ class FakeTaxLotFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeTaxLotFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.label_factory = FakeStatusLabelFactory(organization=organization)
 
@@ -618,7 +618,7 @@ class FakeTaxLotStateFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeTaxLotStateFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_details(self):
@@ -657,7 +657,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
     """
 
     def __init__(self, prprty=None, cycle=None, organization=None, user=None):
-        super(FakeTaxLotPropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
         self.property_view_factory = FakePropertyViewFactory(
@@ -704,7 +704,7 @@ class FakeTaxLotViewFactory(BaseFake):
     """
 
     def __init__(self, taxlot=None, cycle=None, organization=None, user=None):
-        super(FakeTaxLotViewFactory, self).__init__()
+        super().__init__()
         self.taxlot = taxlot
         self.cycle = cycle
         self.organization = organization
@@ -742,7 +742,7 @@ class FakeColumnListSettingsFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeColumnListSettingsFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_columnlistsettings(self, organization=None,

@@ -28,7 +28,7 @@ from seed.tests.util import DataMappingBaseTestCase
 
 class TestProperties(DataMappingBaseTestCase):
     def setUp(self):
-        super(TestProperties, self).setUp()
+        super().setUp()
 
         # for now just import some test data. I'd rather create fake data... next time.
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')

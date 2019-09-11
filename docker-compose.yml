@@ -75,7 +75,7 @@ services:
         max-file: '5'
   oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-    image: seedplatform/oep:1.2
+    image: seedplatform/oep:1.3
     depends_on:
       - web
     environment:
