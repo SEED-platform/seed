@@ -321,6 +321,9 @@ msgstr "Clear Labels"
 msgid "Close"
 msgstr "Close"
 
+msgid "Close Preview"
+msgstr "Close Preview"
+
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
@@ -1205,6 +1208,9 @@ msgstr "Matched Tax Lots"
 msgid "Matched!"
 msgstr "Matched!"
 
+msgid "Matching Criteria Preview"
+msgstr "Matching Criteria Preview"
+
 msgid "Matching Detail"
 msgstr "Matching Detail"
 
@@ -1222,6 +1228,9 @@ msgstr "Matching Results for file"
 
 msgid "MATCHING_ADVICE"
 msgstr "If there are fields in the datafile mapped to these names, the program will attempt to match on the corresponding values in existing records. All of these fields must have the same values between records for the records to match."
+
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Matching columns given higher sort priority*"
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
@@ -1430,6 +1439,9 @@ msgstr "Or Create New (With User as Head):"
 msgid "orange"
 msgstr "orange"
 
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against.  Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.  Then the records across multiple cycles will be reevaluated to update property and taxlot links or associations.  If you continue you may first preview the pending changes before committing."
+
 msgid "Organization"
 msgstr "Organization"
 
@@ -1592,6 +1604,12 @@ msgstr "Potential Matches from Source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Preview Loading"
+msgstr "Preview Loading"
 
 msgid "Previous"
 msgstr "Previous"
@@ -1785,6 +1803,9 @@ msgstr "Restore Default Rules"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
+
+msgid "Review Changes"
+msgstr "Review Changes"
 
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"

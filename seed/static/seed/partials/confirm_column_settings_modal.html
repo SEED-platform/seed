@@ -19,12 +19,7 @@
     </div>
 
     <div class="container-fluid" ng-if="matching_criteria_exists">
-        <div class="alert alert-warning"> <!-- need to translate this -->
-          WARNING: You have modified the criteria that your organization's data will be matched and merged against.
-          Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.
-          Then the records across multiple cycles will be reevaluated to update property and taxlot links.
-          If you continue you may first preview the pending changes before committing.
-        </div>
+        <div class="alert alert-warning" translate>ORG_MATCH_MERGE_LINK_WARNING</div>
 
         <div class="row text-center" ng-switch-when="1" style="padding-bottom: 30px;display: flex;">
             <button type="button" class="btn btn-warning center-block" ng-show="preview_loading" ng-disabled="true">

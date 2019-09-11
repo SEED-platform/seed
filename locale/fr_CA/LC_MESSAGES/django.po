@@ -324,6 +324,9 @@ msgstr "Effacer les étiquettes"
 msgid "Close"
 msgstr "Fermer"
 
+msgid "Close Preview"
+msgstr "Fermer l'aperçu"
+
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
@@ -1210,6 +1213,9 @@ msgstr "Lots d'impôts correspondants"
 msgid "Matched!"
 msgstr "Juméle!"
 
+msgid "Matching Criteria Preview"
+msgstr "Aperçu des critères d'appariement"
+
 msgid "Matching Detail"
 msgstr "Détail sur la correspondance"
 
@@ -1227,6 +1233,9 @@ msgstr "Résultats correspondants pour le fichier"
 
 msgid "MATCHING_ADVICE"
 msgstr "Si le fichier de données contient des champs mappés à ces noms, le programme tentera de faire correspondre les valeurs correspondantes dans les enregistrements existants. Tous ces champs doivent avoir les mêmes valeurs entre les enregistrements pour que les enregistrements correspondent."
+
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Colonnes correspondantes ayant une priorité de tri plus élevée *"
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Résultats correspondants pour le fichier {dataset_filename}"
@@ -1435,6 +1444,9 @@ msgstr "Ou Créer Nouveau (avec l'utilisateur en tant que chef):"
 msgid "orange"
 msgstr "orange"
 
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "AVERTISSEMENT: vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Les enregistrements de chaque cycle seront réévalués pour déterminer s'il existe des correspondances et, le cas échéant, elles seront automatiquement fusionnées. Ensuite, les enregistrements de plusieurs cycles seront réévalués afin de mettre à jour les liens ou associations de propriété et de lot de taxe. Si vous continuez, vous pouvez d'abord visualiser les modifications en attente avant de les valider."
+
 msgid "Organization"
 msgstr "Organisation"
 
@@ -1597,6 +1609,12 @@ msgstr "Correspondances possibles à partir de la source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
+
+msgid "Preview"
+msgstr "Aperçu"
+
+msgid "Preview Loading"
+msgstr "Aperçu Chargement"
 
 msgid "Previous"
 msgstr "Précédente"
@@ -1790,6 +1808,9 @@ msgstr "Restaurer les règles par défaut"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Rétrospection de mise en service"
+
+msgid "Review Changes"
+msgstr "Revoir les Changements"
 
 msgid "Review Mapped Data"
 msgstr "Examiner les données mappées"
