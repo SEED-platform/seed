@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 
 from seed.data_importer.tasks import match_buildings
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
@@ -20,6 +21,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
 
 
@@ -66,7 +68,22 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         self.assertEqual(200, raw_result.status_code)
 
-        summary = json.loads(raw_result.content)
+        raw_content = json.loads(raw_result.content)
+
+        identifier = ProgressData.from_key(raw_content['progress_key']).data['unique_id']
+        result_key = "org_match_merge_link_result__%s" % identifier
+        summary = get_cache_raw(result_key)
+
+        summary_keys = list(summary.keys())
+
+        self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
+
+        # try to get result using results endpoint
+        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+
+        get_result_raw_response = self.client.get(get_result_url)
+        summary = json.loads(get_result_raw_response.content)
+
         summary_keys = list(summary.keys())
 
         self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
@@ -78,7 +95,22 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         self.assertEqual(200, raw_result.status_code)
 
-        summary = json.loads(raw_result.content)
+        raw_content = json.loads(raw_result.content)
+
+        identifier = ProgressData.from_key(raw_content['progress_key']).data['unique_id']
+        result_key = "org_match_merge_link_result__%s" % identifier
+        summary = get_cache_raw(result_key)
+
+        summary_keys = list(summary.keys())
+
+        self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
+
+        # try to get result using results endpoint
+        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+
+        get_result_raw_response = self.client.get(get_result_url)
+        summary = json.loads(get_result_raw_response.content)
+
         summary_keys = list(summary.keys())
 
         self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
@@ -159,8 +191,26 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.assertEqual(200, raw_result.status_code)
 
-        raw_summary = json.loads(raw_result.content)
-        summary = {k: v for k, v in raw_summary.items() if v}  # ignore empty cycles
+        raw_content = json.loads(raw_result.content)
+
+        identifier = ProgressData.from_key(raw_content['progress_key']).data['unique_id']
+        result_key = "org_match_merge_link_result__%s" % identifier
+        raw_summary = get_cache_raw(result_key)
+        summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles
+
+        # Check format of summary
+        self.assertCountEqual([str(self.cycle_1.id), str(self.cycle_2.id)], summary.keys())
+
+        # Check that preview shows links would be created
+        self.assertEqual(summary[str(self.cycle_1.id)][0]['id'], summary[str(self.cycle_2.id)][0]['id'])
+
+        # try to get result using results endpoint
+        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+
+        get_result_raw_response = self.client.get(get_result_url)
+        raw_summary = json.loads(get_result_raw_response.content)
+
+        summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles
 
         # Check format of summary
         self.assertCountEqual([str(self.cycle_1.id), str(self.cycle_2.id)], summary.keys())
@@ -211,8 +261,27 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.assertEqual(200, raw_result.status_code)
 
-        raw_summary = json.loads(raw_result.content)
-        summary = {k: v for k, v in raw_summary.items() if v}  # ignore empty cycles
+        raw_content = json.loads(raw_result.content)
+
+        identifier = ProgressData.from_key(raw_content['progress_key']).data['unique_id']
+        result_key = "org_match_merge_link_result__%s" % identifier
+        raw_summary = get_cache_raw(result_key)
+
+        summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles
+
+        # Check format of summary
+        self.assertCountEqual([str(self.cycle_1.id), str(self.cycle_2.id)], summary.keys())
+
+        # Check that preview shows links would be created
+        self.assertEqual(summary[str(self.cycle_1.id)][0]['id'], summary[str(self.cycle_2.id)][0]['id'])
+
+        # try to get result using results endpoint
+        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+
+        get_result_raw_response = self.client.get(get_result_url)
+        raw_summary = json.loads(get_result_raw_response.content)
+
+        summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles
 
         # Check format of summary
         self.assertCountEqual([str(self.cycle_1.id), str(self.cycle_2.id)], summary.keys())

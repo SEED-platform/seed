@@ -112,14 +112,11 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
       }
 
       // Preview
-
-      // Copy-able
       // Agg function returning last value of matching criteria field (all should be the same if they match)
       $scope.matching_field_value = function(aggregation, fieldValue) {
         aggregation.value = fieldValue;
       };
 
-      // Copy-able
       var prioritize_sort = function (grid, sortColumns) {
         // To maintain grouping while giving users the ability to have some sorting,
         // matching columns are given top priority followed by the hidden linking ID column.
@@ -139,7 +136,6 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         }
       };
 
-      // Copy-able
       // Takes raw cycle-partitioned records and returns array of cycle-aware records
       var format_preview_records = function(raw_inventory) {
         return _.reduce(raw_inventory, function(all_records, records, cycle_id) {
@@ -166,7 +162,6 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           groupingShowAggregationMenu: false,
         };
 
-        // Copy-able
         _.map(preview_column_defs, function (col) {
           var options = {};
           if (col.data_type === 'datetime') {
@@ -177,7 +172,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           }
 
           // For matching criteria values, always pin left and show values in aggregate rows.
-          if ($scope.matching_criteria_columns.includes(col.column_name)) {
+          if ($scope.proposed_matching_criteria_columns.includes(col.column_name)) {
             col.pinnedLeft = true;
 
             // Help indicate matching columns are given preferred sort priority
@@ -253,14 +248,9 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         },
       };
 
-      $scope.matching_criteria_exists = _.find(_.values($scope.change_summary_data), function(delta) {
-        return _.has(delta, 'is_matching_criteria')
-      });
-
-      // If matching_criteria_changes exist run all logic needed to render data preview.
-      if ($scope.matching_criteria_exists) {
-        $scope.preview_loading = true;
-
+      // Preview Loading Helpers
+      var build_proposed_matching_columns = function (result) {
+        // Summarize proposed matching_criteria_columns for pinning and to create preview
         var criteria_additions = _.filter($scope.change_summary_data, function (change) {
             return change.is_matching_criteria
         });
@@ -268,43 +258,62 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
             return change.is_matching_criteria === false;
         });
 
-        var criteria_change_columns = {
+        $scope.criteria_changes = {
           add: _.map(criteria_additions, 'column_name'),
           remove: _.map(criteria_removals, 'column_name'),
         }
 
+        var base_and_add;
+        if ($scope.inventory_type == "properties") {
+          base_and_add = _.union(result.PropertyState, $scope.criteria_changes.add);
+        } else {
+          base_and_add = _.union(result.TaxLotState, $scope.criteria_changes.add);
+        }
+        $scope.proposed_matching_criteria_columns = _.difference(base_and_add, $scope.criteria_changes.remove);
+      };
+
+      var build_preview = function (summary) {
+        $scope.data = format_preview_records(summary);
+        $scope.preview_columns = build_preview_columns();
+        $scope.match_merge_link_preview.columnDefs = $scope.preview_columns;
+      };
+
+      var preview_loading_complete = function () {
+        $scope.preview_loading = false;
+        spinner_utility.hide();
+      };
+
+      var get_preview = function () {
+        // Use new proposed matching_criteria_columns to request a preview then render this preview.
+        var spinner_options = {
+          scale: 0.40,
+          position: "relative",
+          left: "100%",
+        }
+        spinner_utility.show(spinner_options, $('#spinner_placeholder')[0]);
+
+        organization_service.match_merge_link_preview($scope.org_id, $scope.inventory_type, $scope.criteria_changes)
+          .then(function (response) {
+            organization_service.check_match_merge_link_status(response.progress_key)
+            .then(function (completion_notice) {
+              organization_service.get_match_merge_link_result($scope.org_id, completion_notice.unique_id)
+                .then(build_preview)
+                .then(preview_loading_complete);
+            });
+          });
+      };
+
+      // Get and Show Preview (If matching criteria changes exist.)
+      $scope.matching_criteria_exists = _.find(_.values($scope.change_summary_data), function(delta) {
+        return _.has(delta, 'is_matching_criteria');
+      });
+
+      if ($scope.matching_criteria_exists) {
+        $scope.preview_loading = true;
+
         organization_service.matching_criteria_columns($scope.org_id)
-          .then(function (result) {
-            // Proposed matching_criteria_columns identified here to pin left on table
-            var base_and_add;
-            if ($scope.inventory_type == "properties") {
-              base_and_add = _.union(result.PropertyState, criteria_change_columns.add);
-            } else {
-              base_and_add = _.union(result.TaxLotState, criteria_change_columns.add);
-            }
-            $scope.matching_criteria_columns = _.difference(base_and_add, criteria_change_columns.remove);
-
-          })
-          .then(function () {
-            // Use new proposed matching_criteria_columns to request a preview, then render this preview.
-            var spinner_options = {
-              scale: 0.40,
-              position: "relative",
-              left: "100%",
-            }
-            spinner_utility.show(spinner_options, $('#spinner_placeholder')[0]);
-
-            organization_service.match_merge_link_preview($scope.org_id, $scope.inventory_type, criteria_change_columns)
-              .then(function (summary) {
-                $scope.data = format_preview_records(summary);
-                $scope.preview_columns = build_preview_columns();
-                $scope.match_merge_link_preview.columnDefs = $scope.preview_columns;
-              })
-              .then(function () {
-                $scope.preview_loading = false;
-                spinner_utility.hide();
-              });
-          })
+          .then(build_proposed_matching_columns)
+          .then(get_preview);
       }
 
       $scope.confirm = function () {

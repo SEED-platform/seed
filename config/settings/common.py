@@ -207,7 +207,7 @@ register('seed_json', CeleryDatetimeSerializer.seed_dumps,
          CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
-CELERY_ACCEPT_CONTENT = ['seed_json']
+CELERY_ACCEPT_CONTENT = ['seed_json', 'pickle']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_RESULT_EXPIRES = 86400  # 24 hours

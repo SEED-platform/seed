@@ -5,8 +5,9 @@
 :author
 """
 
-from django.contrib.postgres.aggregates.general import ArrayAgg
+from celery import shared_task
 
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
@@ -242,6 +243,7 @@ def match_merge_link(view_id, StateClassName):
         return 0, link_count, None
 
 
+@shared_task(serializer='pickle', ignore_result=True)
 def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
     """
     For a given organization, run a match merge round for each cycle in

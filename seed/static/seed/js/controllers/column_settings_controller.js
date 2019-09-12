@@ -124,7 +124,7 @@ angular.module('BE.seed.controller.column_settings', [])
         }
       };
 
-      $scope.column_change_summary = function (match_link_summary) {
+      var column_update_complete = function (match_link_summary) {
         $scope.columns_updated = true;
         var diff_count = _.keys(diff).length;
         Notification.success('Successfully updated ' + diff_count + ' column' + (diff_count === 1 ? '' : 's'));
@@ -161,15 +161,20 @@ angular.module('BE.seed.controller.column_settings', [])
         })
 
         if (matching_criteria_changed) {
-          organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then(function(match_link_summary) {
-            $scope.column_change_summary(match_link_summary);
+          // reset the spinner and run whole org match merge link
+          spinner_utility.show(undefined, $('.display')[0]);
+
+          organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then(function (response) {
+            organization_service.check_match_merge_link_status(response.progress_key).then(function (completion_notice) {
+              organization_service.get_match_merge_link_result($scope.org.id, completion_notice.unique_id).then(column_update_complete);
+            });
           }).catch(function() {
             Notification.error('There was an error trying to match, merge, link records for this organization.');
           });
         } else {
-          $scope.column_change_summary();
+          column_update_complete();
         }
-      }
+      };
 
       // Saves the modified columns
       $scope.save_settings = function () {
