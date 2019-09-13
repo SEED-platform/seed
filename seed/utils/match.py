@@ -265,16 +265,22 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         Across all Cycles, run match and links.
             - Focus on all -States and canonical records associated to -Views
             in this organization.
-            - Ignore -Views with -States where all matching criteria is None.
             - Identify canonical records that currently have no links. These are
-            unaffected during this process if the record remains unlinked.
-            - Group canonical IDs and -View IDs according to whether their
-            associated -States match each other.
+            unaffected during this process if the record remains unlinked. Also,
+            these are canonical records that can potentially be reused.
+            - Scope the next steps to ignore -Views with -States where all
+            matching criteria is None.
+            - Create link groups of canonical IDs and -View IDs according to
+            whether their associated -States match each other.
             - Ignore groups of size 1 where the single member was previously
             unlinked as well.
-            - For each remaining group, apply a new canonical record to the
+            - For each remaining group, apply a new canonical record to
             each of -Views in this group. Any meters are transferred to this
             new canonical record.
+            - For any records that had empty (all None) matching criteria
+            values, disassociate any previous links by applying a new canonical
+            record to each.
+            - Delete any unused canonical records.
     """
     summary = {
         'PropertyState': {
@@ -413,6 +419,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         # Delete canonical records that are no longer used.
         CanonicalClass.objects.filter(id__in=unused_canonical_ids).delete()
 
+        # If this was a preview run, capture results here and rollback.
         if preview_run:
             if state_class_name == 'PropertyState':
                 summary = properties_across_cycles(org_id, -1, cycle_ids)

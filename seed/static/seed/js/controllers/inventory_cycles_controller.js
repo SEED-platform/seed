@@ -178,10 +178,6 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           } else {
             options.filter = inventory_service.combinedFilter();
           }
-          // else if (['eui', 'interger'].includes(col.data_type)) {
-          //   options.cellTemplate = '<div ng-if="row.groupHeader" class="ui-grid-cell-contents" tooltip-append-to-body="true" tooltip-popup-delay="500" title="TOOLTIP">[tooltip-placeholder?]</div>' +
-          //     '<div ng-if="!row.groupHeader" class="ui-grid-cell-contents">{{COL_FIELD CUSTOM_FILTERS}}</div>'
-          // }
 
           // For matching criteria values, always pin left and show values in aggregate rows.
           if ($scope.matching_criteria_columns.includes(col.column_name)) {
