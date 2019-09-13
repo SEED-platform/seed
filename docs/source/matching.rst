@@ -12,7 +12,7 @@ Why does it exist?
 ------------------
 At a high level, matching is used to identify if two or more property records are actually different
 representations of the same property (or tax lots representing one tax lot).  For example, within the same cycle,
-two matching records where one is used and subsequently discarded to update the other record
+two matching records, so one persists while the other is used and subsequently discarded to update the persisting record
 (say if the building owner's phone number changed). Or across different cycles, it's possible that the
 two records capture the same property at different times/cycles - this relationship is referred to as a **link**.
 
@@ -89,7 +89,9 @@ organization is run in the following cases:
 1. During the original deployment of this feature - This happens in order to
 initially normalize the existing data and establish all initial links.
 2. Whenever a user changes matching criteria - This happens in order to
-re-normalize existing data and reestablish links.
+re-normalize existing data and reestablish links.  As of this writing, before
+committing matching criteria changes, a user can view a preview of how their
+records will be affected as these are difficult to reverse.
 
 Note on In-Cycle Not-merged Matches
 """""""""""""""""""""""""""""""""""
@@ -117,9 +119,9 @@ accidentally try to import the same record snapshot twice - where all the record
 existing record (as opposed to just having the same values for matching criteria fields). So on import, the
 process is as follows:
 
-1. Amongst only the incoming records, duplicates are flagged and ignored.
+1. Amongst only the incoming records, duplicates (of other incoming or existing) are flagged and ignored.
 2. Amongst only the incoming records, matching records are merged together.
 3. Amongst all records in the same Cycle, incoming records that match an existing record gets merged with priority to that existing record.
     If the incoming record has multiple existing matches, the existing matches are merged together in
-    ID order first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases.
+    latest updated order first while also combining any other associations (labels, notes, etc.) just as in the manual merge or edit cases.
     Since the incoming record is new, it doesn't have any of the other associations.
