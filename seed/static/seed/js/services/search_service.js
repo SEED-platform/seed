@@ -130,7 +130,7 @@ angular.module('BE.seed.service.search', [])
         var params = this.filter_params;
         var to_remove = [];
         for (var prop in params) {
-          if (_.has(params, prop) && _.isEmpty(params[prop])) {
+          if (_.isNil(params[prop])) {
             to_remove.push(prop);
           }
         }

@@ -30,7 +30,8 @@ from seed.models import (
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
     ColumnListSettingColumn,
-)
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
@@ -746,8 +747,8 @@ class FakeColumnListSettingsFactory(BaseFake):
         self.organization = organization
 
     def get_columnlistsettings(self, organization=None,
-                               inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY,
-                               location=ColumnListSetting.VIEW_LIST, **kw):
+                               inventory_type=VIEW_LIST_PROPERTY,
+                               location=VIEW_LIST, **kw):
         """Get columnlistsettings instance."""
         if not organization:
             organization = self.organization

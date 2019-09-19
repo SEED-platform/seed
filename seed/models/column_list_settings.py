@@ -59,7 +59,7 @@ class ColumnListSetting(models.Model):
             profile = ColumnListSetting.objects.get(
                 organization=organization_id,
                 id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
+                settings_location=VIEW_LIST,
                 inventory_type=cls.PROFILE_TYPE[inventory_type]
             )
             profile_id = profile.id

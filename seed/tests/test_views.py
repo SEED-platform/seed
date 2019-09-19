@@ -19,14 +19,13 @@ from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    ColumnListSetting,
     PropertyView,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
     TaxLotView,
     Unit,
-)
+    VIEW_LIST_TAXLOT)
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeColumnFactory,
@@ -1057,7 +1056,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         Column.save_column_names(state)
         # get the columnlistsetting (default) for all columns
         columnlistsetting = self.column_list_factory.get_columnlistsettings(
-            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
+            inventory_type=VIEW_LIST_TAXLOT
         )
 
         column_name_mappings = {}
