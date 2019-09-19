@@ -3352,9 +3352,9 @@
       }
     },
     "psl": {
-      "version": "1.2.0",
-      "resolved": "https://registry.npmjs.org/psl/-/psl-1.2.0.tgz",
-      "integrity": "sha512-GEn74ZffufCmkDDLNcl3uuyF/aSD6exEyh1v/ZSdAomB82t6G9hzJVRx0jBmLDW+VfZqks3aScmMw9DszwUalA==",
+      "version": "1.4.0",
+      "resolved": "https://registry.npmjs.org/psl/-/psl-1.4.0.tgz",
+      "integrity": "sha512-HZzqCGPecFLyoRj5HLfuDSKYTJkAfB5thKBIkRHtGjWwY7p1dAyveIbXIq4tO0KYfDF2tHqPUgY9SDnGm00uFw==",
       "dev": true
     },
     "pump": {
@@ -4210,9 +4210,9 @@
       "dev": true
     },
     "uuid": {
-      "version": "3.3.2",
-      "resolved": "https://registry.npmjs.org/uuid/-/uuid-3.3.2.tgz",
-      "integrity": "sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==",
+      "version": "3.3.3",
+      "resolved": "https://registry.npmjs.org/uuid/-/uuid-3.3.3.tgz",
+      "integrity": "sha512-pW0No1RGHgzlpHJO1nsVrHKpOEIxkGg1xB+v0ZmdNH5OAeAwzAVrCnI2/6Mtx+Uys6iaylxa+D3g4j63IKKjSQ==",
       "dev": true
     },
     "verror": {
@@ -4237,9 +4237,9 @@
       }
     },
     "webdriver-manager": {
-      "version": "12.1.5",
-      "resolved": "https://registry.npmjs.org/webdriver-manager/-/webdriver-manager-12.1.5.tgz",
-      "integrity": "sha512-f1apDjMpZ8SHlXtXGzqBxOjV+WQcDRz5PN7pWScgjXS7vhUIFcM3V89Shetf4A04n8DDR2MxiVQq6JproFcRZw==",
+      "version": "12.1.7",
+      "resolved": "https://registry.npmjs.org/webdriver-manager/-/webdriver-manager-12.1.7.tgz",
+      "integrity": "sha512-XINj6b8CYuUYC93SG3xPkxlyUc3IJbD6Vvo75CVGuG9uzsefDzWQrhz0Lq8vbPxtb4d63CZdYophF8k8Or/YiA==",
       "dev": true,
       "requires": {
         "adm-zip": "^0.4.9",
