@@ -3,10 +3,11 @@ API
 
 Authentication
 --------------
-Authentication is handled via an authorization token set in an HTTP header.
+Authentication is handled via an encoded authorization token set in a HTTP header.
 To request an API token, go to ``/app/#/profile/developer`` and click 'Get a New API Key'.
 
-Authenticate every API request with your username (email) and the API key via `Basic Auth`_.
+Authenticate every API request with your username (email, all lowercase) and the API key via `Basic Auth`_.
+The header is sent in the form of ``Authorization: Basic <credentials>``, where credentials is the base64 encoding of the email and key joined by a single colon ``:``.
 
 .. _Basic Auth: https://en.wikipedia.org/wiki/Basic_access_authentication
 
