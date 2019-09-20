@@ -4,8 +4,8 @@
 # awhile and should be avoided if possible.
 from __future__ import unicode_literals
 
-import time
-from datetime import timedelta
+# import time
+# from datetime import timedelta
 
 from django.db import connection, migrations, transaction
 
@@ -42,7 +42,7 @@ def recalculate_hash_objects(apps, schema_editor):
     taxlot_count = TaxLotState.objects.count()
     # print("There are %s objects to traverse" % (property_count + taxlot_count))
 
-    start = time.clock()
+    # start = time.clock()
     # print("Iterating over PropertyStates. Count %s" % property_count)
     with transaction.atomic():
         for idx, obj in enumerate(PropertyState.objects.all().iterator()):
@@ -58,7 +58,7 @@ def recalculate_hash_objects(apps, schema_editor):
                 print("... %s / %s ..." % (idx, taxlot_count))
             obj.hash_object = hash_state_object(obj)
             obj.save()
-    execution_time = time.clock() - start
+    # execution_time = time.clock() - start
     # print(timedelta(seconds=execution_time))
 
 
