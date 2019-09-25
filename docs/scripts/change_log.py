@@ -80,6 +80,10 @@ for issue in repo.issues(state='closed'):
                 # print('No longer valid issue found, will ignore in change log')
                 continue
 
+	    if 'Not Reproducible' in labels:
+                # these issues are not going to be reported
+                continue
+
             if 'Feature' in labels:
                 # print('New feature found')
                 add_issue(closed_issues, 'Feature', issue)
