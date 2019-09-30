@@ -20,7 +20,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 
 * install Postgres 11.1 and redis for cache and message broker
 * install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
-* install TimescaleDB
+* install TimescaleDB 1.4.1
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
@@ -151,26 +151,11 @@ Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
 
 
-TimescaleDB 1.2.2
+TimescaleDB 1.4.1
 -----------------
 
-Homebrew::
-
-   # Add the tap
-   brew tap timescale/tap
-
-   # To install
-   brew install timescaledb
-
-   # Post-install to move files to appropriate place
-   /usr/local/bin/timescaledb_move.sh
-
-   # This involves prompts regarding 1 required setting change and several optional optimizations for PostgreSQL
-   timescaledb-tune
-
-   # Restart PostgreSQL instance
-   brew services restart postgresql
-
+Note, as of version 1.4.1, dumping and restoring databases requires that both the source and target
+database have the same version of TimescaleDB.
 
 Downloading From Source::
 
@@ -180,7 +165,7 @@ Downloading From Source::
 
    git clone https://github.com/timescale/timescaledb.git
    cd timescaledb
-   git checkout <release_tag>  # e.g., git checkout 1.2.2
+   git checkout 1.4.1
 
    # Bootstrap the build system
    ./bootstrap

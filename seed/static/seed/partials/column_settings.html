@@ -27,8 +27,16 @@
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>Modifying Column Settings</h3>
-            <p translate>From the table below, you may modify the columns in the following ways: 1) change the display name of a column, 2) specify the data type of extra data columns, and 3) enable merge protection for specific columns. Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data.</p>
+            <h3 translate>MODIFYING_COLUMN_SETTINGS</h3>
+            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+            <ul>
+              <li translate>COL_CHANGE_DISPLAY</li>
+              <li translate>RENAME_SYS_LEVEL_COL</li>
+              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+              <li translate>COL_MERGE_PROTECTION_TOGGLE</li>
+              <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+            </ul>
+            <p translate>MERGE_PROTECTION_EXPLANATION</p>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
@@ -45,9 +53,12 @@
                         <tr>
                             <th translate>Display Name</th>
                             <th translate>Column Name</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Rename</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
-                            <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="matching_criteria_sort()">
+                                <span>Match Criteria</span> <i class="glyphicon glyphicon-list"></i>
+                            </th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -67,6 +78,7 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,14 +90,21 @@
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+
+                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
+                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
+                            </td>
+                            <td class="text-center" ng-if="column.is_extra_data">
+                                <span ng-if="column.is_extra_data" translate>Ineligible</span>
                             </td>
                         </tr>
                     </tbody>

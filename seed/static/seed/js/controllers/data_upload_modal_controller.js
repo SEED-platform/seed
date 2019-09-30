@@ -541,6 +541,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
                 $scope.tax_lots_geocoded_high_confidence = result_data.tax_lots.geocoded_high_confidence;
                 $scope.tax_lots_geocoded_low_confidence = result_data.tax_lots.geocoded_low_confidence;
+                $scope.tax_lots_geocoded_manually = result_data.tax_lots.geocoded_manually;
                 $scope.tax_lots_geocode_not_possible = result_data.tax_lots.geocode_not_possible;
 
                 $scope.matched_properties = result_data.properties.matched;

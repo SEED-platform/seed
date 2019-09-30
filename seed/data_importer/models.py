@@ -54,7 +54,7 @@ STATUS_MATCHING = 11
 
 class DuplicateDataError(RuntimeError):
     def __init__(self, dup_id):
-        super(DuplicateDataError, self).__init__()
+        super().__init__()
         self.id = dup_id
 
 
@@ -132,7 +132,7 @@ class ImportRecord(NotDeletableModel):
         ordering = ('-updated_at',)
 
     def delete(self, *args, **kwargs):
-        super(ImportRecord, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
         for f in self.files:
             f.delete()
 
@@ -697,7 +697,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         return '%s' % self.file.name
 
     def save(self, in_validation=False, *args, **kwargs):
-        super(ImportFile, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         try:
             if not in_validation:
                 return None
@@ -1105,7 +1105,7 @@ class TableColumnMapping(models.Model):
             self.app = self.import_file.import_record.app
         if self.ignored or not self.is_mapped:
             self.error_message_text = ''
-        super(TableColumnMapping, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def source_string_sha(self):

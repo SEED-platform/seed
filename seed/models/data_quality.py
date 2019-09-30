@@ -528,7 +528,7 @@ class DataQualityCheck(models.Model):
         # set in check_data
         self.column_lookup = {}
 
-        super(DataQualityCheck, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def initialize_cache(identifier=None):

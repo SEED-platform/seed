@@ -155,5 +155,11 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.matching_criteria_columns = function (org_id) {
+      return $http.get('/api/v2/organizations/' + org_id + '/matching_criteria_columns').then(function (response) {
+        return response.data;
+      });
+    };
+
     return organization_factory;
   }]);

@@ -33,7 +33,10 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><pre>{$ user.api_key $}</pre></td>
+                                    <td>
+                                        <pre ng-if="user.api_key">{$ user.api_key $}</pre>
+                                        <span ng-if="!user.api_key" style="font-style: italic; opacity: 0.6;">&lt;generate a key&gt;</span>
+                                    </td>
                                     <td>{$:: user.email $}</td>
                                 </tr>
                             </tbody>
@@ -42,11 +45,13 @@
                     <div class="table_footer">
                         <button type="submit" class="btn btn-primary" ng-click="generate_api_key()"><span translate>Get a New API Key</span> <i class="fa fa-check" ng-show="new_key_generated"></i></button>
                     </div>
-                    <p style="margin-top: 30px;" translate>Example Usage</p>
-                    <pre>curl -X GET \
+                    <div ng-if="user.api_key" style="margin-top: 30px;">
+                        <p translate>Example Usage</p>
+                        <pre>curl -X GET \
   '{$:: getHost() $}/api/v2/version/' \
   -H 'Accept: application/json' \
   -u {$ user.email.toLowerCase() + ':' + user.api_key $}</pre>
+                    </div>
                 </div>
             </div>
         </div>

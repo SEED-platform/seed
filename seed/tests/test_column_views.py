@@ -143,6 +143,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'pinnedLeft': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
 
         # randomly check a column

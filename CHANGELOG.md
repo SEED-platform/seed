@@ -1,26 +1,22 @@
+# SEED Version 2.6.1
+
+Date Range: 08/09/19 - 09/30/19
+
+Closed Issues and Features:
+- Fixed [#961]( https://github.com/SEED-platform/seed/issues/961 ), Inventory Detail UI Refinements
+- Fixed [#1571]( https://github.com/SEED-platform/seed/issues/1571 ), Update verbiage in dialog box(s) to reflect merging and pairing rather than matching
+- Fixed [#1844]( https://github.com/SEED-platform/seed/issues/1844 ), Can't map a field called Gross Floor Area without units
+- Fixed [#1857]( https://github.com/SEED-platform/seed/issues/1857 ), Geocoding -- Tax Lot vs Property tables
+- Fixed [#1883]( https://github.com/SEED-platform/seed/issues/1883 ), Can't create new users (as superuser)
+- Fixed [#1942]( https://github.com/SEED-platform/seed/issues/1942 ), On import, duplicates are not flagged when ULID/UBIDs are involved
+- Fixed [#1944]( https://github.com/SEED-platform/seed/issues/1944 ), ULID doesn't report that it could generate Lat/Long, but then does generate them
+- Fixed [#1950]( https://github.com/SEED-platform/seed/issues/1950 ), ULID-only mapping - Geocoding confidence text is wrong
+
 # SEED Version 2.6.0
 
 Add time series related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) on the upgrade.
 
 Date Range: 05/04/19 - 08/09/19
-
-New Issues:
-- New Issue [#1939]( https://github.com/SEED-platform/seed/issues/1939 ), Meter Detail page: Changing orgs on this page does not update to show data for the new org
-- New Issue [#1935]( https://github.com/SEED-platform/seed/issues/1935 ), BuildingSync V2.0 Updates
-- New Issue [#1933]( https://github.com/SEED-platform/seed/issues/1933 ), BRICR BuildingSync exports after Update with BuildingSync
-- New Issue [#1932]( https://github.com/SEED-platform/seed/issues/1932 ), BRICR upload/download
-- New Issue [#1931]( https://github.com/SEED-platform/seed/issues/1931 ), Meter Data: if data spans month, program reports No Data for Interval == Month
-- New Issue [#1928]( https://github.com/SEED-platform/seed/issues/1928 ), Intermittent deadlock on Meter and MeterReading imports
-- New Issue [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
-- New Issue [#1904]( https://github.com/SEED-platform/seed/issues/1904 ), Add ability to delete extra data columns in Column Settings
-- New Issue [#1901]( https://github.com/SEED-platform/seed/issues/1901 ), 403 Forbidden error -- trying to remove column mappings
-- New Issue [#1899]( https://github.com/SEED-platform/seed/issues/1899 ), Import fields from BuildingSync reports
-- New Issue [#1883]( https://github.com/SEED-platform/seed/issues/1883 ), Can't create new users (as superuser)
-- New Issue [#1882]( https://github.com/SEED-platform/seed/issues/1882 ), Filter operators ! and "" don't work on PM Generation Date (date fields in general?)
-- New Issue [#1878]( https://github.com/SEED-platform/seed/issues/1878 ), Column without field name in input file causes 500 error
-- New Improvement [#1874]( https://github.com/SEED-platform/seed/issues/1874 ), Move column rename to background task
-- New Issue [#1873]( https://github.com/SEED-platform/seed/issues/1873 ), data quality type error
-- New Issue [#1869]( https://github.com/SEED-platform/seed/issues/1869 ), Geocoding -- allow user to "uncheck" geocoding without deleting API key
 
 Closed Issues and Features:
 - Feature [#835]( https://github.com/SEED-platform/seed/issues/835 ), Expand default Portfolio Manager field mapping to include report for timeseries data

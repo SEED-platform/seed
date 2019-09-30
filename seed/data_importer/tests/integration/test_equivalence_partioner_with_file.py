@@ -10,13 +10,14 @@ import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from seed.data_importer import tasks
+from seed.data_importer import tasks, match
 from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
 )
 from seed.models import (
     ASSESSED_RAW,
     Column,
+    PropertyState
 )
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ from seed.tests.util import DataMappingBaseTestCase
 
 class TestEquivalenceWithFile(DataMappingBaseTestCase):
     def setUp(self):
-        super(TestEquivalenceWithFile, self).setUp()
+        super().setUp()
 
         filename = getattr(self, 'filename', 'covered-buildings-sample.csv')
         import_file_source_type = ASSESSED_RAW
@@ -47,10 +48,11 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
 
     def test_equivalence(self):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
-        unmatched_properties, duplicate_property_states = tasks.filter_duplicated_states(
+        unmatched_property_ids, duplicate_property_count = match.filter_duplicate_states(
             all_unmatched_properties
         )
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()
 
+        unmatched_properties = list(PropertyState.objects.filter(pk__in=unmatched_property_ids))
         equiv_classes = partitioner.calculate_equivalence_classes(unmatched_properties)
         self.assertEqual(len(equiv_classes), 512)

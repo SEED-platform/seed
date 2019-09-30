@@ -29,7 +29,7 @@ class LabelSerializer(serializers.ModelSerializer):
             return
         super_organization = kwargs.pop('super_organization')
         self.inventory = kwargs.pop('inventory')
-        super(LabelSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if getattr(self, 'initial_data', None):
             self.initial_data['super_organization'] = super_organization.pk
 

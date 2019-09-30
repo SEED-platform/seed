@@ -14,7 +14,7 @@ from os import path
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
@@ -98,6 +98,9 @@ class TaxLotState(models.Model):
     ulid = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         index_together = [
@@ -193,7 +196,7 @@ class TaxLotState(models.Model):
         # save a hash of the object to the database for quick lookup
         from seed.data_importer.tasks import hash_state_object
         self.hash_object = hash_state_object(self)
-        return super(TaxLotState, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def history(self):
         """
@@ -392,7 +395,7 @@ class TaxLotView(models.Model):
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
-        super(TaxLotView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
         kwargs.update({
@@ -483,6 +486,28 @@ class TaxLotAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+@receiver(pre_save, sender=TaxLotState)
+def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
+    try:
+        original_obj = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass  # Occurs on object creation
+    else:
+        # Sync Latitude, Longitude, and long_lat fields if applicable
+        latitude_change = original_obj.latitude != instance.latitude
+        longitude_change = original_obj.longitude != instance.longitude
+        long_lat_change = original_obj.long_lat != instance.long_lat
+        lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
+
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
+            instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
+            instance.geocoding_confidence = "Manually geocoded (N/A)"
+        elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
+            instance.long_lat = None
+            instance.geocoding_confidence = None
 
 
 m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLotView.labels.through)
