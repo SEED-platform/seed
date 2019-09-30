@@ -4,6 +4,7 @@ Date Range: 08/09/19 - 09/30/19
 
 Closed Issues and Features:
 - Fixed [#961]( https://github.com/SEED-platform/seed/issues/961 ), Inventory Detail UI Refinements
+- Fixed [#1571]( https://github.com/SEED-platform/seed/issues/1571 ), Update verbiage in dialog box(s) to reflect merging and pairing rather than matching
 - Fixed [#1844]( https://github.com/SEED-platform/seed/issues/1844 ), Can't map a field called Gross Floor Area without units
 - Fixed [#1857]( https://github.com/SEED-platform/seed/issues/1857 ), Geocoding -- Tax Lot vs Property tables
 - Fixed [#1883]( https://github.com/SEED-platform/seed/issues/1883 ), Can't create new users (as superuser)
