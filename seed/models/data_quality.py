@@ -963,10 +963,10 @@ class DataQualityCheck(models.Model):
         """
 
         if rule.table_name == 'PropertyState':
-            label_class.objects.filter(property_id=linked_id,
+            label_class.objects.filter(propertyview_id=linked_id,
                                        statuslabel_id=rule.status_label_id).delete()
         else:
-            label_class.objects.filter(taxlot_id=linked_id,
+            label_class.objects.filter(taxlotview_id=linked_id,
                                        statuslabel_id=rule.status_label_id).delete()
 
     def retrieve_result_by_address(self, address):

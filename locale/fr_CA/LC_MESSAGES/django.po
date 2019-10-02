@@ -324,6 +324,18 @@ msgstr "Effacer les étiquettes"
 msgid "Close"
 msgstr "Fermer"
 
+msgid "Close Preview"
+msgstr "Fermer l'aperçu"
+
+msgid "COL_CHANGE_DISPLAY"
+msgstr "Changer le nom d'affichage d'une colonne"
+
+msgid "COL_MATCHING_CRITERIA_TOGGLE"
+msgstr "Pour les colonnes non extra_data, indiquez si la colonne correspond aux critères"
+
+msgid "COL_MERGE_PROTECTION_TOGGLE"
+msgstr "Basculer la protection de fusion pour des colonnes spécifiques"
+
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
@@ -394,11 +406,11 @@ msgstr "Continuer à la mappage de données"
 msgid "Continue to data matching"
 msgstr "Continuer à l'appariement des données"
 
+msgid "CONTINUE_QUESTION"
+msgstr "Es-tu sur de vouloir continuer?"
+
 msgid "Copy Buildings"
 msgstr "Copier des bâtiments"
-
-msgid "COULD_NOT_LOCATE_MATCHES"
-msgstr "<strong>SEED n'a trouvé aucune correspondance existante</strong>. Voulez-vous ajouter un autre fichier?"
 
 msgid "Count #"
 msgstr "Compte #"
@@ -476,6 +488,9 @@ msgstr "Créé étiquette {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Nouveau cycle créé avec nom {cycle_name}"
+
+msgid "Cross-Cycles"
+msgstr "Entre les Cycles"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
@@ -801,6 +816,9 @@ msgstr "Exporter la feuille de calcul"
 msgid "Export your Properties and Tax Lots"
 msgstr "Exportez vos propriétés et vos lots d'impôt"
 
+msgid "EXTRA_DATA_COL_TYPE_CHANGE"
+msgstr "Spécifiez le type de données des colonnes de données supplémentaires"
+
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
 
@@ -969,6 +987,9 @@ msgstr "Copies de propriété ignorées dans le fichier d'importation"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Copies des lots d'impôt ignorées dans the fichier d'importation"
 
+msgid "IMPORT_ANOTHER_QUESTION"
+msgstr "Voulez-vous ajouter un autre fichier?"
+
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "En outre, vous devez spécifier où le champ doit être associé aux données du lot d'impôt ou aux données de la propriété. Cela affectera la manière dont les données sont mises en correspondance et fusionnées, ainsi que la manière dont elles sont affichées dans la vue Inventaire."
 
@@ -1084,6 +1105,9 @@ msgstr "Moitié gauche"
 msgid "light blue"
 msgstr "bleu clair"
 
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Les matchs en dehors de ce cycle seront liés."
+
 msgid "List Settings"
 msgstr "Paramètres de la liste"
 
@@ -1098,6 +1122,9 @@ msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire appar
 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Détail des taxes. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "Pour cette organisation, les enregistrements correspondent si les champs suivants correspondent:"
 
 msgid "Loading data..."
 msgstr "Chargeant les données ..."
@@ -1201,6 +1228,9 @@ msgstr "Lots d'impôts correspondants"
 msgid "Matched!"
 msgstr "Juméle!"
 
+msgid "Matching Criteria Preview"
+msgstr "Aperçu des critères d'appariement"
+
 msgid "Matching Detail"
 msgstr "Détail sur la correspondance"
 
@@ -1218,6 +1248,9 @@ msgstr "Résultats correspondants pour le fichier"
 
 msgid "MATCHING_ADVICE"
 msgstr "Si le fichier de données contient des champs mappés à ces noms, le programme tentera de faire correspondre les valeurs correspondantes dans les enregistrements existants. Tous ces champs doivent avoir les mêmes valeurs entre les enregistrements pour que les enregistrements correspondent."
+
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Colonnes correspondantes ayant une priorité de tri plus élevée *"
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Résultats correspondants pour le fichier {dataset_filename}"
@@ -1255,6 +1288,15 @@ msgstr "rôle de membre"
 msgid "Members"
 msgstr "Membres"
 
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Les matchs de ce cycle seront fusionnés."
+
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "Dans le cas où plusieurs correspondances sont renvoyées d'un seul cycle, ces correspondances seront fusionnées."
+
+msgid "MERGE_PROTECTION_EXPLANATION"
+msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un autre enregistrement, la valeur la plus récente remplace un enregistrement plus ancien. La protection de fusion empêche cela et est particulièrement utile pour les colonnes dans lesquelles vous avez manuellement modifié les valeurs que vous souhaitez conserver même après l'importation et la fusion de nouvelles données."
+
 msgid "Merged properties"
 msgstr "Propriétés fusionnées"
 
@@ -1285,6 +1327,9 @@ msgstr "MJ/m²/année"
 msgid "Modifying Data Quality Rules"
 msgstr "Modification des règles de qualité des données"
 
+msgid "MODIFYING_COLUMN_SETTINGS"
+msgstr "Modification des paramètres de colonne"
+
 msgid "More details"
 msgstr "Plus de détails"
 
@@ -1299,6 +1344,9 @@ msgstr "<strong>Remarque:</strong> seule la première feuille de fichiers Excel 
 
 msgid "multi-sheet Excel files are not currently supported"
 msgstr "les fichiers Excel multi-feuilles ne sont actuellement pas pris en charge"
+
+msgid "MULTIPLE_COL_MOD_OPTIONS"
+msgstr "Dans le tableau ci-dessous, vous pouvez modifier les colonnes des manières suivantes:"
 
 #: seed/models/models.py:186 seed/models/projects.py:30
 msgid "name"
@@ -1419,6 +1467,9 @@ msgstr "Ou Créer Nouveau (avec l'utilisateur en tant que chef):"
 #: seed/models/models.py:182
 msgid "orange"
 msgstr "orange"
+
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "AVERTISSEMENT: vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Les enregistrements de chaque cycle seront réévalués pour déterminer s'il existe des correspondances et, le cas échéant, elles seront automatiquement fusionnées. Ensuite, les enregistrements de plusieurs cycles seront réévalués afin de mettre à jour les liens ou associations de propriété et de lot de taxe. Si vous continuez, vous pouvez d'abord visualiser les modifications en attente avant de les valider."
 
 msgid "Organization"
 msgstr "Organisation"
@@ -1568,6 +1619,9 @@ msgstr "Importation impossible - Aucune association à des propriétés précéd
 msgid "PM_METER_IMPORT_RESULTS"
 msgstr "Résultats d'importation de Portfolio Manager"
 
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
+
 msgid "Postal Code (Property)"
 msgstr "Code postal (propriété)"
 
@@ -1579,6 +1633,12 @@ msgstr "Correspondances possibles à partir de la source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
+
+msgid "Preview"
+msgstr "Aperçu"
+
+msgid "Preview Loading"
+msgstr "Aperçu Chargement"
 
 msgid "Previous"
 msgstr "Précédente"
@@ -1742,6 +1802,9 @@ msgstr "Retrait des bâtiments du projet"
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Renommer la Colonne"
 
+msgid "RENAME_SYS_LEVEL_COL"
+msgstr "Renommez \"Nom de colonne\", qui spécifie la colonne sous-jacente à utiliser au niveau du système."
+
 msgid "Reorder Columns"
 msgstr "Réorganiser les colonnes"
 
@@ -1772,6 +1835,9 @@ msgstr "Restaurer les règles par défaut"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Rétrospection de mise en service"
+
+msgid "Review Changes"
+msgstr "Revoir les Changements"
 
 msgid "Review Mapped Data"
 msgstr "Examiner les données mappées"

@@ -321,6 +321,18 @@ msgstr "Clear Labels"
 msgid "Close"
 msgstr "Close"
 
+msgid "Close Preview"
+msgstr "Close Preview"
+
+msgid "COL_CHANGE_DISPLAY"
+msgstr "Change the display name of a column"
+
+msgid "COL_MATCHING_CRITERIA_TOGGLE"
+msgstr "For non-extra_data columns, toggle whether the column is matching criteria"
+
+msgid "COL_MERGE_PROTECTION_TOGGLE"
+msgstr "Toggle merge protection for specific columns"
+
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
@@ -391,11 +403,11 @@ msgstr "Continue to data mapping"
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
 
+msgid "CONTINUE_QUESTION"
+msgstr "Are you sure you want to continue?"
+
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
-
-msgid "COULD_NOT_LOCATE_MATCHES"
-msgstr "<strong>SEED could not locate any existing matches</strong>. Would you like to add another file?"
 
 msgid "Count #"
 msgstr "Count #"
@@ -473,6 +485,9 @@ msgstr "Created label {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
+
+msgid "Cross-Cycles"
+msgstr "Cross-Cycles"
 
 msgid "Current Name"
 msgstr "Current Name"
@@ -797,6 +812,9 @@ msgstr "Export Spreadsheet"
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
 
+msgid "EXTRA_DATA_COL_TYPE_CHANGE"
+msgstr "Specify the data type of extra data columns"
+
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
 
@@ -965,6 +983,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "IMPORT_ANOTHER_QUESTION"
+msgstr "Would you like to add another file?"
+
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 
@@ -1079,6 +1100,9 @@ msgstr "Left Half"
 msgid "light blue"
 msgstr "light blue"
 
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Matches outside of this cycle will be linked."
+
 msgid "List Settings"
 msgstr "List Settings"
 
@@ -1093,6 +1117,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lot L
 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
+
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "For this organization, records match if the following fields match:"
 
 msgid "Loading data..."
 msgstr "Loading data..."
@@ -1196,6 +1223,9 @@ msgstr "Matched Tax Lots"
 msgid "Matched!"
 msgstr "Matched!"
 
+msgid "Matching Criteria Preview"
+msgstr "Matching Criteria Preview"
+
 msgid "Matching Detail"
 msgstr "Matching Detail"
 
@@ -1213,6 +1243,9 @@ msgstr "Matching Results for file"
 
 msgid "MATCHING_ADVICE"
 msgstr "If there are fields in the datafile mapped to these names, the program will attempt to match on the corresponding values in existing records. All of these fields must have the same values between records for the records to match."
+
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Matching columns given higher sort priority*"
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
@@ -1250,6 +1283,15 @@ msgstr "member role"
 msgid "Members"
 msgstr "Members"
 
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Matches within this cycle will be merged."
+
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."
+
+msgid "MERGE_PROTECTION_EXPLANATION"
+msgstr "Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data."
+
 msgid "Merged properties"
 msgstr "Merged properties"
 
@@ -1280,6 +1322,9 @@ msgstr "MJ/m²/year"
 msgid "Modifying Data Quality Rules"
 msgstr "Modifying Data Quality Rules"
 
+msgid "MODIFYING_COLUMN_SETTINGS"
+msgstr "Modifying Column Settings"
+
 msgid "More details"
 msgstr "More details"
 
@@ -1294,6 +1339,9 @@ msgstr "<strong>Note:</strong> only the first sheet of multi-sheet Excel files w
 
 msgid "multi-sheet Excel files are not currently supported"
 msgstr "multi-sheet Excel files are not currently supported"
+
+msgid "MULTIPLE_COL_MOD_OPTIONS"
+msgstr "From the table below, you may modify the columns in the following ways: "
 
 #: seed/models/models.py:186 seed/models/projects.py:30
 msgid "name"
@@ -1414,6 +1462,9 @@ msgstr "Or Create New (With User as Head):"
 #: seed/models/models.py:182
 msgid "orange"
 msgstr "orange"
+
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against.  Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.  Then the records across multiple cycles will be reevaluated to update property and taxlot links or associations.  If you continue you may first preview the pending changes before committing."
 
 msgid "Organization"
 msgstr "Organization"
@@ -1563,6 +1614,9 @@ msgstr "Unable to Import - No associations to previously imported properties"
 msgid "PM_METER_IMPORT_RESULTS"
 msgstr "Portfolio Manager Meter Import Results"
 
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
+
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
 
@@ -1574,6 +1628,12 @@ msgstr "Potential Matches from Source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Preview Loading"
+msgstr "Preview Loading"
 
 msgid "Previous"
 msgstr "Previous"
@@ -1737,6 +1797,9 @@ msgstr "Removing buildings from project"
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
 
+msgid "RENAME_SYS_LEVEL_COL"
+msgstr "Rename \"Column Name\", which specifies the underlying, system-level column to use"
+
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
 
@@ -1767,6 +1830,9 @@ msgstr "Restore Default Rules"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
+
+msgid "Review Changes"
+msgstr "Review Changes"
 
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"

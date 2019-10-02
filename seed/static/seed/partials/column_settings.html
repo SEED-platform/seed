@@ -27,8 +27,16 @@
     </div>
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>Modifying Column Settings</h3>
-            <p translate>From the table below, you may modify the columns in the following ways: 1) change the display name of a column, 2) specify the data type of extra data columns, and 3) enable merge protection for specific columns. Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data.</p>
+            <h3 translate>MODIFYING_COLUMN_SETTINGS</h3>
+            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+            <ul>
+              <li translate>COL_CHANGE_DISPLAY</li>
+              <li translate>RENAME_SYS_LEVEL_COL</li>
+              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+              <li translate>COL_MERGE_PROTECTION_TOGGLE</li>
+              <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+            </ul>
+            <p translate>MERGE_PROTECTION_EXPLANATION</p>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
