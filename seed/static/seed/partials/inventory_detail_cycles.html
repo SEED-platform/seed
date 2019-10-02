@@ -40,14 +40,14 @@
         </div>
     </div>
 
-    <div class="section_content_container">
-        <div class="table_list_container table_item_detail" style="overflow-x:auto;">
+    <div class="section_content_container table-xscroll-fixed-header-container">
+        <div class="table_list_container table_item_detail">
             <table class="table table-striped table_highlight_first fixed-layout">
                 <thead>
                     <tr>
-                        <th sd-resizable id="building-fields">{$:: 'Field' | translate $}</th>
+                        <th id="building-fields">{$:: 'Field' | translate $}</th>
                         <!-- Cycle Names -->
-                        <th sd-resizable ng-repeat="state in ::states" class="ellipsis-resizable">
+                        <th ng-repeat="state in ::states">
                             <span popover-placement="bottom-left" uib-popover="{$:: cycles[state.cycle_id].start | date: 'yyyy-MM-dd' $} to {$:: cycles[state.cycle_id].end | date: 'yyyy-MM-dd' $}">
                                 {$:: cycles[state.cycle_id].name $}
                             </span>
@@ -57,6 +57,10 @@
                         </th>
                     </tr>
                 </thead>
+            </table>
+        </div>
+        <div class="table_list_container table_item_detail table-body-x-scroll">
+            <table class="table table-striped table_highlight_first fixed-layout">
                 <tbody>
                     <tr ng-repeat="col in ::columns">
                         <!-- Column name -->

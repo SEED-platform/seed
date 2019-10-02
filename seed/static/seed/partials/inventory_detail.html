@@ -111,21 +111,25 @@
             </div>
         </div>
 
-        <div class="section_content_container">
+        <div class="section_content_container table-xscroll-fixed-header-container">
             <div class="table_list_container table_item_detail">
-                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:0;">
+                <table id="inventory-detail-table" class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>
-                            <th sd-resizable id="building-fields">{$:: 'Field' | translate $}</th>
-                            <th sd-resizable class="ellipsis-resizable">{$:: 'Master' | translate $}</th>
+                            <th id="building-fields">{$:: 'Field' | translate $}</th>
+                            <th>{$:: 'Master' | translate $}</th>
                             <!-- Historical values -->
-                            <th sd-resizable ng-repeat="historical_item in ::historical_items" class="ellipsis-resizable">
-                                <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}">
+                            <th ng-repeat="historical_item in ::historical_items">
+                                <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}" popover-placement="bottom">
                                     {$:: historical_item.filename $}
                                 </div>
                             </th>
                         </tr>
                     </thead>
+                </table>
+            </div>
+            <div class="table_list_container table_item_detail table-body-x-scroll">
+                <table class="table table-striped table_highlight_first fixed-layout">
                     <tbody>
                         <tr ng-repeat="col in ::columns">
                             <!-- Column name -->

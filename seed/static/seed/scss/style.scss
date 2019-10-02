@@ -1973,6 +1973,32 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   border-bottom: 1px solid $grayLighter;
 }
 
+.table-xscroll-fixed-header-container {
+  overflow: auto;
+  margin: 20px 5px;
+  border: 1px solid #F1F1F1;
+
+  table {
+    table-layout: fixed;
+    margin-bottom: 0px;
+  }
+
+  th, td {
+    width: 225px;
+  }
+
+  .table_item_detail {
+    border: 0px;
+    margin: 0px;
+  }
+
+  .table-body-x-scroll {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 600px;
+  }
+}
+
 .tbody-striped > tbody:nth-child(odd) td, .tbody-striped > tbody:nth-child(odd) > th {
   background-color: #F9F9F9
 }

@@ -547,6 +547,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      // Horizontal scroll for "2 tables" that scroll together for fixed header effect.
+      var table_container = $('.table-xscroll-fixed-header-container');
+
+      table_container.scroll(function() {
+        $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(
+          table_container.width() + table_container.scrollLeft()
+        );
+      });
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs
