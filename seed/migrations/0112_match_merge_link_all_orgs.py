@@ -16,7 +16,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0109_auto_20190730_1212'),
+        ('seed', '0111_rehash'),
     ]
 
     operations = [
