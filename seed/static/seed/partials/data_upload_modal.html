@@ -176,11 +176,14 @@
                       <li ng-if="properties_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ properties_geocoded_low_confidence|number:0 $}</li>
                       <li ng-if="properties_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ properties_geocode_not_possible|number:0 $}</li>
                     </div>
-
-                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
+                    <div class="">
+                      {$ tax_lots_geocoded_manually|number:0 $}
+                    </div>
+                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocoded_manually || tax_lots_geocode_not_possible">
                       <br>
                       <div translate>Geocoding Results for Tax Lots</div>
                       <li ng-if="tax_lots_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ tax_lots_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocoded_manually">{$:: 'Successful using prepopulated Longitude and Latitude' | translate $}: {$ tax_lots_geocoded_manually|number:0 $}</li>
                       <li ng-if="tax_lots_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ tax_lots_geocoded_low_confidence|number:0 $}</li>
                       <li ng-if="tax_lots_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ tax_lots_geocode_not_possible|number:0 $}</li>
                     </div>
@@ -218,10 +221,11 @@
                       <li ng-if="properties_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ properties_geocode_not_possible|number:0 $}</li>
                     </div>
 
-                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
+                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocoded_manually || tax_lots_geocode_not_possible">
                       <br>
                       <div translate>Geocoding Results for Tax Lots</div>
                       <li ng-if="tax_lots_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ tax_lots_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocoded_manually">{$:: 'Successful using prepopulated Longitude and Latitude' | translate $}: {$ tax_lots_geocoded_manually|number:0 $}</li>
                       <li ng-if="tax_lots_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ tax_lots_geocoded_low_confidence|number:0 $}</li>
                       <li ng-if="tax_lots_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ tax_lots_geocode_not_possible|number:0 $}</li>
                     </div>
@@ -229,7 +233,7 @@
             </div>
             <div class="alert alert-{$ step_10_style $}">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-hide="step_10_error_message" translate="COULD_NOT_LOCATE_MATCHES"></span>
+                <span ng-hide="step_10_error_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>

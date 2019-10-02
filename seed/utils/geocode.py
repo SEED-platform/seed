@@ -34,33 +34,26 @@ def bounding_box_wkt(state):
 
 def geocode_buildings(buildings):
     """
-    Upon receiving a QuerySet (QS) of properties or a QS tax lots, if the QS
-    contains properties, this method filters out properties with both latitude
-    and longitude fields populated and uses those values to populate long_lat.
+    Expects a QuerySet (QS) of PropertyStates or a QS TaxLotStates.
 
-    With the remaining buildings, regardless of model type, this method builds
-    a dictionary of {id: address} and a dictionary of {address: geocoding_results}.
-    It uses those two to construct a dictionary of {id: geocoding_results}.
-    Finally, the {id: geocoding_results} dictionary is used to update the QS objects.
+    Previous manually geocoded -States (not via API) -States are handled then
+    separated first. Everything else is eligible for geocoding (even those
+    successfully geocoded before).
 
-    Depending on if and how a building is geocoded, the geocoding_confidence is
+    With these remaining -States, build a dictionary of {id: address} and
+    a dictionary of {address: geocoding_results}. It uses those two to construct
+    a dictionary of {id: geocoding_results}. Finally, the
+    {id: geocoding_results} dictionary is used to update the QS objects.
+
+    Depending on if and how a -State is geocoded, the geocoding_confidence is
     populated with the details such as the confidence quality or lack thereof.
     """
-    from seed.models.properties import PropertyState
+    # -States with longitude and latitude prepopulated while excluding those previously geocoded by API
+    pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High")
+    _geocode_by_prepopulated_fields(pregeocoded)
 
-    if buildings and buildings.model is PropertyState:
-        """Filter on any properties with both Latitude and Longitude fields populated.
-        Exclude any that had fields populated because they were previously geocoded sucessfully."""
-        pregeocoded = buildings.filter(longitude__isnull=False, latitude__isnull=False).exclude(geocoding_confidence__startswith="High")
-        _geocode_by_prepopulated_fields(pregeocoded)
-
-        """ Previously geocoded buildings via external API should be eligible for re-geocoding.
-        So, filter on any properties with both Latitude and Longitude fields unpopulated
-        or on any properties successfully geocoded previously (whose Latitude and Longitude are populated).
-        """
-        buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
-    else:
-        buildings_to_geocode = buildings
+    # Include ungeocoded -States as well as previously API geocoded -States.
+    buildings_to_geocode = buildings.filter(Q(longitude__isnull=True, latitude__isnull=True) | Q(geocoding_confidence__startswith="High"))
 
     # Don't continue if there are no buildings remaining
     if not buildings_to_geocode:
@@ -81,8 +74,6 @@ def geocode_buildings(buildings):
 
 
 def _save_geocoding_results(id_geocoding_results, buildings_to_geocode):
-    from seed.models.properties import PropertyState
-
     for id, geocoding_result in id_geocoding_results.items():
         building = buildings_to_geocode.get(pk=id)
 
@@ -90,9 +81,8 @@ def _save_geocoding_results(id_geocoding_results, buildings_to_geocode):
             building.long_lat = geocoding_result.get("long_lat")
             building.geocoding_confidence = f"High ({geocoding_result.get('quality')})"
 
-            if isinstance(building, PropertyState):
-                building.longitude = geocoding_result.get("longitude")
-                building.latitude = geocoding_result.get("latitude")
+            building.longitude = geocoding_result.get("longitude")
+            building.latitude = geocoding_result.get("latitude")
         else:
             building.geocoding_confidence = f"Low - check address ({geocoding_result.get('quality')})"
 

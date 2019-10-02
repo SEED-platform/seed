@@ -324,6 +324,15 @@ msgstr "Close"
 msgid "Close Preview"
 msgstr "Close Preview"
 
+msgid "COL_CHANGE_DISPLAY"
+msgstr "Change the display name of a column"
+
+msgid "COL_MATCHING_CRITERIA_TOGGLE"
+msgstr "For non-extra_data columns, toggle whether the column is matching criteria"
+
+msgid "COL_MERGE_PROTECTION_TOGGLE"
+msgstr "Toggle merge protection for specific columns"
+
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
@@ -399,9 +408,6 @@ msgstr "Are you sure you want to continue?"
 
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
-
-msgid "COULD_NOT_LOCATE_MATCHES"
-msgstr "<strong>SEED could not locate any existing matches</strong>. Would you like to add another file?"
 
 msgid "Count #"
 msgstr "Count #"
@@ -806,6 +812,9 @@ msgstr "Export Spreadsheet"
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
 
+msgid "EXTRA_DATA_COL_TYPE_CHANGE"
+msgstr "Specify the data type of extra data columns"
+
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
 
@@ -973,6 +982,9 @@ msgstr "Ignored property duplicates within the import file"
 
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
+
+msgid "IMPORT_ANOTHER_QUESTION"
+msgstr "Would you like to add another file?"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
@@ -1274,6 +1286,9 @@ msgstr "Matches within this cycle will be merged."
 msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
 msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."
 
+msgid "MERGE_PROTECTION_EXPLANATION"
+msgstr "Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data."
+
 msgid "Merged properties"
 msgstr "Merged properties"
 
@@ -1304,6 +1319,9 @@ msgstr "MJ/m²/year"
 msgid "Modifying Data Quality Rules"
 msgstr "Modifying Data Quality Rules"
 
+msgid "MODIFYING_COLUMN_SETTINGS"
+msgstr "Modifying Column Settings"
+
 msgid "More details"
 msgstr "More details"
 
@@ -1318,6 +1336,9 @@ msgstr "<strong>Note:</strong> only the first sheet of multi-sheet Excel files w
 
 msgid "multi-sheet Excel files are not currently supported"
 msgstr "multi-sheet Excel files are not currently supported"
+
+msgid "MULTIPLE_COL_MOD_OPTIONS"
+msgstr "From the table below, you may modify the columns in the following ways: "
 
 #: seed/models/models.py:186 seed/models/projects.py:30
 msgid "name"
@@ -1772,6 +1793,9 @@ msgstr "Removing buildings from project"
 
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
+
+msgid "RENAME_SYS_LEVEL_COL"
+msgstr "Rename \"Column Name\", which specifies the underlying, system-level column to use"
 
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
