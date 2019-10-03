@@ -999,6 +999,9 @@ msgstr "Include in your Properties List all properties shared with you."
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
 
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
+
 msgid "Ineligible"
 msgstr "Ineligible"
 
@@ -1244,6 +1247,9 @@ msgstr "If there are fields in the datafile mapped to these names, the program w
 msgid "MATCHING_COLUMN_SORT_PRIORITY"
 msgstr "Matching columns given higher sort priority*"
 
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Warning: If matching criteria changes are proposed, a preview will be loaded. The load times for this preview depend on how many records belong to this organization and how many of those records would be merged together given the new matching criteria."
+
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
 
@@ -1282,6 +1288,9 @@ msgstr "Members"
 
 msgid "MERGE_IN_CYCLE_MATCHES"
 msgstr "Matches within this cycle will be merged."
+
+msgid "MERGE_LINK_ADVICE"
+msgstr "Matches within the same cycle will be merged together, while matches in different cycles will be associated for cross-cycle analysis."
 
 msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
 msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."

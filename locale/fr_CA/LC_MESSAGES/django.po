@@ -1003,6 +1003,9 @@ msgstr "Inclure dans vos Liste de Propriétés toutes les propriétés partagée
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Inclure dans votre Liste de Lots d'Impôt tous les lots d'impôt partagé avec vous."
 
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "Cette action lancera un match et fusionnera pour l’enregistrement résultant. Les valeurs de cet enregistrement auront la priorité dans l'éventualité d'une fusion. Plusieurs enregistrements correspondants sont préalablement fusionnés, la priorité étant donnée aux enregistrements récemment importés."
+
 msgid "Ineligible"
 msgstr "Inéligible"
 
@@ -1249,6 +1252,9 @@ msgstr "Si le fichier de données contient des champs mappés à ces noms, le pr
 msgid "MATCHING_COLUMN_SORT_PRIORITY"
 msgstr "Colonnes correspondantes ayant une priorité de tri plus élevée *"
 
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Avertissement: Si des modifications des critères de correspondance sont proposées, un aperçu sera chargé. Les temps de chargement de cet aperçu dépendent du nombre d'enregistrements appartenant à cette organisation et du nombre d'enregistrements qui seraient fusionnés en fonction des nouveaux critères de correspondance."
+
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Résultats correspondants pour le fichier {dataset_filename}"
 
@@ -1287,6 +1293,9 @@ msgstr "Membres"
 
 msgid "MERGE_IN_CYCLE_MATCHES"
 msgstr "Les matchs de ce cycle seront fusionnés."
+
+msgid "MERGE_LINK_ADVICE"
+msgstr "Les matchs d'un même cycle seront fusionnés, tandis que les matchs de cycles différents seront associés pour une analyse entre cycles."
 
 msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
 msgstr "Dans le cas où plusieurs correspondances sont renvoyées d'un seul cycle, ces correspondances seront fusionnées."
