@@ -53,10 +53,13 @@
                         <tr>
                             <th translate>Display Name</th>
                             <th translate>Column Name</th>
+                            <th class="text-center" style="min-width: 80px; width: 80px;" ng-click="toggle_geocoding_order_sort()">
+                                <span>Geocoding Order<i class="glyphicon glyphicon-list"></i></span>
+                            </th>
                             <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
                             <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
                             <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
-                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="matching_criteria_sort()">
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_matching_criteria_sort()">
                                 <span>Match Criteria</span> <i class="glyphicon glyphicon-list"></i>
                             </th>
                         </tr>
@@ -79,6 +82,7 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -90,6 +94,17 @@
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
                             </td>
+
+                            <td>
+                                <span style="display: flex; align-items:center;">
+                                    <span ng-click="geocoding_toggle(column)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-checked="column.geocoding_order" class="no-click">
+                                    </span>
+                                    <select class="form-control input-sm" ng-model="column.geocoding_order" ng-options="n for n in geocoding_columns_position_options" ng-change="reinsert_geocoding_column(column)" ng-disabled="!column.geocoding_order"></select>
+                                </span>
+                            </td>
+
+
                             <td class="text-center">
                                 <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
