@@ -174,6 +174,170 @@ class GeocodeAddresses(TestCase):
             self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lot))
             self.assertEqual('High (P1AAA)', refreshed_tax_lot.geocoding_confidence)
 
+    def test_geocode_properties_with_custom_fields(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_property_custom_fields.yaml'):
+            property_details = self.property_state_factory.get_details()
+            property_details['organization_id'] = self.org.id
+            property_details['pm_parent_property_id'] = "3001 Brighton Blvd"
+            property_details['pm_property_id'] = "suite 2693"
+            property_details['property_name'] = None  # can handle empty DB col
+            property_details['state'] = "Colorado"
+            property_details['extra_data'] = {
+                'ed_city': "Denver",
+                'ed_zip': 80216,  # can handle numbers
+                'ed_empty': None,  # can handle empty extra_data col
+            }
+
+            property = PropertyState(**property_details)
+            property.save()
+            properties = PropertyState.objects.filter(pk=property.id)
+
+            # Activate and order geocoding columns
+            self.org.column_set.filter(
+                column_name='pm_parent_property_id',
+                table_name="PropertyState"
+            ).update(geocoding_order=1)
+            self.org.column_set.filter(
+                column_name='pm_property_id',
+                table_name="PropertyState"
+            ).update(geocoding_order=2)
+            self.org.column_set.create(
+                column_name='ed_city',
+                is_extra_data=True,
+                table_name='PropertyState',
+                geocoding_order=3
+            )
+            self.org.column_set.filter(
+                column_name='state',
+                table_name="PropertyState"
+            ).update(geocoding_order=4)
+            self.org.column_set.create(
+                column_name='ed_zip',
+                is_extra_data=True,
+                table_name='PropertyState',
+                geocoding_order=5
+            )
+            self.org.column_set.create(
+                column_name='ed_empty',
+                is_extra_data=True,
+                table_name='PropertyState',
+                geocoding_order=6
+            )
+            self.org.column_set.filter(
+                column_name='property_name',
+                table_name="PropertyState"
+            ).update(geocoding_order=7)
+
+            # Deactivate default geocoding columns
+            self.org.column_set.filter(
+                column_name__in=['address_line_1', 'address_line_2', 'city', 'postal_code'],
+                table_name="PropertyState"
+            ).update(geocoding_order=0)
+
+            geocode_buildings(properties)
+
+            refreshed_property = PropertyState.objects.get(pk=property.id)
+
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
+            self.assertEqual('High (P1AAA)', refreshed_property.geocoding_confidence)
+            self.assertEqual(-104.986138, refreshed_property.longitude)
+            self.assertEqual(39.765251, refreshed_property.latitude)
+
+    def test_geocode_taxlots_with_custom_fields(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_taxlots_custom_fields.yaml'):
+            taxlot_details = self.tax_lot_state_factory.get_details()
+            taxlot_details['organization_id'] = self.org.id
+            taxlot_details['jurisdiction_tax_lot_id'] = "3001 Brighton Blvd"
+            taxlot_details['block_number'] = "suite 2693"
+            taxlot_details['custom_id_1'] = None  # can handle empty DB col
+            taxlot_details['state'] = "Colorado"
+            taxlot_details['extra_data'] = {
+                'ed_city': "Denver",
+                'ed_zip': 80216,  # can handle numbers
+                'ed_empty': None,  # can handle empty extra_data col
+            }
+
+            taxlot = TaxLotState(**taxlot_details)
+            taxlot.save()
+            taxlots = TaxLotState.objects.filter(pk=taxlot.id)
+
+            # Activate and order geocoding columns
+            self.org.column_set.filter(
+                column_name='jurisdiction_tax_lot_id',
+                table_name="TaxLotState"
+            ).update(geocoding_order=1)
+            self.org.column_set.filter(
+                column_name='block_number',
+                table_name="TaxLotState"
+            ).update(geocoding_order=2)
+            self.org.column_set.create(
+                column_name='ed_city',
+                is_extra_data=True,
+                table_name='TaxLotState',
+                geocoding_order=3
+            )
+            self.org.column_set.filter(
+                column_name='state',
+                table_name="TaxLotState"
+            ).update(geocoding_order=4)
+            self.org.column_set.create(
+                column_name='ed_zip',
+                is_extra_data=True,
+                table_name='TaxLotState',
+                geocoding_order=5
+            )
+            self.org.column_set.create(
+                column_name='ed_empty',
+                is_extra_data=True,
+                table_name='TaxLotState',
+                geocoding_order=6
+            )
+            self.org.column_set.filter(
+                column_name='custom_id_1',
+                table_name="TaxLotState"
+            ).update(geocoding_order=7)
+
+            # Deactivate default geocoding columns
+            self.org.column_set.filter(
+                column_name__in=['address_line_1', 'address_line_2', 'city', 'postal_code'],
+                table_name="TaxLotState"
+            ).update(geocoding_order=0)
+
+            geocode_buildings(taxlots)
+
+            refreshed_taxlot = TaxLotState.objects.get(pk=taxlot.id)
+
+            self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_taxlot))
+            self.assertEqual('High (P1AAA)', refreshed_taxlot.geocoding_confidence)
+            self.assertEqual(-104.986138, refreshed_taxlot.longitude)
+            self.assertEqual(39.765251, refreshed_taxlot.latitude)
+
+    def test_not_enough_geocoding_fields_for_org_leads_to_no_geocoding(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['address_line_1'] = "3001 Brighton Blvd"
+        property_details['address_line_2'] = "suite 2693"
+        property_details['city'] = "Denver"
+        property_details['state'] = "Colorado"
+        property_details['postal_code'] = "80216"
+
+        # Deactivate some default geocoding columns
+        self.org.column_set.filter(
+            column_name__in=['address_line_2', 'city', 'postal_code'],
+            table_name="PropertyState"
+        ).update(geocoding_order=0)
+
+        property = PropertyState(**property_details)
+        property.save()
+        properties = PropertyState.objects.filter(pk=property.id)
+
+        self.assertIsNone(geocode_buildings(properties))
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+
+        self.assertIsNone(refreshed_property.long_lat)
+        self.assertIsNone(refreshed_property.geocoding_confidence)
+
     def test_geocode_buildings_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
             state_zip_only_details = self.property_state_factory.get_details()

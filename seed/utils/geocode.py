@@ -7,6 +7,7 @@ import re
 
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
+from numbers import Number
 
 
 class MapQuestAPIKeyError(Exception):
@@ -34,9 +35,9 @@ def bounding_box_wkt(state):
 
 def geocode_buildings(buildings):
     """
-    Expects a QuerySet (QS) of PropertyStates or a QS TaxLotStates.
+    Expects either a QuerySet (QS) of PropertyStates or a QS TaxLotStates.
 
-    Previous manually geocoded -States (not via API) -States are handled then
+    Previous manually geocoded -States (not via API) are handled then
     separated first. Everything else is eligible for geocoding (even those
     successfully geocoded before).
 
@@ -59,13 +60,20 @@ def geocode_buildings(buildings):
     if not buildings_to_geocode:
         return
 
-    mapquest_api_key = buildings_to_geocode[0].organization.mapquest_api_key
+    org = buildings_to_geocode[0].organization
+    mapquest_api_key = org.mapquest_api_key
 
     # Don't continue if the mapquest_api_key for this org is ''
     if not mapquest_api_key:
         return
 
-    id_addresses = _id_addresses(buildings_to_geocode)
+    id_addresses = _id_addresses(buildings_to_geocode, org)
+
+    # Don't continue if there are no addresses to geocode, indiciating an insufficient
+    # number of geocoding columns for all individual buildings or the whole org
+    if not id_addresses:
+        return
+
     address_geocoding_results = _address_geocoding_results(id_addresses, mapquest_api_key)
 
     id_geocoding_results = _id_geocodings(id_addresses, address_geocoding_results)
@@ -97,18 +105,28 @@ def _geocode_by_prepopulated_fields(buildings):
         building.save()
 
 
-def _id_addresses(buildings):
+def _id_addresses(buildings, org):
     """
     Return a dictionary with {id: address, ...} containing only addresses with
     enough components.
 
+    Expects all buildings to be of the same type - either PropertyState or TaxLotState
+
     For any addresses that don't have enough components,
     specify this in `geocoding_confidence`.
     """
+    geocoding_columns = org.column_set.filter(
+        geocoding_order__gt=0,
+        table_name=buildings[0].__class__.__name__
+    ).order_by('geocoding_order').values('column_name', 'is_extra_data')
+
+    if geocoding_columns.count() < 3:
+        return {}
+
     id_addresses = {}
 
     for building in buildings.iterator():
-        full_address = _full_address(building)
+        full_address = _full_address(building, geocoding_columns)
         if full_address is not None:
             id_addresses[building.id] = full_address
         else:
@@ -118,8 +136,10 @@ def _id_addresses(buildings):
     return id_addresses
 
 
-def _full_address(building):
+def _full_address(building, geocoding_columns):
     """
+    Using organization-specific geocoding columns, a full address string is built.
+
     Check there are at least 3 address components present. Combine components to
     one full address. This helps to avoid receiving MapQuests' best guess result.
     For example, only sending '3001 Brighton Blvd, Suite 2693' would yield a
@@ -128,15 +148,18 @@ def _full_address(building):
     Before passing the address back, special and reserved characters are removed.
     """
 
-    address_components = [
-        building.address_line_1 or "",
-        building.address_line_2 or "",
-        building.city or "",
-        building.state or "",
-        building.postal_code or ""
-    ]
+    address_components = []
+    for col in geocoding_columns:
+        if col['is_extra_data']:
+            address_value = building.extra_data.get(col['column_name'], None)
+        else:
+            address_value = getattr(building, col['column_name'])
 
-    if address_components.count("") < 3:
+        # Only accept non-empty strings or numbers
+        if (isinstance(address_value, (str, Number))) and (address_value != ""):
+            address_components.append(str(address_value))
+
+    if len(address_components) > 2:
         full_address = ", ".join(address_components)
         return re.sub(r'[;/?:@=&"<>#%{}|["^~`\]\\]', '', full_address)
     else:
