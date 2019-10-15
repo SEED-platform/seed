@@ -3,18 +3,26 @@ angular.module('BE.seed.controller.geocode_modal', [])
     '$scope',
     '$uibModalInstance',
     'geocode_service',
+    'inventory_type',
     'org_id',
+    'organization_service',
     'property_state_ids',
     'taxlot_state_ids',
-    function ($scope, $uibModalInstance, geocode_service, org_id, property_state_ids, taxlot_state_ids) {
+    function ($scope, $uibModalInstance, geocode_service, inventory_type, org_id, organization_service, property_state_ids, taxlot_state_ids) {
+      $scope.inventory_type = inventory_type;
       $scope.property_state_ids = _.uniq(property_state_ids);
       $scope.taxlot_state_ids = _.uniq(taxlot_state_ids);
+      $scope.geocode_state = 'verify';
 
       geocode_service.check_org_has_api_key(org_id).then(function (result) {
-        if (result) {
-          $scope.geocode_state = 'verify';
-        } else {
-          $scope.geocode_state = 'no_key';
+        $scope.has_api_key = result;
+      });
+
+      organization_service.geocoding_columns(org_id).then(function (data) {
+        if ($scope.inventory_type === 'properties') {
+          $scope.has_enough_geocoding_columns = data.PropertyState.length > 2;
+        } else if ($scope.inventory_type === 'taxlots') {
+          $scope.has_enough_geocoding_columns = data.TaxLotState.length > 2;
         }
       });
 

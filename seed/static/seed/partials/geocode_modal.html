@@ -1,88 +1,92 @@
 <div class="modal-header">
-    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'verify'">Geocode Inventory</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'no_key'">Geocode Inventory</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'geocoding'">Geocoding now...</h4>
-    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'result'">Geocoding Complete</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'verify'" translate>GEOCODE_INVENTORY_BASE_TITLE</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'geocoding'" translate>GEOCODING_NOW</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'result'" translate>GEOCODING_INVENTORY_COMPLETE</h4>
 </div>
 <div class="modal-body">
 
-  <!-- Comments to the user hinting the state the user is in. -->
-  <div ng-show="geocode_state === 'verify'">
-    <div>You've selected the following to be geocoded. Please verify before continuing.</div>
-  </div>
-
-  <div ng-show="geocode_state === 'no_key'">
-    <div class="alert alert-danger">
-      <p>There is no MapQuest API key associated to your organization.</p>
-      <p>If you'd like to geocode your data using the MapQuest service, please provide a valid key within your organization's settings.</p>
-    </div>
-    <div>Here's a summary of what you've selected.</div>
-  </div>
-
-  <div ng-show="geocode_state === 'geocoding'">
-    <div>Currently geocoding the following:</div>
-  </div>
-
-  <div ng-show="geocode_state === 'result'">
-    <div>Before geocoding:</div>
-  </div>
-
-  <!-- The summary of selected records is shown in any state. -->
-  <div class="alert alert-info" ng-if="pre_properties_not_geocoded || pre_tax_lots_not_geocoded">
-    <div>Not geocoded previously for the following:</div>
-    <li ng-if="pre_properties_not_geocoded">{$ pre_properties_not_geocoded|number:0 $} properties</li>
-    <li ng-if="pre_tax_lots_not_geocoded">{$ pre_tax_lots_not_geocoded|number:0 $} tax lots</li>
-  </div>
-
-  <div class="alert alert-warning" ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible || pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
-    <div>
-      Geocoding attempted previously for the following:
-      <br>(If the properties have been manually geocoded, then they will not be updated. To update geocoding, then remove the lat/long.)
-    </div>
-    <div ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible">
-      <br>
-      <div>Properties</div>
-      <li ng-if="pre_properties_geocoded_high_confidence">{$ pre_properties_geocoded_high_confidence|number:0 $} successful with high confidence in the result</li>
-      <li ng-if="pre_properties_geocoded_manually">{$ pre_properties_geocoded_manually|number:0 $} geocoded manually - <b>these will not change</b> </li>
-      <li ng-if="pre_properties_geocoded_low_confidence">{$ pre_properties_geocoded_low_confidence|number:0 $} unsuccessful due to a low geocode confidence in the result</li>
-      <li ng-if="pre_properties_geocode_not_possible">{$ pre_properties_geocode_not_possible|number:0 $} unsuccessful due to missing address fields</li>
+    <div ng-hide="has_enough_geocoding_columns">
+        <div class="alert alert-danger">
+            <p translate>GEOCODING_COL_COUNT_REQUIREMENT</p>
+            <p translate>SUGGEST_UPDATE_GEOCODE_COLS</p>
+        </div>
     </div>
 
-    <div ng-if="pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
-      <br>
-      <div>Tax Lots</div>
-      <li ng-if="pre_tax_lots_geocoded_high_confidence">{$ pre_tax_lots_geocoded_high_confidence|number:0 $} successful with high confidence in the result</li>
-      <li ng-if="pre_tax_lots_geocoded_low_confidence">{$ pre_tax_lots_geocoded_low_confidence|number:0 $} unsuccessful due to a low geocode confidence in the result </li>
-      <li ng-if="pre_tax_lots_geocode_not_possible">{$ pre_tax_lots_geocode_not_possible|number:0 $} unsuccessful due to missing address fields</li>
+    <div ng-hide="has_api_key">
+        <div class="alert alert-danger">
+            <p translate>NO_MAPQUEST_API_KEY_FOR_ORG</p>
+            <p translate>DIRECTIONS_FOR_UPDATING_MQ_API_KEY</p>
+        </div>
     </div>
-  </div>
 
-  <br>
-
-  <div ng-show="geocode_state === 'result'">
-    <div>Updated counts after geocoding:</div>
-    <div class="alert alert-success">
-      <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
-        <div>Properties:</div>
-        <li ng-if="properties_geocoded_high_confidence">{$ properties_geocoded_high_confidence|number:0 $} successful with high confidence in the result</li>
-        <li ng-if="properties_geocoded_manually">{$ properties_geocoded_manually|number:0 $} geocoded manually</li>
-        <li ng-if="properties_geocoded_low_confidence">{$ properties_geocoded_low_confidence|number:0 $} unsuccessful due to a low geocode confidence in the result</li>
-        <li ng-if="properties_geocode_not_possible">{$ properties_geocode_not_possible|number:0 $} unsuccessful due to missing address fields</li>
-      </div>
-
-      <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
-        <br>
-        <div>Tax Lots:</div>
-        <li ng-if="tax_lots_geocoded_high_confidence">{$ tax_lots_geocoded_high_confidence|number:0 $} successful with high confidence in the result</li>
-        <li ng-if="tax_lots_geocoded_low_confidence">{$ tax_lots_geocoded_low_confidence|number:0 $} unsuccessful due to a low geocode confidence in the result </li>
-        <li ng-if="tax_lots_geocode_not_possible">{$ tax_lots_geocode_not_possible|number:0 $} unsuccessful due to missing address fields</li>
-      </div>
+    <div ng-show="has_api_key && has_enough_geocoding_columns && geocode_state === 'verify'">
+        <div translate>SUGGEST_TO_VERIFY</div>
     </div>
-  </div>
+
+    <div ng-show="geocode_state === 'geocoding'">
+        <span translate>CURRENTLY_GEOCODING</span>:
+    </div>
+
+    <div ng-show="geocode_state === 'result'">
+        <span translate>BEFORE_GEOCODING</span>:
+    </div>
+
+    <!-- The summary of selected records is shown in any state. -->
+    <div class="alert alert-info" ng-if="pre_properties_not_geocoded || pre_tax_lots_not_geocoded">
+        <span translate>NOT_GEOCODED_PREVIOUSLY</span>:
+        <li ng-if="pre_properties_not_geocoded">{$ pre_properties_not_geocoded|number:0 $} properties</li>
+        <li ng-if="pre_tax_lots_not_geocoded">{$ pre_tax_lots_not_geocoded|number:0 $} tax lots</li>
+    </div>
+
+    <div class="alert alert-warning" ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible || pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
+        <div>
+            <span translate>GEOCODE_ATTEMPTED_PREVIOUSLY</span>:
+            <br>
+            (<span translate>UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS</span>)
+        </div>
+        <div ng-if="pre_properties_geocoded_high_confidence || pre_properties_geocoded_low_confidence || pre_properties_geocoded_manually || pre_properties_geocode_not_possible">
+            <br>
+            <div translate>Properties</div>
+            <li ng-if="pre_properties_geocoded_high_confidence">{$ pre_properties_geocoded_high_confidence|number:0 $} {$:: 'GEOCODED_WITH_HIGH_CONFIDENCE' | translate $}</li>
+            <li ng-if="pre_properties_geocoded_manually">{$ pre_properties_geocoded_manually|number:0 $} {$:: 'GEOCODED_MANUALLY' | translate $} - <b>{$:: 'ITEMS_WILL_NOT_CHANGE' | translate $}</b></li>
+            <li ng-if="pre_properties_geocoded_low_confidence">{$ pre_properties_geocoded_low_confidence|number:0 $} {$:: 'GEOCODED_WITH_LOW_CONFIDENCE' | translate $}</li>
+            <li ng-if="pre_properties_geocode_not_possible">{$ pre_properties_geocode_not_possible|number:0 $} {$:: 'GEOCODE_UNSUCCESSFUL_MISSING_FIELDS' | translate $}</li>
+        </div>
+
+        <div ng-if="pre_tax_lots_geocoded_high_confidence || pre_tax_lots_geocoded_low_confidence || pre_tax_lots_geocode_not_possible">
+            <br>
+            <div translate>Tax Lots</div>
+            <li ng-if="pre_tax_lots_geocoded_high_confidence">{$ pre_tax_lots_geocoded_high_confidence|number:0 $} {$:: 'GEOCODED_WITH_HIGH_CONFIDENCE' | translate $}</li>
+            <li ng-if="pre_tax_lots_geocoded_low_confidence">{$ pre_tax_lots_geocoded_low_confidence|number:0 $} {$:: 'GEOCODED_WITH_LOW_CONFIDENCE' | translate $} </li>
+            <li ng-if="pre_tax_lots_geocode_not_possible">{$ pre_tax_lots_geocode_not_possible|number:0 $} {$:: 'GEOCODE_UNSUCCESSFUL_MISSING_FIELDS' | translate $}</li>
+        </div>
+    </div>
+
+    <br>
+
+    <div ng-show="geocode_state === 'result'">
+        <div>{$:: 'POST_GEOCODING_COUNTS' | translate $}:</div>
+        <div class="alert alert-success">
+            <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
+                <div>{$:: 'Properties' | translate $}:</div>
+                <li ng-if="properties_geocoded_high_confidence">{$ properties_geocoded_high_confidence|number:0 $} {$:: 'GEOCODED_WITH_HIGH_CONFIDENCE' | translate $}</li>
+                <li ng-if="properties_geocoded_manually">{$ properties_geocoded_manually|number:0 $} {$:: 'GEOCODED_MANUALLY' | translate $}</li>
+                <li ng-if="properties_geocoded_low_confidence">{$ properties_geocoded_low_confidence|number:0 $} {$:: 'GEOCODED_WITH_LOW_CONFIDENCE' | translate $}</li>
+                <li ng-if="properties_geocode_not_possible">{$ properties_geocode_not_possible|number:0 $} {$:: 'GEOCODE_UNSUCCESSFUL_MISSING_FIELDS' | translate $}</li>
+            </div>
+
+            <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
+                <div>{$:: 'Tax Lots' | translate $}:</div>
+                <li ng-if="tax_lots_geocoded_high_confidence">{$ tax_lots_geocoded_high_confidence|number:0 $} {$:: 'GEOCODED_WITH_HIGH_CONFIDENCE' | translate $}</li>
+                <li ng-if="tax_lots_geocoded_low_confidence">{$ tax_lots_geocoded_low_confidence|number:0 $} {$:: 'GEOCODED_WITH_LOW_CONFIDENCE' | translate $} </li>
+                <li ng-if="tax_lots_geocode_not_possible">{$ tax_lots_geocode_not_possible|number:0 $} {$:: 'GEOCODE_UNSUCCESSFUL_MISSING_FIELDS' | translate $}</li>
+            </div>
+        </div>
+    </div>
 
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-primary" ng-click="geocode_buildings()" ng-show="geocode_state === 'verify'">Geocode</button>
-  <button type="button" class="btn btn-default" ng-show="geocode_state === 'verify' || geocode_state === 'no_key'" ng-click="cancel()">Cancel</button>
-  <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'" ng-click="close()">Close</button>
+    <button type="button" class="btn btn-primary" ng-click="geocode_buildings()" ng-show="geocode_state === 'verify' && has_api_key && has_enough_geocoding_columns" translate>Geocode</button>
+    <button type="button" class="btn btn-default" ng-show="geocode_state == 'verify'" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'" ng-click="close()" translate>Close</button>
 </div>

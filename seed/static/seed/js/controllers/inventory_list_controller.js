@@ -659,6 +659,9 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             org_id: function () {
               return user_service.get_organization().id;
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
             }
           }
         });

@@ -233,6 +233,9 @@ msgstr "Retour à la Liste"
 msgid "Back to Mapping"
 msgstr "Retournez à les mappages"
 
+msgid "BEFORE_GEOCODING"
+msgstr "Avant le géocodage"
+
 #: seed/models/models.py:135
 #, fuzzy
 msgid "Benchmarking"
@@ -498,6 +501,9 @@ msgstr "Nom Actuel"
 msgid "Current password"
 msgstr "Mot de passe actuel"
 
+msgid "CURRENTLY_GEOCODING"
+msgstr "Géocodage en cours"
+
 msgid "Custom ID 1"
 msgstr "ID personnalisée 1"
 
@@ -649,6 +655,9 @@ msgstr "Équipe de développement"
 
 msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
 msgstr "Avez-vous revu vos correspondances? C'est une bonne idée de vérifier vos correspondances. Une fois que SEED correspond à vos propriétés et lots d'impôt, vous ne pouvez pas annuler ou modifier ces mappages."
+
+msgid "DIRECTIONS_FOR_UPDATING_MQ_API_KEY"
+msgstr "Si vous souhaitez géocoder vos données à l'aide du service MapQuest, veuillez fournir une clé API valide dans les paramètres de votre organisation."
 
 msgid "Dismiss"
 msgstr "Rejeter"
@@ -914,6 +923,36 @@ msgstr "Dans le tableau ci-dessous, sélectionnez les règles que vous souhaitez
 msgid "Funding from"
 msgstr "Financement à partir de"
 
+msgid "Geocode"
+msgstr "Géocodage"
+
+msgid "GEOCODE_ATTEMPTED_PREVIOUSLY"
+msgstr "Géocodage tenté précédemment"
+
+msgid "GEOCODE_INVENTORY_BASE_TITLE"
+msgstr "Inventaire Géocode"
+
+msgid "GEOCODE_UNSUCCESSFUL_MISSING_FIELDS"
+msgstr "échec en raison de champs d'adresse manquants"
+
+msgid "GEOCODED_MANUALLY"
+msgstr "géocodé manuellement"
+
+msgid "GEOCODED_WITH_HIGH_CONFIDENCE"
+msgstr "succès avec une grande confiance dans le résultat"
+
+msgid "GEOCODED_WITH_LOW_CONFIDENCE"
+msgstr "échec en raison d'une faible confiance du géocode dans le résultat"
+
+msgid "GEOCODING_COL_COUNT_REQUIREMENT"
+msgstr "Au moins 3 colonnes de géocodage sont requises pour ce type de bâtiment afin de tenter un géocodage."
+
+msgid "GEOCODING_INVENTORY_COMPLETE"
+msgstr "Géocodage terminé"
+
+msgid "GEOCODING_NOW"
+msgstr "Géocodage maintenant ..."
+
 msgid "Get a New API Key"
 msgstr "Obtenir une nouvelle clé d'API"
 
@@ -1053,6 +1092,9 @@ msgstr "Cette opération est irréversible."
 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "Il est nécessaire de mapper vos noms de champs aux noms de champs SEED. Vous pouvez sélectionner dans la liste qui apparaît lorsque vous commencez à taper, qui est basée sur la spécification BEDES (Building Energy Data Exchange Specification) ou vous pouvez taper votre propre nom et saisir le nom du champ dans le fichier de données d'origine."
+
+msgid "ITEMS_WILL_NOT_CHANGE"
+msgstr "ceux-ci ne changeront pas"
 
 msgid "Jurisdiction Property ID"
 msgstr "Juridiction"
@@ -1252,6 +1294,9 @@ msgstr "Si le fichier de données contient des champs mappés à ces noms, le pr
 msgid "MATCHING_COLUMN_SORT_PRIORITY"
 msgstr "Colonnes correspondantes ayant une priorité de tri plus élevée *"
 
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Avertissement: Si des modifications des critères de correspondance sont proposées, un aperçu sera chargé. Les temps de chargement de cet aperçu dépendent du nombre d'enregistrements appartenant à cette organisation et du nombre d'enregistrements qui seraient fusionnés en fonction des nouveaux critères de correspondance."
+
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Résultats correspondants pour le fichier {dataset_filename}"
 
@@ -1290,6 +1335,9 @@ msgstr "Membres"
 
 msgid "MERGE_IN_CYCLE_MATCHES"
 msgstr "Les matchs de ce cycle seront fusionnés."
+
+msgid "MERGE_LINK_ADVICE"
+msgstr "Les matchs d'un même cycle seront fusionnés, tandis que les matchs de cycles différents seront associés pour une analyse entre cycles."
 
 msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
 msgstr "Dans le cas où plusieurs correspondances sont renvoyées d'un seul cycle, ces correspondances seront fusionnées."
@@ -1393,6 +1441,9 @@ msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour com
 msgid "No warnings/errors"
 msgstr "Aucun avertissement/erreur"
 
+msgid "NO_MAPQUEST_API_KEY_FOR_ORG"
+msgstr "Aucune clé d'API MapQuest n'est associée à votre organisation."
+
 msgid "None"
 msgstr "Aucun"
 
@@ -1404,6 +1455,9 @@ msgstr "pas autorisé"
 
 msgid "Not Null"
 msgstr "Pas nul"
+
+msgid "NOT_GEOCODED_PREVIOUSLY"
+msgstr "Non géocodé auparavant"
 
 msgid "Note 1: Sub-organizations cannot be deleted."
 msgstr "Remarque 1: Les sous-organisations ne peuvent pas être supprimées."
@@ -1621,6 +1675,9 @@ msgstr "Résultats d'importation de Portfolio Manager"
 
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
+
+msgid "POST_GEOCODING_COUNTS"
+msgstr "Nombre mis à jour après le géocodage"
 
 msgid "Postal Code (Property)"
 msgstr "Code postal (propriété)"
@@ -2129,6 +2186,13 @@ msgstr "Succès!"
 msgid "Successful upload!"
 msgstr "Téléchargement réussi!"
 
+#, fuzzy
+msgid "SUGGEST_TO_VERIFY"
+msgstr "Veuillez vérifier les points suivants avant de continuer."
+
+msgid "SUGGEST_UPDATE_GEOCODE_COLS"
+msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
+
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
 
@@ -2297,6 +2361,9 @@ msgstr "Mettre à jour les graphiques"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"
+
+msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
+msgstr "Si les propriétés ont été géocodées manuellement, elles ne seront pas mises à jour. Pour mettre à jour le géocodage, supprimez le lat / long."
 
 msgid "Upload a Spreadsheet"
 msgstr "Télécharger une feuille de calcul"
