@@ -333,6 +333,9 @@ msgstr "Fermer l'aperçu"
 msgid "COL_CHANGE_DISPLAY"
 msgstr "Changer le nom d'affichage d'une colonne"
 
+msgid "COL_GEOCODING_TOGGLE"
+msgstr "Activer / désactiver l’implication du géocodage et, si elle est activée, modifier l’ordre dans lequel les valeurs de colonne sont concaténées pour construire une adresse complète"
+
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
 msgstr "Pour les colonnes non extra_data, indiquez si la colonne correspond aux critères"
 
@@ -837,6 +840,12 @@ msgstr "Champ"
 msgid "Field Name"
 msgstr "Nom de champ"
 
+msgid "FIELD_NAMES_FOR_GEOCODING_PROPERTIES"
+msgstr "Noms de champs pour les propriétés de géocodage"
+
+msgid "FIELD_NAMES_FOR_GEOCODING_TAXLOTS"
+msgstr "Noms de zone pour les lots de taxe de géocodage"
+
 msgid "FIELD_NAMES_FOR_MATCHING"
 msgstr "Noms de zone pour l'appariement"
 
@@ -947,8 +956,14 @@ msgstr "échec en raison d'une faible confiance du géocode dans le résultat"
 msgid "GEOCODING_COL_COUNT_REQUIREMENT"
 msgstr "Au moins 3 colonnes de géocodage sont requises pour ce type de bâtiment afin de tenter un géocodage."
 
+msgid "GEOCODING_FULL_ADDRESS_ADVICE"
+msgstr "Les champs de fichier de données associés à ces colonnes auront leurs valeurs correspondantes concaténées dans l'ordre indiqué pour former une adresse complète. Cette adresse complète est faite pour chaque enregistrement et utilisée pour le géocodage."
+
 msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Géocodage terminé"
+
+msgid "GEOCODING_NEEDS_THREE_COLS"
+msgstr "Notez que le géocodage nécessite l'utilisation d'au moins trois colonnes et leur remplissage pour construire des adresses complètes."
 
 msgid "GEOCODING_NOW"
 msgstr "Géocodage maintenant ..."
