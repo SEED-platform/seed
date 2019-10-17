@@ -32,7 +32,10 @@ describe('controller: mapping_controller', function () {
       // return false to avoid a subsequent, untested API calls
       spyOn(mock_geocode_service, 'check_org_has_api_key')
         .andCallFake(function () {
-          return false;
+          // return false;
+          return $q.resolve({
+            result: false
+          });
         });
     });
   });
