@@ -30,7 +30,10 @@ describe('controller: mapping_controller', function () {
         });
 
       // return false to avoid a subsequent, untested API calls
-      spyOn(mock_geocode_service, 'api_key_exists').andReturn(false);
+      spyOn(mock_geocode_service, 'api_key_exists')
+        .andCallFake(function () {
+          return false;
+        });
     });
   });
 
