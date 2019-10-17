@@ -6,7 +6,7 @@ describe('controller: mapping_controller', function () {
   // globals set up and used in each test scenario
   var mock_inventory_service, controller;
   var mapping_controller_scope;
-  var timeout, mock_user_service;
+  var timeout, mock_user_service, mock_geocode_service;
 
 
   // make the seed app available for each test
@@ -17,15 +17,21 @@ describe('controller: mapping_controller', function () {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, user_service) {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
       timeout = $timeout;
       mock_user_service = user_service;
+      mock_geocode_service = geocode_service;
 
       spyOn(mock_user_service, 'set_default_columns')
         .andCallFake(function () {
           return undefined;
+        });
+
+      spyOn(mock_geocode_service, 'check_org_has_api_key')
+        .andCallFake(function () {
+          return true;
         });
     });
   });
