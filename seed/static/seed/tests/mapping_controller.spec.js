@@ -30,10 +30,7 @@ describe('controller: mapping_controller', function () {
         });
 
       // return false to avoid a subsequent, untested API calls
-      spyOn(mock_geocode_service, 'api_key_exists')
-        .andCallFake(function () {
-          return false;
-        });
+      spyOn(mock_geocode_service, 'api_key_exists').andReturn(false);
     });
   });
 
@@ -246,6 +243,7 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   it('should show suggested mappings', function () {
@@ -260,6 +258,7 @@ describe('controller: mapping_controller', function () {
     var first_column = mappings[0];
 
     expect(first_column.suggestion).toBe('PM Property ID');
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   it('should detect duplicates', function () {
@@ -283,6 +282,8 @@ describe('controller: mapping_controller', function () {
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
+
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   // Needs to be an e2e test.
@@ -313,6 +314,7 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(false);
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   it('should disable the "show & review buildings" button if duplicates are present', function () {
@@ -329,6 +331,7 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(true);
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   it('should get mappings in an API friendly way', function () {
@@ -352,6 +355,8 @@ describe('controller: mapping_controller', function () {
       to_field_display_name: 'Jurisdiction Tax Lot ID',
       to_table_name: 'TaxLotState'
     });
+
+    expect(mock_geocode_service.api_key_exists).toHaveBeenCalled();
   });
 
   // Needs to be e2e test now.
