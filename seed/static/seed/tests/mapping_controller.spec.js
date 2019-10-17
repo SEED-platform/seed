@@ -29,8 +29,11 @@ describe('controller: mapping_controller', function () {
           return undefined;
         });
 
-      // to avoid a subsequent, untested API call
-      spyOn(mock_geocode_service, 'api_key_exists').andReturn(false);
+      // return false to avoid a subsequent, untested API calls
+      spyOn(mock_geocode_service, 'api_key_exists')
+        .andCallFake(function () {
+          return false;
+        });
     });
   });
 
