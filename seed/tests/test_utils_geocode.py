@@ -359,6 +359,7 @@ class GeocodeAddresses(TestCase):
 
     def test_geocode_buildings_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
+            # 1st Property
             state_zip_only_details = self.property_state_factory.get_details()
             state_zip_only_details['organization_id'] = self.org.id
             state_zip_only_details['address_line_1'] = ""
@@ -370,35 +371,87 @@ class GeocodeAddresses(TestCase):
             state_zip_only_property = PropertyState(**state_zip_only_details)
             state_zip_only_property.save()
 
-            wrong_state_zip_details = self.property_state_factory.get_details()
-            wrong_state_zip_details['organization_id'] = self.org.id
-            wrong_state_zip_details['address_line_1'] = "3001 Brighton Blvd"
-            wrong_state_zip_details['address_line_2'] = "suite 2693"
-            wrong_state_zip_details['city'] = "Denver"
-            wrong_state_zip_details['state'] = "New Jersey"
-            wrong_state_zip_details['postal_code'] = "08081"
-
-            wrong_state_zip_property = PropertyState(**wrong_state_zip_details)
-            wrong_state_zip_property.save()
-
-            ids = [state_zip_only_property.id, wrong_state_zip_property.id]
-
-            properties = PropertyState.objects.filter(id__in=ids)
+            properties = PropertyState.objects.filter(id__in=[state_zip_only_property.id])
 
             geocode_buildings(properties)
 
             state_zip_only_property = PropertyState.objects.get(pk=state_zip_only_property.id)
-            wrong_state_zip_property = PropertyState.objects.get(pk=wrong_state_zip_property.id)
 
             self.assertIsNone(state_zip_only_property.long_lat)
             self.assertIsNone(state_zip_only_property.longitude)
             self.assertIsNone(state_zip_only_property.latitude)
             self.assertEqual("Low - check address (Z1XAA)", state_zip_only_property.geocoding_confidence)
 
+            # 2nd Property
+            wrong_state_zip_details = self.property_state_factory.get_details()
+            wrong_state_zip_details['organization_id'] = self.org.id
+            wrong_state_zip_details['address_line_1'] = ""
+            wrong_state_zip_details['address_line_2'] = ""
+            wrong_state_zip_details['city'] = "Denver"
+            wrong_state_zip_details['state'] = "Colorado"
+            wrong_state_zip_details['postal_code'] = ""
+
+            wrong_state_zip_property = PropertyState(**wrong_state_zip_details)
+            wrong_state_zip_property.save()
+
+            properties = PropertyState.objects.filter(id__in=[wrong_state_zip_property.id])
+
+            geocode_buildings(properties)
+
+            wrong_state_zip_property = PropertyState.objects.get(pk=wrong_state_zip_property.id)
+
             self.assertIsNone(wrong_state_zip_property.long_lat)
             self.assertIsNone(wrong_state_zip_property.longitude)
             self.assertIsNone(wrong_state_zip_property.latitude)
-            self.assertEqual("Low - check address (B3BCA)", wrong_state_zip_property.geocoding_confidence)
+            self.assertEqual("Low - check address (A5XAX)", wrong_state_zip_property.geocoding_confidence)
+
+    def test_geocode_buildings_returns_no_data_when_provided_address_returns_multiple_results(self):
+        with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_multiple_results.yaml'):
+            # 1st Property
+            wrong_state_details = self.property_state_factory.get_details()
+            wrong_state_details['organization_id'] = self.org.id
+            wrong_state_details['address_line_1'] = "101 Market Street"
+            wrong_state_details['address_line_2'] = ""
+            wrong_state_details['city'] = "Denver"
+            wrong_state_details['state'] = "California"
+            wrong_state_details['postal_code'] = ""
+
+            wrong_state_property = PropertyState(**wrong_state_details)
+            wrong_state_property.save()
+
+            properties = PropertyState.objects.filter(id__in=[wrong_state_property.id])
+
+            geocode_buildings(properties)
+
+            wrong_state_property = PropertyState.objects.get(pk=wrong_state_property.id)
+
+            self.assertIsNone(wrong_state_property.long_lat)
+            self.assertIsNone(wrong_state_property.longitude)
+            self.assertIsNone(wrong_state_property.latitude)
+            self.assertEqual("Low - check address (Ambiguous)", wrong_state_property.geocoding_confidence)
+
+            # 2nd Property
+            not_specific_enough_details = self.property_state_factory.get_details()
+            not_specific_enough_details['organization_id'] = self.org.id
+            not_specific_enough_details['address_line_1'] = "101 Market Street"
+            not_specific_enough_details['address_line_2'] = ""
+            not_specific_enough_details['city'] = ""
+            not_specific_enough_details['state'] = "California"
+            not_specific_enough_details['postal_code'] = ""
+
+            not_specific_enough_property = PropertyState(**not_specific_enough_details)
+            not_specific_enough_property.save()
+
+            properties = PropertyState.objects.filter(id__in=[not_specific_enough_property.id])
+
+            geocode_buildings(properties)
+
+            not_specific_enough_property = PropertyState.objects.get(pk=not_specific_enough_property.id)
+
+            self.assertIsNone(not_specific_enough_property.long_lat)
+            self.assertIsNone(not_specific_enough_property.longitude)
+            self.assertIsNone(not_specific_enough_property.latitude)
+            self.assertEqual("Low - check address (Ambiguous)", not_specific_enough_property.geocoding_confidence)
 
     def test_geocode_buildings_is_successful_even_if_two_buildings_have_same_address(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_dup_addresses.yaml'):

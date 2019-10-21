@@ -179,7 +179,7 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
 
         request_url = (
             'https://www.mapquestapi.com/geocoding/v1/batch?' +
-            '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=1' +
+            '&inFormat=json&outFormat=json&thumbMaps=false&maxResults=2' +
             '&json=' + locations_json +
             '&key=' + mapquest_api_key
         )
@@ -202,6 +202,8 @@ def _response_address(result):
 
 def _analyze_location(result):
     """
+    If multiple geolocations are returned, pass invalid indicator of "Ambiguous".
+
     According to MapQuest API
      - https://developer.mapquest.com/documentation/geocoding-api/quality-codes/
      GeoCode Quality ratings are provided in 5 characters in the form 'ZZYYY'.
@@ -210,6 +212,8 @@ def _analyze_location(result):
     Accuracy to either a point or a street address is accepted, while confidence
     ratings must all be at least A's and B's without C's or X's (N/A).
     """
+    if len(result.get('locations')) != 1:
+        return {"quality": "Ambiguous"}
 
     quality = result.get('locations')[0].get('geocodeQualityCode')
     granularity_level = quality[0:2]
