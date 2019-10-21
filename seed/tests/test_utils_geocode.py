@@ -321,9 +321,8 @@ class GeocodeAddresses(TestCase):
         property_details['state'] = "Colorado"
         property_details['postal_code'] = "80216"
 
-        # Deactivate some default geocoding columns
+        # Deactivate all PropertyState geocoding columns
         self.org.column_set.filter(
-            column_name__in=['address_line_2', 'city', 'postal_code'],
             table_name="PropertyState"
         ).update(geocoding_order=0)
 
@@ -337,6 +336,26 @@ class GeocodeAddresses(TestCase):
 
         self.assertIsNone(refreshed_property.long_lat)
         self.assertIsNone(refreshed_property.geocoding_confidence)
+
+    def test_not_enough_geocoding_fields_for_record_leads_to_no_geocoding(self):
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+        property_details['address_line_1'] = ""
+        property_details['address_line_2'] = ""
+        property_details['city'] = ""
+        property_details['state'] = ""
+        property_details['postal_code'] = ""
+
+        property = PropertyState(**property_details)
+        property.save()
+        properties = PropertyState.objects.filter(pk=property.id)
+
+        self.assertIsNone(geocode_buildings(properties))
+
+        refreshed_property = PropertyState.objects.get(pk=property.id)
+
+        self.assertIsNone(refreshed_property.long_lat)
+        self.assertEqual(refreshed_property.geocoding_confidence, "Missing address components (N/A)")
 
     def test_geocode_buildings_returns_no_data_when_provided_address_is_ambigious(self):
         with base_vcr.use_cassette('seed/tests/data/vcr_cassettes/geocode_low_geocodequality.yaml'):
@@ -374,7 +393,7 @@ class GeocodeAddresses(TestCase):
             self.assertIsNone(state_zip_only_property.long_lat)
             self.assertIsNone(state_zip_only_property.longitude)
             self.assertIsNone(state_zip_only_property.latitude)
-            self.assertEqual("Missing address components (N/A)", state_zip_only_property.geocoding_confidence)
+            self.assertEqual("Low - check address (Z1XAA)", state_zip_only_property.geocoding_confidence)
 
             self.assertIsNone(wrong_state_zip_property.long_lat)
             self.assertIsNone(wrong_state_zip_property.longitude)

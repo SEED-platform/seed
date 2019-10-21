@@ -120,7 +120,7 @@ def _id_addresses(buildings, org):
         table_name=buildings[0].__class__.__name__
     ).order_by('geocoding_order').values('column_name', 'is_extra_data')
 
-    if geocoding_columns.count() < 3:
+    if geocoding_columns.count() == 0:
         return {}
 
     id_addresses = {}
@@ -140,7 +140,7 @@ def _full_address(building, geocoding_columns):
     """
     Using organization-specific geocoding columns, a full address string is built.
 
-    Check there are at least 3 address components present. Combine components to
+    Check there are at least 1 address components present. Combine components to
     one full address. This helps to avoid receiving MapQuests' best guess result.
     For example, only sending '3001 Brighton Blvd, Suite 2693' would yield a
     valid point from one of multiple cities.
@@ -159,7 +159,7 @@ def _full_address(building, geocoding_columns):
         if (isinstance(address_value, (str, Number))) and (address_value != ""):
             address_components.append(str(address_value))
 
-    if len(address_components) > 2:
+    if len(address_components) > 0:
         full_address = ", ".join(address_components)
         return re.sub(r'[;/?:@=&"<>#%{}|["^~`\]\\]', '', full_address)
     else:
