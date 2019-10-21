@@ -321,6 +321,11 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'taxlot view with id {} does not exist'.format(pk)
             }
 
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
+                               .order_by('property_view_id').values_list('property_view_id',
+                                                                         flat=True))
+
         # Capture previous associated labels
         label_ids = list(old_view.labels.all().values_list('id', flat=True))
 
@@ -401,11 +406,6 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
         # Delete the audit log entry for the merge
         log.delete()
-
-        # Duplicate pairing
-        paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                               .order_by('property_view_id').values_list('property_view_id',
-                                                                         flat=True))
 
         old_view.delete()
         new_view1.save()
