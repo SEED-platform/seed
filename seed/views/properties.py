@@ -503,6 +503,10 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'property view with id {} does not exist'.format(pk)
             }
 
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                               .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
+
         # Capture previous associated labels
         label_ids = list(old_view.labels.all().values_list('id', flat=True))
 
@@ -586,10 +590,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
         # Delete the audit log entry for the merge
         log.delete()
-
-        # Duplicate pairing
-        paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                               .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
 
         old_view.delete()
         new_view1.save()
@@ -879,7 +879,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             result = update_result_with_master(result, master)
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
-            return JsonResponse(result)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @api_endpoint_class
     @ajax_request_class
@@ -946,6 +946,9 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if log.name == 'Import Creation':
                     # Add new state by removing the existing ID.
                     property_state_data.pop('id')
+                    # Remove the import_file_id for the first edit of a new record
+                    # If the import file has been deleted and this value remains the serializer won't be valid
+                    property_state_data.pop('import_file')
                     new_property_state_serializer = PropertyStateSerializer(
                         data=property_state_data
                     )
