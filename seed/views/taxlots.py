@@ -661,7 +661,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
             result = update_result_with_master(result, master)
             return JsonResponse(result, status=status.HTTP_200_OK)
         else:
-            return JsonResponse(result, status_code=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @api_endpoint_class
     @ajax_request_class
