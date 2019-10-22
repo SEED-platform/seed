@@ -946,6 +946,9 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if log.name == 'Import Creation':
                     # Add new state by removing the existing ID.
                     property_state_data.pop('id')
+                    # Remove the import_file_id for the first edit of a new record
+                    # If the import file has been deleted and this value remains the serializer won't be valid
+                    property_state_data.pop('import_file')
                     new_property_state_serializer = PropertyStateSerializer(
                         data=property_state_data
                     )
