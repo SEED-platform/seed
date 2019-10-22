@@ -876,6 +876,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
 
         _.forEach(profiles, function (profile) {
+          // Remove exact duplicates - this shouldn't be necessary, but it has occurred and will avoid errors and cleanup the database at the same time
+          profile.columns = _.uniqWith(profile.columns, _.isEqual);
+
           profile.columns = _.sortBy(profile.columns, ['order', 'column_name']);
         });
 
