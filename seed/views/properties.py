@@ -879,7 +879,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             result = update_result_with_master(result, master)
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
-            return JsonResponse(result)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @api_endpoint_class
     @ajax_request_class
