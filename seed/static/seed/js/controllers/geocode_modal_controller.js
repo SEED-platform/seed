@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
 
           $scope.pre_tax_lots_geocoded_high_confidence = result.tax_lots.high_confidence;
           $scope.pre_tax_lots_geocoded_low_confidence = result.tax_lots.low_confidence;
+          $scope.pre_tax_lots_geocoded_manually = result.tax_lots.manual;
           $scope.pre_tax_lots_geocode_not_possible = result.tax_lots.missing_address_components;
         }
       });
@@ -60,6 +61,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
             if (result.tax_lots) {
               $scope.tax_lots_geocoded_high_confidence = result.tax_lots.high_confidence;
               $scope.tax_lots_geocoded_low_confidence = result.tax_lots.low_confidence;
+              $scope.tax_lots_geocoded_manually = result.tax_lots.manual;
               $scope.tax_lots_geocode_not_possible = result.tax_lots.missing_address_components;
             }
 
