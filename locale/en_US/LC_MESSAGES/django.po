@@ -950,7 +950,7 @@ msgid "GEOCODED_WITH_LOW_CONFIDENCE"
 msgstr "unsuccessful due to a low geocode confidence in the result"
 
 msgid "GEOCODING_COL_COUNT_REQUIREMENT"
-msgstr "At least 3 geocoding columns are required for this building type in order to attempt geocoding."
+msgstr "At least 1 geocoding column is required for this building type in order to attempt geocoding."
 
 msgid "GEOCODING_FULL_ADDRESS_ADVICE"
 msgstr "Datafile fields mapped to these columns will have their corresponding values concatenated in the order listed to form a full address. This full address is made for each record and used for geocoding."
@@ -959,7 +959,7 @@ msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Geocoding Complete"
 
 msgid "GEOCODING_NEEDS_THREE_COLS"
-msgstr "Note, geocoding requires at least 3 columns are used and populated to construct full addresses."
+msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
 
 msgid "GEOCODING_NOW"
 msgstr "Geocoding now..."

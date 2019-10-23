@@ -953,8 +953,9 @@ msgstr "succès avec une grande confiance dans le résultat"
 msgid "GEOCODED_WITH_LOW_CONFIDENCE"
 msgstr "échec en raison d'une faible confiance du géocode dans le résultat"
 
+#, fuzzy
 msgid "GEOCODING_COL_COUNT_REQUIREMENT"
-msgstr "Au moins 3 colonnes de géocodage sont requises pour ce type de bâtiment afin de tenter un géocodage."
+msgstr "Au moins 1 colonne de géocodage est requise pour ce type de bâtiment afin de tenter un géocodage."
 
 msgid "GEOCODING_FULL_ADDRESS_ADVICE"
 msgstr "Les champs de fichier de données associés à ces colonnes auront leurs valeurs correspondantes concaténées dans l'ordre indiqué pour former une adresse complète. Cette adresse complète est faite pour chaque enregistrement et utilisée pour le géocodage."
@@ -963,7 +964,7 @@ msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Géocodage terminé"
 
 msgid "GEOCODING_NEEDS_THREE_COLS"
-msgstr "Notez que le géocodage nécessite l'utilisation d'au moins trois colonnes et leur remplissage pour construire des adresses complètes."
+msgstr "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne et son remplissage pour construire des adresses complètes."
 
 msgid "GEOCODING_NOW"
 msgstr "Géocodage maintenant ..."
