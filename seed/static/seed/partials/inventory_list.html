@@ -87,8 +87,7 @@
             <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length" translate>Clear Labels</button>
         </div>
         <div class="btn-group">
-            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-show="filters_exist()" class="btn btn-info btn-sm" translate>Clear Filters</button>
-            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-show="!filters_exist()" ng-disabled="true" class="btn btn-default btn-sm" translate>Clear Filters</button>
+            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-class="{'btn-info': filters_exist(), 'btn-default': !filters_exist()}" class="btn btn-sm" translate>Clear Filters</button>
         </div>
 
     </form>
@@ -113,7 +112,6 @@
 </div>
 
 <div class="inventory-list-tab-container">
-    <!-- <div class="item-count text-info" style="font-weight: 600;"> -->
     <div class="item-count" ng-class="{'text-info': filters_exist()}">
         <span ng-if="::inventory_type === 'properties'">
             <i class="fa fa-building-o"></i>
