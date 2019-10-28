@@ -467,6 +467,24 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
       $scope.columns.unshift({
+        name: 'merged_indicator',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <div class="ui-grid-cell-contents merged-indicator">' +
+        '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
+        '  </div>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnMoving: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: 30
+      }, {
         name: 'notes_count',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
@@ -518,7 +536,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
