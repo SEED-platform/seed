@@ -189,14 +189,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels () {
+      function updateApplicableLabels (current_labels) {
         var inventoryIds;
         if ($scope.inventory_type === 'properties') {
           inventoryIds = _.map($scope.data, 'property_view_id').sort();
         } else {
           inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
         }
-        $scope.labels = _.filter(labels, function (label) {
+        $scope.labels = _.filter(current_labels, function (label) {
           return _.some(label.is_applied, function (id) {
             return _.includes(inventoryIds, id);
           });
@@ -588,7 +588,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
-        updateApplicableLabels();
+        get_labels();
         $scope.updateQueued = true;
       };
 
@@ -625,17 +625,15 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      processData();
-
       var get_labels = function () {
         label_service.get_labels([], {
           inventory_type: $scope.inventory_type
-        }).then(function (labels) {
-          $scope.labels = _.filter(labels, function (label) {
-            return !_.isEmpty(label.is_applied);
-          });
+        }).then(function (current_labels) {
+          updateApplicableLabels(current_labels);
         });
       };
+
+      processData();
 
       $scope.open_ubid_modal = function () {
         $uibModal.open({
