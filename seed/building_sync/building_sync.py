@@ -90,6 +90,11 @@ class BuildingSync(object):
                 "required": True,
                 "type": "string",
             },
+            "ubid": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:Ubid",
+                "required": True,
+                "type": "string",
+            },
             "year_built": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:YearOfConstruction",
                 "required": True,
