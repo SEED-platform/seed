@@ -807,7 +807,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible;
         });
 
         // Ensure pinned ordering first
@@ -904,19 +904,25 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
-            // Ensure that 'notes_count' and 'id' remain first
-            var col, idIndex;
-            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
-            if (idIndex !== 2) {
-              col = $scope.gridApi.grid.columns[idIndex];
-              $scope.gridApi.grid.columns.splice(idIndex, 1);
+            // Ensure that 'merged_indicator', 'notes_count', and 'id' remain first
+            var col, staticColIndex;
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'merged_indicator'});
+            if (staticColIndex !== 2) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
             }
-            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
-            if (idIndex !== 3) {
-              col = $scope.gridApi.grid.columns[idIndex];
-              $scope.gridApi.grid.columns.splice(idIndex, 1);
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
+            if (staticColIndex !== 3) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
+            }
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (staticColIndex !== 4) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
+              $scope.gridApi.grid.columns.splice(4, 0, col);
             }
             saveSettings();
           });
