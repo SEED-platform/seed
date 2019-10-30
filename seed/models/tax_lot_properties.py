@@ -152,10 +152,12 @@ class TaxLotProperty(models.Model):
                 'centroid': 'centroid',
                 'bounding_box': 'bounding_box',
                 'long_lat': 'long_lat',
+                'related_audit_log_class': apps.get_model('seed', 'TaxLotAuditLog'),
                 'related_class': 'TaxLotView',
                 'related_query_in': 'taxlot_view_id__in',
                 'select_related': 'taxlot',
                 'related_view': 'taxlot_view',
+                'related_view_class': apps.get_model('seed', 'TaxLotView'),
                 'related_view_id': 'taxlot_view_id',
                 'related_state_id': 'taxlot_state_id',
             }
@@ -171,10 +173,12 @@ class TaxLotProperty(models.Model):
                 'centroid': 'centroid',
                 'bounding_box': 'bounding_box',
                 'long_lat': 'long_lat',
+                'related_audit_log_class': apps.get_model('seed', 'PropertyAuditLog'),
                 'related_class': 'PropertyView',
                 'related_query_in': 'property_view_id__in',
                 'select_related': 'property',
                 'related_view': 'property_view',
+                'related_view_class': apps.get_model('seed', 'PropertyView'),
                 'related_view_id': 'property_view_id',
                 'related_state_id': 'property_state_id',
             }
@@ -280,6 +284,13 @@ class TaxLotProperty(models.Model):
         join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
                             .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
 
+        # Get merged_indicators for related
+        join_states_qs = lookups['related_view_class'].objects.filter(id__in=related_ids)
+        join_merged_state_ids = lookups['related_audit_log_class'].objects.filter(
+            name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
+            state_id__in=models.Subquery(join_states_qs.values('state_id'))
+        ).values_list('state_id', flat=True)
+
         # A mapping of object's view pk to a list of related state info for a related view
         join_map = {}
         for join in joins:
@@ -309,6 +320,7 @@ class TaxLotProperty(models.Model):
                 })
 
             join_dict['notes_count'] = join_note_counts.get(join.id, 0)
+            join_dict['merged_indicator'] = getattr(join, lookups['related_view']).state_id in join_merged_state_ids
 
             # remove the measures from this view for now
             if join_dict.get('measures'):
@@ -362,7 +374,7 @@ class TaxLotProperty(models.Model):
             obj_dict[lookups['obj_state_id']] = obj.state.id
             obj_dict[lookups['obj_view_id']] = obj.id
 
-            obj_dict['merged_indicator'] = obj.state.id in merged_state_ids
+            obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)

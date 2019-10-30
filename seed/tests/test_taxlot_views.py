@@ -88,6 +88,33 @@ class TaxLotViewTests(DataMappingBaseTestCase):
 
         self.assertTrue(data['results'][0]['merged_indicator'])
 
+        # Create pairings and check if paired object has indicator as well
+        property_factory = FakePropertyFactory(organization=self.org)
+        property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        property = property_factory.get_property()
+        property_state = property_state_factory.get_property_state()
+        property_view = PropertyView.objects.create(
+            property=property, cycle=self.cycle, state=property_state
+        )
+
+        # attach pairing to one and only taxlot_view
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=property_view.id,
+            taxlot_view_id=TaxLotView.objects.get().id
+        ).save()
+
+        url = reverse('api:v2:taxlots-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        related = data['results'][0]['related'][0]
+
+        self.assertTrue('merged_indicator' in related)
+        self.assertFalse(related['merged_indicator'])
+
 
 class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
