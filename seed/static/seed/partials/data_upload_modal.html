@@ -8,7 +8,7 @@
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
     <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
     <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
-    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
+    <h4 class="modal-title" ng-switch-when="10">{$:: 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
