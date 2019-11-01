@@ -92,7 +92,7 @@ class BuildingSync(object):
             },
             "ubid": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:Ubid",
-                "required": True,
+                "required": False,
                 "type": "string",
             },
             "year_built": {
