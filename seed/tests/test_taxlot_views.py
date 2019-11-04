@@ -11,8 +11,10 @@ from datetime import datetime
 from django.core.urlresolvers import reverse
 from django.utils.timezone import get_current_timezone
 
+from seed.data_importer.tasks import match_buildings
 from seed.landing.models import SEEDUser as User
 from seed.models import (
+    DATA_STATE_MAPPING,
     PropertyView,
     TaxLot,
     TaxLotProperty,
@@ -27,11 +29,94 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
-class TaxLotMergeUnmergeViewTests(DeleteModelsTestCase):
+class TaxLotViewTests(DataMappingBaseTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.client.login(**user_details)
+
+    def test_merged_indicators_provided_on_filter_endpoint(self):
+        _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
+
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        # set import_file_1 mapping done so that record is "created for users to view".
+        import_file_1.mapping_done = True
+        import_file_1.save()
+        match_buildings(import_file_1.id)
+
+        _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
+
+        url = reverse('api:v2:taxlots-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertFalse(data['results'][0]['merged_indicator'])
+
+        # make sure merged_indicator is True when merge occurs
+        base_details['city'] = 'Denver'
+        base_details['import_file_id'] = import_file_2.id
+        self.taxlot_state_factory.get_taxlot_state(**base_details)
+
+        # set import_file_2 mapping done so that match merging can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        match_buildings(import_file_2.id)
+
+        url = reverse('api:v2:taxlots-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertTrue(data['results'][0]['merged_indicator'])
+
+        # Create pairings and check if paired object has indicator as well
+        property_factory = FakePropertyFactory(organization=self.org)
+        property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        property = property_factory.get_property()
+        property_state = property_state_factory.get_property_state()
+        property_view = PropertyView.objects.create(
+            property=property, cycle=self.cycle, state=property_state
+        )
+
+        # attach pairing to one and only taxlot_view
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=property_view.id,
+            taxlot_view_id=TaxLotView.objects.get().id
+        ).save()
+
+        url = reverse('api:v2:taxlots-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        related = data['results'][0]['related'][0]
+
+        self.assertTrue('merged_indicator' in related)
+        self.assertFalse(related['merged_indicator'])
+
+
+class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

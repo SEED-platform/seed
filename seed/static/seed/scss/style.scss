@@ -3409,6 +3409,22 @@ $pairedCellWidth: 60px;
   }
 }
 
+.merged-indicator {
+  -webkit-transform: scaleY(-1);
+  transform: scaleY(-1);
+  padding-top: 8px;
+
+  i.fa {
+    font-size: 16px;
+    padding-left: 5px;
+
+    &.text-muted {
+      color: #222;
+      opacity: 0.1;
+    }
+  }
+}
+
 .settings_profile {
   padding-top: 10px !important;
 
