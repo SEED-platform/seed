@@ -25,7 +25,10 @@ from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
+from seed.data_importer.tasks import match_buildings
+
 from seed.models import (
+    DATA_STATE_MAPPING,
     Meter,
     MeterReading,
     Property,
@@ -47,7 +50,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeColumnListSettingsFactory,
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 COLUMNS_TO_SEND = [
@@ -63,7 +66,7 @@ COLUMNS_TO_SEND = [
 
 
 # These tests mostly use V2.1 API except for when writing back to the API for updates
-class PropertyViewTests(DeleteModelsTestCase):
+class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -131,6 +134,71 @@ class PropertyViewTests(DeleteModelsTestCase):
         )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_merged_indicators_provided_on_filter_endpoint(self):
+        _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
+
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file_1 mapping done so that record is "created for users to view".
+        import_file_1.mapping_done = True
+        import_file_1.save()
+        match_buildings(import_file_1.id)
+
+        _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertFalse(data['results'][0]['merged_indicator'])
+
+        # make sure merged_indicator is True when merge occurs
+        base_details['city'] = 'Denver'
+        base_details['import_file_id'] = import_file_2.id
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file_2 mapping done so that match merging can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        match_buildings(import_file_2.id)
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertTrue(data['results'][0]['merged_indicator'])
+
+        # Create pairings and check if paired object has indicator as well
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        taxlot = taxlot_factory.get_taxlot()
+        taxlot_state = taxlot_state_factory.get_taxlot_state()
+        taxlot_view = TaxLotView.objects.create(taxlot=taxlot, cycle=self.cycle, state=taxlot_state)
+
+        # attach pairing to one and only property_view
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=PropertyView.objects.get().id,
+            taxlot_view_id=taxlot_view.id
+        ).save()
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        related = data['results'][0]['related'][0]
+
+        self.assertTrue('merged_indicator' in related)
+        self.assertFalse(related['merged_indicator'])
 
     def test_list_properties_with_profile_id(self):
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
@@ -280,7 +348,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(b'false', false_result.content)
 
 
-class PropertyMergeViewTests(DeleteModelsTestCase):
+class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -646,7 +714,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.assertEqual(PropertyView.objects.filter(property_id=persisting_property_id).count(), 1)
 
 
-class PropertyUnmergeViewTests(DeleteModelsTestCase):
+class PropertyUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
