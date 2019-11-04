@@ -90,11 +90,6 @@ class BuildingSync(object):
                 "required": True,
                 "type": "string",
             },
-            "ubid": {
-                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:Ubid",
-                "required": False,
-                "type": "string",
-            },
             "year_built": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:YearOfConstruction",
                 "required": True,
@@ -116,6 +111,14 @@ class BuildingSync(object):
                 "key_path_value": "Assessor parcel number",
                 "value_path_name": "auc:IdentifierValue",
                 "required": False,  # temporarily make this False until AT can handle it correctly.
+                "type": "string",
+            },
+            "ubid": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierLabel",
+                "key_path_value": "UBID",
+                "value_path_name": "auc:IdentifierValue",
+                "required": False,
                 "type": "string",
             },
             "custom_id_1": {
