@@ -356,7 +356,7 @@ class Rule(models.Model):
                 # try to convert to float
                 try:
                     value = float(value)
-                except ValueError as e:
+                except ValueError:
                     raise DataQualityTypeCastError(f"Error converting {value} to number")
             else:
                 # must be a float...
@@ -399,7 +399,7 @@ class Rule(models.Model):
                 # try to convert to float
                 try:
                     value = float(value)
-                except ValueError as e:
+                except ValueError:
                     raise DataQualityTypeCastError(f"Error converting {value} to number")
             else:
                 # must be a float...
@@ -728,7 +728,6 @@ class DataQualityCheck(models.Model):
                     except UnitMismatchError:
                         self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
-
 
                     try:
                         if not rule.maximum_valid(value):
