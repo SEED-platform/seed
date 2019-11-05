@@ -347,7 +347,13 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError as e:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -382,7 +388,13 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError as e:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -636,9 +648,13 @@ class DataQualityCheck(models.Model):
                 #                                             len(model_labels['label_ids'])))
 
         for rule in rules:
+            # create an extra data flag for the rule
+            is_extra_data = rule.field in row.extra_data
+
             # check if the field exists
-            if hasattr(row, rule.field) or rule.field in row.extra_data:
+            if hasattr(row, rule.field) or is_extra_data:
                 value = None
+
                 label_applied = False
                 display_name = rule.field
 
@@ -648,7 +664,7 @@ class DataQualityCheck(models.Model):
                     # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
                     if isinstance(value, ureg.Quantity) and rule.units == '':
                         value = value.magnitude
-                elif rule.field in row.extra_data:
+                elif is_extra_data:
                     value = row.extra_data[rule.field]
 
                     if ' (Invalid Footprint)' in rule.field:
@@ -661,6 +677,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_type_error(row.id, rule, display_name, value)
                         continue
 
+                # get the display name of the rule
                 if (rule.table_name, rule.field) in self.column_lookup:
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
@@ -685,6 +702,7 @@ class DataQualityCheck(models.Model):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id)
                 else:
+                    # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
@@ -693,6 +711,10 @@ class DataQualityCheck(models.Model):
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
+                        continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
                         continue
 
                     try:
@@ -703,6 +725,10 @@ class DataQualityCheck(models.Model):
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
+                        continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
                         continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
