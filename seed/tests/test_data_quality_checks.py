@@ -4,8 +4,9 @@
 :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
+import pint
 from django.forms.models import model_to_dict
+from quantityfield import ureg
 
 from seed.models.data_quality import (
     DataQualityCheck,
@@ -197,4 +198,33 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         self.assertFalse(rule.maximum_valid('9999'))
         with self.assertRaises(DataQualityTypeCastError):
             self.assertEqual(rule.maximum_valid('not-a-number'), '')
+
+    def test_min_value_quantities(self):
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='kBtu/ft**2/year')
+        self.assertTrue(rule.minimum_valid(15))
+        self.assertTrue(rule.minimum_valid('15'))
+        self.assertTrue(rule.maximum_valid(15))
+        self.assertTrue(rule.maximum_valid('15'))
+        self.assertFalse(rule.minimum_valid(5))
+        self.assertFalse(rule.minimum_valid('5'))
+        self.assertFalse(rule.maximum_valid(150))
+        self.assertFalse(rule.maximum_valid('150'))
+
+        # All of these should value since they are less than 10 (e.g. 5 kbtu/m2/year =~ 0.5 kbtu/ft2/year)
+        # different units on check data
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year"))) # ~ 0.5 kbtu/ft2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/ft**2/year")))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(1100, "kBtu/m**2/year"))) # ~ 102.2 kbtu/ft2/year
+
+        # these should all pass
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(10, "kBtu/ft**2/year")))
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(110, "kBtu/m**2/year"))) # 10.22 kbtu/ft2/year
+
+        # test the rule with different units
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='kBtu/m**2/year')
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(0.05, "kBtu/ft**2/year"))) # ~ 0.538 kbtu/m2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(15, "kBtu/ft**2/year"))) # ~ 161 kbtu/m2/year
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/m**2/year")))
 
