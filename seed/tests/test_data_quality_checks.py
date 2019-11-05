@@ -12,7 +12,10 @@ from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
     DataQualityTypeCastError,
+    ComparisonError,
+    UnitMismatchError,
 )
+from pint.errors import DimensionalityError
 from seed.models.models import ASSESSED_RAW
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -227,4 +230,13 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         self.assertFalse(rule.maximum_valid(ureg.Quantity(15, "kBtu/ft**2/year"))) # ~ 161 kbtu/m2/year
         self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))
         self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/m**2/year")))
+
+    def test_incorrect_pint_unit_conversions(self):
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='ft**2')
+        # this should error out nicely
+        with self.assertRaises(UnitMismatchError):
+            self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+
+        with self.assertRaises(UnitMismatchError):
+            self.assertFalse(rule.maximum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
 

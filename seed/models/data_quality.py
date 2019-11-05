@@ -7,15 +7,16 @@
 import json
 import logging
 import re
+from builtins import str
 from datetime import date, datetime
 from random import randint
 
 import pytz
-from builtins import str
 from django.apps import apps
 from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
+from pint.errors import DimensionalityError
 from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
@@ -40,6 +41,10 @@ class ComparisonError(Exception):
 
 
 class DataQualityTypeCastError(Exception):
+    pass
+
+
+class UnitMismatchError(Exception):
     pass
 
 
@@ -363,6 +368,8 @@ class Rule(models.Model):
                 else:
                     # If rule_min is undefined/None or value is okay, then it is valid.
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -403,6 +410,8 @@ class Rule(models.Model):
                     return False
                 else:
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -716,6 +725,10 @@ class DataQualityCheck(models.Model):
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_type_error(row.id, rule, display_name, s_value)
                         continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
+                        continue
+
 
                     try:
                         if not rule.maximum_valid(value):
@@ -729,6 +742,9 @@ class DataQualityCheck(models.Model):
                     except DataQualityTypeCastError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_type_error(row.id, rule, display_name, s_value)
+                        continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
@@ -871,6 +887,19 @@ class DataQualityCheck(models.Model):
                 'table_name': rule.table_name,
                 'message': display_name + ' could not be compared numerically',
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_dimension_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value.magnitude,
+                'table_name': rule.table_name,
+                'message': display_name + ' units mismatch with rule units',
+                'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
                 'severity': rule.get_severity_display(),
             }
         )
