@@ -183,14 +183,18 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
     def test_min_value(self):
         rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_NUMBER, min=0.5)
         self.assertTrue(rule.minimum_valid(1000))
+        self.assertTrue(rule.minimum_valid('1000'))
         self.assertFalse(rule.minimum_valid(0.1))
+        self.assertFalse(rule.minimum_valid('0.1'))
         with self.assertRaises(DataQualityTypeCastError):
             self.assertEqual(rule.minimum_valid('not-a-number'), '')
 
     def test_max_value(self):
         rule = Rule.objects.create(name='max_str_rule', data_type=Rule.TYPE_NUMBER, max=1000)
         self.assertTrue(rule.maximum_valid(0.1))
+        self.assertTrue(rule.maximum_valid('0.1'))
         self.assertFalse(rule.maximum_valid(9999))
+        self.assertFalse(rule.maximum_valid('9999'))
         with self.assertRaises(DataQualityTypeCastError):
             self.assertEqual(rule.maximum_valid('not-a-number'), '')
 
