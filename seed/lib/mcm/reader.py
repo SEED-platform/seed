@@ -358,7 +358,12 @@ class ExcelParser(object):
 
         def item(i, j):
             """returns a tuple (column header, cell value)"""
-            # self.cache_headers[j],
+            if self.cache_headers[j] == 'Postal Code' or 'ZIP':
+                return (
+                    self.get_value(sheet.cell(header_row, j)),
+                    str(self.get_value(sheet.cell(i, j))).zfill(5)
+                )
+
             return (
                 self.get_value(sheet.cell(header_row, j)),
                 self.get_value(sheet.cell(i, j))
