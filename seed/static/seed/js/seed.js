@@ -891,8 +891,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'data_quality_admin_controller',
         resolve: {
           columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+            var organization_id = $stateParams.organization_id;
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns().then(function (columns) {
+              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
@@ -903,7 +904,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return columns;
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns().then(function (columns) {
+              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
