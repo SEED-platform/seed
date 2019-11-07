@@ -102,6 +102,13 @@
             </div>
         </span>
 
+        <span>
+            <div class="form-check">
+                <input type="checkbox" ng-model="showSubOrgData" ng-change="toggle_sub_org_data()">
+                <span>{$:: 'Show data from sub-organizations' | translate $}</span>
+            </div>
+        </span>
+
         <span ng-show="profiles.length > 0">
             <label>{$:: 'List Settings Profile' | translate $}:</label>
             <div style="display: inline-block;">

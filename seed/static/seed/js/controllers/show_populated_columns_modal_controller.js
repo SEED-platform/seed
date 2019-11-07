@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
 
         var promise;
         if ($scope.inventory_type === 'properties') {
-          promise = inventory_service.get_properties(1, undefined, $scope.cycle, -1).then(function (inv) {
+          promise = inventory_service.get_properties(1, undefined, $scope.cycle, -1, false).then(function (inv) {
             return inv.results;
           });
         } else if ($scope.inventory_type === 'taxlots') {

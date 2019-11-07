@@ -9,6 +9,7 @@ All rights reserved.  # NOQA
 """
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import detail_route, list_route
@@ -209,6 +210,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
+        show_sub_org_data = request.query_params.get('show_sub_org_data', 'false') == 'true'
         # check if there is a query paramater for the profile_id. If so, then use that one
         profile_id = request.query_params.get('profile_id', profile_id)
 
@@ -234,16 +236,27 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                     'results': []
                 })
 
+        organization = Organization.objects.get(id=org_id)
+        sub_organizations = []
+        org_filter = Q(property__organization_id=organization.id)
+        cycle_filter = Q(cycle=cycle)
+        # Matches cycles that start and end during the organization's current
+        # cycle
+        if show_sub_org_data:
+            for sub_org in organization.child_orgs.all():
+                org_filter = org_filter | Q(property__organization_id=sub_org.id)
+                sub_cycle = self._find_org_cycle(cycle, sub_org)
+                if sub_cycle:
+                    cycle_filter = cycle_filter | Q(cycle=sub_cycle)
+
+        final_filter = org_filter & cycle_filter
         # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
         if 'inventory_ids' in request.data and request.data['inventory_ids']:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property_id__in=request.data['inventory_ids'],
-                        property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
-        else:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+            final_filter = Q(property_id__in=request.data['inventory_ids']) & final_filter
+
+        property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
+            .filter(final_filter) \
+            .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -306,6 +319,21 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         }
 
         return JsonResponse(response)
+
+    def _find_org_cycle(self, cycle, organization):
+        """
+        Matches the first cycle of a organization that starts and ends
+        within the range of the cycle provided
+
+        :param cycle: Cycle
+        :param organization: Organization
+        :return: Cycle, or None if there is no cycle that matches
+        """
+        range_start = cycle.start
+        range_end = cycle.end
+        cycles = organization.cycles.filter(start__gte=range_start,
+                                            end__gte=range_end)
+        return cycles.first()
 
     def _move_relationships(self, old_state, new_state):
         """
@@ -388,6 +416,10 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
               description: The number of items per page to return
               required: false
               paramType: query
+            - name: show_sub_org_data
+              description: Show data from sub-organizations as well
+              required: false
+              paramTpe: query
             - name: profile_id
               description: Either an id of a list settings profile, or undefined
               paramType: body

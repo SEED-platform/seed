@@ -302,7 +302,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               var data = new Array($scope.selectedOrder.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
+                return inventory_service.get_properties(1, undefined, undefined, -1, false, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -596,7 +596,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         spinner_utility.show();
         var promise;
         if ($scope.inventory_type === 'properties') {
-          promise = inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
+          promise = inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined, $scope.showSubOrgData).then(function (properties) {
             processData(properties.results);
             $scope.pagination = properties.pagination;
             spinner_utility.hide();
@@ -629,6 +629,12 @@ angular.module('BE.seed.controller.inventory_list', [])
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           updateApplicableLabels(current_labels);
         });
+      };
+
+      $scope.toggle_sub_org_data = function() {
+        // TODO: In refresh_objects(), showSubOrgData is false. Need to find
+        // out why
+        refresh_objects();
       };
 
       processData();

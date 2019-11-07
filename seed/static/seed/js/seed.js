@@ -576,7 +576,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
           }],
           propertyInventory: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_properties(1, undefined, undefined, -1);
+            return inventory_service.get_properties(1, undefined, undefined, -1, false);
           }],
           taxlotInventory: ['inventory_service', function (inventory_service) {
             return inventory_service.get_taxlots(1, undefined, undefined, -1);
@@ -1076,7 +1076,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory: ['$stateParams', 'inventory_service', 'current_profile', function ($stateParams, inventory_service, current_profile) {
             var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, profile_id);
+              return inventory_service.get_properties(1, undefined, undefined, profile_id, false);
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
             }
@@ -1122,7 +1122,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             // if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_properties(1, undefined, undefined, undefined);
+            return inventory_service.get_properties(1, undefined, undefined, undefined, false);
             // } else if ($stateParams.inventory_type === 'taxlots') {
             //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
             // }

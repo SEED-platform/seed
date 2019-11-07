@@ -79,7 +79,7 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
       // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
       var promises = [];
-      promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined));
+      promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined, false));
       promises.push(inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined));
 
       return $q.all(promises).then(function (results) {
