@@ -968,6 +968,17 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     chunks = []
     for batch_chunk in batch(parser.data, 100):
+        for i in range(len(batch_chunk)):
+            if len(str(batch_chunk[i]['postal code'])) < 5:
+                batch_chunk[i]['postal code'] = str(batch_chunk[i]['postal code']).zfill(5)
+            elif '-' in str(batch_chunk[i]['postal code']):
+                zip = str(batch_chunk[i]['postal code']).split('-')[0]
+                ext = str(batch_chunk[i]['postal code']).split('-')[1]
+                if zip and len(str(zip)) < 5:
+                    zip = zip.zfill(5)
+                if ext and len(str(ext)) < 4:
+                    ext = ext.zfill(4)
+                batch_chunk[i]['postal code'] = zip + '-' + ext
         import_file.num_rows += len(batch_chunk)
         chunks.append(batch_chunk)
     import_file.save()
