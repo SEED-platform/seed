@@ -1099,9 +1099,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
@@ -1133,9 +1131,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return cycle_service.get_cycles();
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
@@ -1196,9 +1192,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
-            return label_service.get_labels([$stateParams.view_id], {
-              inventory_type: $stateParams.inventory_type
-            });
+            return label_service.get_labels($stateParams.inventory_type, [$stateParams.view_id]);
           }]
         }
       })
