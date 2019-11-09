@@ -54,26 +54,28 @@ angular.module('BE.seed.service.label', [])
        }]
        */
 
-      function get_labels (selected, search_params) {
-        return get_labels_for_org(user_service.get_organization().id, selected, search_params);
+      // Passing no arguments will return all labels, but no information about what properties/taxlots they're applied to
+      // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
+      // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
+      function get_labels(inventory_type, filter_ids) {
+        return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids);
       }
 
-      function get_labels_for_org (org_id, selected, search_params) {
-        var searchArgs = _.assignIn({
+      function get_labels_for_org(org_id, inventory_type, filter_ids) {
+        var params = {
           organization_id: org_id
-        }, search_params);
-
-        // If no inventory_type specified use 'property_view' just to get the list of all labels
-        // Used to specify which Label-connected Model to use in the the back-end.
-        searchArgs.inventory_type = (searchArgs.inventory_type === 'taxlots') ? 'taxlot_view' : 'property_view';
-
-        return $http.post('/api/v2/labels/filter/', {
-          selected: selected
-        }, {
-          params: searchArgs
-        }).then(function (response) {
-          return _.map(response.data, update_label_w_local_props);
-        });
+        };
+        var body = null;
+        if (inventory_type === 'properties') {
+          params.inventory_type = 'property_view';
+          body = {selected: filter_ids};
+        } else if (inventory_type === 'taxlots') {
+          params.inventory_type = 'taxlot_view';
+          body = {selected: filter_ids};
+        }
+        return $http.post('/api/v2/labels/filter/', body, {
+          params: params
+        }).then(map_labels);
       }
 
 
@@ -96,11 +98,10 @@ angular.module('BE.seed.service.label', [])
       function create_label_for_org (org_id, label) {
         return $http.post('/api/v2/labels/', label, {
           params: {
-            inventory_type: 'property_view',
             organization_id: org_id
           }
         }).then(function (response) {
-          return update_label_w_local_props(response.data);
+          return map_label(response.data);
         });
       }
 
@@ -126,7 +127,7 @@ angular.module('BE.seed.service.label', [])
             organization_id: org_id
           }
         }).then(function (response) {
-          return update_label_w_local_props(response.data);
+          return map_label(response.data);
         });
       }
 
@@ -167,21 +168,19 @@ angular.module('BE.seed.service.label', [])
        @param {array} remove_label_ids         An array of label ids to remove from selected properties.
        @param {array} selected                 An array of inventory ids corresponding to selected properties or taxlots
        (should be empty to get all).
-       @param {object} search_params           A reference to the Search object, which includes
-       properties for active filters, and inventory_type.
        @return {object}                        A promise object that resolves server response
        (success or error).
 
        */
-      function update_property_labels (add_label_ids, remove_label_ids, selected, search_params) {
+      function update_property_labels (add_label_ids, remove_label_ids, selected) {
         return $http.put('/api/v2/labels-property/', {
           inventory_ids: selected,
           add_label_ids: add_label_ids,
           remove_label_ids: remove_label_ids
         }, {
-          params: _.assignIn({
+          params: {
             organization_id: user_service.get_organization().id
-          }, search_params)
+          }
         }).then(function (response) {
           return response.data;
         });
@@ -197,23 +196,19 @@ angular.module('BE.seed.service.label', [])
        @param {array} remove_label_ids         An array of label ids to remove from selected properties.
        @param {array} selected                 An array of Tax Lot ids corresponding to selected Tax Lots
        (should be empty if select_all_checkbox is true).
-       @param {boolean} select_all_checkbox    A boolean indicating whether user checked 'Select all' checkbox.
-       @param {object} search_params           A reference to the Search object, which includes
-       properties for active filters.
-
        @return {object}                        A promise object that resolves server response
        (success or error).
 
        */
-      function update_taxlot_labels (add_label_ids, remove_label_ids, selected, search_params) {
+      function update_taxlot_labels (add_label_ids, remove_label_ids, selected) {
         return $http.put('/api/v2/labels-taxlot/', {
           inventory_ids: selected,
           add_label_ids: add_label_ids,
           remove_label_ids: remove_label_ids
         }, {
-          params: _.assignIn({
+          params: {
             organization_id: user_service.get_organization().id
-          }, search_params)
+          }
         }).then(function (response) {
           return response.data;
         });
@@ -282,14 +277,16 @@ angular.module('BE.seed.service.label', [])
       /*  Add a few properties to the label object so that it
        works well with UI components.
        */
-      function update_label_w_local_props (lbl) {
-        if (lbl) {
-          // add bootstrap label class names
-          lbl.label = lookup_label(lbl.color);
-          // create 'text' property needed for ngTagsInput control
-          lbl.text = lbl.name;
-        }
-        return lbl;
+      function map_labels(response) {
+        return _.map(response.data, map_label);
+      }
+
+      function map_label(label) {
+        // add bootstrap label class names
+        label.label = lookup_label(label.color);
+        // create 'text' property needed for ngTagsInput control
+        label.text = label.name;
+        return label;
       }
 
 

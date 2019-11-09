@@ -98,7 +98,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             }
             if (rule.label) {
               // console.log('load: ', rule.label)
-              var match = _.find(labels_payload, function (label) {
+              var match = _.find($scope.all_labels, function (label) {
                 // console.log('found: ', label)
                 return label.id === rule.label;
               });
@@ -315,20 +315,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             }
           }
         });
-        modalInstance.result.then(function (returnedLabels) {
-          rule.label = returnedLabels;
-
-          //code for multiple labels
-          // label_service.get_labels().then(function (allLabels) {
-          //   console.log('all: ', allLabels)
-          //   rule.label = _.filter(allLabels, function (label) {
-          //     // console.log(label.id + ' and ' + returnedLabels)
-          //     return _.includes(returnedLabels, label.id);
-          //   });
-          // });
-
-        }, function () {
-          // Do nothing
+        modalInstance.result.then(function (returnedLabel) {
+          rule.label = returnedLabel;
+        }).finally(function() {
+          // refresh labels
+          label_service.get_labels_for_org($scope.org.org_id).then(function (labels) {
+            $scope.all_labels = labels;
+          });
         });
       };
 

@@ -9,6 +9,7 @@ def get_version():
 
     return j['version']
 
+
 setup(
     name='seed',
     version=get_version(),
