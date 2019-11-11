@@ -46,6 +46,64 @@ angular.module('BE.seed.controller.mapping', [])
       $translate,
       i18nService
     ) {
+
+      $scope.mock_mappings = {
+        "(None selected)": [],
+        "PM Imports as of 20191104": [
+          {"from_field": "Property Id", "from_units": null, "to_field": "pm_property_id", "to_table_name": "PropertyState"},
+          {"from_field": "Property Name", "from_units": null, "to_field": "property_name", "to_table_name": "PropertyState"},
+          {"from_field": "Parent Property Id", "from_units": null, "to_field": "pm_parent_property_id", "to_table_name": "PropertyState"},
+          {"from_field": "Parent Property Name", "from_units": null, "to_field": "Some Parent Property Name", "to_table_name": "PropertyState"},
+          {"from_field": "Year Ending", "from_units": null, "to_field": "Year Ending Test", "to_table_name": "PropertyState"},
+          {"from_field": "Electricity Use - Grid Purchase (kWh)", "from_units": null, "to_field": "Electricity Use - Grid Purchase (kWh)", "to_table_name": "PropertyState"},
+          {"from_field": "Natural Gas Use (therms)", "from_units": null, "to_field": "Natural Gas Use (therms)", "to_table_name": "PropertyState"},
+          {"from_field": "ENERGY STAR Score", "from_units": null, "to_field": "energy_score", "to_table_name": "PropertyState"},
+          {"from_field": "Site Energy Use (kBtu)", "from_units": "GJ/m**2/year", "to_field": "site_eui_modeled", "to_table_name": "PropertyState"},
+          {"from_field": "Source Energy Use (kBtu)", "from_units": "kBtu/m**2/year", "to_field": "source_eui_modeled", "to_table_name": "PropertyState"},
+          {"from_field": "Site EUI (kBtu/ft2)", "from_units": "kWh/m**2/year", "to_field": "site_eui", "to_table_name": "PropertyState"},
+          {"from_field": "Source EUI (kBtu/ft2)", "from_units": "MJ/m**2/year", "to_field": "source_eui", "to_table_name": "PropertyState"},
+          {"from_field": "Total GHG Emissions (Metric Tons CO2e)", "from_units": null, "to_field": "Total GHG Emissions (Metric Tons CO2e)", "to_table_name": "PropertyState"},
+          {"from_field": "Total GHG Emissions Intensity (kgCO2e/ft2)", "from_units": null, "to_field": "Total GHG Emissions Intensity (kgCO2e/ft2)", "to_table_name": "PropertyState"},
+          {"from_field": "On Behalf Of", "from_units": null, "to_field": "On Behalf Of", "to_table_name": "PropertyState"},
+          {"from_field": "Organization", "from_units": null, "to_field": "Some Organization Test Change", "to_table_name": "PropertyState"},
+          {"from_field": "Phone", "from_units": null, "to_field": "owner", "to_table_name": "PropertyState"},
+          {"from_field": "Email", "from_units": null, "to_field": "owner_email", "to_table_name": "PropertyState"},
+          {"from_field": "Generation Date", "from_units": null, "to_field": "generation_date", "to_table_name": "PropertyState"},
+          {"from_field": "Release Date", "from_units": null, "to_field": "release_date", "to_table_name": "PropertyState"}
+        ],
+        "PM Imports with missing email as of 20191104": [
+          {"from_field": "Property Id", "from_units": null, "to_field": "pm_property_id", "to_table_name": "PropertyState"},
+          {"from_field": "Property Name", "from_units": null, "to_field": "property_name", "to_table_name": "PropertyState"},
+          {"from_field": "Parent Property Id", "from_units": null, "to_field": "pm_parent_property_id", "to_table_name": "PropertyState"},
+          {"from_field": "Parent Property Name", "from_units": null, "to_field": "Some Parent Property Name", "to_table_name": "PropertyState"},
+          {"from_field": "Year Ending", "from_units": null, "to_field": "Year Ending Test", "to_table_name": "PropertyState"},
+          {"from_field": "Electricity Use - Grid Purchase (kWh)", "from_units": null, "to_field": "Electricity Use - Grid Purchase (kWh)", "to_table_name": "PropertyState"},
+          {"from_field": "Natural Gas Use (therms)", "from_units": null, "to_field": "Natural Gas Use (therms)", "to_table_name": "PropertyState"},
+          {"from_field": "ENERGY STAR Score", "from_units": null, "to_field": "energy_score", "to_table_name": "PropertyState"},
+          {"from_field": "Site Energy Use (kBtu)", "from_units": "GJ/m**2/year", "to_field": "site_eui_modeled", "to_table_name": "PropertyState"},
+          {"from_field": "Source Energy Use (kBtu)", "from_units": "kBtu/m**2/year", "to_field": "source_eui_modeled", "to_table_name": "PropertyState"},
+          {"from_field": "Site EUI (kBtu/ft2)", "from_units": "kWh/m**2/year", "to_field": "site_eui", "to_table_name": "PropertyState"},
+          {"from_field": "Source EUI (kBtu/ft2)", "from_units": "MJ/m**2/year", "to_field": "source_eui", "to_table_name": "PropertyState"},
+          {"from_field": "Total GHG Emissions (Metric Tons CO2e)", "from_units": null, "to_field": "Total GHG Emissions (Metric Tons CO2e)", "to_table_name": "PropertyState"},
+          {"from_field": "Total GHG Emissions Intensity (kgCO2e/ft2)", "from_units": null, "to_field": "Total GHG Emissions Intensity (kgCO2e/ft2)", "to_table_name": "PropertyState"},
+          {"from_field": "On Behalf Of", "from_units": null, "to_field": "On Behalf Of", "to_table_name": "PropertyState"},
+          {"from_field": "Organization", "from_units": null, "to_field": "Some Organization Test Change", "to_table_name": "PropertyState"},
+          {"from_field": "Phone", "from_units": null, "to_field": "owner", "to_table_name": "PropertyState"},
+          {"from_field": "Generation Date", "from_units": null, "to_field": "generation_date", "to_table_name": "PropertyState"},
+          {"from_field": "Release Date", "from_units": null, "to_field": "release_date", "to_table_name": "PropertyState"}
+        ],
+      };
+
+      $scope.mock_presets = Object.keys($scope.mock_mappings);
+      $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
+      $scope.apply_mapping_preset = function () {
+        // if changes were made to currently applied preset, open modal to confirm action
+          // if confirmed, initialize_mappings and change applied_preset to selected_preset
+          // if cancelled, do nothing
+        $scope.applied_preset = $scope.selected_preset;
+        $scope.initialize_mappings();
+      };
+
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
       var stripRegion = function (languageTag) {
@@ -213,15 +271,21 @@ angular.module('BE.seed.controller.mapping', [])
        * initialize_mappings: prototypical inheritance for all the raw columns
        * called by init()
        */
-      var initialize_mappings = function () {
+      $scope.initialize_mappings = function () {
+        $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
-          var suggestion = $scope.suggested_mappings[name];
+          var suggestion = _.find(
+              $scope.mock_mappings[$scope.applied_preset],
+              {from_field: name}
+          ) || {};
 
           var col = {
+            from_units: suggestion.from_units,
             name: name,
-            suggestion_column_name: suggestion[1],
-            suggestion_table_name: suggestion[0],
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
+            raw_data: _.map(first_five_rows_payload.first_five_rows, name),
+            suggestion: suggestion.to_field,
+            suggestion_column_name: suggestion.to_field,
+            suggestion_table_name: suggestion.to_table_name,
           };
 
           var match;
@@ -238,16 +302,11 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
-          } else {
-            // No match, generate title-cased name
-            col.suggestion = $filter('titleCase')(col.suggestion_column_name);
-            col.suggestion_column_name = null;
           }
-
-          col.from_units = get_default_quantity_units(col);
 
           $scope.mappings.push(col);
         });
+        console.log($scope.mappings);
       };
 
       /**
@@ -568,7 +627,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var init = function () {
-        initialize_mappings();
+        $scope.initialize_mappings();
 
         $scope.updateColDuplicateStatus();
         $scope.updateInventoryTypeDropdown();

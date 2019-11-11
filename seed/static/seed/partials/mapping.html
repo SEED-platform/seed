@@ -76,6 +76,11 @@
     </div>
     <div class="section_content_container" style="padding: 0 16px;">
         <div class="section_content">
+            <div class="section_action_container right_wide settings_profile">
+              <span translate>Column Mapping Preset</span>:
+              <select class="form-control input-sm" ng-model="selected_preset" ng-options="option for option in mock_presets"></select>
+              <button type="button" class="btn btn-primary" ng-click="apply_mapping_preset()" ng-hide="import_file.matching_done" ng-disabled="selected_preset === applied_preset" translate>Apply Preset</button>
+            </div>
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
                 <div class="alert alert-warning" ng-show="!suggested_fields_present() && !import_file.matching_done" translate>To increase geocode results, it's highly recommended that Address Line 1, City, State, and Postal Code are all provided.</div>
