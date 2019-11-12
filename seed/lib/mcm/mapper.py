@@ -100,12 +100,13 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
         table_name, mapped_column_name, display_name, is_extra_data = mapping.get(raw_column_name)
 
         # special postal case:
-        if mapped_column_name == 'postal_code' and column_value:
-            if '-' in str(column_value):
-                zip = str(column_value).split('-')[0].zfill(5)
-                ext = str(column_value).split('-')[1].zfill(4)
-                column_value = zip + '-' + ext
-            column_value = str(column_value).zfill(5)
+        if mapped_column_name == 'postal_code':
+            if column_value:
+                if '-' in str(column_value):
+                    postal = str(column_value).split('-')[0].zfill(5)
+                    ext = str(column_value).split('-')[1].zfill(4)
+                    column_value = postal + '-' + ext
+                column_value = str(column_value).zfill(5)
 
         cleaned_value = None
         if cleaner:
