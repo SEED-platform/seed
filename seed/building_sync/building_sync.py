@@ -113,6 +113,14 @@ class BuildingSync(object):
                 "required": False,  # temporarily make this False until AT can handle it correctly.
                 "type": "string",
             },
+            "ubid": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierLabel",
+                "key_path_value": "UBID",
+                "value_path_name": "auc:IdentifierValue",
+                "required": False,
+                "type": "string",
+            },
             "custom_id_1": {
                 "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
                 "key_path_name": "auc:IdentifierCustomName",

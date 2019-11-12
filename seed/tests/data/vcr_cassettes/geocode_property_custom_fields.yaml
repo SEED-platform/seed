@@ -18,7 +18,7 @@ interactions:
         Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
         2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"3001
         Brighton Blvd, suite 2693, Denver, Colorado, 80216"},"locations":[{"street":"3001
-        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r11913793|p227333290|n14782249","unknownInput":"","type":"s","latLng":{"lat":39.764984,"lng":-104.985765},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764984,-104.985765|marker-sm-50318A-1&scalebar=true&zoom=15&rand=24544367"}]}]}'
+        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r11913793|p227333290|n14782249","unknownInput":"","type":"s","latLng":{"lat":39.764984,"lng":-104.985765},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764984,-104.985765|marker-sm-50318A-1&scalebar=true&zoom=15&rand=1904154842"}]}]}'
     headers:
       Access-Control-Allow-Methods:
       - OPTIONS,GET,POST
@@ -29,13 +29,13 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Sat, 12 Oct 2019 17:07:09 GMT
+      - Sat, 12 Oct 2019 17:07:27 GMT
       Expires:
       - Mon, 20 Dec 1998 01:00:00 GMT
       GeocodeTransactionCount:
       - '1'
       Last-Modified:
-      - Sat, 12 Oct 2019 17:07:09 GMT
+      - Sat, 12 Oct 2019 17:07:27 GMT
       Pragma:
       - no-cache
       ReverseGeocodeTransactionCount:
@@ -43,7 +43,7 @@ interactions:
       Server:
       - Apache-Coyote/1.1
       Set-Cookie:
-      - JSESSIONID=EC601BE5C497B7BCCF80EB7AE6ABFE90; Path=/; HttpOnly; Secure
+      - JSESSIONID=54BC26E07995468F16192DEA72A3208F; Path=/; HttpOnly; Secure
       Strict-Transport-Security:
       - max-age=0
       Transfer-Encoding:

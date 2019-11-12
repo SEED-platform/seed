@@ -101,7 +101,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
         var removeLabelIDs = _.chain($scope.labels).filter('is_checked_remove').map('id').value().sort();
 
         if (inventory_type === 'properties') {
-          label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
+          label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(function (data) {
             if (data.num_updated === 1) {
               notification.primary(data.num_updated + ' property updated.');
             } else {
@@ -113,7 +113,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
           }
           );
         } else if (inventory_type === 'taxlots') {
-          label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids, {}).then(function (data) {
+          label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(function (data) {
             if (data.num_updated === 1) {
               notification.primary(data.num_updated + ' tax lot updated.');
             } else {
@@ -139,9 +139,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', [])
         $scope.initialize_new_label();
         //get labels with 'is_applied' property by passing in current search state
         $scope.loading = true;
-        label_service.get_labels(inventory_ids, {
-          inventory_type: inventory_type
-        }).then(function (labels) {
+        label_service.get_labels(inventory_type, inventory_ids).then(function (labels) {
           $scope.labels = labels;
           $scope.loading = false;
         });
