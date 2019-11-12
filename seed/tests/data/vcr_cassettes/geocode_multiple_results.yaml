@@ -1,0 +1,133 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.20.0
+    method: GET
+    uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%22101+Market+Street%2C+Denver%2C+California%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
+  response:
+    body:
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+        Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
+        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"101
+        Market Street, Denver, California"},"locations":[{"street":"101 Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Occidental","adminArea5Type":"City","adminArea4":"Sonoma","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95465","geocodeQualityCode":"P1ACX","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r7818601|p23781171|n9516106","unknownInput":"","type":"s","latLng":{"lat":38.424456,"lng":-122.962192},"displayLatLng":{"lat":38.424333,"lng":-122.96209},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=38.424456,-122.962192|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-1026963477"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Diego","adminArea5Type":"City","adminArea4":"San Diego","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"92101-6800","geocodeQualityCode":"P1ACX","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"R","linkId":"r7267579|p106418581|n8839741","unknownInput":"","type":"s","latLng":{"lat":32.711405,"lng":-117.163306},"displayLatLng":{"lat":32.71092,"lng":-117.163308},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=32.711405,-117.163306|marker-sm-50318A-2&scalebar=true&zoom=15&rand=1443122952"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Planada","adminArea5Type":"City","adminArea4":"Merced","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95365-8062","geocodeQualityCode":"P1ACX","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r10512221|p180848214|n12919832","unknownInput":"","type":"s","latLng":{"lat":37.289466,"lng":-120.322259},"displayLatLng":{"lat":37.289285,"lng":-120.322481},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=37.289466,-120.322259|marker-sm-50318A-3&scalebar=true&zoom=15&rand=1619422523"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Francisco","adminArea5Type":"City","adminArea4":"San Francisco","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"94105-1520","geocodeQualityCode":"P1ACX","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r9897208|p25902405|n12144878","unknownInput":"","type":"s","latLng":{"lat":37.793398,"lng":-122.396185},"displayLatLng":{"lat":37.792802,"lng":-122.395431},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=37.793398,-122.396185|marker-sm-50318A-4&scalebar=true&zoom=15&rand=1387587375"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Venice","adminArea5Type":"City","adminArea4":"Los
+        Angeles","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"90291-3676","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5718144|i12797403","unknownInput":"","type":"s","latLng":{"lat":33.98835,"lng":-118.47268},"displayLatLng":{"lat":33.988524,"lng":-118.472779},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=33.98835,-118.47268|marker-sm-50318A-5&scalebar=true&zoom=15&rand=1337894034"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Folsom","adminArea5Type":"City","adminArea4":"Sacramento","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95630-3105","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5718121|i7873791","unknownInput":"","type":"s","latLng":{"lat":38.67619,"lng":-121.161125},"displayLatLng":{"lat":38.676058,"lng":-121.161275},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=38.67619,-121.161125|marker-sm-50318A-6&scalebar=true&zoom=15&rand=2011853426"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Port
+        Hueneme","adminArea5Type":"City","adminArea4":"Ventura","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"93041","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5717691|i5852587","unknownInput":"","type":"s","latLng":{"lat":34.146613,"lng":-119.20042},"displayLatLng":{"lat":34.146611,"lng":-119.20062},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=34.146613,-119.20042|marker-sm-50318A-7&scalebar=true&zoom=15&rand=1064453209"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Andreas","adminArea5Type":"City","adminArea4":"Calaveras","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95249-9601","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5724014|i11079877","unknownInput":"","type":"s","latLng":{"lat":38.195797,"lng":-120.682628},"displayLatLng":{"lat":38.195601,"lng":-120.682667},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=38.195797,-120.682628|marker-sm-50318A-8&scalebar=true&zoom=15&rand=-1808976494"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Rafael","adminArea5Type":"City","adminArea4":"Marin","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"94901-5803","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5716793|i7179630","unknownInput":"","type":"s","latLng":{"lat":37.962063,"lng":-122.505889},"displayLatLng":{"lat":37.961891,"lng":-122.505989},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=37.962063,-122.505889|marker-sm-50318A-9&scalebar=true&zoom=15&rand=-1724545697"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Santa
+        Cruz","adminArea5Type":"City","adminArea4":"Santa Cruz","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95060-2926","geocodeQualityCode":"L1ACX","geocodeQuality":"ADDRESS","dragPoint":false,"sideOfStreet":"L","linkId":"rnr5718135|i7871660","unknownInput":"","type":"s","latLng":{"lat":36.98042,"lng":-122.018987},"displayLatLng":{"lat":36.980396,"lng":-122.019186},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=36.98042,-122.018987|marker-sm-50318A-10&scalebar=true&zoom=15&rand=178673446"}]}]}'
+    headers:
+      Access-Control-Allow-Methods:
+      - OPTIONS,GET,POST
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache, must-revalidate
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 21 Oct 2019 20:25:21 GMT
+      Expires:
+      - Mon, 20 Dec 1998 01:00:00 GMT
+      GeocodeTransactionCount:
+      - '1'
+      Last-Modified:
+      - Mon, 21 Oct 2019 20:25:21 GMT
+      Pragma:
+      - no-cache
+      ReverseGeocodeTransactionCount:
+      - '0'
+      Server:
+      - Apache-Coyote/1.1
+      Set-Cookie:
+      - JSESSIONID=4E31BC0606632DF6385698B2B3E40ADD; Path=/; HttpOnly; Secure
+      Strict-Transport-Security:
+      - max-age=0
+      Transfer-Encoding:
+      - chunked
+      status:
+      - success
+      transactionWeight:
+      - '1.0'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.20.0
+    method: GET
+    uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%22101+Market+Street%2C+California%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
+  response:
+    body:
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+        Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
+        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"101
+        Market Street, California"},"locations":[{"street":"101 Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Diego","adminArea5Type":"City","adminArea4":"San Diego","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"92101-6800","geocodeQualityCode":"P1ABA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"R","linkId":"r7267579|p106418581|n8839741","unknownInput":"","type":"s","latLng":{"lat":32.711405,"lng":-117.163306},"displayLatLng":{"lat":32.71092,"lng":-117.163308},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=32.711405,-117.163306|marker-sm-50318A-1&scalebar=true&zoom=15&rand=1501036533"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Occidental","adminArea5Type":"City","adminArea4":"Sonoma","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95465","geocodeQualityCode":"P1ABA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r7818601|p23781171|n9516106","unknownInput":"","type":"s","latLng":{"lat":38.424456,"lng":-122.962192},"displayLatLng":{"lat":38.424333,"lng":-122.96209},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=38.424456,-122.962192|marker-sm-50318A-2&scalebar=true&zoom=15&rand=-1560502256"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Planada","adminArea5Type":"City","adminArea4":"Merced","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"95365-8062","geocodeQualityCode":"P1ABA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r10512221|p180848214|n12919832","unknownInput":"","type":"s","latLng":{"lat":37.289466,"lng":-120.322259},"displayLatLng":{"lat":37.289285,"lng":-120.322481},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=37.289466,-120.322259|marker-sm-50318A-3&scalebar=true&zoom=15&rand=47550263"},{"street":"101
+        Market St","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"San
+        Francisco","adminArea5Type":"City","adminArea4":"San Francisco","adminArea4Type":"County","adminArea3":"CA","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"94105-1520","geocodeQualityCode":"P1ABA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r9897208|p25902405|n12144878","unknownInput":"","type":"s","latLng":{"lat":37.793398,"lng":-122.396185},"displayLatLng":{"lat":37.792802,"lng":-122.395431},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=37.793398,-122.396185|marker-sm-50318A-4&scalebar=true&zoom=15&rand=1983646096"}]}]}'
+    headers:
+      Access-Control-Allow-Methods:
+      - OPTIONS,GET,POST
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache, must-revalidate
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 21 Oct 2019 20:25:21 GMT
+      Expires:
+      - Mon, 20 Dec 1998 01:00:00 GMT
+      GeocodeTransactionCount:
+      - '1'
+      Last-Modified:
+      - Mon, 21 Oct 2019 20:25:21 GMT
+      Pragma:
+      - no-cache
+      ReverseGeocodeTransactionCount:
+      - '0'
+      Server:
+      - Apache-Coyote/1.1
+      Set-Cookie:
+      - JSESSIONID=148C4D4E57FC0907B22629752B61F432; Path=/; HttpOnly; Secure
+      Strict-Transport-Security:
+      - max-age=0
+      Transfer-Encoding:
+      - chunked
+      status:
+      - success
+      transactionWeight:
+      - '1.0'
+    status:
+      code: 200
+      message: OK
+version: 1

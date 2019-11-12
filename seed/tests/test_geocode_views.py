@@ -105,6 +105,12 @@ class GeocodeViewTests(TestCase):
         tax_lot_low = TaxLotState(**tax_lot_low_details)
         tax_lot_low.save()
 
+        tax_lot_manual_details = self.tax_lot_state_factory.get_details()
+        tax_lot_manual_details["organization_id"] = self.org.id
+        tax_lot_manual_details["geocoding_confidence"] = "Manually geocoded (N/A)"
+        tax_lot_manual = TaxLotState(**tax_lot_manual_details)
+        tax_lot_manual.save()
+
         tax_lot_missing_details = self.tax_lot_state_factory.get_details()
         tax_lot_missing_details["organization_id"] = self.org.id
         tax_lot_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
@@ -125,6 +131,7 @@ class GeocodeViewTests(TestCase):
                 tax_lot_none.id,
                 tax_lot_high.id,
                 tax_lot_low.id,
+                tax_lot_manual.id,
                 tax_lot_missing.id
             ]
         }
@@ -144,6 +151,7 @@ class GeocodeViewTests(TestCase):
                 "not_geocoded": 1,
                 "high_confidence": 1,
                 "low_confidence": 1,
+                "manual": 1,
                 "missing_address_components": 1
             }
         }
