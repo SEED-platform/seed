@@ -626,9 +626,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var get_labels = function () {
-        label_service.get_labels([], {
-          inventory_type: $scope.inventory_type
-        }).then(function (current_labels) {
+        label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           updateApplicableLabels(current_labels);
         });
       };
