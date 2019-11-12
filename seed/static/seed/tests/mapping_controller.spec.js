@@ -6,7 +6,7 @@ describe('controller: mapping_controller', function () {
   // globals set up and used in each test scenario
   var mock_inventory_service, controller;
   var mapping_controller_scope;
-  var timeout, mock_user_service;
+  var timeout, mock_geocode_service, mock_user_service, mock_organization_service;
 
 
   // make the seed app available for each test
@@ -17,15 +17,31 @@ describe('controller: mapping_controller', function () {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, organization_service, user_service) {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
       timeout = $timeout;
       mock_user_service = user_service;
+      mock_geocode_service = geocode_service;
+      mock_organization_service = organization_service;
 
       spyOn(mock_user_service, 'set_default_columns')
         .andCallFake(function () {
           return undefined;
+        });
+
+      spyOn(mock_geocode_service, 'check_org_has_api_key')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+          });
+        });
+
+      spyOn(mock_organization_service, 'geocoding_columns')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+          });
         });
     });
   });
@@ -239,6 +255,8 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should show suggested mappings', function () {
@@ -253,6 +271,8 @@ describe('controller: mapping_controller', function () {
     var first_column = mappings[0];
 
     expect(first_column.suggestion).toBe('PM Property ID');
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should detect duplicates', function () {
@@ -276,6 +296,9 @@ describe('controller: mapping_controller', function () {
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
+
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   // Needs to be an e2e test.
@@ -306,6 +329,8 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(false);
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should disable the "show & review buildings" button if duplicates are present', function () {
@@ -322,6 +347,8 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(true);
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should get mappings in an API friendly way', function () {
@@ -345,6 +372,9 @@ describe('controller: mapping_controller', function () {
       to_field_display_name: 'Jurisdiction Tax Lot ID',
       to_table_name: 'TaxLotState'
     });
+
+  expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+  expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   // Needs to be e2e test now.

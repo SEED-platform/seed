@@ -138,6 +138,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
+            'geocoding_order': 0,
             'related': False,
             'sharedFieldType': 'None',
             'pinnedLeft': True,
