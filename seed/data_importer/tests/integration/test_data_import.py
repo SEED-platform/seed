@@ -389,3 +389,92 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # call the mapping function from the tasks file
         map_data(self.import_file.id)
+
+
+class TestPostalCode(DataMappingBaseTestCase):
+    def setUp(self):
+        filename = getattr(self, 'filename', 'example-data-properties-postal.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
+
+    def test_postal_code_property(self):
+
+        new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
+
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
+        tasks.map_data(self.import_file.pk)
+
+        # get excel file raw postal code cell value
+        from seed.lib.mcm.reader import ExcelParser
+        col_addr, col_postal = 0, 0
+        self.parser = ExcelParser(self.import_file.file, 'sheet1')
+        for col in range(self.parser.sheet.ncols):
+            if self.parser.sheet.cell_value(0, col) == 'address line 1':
+                col_addr = col
+            elif self.parser.sheet.cell_value(0, col) == 'postal code':
+                col_postal = col
+
+        # get mapped property postal_code
+        ps = PropertyState.objects.filter(address_line_1='11 Ninth Street')[0]
+
+        # regular or w/ ext case:
+        for row in range(self.parser.sheet.nrows):
+            if self.parser.sheet.cell(row, col_addr).value == '11 Ninth Street':
+                if '-' in ps.postal_code:
+                    self.assertEqual(len(ps.postal_code.split('-')[0]), 5)
+                    self.assertEqual(len(ps.postal_code.split('-')[1]), 4)
+                    self.assertEqual(ps.postal_code.split('-')[0].lstrip('0'),
+                                     self.parser.sheet.cell_value(row, col_postal).split('-')[0])
+                    self.assertEqual(ps.postal_code.split('-')[1].lstrip('0'),
+                                     self.parser.sheet.cell_value(row, col_postal).split('-')[1])
+                else:
+                    self.assertEqual(len(ps.postal_code), 5)
+                    self.assertEqual(int(ps.postal_code.lstrip('0')),
+                                     int(self.parser.sheet.cell_value(row, col_postal)))
+
+    def test_postal_code_taxlot(self):
+
+        new_mappings = copy.deepcopy(self.fake_mappings['taxlot'])
+
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
+        tasks.map_data(self.import_file.pk)
+
+        # get excel file raw postal code cell value
+        from seed.lib.mcm.reader import ExcelParser
+        col_addr, col_postal = 0, 0
+        self.parser = ExcelParser(self.import_file.file, 'sheet1')
+        for col in range(self.parser.sheet.ncols):
+            if self.parser.sheet.cell_value(0, col) == 'address':
+                col_addr = col
+            elif self.parser.sheet.cell_value(0, col) == 'postal code':
+                col_postal = col
+
+        # get mapped taxlot postal_code
+        ts = TaxLotState.objects.filter(address_line_1='93029 Wellington Blvd').first()
+        if ts is None:
+            raise TypeError("Invalid Taxlot Address!")
+
+        # regular or w/ ext case:
+        for row in range(self.parser.sheet.nrows):
+            if self.parser.sheet.cell(row, col_addr).value == '93029 Wellington Blvd':
+                if '-' in ts.postal_code:
+                    self.assertEqual(len(ts.postal_code.split('-')[0]), 5)
+                    self.assertEqual(len(ts.postal_code.split('-')[1]), 4)
+                    self.assertEqual(ts.postal_code.split('-')[0].lstrip('0'),
+                                     self.parser.sheet.cell_value(row, col_postal).split('-')[0])
+                    self.assertEqual(ts.postal_code.split('-')[1].lstrip('0'),
+                                     self.parser.sheet.cell_value(row, col_postal).split('-')[1])
+                else:
+                    self.assertEqual(len(ts.postal_code), 5)
+                    self.assertEqual(int(ts.postal_code.lstrip('0')),
+                                     int(self.parser.sheet.cell_value(row, col_postal)))
