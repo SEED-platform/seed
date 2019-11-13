@@ -349,9 +349,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([$scope.inventory.view_id], {
-            inventory_type: $scope.inventory_type
-          }).then(function (labels) {
+          label_service.get_labels($scope.inventory_type, [$scope.inventory.view_id]).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
               return !_.isEmpty(label.is_applied);
             });

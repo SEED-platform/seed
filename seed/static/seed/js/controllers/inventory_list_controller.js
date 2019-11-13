@@ -467,6 +467,24 @@ angular.module('BE.seed.controller.inventory_list', [])
         return _.defaults(col, options, defaults);
       });
       $scope.columns.unshift({
+        name: 'merged_indicator',
+        displayName: '',
+        cellTemplate: '<div class="ui-grid-row-header-link">' +
+        '  <div class="ui-grid-cell-contents merged-indicator">' +
+        '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
+        '  </div>' +
+        '</div>',
+        enableColumnMenu: false,
+        enableColumnMoving: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: 30
+      }, {
         name: 'notes_count',
         displayName: '',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
@@ -518,7 +536,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
@@ -608,9 +626,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var get_labels = function () {
-        label_service.get_labels([], {
-          inventory_type: $scope.inventory_type
-        }).then(function (current_labels) {
+        label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           updateApplicableLabels(current_labels);
         });
       };
@@ -657,6 +673,9 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             org_id: function () {
               return user_service.get_organization().id;
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
             }
           }
         });
@@ -789,7 +808,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible;
         });
 
         // Ensure pinned ordering first
@@ -886,19 +905,25 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
-            // Ensure that 'notes_count' and 'id' remain first
-            var col, idIndex;
-            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
-            if (idIndex !== 2) {
-              col = $scope.gridApi.grid.columns[idIndex];
-              $scope.gridApi.grid.columns.splice(idIndex, 1);
+            // Ensure that 'merged_indicator', 'notes_count', and 'id' remain first
+            var col, staticColIndex;
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'merged_indicator'});
+            if (staticColIndex !== 2) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
             }
-            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
-            if (idIndex !== 3) {
-              col = $scope.gridApi.grid.columns[idIndex];
-              $scope.gridApi.grid.columns.splice(idIndex, 1);
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
+            if (staticColIndex !== 3) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
+            }
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (staticColIndex !== 4) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
+              $scope.gridApi.grid.columns.splice(4, 0, col);
             }
             saveSettings();
           });

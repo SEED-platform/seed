@@ -48,3 +48,53 @@ class TestOrganizationViews(DataMappingBaseTestCase):
 
         self.assertCountEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
         self.assertCountEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
+
+    def test_matching_criteria_columns_view_with_nondefault_geocoding_columns(self):
+        # Deactivate city for properties and state for taxlots
+        self.org.column_set.filter(
+            column_name='city',
+            table_name="PropertyState"
+        ).update(geocoding_order=0)
+        self.org.column_set.filter(
+            column_name='state',
+            table_name="TaxLotState"
+        ).update(geocoding_order=0)
+
+        # Create geocoding-enabled ED_city for properties and ED_state for taxlots
+        self.org.column_set.create(
+            column_name='ed_city',
+            is_extra_data=True,
+            table_name='PropertyState',
+            geocoding_order=3
+        )
+        self.org.column_set.create(
+            column_name='ed_state',
+            is_extra_data=True,
+            table_name='TaxLotState',
+            geocoding_order=4
+        )
+
+        url = reverse('api:v2:organizations-geocoding-columns', args=[self.org.id])
+        raw_result = self.client.get(url)
+        result = json.loads(raw_result.content)
+
+        default_matching_criteria_display_names = {
+            'PropertyState': [
+                'address_line_1',
+                'address_line_2',
+                'ed_city',
+                'state',
+                'postal_code',
+            ],
+            'TaxLotState': [
+                'address_line_1',
+                'address_line_2',
+                'city',
+                'ed_state',
+                'postal_code',
+            ],
+        }
+
+        # Specifically use assertEqual as order does matter
+        self.assertEqual(result['PropertyState'], default_matching_criteria_display_names['PropertyState'])
+        self.assertEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
