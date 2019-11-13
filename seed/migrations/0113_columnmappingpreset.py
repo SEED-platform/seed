@@ -22,7 +22,6 @@ class Migration(migrations.Migration):
                 ('mappings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
-                ('organizations', models.ManyToManyField(to='orgs.Organization')),
             ],
         ),
     ]
