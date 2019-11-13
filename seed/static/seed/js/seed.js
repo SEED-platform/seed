@@ -38,6 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
+  'BE.seed.controller.column_mapping_preset_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
   'BE.seed.controller.create_sub_organization_modal',
@@ -863,6 +864,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                   column_mappings: taxlotMappings
                 };
               }
+            });
+          }],
+          column_mapping_presets: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
             });
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
