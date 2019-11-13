@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.column_mapping_preset_modal', [])
       };
 
       $scope.remove_profile = function () {
-        inventory_service.remove_settings_profile($scope.data.id).then(function () {
+        column_mappings_service.delete_column_mapping_preset($scope.org_id, $scope.data.id).then(function () {
           $uibModalInstance.close();
         });
       };

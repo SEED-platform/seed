@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.presets = column_mapping_presets;
 
-      $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0];
+      $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
 
       $scope.new_preset = function () {
         var modalInstance = $uibModal.open({
@@ -73,6 +73,26 @@ angular.module('BE.seed.controller.column_mappings', [])
         modalInstance.result.then(function (new_preset) {
           $scope.presets.push(new_preset);
           $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+          $scope.changes_possible = false;
+        });
+      };
+
+      $scope.remove_preset = function () {
+        var old_preset = angular.copy($scope.dropdown_selected_preset);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
+          controller: 'column_mapping_preset_modal_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.dropdown_selected_preset),
+            org_id: _.constant($scope.org.id),
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.presets, old_preset);
+          $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
           $scope.changes_possible = false;
         });
       };
