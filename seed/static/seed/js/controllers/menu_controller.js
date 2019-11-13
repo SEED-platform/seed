@@ -85,7 +85,7 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
-      function init_menu() {
+      function init_menu () {
         //Default to false but use cookie value if one has been set
         var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
         $scope.expanded_controller = isNavExpanded;

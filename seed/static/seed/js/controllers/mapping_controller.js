@@ -317,7 +317,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var get_geocoding_columns = function () {
-        organization_service.geocoding_columns(org_id).then(function(geocoding_columns) {
+        organization_service.geocoding_columns(org_id).then(function (geocoding_columns) {
           $scope.property_geocoding_columns_array = _.map(geocoding_columns.PropertyState, function (column_name) {
             return _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
           });
@@ -331,7 +331,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var org_id = user_service.get_organization().id;
-      geocode_service.check_org_has_api_key(org_id).then(function(result) {
+      geocode_service.check_org_has_api_key(org_id).then(function (result) {
         $scope.org_has_api_key = result;
         if (result) {
           get_geocoding_columns();
