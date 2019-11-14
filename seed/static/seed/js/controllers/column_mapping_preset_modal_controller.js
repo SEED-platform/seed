@@ -25,13 +25,13 @@ angular.module('BE.seed.controller.column_mapping_preset_modal', [])
         }
       };
 
-      $scope.remove_profile = function () {
+      $scope.remove_preset = function () {
         column_mappings_service.delete_column_mapping_preset($scope.org_id, $scope.data.id).then(function () {
           $uibModalInstance.close();
         });
       };
 
-      $scope.new_profile = function () {
+      $scope.new_preset = function () {
         if (!$scope.disabled()) {
           column_mappings_service.new_column_mapping_preset_for_org($scope.org_id, {
             name: $scope.newName,

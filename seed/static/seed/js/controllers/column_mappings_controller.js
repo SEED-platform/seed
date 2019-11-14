@@ -10,13 +10,13 @@ angular.module('BE.seed.controller.column_mappings', [])
     '$stateParams',
     '$uibModal',
     'Notification',
-    'column_mappings_service',
+    'auth_payload',
     'column_mapping_presets',
-    'spinner_utility',
     'column_mappings',
+    'column_mappings_service',
     'inventory_service',
     'organization_payload',
-    'auth_payload',
+    'spinner_utility',
     'urls',
     function (
       $scope,
@@ -25,14 +25,14 @@ angular.module('BE.seed.controller.column_mappings', [])
       $stateParams,
       $uibModal,
       Notification,
-      column_mappings_service,
+      auth_payload,
       column_mapping_presets,
-      spinner_utility,
       column_mappings,
+      column_mappings_service,
       inventory_service,
       organization_payload,
-      auth_payload,
-      urls,
+      spinner_utility,
+      urls
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       // console.log($scope.mappable_property_columns);
       // console.log($scope.mappable_taxlot_columns);
 
-      $scope.presets = column_mapping_presets;
+      $scope.presets = column_mapping_presets || [];
 
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
 
@@ -125,8 +125,9 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.check_for_changes = function () {
         if ($scope.changes_possible) {
           $uibModal.open({
-            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Presets</button></div>'
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch presets without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Presets</button></div>'
           }).result.then(function () {
+            $scope.current_preset = $scope.dropdown_selected_preset;
             $scope.changes_possible = false;
           }).catch(function () {
             $scope.dropdown_selected_preset = $scope.current_preset;
@@ -135,9 +136,15 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.add_new_column = function () {
-        $scope.dropdown_selected_preset.mappings.push(
-          {"from_field": "", "from_units": null, "to_field": "", "to_table_name": ""}
-        );
+        if ($scope.dropdown_selected_preset.mappings[0]) {
+          $scope.dropdown_selected_preset.mappings.push(
+            {"from_field": "", "from_units": null, "to_field": "", "to_table_name": ""}
+          );
+        } else {
+          $scope.dropdown_selected_preset.mappings = [
+            {"from_field": "", "from_units": null, "to_field": "", "to_table_name": ""}
+          ];
+        }
         $scope.flag_change();
       };
 
