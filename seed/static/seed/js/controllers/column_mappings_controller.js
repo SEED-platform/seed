@@ -116,6 +116,18 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
+      $scope.save_preset = function () {
+        var updated_data = {mappings: $scope.dropdown_selected_preset.mappings};
+        var preset_id = $scope.dropdown_selected_preset.id;
+        column_mappings_service.update_column_mapping_preset($scope.org.id, preset_id, updated_data).then(function (result) {
+          var preset_index = _.findIndex($scope.presets, ['id', $scope.dropdown_selected_preset.id]);
+          $scope.presets[preset_index].mappings = result.data.mappings;
+          $scope.presets[preset_index].updated = result.data.updated;
+          $scope.changes_possible = false;
+          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
+        });
+      };
+
       $scope.changes_possible = false;
 
       $scope.flag_change = function () {
