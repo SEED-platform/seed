@@ -834,39 +834,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
-          column_mappings: ['column_mappings_service', '$stateParams', 'naturalSort', function (column_mappings_service, $stateParams, naturalSort) {
-            var organization_id = $stateParams.organization_id;
-
-            return column_mappings_service.get_column_mappings_for_org(organization_id).then(function (data) {
-              var propertyMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'Property');
-              });
-              propertyMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-              var taxlotMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'TaxLot');
-              });
-              taxlotMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-
-              if ($stateParams.inventory_type === 'properties') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: propertyMappings
-                };
-              } else if ($stateParams.inventory_type === 'taxlots') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: taxlotMappings
-                };
-              }
-            });
-          }],
-          column_mapping_presets: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
+          column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
               return response.data;

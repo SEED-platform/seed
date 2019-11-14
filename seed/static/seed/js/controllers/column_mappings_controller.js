@@ -5,57 +5,40 @@
 angular.module('BE.seed.controller.column_mappings', [])
   .controller('column_mappings_controller', [
     '$scope',
-    '$q',
     '$state',
-    '$stateParams',
     '$uibModal',
     'Notification',
     'auth_payload',
-    'column_mapping_presets',
-    'column_mappings',
+    'column_mapping_presets_payload',
     'column_mappings_service',
     'inventory_service',
     'organization_payload',
-    'spinner_utility',
     'urls',
     function (
       $scope,
-      $q,
       $state,
-      $stateParams,
       $uibModal,
       Notification,
       auth_payload,
-      column_mapping_presets,
-      column_mappings,
+      column_mapping_presets_payload,
       column_mappings_service,
       inventory_service,
       organization_payload,
-      spinner_utility,
       urls
     ) {
-      $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
 
       $scope.state = $state.current;
 
-      $scope.filter_params = {};
-
-      $scope.property_count = column_mappings.property_count;
-      $scope.taxlot_count = column_mappings.taxlot_count;
-      $scope.column_mappings = column_mappings.column_mappings;
-
       $scope.mappable_property_columns = inventory_service.get_property_columns().then(function (result) {
-
+        console.log(result);
       });
       $scope.mappable_taxlot_columns = inventory_service.get_taxlot_columns().then(function (result) {
-
+        console.log(result);
       });
-      // console.log($scope.mappable_property_columns);
-      // console.log($scope.mappable_taxlot_columns);
 
-      $scope.presets = column_mapping_presets || [];
+      $scope.presets = column_mapping_presets_payload;
 
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
 
@@ -91,7 +74,9 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
 
         modalInstance.result.then(function (new_name) {
-          $scope.dropdown_selected_preset.name = new_name;
+          var preset_index = _.findIndex($scope.presets, ['id', $scope.dropdown_selected_preset.id]);
+          $scope.presets[preset_index].name = new_name;
+
           Notification.primary('Renamed ' + old_name + ' to ' + new_name);
         });
       };
@@ -123,6 +108,7 @@ angular.module('BE.seed.controller.column_mappings', [])
           var preset_index = _.findIndex($scope.presets, ['id', $scope.dropdown_selected_preset.id]);
           $scope.presets[preset_index].mappings = result.data.mappings;
           $scope.presets[preset_index].updated = result.data.updated;
+
           $scope.changes_possible = false;
           Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
         });
@@ -139,12 +125,13 @@ angular.module('BE.seed.controller.column_mappings', [])
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch presets without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Presets</button></div>'
           }).result.then(function () {
-            $scope.current_preset = $scope.dropdown_selected_preset;
             $scope.changes_possible = false;
           }).catch(function () {
             $scope.dropdown_selected_preset = $scope.current_preset;
+            return;
           });
         }
+        $scope.current_preset = $scope.dropdown_selected_preset;
       };
 
       $scope.add_new_column = function () {

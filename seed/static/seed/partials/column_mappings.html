@@ -28,10 +28,10 @@
           <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible" tooltip-placement="bottom" uib-tooltip="Save">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
           </button>
-          <button class="btn btn-primary" type="button" ng-click="rename_preset()" tooltip-placement="bottom" uib-tooltip="Rename">
+          <button class="btn btn-primary" type="button" ng-click="rename_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Rename">
               <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
           </button>
-          <button class="btn btn-danger" type="button" ng-click="remove_preset()" tooltip-placement="bottom" uib-tooltip="Delete">
+          <button class="btn btn-danger" type="button" ng-click="remove_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Delete">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
           </button>
           <button class="btn btn-info" type="button" ng-click="new_preset()" tooltip-placement="bottom" uib-tooltip="New">
@@ -136,7 +136,7 @@
                   </tbody>
               </table>
             </div>
-            <button class="btn btn-success" type="button" ng-click="add_new_column()" tooltip-placement="bottom" uib-tooltip="New">
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New">
                 Add Column
             </button>
         </div>
