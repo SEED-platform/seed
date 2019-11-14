@@ -77,6 +77,25 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
+      $scope.rename_preset = function () {
+        var old_name = $scope.dropdown_selected_preset.name;
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
+          controller: 'column_mapping_preset_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.dropdown_selected_preset),
+            org_id: _.constant($scope.org.id),
+          }
+        });
+
+        modalInstance.result.then(function (new_name) {
+          $scope.dropdown_selected_preset.name = new_name;
+          Notification.primary('Renamed ' + old_name + ' to ' + new_name);
+        });
+      };
+
       $scope.remove_preset = function () {
         var old_preset = angular.copy($scope.dropdown_selected_preset);
 

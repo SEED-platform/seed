@@ -15,13 +15,12 @@ angular.module('BE.seed.controller.column_mapping_preset_modal', [])
       $scope.data = data;
       $scope.org_id = org_id;
 
-      $scope.rename_profile = function () {
+      $scope.rename_preset = function () {
         if (!$scope.disabled()) {
-          var id = $scope.data.id;
-          var profile = _.omit($scope.data, 'id');
-          profile.name = $scope.newName;
-          inventory_service.update_settings_profile(id, profile).then(function (result) {
-            $uibModalInstance.close(result.name);
+          var preset_id = $scope.data.id;
+          var updated_data = {name: $scope.newName}
+          column_mappings_service.update_column_mapping_preset($scope.org_id, preset_id, updated_data).then(function (result) {
+            $uibModalInstance.close(result.data.name);
           });
         }
       };
