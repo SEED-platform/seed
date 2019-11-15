@@ -3469,3 +3469,9 @@ $pairedCellWidth: 60px;
 .pad-left-20 {
   padding-left: 20px;
 }
+
+.inventory-progress-modal {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
