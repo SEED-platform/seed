@@ -97,7 +97,8 @@
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
+                                <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'valid-bg': rule.severity === 'valid', 'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
+                                    <option value="valid" ng-if="_.includes(['eui', 'number'], rule.data_type)" translate>Valid Data</option>
                                     <option value="error" translate>Error</option>
                                     <option value="warning" translate>Warning</option>
                                 </select>
