@@ -834,6 +834,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
+          mappable_property_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_property_columns().then(function (result) {
+              return result;
+            });
+          }],
+          mappable_taxlot_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_taxlot_columns().then(function (result) {
+              return result;
+            });
+          }],
           column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {

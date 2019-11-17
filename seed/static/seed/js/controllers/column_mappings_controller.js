@@ -12,6 +12,8 @@ angular.module('BE.seed.controller.column_mappings', [])
     'column_mapping_presets_payload',
     'column_mappings_service',
     'inventory_service',
+    'mappable_property_columns_payload',
+    'mappable_taxlot_columns_payload',
     'organization_payload',
     'urls',
     function (
@@ -23,6 +25,8 @@ angular.module('BE.seed.controller.column_mappings', [])
       column_mapping_presets_payload,
       column_mappings_service,
       inventory_service,
+      mappable_property_columns_payload,
+      mappable_taxlot_columns_payload,
       organization_payload,
       urls
     ) {
@@ -31,11 +35,39 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.state = $state.current;
 
-      $scope.mappable_property_columns = inventory_service.get_property_columns().then(function (result) {
-        console.log(result);
-      });
-      $scope.mappable_taxlot_columns = inventory_service.get_taxlot_columns().then(function (result) {
-        console.log(result);
+      $scope.mappable_property_columns = mappable_property_columns_payload;
+      $scope.mappable_taxlot_columns = mappable_taxlot_columns_payload;
+
+      var mapping_db_to_display = function(mapping) {
+        var mappable_column;
+
+        if (mapping.to_table_name === "PropertyState") {
+          mappable_column = _.find($scope.mappable_property_columns, {column_name: mapping.to_field});
+        } else {
+          mappable_column = _.find($scope.mappable_taxlot_columns, {column_name: mapping.to_field});
+        }
+
+        if (mappable_column) {
+          mapping.to_field = mappable_column.displayName;
+        }
+      };
+
+      var mapping_display_to_db = function(mapping) {
+        var mappable_column;
+        if (mapping.to_table_name === "PropertyState") {
+          mappable_column = _.find($scope.mappable_property_columns, {displayName: mapping.to_field});
+        } else {
+          mappable_column = _.find($scope.mappable_taxlot_columns, {displayName: mapping.to_field});
+        }
+
+        if (mappable_column) {
+          mapping.to_field = mappable_column.column_name;
+        }
+      };
+
+      // On page load, convert DB field names to display names
+      _.forEach(column_mapping_presets_payload, function(preset) {
+        _.forEach(preset.mappings, mapping_db_to_display);
       });
 
       $scope.presets = column_mapping_presets_payload;
@@ -102,11 +134,14 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.save_preset = function () {
-        var updated_data = {mappings: $scope.dropdown_selected_preset.mappings};
         var preset_id = $scope.dropdown_selected_preset.id;
+        var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
+
+        _.forEach($scope.presets[preset_index].mappings, mapping_display_to_db);
+        var updated_data = {mappings: $scope.presets[preset_index].mappings};
+
         column_mappings_service.update_column_mapping_preset($scope.org.id, preset_id, updated_data).then(function (result) {
-          var preset_index = _.findIndex($scope.presets, ['id', $scope.dropdown_selected_preset.id]);
-          $scope.presets[preset_index].mappings = result.data.mappings;
+          _.forEach($scope.presets[preset_index].mappings, mapping_db_to_display);
           $scope.presets[preset_index].updated = result.data.updated;
 
           $scope.changes_possible = false;
@@ -118,7 +153,7 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.flag_change = function () {
         $scope.changes_possible = true;
-      }
+      };
 
       $scope.check_for_changes = function () {
         if ($scope.changes_possible) {
