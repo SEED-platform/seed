@@ -136,6 +136,7 @@ class Column(models.Model):
         'extra_data',
         'lot_number',
         'normalized_address',
+        'organization',
         'updated',
     ]
 
@@ -210,6 +211,18 @@ class Column(models.Model):
             'column_name': 'custom_id_1',
             'table_name': 'TaxLotState',
             'display_name': 'Custom ID 1',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'organization',
+            'table_name': 'PropertyState',
+            'display_name': 'Organization',
+            'data_type': 'string',
+        }, {
+            # This should never be mapped to!
+            'column_name': 'organization',
+            'table_name': 'TaxLotState',
+            'display_name': 'Organization',
             'data_type': 'string',
         }, {
             'column_name': 'address_line_1',
