@@ -38,6 +38,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.mappable_property_columns = mappable_property_columns_payload;
       $scope.mappable_taxlot_columns = mappable_taxlot_columns_payload;
 
+      // Helpers to convert to and from DB column names and column display names
       var mapping_db_to_display = function(mapping) {
         var mappable_column;
 
@@ -74,6 +75,45 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
 
+      // Inventory Types
+      $scope.setAllFields = '';
+      $scope.setAllFieldsOptions = [{
+        name: 'Property',
+        value: 'PropertyState'
+      }, {
+        name: 'Tax Lot',
+        value: 'TaxLotState'
+      }];
+
+      var analyze_chosen_inventory_types = function () {
+        var chosenTypes = _.uniq(_.map($scope.dropdown_selected_preset.mappings, 'to_table_name'));
+
+        if (chosenTypes.length === 1) {
+          $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+        } else {
+          $scope.setAllFields = '';
+        }
+      };
+
+      // On load...
+      analyze_chosen_inventory_types()
+
+      $scope.updateSingleInventoryTypeDropdown = function () {
+        analyze_chosen_inventory_types();
+
+        $scope.flag_change();
+      };
+
+      $scope.setAllInventoryTypes = function () {
+        _.forEach($scope.dropdown_selected_preset.mappings, function (mapping) {
+          if (mapping.to_table_name !== $scope.setAllFields.value) {
+            mapping.to_table_name = $scope.setAllFields.value;
+            $scope.flag_change();
+          }
+        });
+      };
+
+      // Preset-level CRUD modal-rending actions
       $scope.new_preset = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
@@ -149,6 +189,7 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
+      // Track changes to help prevent losing changes when data could be lost
       $scope.changes_possible = false;
 
       $scope.flag_change = function () {
@@ -166,9 +207,12 @@ angular.module('BE.seed.controller.column_mappings', [])
             return;
           });
         }
+
         $scope.current_preset = $scope.dropdown_selected_preset;
+        analyze_chosen_inventory_types();
       };
 
+      // Add and remove column methods
       $scope.add_new_column = function () {
         if ($scope.dropdown_selected_preset.mappings[0]) {
           $scope.dropdown_selected_preset.mappings.push(

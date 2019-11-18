@@ -87,7 +87,7 @@
                       <tr>
                           <td style="border-right: 0 none; max-width: 160px; width: 160px; text-align: right;">
                               <span style="padding-right:5px;" ng-hide="import_file.matching_done">{$:: 'Set all fields to' | translate $}:</span>
-                              <select ng-model="dropdown_selected_preset" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value"></select>
+                              <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value"></select>
                           </td>
                           <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
                           <td style="max-width: 128px; width: 128px;"></td>
@@ -105,7 +105,7 @@
                   <tbody id="mapped-table">
                       <tr ng-repeat="(index, col) in dropdown_selected_preset.mappings">
                           <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-type-{$:: $index $}">
-                              <select ng-model="col.to_table_name" ng-change="flag_change()">
+                              <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
                                   <option value="PropertyState" translate>Property</option>
                                   <option value="TaxLotState" translate>Tax Lot</option>
                               </select>
