@@ -78,8 +78,8 @@
         <div class="section_content">
             <div class="section_action_container right_wide settings_profile">
               <span translate>Column Mapping Preset</span>:
-              <select class="form-control input-sm" ng-model="selected_preset" ng-options="option for option in mock_presets"></select>
-              <button type="button" class="btn btn-primary" ng-click="apply_mapping_preset()" ng-hide="import_file.matching_done" ng-disabled="selected_preset === applied_preset" translate>Apply Preset</button>
+              <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="flag_preset_change()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
+              <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset === current_preset" translate>Apply Preset</button>
             </div>
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
