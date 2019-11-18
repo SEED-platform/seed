@@ -77,9 +77,17 @@
     <div class="section_content_container" style="padding: 0 16px;">
         <div class="section_content">
             <div class="section_action_container right_wide settings_profile">
-              <span translate>Column Mapping Preset</span>:
+              <span translate>Current Column Mapping Preset</span>: <label class="label label-default" ng-if="dropdown_selected_preset.id != current_preset.id">{$:: current_preset.name $}</label>
               <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="flag_preset_change()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
-              <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset === current_preset" translate>Apply Preset</button>
+              <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset.id === current_preset.id" translate>
+                Apply Preset
+              </button>
+              <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!mappings_change_possible || (dropdown_selected_preset.id === 0) || (dropdown_selected_preset.id != current_preset.id)" tooltip-placement="bottom" uib-tooltip="Save">
+                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+              </button>
+              <button class="btn btn-info" type="button" ng-click="new_preset()" tooltip-placement="bottom" uib-tooltip="New">
+                  <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+              </button>
             </div>
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>

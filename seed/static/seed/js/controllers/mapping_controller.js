@@ -21,10 +21,12 @@ angular.module('BE.seed.controller.mapping', [])
     '$uibModal',
     'user_service',
     'uploader_service',
+    'column_mappings_service',
     'data_quality_service',
     'inventory_service',
     '$translate',
     'i18nService', // from ui-grid
+    'Notification',
     function (
       $scope,
       $log,
@@ -43,17 +45,17 @@ angular.module('BE.seed.controller.mapping', [])
       $uibModal,
       user_service,
       uploader_service,
+      column_mappings_service,
       data_quality_service,
       inventory_service,
       $translate,
-      i18nService
+      i18nService,
+      Notification
     ) {
 
       $scope.presets = [
-        {id: 0, mappings: [], name: "(None selected)"},
+        {id: 0, mappings: [], name: "<None selected>"},
       ].concat(column_mapping_presets_payload);
-
-      console.log(column_mapping_presets_payload);
 
       // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
@@ -100,6 +102,59 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.initialize_mappings();
           analyze_chosen_inventory_types();
         }
+      };
+
+      // Preset-level create and update modal-rending actions
+      var preset_mappings_from_working_mappings = function () {
+        return _.reduce($scope.mappings, function (preset_mapping_data, mapping) {
+          preset_mapping_data.push({
+            from_field: mapping.name,
+            from_units: mapping.from_units,
+            to_field: mapping.suggestion_column_name,
+            to_table_name: mapping.suggestion_table_name,
+          });
+
+          return preset_mapping_data;
+        }, []);
+      }
+
+      $scope.new_preset = function () {
+        var preset_mapping_data = preset_mappings_from_working_mappings();
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
+          controller: 'column_mapping_preset_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant({mappings: preset_mapping_data}),
+            org_id: _.constant(user_service.get_organization().id),
+          }
+        });
+
+        modalInstance.result.then(function (new_preset) {
+          $scope.presets.push(new_preset);
+          $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+
+          $scope.preset_change_possible = false;
+          $scope.mappings_change_possible = false;
+          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
+        });
+      };
+
+      $scope.save_preset = function () {
+        var preset_id = $scope.dropdown_selected_preset.id;
+        var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
+
+        var preset_mapping_data = preset_mappings_from_working_mappings();
+
+        column_mappings_service.update_column_mapping_preset(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
+          $scope.presets[preset_index].mappings = result.data.mappings;
+          $scope.presets[preset_index].updated = result.data.updated;
+
+          $scope.preset_change_possible = false;
+          $scope.mappings_change_possible = false;
+          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
+        });
       };
 
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into

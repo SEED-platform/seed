@@ -128,7 +128,9 @@ angular.module('BE.seed.controller.column_mappings', [])
         modalInstance.result.then(function (new_preset) {
           $scope.presets.push(new_preset);
           $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+
           $scope.changes_possible = false;
+          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
         });
       };
 
@@ -216,11 +218,11 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.add_new_column = function () {
         if ($scope.dropdown_selected_preset.mappings[0]) {
           $scope.dropdown_selected_preset.mappings.push(
-            {"from_field": "", "from_units": null, "to_field": "", "to_table_name": ""}
+            {from_field: "", from_units: null, to_field: "", to_table_name: ""}
           );
         } else {
           $scope.dropdown_selected_preset.mappings = [
-            {"from_field": "", "from_units": null, "to_field": "", "to_table_name": ""}
+            {from_field: "", from_units: null, to_field: "", to_table_name: ""}
           ];
         }
         $scope.flag_change();
