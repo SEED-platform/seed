@@ -40,7 +40,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
             return inv.results;
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          promise = inventory_service.get_taxlots(1, undefined, $scope.cycle, -1).then(function (inv) {
+          promise = inventory_service.get_taxlots(1, undefined, $scope.cycle, -1, false).then(function (inv) {
             return inv.results;
           });
         }

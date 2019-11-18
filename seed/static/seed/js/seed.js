@@ -579,7 +579,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return inventory_service.get_properties(1, undefined, undefined, -1, false);
           }],
           taxlotInventory: ['inventory_service', function (inventory_service) {
-            return inventory_service.get_taxlots(1, undefined, undefined, -1);
+            return inventory_service.get_taxlots(1, undefined, undefined, -1, false);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
@@ -1078,7 +1078,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_properties(1, undefined, undefined, profile_id, false);
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
+              return inventory_service.get_taxlots(1, undefined, undefined, profile_id, false);
             }
           }],
           cycles: ['cycle_service', function (cycle_service) {
@@ -1124,7 +1124,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             // if ($stateParams.inventory_type === 'properties') {
             return inventory_service.get_properties(1, undefined, undefined, undefined, false);
             // } else if ($stateParams.inventory_type === 'taxlots') {
-            //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
+            //   return inventory_service.get_taxlots(1, undefined, undefined, undefined, false);
             // }
           }],
           cycles: ['cycle_service', function (cycle_service) {

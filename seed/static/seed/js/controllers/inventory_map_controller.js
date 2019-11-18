@@ -575,7 +575,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           $scope.data = inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined, false).results;
           $state.reload();
         } else if ($scope.inventory_type === 'taxlots') {
-          $scope.data = inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined).results;
+          $scope.data = inventory_service.get_taxlots(1, undefined, $scope.cycle.selected_cycle, undefined, false).results;
           $state.reload();
         }
       };

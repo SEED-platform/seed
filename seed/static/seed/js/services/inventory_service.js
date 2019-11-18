@@ -215,11 +215,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, show_sub_org_data, inventory_ids) {
+
+      if (show_sub_org_data == undefined) show_sub_org_data = false;
+
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
-        per_page: per_page || 999999999
+        per_page: per_page || 999999999,
+        show_sub_org_data: show_sub_org_data 
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
