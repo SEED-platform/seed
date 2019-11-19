@@ -250,4 +250,13 @@ angular.module('BE.seed.controller.column_mappings', [])
         $scope.dropdown_selected_preset.mappings.splice(index, 1);
         $scope.flag_change();
       };
+
+      // Copy Data File Header values into SEED Header values
+      $scope.mirror_data_file_headers = function () {
+        _.forEach($scope.dropdown_selected_preset.mappings, function (mapping) {
+          mapping.to_field = mapping.from_field;
+        });
+
+        $scope.flag_change();
+      };
     }]);
