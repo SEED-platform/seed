@@ -615,12 +615,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         var chunk = 5000;
         $scope.progress = {};
         var modalInstance = $uibModal.open({
-          template: '<div class="modal-body">' +
-            '<h4>Loading inventory...</h4>' +
-            '<uib-progress class="progress-striped active">' +
-            '  <uib-bar value="progress.percent || 0"><span style="color:white; white-space:nowrap;" ng-if="progress.percent">{$ progress.current $} / {$ progress.total $}</span></uib-bar>' +
-            '  <uib-bar value="100 - (progress.percent || 0)" type="info"></uib-bar>' +
-            '</uib-progress></div>',
+          templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
           backdrop: 'static',
           windowClass: 'inventory-progress-modal',
           scope: $scope
