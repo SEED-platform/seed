@@ -371,7 +371,7 @@ def create_cases(org, cycle, tax_lots, properties):
         def _create_state(view_model, state_model, org, state_def):
             state, created = state_model.objects.get_or_create(**state_def)
             if not created and not view_model.objects.filter(state=state).filter(
-                cycle__organization=org).exists():
+                    cycle__organization=org).exists():
                 state = state_model.objects.create(**state_def)
                 created = True
             return state, created
@@ -676,7 +676,7 @@ def update_taxlot_year(taxlot, year):
 
     # change something else in extra_data aside from the year:
     taxlot.extra_data['taxlot_extra_data_field_1'] = taxlot.extra_data[
-                                                         'taxlot_extra_data_field_1'] + '_' + str(year)
+        'taxlot_extra_data_field_1'] + '_' + str(year)
 
     # update the noise
     taxlot = update_taxlot_noise(taxlot)
@@ -709,7 +709,7 @@ def update_property_year(property, year):
 
     # change something in extra_data so something there changes too
     property.extra_data['property_extra_data_field_1'] = property.extra_data[
-                                                             'property_extra_data_field_1'] + '_' + str(year)
+        'property_extra_data_field_1'] + '_' + str(year)
 
     property = update_property_noise(property)
 
