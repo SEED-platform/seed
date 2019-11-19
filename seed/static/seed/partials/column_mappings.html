@@ -121,11 +121,11 @@
                                   ng-attr-id="mapped-row-input-box-{$ $index $}">
                           </td>
                           <td>
-                              <select ng-model="col.from_units" ng-if="">
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
                               </select>
-                              <select ng-model="col.from_units" ng-if="col.from_units" ng-change="flag_change()"> <!-- HARDCODED FOR NOW -->
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)">
                                   <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>

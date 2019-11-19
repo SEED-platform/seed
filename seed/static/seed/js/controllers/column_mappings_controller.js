@@ -54,6 +54,11 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       var mapping_display_to_db = function(mapping) {
+        // First, clear from_units if mapping is not for units col
+        if (!$scope.is_eui_column(mapping) && !$scope.is_area_column(mapping)) {
+          mapping.from_units = null;
+        }
+
         var mappable_column;
         if (mapping.to_table_name === "PropertyState") {
           mappable_column = _.find($scope.mappable_property_columns, {displayName: mapping.to_field});
@@ -212,6 +217,19 @@ angular.module('BE.seed.controller.column_mappings', [])
 
         $scope.current_preset = $scope.dropdown_selected_preset;
         analyze_chosen_inventory_types();
+      };
+
+      // Handle units
+      var eui_columns = _.filter($scope.mappable_property_columns, {data_type: 'eui'});
+      $scope.is_eui_column = function (mapping) {
+          // All of these are on the PropertyState table
+        return mapping.to_table_name === 'PropertyState' && Boolean(_.find(eui_columns, {displayName: mapping.to_field}));
+      };
+
+      var area_columns = _.filter($scope.mappable_property_columns, {data_type: 'area'});
+      $scope.is_area_column = function (mapping) {
+        // All of these are on the PropertyState table
+        return mapping.to_table_name === 'PropertyState' && Boolean(_.find(area_columns, {displayName: mapping.to_field}));
       };
 
       // Add and remove column methods
