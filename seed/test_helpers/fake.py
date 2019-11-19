@@ -81,14 +81,20 @@ class BaseFake(object):
             self.fake.random_element(elements=STREET_SUFFIX)
         )
 
-    def owner(self, city=None, state=None):
-        """Return Owner named tuple"""
-        email = self.fake.company_email()
+    def company(self, email=None):
+        if not email:
+            email = self.fake.company_email()
         ergx = re.compile(r'.*@(.*)\..*')
         company = "{} {}".format(
             string.capwords(ergx.match(email).group(1), '-').replace('-', ' '),
             self.fake.company_suffix()
         )
+        return company
+
+    def owner(self, city=None, state=None):
+        """Return Owner named tuple"""
+        email = self.fake.company_email()
+        company = self.company(email)
         return Owner(
             company, email, self.fake.phone_number(), self.address_line_1(),
             "{}, {}".format(city if city else self.fake.city(),
