@@ -110,9 +110,11 @@ class Rule(models.Model):
 
     SEVERITY_ERROR = 0
     SEVERITY_WARNING = 1
+    SEVERITY_VALID = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
-        (SEVERITY_WARNING, 'warning')
+        (SEVERITY_WARNING, 'warning'),
+        (SEVERITY_VALID, 'valid')
     ]
 
     DEFAULT_RULES = [
@@ -657,6 +659,7 @@ class DataQualityCheck(models.Model):
                 #                                             len(model_labels['label_ids'])))
 
         for rule in rules:
+            severity_1 = rule.severity
             # create an extra data flag for the rule
             is_extra_data = rule.field in row.extra_data
 
@@ -713,6 +716,8 @@ class DataQualityCheck(models.Model):
                 else:
                     # check the min and max values
                     try:
+                        if rule.field == 'site_eui':
+                            print(value, rule.min, rule.minimum_valid(value), rule.get_severity_display())
                         if not rule.minimum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
@@ -730,6 +735,8 @@ class DataQualityCheck(models.Model):
                         continue
 
                     try:
+                        if rule.field == 'site_eui':
+                            print(value, rule.max, rule.maximum_valid(value), rule.get_severity_display())
                         if not rule.maximum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
                             self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
@@ -745,6 +752,19 @@ class DataQualityCheck(models.Model):
                     except UnitMismatchError:
                         self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
+
+                    if rule.field == 'site_eui':
+                        if rule.maximum_valid(value) and rule.minimum_valid(value):
+                            if severity_1 is 2:
+                                rule.severity = severity_1
+                        else:
+                            if rule.severity == 0:
+                                break
+                            else:
+                                rule.severity = 1
+
+#                if rule.field == 'site_eui':
+#                    print('eui: ', value, rule.min, rule.max, rule.severity, rule.get_severity_display())
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
