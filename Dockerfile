@@ -8,7 +8,7 @@
 #    https://pkgs.alpinelinux.org/package/edge/testing/x86_64/geos
 #FROM alpine:3.8
 
-FROM seedplatform/seed:2.6.1
+FROM seedplatform/seed:2.6.0
 
 # DO NOT UPGRADE until libgeos and shapely fix the connection.
 #RUN apk add --no-cache python \
