@@ -259,4 +259,17 @@ angular.module('BE.seed.controller.column_mappings', [])
 
         $scope.flag_change();
       };
+
+      $scope.is_file_header_duplicate = function (mapping) {
+        var mapping_by_from_field = _.filter($scope.current_preset.mappings, {from_field: mapping.from_field});
+        return mapping_by_from_field.length > 1;
+      };
+
+      $scope.header_duplicates_present = function () {
+        var grouped_by_from_field = _.groupBy($scope.current_preset.mappings, 'from_field')
+
+        return Boolean(_.find(
+          _.values(grouped_by_from_field), function (group) {return group.length > 1})
+        );
+      };
     }]);

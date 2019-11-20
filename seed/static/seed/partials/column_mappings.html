@@ -31,7 +31,7 @@
           <span>Column Mapping Preset: </span>
           <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
 
-          <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible" tooltip-placement="bottom" uib-tooltip="Save">
+          <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present()" tooltip-placement="bottom" uib-tooltip="Save">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
           </button>
           <button class="btn btn-primary" type="button" ng-click="rename_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Rename">
@@ -72,6 +72,9 @@
         <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
             <button type="button" class="btn btn-primary" ng-click="mirror_data_file_headers()" translate>Copy Data File Headers directly to SEED Headers</button>
         </div>
+
+        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>Please review Date File Headers.  Duplicate values are not allowed.</div>
+
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="table_list_container has_borders">
               <table class="table table-striped" ng-hide="review_mappings">
@@ -102,7 +105,7 @@
                   </thead>
                   <tbody id="mapped-table">
                       <tr ng-repeat="(index, col) in dropdown_selected_preset.mappings">
-                          <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-type-{$:: $index $}">
+                          <td style="text-align: right;" ng-attr-id="mapped-row-type-{$:: $index $}">
                               <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
                                   <option value="PropertyState" translate>Property</option>
                                   <option value="TaxLotState" translate>Tax Lot</option>
@@ -131,7 +134,7 @@
                                   <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
                               </select>
                           </td>
-                          <td>
+                          <td ng-class="{'danger': is_file_header_duplicate(col)}">
                               <input type="text" class="form-control input-sm tcm_field" ng-model="col.from_field" ng-change="flag_change()">
                           </td>
                           <td ng-repeat="cell_value in ::col.raw_data track by $index">
