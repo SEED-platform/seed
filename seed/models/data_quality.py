@@ -749,13 +749,15 @@ class DataQualityCheck(models.Model):
                         continue
 
                     try:
-                        if rule.severity == 1:
-                            rule.severity = 2
-                        if not rule.minimum_valid(value) or not rule.maximum_valid(value):
-                            if rule.severity == 0:
-                                break
-                            else:
-                                rule.severity = 1
+                        if rule.field == 'site_eui':
+                            if rule.severity == 1:
+                                rule.severity = 2
+                            if not rule.minimum_valid(value) or not rule.maximum_valid(value):
+                                if rule.severity == 0:
+                                    # print(value.magnitude, rule.get_severity_display())
+                                    break
+                                else:
+                                    rule.severity = 1
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -770,6 +772,12 @@ class DataQualityCheck(models.Model):
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
+
+            if rule.field == 'site_eui':
+                # if isinstance(value, float):
+                if isinstance(value, float) and rule.get_severity_display() == 'valid':
+                    # apply valid data label to inventory:
+                    print(value, rule.get_severity_display())
 
     def save_to_cache(self, identifier):
         """
