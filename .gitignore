@@ -81,3 +81,7 @@ docker-compose.*.yml
 !docker-compose.yml
 !docker-compose.local.yml
 !docker-compose.deploy.yml
+
+# generated files
+automated-*.csv
+
