@@ -109,8 +109,8 @@ class Rule(models.Model):
     ]
 
     SEVERITY_ERROR = 0
-    SEVERITY_WARNING = 1
-    SEVERITY_VALID = 2
+    SEVERITY_VALID = 1
+    SEVERITY_WARNING = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
         (SEVERITY_WARNING, 'warning'),
@@ -716,9 +716,16 @@ class DataQualityCheck(models.Model):
                     # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.field == 'site_eui':
+                                if rule.severity == 0:
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                    label_applied = self.update_status_label(label, rule, linked_id)
+                                    break
+                                if isinstance(value, float):
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                    label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -733,9 +740,16 @@ class DataQualityCheck(models.Model):
 
                     try:
                         if not rule.maximum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.field == 'site_eui':
+                                if rule.severity == 0:
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                    label_applied = self.update_status_label(label, rule, linked_id)
+                                    break
+                                if isinstance(value, float):
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                    label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -748,36 +762,16 @@ class DataQualityCheck(models.Model):
                         self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
-                    try:
-                        if rule.field == 'site_eui':
+                    if rule.field == 'site_eui':
+                        if rule.minimum_valid(value) and rule.maximum_valid(value):
                             if rule.severity == 1:
-                                rule.severity = 2
-                            if not rule.minimum_valid(value) or not rule.maximum_valid(value):
-                                if rule.severity == 0:
-                                    # print(value.magnitude, rule.get_severity_display())
-                                    break
-                                else:
-                                    rule.severity = 1
-                    except ComparisonError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
-                        continue
-                    except DataQualityTypeCastError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_type_error(row.id, rule, display_name, s_value)
-                        continue
-                    except UnitMismatchError:
-                        self.add_result_dimension_error(row.id, rule, display_name, value)
-                        continue
+                                if not isinstance(value, float):
+                                    print('valid eui: ', value, rule.get_severity_display(), rule.status_label.name)
+                                    label_applied = self.update_status_label(label, rule, linked_id)
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
 
-            if rule.field == 'site_eui':
-                # if isinstance(value, float):
-                if isinstance(value, float) and rule.get_severity_display() == 'valid':
-                    # apply valid data label to inventory:
-                    print(value, rule.get_severity_display())
 
     def save_to_cache(self, identifier):
         """
@@ -1004,7 +998,6 @@ class DataQualityCheck(models.Model):
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
-
         if rule.status_label_id is not None and linked_id is not None:
             label_org_id = rule.status_label.super_organization_id
 
