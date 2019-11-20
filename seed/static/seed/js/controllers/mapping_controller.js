@@ -72,7 +72,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var analyze_chosen_inventory_types = function () {
-        var chosenTypes = _.uniq(_.map($scope.dropdown_selected_preset.mappings, 'to_table_name'));
+        var chosenTypes = _.uniq(_.map($scope.current_preset.mappings, 'to_table_name'));
         var all_cols_have_table_name = !_.find($scope.mappings, {suggestion_table_name: undefined});
 
         if (chosenTypes.length === 1 && all_cols_have_table_name) {
@@ -106,11 +106,12 @@ angular.module('BE.seed.controller.mapping', [])
 
       // Preset-level create and update modal-rending actions
       var preset_mappings_from_working_mappings = function () {
+        // for to_field, try DB col name, if not use col display name
         return _.reduce($scope.mappings, function (preset_mapping_data, mapping) {
           preset_mapping_data.push({
             from_field: mapping.name,
             from_units: mapping.from_units,
-            to_field: mapping.suggestion_column_name,
+            to_field: mapping.suggestion_column_name || mapping.name,
             to_table_name: mapping.suggestion_table_name,
           });
 
@@ -137,12 +138,12 @@ angular.module('BE.seed.controller.mapping', [])
 
           $scope.preset_change_possible = false;
           $scope.mappings_change_possible = false;
-          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
+          Notification.primary('Saved ' + $scope.current_preset.name);
         });
       };
 
       $scope.save_preset = function () {
-        var preset_id = $scope.dropdown_selected_preset.id;
+        var preset_id = $scope.current_preset.id;
         var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
 
         var preset_mapping_data = preset_mappings_from_working_mappings();
@@ -153,7 +154,7 @@ angular.module('BE.seed.controller.mapping', [])
 
           $scope.preset_change_possible = false;
           $scope.mappings_change_possible = false;
-          Notification.primary('Saved ' + $scope.dropdown_selected_preset.name);
+          Notification.primary('Saved ' + $scope.current_preset.name);
         });
       };
 
