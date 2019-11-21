@@ -48,6 +48,10 @@ class UnitMismatchError(Exception):
     pass
 
 
+class MissingLabelError(Exception):
+    pass
+
+
 def format_pint_violation(rule, source_value):
     """
     Format a pint min, max violation for human readability.
@@ -113,8 +117,8 @@ class Rule(models.Model):
     SEVERITY_WARNING = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
-        (SEVERITY_WARNING, 'warning'),
-        (SEVERITY_VALID, 'valid')
+        (SEVERITY_VALID, 'valid'),
+        (SEVERITY_WARNING, 'warning')
     ]
 
     DEFAULT_RULES = [
@@ -715,17 +719,18 @@ class DataQualityCheck(models.Model):
                 else:
                     # check the min and max values
                     try:
-                        if not rule.minimum_valid(value):
-                            if rule.field == 'site_eui':
+                        if rule.field == 'site_eui':
+                            if not rule.minimum_valid(value):
                                 if rule.severity == 0:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                     label_applied = self.update_status_label(label, rule, linked_id)
                                     break
-                                if isinstance(value, float):
+                                elif rule.severity == 2:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -739,17 +744,18 @@ class DataQualityCheck(models.Model):
                         continue
 
                     try:
-                        if not rule.maximum_valid(value):
-                            if rule.field == 'site_eui':
+                        if rule.field == 'site_eui':
+                            if not rule.maximum_valid(value):
                                 if rule.severity == 0:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                     label_applied = self.update_status_label(label, rule, linked_id)
                                     break
-                                if isinstance(value, float):
+                                elif rule.severity == 2:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -762,16 +768,19 @@ class DataQualityCheck(models.Model):
                         self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
-                    if rule.field == 'site_eui':
-                        if rule.minimum_valid(value) and rule.maximum_valid(value):
-                            if rule.severity == 1:
-                                if not isinstance(value, float):
-                                    print('valid eui: ', value, rule.get_severity_display(), rule.status_label.name)
-                                    label_applied = self.update_status_label(label, rule, linked_id)
+                    # Check for mandatory label for valid data:
+                    if rule.minimum_valid(value) and rule.maximum_valid(value) and rule.severity == 1:
+#                        if rule.field == 'site_eui':
+                        try:
+                            if rule.status_label:
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                print('valid eui and label: ', value, rule.status_label)
+                        except MissingLabelError:
+                            self.add_result_missing_label(row.id, rule, display_name, value)
+                            continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
-
 
     def save_to_cache(self, identifier):
         """
@@ -950,6 +959,18 @@ class DataQualityCheck(models.Model):
             'detailed_message': rule.field + ' is required and missing',
             'severity': rule.get_severity_display(),
         })
+
+    def add_result_missing_label(self, row_id, rule, display_name, value):
+        if rule.severity == 1:
+            self.results[row_id]['data_quality_results'].append({
+                'field': rule.field,
+                'formatted_field': rule.field,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': rule.status_label + ' is missing',
+                'detailed_message': rule.status_label + ' is required and missing',
+                'severity': rule.get_severity_display(),
+            })
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append({
