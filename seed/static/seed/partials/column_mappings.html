@@ -29,7 +29,7 @@
         <!-- possibly generlize settings_profile? -->
         <div class="section_action_container right_wide settings_profile">
           <span>Column Mapping Preset: </span>
-          <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
+          <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-disabled="!presets.length" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
 
           <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present()" tooltip-placement="bottom" uib-tooltip="Save">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
@@ -50,12 +50,14 @@
 
 <div class="section">
     <div class="section_tab_container">
-        <div class="row">
+        <div class="row" style="border-top: 1px solid #ddd;">
             <div class="col-sm-7 tab_content wide">
-                <strong>==========placeholder Text/Advice for creating mapping presets==========</strong>
-                <p>New text about this Column Mappings page</p>
-                <p>Similar text to what's on import mapping page</p>
-                <strong>==========placeholder Text/Advice for creating mapping presets==========</strong>
+                <p>Column mapping presets can help you standardize and simplify your file import mapping process.</p>
+                <p>Create mappings to specific Data File header values - mapping SEED headers, Inventory Types, and if applicable, Measurement Units.</p>
+                <p>SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes.</p>
+                <p>Also, you can copy Data File header values directly over to SEED headers via the button below.</p>
+                <p>You can create mapping rows for a preset by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right.</p>
+                <p><strong>When using a preset for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated.</strong></p>
             </div>
 
             <div class="col-sm-5 key tab_content wide">
@@ -75,7 +77,7 @@
             <button type="button" class="btn btn-primary" ng-click="mirror_data_file_headers()" translate>Copy Data File Headers directly to SEED Headers</button>
         </div>
 
-        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>Please review Date File Headers.  Duplicate values are not allowed.</div>
+        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>Please review Date File Headers.  Duplicate or empty values are not allowed.</div>
 
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="table_list_container has_borders">
@@ -83,7 +85,7 @@
                   <thead>
                       <tr>
                           <th colspan="3" class="source_data">SEED</th>
-                          <th colspan="6" class="source_data">{$ dropdown_selected_preset.name $}</th>
+                          <th colspan="6" class="source_data">{$ current_preset.name $}</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -103,6 +105,7 @@
                           <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
                           <th><translate>Measurement Units</translate></th>
                           <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
+                          <th></th>
                       </tr>
                   </thead>
                   <tbody id="mapped-table">
