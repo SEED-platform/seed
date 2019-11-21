@@ -725,11 +725,13 @@ class DataQualityCheck(models.Model):
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    print('min error out 1st!', value.magnitude, label_applied, rule.status_label)
                                     break
                                 elif rule.severity == 2:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    print('min must be warning value: ', value.magnitude, label_applied, rule.status_label)
                                     break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
@@ -750,11 +752,13 @@ class DataQualityCheck(models.Model):
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    print('max error out 1st!', value.magnitude, label_applied, rule.status_label)
                                     break
                                 elif rule.severity == 2:
                                     s_min, s_max, s_value = rule.format_strings(value)
                                     self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                     label_applied = self.update_status_label(label, rule, linked_id)
+                                    print('max must be warning value: ', value.magnitude, label_applied, rule.status_label)
                                     break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
@@ -769,15 +773,16 @@ class DataQualityCheck(models.Model):
                         continue
 
                     # Check for mandatory label for valid data:
-                    if rule.minimum_valid(value) and rule.maximum_valid(value) and rule.severity == 1:
-#                        if rule.field == 'site_eui':
-                        try:
-                            if rule.status_label:
-                                label_applied = self.update_status_label(label, rule, linked_id)
-                                print('valid eui and label: ', value, rule.status_label)
-                        except MissingLabelError:
-                            self.add_result_missing_label(row.id, rule, display_name, value)
-                            continue
+                    try:
+                        label_applied = self.update_status_label(label, rule, linked_id)
+                    except MissingLabelError:
+                        self.add_result_missing_label(row.id, rule, display_name, value)
+                        continue
+
+                    if rule.field == 'site_eui':
+                        if rule.minimum_valid(value) and rule.maximum_valid(value):
+                            if rule.severity == 1:
+                                print('valid eui and label: ', value, label_applied, rule.status_label)
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
