@@ -251,6 +251,16 @@ angular.module('BE.seed.controller.column_mappings', [])
         $scope.flag_change();
       };
 
+      // Copy Comma-delimited list into headers
+      $scope.csv_headers = "";
+
+      $scope.copy_csv_headers = function() {
+        _.forEach($scope.csv_headers.split(','), function (col_header) {
+          $scope.add_new_column();
+          _.last($scope.current_preset.mappings).from_field = col_header;
+        })
+      };
+
       // Copy Data File Header values into SEED Header values
       $scope.mirror_data_file_headers = function () {
         _.forEach($scope.current_preset.mappings, function (mapping) {

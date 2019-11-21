@@ -60,9 +60,11 @@
 
             <div class="col-sm-5 key tab_content wide">
                 <p translate>IF_MARKED_AS_DUPLICATE_ADVICE</p>
-                <textarea name="name" rows="8" cols="80" placeholder="<File Column 1>,<File Column 2>,<File Column 3>,..."></textarea>
-                <button class="btn btn-info" type="button" ng-click="newProfile()" tooltip-placement="bottom" uib-tooltip="New">
-                    Import CSV Headers
+                <br>
+                <textarea ng-model="csv_headers" rows="8" cols="45" style="resize: none;" placeholder="<File Column 1>,<File Column 2>,<File Column 3>,..."></textarea>
+                <br>
+                <button class="btn btn-info" ng-disabled="csv_headers === ''" type="button" ng-click="copy_csv_headers()" tooltip-placement="bottom" uib-tooltip="Creates rows given comma-separated columns.">
+                    Copy into Data File Headers
                 </button>
             </div>
 
