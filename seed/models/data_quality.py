@@ -719,20 +719,17 @@ class DataQualityCheck(models.Model):
                 else:
                     # check the min and max values
                     try:
-                        if rule.field == 'site_eui':
-                            if not rule.minimum_valid(value):
-                                if rule.severity == 0:
-                                    s_min, s_max, s_value = rule.format_strings(value)
-                                    self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                    label_applied = self.update_status_label(label, rule, linked_id)
-                                    print('min error out 1st!', value.magnitude, label_applied, rule.status_label)
-                                    break
-                                elif rule.severity == 2:
-                                    s_min, s_max, s_value = rule.format_strings(value)
-                                    self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                    label_applied = self.update_status_label(label, rule, linked_id)
-                                    print('min must be warning value: ', value.magnitude, label_applied, rule.status_label)
-                                    break
+                        if not rule.minimum_valid(value):
+                            if rule.severity == 0:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                break
+                            elif rule.severity == 2:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -746,20 +743,17 @@ class DataQualityCheck(models.Model):
                         continue
 
                     try:
-                        if rule.field == 'site_eui':
-                            if not rule.maximum_valid(value):
-                                if rule.severity == 0:
-                                    s_min, s_max, s_value = rule.format_strings(value)
-                                    self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                    label_applied = self.update_status_label(label, rule, linked_id)
-                                    print('max error out 1st!', value.magnitude, label_applied, rule.status_label)
-                                    break
-                                elif rule.severity == 2:
-                                    s_min, s_max, s_value = rule.format_strings(value)
-                                    self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                    label_applied = self.update_status_label(label, rule, linked_id)
-                                    print('max must be warning value: ', value.magnitude, label_applied, rule.status_label)
-                                    break
+                        if not rule.maximum_valid(value):
+                            if rule.severity == 0:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                break
+                            elif rule.severity == 2:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -774,15 +768,27 @@ class DataQualityCheck(models.Model):
 
                     # Check for mandatory label for valid data:
                     try:
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        if rule.minimum_valid(value) and rule.maximum_valid(value):
+                            if rule.severity == 1:
+                                '''
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.results[row.id]['data_quality_results'].append(
+                                    {
+                                        'field': rule.field,
+                                        'formatted_field': display_name,
+                                        'value': s_value,
+                                        'table_name': rule.table_name,
+                                        'message': display_name + ' is valid',
+                                        'detailed_message': display_name + ' [' + s_value + '] is valid data',
+                                        'severity': rule.get_severity_display(),
+                                    }
+                                )
+                                '''
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                                break
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
-
-                    if rule.field == 'site_eui':
-                        if rule.minimum_valid(value) and rule.maximum_valid(value):
-                            if rule.severity == 1:
-                                print('valid eui and label: ', value, label_applied, rule.status_label)
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
