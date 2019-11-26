@@ -25,7 +25,6 @@ FROM seedplatform/seed:2.6.0
 #        npm \
 #        nginx && \
 #    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main openssl && \
-#
 #    apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ geos gdal && \
 #    ln -sf /usr/bin/python3 /usr/bin/python && \
 #    python -m ensurepip && \
@@ -47,6 +46,10 @@ FROM seedplatform/seed:2.6.0
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
 ##   - install supervisor that works with Python3.
 ##   - enchant, python-gdbm, libssl-dev, libxml2-dev are no longer explicitly installed
+
+## Remove this line after updating the base image to support the new dependency versions. The line ensures that the
+# code is only this branch, not any remnants from the tagged container.
+RUN rm -rf /seed/
 
 ### Install python requirements
 WORKDIR /seed
