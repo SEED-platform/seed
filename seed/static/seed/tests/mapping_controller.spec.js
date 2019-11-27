@@ -221,6 +221,7 @@ describe('controller: mapping_controller', function () {
       raw_columns_payload: raw_columns_payload,
       first_five_rows_payload: first_five_rows_payload,
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
+      column_mapping_presets_payload: [],
       cycles: mock_cycles,
       inventory_service: mock_inventory_service
     });
