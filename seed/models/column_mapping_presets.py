@@ -9,7 +9,7 @@ from seed.lib.superperms.orgs.models import Organization
 
 class ColumnMappingPreset(models.Model):
     name = models.CharField(max_length=255, blank=False)
-    mappings = JSONField(default=dict, blank=True)
+    mappings = JSONField(default=list, blank=True)
 
     organizations = models.ManyToManyField(Organization)
 

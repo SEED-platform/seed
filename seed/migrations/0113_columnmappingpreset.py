@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=255)),
-                ('mappings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict)),
+                ('mappings', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=list)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
             ],
