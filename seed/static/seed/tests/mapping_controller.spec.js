@@ -242,24 +242,12 @@ describe('controller: mapping_controller', function () {
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
   });
 
-  it('should show suggested mappings', function () {
-    // arrange
-    create_mapping_controller();
-
-    // act
-    mapping_controller_scope.$digest();
-
-    // assertions
-    var mappings = mapping_controller_scope.mappings;
-    var first_column = mappings[0];
-
-    expect(first_column.suggestion).toBe('PM Property ID');
-  });
-
   it('should detect duplicates', function () {
     create_mapping_controller();
     mapping_controller_scope.$digest();
     console.log('mappings', angular.copy(mapping_controller_scope.mappings));
+    mapping_controller_scope.mappings[0].suggestion = 'PM Property ID';
+    mapping_controller_scope.mappings[1].suggestion = 'Property Name';
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
