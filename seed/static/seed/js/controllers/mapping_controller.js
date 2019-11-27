@@ -72,7 +72,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var analyze_chosen_inventory_types = function () {
-        var chosenTypes = _.uniq(_.map($scope.current_preset.mappings, 'to_table_name'));
+        var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
         var all_cols_have_table_name = !_.find($scope.mappings, {suggestion_table_name: undefined});
 
         if (chosenTypes.length === 1 && all_cols_have_table_name) {

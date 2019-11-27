@@ -76,7 +76,7 @@
     </div>
     <div class="section_content_container" style="padding: 0 16px;">
         <div class="section_content">
-            <div class="section_action_container right_wide settings_profile" style="padding-bottom: 10px;">
+            <div class="section_action_container right_wide settings_profile" style="padding-bottom: 10px;" ng-hide="review_mappings || import_file.matching_done">
               <span translate>Current Column Mapping Preset</span>: <label class="label label-default" ng-if="dropdown_selected_preset.id != current_preset.id">{$:: current_preset.name $}</label>
               <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="flag_preset_change()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
               <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset.id === current_preset.id" translate>
