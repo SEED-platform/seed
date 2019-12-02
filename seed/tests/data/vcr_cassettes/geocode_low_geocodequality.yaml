@@ -2,45 +2,113 @@ interactions:
 - request:
     body: null
     headers:
-      Accept: ['*/*']
-      Accept-Encoding: ['gzip, deflate']
-      Connection: [keep-alive]
-      User-Agent: [python-requests/2.20.0]
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.20.0
     method: GET
-    uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%223001+Brighton+Blvd%2C+suite+2693%2C+Denver%2C+New+Jersey%2C+08081%22%7D%5D%7D&maxResults=1&outFormat=json&thumbMaps=false
+    uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%22Colorado%2C+80202%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
   response:
-    body: {string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+    body:
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
         Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
-        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"3001
-        Brighton Blvd, suite 2693, Denver, New Jersey, 08081"},"locations":[{"street":"[100
-        - 399] Brighton Ct, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Sicklerville","adminArea5Type":"City","adminArea4":"Camden","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08081-2408","geocodeQualityCode":"B3BCA","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"L","linkId":"rnr1179789|i39642056","unknownInput":"","type":"s","latLng":{"lat":39.758716,"lng":-75.035045},"displayLatLng":{"lat":39.758914,"lng":-75.035074},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.758716,-75.035045|marker-sm-50318A-1&scalebar=true&zoom=15&rand=2106111333"},{"street":"[1170
-        - 1199] Brighton Ct, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Beverly","adminArea5Type":"City","adminArea4":"Burlington","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08010","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"L","linkId":"rnr1179806|i37431891","unknownInput":"","type":"s","latLng":{"lat":40.046628,"lng":-74.910985},"displayLatLng":{"lat":40.046457,"lng":-74.910881},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=40.046628,-74.910985|marker-sm-50318A-2&scalebar=true&zoom=15&rand=-1859845443"},{"street":"[809
-        - 899] Brighton Rd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Cherry
-        Hill","adminArea5Type":"City","adminArea4":"Camden","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08034-1812","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"L","linkId":"rnr1180999|i42308621","unknownInput":"","type":"s","latLng":{"lat":39.920978,"lng":-74.998864},"displayLatLng":{"lat":39.920834,"lng":-74.998725},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.920978,-74.998864|marker-sm-50318A-3&scalebar=true&zoom=15&rand=-893050284"},{"street":"[189
-        - 199] Brighton Rd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Barnegat","adminArea5Type":"City","adminArea4":"Ocean","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08005-1904","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"L","linkId":"rnr1180911|i39883159","unknownInput":"","type":"s","latLng":{"lat":39.762243,"lng":-74.321524},"displayLatLng":{"lat":39.76213,"lng":-74.321359},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.762243,-74.321524|marker-sm-50318A-4&scalebar=true&zoom=15&rand=1236834228"},{"street":"[9
-        - 100] Brighton Pl, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Sewell","adminArea5Type":"City","adminArea4":"Gloucester","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08080-2302","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"L","linkId":"rnr1180525|i37002350","unknownInput":"","type":"s","latLng":{"lat":39.737182,"lng":-75.073329},"displayLatLng":{"lat":39.737018,"lng":-75.073444},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.737182,-75.073329|marker-sm-50318A-5&scalebar=true&zoom=15&rand=-1867887418"},{"street":"[1
-        - 99] Brighton Pl, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Cinnaminson","adminArea5Type":"City","adminArea4":"Burlington","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08077-4515","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"R","linkId":"rnr1180904|i37058410","unknownInput":"","type":"s","latLng":{"lat":39.981616,"lng":-75.001601},"displayLatLng":{"lat":39.981794,"lng":-75.00151},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.981616,-75.001601|marker-sm-50318A-6&scalebar=true&zoom=15&rand=1451185518"},{"street":"[37
-        - 99] Brighton Pl, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Swedesboro","adminArea5Type":"City","adminArea4":"Gloucester","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08085-5060","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"R","linkId":"rnr1180227|i37545420","unknownInput":"","type":"s","latLng":{"lat":39.739967,"lng":-75.337586},"displayLatLng":{"lat":39.740091,"lng":-75.337429},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.739967,-75.337586|marker-sm-50318A-7&scalebar=true&zoom=15&rand=1946185899"},{"street":"[61
-        - 99] Brighton Rd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Westampton","adminArea5Type":"City","adminArea4":"Burlington","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08060-2326","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"R","linkId":"rnr1181114|i37578598","unknownInput":"","type":"s","latLng":{"lat":40.008751,"lng":-74.807847},"displayLatLng":{"lat":40.008917,"lng":-74.807735},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=40.008751,-74.807847|marker-sm-50318A-8&scalebar=true&zoom=15&rand=-2115321108"},{"street":"[21
-        - 23] Brighton Rd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Marlton","adminArea5Type":"City","adminArea4":"Burlington","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08053-1866","geocodeQualityCode":"B3BCB","geocodeQuality":"STREET","dragPoint":false,"sideOfStreet":"R","linkId":"rnr1181112|i36929814","unknownInput":"","type":"s","latLng":{"lat":39.896761,"lng":-74.910585},"displayLatLng":{"lat":39.896958,"lng":-74.910614},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.896761,-74.910585|marker-sm-50318A-9&scalebar=true&zoom=15&rand=-62626333"},{"street":"","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Sicklerville","adminArea5Type":"City","adminArea4":"Camden
-        County","adminArea4Type":"County","adminArea3":"NJ","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"08081","geocodeQualityCode":"Z1XXA","geocodeQuality":"ZIP","dragPoint":false,"sideOfStreet":"N","linkId":"286269995","unknownInput":"","type":"s","latLng":{"lat":39.738117,"lng":-74.985146},"displayLatLng":{"lat":39.738117,"lng":-74.985146},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.738117,-74.985146|marker-sm-50318A-10&scalebar=true&zoom=15&rand=680229275"}]}]}'}
+        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"Colorado,
+        80202"},"locations":[{"street":"","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver
+        County","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80202","geocodeQualityCode":"Z1XAA","geocodeQuality":"ZIP","dragPoint":false,"sideOfStreet":"N","linkId":"286301816","unknownInput":"","type":"s","latLng":{"lat":39.751787,"lng":-104.997035},"displayLatLng":{"lat":39.751787,"lng":-104.997035},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.751787,-104.997035|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-659302199"}]}]}'
     headers:
-      Access-Control-Allow-Methods: ['OPTIONS,GET,POST']
-      Access-Control-Allow-Origin: ['*']
-      Cache-Control: ['no-cache, must-revalidate']
-      Content-Length: ['7917']
-      Content-Type: [application/json;charset=UTF-8]
-      Date: ['Mon, 07 Jan 2019 22:52:14 GMT']
-      Expires: ['Mon, 20 Dec 1998 01:00:00 GMT']
-      GeocodeTransactionCount: ['1']
-      Last-Modified: ['Mon, 07 Jan 2019 22:52:14 GMT']
-      Pragma: [no-cache]
-      ReverseGeocodeTransactionCount: ['0']
-      Server: [Apache-Coyote/1.1]
-      Set-Cookie: [JSESSIONID=5F53610D9CB9C79AA1FE83AB3C367FF2; Path=/; HttpOnly;
-          Secure]
-      Strict-Transport-Security: [max-age=0]
-      status: [success]
-      transactionWeight: ['1.0']
-    status: {code: 200, message: OK}
+      Access-Control-Allow-Methods:
+      - OPTIONS,GET,POST
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache, must-revalidate
+      Content-Length:
+      - '1040'
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 21 Oct 2019 20:23:11 GMT
+      Expires:
+      - Mon, 20 Dec 1998 01:00:00 GMT
+      GeocodeTransactionCount:
+      - '1'
+      Last-Modified:
+      - Mon, 21 Oct 2019 20:23:12 GMT
+      Pragma:
+      - no-cache
+      ReverseGeocodeTransactionCount:
+      - '0'
+      Server:
+      - Apache-Coyote/1.1
+      Set-Cookie:
+      - JSESSIONID=842E0840536221D3A5EF62B6F94B5CEC; Path=/; HttpOnly; Secure
+      Strict-Transport-Security:
+      - max-age=0
+      status:
+      - success
+      transactionWeight:
+      - '1.0'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.20.0
+    method: GET
+    uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%22Denver%2C+Colorado%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
+  response:
+    body:
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+        Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
+        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"Denver,
+        Colorado"},"locations":[{"street":"","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver
+        County","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"","geocodeQualityCode":"A5XAX","geocodeQuality":"CITY","dragPoint":false,"sideOfStreet":"N","linkId":"282041090","unknownInput":"","type":"s","latLng":{"lat":39.738453,"lng":-104.984853},"displayLatLng":{"lat":39.738453,"lng":-104.984853},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.738453,-104.984853|marker-sm-50318A-1&scalebar=true&zoom=12&rand=-148576992"}]}]}'
+    headers:
+      Access-Control-Allow-Methods:
+      - OPTIONS,GET,POST
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - no-cache, must-revalidate
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 21 Oct 2019 20:23:12 GMT
+      Expires:
+      - Mon, 20 Dec 1998 01:00:00 GMT
+      GeocodeTransactionCount:
+      - '1'
+      Last-Modified:
+      - Mon, 21 Oct 2019 20:23:12 GMT
+      Pragma:
+      - no-cache
+      ReverseGeocodeTransactionCount:
+      - '0'
+      Server:
+      - Apache-Coyote/1.1
+      Set-Cookie:
+      - JSESSIONID=5BAF0702352158FDF1A0D565C0CBF991; Path=/; HttpOnly; Secure
+      Strict-Transport-Security:
+      - max-age=0
+      Transfer-Encoding:
+      - chunked
+      status:
+      - success
+      transactionWeight:
+      - '1.0'
+    status:
+      code: 200
+      message: OK
 version: 1

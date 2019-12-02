@@ -82,6 +82,10 @@ class GeocodeViews(viewsets.ViewSet):
                     id__in=tax_lot_ids,
                     geocoding_confidence__startswith='Low'
                 )),
+                'manual': len(TaxLotState.objects.filter(
+                    id__in=tax_lot_ids,
+                    geocoding_confidence='Manually geocoded (N/A)'
+                )),
                 'missing_address_components': len(TaxLotState.objects.filter(
                     id__in=tax_lot_ids,
                     geocoding_confidence='Missing address components (N/A)'
