@@ -5,48 +5,8 @@ from __future__ import unicode_literals
 import django.contrib.postgres.fields.jsonb
 from django.db import migrations, models
 from datetime import datetime
-from json import load
 
-
-def pm_mappings():
-    with open("./seed/lib/mappings/data/pm-mapping.json", "r") as read_file:
-        raw_mappings = load(read_file)
-
-    # Verify that from_field values are all uniq
-    from_fields = [rm['from_field'] for rm in raw_mappings]
-    assert len(from_fields) == len(set(from_fields))
-
-    # taken from mapping partial (./static/seed/partials/mapping.html)
-    valid_units = [
-        # area units
-        "ft**2",
-        "m**2",
-        # eui_units
-        "kBtu/ft**2/year",
-        "kWh/m**2/year",
-        "GJ/m**2/year",
-        "MJ/m**2/year",
-        "kBtu/m**2/year",
-    ]
-
-    formatted_mappings = []
-
-    # check unit value is one that SEED recognizes
-    for rm in raw_mappings:
-        from_units = rm.get('units', None)
-        if from_units not in valid_units:
-            from_units = None
-
-        mapping = {
-            "to_field": rm.get('to_field'),
-            "from_field": rm.get('from_field'),
-            "from_units": from_units,
-            "to_table_name": rm.get('to_table_name'),
-        }
-
-        formatted_mappings.append(mapping)
-
-    return formatted_mappings
+from seed.utils.organizations import default_pm_mappings
 
 
 def snapshot_mappings(ColumnMapping, org):
@@ -99,12 +59,12 @@ def forwards(apps, schema_editor):
                 mappings=snapshot_mappings(ColumnMapping, org)
             )
 
-            # Create PM mappings
-            pm_mapping_name = 'Portfolio Manager Defaults'
-            org.columnmappingpreset_set.create(
-                name=pm_mapping_name,
-                mappings=pm_mappings()
-            )
+        # Create PM mappings
+        pm_mapping_name = 'Portfolio Manager Defaults'
+        org.columnmappingpreset_set.create(
+            name=pm_mapping_name,
+            mappings=default_pm_mappings()
+        )
 
 
 class Migration(migrations.Migration):
