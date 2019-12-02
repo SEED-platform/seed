@@ -111,7 +111,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0011_auto_20190714_2159'),
-        ('seed', '0112_refresh_matching_criteria'),
+        ('seed', '0113_column_geocoding_order'),
     ]
 
     operations = [
@@ -126,10 +126,5 @@ class Migration(migrations.Migration):
                 ('organizations', models.ManyToManyField(to='orgs.Organization')),
             ],
         ),
-        # migrations.AddField(
-        #     model_name='columnmappingpreset',
-        #     name='organizations',
-        #     field=models.ManyToManyField(to='orgs.Organization'),
-        # ),
         migrations.RunPython(forwards),
     ]
