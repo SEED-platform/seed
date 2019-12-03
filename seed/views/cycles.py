@@ -9,7 +9,6 @@ All rights reserved.  # NOQA
 """
 from seed.filtersets import CycleFilterSet
 from seed.models import Cycle
-from seed.pagination import NoPagination
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
@@ -142,7 +141,7 @@ class CycleViewSet(SEEDOrgModelViewSet):
             :required: false
     """
     serializer_class = CycleSerializer
-    pagination_class = NoPagination
+    pagination_class = None
     model = Cycle
     data_name = 'cycles'
     filter_class = CycleFilterSet

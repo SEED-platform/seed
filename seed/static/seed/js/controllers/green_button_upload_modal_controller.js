@@ -159,7 +159,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
 
         col_defs.push(successfully_imported_col_def);
 
-        if ((message[0] || {}).hasOwnProperty('errors')) {
+        if (_.has(message, '[0].errors')) {
           col_defs.push({
             field: 'errors',
             enableHiding: false

@@ -328,7 +328,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.save_item = function () {
-        $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
             .then(save_item_resolve, save_item_reject)

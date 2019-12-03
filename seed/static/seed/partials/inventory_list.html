@@ -15,17 +15,10 @@
 </div>
 
 <div class="inventory-list-controls">
-    <form name="listControlsForm"
-          class="form-inline"
-          role="form"
-          ng-submit="submitNewLabelForm(newLabelForm.$valid)"
-          novalidate>
+    <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="form-group">
             <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
-                <button id="btnInventoryActions"
-                        type="button"
-                        uib-dropdown-toggle
-                        class="btn btn-default btn-sm">
+                <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
@@ -49,7 +42,7 @@
                         <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
                     </li>
                     <li role="menuitem">
-                        <a ng-click="open_ubid_modal()" ng-disabled="selectedCount === 0" >Decode UBID/ULID for Selected</a>
+                        <a ng-click="open_ubid_modal()" ng-disabled="selectedCount === 0">Decode UBID/ULID for Selected</a>
                     </li>
                     <li class="divider"></li>
                     <li role="menuitem">
@@ -61,20 +54,8 @@
         <div class="form-group">
             <label for="tagsInput" translate>Filter by label:</label>
             <div class="btn-group">
-                <tags-input id="tagsInput"
-                            ng-model="selected_labels"
-                            min-length="1"
-                            placeholder="{$:: 'Add a label' | translate $}"
-                            replace-spaces-with-dashes="false"
-                            add-from-autocomplete-only="true"
-                            ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)"
-                                   max-results-to-show="255"
-                                   min-length="0"
-                                   load-on-empty="true"
-                                   load-on-focus="true"
-                                   ng-disabled="!labels.length">
-                    </auto-complete>
+                <tags-input id="tagsInput" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
             </div>
         </div>
@@ -96,8 +77,7 @@
         <span>
             <label>{$:: 'Cycle' | translate $}:</label>
             <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                        ng-options="option.name for option in ::cycle.cycles track by option.id">
+                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
                 </select>
             </div>
         </span>

@@ -2,8 +2,6 @@
 
 {% block content %}
 <div class="page login">
-    {% include "landing/_header.html" %}
-
     <div class="page_section">
         {% include "landing/_marketing_bullets.html" %}
         <!-- END .section_marketing -->
@@ -11,7 +9,7 @@
             {% include "landing/_browser_supported.html" %}
             <div class="clearfix"></div>
             <div class="form_title">
-                <h2>{% trans "Log in" %}</h2>
+                <h2>{% trans "Log in to SEED Platform™" %}</h2>
                 {% block login-pretext %}{% endblock %}
                 <form action="" method="POST" class="signup_form login_form">{% csrf_token %}
                     <table class="signup_table">
