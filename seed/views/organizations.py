@@ -981,3 +981,42 @@ class OrganizationViewSet(viewsets.ViewSet):
         result_key = _get_match_merge_link_key(identifier)
 
         return JsonResponse(get_cache_raw(result_key))
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @detail_route(methods=['GET'])
+    def geocoding_columns(self, request, pk=None):
+        """
+        Retrieve all geocoding columns for an org.
+        ---
+        response_serializer: OrganizationUsersSerializer
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        geocoding_columns_qs = org.column_set.\
+            filter(geocoding_order__gt=0).\
+            order_by('geocoding_order').\
+            values('table_name', 'column_name')
+
+        geocoding_columns = {
+            'PropertyState': [],
+            'TaxLotState': [],
+        }
+
+        for col in geocoding_columns_qs:
+            geocoding_columns[col['table_name']].append(col['column_name'])
+
+        return JsonResponse(geocoding_columns)

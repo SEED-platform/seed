@@ -30,11 +30,11 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
-class TaxLotViewTests(DeleteModelsTestCase):
+class TaxLotViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -180,7 +180,7 @@ class TaxLotViewTests(DeleteModelsTestCase):
         self.assertEqual(result_2[0]['id'], taxlot_2.id)
 
 
-class TaxLotMergeUnmergeViewTests(DeleteModelsTestCase):
+class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

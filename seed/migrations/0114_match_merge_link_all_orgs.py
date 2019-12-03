@@ -16,7 +16,7 @@ def forwards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0111_rehash'),
+        ('seed', '0113_column_geocoding_order'),
     ]
 
     operations = [

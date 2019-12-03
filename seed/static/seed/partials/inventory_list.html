@@ -84,10 +84,10 @@
             <label class="btn btn-default btn-sm" style="width:75px;" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</label>
         </div>
         <div class="form-group btn-group building-list-filter-buttons">
-            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-disabled="!selected_labels.length" translate>Clear Labels</button>
+            <button type="button" ng-click="clear_labels()" class="btn btn-default btn-sm" ng-class="{'btn-info': selected_labels.length, 'btn-default': !selected_labels.length}" translate>Clear Labels</button>
         </div>
         <div class="btn-group">
-            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-disabled="!filters_exist()" class="btn btn-default btn-sm" translate>Clear Filters</button>
+            <button type="button" ng-click="gridApi.grid.clearAllFilters();" ng-class="{'btn-info': filters_exist(), 'btn-default': !filters_exist()}" class="btn btn-sm" translate>Clear Filters</button>
         </div>
 
     </form>
@@ -112,7 +112,7 @@
 </div>
 
 <div class="inventory-list-tab-container">
-    <div class="item-count">
+    <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
         <span ng-if="::inventory_type === 'properties'">
             <i class="fa fa-building-o"></i>
             <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>

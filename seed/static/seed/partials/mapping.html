@@ -32,6 +32,18 @@
                         </p>
                         <p translate>MATCHING_ADVICE</p>
                         <p translate>MERGE_LINK_ADVICE</p>
+                        <p ng-show="property_geocoding_columns_array.length">
+                            <span class="label label-default">{$:: 'FIELD_NAMES_FOR_GEOCODING_PROPERTIES' | translate $}:</span>
+                            <span><strong>{$ property_geocoding_columns $}</strong></span>
+                        </p>
+                        <p ng-show="taxlot_geocoding_columns_array.length">
+                            <span class="label label-default">{$:: 'FIELD_NAMES_FOR_GEOCODING_TAXLOTS' | translate $}:</span>
+                            <span><strong>{$ taxlot_geocoding_columns $}</strong></span>
+                        </p>
+                        <p ng-show="org_has_api_key && (property_geocoding_columns || taxlot_geocoding_columns)">
+                          {$:: 'GEOCODING_FULL_ADDRESS_ADVICE' | translate $}
+                          <strong>{$:: 'GEOCODING_NEEDS_THREE_COLS' | translate $}</strong>
+                        </p>
                         <p translate>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
                         <p translate>WHEN_YOU_CLICK_MAP_YOUR_DATA</p>
                     </div>
@@ -79,7 +91,6 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-warning" ng-show="!suggested_fields_present() && !import_file.matching_done" translate>To increase geocode results, it's highly recommended that Address Line 1, City, State, and Postal Code are all provided.</div>
                 <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done">
                     {$:: 'PROPERTY_MATCHING_FIELDS_REQUIREMENT' | translate $}: {$ property_matching_criteria_columns $}.
                 </div>

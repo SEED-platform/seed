@@ -37,8 +37,26 @@ def _create_default_columns(organization_id):
             'ulid'
         ]
 
-        if column.get('column_name') in original_identity_fields:
+        # Default fields and order are those used before customization was enabled
+        default_geocoding_fields = [
+            'address_line_1',
+            'address_line_2',
+            'city',
+            'state',
+            'postal_code',
+        ]
+
+        column_name = column.get('column_name')
+
+        if column_name in original_identity_fields:
             details['is_matching_criteria'] = True
+
+        try:
+            field_index = default_geocoding_fields.index(column_name)
+            # Increment each index by 1 since 0 represents a geocoding deactivated field.
+            details['geocoding_order'] = field_index + 1
+        except ValueError:
+            pass
 
         Column.objects.create(**details)
 
