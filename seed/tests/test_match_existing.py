@@ -25,7 +25,6 @@ from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
     Column,
-    ColumnListSetting,
     Meter,
     MeterReading,
     Property,
@@ -36,6 +35,7 @@ from seed.models import (
     TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
+    VIEW_LIST_TAXLOT,
 )
 from seed.utils.match import (
     match_merge_link,
@@ -1799,7 +1799,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         # get the columnlistsetting (default) for all columns
         column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
         columnlistsetting = column_list_factory.get_columnlistsettings(
-            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT,
+            inventory_type=VIEW_LIST_TAXLOT,
             columns=['district', 'city'],
             table_name='TaxLotState'
         )

@@ -24,7 +24,9 @@ from seed.models import (
     ColumnListSettingColumn,
     PropertyView,
     TaxLotProperty,
-    TaxLotView
+    TaxLotView,
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY,
 )
 from seed.serializers.pint import apply_display_unit_preferences
 
@@ -155,8 +157,8 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
             profile = ColumnListSetting.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
-                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                settings_location=VIEW_LIST,
+                inventory_type=VIEW_LIST_PROPERTY
             )
             show_columns = list(ColumnListSettingColumn.objects.filter(
                 column_list_setting_id=profile.id

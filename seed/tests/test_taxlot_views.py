@@ -14,11 +14,11 @@ from django.utils.timezone import get_current_timezone
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
-    ColumnListSetting,
     PropertyView,
     TaxLot,
     TaxLotProperty,
     TaxLotView,
+    VIEW_LIST_TAXLOT,
 )
 from seed.test_helpers.fake import (
     FakeColumnListSettingsFactory,
@@ -150,7 +150,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         Column.save_column_names(state)
         # get the columnlistsetting (default) for all columns
         columnlistsetting = self.column_list_factory.get_columnlistsettings(
-            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT,
+            inventory_type=VIEW_LIST_TAXLOT,
             columns=['address_line_1', 'field_1'],
             table_name='TaxLotState'
         )
