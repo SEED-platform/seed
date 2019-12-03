@@ -99,47 +99,12 @@ body {
 
 ////////// STYLE THE PAGE ////////////
 .page {
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
   width: 75%;
   background: $white;
   border-radius: 8px;
   @include box-shadow(0 0 26px rgba(0, 0, 0, 0.7));
 
-  .header {
-    background-color: $landing-landing-lt-blue;
-    @include border-top-radius(9px);
-    border-bottom: 1px solid $bdp-landing-md-gray;
-
-    .logo {
-      float: left;
-      width: 260px;
-
-      .logo_text {
-        width: 260px;
-        padding: 27px 20px 18px;
-        font-size: 24px;
-        font-family: $font-family-base-narrow;
-
-        font-weight: normal;
-        text-transform: uppercase;
-
-        .logo_text_seed {
-          font-family: $font-family-base;
-          font-weight: bold;
-        }
-        .logo_text_saving,
-        .saving_progress {
-          color: $be-blue;
-        }
-      }
-    }
-    .logo_DOE {
-      float: right;
-      padding: 22px 30px 20px 0;
-      width: 274px;
-    }
-  }
   .page_section {
 
     .section_marketing {
@@ -149,19 +114,22 @@ body {
       color: $black;
 
       h1 {
-        padding: 24px 30px 11px 30px;
+        padding: 42px 30px 11px 30px;
         font-size: 24px;
         line-height: 30px;
         font-weight: normal;
         text-align: center;
       }
+
       .marketing_text {
         padding: 0 30px 20px 30px;
         line-height: 21px;
+
         .bullet {
           float: left;
           width: 8%;
           padding-top: 2px;
+
           div {
             width: 20px;
             height: 20px;
@@ -171,21 +139,25 @@ body {
             @include box-shadow(1px 1px 4px $bdp-landing-md-gray);
           }
         }
+
         .bullet_text {
           float: right;
           width: 91%;
         }
       }
+
       .asterisk {
         .bullet_text {
           font-size: 14px;
           line-height: 16px;
         }
       }
+
       span.asterisk_color {
         font-size: 120%;
         color: $orange;
       }
+
       .powered_by_seed {
         position: absolute;
         width: 200px;
@@ -202,6 +174,7 @@ body {
         }
       }
     }
+
     .section_forms {
       float: right;
       overflow: hidden;
@@ -210,12 +183,11 @@ body {
       text-align: center;
       border-left: 1px solid $bdp-landing-md-gray;
       background: url('../images/landing/bg-paper.png');
-      -webkit-border-bottom-right-radius: 8px;
-      -moz-border-bottom-right-radius: 8px;
+      border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
 
       .form_title {
-        padding-top: 26px;
+        padding-top: 42px;
 
         h2 {
           font-size: 24px;
@@ -227,12 +199,14 @@ body {
         p.password_note {
           color: $red;
           text-align: left;
-          padding: 0px 32px;
+          padding: 0 32px;
         }
       }
+
       .disable_login {
         opacity: 0.5;
       }
+
       /////////// DEFINE THE HEIGHT OF SECTION FORM CONTAINERS. KEEP SAME. //////////////
       .choose_your_path,
       .current_account_link,
@@ -242,6 +216,7 @@ body {
         margin-top: 10px;
         min-height: 228px;
       }
+
       .current_account_link,
       .enter_invite_code_form {
         .signup_form {
@@ -249,6 +224,7 @@ body {
           min-height: 0;
         }
       }
+
       .browser_unsupported {
         display: none;
 
@@ -265,6 +241,7 @@ body {
             font-size: 16px;
           }
         }
+
         .browser_download_links {
           margin-top: 20px;
           width: 100%;
@@ -297,6 +274,7 @@ body {
           }
 
         }
+
         .browser_name {
           position: relative;
           top: 70px;
@@ -309,17 +287,21 @@ body {
           margin: 0 auto;
           background-color: transparent;
           text-align: left;
+
           th {
             padding: 8px 8px 20px 0;
             text-align: right;
             display: none;
           }
+
           td {
             text-align: center;
+
             p {
               text-align: center;
             }
           }
+
           input {
             display: inline-block;
             width: 94%;
@@ -337,19 +319,23 @@ body {
             @include box-shadow(0px 1px 1px $white);
             @include transition(border box-shadow linear 0.2s);
           }
+
           input:focus {
             border-color: rgba(82, 168, 236, 0.8);
             outline: thin dotted 9;
             @include box-shadow(inset 0 1px 1px rgba(0, 0, 0, .075) /* , 0 0 8px rgba(82,168,236,.6) */
             );
           }
+
           br {
             display: none;
           }
+
           .errorlist {
             text-indent: 0;
             color: $red;
             position: relative;
+
             li {
               position: absolute;
               left: 200px;
@@ -363,24 +349,29 @@ body {
             margin-top: 10px;
             margin-bottom: 4px;
           }
+
           #id_first_name,
           #id_last_name,
           #id_password1,
           #id_password2 {
             width: 88%;
           }
+
           input[type="checkbox"] {
             margin-top: 0;
             width: 20px;
           }
+
           .opt-ins {
             padding-top: 16px;
           }
 
         }
+
         p {
           line-height: 24px;
         }
+
         .btn {
           margin: 30px 4px 0 4px;
           display: inline-block;
@@ -392,11 +383,13 @@ body {
           margin-top: 20px;
           margin-bottom: 20px;
         }
+
         .already_signed_up {
           display: block;
           margin-top: 20px;
           font-size: 15px;
         }
+
         .already_signed_up_signup {
           display: block;
           margin-top: 20px;
@@ -405,21 +398,25 @@ body {
 
         .thank_you {
           padding-top: 20px;
+
           .thank_you_text {
             margin: 0 auto;
             width: 75%;
             line-height: 22px
           }
         }
+
         span.email_me {
           font-size: 15px;
         }
 
       }
     }
+
     .helptext {
       display: none;
     }
+
     .signup_complete_message {
       margin-top: 30px;
     }

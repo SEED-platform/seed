@@ -297,12 +297,12 @@ def get_cycle(org, year=2015):
     :return: cycle starting on datetime(year, 1, 1, 0, 0, 0) and ending on
                 datetime(year, 12, 31, 23, 59, 59)
     """
-    cycle, _ = seed.models.Cycle.objects.get_or_create(name="{y} Annual".format(y=year),
-                                                       organization=org,
-                                                       start=datetime.datetime(year, 1, 1),
-                                                       end=datetime.datetime(year + 1, 1,
-                                                                             1) - datetime.timedelta(
-                                                           seconds=1))
+    cycle, _ = seed.models.Cycle.objects.get_or_create(
+        name="{y} Annual".format(y=year),
+        organization=org,
+        start=datetime.datetime(year, 1, 1),
+        end=datetime.datetime(year + 1, 1, 1) - datetime.timedelta(seconds=1)
+    )
     return cycle
 
 
@@ -631,8 +631,7 @@ def _create_case_D(org, cycle, taxlots, properties, campus, number_records_per_c
     return taxlots, properties, campus
 
 
-def create_case_D(org, cycle, taxlot_factory, property_factory,
-                  number_records_per_cycle_per_state=1):
+def create_case_D(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state=1):
     """
     Creates one instance of Case D (n buildings, m taxlots, one campus) for the given org in the given cycle
     :param org: Organization, the organization that will own the created cases
@@ -657,8 +656,9 @@ def create_case_D(org, cycle, taxlot_factory, property_factory,
         properties.append(
             property_factory.property_state(pm_parent_property_id=campus_property_id, city=city))
 
-    taxlots, properties, campus = _create_case_D(org, cycle, taxlots, properties, campus,
-                                                 number_records_per_cycle_per_state)
+    taxlots, properties, campus = _create_case_D(
+        org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state
+    )
 
     return taxlots, properties, campus
 
@@ -745,13 +745,12 @@ def create_additional_years(org, years, pairs_taxlots_and_properties, case,
             taxlots = list(map(update_taxlot_f, taxlots))
             properties = list(map(update_property_f, properties))
             print('Creating {i}'.format(i=idx))
-            taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots,
-                                                                            properties,
-                                                                            number_records_per_cycle_per_state)
+            taxlots, properties = create_cases_with_multi_records_per_cycle(
+                org, cycle, taxlots, properties, number_records_per_cycle_per_state
+            )
 
 
-def create_additional_years_D(org, years, tuples_taxlots_properties_campus,
-                              number_records_per_cycle_per_state=1):
+def create_additional_years_D(org, years, tuples_taxlots_properties_campus, number_records_per_cycle_per_state=1):
     """
     Creates additional years of records from existing SampleDataRecords for case D.
     :param org: Organization, the org that will own the new records
@@ -797,9 +796,9 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     taxlot_extra_data_factory = FakeTaxLotExtraDataFactory()
     taxlot_factory = CreateSampleDataFakeTaxLotFactory(taxlot_extra_data_factory)
     property_extra_data_factory = FakePropertyStateExtraDataFactory()
-    property_factory = CreateSampleDataFakePropertyStateFactory(org, year_ending,
-                                                                "Case A-1: 1 Property, 1 Tax Lot",
-                                                                property_extra_data_factory)
+    property_factory = CreateSampleDataFakePropertyStateFactory(
+        org, year_ending, "Case A-1: 1 Property, 1 Tax Lot", property_extra_data_factory
+    )
 
     pairs_taxlots_and_properties_A = []
     pairs_taxlots_and_properties_B = []
@@ -819,31 +818,26 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
         print("Creating Case B {i}".format(i=i))
         property_factory.case_description = "Case B-1: Multiple (3) Properties, 1 Tax Lot"
         pairs_taxlots_and_properties_B.append(
-            create_case_B(org, cycle, taxlot_factory, property_factory,
-                          number_records_per_cycle_per_state))
+            create_case_B(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state)
+        )
 
-    create_additional_years(org, extra_years, pairs_taxlots_and_properties_B, "B",
-                            number_records_per_cycle_per_state)
+    create_additional_years(org, extra_years, pairs_taxlots_and_properties_B, "B", number_records_per_cycle_per_state)
 
     for i in range(c_ct):
         print("Creating Case C {i}".format(i=i))
         property_factory.case_description = "Case C: 1 Property, Multiple (3) Tax Lots"
         pairs_taxlots_and_properties_C.append(
-            create_case_C(org, cycle, taxlot_factory, property_factory,
-                          number_records_per_cycle_per_state))
+            create_case_C(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state))
 
-    create_additional_years(org, extra_years, pairs_taxlots_and_properties_C, "C",
-                            number_records_per_cycle_per_state)
+    create_additional_years(org, extra_years, pairs_taxlots_and_properties_C, "C", number_records_per_cycle_per_state)
 
     for i in range(d_ct):
         print("Creating Case D {i}".format(i=i))
         property_factory.case_description = "Case D: Campus with Multiple associated buildings"
         tuples_taxlots_properties_campus_D.append(
-            create_case_D(org, cycle, taxlot_factory, property_factory,
-                          number_records_per_cycle_per_state))
+            create_case_D(org, cycle, taxlot_factory, property_factory, number_records_per_cycle_per_state))
 
-    create_additional_years_D(org, extra_years, tuples_taxlots_properties_campus_D,
-                              number_records_per_cycle_per_state)
+    create_additional_years_D(org, extra_years, tuples_taxlots_properties_campus_D, number_records_per_cycle_per_state)
 
 
 class Command(BaseCommand):
@@ -871,10 +865,12 @@ class Command(BaseCommand):
         years = options.get('years', '2015')
         years = years.split(',')
         years = [int(x) for x in years]
-        create_sample_data(years,
-                           int(options.get('case_A_count', 0)),
-                           int(options.get('case_B_count', 0)),
-                           int(options.get('case_C_count', 0)),
-                           int(options.get('case_D_count', 0)),
-                           int(options.get('number_records_per_cycle_per_state', 0)))
+        create_sample_data(
+            years,
+            int(options.get('case_A_count', 0)),
+            int(options.get('case_B_count', 0)),
+            int(options.get('case_C_count', 0)),
+            int(options.get('case_D_count', 0)),
+            int(options.get('number_records_per_cycle_per_state', 0))
+        )
         return

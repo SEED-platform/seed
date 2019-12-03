@@ -7,127 +7,25 @@
  * UI Grid overrides
  */
 angular.module('ui.grid').config(['$provide', function ($provide) {
-  $provide.decorator('i18nService', ['$delegate', function ($delegate) {
-    var pagination = $delegate.get('en').pagination;
-    pagination.sizes = 'properties per page';
-    pagination.totalItems = 'properties';
-    $delegate.add('en', {pagination: pagination});
-    return $delegate;
-  }]);
-  $provide.decorator('uiGridGridMenuService', ['$delegate', 'i18nService', 'gridUtil', function ($delegate, i18nService, gridUtil) {
-    $delegate.getMenuItems = function ($scope) {
-      var menuItems = [];
-      if ($scope.grid.options.gridMenuCustomItems) {
-        if (!angular.isArray($scope.grid.options.gridMenuCustomItems)) {
-          gridUtil.logError('gridOptions.gridMenuCustomItems must be an array, and is not');
-        } else {
-          menuItems = menuItems.concat($scope.grid.options.gridMenuCustomItems);
-        }
-      }
-      var clearFilters = [{
-        title: i18nService.getSafeText('gridMenu.clearAllFilters'),
-        action: function ($event) {
-          $scope.grid.clearAllFilters();
-        },
-        shown: function () {
-          return $scope.grid.options.enableFiltering;
-        },
-        order: 100
-      }];
-      menuItems = menuItems.concat(clearFilters);
-      menuItems = menuItems.concat($scope.registeredMenuItems);
-      if ($scope.grid.options.gridMenuShowHideColumns !== false) {
-        menuItems = menuItems.concat($delegate.showHideColumns($scope));
-      }
-      menuItems.sort(function (a, b) {
-        return a.order - b.order;
-      });
-      return menuItems;
-    };
-    return $delegate;
-  }]);
-  $provide.decorator('uiGridMenuItemDirective', ['$delegate', 'gridUtil', '$compile', 'i18nService', function ($delegate, gridUtil, $compile, i18nService) {
-    $delegate[0].compile = function () {
-      return {
-        pre: function ($scope, $elm) {
-          if ($scope.templateUrl) {
-            gridUtil.getTemplate($scope.templateUrl)
-              .then(function (contents) {
-                var template = angular.element(contents);
+  // SEED translation overrides, DEPRECATED.  Leaving here commented as an example if this is needed in the future
+  // $provide.decorator('i18nService', ['$delegate', function ($delegate) {
+  //   var pagination = $delegate.get('en').pagination;
+  //   pagination.sizes = 'properties per page';
+  //   pagination.totalItems = 'properties';
+  //   $delegate.add('en', {pagination: pagination});
+  //   return $delegate;
+  // }]);
 
-                var newElm = $compile(template)($scope);
-                $elm.replaceWith(newElm);
-              });
-          }
-        },
-        post: function ($scope, $elm, $attrs, controllers) {
-          var uiGridCtrl = controllers[0];
-
-          // TODO(c0bra): validate that shown and active are functions if they're defined. An exception is already thrown above this though
-          // if (typeof($scope.shown) !== 'undefined' && $scope.shown && typeof($scope.shown) !== 'function') {
-          //   throw new TypeError("$scope.shown is defined but not a function");
-          // }
-          if (typeof($scope.shown) === 'undefined' || $scope.shown === null) {
-            $scope.shown = function () {
-              return true;
-            };
-          }
-
-          $scope.itemShown = function () {
-            var context = {};
-            if ($scope.context) {
-              context.context = $scope.context;
-            }
-
-            if (typeof(uiGridCtrl) !== 'undefined' && uiGridCtrl) {
-              context.grid = uiGridCtrl.grid;
-            }
-
-            return $scope.shown.call(context);
-          };
-
-          $scope.itemAction = function ($event, title) {
-            $event.stopPropagation();
-
-            if (typeof($scope.action) === 'function') {
-              var context = {};
-
-              if ($scope.context) {
-                context.context = $scope.context;
-              }
-
-              // Add the grid to the function call context if the uiGrid controller is present
-              if (typeof(uiGridCtrl) !== 'undefined' && uiGridCtrl) {
-                context.grid = uiGridCtrl.grid;
-              }
-
-              $scope.action.call(context, $event, title);
-
-              if (!$scope.leaveOpen) {
-                $scope.$emit('hide-menu');
-              } else {
-                /*
-                 * XXX: Fix after column refactor
-                 * Ideally the focus would remain on the item.
-                 * However, since there are two menu items that have their 'show' property toggled instead. This is a quick fix.
-                 */
-
-                var id = parseInt($elm[0].id.match(/\d+/)[0]);
-                var selector = '#menuitem-' + (id % 2 ? id + 1 : id - 1);
-                gridUtil.focus.bySelector(angular.element(selector), 'button[type=button]', true);
-              }
-            }
-          };
-
-          $scope.i18n = i18nService.get();
-        }
-      };
-    };
-    return $delegate;
-  }]);
-
+  // From `@name search`, adds a `foreachFilterColIgnoringChildren` function if grid.api.treeBase is defined to ignore column filters for child rows
   $provide.decorator('rowSearcher', ['$delegate', 'gridUtil', function ($delegate, gridUtil) {
     $delegate.search = function (grid, rows, columns) {
+      /*
+       * Added performance optimisations into this code base, as this logic creates deeply nested
+       * loops and is therefore very performance sensitive.  In particular, avoiding forEach as
+       * this impacts some browser optimisers (particularly Chrome), using iterators instead
+       */
+
+      // Don't do anything if we weren't passed any rows
       if (!rows) {
         return;
       }
@@ -157,7 +55,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
       for (var i = 0; i < colsLength; i++) {
         var col = columns[i];
 
-        if (typeof(col.filters) !== 'undefined' && hasTerm(col.filters)) {
+        if (typeof (col.filters) !== 'undefined' && hasTerm(col.filters)) {
           filterData.push({col: col, filters: $delegate.setupFilters(col.filters)});
         }
       }
@@ -170,6 +68,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           }
         };
 
+        // =============== START SEED CHANGE ===============
         var foreachFilterColIgnoringChildren = function (grid, filterData) {
           var rowsLength = rows.length;
           var lastVisibility = false;
@@ -197,6 +96,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           if (gridHasTree) foreachFilterColIgnoringChildren(grid, filterData[j]);
           else foreachFilterCol(grid, filterData[j]);
         }
+        // =============== END SEED CHANGE ===============
 
         if (grid.api.core.raise.rowsVisibleChanged) {
           grid.api.core.raise.rowsVisibleChanged();
@@ -204,7 +104,7 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
 
         // drop any invisible rows
         // keeping these, as needed with filtering for trees - we have to come back and make parent nodes visible if child nodes are selected in the filter
-        // rows = rows.filter(function(row){ return row.visible; });
+        // rows = rows.filter(function(row) { return row.visible; });
 
       }
 
@@ -214,16 +114,25 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
   }]);
 
   // Disable uiGridConstants.dataChange.COLUMN on filter keyup
-  $provide.decorator('uiGridHeaderCellDirective', ['$delegate', '$compile', '$timeout', '$window', '$document', 'gridUtil', 'uiGridConstants', 'ScrollEvent', 'i18nService', function ($delegate, $compile, $timeout, $window, $document, gridUtil, uiGridConstants, ScrollEvent, i18nService) {
+  $provide.decorator('uiGridHeaderCellDirective', ['$delegate', '$compile', '$timeout', '$window', '$document', 'gridUtil', 'uiGridConstants', 'ScrollEvent', 'i18nService', '$rootScope', function ($delegate, $compile, $timeout, $window, $document, gridUtil, uiGridConstants, ScrollEvent, i18nService, $rootScope) {
     // Do stuff after mouse has been down this many ms on the header cell
-    var mousedownTimeout = 500;
-    var changeModeTimeout = 500;    // length of time between a touch event and a mouse event being recognised again, and vice versa
+    var mousedownTimeout = 500,
+      changeModeTimeout = 500; // length of time between a touch event and a mouse event being recognised again, and vice versa
 
     $delegate[0].compile = function () {
       return {
-        pre: function ($scope, $elm, $attrs) {
-          var cellHeader = $compile($scope.col.headerCellTemplate)($scope);
-          $elm.append(cellHeader);
+        pre: function ($scope, $elm) {
+          var template = $scope.col.headerCellTemplate;
+          if (template === undefined && $scope.col.providedHeaderCellTemplate !== '') {
+            if ($scope.col.headerCellTemplatePromise) {
+              $scope.col.headerCellTemplatePromise.then(function () {
+                template = $scope.col.headerCellTemplate;
+                $elm.append($compile(template)($scope));
+              });
+            }
+          } else {
+            $elm.append($compile(template)($scope));
+          }
         },
 
         post: function ($scope, $elm, $attrs, controllers) {
@@ -235,20 +144,20 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
             sort: i18nService.getSafeText('sort')
           };
           $scope.isSortPriorityVisible = function () {
-            //show sort priority if column is sorted and there is at least one other sorted column
-            return angular.isNumber($scope.col.sort.priority) && $scope.grid.columns.some(function (element, index) {
-                return angular.isNumber(element.sort.priority) && element !== $scope.col;
-              });
+            // show sort priority if column is sorted and there is at least one other sorted column
+            return $scope.col && $scope.col.sort && angular.isNumber($scope.col.sort.priority) && $scope.grid.columns.some(function (element, index) {
+              return angular.isNumber(element.sort.priority) && element !== $scope.col;
+            });
           };
           $scope.getSortDirectionAriaLabel = function () {
             var col = $scope.col;
-            //Trying to recreate this sort of thing but it was getting messy having it in the template.
-            //Sort direction {{col.sort.direction == asc ? 'ascending' : ( col.sort.direction == desc ? 'descending':'none')}}. {{col.sort.priority ? {{columnPriorityText}} {{col.sort.priority}} : ''}
-            var sortDirectionText = col.sort.direction === uiGridConstants.ASC ? $scope.i18n.sort.ascending : ( col.sort.direction === uiGridConstants.DESC ? $scope.i18n.sort.descending : $scope.i18n.sort.none);
-            var label = sortDirectionText;
+            // Trying to recreate this sort of thing but it was getting messy having it in the template.
+            // Sort direction {{col.sort.direction == asc ? 'ascending' : ( col.sort.direction == desc ? 'descending': 'none')}}.
+            // {{col.sort.priority ? {{columnPriorityText}} {{col.sort.priority}} : ''}
+            var label = col.sort && col.sort.direction === uiGridConstants.ASC ? $scope.i18n.sort.ascending : (col.sort && col.sort.direction === uiGridConstants.DESC ? $scope.i18n.sort.descending : $scope.i18n.sort.none);
 
             if ($scope.isSortPriorityVisible()) {
-              label = label + '. ' + $scope.i18n.headerCell.priority + ' ' + col.sort.priority;
+              label = label + '. ' + $scope.i18n.headerCell.priority + ' ' + (col.sort.priority + 1);
             }
             return label;
           };
@@ -268,14 +177,12 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
           $scope.desc = uiGridConstants.DESC;
 
           // Store a reference to menu element
-          var $colMenu = angular.element($elm[0].querySelectorAll('.ui-grid-header-cell-menu'));
-
           var $contentsElm = angular.element($elm[0].querySelectorAll('.ui-grid-cell-contents'));
 
 
           // apply any headerCellClass
-          var classAdded;
-          var previousMouseX;
+          var classAdded,
+            previousMouseX;
 
           // filter watchers
           var filterDeregisters = [];
@@ -301,11 +208,10 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
            * will be a click event and that can cause the column menu to close
            *
            */
-
           $scope.downFn = function (event) {
             event.stopPropagation();
 
-            if (typeof(event.originalEvent) !== 'undefined' && event.originalEvent !== undefined) {
+            if (typeof (event.originalEvent) !== 'undefined' && event.originalEvent !== undefined) {
               event = event.originalEvent;
             }
 
@@ -323,12 +229,9 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
               if ($scope.colMenu) {
                 uiGridCtrl.columnMenuScope.showMenu($scope.col, $elm, event);
               }
-            });
+            }).catch(angular.noop);
 
-            uiGridCtrl.fireEvent(uiGridConstants.events.COLUMN_HEADER_CLICK, {
-              event: event,
-              columnName: $scope.col.colDef.name
-            });
+            uiGridCtrl.fireEvent(uiGridConstants.events.COLUMN_HEADER_CLICK, {event: event, columnName: $scope.col.colDef.name});
 
             $scope.offAllEvents();
             if (event.type === 'touchstart') {
@@ -351,12 +254,17 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
 
             if (mousedownTime > mousedownTimeout) {
               // long click, handled above with mousedown
-            }
-            else {
+            } else {
               // short click
               if ($scope.sortable) {
                 $scope.handleClick(event);
               }
+            }
+          };
+
+          $scope.handleKeyDown = function (event) {
+            if (event.keyCode === 32) {
+              event.preventDefault();
             }
           };
 
@@ -422,56 +330,21 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
             }
           };
 
-
-          var updateHeaderOptions = function (grid) {
-            var contents = $elm;
-            if (classAdded) {
-              contents.removeClass(classAdded);
-              classAdded = null;
-            }
-
-            if (angular.isFunction($scope.col.headerCellClass)) {
-              classAdded = $scope.col.headerCellClass($scope.grid, $scope.row, $scope.col, $scope.rowRenderIndex, $scope.colRenderIndex);
-            }
-            else {
-              classAdded = $scope.col.headerCellClass;
-            }
-            contents.addClass(classAdded);
-
-            $timeout(function () {
-              var rightMostContainer = $scope.grid.renderContainers['right'] ? $scope.grid.renderContainers['right'] : $scope.grid.renderContainers['body'];
-              $scope.isLastCol = ( $scope.col === rightMostContainer.visibleColumnCache[rightMostContainer.visibleColumnCache.length - 1] );
-            });
-
-            // Figure out whether this column is sortable or not
-            if (uiGridCtrl.grid.options.enableSorting && $scope.col.enableSorting) {
-              $scope.sortable = true;
-            }
-            else {
-              $scope.sortable = false;
-            }
-
-            // Figure out whether this column is filterable or not
-            var oldFilterable = $scope.filterable;
-            if (uiGridCtrl.grid.options.enableFiltering && $scope.col.enableFiltering) {
-              $scope.filterable = true;
-            }
-            else {
-              $scope.filterable = false;
-            }
-
-            if (oldFilterable !== $scope.filterable) {
-              if (typeof($scope.col.updateFilters) !== 'undefined') {
-                $scope.col.updateFilters($scope.filterable);
+          var setFilter = function (updateFilters) {
+            if (updateFilters) {
+              if (typeof ($scope.col.updateFilters) !== 'undefined') {
+                $scope.col.updateFilters($scope.col.filterable);
               }
 
               // if column is filterable add a filter watcher
-              if ($scope.filterable) {
+              if ($scope.col.filterable) {
                 $scope.col.filters.forEach(function (filter, i) {
                   filterDeregisters.push($scope.$watch('col.filters[' + i + '].term', function (n, o) {
                     if (n !== o) {
-                      uiGridCtrl.grid.api.core.raise.filterChanged();
+                      uiGridCtrl.grid.api.core.raise.filterChanged($scope.col);
+                      // =============== START SEED CHANGE ===============
                       // uiGridCtrl.grid.api.core.notifyDataChange( uiGridConstants.dataChange.COLUMN );
+                      // =============== END SEED CHANGE ===============
                       uiGridCtrl.grid.queueGridRefresh();
                     }
                   }));
@@ -486,16 +359,45 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
                   filterDeregister();
                 });
               }
-
             }
+          };
+
+          var updateHeaderOptions = function () {
+            var contents = $elm;
+
+            if (classAdded) {
+              contents.removeClass(classAdded);
+              classAdded = null;
+            }
+
+            if (angular.isFunction($scope.col.headerCellClass)) {
+              classAdded = $scope.col.headerCellClass($scope.grid, $scope.row, $scope.col, $scope.rowRenderIndex, $scope.colRenderIndex);
+            } else {
+              classAdded = $scope.col.headerCellClass;
+            }
+            contents.addClass(classAdded);
+
+            $scope.$applyAsync(function () {
+              var rightMostContainer = $scope.grid.renderContainers['right'] && $scope.grid.renderContainers['right'].visibleColumnCache.length ?
+                $scope.grid.renderContainers['right'] : $scope.grid.renderContainers['body'];
+              $scope.isLastCol = uiGridCtrl.grid.options && uiGridCtrl.grid.options.enableGridMenu &&
+                $scope.col === rightMostContainer.visibleColumnCache[rightMostContainer.visibleColumnCache.length - 1];
+            });
+
+            // Figure out whether this column is sortable or not
+            $scope.sortable = Boolean($scope.col.enableSorting);
+
+            // Figure out whether this column is filterable or not
+            var oldFilterable = $scope.col.filterable;
+            $scope.col.filterable = Boolean(uiGridCtrl.grid.options.enableFiltering && $scope.col.enableFiltering);
+
+            $scope.$applyAsync(function () {
+              setFilter(oldFilterable !== $scope.col.filterable);
+            });
 
             // figure out whether we support column menus
-            if ($scope.col.grid.options && $scope.col.grid.options.enableColumnMenus !== false &&
-              $scope.col.colDef && $scope.col.colDef.enableColumnMenu !== false) {
-              $scope.colMenu = true;
-            } else {
-              $scope.colMenu = false;
-            }
+            $scope.colMenu = ($scope.col.grid.options && $scope.col.grid.options.enableColumnMenus !== false &&
+              $scope.col.colDef && $scope.col.colDef.enableColumnMenu !== false);
 
             /**
              * @ngdoc property
@@ -506,6 +408,13 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
              * using this option. If gridOptions.enableColumnMenus === false then you get no column
              * menus irrespective of the value of this option ).  Defaults to true.
              *
+             * By default column menu's trigger is hidden before mouse over, but you can always force it to be visible with CSS:
+             *
+             * <pre>
+             *  .ui-grid-column-menu-button {
+             *    display: block;
+             *  }
+             * </pre>
              */
             /**
              * @ngdoc property
@@ -527,20 +436,15 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
             }
           };
 
-          /*
-           $scope.$watch('col', function (n, o) {
-           if (n !== o) {
-           // See if the column's internal class has changed
-           var newColClass = $scope.col.getColClass(false);
-           if (newColClass !== initColClass) {
-           $elm.removeClass(initColClass);
-           $elm.addClass(newColClass);
-           initColClass = newColClass;
-           }
-           }
-           });
-           */
           updateHeaderOptions();
+
+          if ($scope.col.filterContainer === 'columnMenu' && $scope.col.filterable) {
+            $rootScope.$on('menu-shown', function () {
+              $scope.$applyAsync(function () {
+                setFilter($scope.col.filterable);
+              });
+            });
+          }
 
           // Register a data change watch that would get triggered whenever someone edits a cell or modifies column defs
           var dataChangeDereg = $scope.grid.registerDataChangeCallback(updateHeaderOptions, [uiGridConstants.dataChange.COLUMN]);
@@ -561,11 +465,18 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
                   uiGridCtrl.columnMenuScope.hideMenu();
                 }
                 uiGridCtrl.grid.refresh();
-              });
+              }).catch(angular.noop);
           };
 
+          $scope.headerCellArrowKeyDown = function (event) {
+            if (event.keyCode === 32 || event.keyCode === 13) {
+              event.preventDefault();
+              $scope.toggleMenu(event);
+            }
+          };
 
           $scope.toggleMenu = function (event) {
+
             event.stopPropagation();
 
             // If the menu is already showing...
