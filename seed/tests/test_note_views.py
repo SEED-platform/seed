@@ -56,8 +56,7 @@ class NoteViewTests(TestCase):
         url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        result = json.loads(response.content)
-        results = result['results']
+        results = json.loads(response.content)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0]['note_type'], 'Log')
         self.assertEqual(results[0]['user_id'], self.user.pk)

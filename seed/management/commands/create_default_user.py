@@ -52,13 +52,13 @@ class Command(BaseCommand):
 
             if options['usertype'] == 'superuser':
                 u = User.objects.create_superuser(
-                    options['username'],
+                    options['username'].lower(),
                     options['username'],
                     options['password']
                 )
             else:
                 u = User.objects.create_user(
-                    options['username'],
+                    options['username'].lower(),
                     options['username'],
                     options['password']
                 )

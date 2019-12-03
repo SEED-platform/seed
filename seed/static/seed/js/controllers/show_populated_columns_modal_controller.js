@@ -30,23 +30,31 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         return !_.isNil(value) && value !== '';
       };
 
+      var fetch = function (page, chunk) {
+        var fn;
+        if ($scope.inventory_type === 'properties') {
+          fn = inventory_service.get_properties;
+        } else if ($scope.inventory_type === 'taxlots') {
+          fn = inventory_service.get_taxlots;
+        }
+        return fn(page, chunk, $scope.cycle, -1).then(function (data) {
+          $scope.progress = Math.round(data.pagination.end / data.pagination.total * 100);
+          if (data.pagination.has_next) {
+            return fetch(page + 1, chunk).then(function (data2) {
+              return data.results.concat(data2);
+            });
+          }
+          return data.results;
+        });
+      };
+
       $scope.start = function () {
         $scope.state = 'running';
         $scope.status = 'Fetching Inventory';
 
-        var promise;
-        if ($scope.inventory_type === 'properties') {
-          promise = inventory_service.get_properties(1, undefined, $scope.cycle, -1).then(function (inv) {
-            return inv.results;
-          });
-        } else if ($scope.inventory_type === 'taxlots') {
-          promise = inventory_service.get_taxlots(1, undefined, $scope.cycle, -1).then(function (inv) {
-            return inv.results;
-          });
-        }
-
-        promise.then(function (inventory) {
-          $scope.progress = 50;
+        var page = 1;
+        var chunk = 5000;
+        fetch(page, chunk).then(function (inventory) {
           $scope.status = 'Processing ' + $scope.columns.length + ' columns in ' + inventory.length + ' records';
 
           var cols = _.reject($scope.columns, 'related');

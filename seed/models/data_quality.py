@@ -79,7 +79,7 @@ def format_pint_violation(rule, source_value):
         formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
     if rule.max is not None:
         formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
-    return (formatted_value, formatted_min, formatted_max)
+    return formatted_value, formatted_min, formatted_max
 
 
 class Rule(models.Model):
