@@ -724,12 +724,10 @@ class DataQualityCheck(models.Model):
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                 label_applied = self.update_status_label(label, rule, linked_id)
-                                break
                             elif rule.severity == 2:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                 label_applied = self.update_status_label(label, rule, linked_id)
-                                break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -748,12 +746,10 @@ class DataQualityCheck(models.Model):
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                 label_applied = self.update_status_label(label, rule, linked_id)
-                                break
                             elif rule.severity == 2:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                 label_applied = self.update_status_label(label, rule, linked_id)
-                                break
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -785,7 +781,6 @@ class DataQualityCheck(models.Model):
                                 )
                                 '''
                                 label_applied = self.update_status_label(label, rule, linked_id)
-                                break
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
