@@ -720,11 +720,7 @@ class DataQualityCheck(models.Model):
                     # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
-                            if rule.severity == 0:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                label_applied = self.update_status_label(label, rule, linked_id)
-                            elif rule.severity == 2:
+                            if rule.severity == 0 or rule.severity == 2:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                 label_applied = self.update_status_label(label, rule, linked_id)
@@ -742,11 +738,7 @@ class DataQualityCheck(models.Model):
 
                     try:
                         if not rule.maximum_valid(value):
-                            if rule.severity == 0:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                label_applied = self.update_status_label(label, rule, linked_id)
-                            elif rule.severity == 2:
+                            if rule.severity == 0 or rule.severity == 2:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                 label_applied = self.update_status_label(label, rule, linked_id)
