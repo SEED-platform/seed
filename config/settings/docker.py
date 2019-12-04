@@ -65,9 +65,9 @@ if 'REDIS_PASSWORD' in os.environ:
         }
     }
     CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-       CACHES['default']['OPTIONS']['PASSWORD'],
-       CACHES['default']['LOCATION'],
-       CACHES['default']['OPTIONS']['DB']
+        CACHES['default']['OPTIONS']['PASSWORD'],
+        CACHES['default']['LOCATION'],
+        CACHES['default']['OPTIONS']['DB']
     )
 else:
     CACHES = {
@@ -124,4 +124,3 @@ if 'SENTRY_RAVEN_DSN' in os.environ:
         'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
     }
 # SENTRY_JS_DSN is directly passed through to the Sentry configuration for JS.
-

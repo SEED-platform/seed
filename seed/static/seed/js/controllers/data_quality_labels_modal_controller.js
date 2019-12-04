@@ -46,7 +46,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.submitNewLabelForm = function (form) {
         $scope.createdLabel = null;
         if (form.$invalid) return;
-        label_service.create_label($scope.new_label).then(function (data) {
+        label_service.create_label_for_org(org_id, $scope.new_label).then(function (data) {
           var createdLabel = data;
 
           $scope.newLabelForm.$setPristine();

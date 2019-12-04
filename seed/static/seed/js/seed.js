@@ -891,8 +891,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'data_quality_admin_controller',
         resolve: {
           columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+            var organization_id = $stateParams.organization_id;
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns().then(function (columns) {
+              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
@@ -903,7 +904,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return columns;
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns().then(function (columns) {
+              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
@@ -1072,14 +1073,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_list.html',
         controller: 'inventory_list_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', 'current_profile', function ($stateParams, inventory_service, current_profile) {
-            var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
-            if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, profile_id);
-            } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
-            }
-          }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
@@ -1098,9 +1091,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
@@ -1121,20 +1112,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-            // if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_properties(1, undefined, undefined, undefined);
-            // } else if ($stateParams.inventory_type === 'taxlots') {
-            //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
-            // }
-          }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
@@ -1195,9 +1177,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
-            return label_service.get_labels([$stateParams.view_id], {
-              inventory_type: $stateParams.inventory_type
-            });
+            return label_service.get_labels($stateParams.inventory_type, [$stateParams.view_id]);
           }]
         }
       })

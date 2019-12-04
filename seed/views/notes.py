@@ -36,6 +36,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
     """
     serializer_class = NoteSerializer
     renderer_classes = (JSONRenderer,)
+    pagination_class = None
     model = Note
     parser_classes = (JSONParser, FormParser)
     orgfilter = 'organization_id'

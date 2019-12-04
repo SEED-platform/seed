@@ -284,7 +284,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
        * save_item: saves the user's changes to the Property/TaxLot State object.
        */
       $scope.save_item = function () {
-        $scope.$emit('show_saving');
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
             .then(function (data) {
@@ -302,11 +301,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
                 // TODO: Refactor so that table is dynamically updated with new information
-                $scope.$emit('finished_saving');
                 $state.reload();
               }
-            }, function () {
-              $scope.$emit('finished_saving');
             })
             .catch(function (data) {
               $log.error(String(data));
@@ -328,11 +324,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 // In the short term, we're just refreshing the page after a save so the table
                 // shows new history.
                 // TODO: Refactor so that table is dynamically updated with new information
-                $scope.$emit('finished_saving');
                 $state.reload();
               }
-            }, function () {
-              $scope.$emit('finished_saving');
             })
             .catch(function (data) {
               $log.error(String(data));
@@ -356,9 +349,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([$scope.inventory.view_id], {
-            inventory_type: $scope.inventory_type
-          }).then(function (labels) {
+          label_service.get_labels($scope.inventory_type, [$scope.inventory.view_id]).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
               return !_.isEmpty(label.is_applied);
             });

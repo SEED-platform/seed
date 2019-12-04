@@ -22,6 +22,8 @@ angular.module('BE.seed.controller.mapping', [])
     'uploader_service',
     'data_quality_service',
     'inventory_service',
+    'geocode_service',
+    'organization_service',
     '$translate',
     'i18nService', // from ui-grid
     function (
@@ -43,6 +45,8 @@ angular.module('BE.seed.controller.mapping', [])
       uploader_service,
       data_quality_service,
       inventory_service,
+      geocode_service,
+      organization_service,
       $translate,
       i18nService
     ) {
@@ -87,7 +91,7 @@ angular.module('BE.seed.controller.mapping', [])
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
       matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
         var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
@@ -95,7 +99,7 @@ angular.module('BE.seed.controller.mapping', [])
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
       $scope.matching_criteria_columns = _.uniq(matching_criteria_columns).sort().join(', ');
       $scope.property_matching_criteria_columns = _.map(matching_criteria_columns_payload.PropertyState, 'display_name').sort().join(', ');
@@ -311,6 +315,28 @@ angular.module('BE.seed.controller.mapping', [])
         });
         return mappings;
       };
+
+      var get_geocoding_columns = function () {
+        organization_service.geocoding_columns(org_id).then(function (geocoding_columns) {
+          $scope.property_geocoding_columns_array = _.map(geocoding_columns.PropertyState, function (column_name) {
+            return _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
+          });
+          $scope.property_geocoding_columns = $scope.property_geocoding_columns_array.join(', ');
+
+          $scope.taxlot_geocoding_columns_array = _.map(geocoding_columns.TaxLotState, function (column_name) {
+            return _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
+          });
+          $scope.taxlot_geocoding_columns = $scope.taxlot_geocoding_columns_array.join(', ');
+        });
+      };
+
+      var org_id = user_service.get_organization().id;
+      geocode_service.check_org_has_api_key(org_id).then(function (result) {
+        $scope.org_has_api_key = result;
+        if (result) {
+          get_geocoding_columns();
+        }
+      });
 
       var suggested_address_fields = [
         {column_name: 'address_line_1'},

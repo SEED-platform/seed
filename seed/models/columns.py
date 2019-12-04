@@ -583,6 +583,9 @@ class Column(models.Model):
     import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
+    # 0 is deactivated. Order used to construct full address.
+    geocoding_order = models.IntegerField(default=0, blank=False)
+
     shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
     # By default, when two records are merge the new data will take precedence over the existing
@@ -1108,7 +1111,7 @@ class Column(models.Model):
                 _log.error("could not find data_type for %s" % c)
                 types[c['column_name']] = ''
 
-        return {"types": types}
+        return {'types': types}
 
     @staticmethod
     def retrieve_db_fields(org_id):
