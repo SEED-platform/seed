@@ -57,11 +57,11 @@ angular.module('BE.seed.service.label', [])
       // Passing no arguments will return all labels, but no information about what properties/taxlots they're applied to
       // Passing an inventory type will return all labels and the corresponding inventory type they're applied to
       // Passing an inventory type and filter_ids will return all labels but limited to only the selected properties/taxlots
-      function get_labels(inventory_type, filter_ids) {
+      function get_labels (inventory_type, filter_ids) {
         return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids);
       }
 
-      function get_labels_for_org(org_id, inventory_type, filter_ids) {
+      function get_labels_for_org (org_id, inventory_type, filter_ids) {
         var params = {
           organization_id: org_id
         };
@@ -277,11 +277,11 @@ angular.module('BE.seed.service.label', [])
       /*  Add a few properties to the label object so that it
        works well with UI components.
        */
-      function map_labels(response) {
+      function map_labels (response) {
         return _.map(response.data, map_label);
       }
 
-      function map_label(label) {
+      function map_label (label) {
         // add bootstrap label class names
         label.label = lookup_label(label.color);
         // create 'text' property needed for ngTagsInput control

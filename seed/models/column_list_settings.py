@@ -15,24 +15,24 @@ from seed.models import (
     Column,
 )
 
+VIEW_LIST = 0
+VIEW_DETAIL = 1
+VIEW_LOCATION_TYPES = [
+    (VIEW_LIST, 'List View Settings'),
+    (VIEW_DETAIL, 'Detail View Settings'),
+]
+
+VIEW_LIST_PROPERTY = 0
+VIEW_LIST_TAXLOT = 1
+VIEW_LIST_INVENTORY_TYPE = [
+    (VIEW_LIST_PROPERTY, 'Property'),
+    (VIEW_LIST_TAXLOT, 'Tax Lot'),
+]
+
 
 class ColumnListSetting(models.Model):
     """Ability to persist a list of views with different columns. The list of column views points to the columns that
     are contained in the list view."""
-
-    VIEW_LIST = 0
-    VIEW_DETAIL = 1
-    VIEW_LOCATION_TYPES = [
-        (VIEW_LIST, 'List View Settings'),
-        (VIEW_DETAIL, 'Detail View Settings'),
-    ]
-
-    VIEW_LIST_PROPERTY = 0
-    VIEW_LIST_TAXLOT = 1
-    VIEW_LIST_INVENTORY_TYPE = [
-        (VIEW_LIST_PROPERTY, 'Property'),
-        (VIEW_LIST_TAXLOT, 'Tax Lot'),
-    ]
 
     organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
     name = models.CharField(max_length=512, db_index=True)
@@ -59,7 +59,7 @@ class ColumnListSetting(models.Model):
             profile = ColumnListSetting.objects.get(
                 organization=organization_id,
                 id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
+                settings_location=VIEW_LIST,
                 inventory_type=cls.PROFILE_TYPE[inventory_type]
             )
             profile_id = profile.id

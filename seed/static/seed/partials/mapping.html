@@ -138,7 +138,7 @@
                                 </select>
                             </td>
                             <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
-                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}">
+                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </td>
                             <td>
                                 <select ng-model="col.from_units" ng-if="is_area_column(col)">

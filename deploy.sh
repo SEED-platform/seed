@@ -17,7 +17,7 @@ SEED_ADMIN_USER (required), admin user for SEED
 SEED_ADMIN_PASSWORD (required), admin password for SEED
 SEED_ADMIN_ORG (required), default organization for admin user in SEED
 SECRET_KEY (required), unique key for SEED web application
-AWS_ACCESS_KEY (optional), Access key for AWS
+AWS_ACCESS_KEY_ID (optional), Access key for AWS
 AWS_SECRET_ACCESS_KEY, Secret key for AWS
 AWS_SES_REGION_NAME (optional), AWS Region for SES
 AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
