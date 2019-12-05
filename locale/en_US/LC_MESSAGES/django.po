@@ -1358,8 +1358,20 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Merged properties"
 msgstr "Merged properties"
 
+msgid "Merged properties amongst existing records"
+msgstr "Merged properties amongst existing records"
+
+msgid "Merged properties within import file"
+msgstr "Merged properties within import file"
+
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
+
+msgid "Merged tax lots amongst existing records"
+msgstr "Merged tax lots amongst existing records"
+
+msgid "Merged tax lots within import file"
+msgstr "Merged tax lots within import file"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Meter energy display units (change one at a time)"

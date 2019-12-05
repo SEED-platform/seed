@@ -1364,8 +1364,20 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "Merged properties"
 msgstr "Propriétés fusionnées"
 
+msgid "Merged properties amongst existing records"
+msgstr "Propriétés fusionnées parmi des enregistrements existants"
+
+msgid "Merged properties within import file"
+msgstr "Propriétés fusionnées dans le fichier d'importation"
+
 msgid "Merged tax lots"
 msgstr "Lots d'impôt fusionnés"
+
+msgid "Merged tax lots amongst existing records"
+msgstr "Fusion de lots de taxes parmi des enregistrements existants"
+
+msgid "Merged tax lots within import file"
+msgstr "Fusion des lots de taxe dans le fichier d'importation"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
