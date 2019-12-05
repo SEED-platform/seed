@@ -92,12 +92,14 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
     property_duplicates_against_existing_count = 0
     property_duplicates_within_file_count = 0
     property_merges_against_existing_count = 0
+    property_merges_between_existing_count = 0
     property_merges_within_file_count = 0
     property_new_count = 0
 
     tax_lot_duplicates_against_existing_count = 0
     tax_lot_duplicates_within_file_count = 0
     tax_lot_merges_against_existing_count = 0
+    tax_lot_merges_between_existing_count = 0
     tax_lot_merges_within_file_count = 0
     tax_lot_new_count = 0
 
@@ -123,7 +125,7 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
-        merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count = states_to_views(
+        merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count, property_merges_between_existing_count = states_to_views(
             promoted_property_ids,
             org,
             import_file.cycle,
@@ -143,7 +145,7 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
-        merged_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count = states_to_views(
+        merged_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
             promoted_tax_lot_ids,
             org,
             import_file.cycle,
@@ -161,12 +163,14 @@ def match_incoming_properties_and_taxlots(file_pk, progress_key):
         'property_duplicates_against_existing': property_duplicates_against_existing_count,
         'property_duplicates_within_file': property_duplicates_within_file_count,
         'property_merges_against_existing': property_merges_against_existing_count,
+        'property_merges_between_existing': property_merges_between_existing_count,
         'property_merges_within_file': property_merges_within_file_count,
         'property_new': property_new_count,
         'tax_lot_initial_incoming': tax_lot_initial_incoming_count,
         'tax_lot_duplicates_against_existing': tax_lot_duplicates_against_existing_count,
         'tax_lot_duplicates_within_file': tax_lot_duplicates_within_file_count,
         'tax_lot_merges_against_existing': tax_lot_merges_against_existing_count,
+        'tax_lot_merges_between_existing': tax_lot_merges_between_existing_count,
         'tax_lot_merges_within_file': tax_lot_merges_within_file_count,
         'tax_lot_new': tax_lot_new_count,
     }
@@ -319,7 +323,10 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     )
 
     # For the remaining -States, search for a match within the -States that are attached to -Views.
-    # If matches are found, take the first match. Otherwise, add current -State to be promoted as is.
+    # If one match is found, pass that along.
+    # If multiple matches are found, merge them together, pass along the resulting record.
+    # Otherwise, add current -State to be promoted as is.
+    merged_between_existing_count = 0
     merge_state_pairs = []
     for state in unmatched_states:
         matching_criteria = matching_filter_criteria(org.id, table_name, state)
@@ -330,6 +337,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
         count = state_matches.count()
 
         if count > 1:
+            merged_between_existing_count += count
             state_ids = list(state_matches.order_by('id').values_list('id', flat=True))
             # The following merge action ignores merge protection and prioritizes -States by most recent AuditLog
             merged_state = merge_states_with_views(state_ids, org.id, 'System Match', StateClass)
@@ -376,7 +384,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
         merge_state=MERGE_STATE_MERGED
     )
 
-    return list(set(processed_views)), duplicate_count, new_count, matched_count
+    return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
 
 
 def save_state_match(state1, state2, priorities):
