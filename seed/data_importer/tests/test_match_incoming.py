@@ -741,11 +741,11 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         """
         For second file, create several properties that are one or many of the following:
-            - duplicates amongst file_1
-            - duplicates amongst file_2
-            - matching amongst file_1
-            - matching amongst file_2
-            - completely new
+            - 1 duplicates amongst file_1
+            - 2 duplicates amongst file_2
+            - 1 matching amongst file_1
+            - 2 matching amongst file_2
+            - 4 completely new
         """
         base_details_file_2 = {
             'import_file_id': self.import_file_2.id,
@@ -825,14 +825,18 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         expected = {
             'import_file_records': None,  # This is calculated in a separate process
-            'property_all_unmatched': 10,
-            'property_duplicates': 2,
-            'property_duplicates_of_existing': 1,
-            'property_unmatched': 4,
-            'tax_lot_all_unmatched': 0,
-            'tax_lot_duplicates': 0,
-            'tax_lot_duplicates_of_existing': 0,
-            'tax_lot_unmatched': 0,
+            'property_duplicates_against_existing': 1,
+            'property_duplicates_within_file': 2,
+            'property_initial_incoming': 10,
+            'property_merges_against_existing': 1,
+            'property_merges_within_file': 2,
+            'property_new': 4,
+            'tax_lot_duplicates_against_existing': 0,
+            'tax_lot_duplicates_within_file': 0,
+            'tax_lot_initial_incoming': 0,
+            'tax_lot_merges_against_existing': 0,
+            'tax_lot_merges_within_file': 0,
+            'tax_lot_new': 0,
         }
         self.assertEqual(results, expected)
 
@@ -877,11 +881,11 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         """
         For second file, create several taxlots that are one or many of the following:
-            - duplicates amongst file_1
-            - duplicates amongst file_2
-            - matching amongst file_1
-            - matching amongst file_2
-            - completely new
+            - 1 duplicates amongst file_1
+            - 3 duplicates amongst file_2
+            - 1 matching amongst file_1
+            - 2 matching amongst file_2
+            - 3 completely new
         """
         base_details_file_2 = {
             'import_file_id': self.import_file_2.id,
@@ -956,14 +960,18 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         expected = {
             'import_file_records': None,  # This is calculated in a separate process
-            'property_all_unmatched': 0,
-            'property_duplicates': 0,
-            'property_duplicates_of_existing': 0,
-            'property_unmatched': 0,
-            'tax_lot_all_unmatched': 10,
-            'tax_lot_duplicates': 3,
-            'tax_lot_duplicates_of_existing': 1,
-            'tax_lot_unmatched': 3,
+            'property_duplicates_against_existing': 0,
+            'property_duplicates_within_file': 0,
+            'property_initial_incoming': 0,
+            'property_merges_against_existing': 0,
+            'property_merges_within_file': 0,
+            'property_new': 0,
+            'tax_lot_duplicates_against_existing': 1,
+            'tax_lot_duplicates_within_file': 3,
+            'tax_lot_initial_incoming': 10,
+            'tax_lot_merges_against_existing': 1,
+            'tax_lot_merges_within_file': 2,
+            'tax_lot_new': 3,
         }
         self.assertEqual(results, expected)
 
