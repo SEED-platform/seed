@@ -84,10 +84,8 @@ angular.module('BE.seed.controller.mapping', [])
 
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
 
-      var matching_criteria_columns = [];
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
         var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
-        matching_criteria_columns.push(display_name);
         return {
           column_name: column_name,
           display_name: display_name
@@ -95,13 +93,12 @@ angular.module('BE.seed.controller.mapping', [])
       });
       matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
         var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
-        matching_criteria_columns.push(display_name);
         return {
           column_name: column_name,
           display_name: display_name
         };
       });
-      $scope.matching_criteria_columns = _.uniq(matching_criteria_columns).sort().join(', ');
+
       $scope.property_matching_criteria_columns = _.map(matching_criteria_columns_payload.PropertyState, 'display_name').sort().join(', ');
       $scope.taxlot_matching_criteria_columns = _.map(matching_criteria_columns_payload.TaxLotState, 'display_name').sort().join(', ');
 
