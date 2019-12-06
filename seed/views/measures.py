@@ -16,7 +16,6 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import (
     Measure,
 )
-from seed.pagination import NoPagination
 from seed.serializers.measures import MeasureSerializer
 
 
@@ -24,14 +23,14 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API View for measures. This only includes retrieve and list since the measures are immutable.
 
-    The reset POST method is for reseting the measures back to the default list provided
+    The reset POST method is for resetting the measures back to the default list provided
     by BuildingSync enumeration.json file.
     """
     serializer_class = MeasureSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Measure.objects.all()
-    pagination_class = NoPagination
+    pagination_class = None
 
     @list_route(methods=['POST'])
     def reset(self, request):

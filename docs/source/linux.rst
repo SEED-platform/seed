@@ -28,6 +28,7 @@ Install the following base packages to run SEED:
     sudo apt install libpq-dev python3-dev python3-pip libatlas-base-dev \
     gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
     libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python mercurial
+    sudo apt install gdal-bin postgis
     sudo apt install redis-server
     sudo apt install timescaledb-postgresql-10 postgresql-contrib
 
@@ -98,7 +99,7 @@ you have manually installed within your infrastructure.
     # Database
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'seeddb',
             'USER': 'seeduser',
             'PASSWORD': '<PASSWORD>',

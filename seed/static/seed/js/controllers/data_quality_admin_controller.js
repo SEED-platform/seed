@@ -317,7 +317,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
         modalInstance.result.then(function (returnedLabel) {
           rule.label = returnedLabel;
-        }).finally(function() {
+        }).finally(function () {
           // refresh labels
           label_service.get_labels_for_org($scope.org.org_id).then(function (labels) {
             $scope.all_labels = labels;

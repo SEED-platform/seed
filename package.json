@@ -1,5 +1,5 @@
 {
-  "name": "SEED",
+  "name": "seed",
   "version": "2.6.2",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE",
@@ -35,6 +35,6 @@
   },
   "browserslist": [
     "last 3 versions",
-    "ie >= 8"
+    "ie >= 10"
   ]
 }
