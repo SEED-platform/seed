@@ -379,14 +379,6 @@ class DataQualityViews(viewsets.ViewSet):
                     'status_label_id': rule['label']
                 }
             )
-            try:
-                if rule['severity'] == 'valid':
-                    assert rule['label'] is not None
-            except AssertionError:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Valid data label must not be none',
-                }, status=status.HTTP_400_BAD_REQUEST)
 
         for rule in posted_rules['taxlots']:
             updated_rules.append(
@@ -410,6 +402,12 @@ class DataQualityViews(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
+            if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Valid data label must not be none'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 dq.add_rule(rule)
             except TypeError as e:

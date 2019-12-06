@@ -56,9 +56,12 @@ angular.module('BE.seed.controller.menu', [])
         if (!$rootScope.route_load_error) {
           $rootScope.route_load_error = true;
           $scope.menu.error_message = data.message;
-          $scope.load_error_message = data.data.message;
+          $rootScope.load_error_message = data.data.message;
         }
       });
+      $scope.$on('app_success', function () {
+        $rootScope.route_load_error = false;
+      })
       $scope.$on('organization_list_updated', function () {
         init();
       });
