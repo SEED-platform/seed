@@ -24,12 +24,3 @@ class FakePagination(pagination.PageNumberPagination):
 
     def paginate_queryset(self, queryset, request, view=None):
         return queryset
-
-
-class NoPagination(pagination.PageNumberPagination):
-
-    def get_paginated_response(self, data):
-        return response.Response(data)
-
-    def paginate_queryset(self, queryset, request, view=None):
-        return queryset

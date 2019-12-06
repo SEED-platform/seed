@@ -7,15 +7,16 @@
 import json
 import logging
 import re
+from builtins import str
 from datetime import date, datetime
 from random import randint
 
 import pytz
-from builtins import str
 from django.apps import apps
 from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
+from pint.errors import DimensionalityError
 from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
@@ -40,6 +41,10 @@ class ComparisonError(Exception):
 
 
 class DataQualityTypeCastError(Exception):
+    pass
+
+
+class UnitMismatchError(Exception):
     pass
 
 
@@ -74,7 +79,7 @@ def format_pint_violation(rule, source_value):
         formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
     if rule.max is not None:
         formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
-    return (formatted_value, formatted_min, formatted_max)
+    return formatted_value, formatted_min, formatted_max
 
 
 class Rule(models.Model):
@@ -347,7 +352,13 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -357,6 +368,8 @@ class Rule(models.Model):
                 else:
                     # If rule_min is undefined/None or value is okay, then it is valid.
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -382,7 +395,13 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -391,6 +410,8 @@ class Rule(models.Model):
                     return False
                 else:
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -636,9 +657,13 @@ class DataQualityCheck(models.Model):
                 #                                             len(model_labels['label_ids'])))
 
         for rule in rules:
+            # create an extra data flag for the rule
+            is_extra_data = rule.field in row.extra_data
+
             # check if the field exists
-            if hasattr(row, rule.field) or rule.field in row.extra_data:
+            if hasattr(row, rule.field) or is_extra_data:
                 value = None
+
                 label_applied = False
                 display_name = rule.field
 
@@ -648,7 +673,7 @@ class DataQualityCheck(models.Model):
                     # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
                     if isinstance(value, ureg.Quantity) and rule.units == '':
                         value = value.magnitude
-                elif rule.field in row.extra_data:
+                elif is_extra_data:
                     value = row.extra_data[rule.field]
 
                     if ' (Invalid Footprint)' in rule.field:
@@ -661,6 +686,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_type_error(row.id, rule, display_name, value)
                         continue
 
+                # get the display name of the rule
                 if (rule.table_name, rule.field) in self.column_lookup:
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
@@ -685,6 +711,7 @@ class DataQualityCheck(models.Model):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id)
                 else:
+                    # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
                             s_min, s_max, s_value = rule.format_strings(value)
@@ -693,6 +720,13 @@ class DataQualityCheck(models.Model):
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
+                        continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
+                        continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
                     try:
@@ -703,6 +737,13 @@ class DataQualityCheck(models.Model):
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
+                        continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
+                        continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
@@ -845,6 +886,19 @@ class DataQualityCheck(models.Model):
                 'table_name': rule.table_name,
                 'message': display_name + ' could not be compared numerically',
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
+                'severity': rule.get_severity_display(),
+            }
+        )
+
+    def add_result_dimension_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value.magnitude,
+                'table_name': rule.table_name,
+                'message': display_name + ' units mismatch with rule units',
+                'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
                 'severity': rule.get_severity_display(),
             }
         )

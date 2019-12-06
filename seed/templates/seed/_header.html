@@ -8,22 +8,10 @@
         <div class="logo">
             <div class="logo_text">
                 <span class="logo_text_seed">Seed</span>
-                <span class="logo_text_patform" ng-hide="saving_indicator">Platform™</span>
-                <span class="logo_text_saving" ng-show="saving_indicator">Saving</span>
-                <span class="saving_progress" ng-show="saving_indicator"></span>
+                <span class="logo_text_platform">Platform™</span>
             </div>
         </div>
     </div>
-    <!--<div class="search_bar_container">
-        <div class="search_bar">
-            <div class="input-group">
-                <input class="form-control" type="search" placeholder="Search" ng-model="search_input" sd-enter="input_search()">
-                <span class="input-group-btn">
-                    <button class="btn btn-primary" type="button" ng-click="input_search()"><i class="fa fa-search"></i></button>
-                </span>
-            </div>
-        </div>
-    </div>-->
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
             <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">

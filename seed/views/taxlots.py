@@ -40,7 +40,8 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
     TaxLot,
-)
+    VIEW_LIST,
+    VIEW_LIST_TAXLOT)
 from seed.serializers.pint import (
     apply_display_unit_preferences,
     add_pint_unit_suffix
@@ -129,7 +130,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
         # This uses an old method of returning the show_columns. There is a new method that
-        # is prefered in v2.1 API with the ProfileIdMixin.
+        # is preferred in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -141,8 +142,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 profile = ColumnListSetting.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=ColumnListSetting.VIEW_LIST,
-                    inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
+                    settings_location=VIEW_LIST,
+                    inventory_type=VIEW_LIST_TAXLOT
                 )
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id

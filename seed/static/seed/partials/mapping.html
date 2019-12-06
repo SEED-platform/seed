@@ -27,10 +27,26 @@
                         <p translate>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
                         <p translate>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
                         <p>
-                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $}:</span>
-                            <span><strong>{$ matching_criteria_columns $}</strong></span>
+                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Properties' | translate $}:</span>
+                            <span><strong>{$ property_matching_criteria_columns $}</strong></span>
+                        </p>
+                        <p>
+                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Tax Lots' | translate $}:</span>
+                            <span><strong>{$ taxlot_matching_criteria_columns $}</strong></span>
                         </p>
                         <p translate>MATCHING_ADVICE</p>
+                        <p ng-show="property_geocoding_columns_array.length">
+                            <span class="label label-default">{$:: 'FIELD_NAMES_FOR_GEOCODING_PROPERTIES' | translate $}:</span>
+                            <span><strong>{$ property_geocoding_columns $}</strong></span>
+                        </p>
+                        <p ng-show="taxlot_geocoding_columns_array.length">
+                            <span class="label label-default">{$:: 'FIELD_NAMES_FOR_GEOCODING_TAXLOTS' | translate $}:</span>
+                            <span><strong>{$ taxlot_geocoding_columns $}</strong></span>
+                        </p>
+                        <p ng-show="org_has_api_key && (property_geocoding_columns || taxlot_geocoding_columns)">
+                          {$:: 'GEOCODING_FULL_ADDRESS_ADVICE' | translate $}
+                          <strong>{$:: 'GEOCODING_NEEDS_THREE_COLS' | translate $}</strong>
+                        </p>
                         <p translate>For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired.</p>
                         <p translate>WHEN_YOU_CLICK_MAP_YOUR_DATA</p>
                     </div>
@@ -78,7 +94,6 @@
         <div class="section_content">
             <div class="table_list_container mapping" ng-cloak>
                 <div class="alert warning file_error_messages" ng-show="has_mapping_error_messages()" ng-bind-html="mapping_error_messages"></div>
-                <div class="alert alert-warning" ng-show="!suggested_fields_present() && !import_file.matching_done" translate>To increase geocode results, it's highly recommended that Address Line 1, City, State, and Postal Code are all provided.</div>
                 <div class="alert alert-danger" ng-show="!required_property_fields_present() && !import_file.matching_done">
                     {$:: 'PROPERTY_MATCHING_FIELDS_REQUIREMENT' | translate $}: {$ property_matching_criteria_columns $}.
                 </div>
@@ -127,7 +142,7 @@
                                 </select>
                             </td>
                             <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
-                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}">
+                                <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </td>
                             <td>
                                 <select ng-model="col.from_units" ng-if="is_area_column(col)">

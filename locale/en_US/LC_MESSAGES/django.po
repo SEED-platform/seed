@@ -232,6 +232,9 @@ msgstr "Back to List"
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
 
+msgid "BEFORE_GEOCODING"
+msgstr "Before geocoding"
+
 #: seed/models/models.py:135
 msgid "Benchmarking"
 msgstr "Benchmarking"
@@ -326,6 +329,9 @@ msgstr "Close Preview"
 
 msgid "COL_CHANGE_DISPLAY"
 msgstr "Change the display name of a column"
+
+msgid "COL_GEOCODING_TOGGLE"
+msgstr "Toggle geocoding involvement and, if enabled, change order of how column values are concatenated to construct a full address"
 
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
 msgstr "For non-extra_data columns, toggle whether the column is matching criteria"
@@ -495,6 +501,9 @@ msgstr "Current Name"
 msgid "Current password"
 msgstr "Current password"
 
+msgid "CURRENTLY_GEOCODING"
+msgstr "Currently geocoding"
+
 msgid "Custom ID 1"
 msgstr "Custom ID 1"
 
@@ -646,6 +655,9 @@ msgstr "Development Team"
 
 msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
 msgstr "Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties and tax lots you cannot undo or edit these mappings."
+
+msgid "DIRECTIONS_FOR_UPDATING_MQ_API_KEY"
+msgstr "If you'd like to geocode your data using the MapQuest service, please provide a valid API key within your organization's settings."
 
 msgid "Dismiss"
 msgstr "Dismiss"
@@ -824,6 +836,12 @@ msgstr "Field"
 msgid "Field Name"
 msgstr "Field Name"
 
+msgid "FIELD_NAMES_FOR_GEOCODING_PROPERTIES"
+msgstr "Field names for geocoding properties"
+
+msgid "FIELD_NAMES_FOR_GEOCODING_TAXLOTS"
+msgstr "Field names for geocoding tax lots"
+
 msgid "FIELD_NAMES_FOR_MATCHING"
 msgstr "Field names for matching"
 
@@ -909,6 +927,42 @@ msgstr "From the table below, select the rules that you want to: 1) enable/disab
 
 msgid "Funding from"
 msgstr "Funding from"
+
+msgid "Geocode"
+msgstr "Geocode"
+
+msgid "GEOCODE_ATTEMPTED_PREVIOUSLY"
+msgstr "Geocoding attempted previously"
+
+msgid "GEOCODE_INVENTORY_BASE_TITLE"
+msgstr "Geocode Inventory"
+
+msgid "GEOCODE_UNSUCCESSFUL_MISSING_FIELDS"
+msgstr "unsuccessful due to missing address fields"
+
+msgid "GEOCODED_MANUALLY"
+msgstr "geocoded manually"
+
+msgid "GEOCODED_WITH_HIGH_CONFIDENCE"
+msgstr "successful with high confidence in the result"
+
+msgid "GEOCODED_WITH_LOW_CONFIDENCE"
+msgstr "unsuccessful due to a low geocode confidence in the result"
+
+msgid "GEOCODING_COL_COUNT_REQUIREMENT"
+msgstr "At least 1 geocoding column is required for this building type in order to attempt geocoding."
+
+msgid "GEOCODING_FULL_ADDRESS_ADVICE"
+msgstr "Datafile fields mapped to these columns will have their corresponding values concatenated in the order listed to form a full address. This full address is made for each record and used for geocoding."
+
+msgid "GEOCODING_INVENTORY_COMPLETE"
+msgstr "Geocoding Complete"
+
+msgid "GEOCODING_NEEDS_THREE_COLS"
+msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
+
+msgid "GEOCODING_NOW"
+msgstr "Geocoding now..."
 
 msgid "Get a New API Key"
 msgstr "Get a New API Key"
@@ -1049,6 +1103,9 @@ msgstr "This operation is irreversible."
 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
+
+msgid "ITEMS_WILL_NOT_CHANGE"
+msgstr "these will not change"
 
 msgid "Jurisdiction Property ID"
 msgstr "Jurisdiction Property ID"
@@ -1247,6 +1304,9 @@ msgstr "If there are fields in the datafile mapped to these names, the program w
 msgid "MATCHING_COLUMN_SORT_PRIORITY"
 msgstr "Matching columns given higher sort priority*"
 
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Warning: If matching criteria changes are proposed, a preview will be loaded. The load times for this preview depend on how many records belong to this organization and how many of those records would be merged together given the new matching criteria."
+
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
 
@@ -1285,6 +1345,9 @@ msgstr "Members"
 
 msgid "MERGE_IN_CYCLE_MATCHES"
 msgstr "Matches within this cycle will be merged."
+
+msgid "MERGE_LINK_ADVICE"
+msgstr "Matches within the same cycle will be merged together, while matches in different cycles will be associated for cross-cycle analysis."
 
 msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
 msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."
@@ -1388,6 +1451,9 @@ msgstr "No labels available. Add a label above to get started."
 msgid "No warnings/errors"
 msgstr "No warnings/errors"
 
+msgid "NO_MAPQUEST_API_KEY_FOR_ORG"
+msgstr "There is no MapQuest API key associated to your organization."
+
 msgid "None"
 msgstr "None"
 
@@ -1399,6 +1465,9 @@ msgstr "not authorized"
 
 msgid "Not Null"
 msgstr "Not Null"
+
+msgid "NOT_GEOCODED_PREVIOUSLY"
+msgstr "Not geocoded previously"
 
 msgid "Note 1: Sub-organizations cannot be deleted."
 msgstr "Note 1: Sub-organizations cannot be deleted."
@@ -1616,6 +1685,9 @@ msgstr "Portfolio Manager Meter Import Results"
 
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
+
+msgid "POST_GEOCODING_COUNTS"
+msgstr "Updated counts after geocoding"
 
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
@@ -2122,6 +2194,12 @@ msgstr "Success!"
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
+msgid "SUGGEST_TO_VERIFY"
+msgstr "Please verify before continuing."
+
+msgid "SUGGEST_UPDATE_GEOCODE_COLS"
+msgstr "Update the geocoding column settings in your organization's column settings page."
+
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
@@ -2292,6 +2370,9 @@ msgstr "Update Charts"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
+msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"

@@ -76,6 +76,61 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+      // Seperate array used to capture and track geocoding-enabled columns and their order
+      // Any change to the array leading to position switching should be followed by a
+      // recalulation of geocoding_order values using indeces.
+      $scope.geocoding_columns = _.orderBy(
+        _.filter(columns, function (column) {
+          return column.geocoding_order > 0;
+        }),
+        'geocoding_order'
+      );
+
+      $scope.geocoding_columns_position_options = _.range(1, ($scope.geocoding_columns.length + 1), 1);
+
+      var update_geocoding_order_values = function () {
+        // Since array order represents geocoding order, use indeces to update geocoding_order values
+        _.each($scope.geocoding_columns, function (geocode_active_col, index) {
+          geocode_active_col.geocoding_order = index + 1;
+        });
+      };
+
+      var remove_geocoding_col_by_name = function (column) {
+        _.remove($scope.geocoding_columns, function (included_col) {
+          return included_col.name === column.name;
+        });
+      };
+
+      var set_modified_and_check_sort = function () {
+        $scope.setModified();
+        if ($scope.column_sort == 'geocoding_order') {
+          geocoding_order_sort();
+        }
+      };
+
+      $scope.geocoding_toggle = function (column) {
+        if (column.geocoding_order > 0) {
+          // If currently activated, deactivate it and remove from geocoding_columns
+          column.geocoding_order = 0;
+          remove_geocoding_col_by_name(column);
+          update_geocoding_order_values();
+        } else {
+          // If currently deactivated, activate by adding to geocoding_columns to the end.
+          $scope.geocoding_columns.push(column);
+          column.geocoding_order = $scope.geocoding_columns.length;
+        }
+        // Update the count of geocoding columns
+        $scope.geocoding_columns_position_options = _.range(1, $scope.geocoding_columns.length + 1, 1);
+        set_modified_and_check_sort();
+      };
+
+      $scope.reinsert_geocoding_column = function (column) {
+        remove_geocoding_col_by_name(column);
+        $scope.geocoding_columns.splice((column.geocoding_order - 1), 0, column);
+        update_geocoding_order_values();
+        set_modified_and_check_sort();
+      };
+
       $scope.setModified = function () {
         $scope.columns_updated = false;
         updateDiff();
@@ -109,18 +164,36 @@ angular.module('BE.seed.controller.column_settings', [])
         });
       };
 
-      // Matching Criteria sorting
-      $scope.column_sort = 'default';
-      $scope.matching_criteria_sort = function() {
-        if ($scope.column_sort === 'default') {
-          $scope.columns = _.sortBy($scope.columns, 'is_matching_criteria');
-          $scope.column_sort = 'is_matching_criteria';
-        } else if ($scope.column_sort === 'is_matching_criteria') {
+      // Table Sorting
+      var default_sort_toggle = function () {
+        $scope.column_sort = 'default';
+        $scope.columns = _.sortBy($scope.columns, 'id');
+      };
+
+      default_sort_toggle();
+
+      var geocoding_order_sort = function () {
+        $scope.columns = _.sortBy($scope.columns, function (col) {
+          // infinity at 0, increasing after
+          return (1 / col.geocoding_order + col.geocoding_order);
+        });
+      };
+
+      $scope.toggle_geocoding_order_sort = function () {
+        if (($scope.column_sort !== 'geocoding_order')) {
+          geocoding_order_sort();
+          $scope.column_sort = 'geocoding_order';
+        } else {
+          default_sort_toggle();
+        }
+      };
+
+      $scope.toggle_matching_criteria_sort = function () {
+        if ($scope.column_sort !== 'is_matching_criteria') {
           $scope.columns = _.reverse(_.sortBy($scope.columns, 'is_matching_criteria'));
-          $scope.column_sort = 'reversed_is_matching_criteria';
-        } else if ($scope.column_sort === 'reversed_is_matching_criteria') {
-          $scope.columns = _.sortBy($scope.columns, 'id');
-          $scope.column_sort = 'default';
+          $scope.column_sort = 'is_matching_criteria';
+        } else {
+          default_sort_toggle();
         }
       };
 
