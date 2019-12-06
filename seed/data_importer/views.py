@@ -1305,8 +1305,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
-            if not table:
+            # Do not return the campus, created, updated fields... that is force them to be in the property state
+            if not table or table == 'Property':
                 suggested_mappings[m][0] = 'PropertyState'
+            elif table == 'TaxLot':
+                suggested_mappings[m][0] = 'TaxLotState'
 
         result['suggested_column_mappings'] = suggested_mappings
         result['property_columns'] = property_columns
