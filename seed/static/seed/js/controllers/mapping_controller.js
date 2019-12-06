@@ -590,8 +590,30 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
+      var display_cached_column_mappings = function () {
+        var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
+        _.forEach($scope.mappings, function (col) {
+          var cached_col = _.find(cached_mappings, {from_field: col.name, to_table_name: col.suggestion_table_name})
+          col.suggestion_column_name = cached_col.to_field;
+          col.from_units = cached_col.from_units;
+
+          // If available, use display_name, else use raw field name.
+          var mappable_column = _.find(
+            $scope.mappable_property_columns.concat($scope.mappable_taxlot_columns),
+            {column_name: cached_col.to_field, table_name: cached_col.to_table_name}
+          )
+          if (mappable_column) {
+            col.suggestion = mappable_column.display_name;
+          } else {
+            col.suggestion = cached_col.to_field;
+          }
+        });
+      };
+
       var init = function () {
         initialize_mappings();
+
+        if ($scope.import_file.matching_done) { display_cached_column_mappings(); }
 
         $scope.updateColDuplicateStatus();
         $scope.updateInventoryTypeDropdown();
