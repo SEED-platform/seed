@@ -15,7 +15,7 @@ services:
     image: seedplatform/seed:latest
     build: .
   oep-city-1:
-    image: seedplatform/oep:develop
+    image: seedplatform/oep:1.4
     depends_on:
       - web
 volumes:
