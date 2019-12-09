@@ -133,8 +133,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
             inventory_type: function () {
               return $stateParams.inventory_type;
             },
-            single_record: function () {
-              return $scope.item_state;
+            provided_inventory: function () {
+              var provided_inventory = [];
+
+              // Add historical items
+              _.each($scope.historical_items, function (item) {
+                var item_state_copy = angular.copy(item.state);
+                _.defaults(item_state_copy, item.state.extra_data);
+                provided_inventory.push(item_state_copy);
+              })
+
+              // add "master" copy
+              item_copy = angular.copy($scope.item_state);
+              _.defaults(item_copy, $scope.item_state.extra_data);
+
+              return provided_inventory;
             },
           }
         });

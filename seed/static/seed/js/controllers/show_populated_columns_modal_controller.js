@@ -14,9 +14,9 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
     'columns',
     'currentProfile',
     'cycle',
-    'single_record',
+    'provided_inventory',
     'inventory_type',
-    function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle, single_record, inventory_type) {
+    function ($scope, $window, $uibModalInstance, Notification, inventory_service, modified_service, spinner_utility, columns, currentProfile, cycle, provided_inventory, inventory_type) {
       $scope.columns = columns;
       $scope.currentProfile = currentProfile;
       $scope.cycle = cycle;
@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         var relatedCols = _.filter($scope.columns, 'related');
         // console.log('relatedCols', relatedCols);
 
-        var col_key = single_record ? "column_name" : "name";
+        var col_key = provided_inventory ? "column_name" : "name";
 
         _.forEach(inventory, function (record, index) {
           // console.log(cols.length + ' remaining cols to check');
@@ -124,8 +124,8 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         $scope.state = 'running';
         $scope.status = 'Fetching Inventory';
 
-        if (single_record) {
-          update_profile_with_populated_columns([single_record]);
+        if (provided_inventory) {
+          update_profile_with_populated_columns(provided_inventory);
         } else {
           var page = 1;
           var chunk = 5000;
