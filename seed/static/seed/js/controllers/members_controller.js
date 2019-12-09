@@ -58,11 +58,8 @@ angular.module('BE.seed.controller.members', [])
        * @param  {obj} user
        */
       $scope.update_role = function (user) {
-        $scope.$emit('show_saving');
         organization_service.update_role(user.user_id, $scope.org.id, user.role)
-          .then(function () {
-            $scope.$emit('finished_saving');
-          }, function (data) {
+          .catch(function (data) {
             $scope.$emit('app_error', data);
           });
 

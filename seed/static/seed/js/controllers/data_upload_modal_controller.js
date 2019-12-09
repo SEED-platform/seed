@@ -465,7 +465,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           enableHiding: false
         }];
 
-        if ((results[0] || {}).hasOwnProperty('errors')) {
+        if (_.has(results, '[0].errors')) {
           column_defs.push({
             field: 'errors',
             enableHiding: false
@@ -505,7 +505,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             }
           }, function (data) {
             $log.error(data.message);
-            if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
+            if (_.has(data, 'stacktrace')) $log.error(data.stacktrace);
             $scope.step_12_error_message = data.message;
             $scope.step.number = 12;
           }, $scope.uploader);

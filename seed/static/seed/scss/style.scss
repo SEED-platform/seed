@@ -348,7 +348,6 @@ a:not([href]) {
 
       .menu_toggle_container,
       .logo_container,
-      .search_bar_container,
       .add_menu_container {
         position: relative;
         float: left;
@@ -390,21 +389,7 @@ a:not([href]) {
               font-family: $font-family-base;
               font-weight: bold;
             }
-
-            .logo_text_saving,
-            .saving_progress {
-              color: $blue;
-            }
           }
-        }
-      }
-
-      .search_bar_container {
-
-        .search_bar {
-          display: block;
-          width: 320px;
-          padding: 10px 20px 10px 2px;
         }
       }
 
@@ -489,12 +474,6 @@ a:not([href]) {
         }
       }
     }
-  }
-}
-
-@media (max-width: 945px) {
-  .search_bar_container {
-    display: none;
   }
 }
 
@@ -612,9 +591,9 @@ a:not([href]) {
       padding: 10px;
 
       &:hover,
-      &:hover,
       &.active {
         background-color: $gray_lightest;
+        text-decoration: none;
       }
     }
   }
@@ -898,7 +877,8 @@ a:not([href]) {
     }
 
     .jumbotron {
-      background: url('../../seed/images/kc_2.jpg') no-repeat;
+      background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
+      background-size: cover;
       height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;
@@ -2231,8 +2211,6 @@ select {
 .angular-ui-tree-placeholder {
   background: #f0f9ff;
   border: 2px dashed #bed2db;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
@@ -2984,11 +2962,6 @@ table.import_results a[disabled] {
 }
 
 .noselect {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
@@ -3495,4 +3468,10 @@ $pairedCellWidth: 60px;
 
 .pad-left-20 {
   padding-left: 20px;
+}
+
+.inventory-progress-modal {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
 }

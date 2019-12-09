@@ -42,12 +42,10 @@ angular.module('BE.seed.controller.menu', [])
       $scope.username = window.BE.username;
       $scope.urls = urls;
       $scope.datasets_count = 0;
-      $scope.search_input = '';
       $scope.organizations_count = 0;
       $scope.menu = {
         user: {}
       };
-      $scope.saving_indicator = false;
       $scope.is_initial_state = $scope.expanded_controller === $scope.collapsed_controller;
 
       $scope.hide_load_error = function () {
@@ -59,13 +57,6 @@ angular.module('BE.seed.controller.menu', [])
           $rootScope.route_load_error = true;
           $scope.menu.error_message = data.message;
         }
-      });
-      $scope.$on('show_saving', function () {
-        $scope.saving_indicator = true;
-        start_saving_indicator('. . .   ', '');
-      });
-      $scope.$on('finished_saving', function () {
-        $scope.saving_indicator = false;
       });
       $scope.$on('organization_list_updated', function () {
         init();
@@ -91,10 +82,6 @@ angular.module('BE.seed.controller.menu', [])
 
       $scope.href = function (url) {
         window.location = url;
-      };
-
-      $scope.reset_search_field = function () {
-        $scope.search_input = '';
       };
 
       //Sets initial expanded/collapse state of sidebar menu
@@ -158,45 +145,6 @@ angular.module('BE.seed.controller.menu', [])
           $scope.$broadcast('datasets_updated');
           init();
         });
-      };
-
-      /**
-       * start_saving_indicator: 'speaks' through a chuck of text. Used as a saving
-       *              indicator. $scope.saving_indicator should be set to true
-       *              for this to run.
-       *
-       *  TODO(Aleck): break out into a directive or service and make functional
-       *               where the element is a param, as is the bool, and timing
-       *
-       *  e.g. start_saving_indicator(". . .  ", "") will update the DOM element with
-       *       class=saving_progress as follows:
-       *       After 250ms: "."
-       *       After 250ms: ". "
-       *       After 250ms: ".  ."
-       *       After 250ms: ".  . "
-       *       After 250ms: ".  .  ."
-       *       After 250ms: ".  .  . "
-       *       After 250ms: ""
-       *       After 250ms: "."
-       *       After 250ms: ". "
-       *
-       *  @params {string} full_text: indicator text to iterate and loop through
-       *  @params {string} partial: the substring of the full_text displayed
-       *  @local {bool} $scope.saving_indicator true to continue
-       */
-      var start_saving_indicator = function (full_text, partial) {
-        var delay_ms = 250;
-        angular.element('.saving_progress').html(partial);
-        if (!$scope.saving_indicator) {
-          return;
-        }
-        if (full_text === partial) {
-          start_saving_indicator(full_text, '');
-        } else {
-          $timeout(function () {
-            start_saving_indicator(full_text, full_text.substring(0, partial.length + 1));
-          }, delay_ms);
-        }
       };
 
       /**

@@ -84,24 +84,21 @@ angular.module('BE.seed.controller.mapping', [])
 
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
 
-      var matching_criteria_columns = [];
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
         var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
-        matching_criteria_columns.push(display_name);
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
       matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
         var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
-        matching_criteria_columns.push(display_name);
         return {
           column_name: column_name,
           display_name: display_name
-        }
+        };
       });
-      $scope.matching_criteria_columns = _.uniq(matching_criteria_columns).sort().join(', ');
+
       $scope.property_matching_criteria_columns = _.map(matching_criteria_columns_payload.PropertyState, 'display_name').sort().join(', ');
       $scope.taxlot_matching_criteria_columns = _.map(matching_criteria_columns_payload.TaxLotState, 'display_name').sort().join(', ');
 
@@ -317,7 +314,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var get_geocoding_columns = function () {
-        organization_service.geocoding_columns(org_id).then(function(geocoding_columns) {
+        organization_service.geocoding_columns(org_id).then(function (geocoding_columns) {
           $scope.property_geocoding_columns_array = _.map(geocoding_columns.PropertyState, function (column_name) {
             return _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
           });
@@ -331,7 +328,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var org_id = user_service.get_organization().id;
-      geocode_service.check_org_has_api_key(org_id).then(function(result) {
+      geocode_service.check_org_has_api_key(org_id).then(function (result) {
         $scope.org_has_api_key = result;
         if (result) {
           get_geocoding_columns();
@@ -593,8 +590,30 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
+      var display_cached_column_mappings = function () {
+        var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
+        _.forEach($scope.mappings, function (col) {
+          var cached_col = _.find(cached_mappings, {from_field: col.name, to_table_name: col.suggestion_table_name})
+          col.suggestion_column_name = cached_col.to_field;
+          col.from_units = cached_col.from_units;
+
+          // If available, use display_name, else use raw field name.
+          var mappable_column = _.find(
+            $scope.mappable_property_columns.concat($scope.mappable_taxlot_columns),
+            {column_name: cached_col.to_field, table_name: cached_col.to_table_name}
+          )
+          if (mappable_column) {
+            col.suggestion = mappable_column.display_name;
+          } else {
+            col.suggestion = cached_col.to_field;
+          }
+        });
+      };
+
       var init = function () {
         initialize_mappings();
+
+        if ($scope.import_file.matching_done) { display_cached_column_mappings(); }
 
         $scope.updateColDuplicateStatus();
         $scope.updateInventoryTypeDropdown();
