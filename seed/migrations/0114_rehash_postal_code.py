@@ -19,11 +19,9 @@ def forwards(apps, schema_editor):
     def zero_fill(postal):
         if postal is not None:
             if '-' in postal:
-                postal = postal.split('-')[0].zfill(5) + '-' + postal.split('-')[1].zfill(4)
+                return postal.split('-')[0].zfill(5) + '-' + postal.split('-')[1].zfill(4)
             else:
-                postal = postal.zfill(5)
-
-            return postal
+                return postal.zfill(5)
 
     for field in ps.objects.all():
         field.postal_code = zero_fill(field.postal_code)
