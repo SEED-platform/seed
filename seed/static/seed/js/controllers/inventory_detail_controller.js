@@ -70,6 +70,76 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.columns = _.reject(columns, 'is_extra_data');
       }
 
+      var profile_formatted_columns = function () {
+        return _.map($scope.columns, function (col, index) {
+          return {
+            column_name: col.column_name,
+            id: col.id,
+            order: index + 1,
+            pinned: false,
+            table_name: col.table_name,
+          };
+        });
+      };
+
+      $scope.newProfile = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: profile_formatted_columns,
+            settings_location: _.constant('Detail View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        return modalInstance.result.then(function (newProfile) {
+          $scope.profiles.push(newProfile);
+          ignoreNextChange = true;
+          $scope.currentProfile = _.last($scope.profiles);
+          inventory_service.save_last_profile(newProfile.id, $scope.inventory_type);
+        });
+      };
+
+      $scope.open_show_populated_columns_modal = function () {
+        if (!profiles.length) {
+          // Create a profile first
+          $scope.newProfile().then(function () {
+            populated_columns_modal();
+          });
+        } else {
+          populated_columns_modal();
+        }
+      };
+
+      function populated_columns_modal() {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
+          controller: 'show_populated_columns_modal_controller',
+          resolve: {
+            columns: function () {
+              return columns;
+            },
+            currentProfile: function () {
+              return $scope.currentProfile;
+            },
+            cycle: function () {
+              return null;
+            },
+            inventory_type: function () {
+              return $stateParams.inventory_type;
+            },
+            single_record: function () {
+              return $scope.item_state;
+            },
+          }
+        });
+      }
+
       $scope.isDisabledField = function (name) {
         return _.includes([
           'analysis_end_time',
