@@ -37,6 +37,8 @@ Building and Configuring Containers
 
     .. code-block:: bash
 
+        docker volume create --name=seed_pgdata
+        docker volume create --name=seed_media
         docker-compose up
 
     **Note that you may need to build the containers a couple times for everything to converge**
