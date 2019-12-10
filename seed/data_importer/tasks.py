@@ -9,10 +9,10 @@ from __future__ import absolute_import
 
 import collections
 import copy
-import datetime as dt
 import hashlib
 import os
 import json
+import pytz
 import traceback
 from _csv import Error
 from builtins import str
@@ -21,6 +21,7 @@ from itertools import chain
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
+from datetime import date, datetime
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
@@ -240,7 +241,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW or PORTFOLIO_RAW.
     :param prog_key: string, key of the progress key
-    :param increment: double, value by which to increment progress key
     """
     progress_data = ProgressData.from_key(prog_key)
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -424,11 +424,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     except DataError as e:
         _log.error(traceback.format_exc())
         progress_data.finish_with_error('Invalid data found', str(e))
-        raise DataError("Invalid data found: %s" % (e))
+        raise DataError("Invalid data found: %s" % str(e))
     except TypeError as e:
         _log.error('Error mapping data with error: %s' % str(e))
-        progress_data.finish_with_error('Invalid type found while mapping data', (e))
-        raise DataError("Invalid type found while mapping data: %s" % (e))
+        progress_data.finish_with_error('Invalid type found while mapping data', str(e))
+        raise DataError("Invalid type found while mapping data: %s" % str(e))
 
     progress_data.step()
 
@@ -519,10 +519,10 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
 
     @lock_and_track returns a progress_key
 
-    :param organization: object, Organization object
+    :param org_id:
     :param property_state_ids: list, list of property state IDs to check
     :param taxlot_state_ids: list, list of tax lot state IDs to check
-    :param identifier: str, for retrieving progress status
+    :param dq_id: str, for retrieving progress status
     """
     # Initialize the data quality checks with the organization here. It is important to do it here
     # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
@@ -604,8 +604,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
     :param chunk: list, ids to process
     :param file_pk: ImportFile Primary Key
-    :param prog_key: string, Progress Key to append progress
-    :param increment: Float, Value by which to increment the progress
+    :param progress_key: string, Progress Key to append progress
     :return: Bool, Always true
     """
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -629,7 +628,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                         raw_property.bounding_box = v
                     elif isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
-                    elif isinstance(v, (dt.datetime, dt.date)):
+                    elif isinstance(v, (datetime, date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
                     else:
@@ -660,6 +659,7 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
 
     :param results: List of results from the parent task
     :param file_pk: ID of the file that was being imported
+    :param progress_key: string, Progress Key to append progress
     :param summary: Summary to be saved on ProgressData as a message
     :return: results: results from the other tasks before the chord ran
     """
@@ -667,7 +667,7 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in ["PM Meter Usage", "GreenButton"] and summary is not None:
+    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and summary is not None:
         import_file.cycle_id = None
 
         _append_meter_import_results_to_summary(results, summary)
@@ -730,7 +730,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     proposed_imports = meters_parser.proposed_imports()
 
     readings = meter_readings['readings']
-    meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+    meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
     meter_id = meter.id
 
@@ -777,20 +777,20 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             ]
 
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
+                ' VALUES ' + ', '.join(reading_strings) +
+                ' ON CONFLICT (meter_id, start_time, end_time)' +
+                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
+                ' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
                 key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
                 result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
-        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+        if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
-            result[key] = {"error": "Overlapping readings."}
+            result[key] = {'error': 'Overlapping readings.'}
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -823,7 +823,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
     try:
         with transaction.atomic():
             readings = meter_readings['readings']
-            meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+            meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
 
             meter, _created = Meter.objects.get_or_create(**meter_only_details)
 
@@ -834,21 +834,21 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             ]
 
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
+                ' VALUES ' + ', '.join(reading_strings) +
+                ' ON CONFLICT (meter_id, start_time, end_time)' +
+                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
+                ' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
                 key = "{} - {}".format(meter.source_id, meter.get_type_display())
                 result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
-        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+        if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             type_lookup = dict(Meter.ENERGY_TYPES)
-            key = "{} - {}".format(meter_readings.get("source_id"), type_lookup[meter_readings['type']])
-            result[key] = {"error": "Overlapping readings."}
+            key = "{} - {}".format(meter_readings.get('source_id'), type_lookup[meter_readings['type']])
+            result[key] = {'error': 'Overlapping readings.'}
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -869,6 +869,7 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     create a before and after summary of the import.
 
     :param file_pk: int, ID of the file to import
+    :param progress_key: string, Progress Key to append progress
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -916,7 +917,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
         success_count = result[key].get('count')
 
         if success_count is None:
-            error_comments[key].add(result[key].get("error"))
+            error_comments[key].add(result[key].get('error'))
         else:
             agg_results_summary[key] += success_count
 
@@ -924,10 +925,10 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     for import_info in incoming_summary:
         key = "{} - {}".format(import_info['source_id'], import_info['type'])
 
-        import_info["successfully_imported"] = agg_results_summary.get(key, 0)
+        import_info['successfully_imported'] = agg_results_summary.get(key, 0)
 
         if error_comments:
-            import_info["errors"] = " ".join(list(error_comments.get(key, "")))
+            import_info['errors'] = ' '.join(list(error_comments.get(key, '')))
 
     return incoming_summary
 
@@ -950,14 +951,14 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     if import_file.raw_save_done:
         return progress_data.finish_with_warning('Raw data already saved')
 
-    if import_file.source_type == "PM Meter Usage":
+    if import_file.source_type == 'PM Meter Usage':
         return _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
-    elif import_file.source_type == "GreenButton":
+    elif import_file.source_type == 'GreenButton':
         return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
 
     file_extension = os.path.splitext(import_file.file.name)[1]
 
-    if file_extension == ".json" or file_extension == '.geojson':
+    if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
     else:
         parser = reader.MCMParser(import_file.local_file)
@@ -999,9 +1000,9 @@ def save_raw_data(file_pk):
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
-        progress_data.finish_with_error('File Content Error: ' + e, traceback.format_exc())
+        progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
     except KeyError as e:
-        progress_data.finish_with_error('Invalid Column Name: "' + e + '"',
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"',
                                         traceback.format_exc())
     except TypeError:
         progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
@@ -1068,7 +1069,7 @@ def match_buildings(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("This should never happen in production")
+        _log.warn('This should never happen in production')
 
     # Start, match, pair
     progress_data.total = 3
@@ -1090,7 +1091,7 @@ def finish_matching(result, import_file_id, progress_key):
     if isinstance(result, list) and len(result) == 1:
         import_file.matching_results_data = result[0]
     else:
-        raise Exception("there are more than one results for matching_results, need to merge")
+        raise Exception('there are more than one results for matching_results, need to merge')
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -1113,7 +1114,7 @@ def hash_state_object(obj, include_extra_data=True):
 
     def _get_field_from_obj(field_obj, field):
         if not hasattr(field_obj, field):
-            return "FOO"  # Return a random value so we can distinguish between this and None.
+            return 'FOO'  # Return a random value so we can distinguish between this and None.
         else:
             return getattr(field_obj, field)
 
@@ -1121,7 +1122,7 @@ def hash_state_object(obj, include_extra_data=True):
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(f.encode('utf-8'))
-        if isinstance(obj_val, dt.datetime):
+        if isinstance(obj_val, datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
@@ -1135,6 +1136,345 @@ def hash_state_object(obj, include_extra_data=True):
         add_dictionary_repr_to_hash(m, obj.extra_data)
 
     return m.hexdigest()
+
+
+def filter_duplicated_states(unmatched_states):
+    """
+    Takes a list of states, where some values may contain the same data
+    as others, and returns two lists.  The first list consists of a
+    single state for each equivalent set of states in
+    unmatched_states.  The second list consists of all the
+    non-representative states which (for example) could be deleted.
+
+    :param unmatched_states: List, unmatched states
+    :return:
+    """
+
+    hash_values = []
+    for unmatch in unmatched_states:
+        hash_values.append(unmatch.hash_object)
+    equality_classes = collections.defaultdict(list)
+
+    for (i, hashval) in enumerate(hash_values):
+        equality_classes[hashval].append(i)
+
+    canonical_states = [unmatched_states[equality_list[0]] for equality_list in
+                        equality_classes.values()]
+    canonical_state_ids = set([s.pk for s in canonical_states])
+    noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
+
+    return canonical_states, noncanonical_states
+
+
+# from seed.utils.cprofile import cprofile
+# @cprofile()
+def match_and_merge_unmatched_objects(unmatched_states, partitioner):
+    """
+    Take a list of unmatched_property_states or unmatched_tax_lot_states and returns a set of
+    states that correspond to unmatched states.
+
+    :param unmatched_states: list, PropertyStates or TaxLotStates
+    :param partitioner: instance of EquivalencePartitioner
+    :return: [list, list], merged_objects, equivalence_classes keys
+    """
+    # Sort unmatched states/This should not be happening!
+    unmatched_states.sort(key=lambda state: state.pk)
+
+    # This removes any states that are duplicates,
+    equivalence_classes = partitioner.calculate_equivalence_classes(unmatched_states)
+
+    # get the priorities of the columns from the database
+    if len(equivalence_classes) > 0:
+        priorities = Column.retrieve_priorities(unmatched_states[0].organization)
+    else:
+        priorities = None
+
+    # For each of the equivalence classes, merge them down to a single
+    # object of that type.
+    merged_objects = []
+
+    for (class_key, class_indexes) in equivalence_classes.items():
+        if len(class_indexes) == 1:
+            # If there is only one class index, then just save the object to merged_objects and
+            # move on
+            merged_objects.append(unmatched_states[class_indexes[0]])
+        else:
+            # Sort the properties/taxlots by release_data first, then generation_date, and finally the primary key
+            # In the key function the logical "or" is to handle the case where the attribute exists but the value is None
+
+            # Fake future date to represent infinity in comparator
+            infinite_datetime = datetime(3000, 1, 1, tzinfo=pytz.UTC)
+            class_indexes.sort(key=lambda i: (
+                getattr(unmatched_states[i], 'release_date', infinite_datetime) or infinite_datetime,
+                getattr(unmatched_states[i], 'generation_date', infinite_datetime) or infinite_datetime,
+                getattr(unmatched_states[i], 'pk', float('inf'))
+            ))
+            unmatched_state_class = [unmatched_states[i] for i in class_indexes]
+            merged_result = unmatched_state_class[0]
+            for unmatched in unmatched_state_class[1:]:
+                merged_result = save_state_match(merged_result, unmatched, priorities)
+
+            merged_objects.append(merged_result)
+
+    return merged_objects, list(equivalence_classes.keys())
+
+
+# @cprofile(n=50)
+def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
+    """
+    This is fairly inefficient, because we grab all the organization's entire PropertyViews at once.
+    Surely this can be improved, but the logic is unusual/particularly dynamic here, so hopefully
+    this can be refactored into a better, purely database approach... Perhaps existing_view_states
+    can wrap database calls. Still the abstractions are subtly different (can I refactor the
+    partitioner to use Query objects); it may require a bit of thinking.
+
+    :param unmatched_states:
+    :param partitioner:
+    :param org:
+    :param import_file:
+    :return:
+    """
+
+    # Cycle coming from the import_file does not make sense here.
+    # Makes testing hard. Should be an argument.
+    current_match_cycle = import_file.cycle
+
+    if isinstance(unmatched_states[0], PropertyState):
+        ObjectViewClass = PropertyView
+        ParentAttrName = 'property'
+    elif isinstance(unmatched_states[0], TaxLotState):
+        ObjectViewClass = TaxLotView
+        ParentAttrName = 'taxlot'
+    else:
+        raise ValueError("Unknown class '{}' passed to merge_unmatched_into_views".format(
+            type(unmatched_states[0])))
+
+    class_views = ObjectViewClass.objects.filter(
+        state__organization=org,
+        cycle_id=current_match_cycle
+    ).select_related('state')
+    existing_view_states = collections.defaultdict(dict)
+    existing_view_state_hashes = set()
+
+    # TODO #239: this is an expensive calculation
+    for view in class_views:
+        equivalence_can_key = partitioner.calculate_canonical_key(view.state)
+        existing_view_states[equivalence_can_key][view.cycle] = view
+        existing_view_state_hashes.add(view.state.hash_object)
+
+    matched_views = []
+
+    merge_data = []
+    promote_data = []
+    for unmatched in unmatched_states:
+        if unmatched.hash_object in existing_view_state_hashes:
+            # If an exact duplicate exists, delete the unmatched state
+            unmatched.data_state = DATA_STATE_DELETE
+            unmatched.save()
+        else:
+            # Look to see if there is a match among the property states of the object.
+
+            # equiv_key = False
+            # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
+            equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
+            for key in existing_view_states:
+                if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
+                    if current_match_cycle in existing_view_states[key]:
+                        # There is an existing View for the current cycle that matches us.
+                        # Merge the new state in with the existing one and update the view,
+                        # audit log.
+                        current_view = existing_view_states[key][current_match_cycle]
+                        merge_data.append((current_view, unmatched))
+                    else:
+                        # Grab another view that has the same parent as the one we belong to.
+                        cousin_view = existing_view_states[key].values()[0]
+                        view_parent = getattr(cousin_view, ParentAttrName)
+                        new_view = type(cousin_view)()
+                        setattr(new_view, ParentAttrName, view_parent)
+                        new_view.cycle = current_match_cycle
+                        new_view.state = unmatched
+                        try:
+                            new_view.save()
+                            matched_views.append(new_view)
+                        except IntegrityError:
+                            _log.warn('Unable to save the new view as it already exists in the db')
+
+                    break
+            else:
+                # Create a new object/view for the current object.
+                promote_data.append((unmatched, current_match_cycle))
+
+    # create the data atomically to speed it up
+    _log.debug("There are %s merge_data and %s promote_data" % (len(merge_data), len(promote_data)))
+    priorities = Column.retrieve_priorities(org.pk)
+    try:
+        with transaction.atomic():
+            for merge_datum in merge_data:
+                merge_datum[0].state = save_state_match(
+                    merge_datum[0].state, merge_datum[1], priorities
+                )
+                merge_datum[0].save()
+
+                matched_views.append(merge_datum[0])
+
+            for promote_datum in promote_data:
+                created_view = promote_datum[0].promote(promote_datum[1])
+                matched_views.append(created_view)
+    except IntegrityError as e:
+        raise IntegrityError("Could not merge results with error: %s" % (e))
+
+    return list(set(matched_views))
+
+
+@shared_task
+@lock_and_track
+# @cprofile()
+def _match_properties_and_taxlots(file_pk, progress_key):
+    """
+    Match the properties and taxlots
+
+    :param file_pk: ImportFile Primary Key
+    :return:
+    """
+    import_file = ImportFile.objects.get(pk=file_pk)
+    progress_data = ProgressData.from_key(progress_key)
+
+    # Don't query the org table here, just get the organization from the import_record
+    org = import_file.import_record.super_organization
+
+    # Return a list of all the properties/tax lots based on the import file.
+    all_unmatched_properties = import_file.find_unmatched_property_states()
+
+    # Set the progress to started - 33%
+    progress_data.step('Matching data')
+
+    unmatched_properties = []
+    unmatched_tax_lots = []
+    duplicates_of_existing_property_states = []
+    duplicates_of_existing_taxlot_states = []
+    if all_unmatched_properties:
+        property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
+
+        # Filter out the duplicates within the import file.
+        _log.debug("Start filter_duplicated_states: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+        unmatched_properties, duplicate_property_states = filter_duplicated_states(
+            all_unmatched_properties
+        )
+        _log.debug("End filter_duplicated_states: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+
+        # Merge everything together based on the notion of equivalence
+        # provided by the partitioner, while ignoring duplicates.
+        _log.debug("Start match_and_merge_unmatched_objects: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+        unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
+            unmatched_properties,
+            property_partitioner
+        )
+        _log.debug("End match_and_merge_unmatched_objects: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+
+        # Take the final merged-on-import objects, and find Views that
+        # correspond to it and merge those together.
+        # TODO #239: This is quite slow... fix this next
+        _log.debug("Start merge_unmatched_into_views: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+        merged_property_views = merge_unmatched_into_views(
+            unmatched_properties,
+            property_partitioner,
+            org,
+            import_file
+        )
+        _log.debug(
+            "End merge_unmatched_into_views: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_property_states = [state for state in unmatched_properties if
+                                                  state.data_state == DATA_STATE_DELETE]
+        unmatched_properties = [state for state in unmatched_properties
+                                if state not in duplicates_of_existing_property_states]
+    else:
+        duplicate_property_states = []
+        merged_property_views = []
+
+    # Do the same process with the TaxLots.
+    all_unmatched_tax_lots = import_file.find_unmatched_tax_lot_states()
+
+    if all_unmatched_tax_lots:
+        # Filter out the duplicates.  Do we actually want to delete them
+        # here?  Mark their abandonment in the Audit Logs?
+        unmatched_tax_lots, duplicate_tax_lot_states = filter_duplicated_states(
+            all_unmatched_tax_lots)
+
+        taxlot_partitioner = EquivalencePartitioner.make_default_state_equivalence(TaxLotState)
+
+        # Merge everything together based on the notion of equivalence
+        # provided by the partitioner.
+        unmatched_tax_lots, taxlot_equivalence_keys = match_and_merge_unmatched_objects(
+            unmatched_tax_lots,
+            taxlot_partitioner
+        )
+
+        # Take the final merged-on-import objects, and find Views that
+        # correspond to it and merge those together.
+        _log.debug("Start tax_lot merge_unmatched_into_views: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+        merged_taxlot_views = merge_unmatched_into_views(
+            unmatched_tax_lots,
+            taxlot_partitioner,
+            org,
+            import_file
+        )
+        _log.debug("End tax_lot merge_unmatched_into_views: %s" % datetime.now().strftime(
+            "%Y-%m-%d %H:%M:%S"))
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
+                                                if state.data_state == DATA_STATE_DELETE]
+        unmatched_tax_lots = [state for state in unmatched_tax_lots if
+                              state not in duplicates_of_existing_taxlot_states]
+    else:
+        duplicate_tax_lot_states = []
+        merged_taxlot_views = []
+
+    # TODO #239: This is the next slowest... fix me too.
+    _log.debug("Start pair_new_states: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    progress_data.step('Pairing data')
+    pair_new_states(merged_property_views, merged_taxlot_views)
+    _log.debug("End pair_new_states: %s" % datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+    # Mark all the unmatched objects as done with matching and mapping
+    # There should be some kind of bulk-update/save thing we can do to
+    # improve upon this.
+    for state in chain(unmatched_properties, unmatched_tax_lots):
+        state.data_state = DATA_STATE_MATCHING
+        state.save()
+
+    for state in map(lambda x: x.state, chain(merged_property_views, merged_taxlot_views)):
+        state.data_state = DATA_STATE_MATCHING
+        # The merge state seems backwards, but it isn't for some reason, if they are not marked as
+        # MERGE_STATE_MERGED when called in the merge_unmatched_into_views, then they are new.
+        if state.merge_state != MERGE_STATE_MERGED:
+            state.merge_state = MERGE_STATE_NEW
+        state.save()
+
+    for state in chain(duplicate_property_states, duplicate_tax_lot_states):
+        state.data_state = DATA_STATE_DELETE
+        # state.merge_state = MERGE_STATE_DUPLICATE
+        state.save()
+
+    return {
+        'import_file_records': import_file.num_rows,
+        'property_all_unmatched': len(all_unmatched_properties),
+        'property_duplicates': len(duplicate_property_states),
+        'property_duplicates_of_existing': len(duplicates_of_existing_property_states),
+        'property_unmatched': len(unmatched_properties),
+        'tax_lot_all_unmatched': len(all_unmatched_tax_lots),
+        'tax_lot_duplicates': len(duplicate_tax_lot_states),
+        'tax_lot_duplicates_of_existing': len(duplicates_of_existing_taxlot_states),
+        'tax_lot_unmatched': len(unmatched_tax_lots),
+    }
 
 
 def list_canonical_property_states(org_id):
@@ -1155,6 +1495,72 @@ def list_canonical_property_states(org_id):
 
     ids = [p.state.id for p in pvs]
     return PropertyState.objects.filter(pk__in=ids)
+
+
+def save_state_match(state1, state2, priorities):
+    """
+    Merge the contents of state2 into state1
+
+    :param state1: PropertyState or TaxLotState
+    :param state2: PropertyState or TaxLotState
+    :param priorities: dict, column names and the priorities of the merging of data. This includes
+    all of the priorities for the columns, not just the priorities for the selected taxlotstate.
+    :return: state1, after merge
+    """
+    merged_state = type(state1).objects.create(organization=state1.organization)
+
+    merged_state = merging.merge_state(
+        merged_state, state1, state2, priorities[merged_state.__class__.__name__]
+    )
+
+    AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
+
+    assert AuditLogClass.objects.filter(state=state1).count() >= 1
+    assert AuditLogClass.objects.filter(state=state2).count() >= 1
+
+    # NJACHECK - is this logic correct?
+    state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
+    state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
+
+    AuditLogClass.objects.create(organization=state1.organization,
+                                 parent1=state_1_audit_log,
+                                 parent2=state_2_audit_log,
+                                 parent_state1=state1,
+                                 parent_state2=state2,
+                                 state=merged_state,
+                                 name='System Match',
+                                 description='Automatic Merge',
+                                 import_filename=None,
+                                 record_type=AUDIT_IMPORT)
+
+    # If the two states being merged were just imported from the same import file, carry the import_file_id into the new
+    # state. Also merge the lot_number fields so that pairing can work correctly on the resulting merged record
+    # Possible conditions:
+    # state1.data_state = 2, state1.merge_state = 0 and state2.data_state = 2, state2.merge_state = 0
+    # state1.data_state = 0, state1.merge_state = 2 and state2.data_state = 2, state2.merge_state = 0
+    if state1.import_file_id == state2.import_file_id:
+        if ((
+            state1.data_state == DATA_STATE_MAPPING and state1.merge_state == MERGE_STATE_UNKNOWN and
+            state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN) or
+            (
+                state1.data_state == DATA_STATE_UNKNOWN and state1.merge_state == MERGE_STATE_MERGED and
+                state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN)):
+            merged_state.import_file_id = state1.import_file_id
+
+            if isinstance(merged_state, PropertyState):
+                joined_lots = set()
+                if state1.lot_number:
+                    joined_lots = joined_lots.union(state1.lot_number.split(';'))
+                if state2.lot_number:
+                    joined_lots = joined_lots.union(state2.lot_number.split(';'))
+                if joined_lots:
+                    merged_state.lot_number = ';'.join(joined_lots)
+
+    # Set the merged_state to merged
+    merged_state.merge_state = MERGE_STATE_MERGED
+    merged_state.save()
+
+    return merged_state
 
 
 def pair_new_states(merged_property_views, merged_taxlot_views):
@@ -1209,9 +1615,9 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global taxlot_m2m_keygen
     global property_m2m_keygen
 
-    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
+    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ['jurisdiction_tax_lot_id'])
     property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
-                                                 ["pm_property_id", "jurisdiction_property_id"])
+                                                 ['pm_property_id', 'jurisdiction_property_id'])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
@@ -1219,8 +1625,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         *tax_comparison_field_names)
 
     # For each of the view objects, make an
-    prop_type = namedtuple("Prop", prop_comparison_fields)
-    taxlot_type = namedtuple("TL", tax_comparison_fields)
+    prop_type = namedtuple('Prop', prop_comparison_fields)
+    taxlot_type = namedtuple('TL', tax_comparison_fields)
 
     # Makes object with field_name->val attributes on them.
     property_objects = [prop_type(*attr) for attr in property_views]
@@ -1290,12 +1696,12 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         # PropertyView.objects.get(pk=pv_pk)
         # TaxLotView.objects.get(pk=tlv_pk)
 
-        connection = TaxLotProperty.objects.filter(
+        count = TaxLotProperty.objects.filter(
             property_view_id=pv_pk,
             taxlot_view_id=tlv_pk
         ).count()
 
-        if connection:
+        if count:
             continue
 
         is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0
