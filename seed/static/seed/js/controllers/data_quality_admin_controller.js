@@ -119,9 +119,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.restore_defaults = function () {
         spinner_utility.show();
         $scope.defaults_restored = false;
+        $scope.rules_reset = false;
         data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
           loadRules(rules);
           $scope.defaults_restored = true;
+          $scope.rules_updated = false;
         }, function (data) {
           $scope.$emit('app_error', data);
         }).finally(function () {
@@ -133,6 +135,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.reset_all_rules = function () {
         spinner_utility.show();
         $scope.rules_reset = false;
+        $scope.defaults_restored = false;
+        $scope.rules_updated = false;
         data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
           loadRules(rules);
           $scope.rules_reset = true;
@@ -146,6 +150,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       // Saves the configured rules
       $scope.save_settings = function () {
         $scope.rules_updated = false;
+        $scope.defaults_restored = false;
+        $scope.rules_reset = false;
         var rules = {
           properties: [],
           taxlots: []
