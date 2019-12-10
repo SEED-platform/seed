@@ -28,8 +28,12 @@
                         <p translate>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
                         <p translate>Column Mapping Presets can be used to help you easily and consistently map your data. Note that file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used.</p>
                         <p>
-                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $}:</span>
-                            <span><strong>{$ matching_criteria_columns $}</strong></span>
+                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Properties' | translate $}:</span>
+                            <span><strong>{$ property_matching_criteria_columns $}</strong></span>
+                        </p>
+                        <p>
+                            <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Tax Lots' | translate $}:</span>
+                            <span><strong>{$ taxlot_matching_criteria_columns $}</strong></span>
                         </p>
                         <p translate>MATCHING_ADVICE</p>
                         <p ng-show="property_geocoding_columns_array.length">

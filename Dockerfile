@@ -8,7 +8,9 @@
 #    https://pkgs.alpinelinux.org/package/edge/testing/x86_64/geos
 #FROM alpine:3.8
 
-FROM seedplatform/seed:2.6.1
+# Start with 2.6.0. note that the source code will be removed and re-copied to this container. The
+# version of SEED here is used to load in the core system packages and dependencies.
+FROM seedplatform/seed:2.6.0
 
 # DO NOT UPGRADE until libgeos and shapely fix the connection.
 #RUN apk add --no-cache python \
@@ -25,7 +27,6 @@ FROM seedplatform/seed:2.6.1
 #        npm \
 #        nginx && \
 #    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/main openssl && \
-#
 #    apk add --no-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ geos gdal && \
 #    ln -sf /usr/bin/python3 /usr/bin/python && \
 #    python -m ensurepip && \
@@ -47,6 +48,10 @@ FROM seedplatform/seed:2.6.1
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
 ##   - install supervisor that works with Python3.
 ##   - enchant, python-gdbm, libssl-dev, libxml2-dev are no longer explicitly installed
+
+## Remove this line after updating the base image to support the new dependency versions. The line ensures that the
+# code is only this branch, not any remnants from the tagged container.
+RUN rm -rf /seed/
 
 ### Install python requirements
 WORKDIR /seed
