@@ -1,3 +1,11 @@
+# SEED Version 2.6.0-patch0
+
+This patch has address a couple issues including:
+
+- Use previous version of base image for docker builds (both SEED and PostgreSQL). This is due to Ubuntu edge repo no long including the correct version of Postgis.
+- Update the deployment to automatically read the version of redis, postgres, and OEP from the docker-compose.build.yml file
+- Fix data comparisons when merging records
+
 # SEED Version 2.6.0
 
 Add time series related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) on the upgrade.
