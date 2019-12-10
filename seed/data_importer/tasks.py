@@ -18,6 +18,7 @@ from _csv import Error
 from builtins import str
 from collections import namedtuple
 from itertools import chain
+from seed.lib.merging import merging
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
@@ -65,7 +66,10 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
-    DATA_STATE_UNKNOWN)
+    DATA_STATE_UNKNOWN,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
