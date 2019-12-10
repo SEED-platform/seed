@@ -64,7 +64,8 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
-    DATA_STATE_UNKNOWN)
+    DATA_STATE_UNKNOWN
+)
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
