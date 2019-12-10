@@ -1,3 +1,7 @@
+# SEED Version 2.6.1-Patch0
+
+- This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.
+
 # SEED Version 2.6.1
 
 Date Range: 08/09/19 - 09/30/19
@@ -11,6 +15,15 @@ Closed Issues and Features:
 - Fixed [#1942]( https://github.com/SEED-platform/seed/issues/1942 ), On import, duplicates are not flagged when ULID/UBIDs are involved
 - Fixed [#1944]( https://github.com/SEED-platform/seed/issues/1944 ), ULID doesn't report that it could generate Lat/Long, but then does generate them
 - Fixed [#1950]( https://github.com/SEED-platform/seed/issues/1950 ), ULID-only mapping - Geocoding confidence text is wrong
+
+# SEED Version 2.6.0-patch0
+
+This patch has address a couple issues including:
+
+- Use previous version of base image for docker builds (both SEED and PostgreSQL). This is due to Ubuntu edge repo no long including the correct version of Postgis.
+- Update the deployment to automatically read the version of redis, postgres, and OEP from the docker-compose.build.yml file
+- Fix data comparisons when merging records
+- Use OEP Version 1.4
 
 # SEED Version 2.6.0
 

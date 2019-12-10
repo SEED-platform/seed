@@ -10,25 +10,24 @@ from __future__ import absolute_import
 import collections
 import copy
 import hashlib
-import os
 import json
-import pytz
+import os
 import traceback
 from _csv import Error
 from builtins import str
 from collections import namedtuple
+from datetime import date, datetime
 from itertools import chain
+from math import ceil
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
-from datetime import date, datetime
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
-from math import ceil
 from past.builtins import basestring
 from unidecode import unidecode
 
@@ -400,7 +399,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # Also create a new rule for this new column
                         if footprint_details.get('obj_field'):
                             if getattr(map_model_obj, footprint_details['obj_field']) is None:
-                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
+                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file,
+                                                                     original_row, map_model_obj)
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
