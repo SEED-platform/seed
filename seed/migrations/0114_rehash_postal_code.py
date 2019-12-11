@@ -11,16 +11,20 @@ from django.db import connection, migrations, transaction
 
 from seed.data_importer.tasks import hash_state_object
 
+import re
+
 
 def forwards(apps, schema_editor):
     ps = apps.get_model('seed', 'PropertyState')
     ts = apps.get_model('seed', 'TaxLotState')
 
     def zero_fill(postal):
-        if postal is not None:
-            if '-' in postal:
+        if postal:
+            if bool(re.compile(r"(\b\d{1,5}-\d{1,4}\b)").match(postal)):
+                print(postal.split('-')[0].zfill(5) + '-' + postal.split('-')[1].zfill(4))
                 return postal.split('-')[0].zfill(5) + '-' + postal.split('-')[1].zfill(4)
-            else:
+            elif bool(re.compile(r"(\b\d{1,5}\b)").match(postal)):
+                print(postal.zfill(5))
                 return postal.zfill(5)
 
     for field in ps.objects.all():
