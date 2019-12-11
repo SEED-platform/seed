@@ -405,7 +405,7 @@ class DataQualityViews(viewsets.ViewSet):
             if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Valid data label must not be none'
+                    'message': 'Label must be assigned when using Valid Data Severity.'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
             try:
