@@ -113,12 +113,12 @@ class Rule(models.Model):
     ]
 
     SEVERITY_ERROR = 0
-    SEVERITY_VALID = 1
-    SEVERITY_WARNING = 2
+    SEVERITY_WARNING = 1
+    SEVERITY_VALID = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
+        (SEVERITY_WARNING, 'warning'),
         (SEVERITY_VALID, 'valid'),
-        (SEVERITY_WARNING, 'warning')
     ]
 
     DEFAULT_RULES = [
@@ -720,7 +720,7 @@ class DataQualityCheck(models.Model):
                     # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
-                            if rule.severity == 0 or rule.severity == 2:
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
                                 label_applied = self.update_status_label(label, rule, linked_id)
@@ -738,7 +738,7 @@ class DataQualityCheck(models.Model):
 
                     try:
                         if not rule.maximum_valid(value):
-                            if rule.severity == 0 or rule.severity == 2:
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
                                 label_applied = self.update_status_label(label, rule, linked_id)
@@ -757,7 +757,7 @@ class DataQualityCheck(models.Model):
                     # Check for mandatory label for valid data:
                     try:
                         if rule.minimum_valid(value) and rule.maximum_valid(value):
-                            if rule.severity == 1:
+                            if rule.severity == Rule.SEVERITY_VALID:
                                 '''
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.results[row.id]['data_quality_results'].append(
@@ -959,7 +959,7 @@ class DataQualityCheck(models.Model):
         })
 
     def add_result_missing_label(self, row_id, rule, display_name, value):
-        if rule.severity == 1:
+        if rule.severity == Rule.SEVERITY_VALID:
             self.results[row_id]['data_quality_results'].append({
                 'field': rule.field,
                 'formatted_field': rule.field,
