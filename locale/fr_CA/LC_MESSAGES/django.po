@@ -1364,8 +1364,26 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "Merged properties"
 msgstr "Propriétés fusionnées"
 
+msgid "Merged properties against existing records"
+msgstr "Propriétés fusionnées avec des enregistrements existants"
+
+msgid "Merged properties between existing records"
+msgstr "Propriétés fusionnées entre des enregistrements existants"
+
+msgid "Merged properties within import file"
+msgstr "Propriétés fusionnées dans le fichier d'importation"
+
 msgid "Merged tax lots"
 msgstr "Lots d'impôt fusionnés"
+
+msgid "Merged tax lots against existing records"
+msgstr "Fusion de lots de taxes avec des enregistrements existants"
+
+msgid "Merged tax lots between existing records"
+msgstr "Fusion de lots de taxes entre des enregistrements existants"
+
+msgid "Merged tax lots within import file"
+msgstr "Fusion des lots de taxe dans le fichier d'importation"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
@@ -1656,8 +1674,8 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Veuillez consulter les en-têtes SEED. Les valeurs en double ne sont pas autorisées."
+msgid "Please review SEED headers or Data File headers. Duplicate values are not allowed for either."
+msgstr "Veuillez consulter les en-têtes SEED ou les en-têtes de fichier de données. Les valeurs en double ne sont pas autorisées non plus."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Veuillez consulter les en-têtes SEED. Les valeurs vides ne sont pas autorisées."
