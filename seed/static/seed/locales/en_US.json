@@ -528,7 +528,7 @@
     "Please go to the following page and choose a new password:": "Please go to the following page and choose a new password:",
     "Please go to the following page and setup your account:": "Please go to the following page and setup your account:",
     "Please join the SEED-Platform Dev forum where you can connect with other developers.": "Please join the SEED-Platform Dev forum where you can connect with other developers.",
-    "Please review SEED headers.  Duplicate values are not allowed.": "Please review SEED headers.  Duplicate values are not allowed.",
+    "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.": "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.",
     "Please review SEED headers.  Empty values are not allowed.": "Please review SEED headers.  Empty values are not allowed.",
     "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform.": "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform.",
     "Please wait while your data is loaded...": "Please wait while your data is loaded...",
