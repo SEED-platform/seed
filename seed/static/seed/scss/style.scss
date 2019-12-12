@@ -2824,11 +2824,7 @@ gs-input .tags .tag-item .remove-button {
   }
 }
 
-#inventory-actions-dropdown, #inventory-detail-actions-dropdown, #inventory-detail-edit {
-  &#inventory-detail-actions-dropdown {
-    width: 200px;
-  }
-
+#inventory-actions-dropdown, #inventory-detail-edit {
   li {
     cursor: default;
   }
