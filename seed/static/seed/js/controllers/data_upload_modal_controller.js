@@ -528,31 +528,41 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           } else {
             uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
-                $scope.duplicate_property_states = result_data.properties.duplicates;
-                $scope.duplicate_tax_lot_states = result_data.tax_lots.duplicates;
-                $scope.duplicates_of_existing_property_states = result_data.properties.duplicates_of_existing;
-                $scope.duplicates_of_existing_taxlot_states = result_data.tax_lots.duplicates_of_existing;
                 $scope.import_file_records = result_data.import_file_records;
+
+                $scope.property_initial_incoming = result_data.properties.initial_incoming;
+                $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;
+                $scope.property_duplicates_within_file = result_data.properties.duplicates_within_file;
+                $scope.property_merges_against_existing = result_data.properties.merges_against_existing;
+                $scope.property_merges_between_existing = result_data.properties.merges_between_existing;
+                $scope.property_merges_within_file = result_data.properties.merges_within_file;
+                $scope.property_new = result_data.properties.new;
 
                 $scope.properties_geocoded_high_confidence = result_data.properties.geocoded_high_confidence;
                 $scope.properties_geocoded_low_confidence = result_data.properties.geocoded_low_confidence;
                 $scope.properties_geocoded_manually = result_data.properties.geocoded_manually;
                 $scope.properties_geocode_not_possible = result_data.properties.geocode_not_possible;
 
+                $scope.tax_lot_initial_incoming = result_data.tax_lots.initial_incoming;
+                $scope.tax_lot_duplicates_against_existing = result_data.tax_lots.duplicates_against_existing;
+                $scope.tax_lot_duplicates_within_file = result_data.tax_lots.duplicates_within_file;
+                $scope.tax_lot_merges_against_existing = result_data.tax_lots.merges_against_existing;
+                $scope.tax_lot_merges_between_existing = result_data.tax_lots.merges_between_existing;
+                $scope.tax_lot_merges_within_file = result_data.tax_lots.merges_within_file;
+                $scope.tax_lot_new = result_data.tax_lots.new;
+
                 $scope.tax_lots_geocoded_high_confidence = result_data.tax_lots.geocoded_high_confidence;
                 $scope.tax_lots_geocoded_low_confidence = result_data.tax_lots.geocoded_low_confidence;
                 $scope.tax_lots_geocoded_manually = result_data.tax_lots.geocoded_manually;
                 $scope.tax_lots_geocode_not_possible = result_data.tax_lots.geocode_not_possible;
 
-                $scope.matched_properties = result_data.properties.matched;
-                $scope.unmatched_properties = result_data.properties.unmatched;
-                $scope.matched_taxlots = result_data.tax_lots.matched;
-                $scope.unmatched_taxlots = result_data.tax_lots.unmatched;
                 $scope.uploader.complete = true;
                 $scope.uploader.in_progress = false;
                 $scope.uploader.progress = 0;
                 $scope.uploader.status_message = '';
-                if ($scope.matched_properties + $scope.matched_taxlots > 0) {
+
+                // If merges against existing exist, provide slightly different feedback
+                if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {
                   $scope.step.number = 8;
                 } else {
                   $scope.step.number = 10;
