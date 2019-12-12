@@ -172,6 +172,9 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             inventory_type: function () {
               return $stateParams.inventory_type;
+            },
+            provided_inventory: function () {
+              return null;
             }
           }
         });
