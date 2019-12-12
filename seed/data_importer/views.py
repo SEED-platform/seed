@@ -1179,31 +1179,28 @@ class ImportFileViewSet(viewsets.ViewSet):
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
-            'import_file_records': import_file.matching_results_data.get('import_file_records',
-                                                                         None),
+            'import_file_records': import_file.matching_results_data.get('import_file_records', None),
             'properties': {
-                'matched': len(properties_matched),
-                'unmatched': len(properties_new),
-                'all_unmatched': import_file.matching_results_data.get('property_all_unmatched',
-                                                                       None),
-                'duplicates': import_file.matching_results_data.get('property_duplicates', None),
-                'duplicates_of_existing': import_file.matching_results_data.get(
-                    'property_duplicates_of_existing', None),
-                'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
+                'initial_incoming': import_file.matching_results_data.get('property_initial_incoming', None),
+                'duplicates_against_existing': import_file.matching_results_data.get('property_duplicates_against_existing', None),
+                'duplicates_within_file': import_file.matching_results_data.get('property_duplicates_within_file', None),
+                'merges_against_existing': import_file.matching_results_data.get('property_merges_against_existing', None),
+                'merges_between_existing': import_file.matching_results_data.get('property_merges_between_existing', None),
+                'merges_within_file': import_file.matching_results_data.get('property_merges_within_file', None),
+                'new': import_file.matching_results_data.get('property_new', None),
                 'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
                 'geocoded_manually': property_geocode_results.get('manual'),
                 'geocode_not_possible': property_geocode_results.get('missing_address_components'),
             },
             'tax_lots': {
-                'matched': len(tax_lots_matched),
-                'unmatched': len(tax_lots_new),
-                'all_unmatched': import_file.matching_results_data.get('tax_lot_all_unmatched',
-                                                                       None),
-                'duplicates': import_file.matching_results_data.get('tax_lot_duplicates', None),
-                'duplicates_of_existing': import_file.matching_results_data.get(
-                    'tax_lot_duplicates_of_existing', None),
-                'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
+                'initial_incoming': import_file.matching_results_data.get('tax_lot_initial_incoming', None),
+                'duplicates_against_existing': import_file.matching_results_data.get('tax_lot_duplicates_against_existing', None),
+                'duplicates_within_file': import_file.matching_results_data.get('tax_lot_duplicates_within_file', None),
+                'merges_against_existing': import_file.matching_results_data.get('tax_lot_merges_against_existing', None),
+                'merges_between_existing': import_file.matching_results_data.get('tax_lot_merges_between_existing', None),
+                'merges_within_file': import_file.matching_results_data.get('tax_lot_merges_within_file', None),
+                'new': import_file.matching_results_data.get('tax_lot_new', None),
                 'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
                 'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
                 'geocoded_manually': tax_lot_geocode_results.get('manual'),
@@ -1305,8 +1302,11 @@ class ImportFileViewSet(viewsets.ViewSet):
         # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
-            if not table:
+            # Do not return the campus, created, updated fields... that is force them to be in the property state
+            if not table or table == 'Property':
                 suggested_mappings[m][0] = 'PropertyState'
+            elif table == 'TaxLot':
+                suggested_mappings[m][0] = 'TaxLotState'
 
         result['suggested_column_mappings'] = suggested_mappings
         result['property_columns'] = property_columns

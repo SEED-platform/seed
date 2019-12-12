@@ -1358,8 +1358,26 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Merged properties"
 msgstr "Merged properties"
 
+msgid "Merged properties against existing records"
+msgstr "Merged properties against existing records"
+
+msgid "Merged properties between existing records"
+msgstr "Merged properties between existing records"
+
+msgid "Merged properties within import file"
+msgstr "Merged properties within import file"
+
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
+
+msgid "Merged tax lots against existing records"
+msgstr "Merged tax lots against existing records"
+
+msgid "Merged tax lots between existing records"
+msgstr "Merged tax lots between existing records"
+
+msgid "Merged tax lots within import file"
+msgstr "Merged tax lots within import file"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Meter energy display units (change one at a time)"
@@ -1650,8 +1668,8 @@ msgstr "Please go to the following page and setup your account:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Please review SEED headers.  Duplicate values are not allowed."
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Please review SEED headers.  Empty values are not allowed."
