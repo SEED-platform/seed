@@ -1130,6 +1130,9 @@ msgstr "kWh/m²/année"
 msgid "Label"
 msgstr "Étiquette"
 
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "L'étiquette doit être attribuée lors de l'utilisation de la gravité de données valide."
+
 msgid "Label Name"
 msgstr "Nom de l'étiquette"
 
@@ -1674,8 +1677,8 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Veuillez consulter les en-têtes SEED. Les valeurs en double ne sont pas autorisées."
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Veuillez consulter les noms de colonnes SEED ou les noms de colonnes du fichier en cours d'importation. Les valeurs en double ne sont pas autorisées dans les deux cas."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Veuillez consulter les en-têtes SEED. Les valeurs vides ne sont pas autorisées."
