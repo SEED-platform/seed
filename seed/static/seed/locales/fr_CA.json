@@ -355,6 +355,7 @@
     "kBtu\/sq. ft.\/year": "kBtu\/pi. ca.\/année",
     "kWh\/m²\/year": "kWh\/m²\/année",
     "Label": "Étiquette",
+    "Label must be assigned when using Valid Data Severity.": "L'étiquette doit être attribuée lors de l'utilisation de la gravité de données valide.",
     "Label Name": "Nom de l'étiquette",
     "Label updated.": "Étiquette mise à jour",
     "Labels": "Étiquettes",

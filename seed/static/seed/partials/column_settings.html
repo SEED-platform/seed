@@ -121,7 +121,8 @@
                                 <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
                             </td>
                             <td class="text-center" ng-if="column.is_extra_data">
-                                <span ng-if="column.is_extra_data" translate>Ineligible</span>
+                                <!-- Set column.is_matching_criteria to -1? -->
+                                <span ng-if="column.is_extra_data" ng-value="column.is_matching_criteria=-1" translate>Ineligible</span>
                             </td>
                         </tr>
                     </tbody>
