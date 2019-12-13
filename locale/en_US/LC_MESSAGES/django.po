@@ -1125,6 +1125,9 @@ msgstr "kWh/m²/year"
 msgid "Label"
 msgstr "Label"
 
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "Label must be assigned when using Valid Data Severity."
+
 msgid "Label Name"
 msgstr "Label Name"
 

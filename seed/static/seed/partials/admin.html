@@ -33,7 +33,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails" translate>User E-mail:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org.email"> </select>
+                                <select class="form-control" name="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org.email"></select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -76,7 +76,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="new_user_org_select" translate>Choose Existing Organization:</label>
                             <div class="col-sm-4">
-                                <select name="new_user_orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization"></select>
+                                <select name="new_user_orgs" class="form-control" ng-options="o as o.name for o in org_user.organizations" ng-model="user.organization"></select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -109,14 +109,14 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+                                    <select name="orgs" class="form-control" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
+                                    <select name="user_emails" class="form-control" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
                                 </div>
                             </div>
                             <div class="form-group">

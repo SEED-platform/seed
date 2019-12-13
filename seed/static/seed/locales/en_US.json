@@ -355,6 +355,7 @@
     "kBtu\/sq. ft.\/year": "kBtu\/sq. ft.\/year",
     "kWh\/m²\/year": "kWh\/m²\/year",
     "Label": "Label",
+    "Label must be assigned when using Valid Data Severity.": "Label must be assigned when using Valid Data Severity.",
     "Label Name": "Label Name",
     "Label updated.": "Label updated",
     "Labels": "Labels",
