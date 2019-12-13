@@ -1130,6 +1130,9 @@ msgstr "kWh/m²/année"
 msgid "Label"
 msgstr "Étiquette"
 
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "L'étiquette doit être attribuée lors de l'utilisation de la gravité de données valide."
+
 msgid "Label Name"
 msgstr "Nom de l'étiquette"
 
