@@ -63,7 +63,6 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.org_form.add = function (org) {
         organization_service.add(org).then(function () {
-          $scope.org_form.invalid = false;
           get_organizations().then(function () {
             $scope.$emit('organization_list_updated');
           });
@@ -75,7 +74,6 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.user_form.add = function (user) {
         user_service.add(user).then(function (data) {
-          $scope.user_form.invalid = false;
 
           var alert_message = 'User ' + user.email + ' created and added';
           if (data.org_created) {
@@ -102,6 +100,10 @@ angular.module('BE.seed.controller.admin', [])
           return org.name.toLowerCase();
         });
         return _.includes(orgs, name.toLowerCase());
+      };
+
+      $scope.user_form.not_ready = function () {
+        return !$scope.user.organization && !$scope.user.org_name;
       };
 
       $scope.user_form.reset = function () {
@@ -206,12 +208,12 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-              org.remove_message = 'success';
-              get_organizations();
-            }, function () {
-              // Do nothing
-            },
-            org);
+                org.remove_message = 'success';
+                get_organizations();
+              }, function () {
+                // Do nothing
+              },
+              org);
           });
       };
 
