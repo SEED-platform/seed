@@ -36,6 +36,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
+      var org_id = organization_payload.organization.id;
+      var base_storage_key = 'report.' + org_id + '.' + $scope.inventory_type;
+
       var pretty_unit = function (pint_spec) {
         var mappings = {
           'ft**2': 'ft²',
@@ -175,9 +178,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.chartSeries = ['id', 'yr_e'];
       $scope.aggChartSeries = ['use_description', 'yr_e'];
 
-      //Currently selected x and y variables
-      $scope.xAxisSelectedItem = $scope.xAxisVars[0]; //initialize to first var
-      $scope.yAxisSelectedItem = $scope.yAxisVars[0]; //initialize to first var
+      var localStorageXAxisKey = base_storage_key + '.xaxis';
+      var localStorageYAxisKey = base_storage_key + '.yaxis';
+
+      //Currently selected x and y variables - check local storage first, otherwise initialize to first choice
+      $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+      $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
 
       //Chart data
       $scope.chartData = [];
@@ -250,6 +256,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         getChartData();
         getAggChartData();
         updateChartTitles();
+        updateStorage();
       };
 
 
@@ -396,6 +403,15 @@ angular.module('BE.seed.controller.inventory_reports', [])
           });
       }
 
+      function updateStorage () {
+        // Save axis and cycle selections
+        localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
+        localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
+
+        localStorage.setItem(localStorageFromCycleKey, JSON.stringify($scope.fromCycle.selected_cycle));
+        localStorage.setItem(localStorageToCycleKey, JSON.stringify($scope.toCycle.selected_cycle));
+      };
+
       /*  Generate an array of color objects to be used as part of chart configuration
        Each color object should have the following properties:
        {
@@ -421,6 +437,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
         return colorsArr;
       }
 
+      var localStorageFromCycleKey = base_storage_key + '.fromcycle';
+      var localStorageToCycleKey = base_storage_key + '.tocycle';
 
       /* Call the update method so the page initializes
        with the values set in the scope */
@@ -428,12 +446,14 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
         // Initialize pulldowns
         $scope.fromCycle = {
-          selected_cycle: _.head($scope.cycles)
+          selected_cycle: JSON.parse(localStorage.getItem(localStorageFromCycleKey)) || _.head($scope.cycles)
         };
         $scope.toCycle = {
-          selected_cycle: _.last($scope.cycles)
+          selected_cycle: JSON.parse(localStorage.getItem(localStorageToCycleKey)) || _.last($scope.cycles)
         };
 
+        // Attempt to load selections
+        $scope.updateChartData();
       }
 
       init();

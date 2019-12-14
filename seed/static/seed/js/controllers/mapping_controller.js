@@ -317,7 +317,13 @@ angular.module('BE.seed.controller.mapping', [])
         var duplicates_present = false;
         _.forEach($scope.mappings, function (col) {
           var potential = col.suggestion + '.' + col.suggestion_table_name;
-          col.is_duplicate = _.get(suggestions, potential, 0) > 1;
+          var dup_suggestion = _.get(suggestions, potential, 0) > 1;
+
+          var dup_header = _.filter($scope.raw_columns, function (filter_col) {
+            return filter_col === col.name;
+          }).length > 1;
+
+          col.is_duplicate = dup_header || dup_suggestion;
           duplicates_present = duplicates_present || col.is_duplicate;
         });
 
