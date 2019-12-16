@@ -1001,8 +1001,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                if log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
