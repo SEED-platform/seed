@@ -87,7 +87,7 @@ def recalculate_hash_objects(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0113_column_geocoding_order'),
+        ('seed', '0114_auto_20191211_0958'),
     ]
 
     operations = [
