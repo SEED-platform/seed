@@ -104,19 +104,19 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations track by o.org_id" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)" required></select>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
+                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user" required></select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-offset-4 col-sm-8">
-                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()" translate>Add user</button>
+                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()" ng-disabled="addRemoveForm.$invalid" translate>Add user</button>
                                 </div>
                             </div>
                         </form>
