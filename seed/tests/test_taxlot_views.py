@@ -44,9 +44,37 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.org, self.org_user, _ = create_organization(self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.client.login(**user_details)
+
+    def test_first_lat_long_edit(self):
+        state = self.taxlot_state_factory.get_taxlot_state()
+        taxlot = self.taxlot_factory.get_taxlot()
+        view = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=state
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "latitude": 39.765251,
+                "longitude": -104.986138,
+            }
+        }
+        url = reverse('api:v2:taxlots-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
+
+        response = self.client.get(url, content_type='application/json')
+        data = json.loads(response.content)
+
+        self.assertEqual(data['status'], 'success')
+
+        self.assertIsNotNone(data['state']['long_lat'])
+        self.assertIsNotNone(data['state']['geocoding_confidence'])
 
     def test_merged_indicators_provided_on_filter_endpoint(self):
         _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
