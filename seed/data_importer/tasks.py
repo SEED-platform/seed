@@ -949,27 +949,16 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
 
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
-    Worker method for saving raw data. Chunk up the CSV or XLSX file and save the raw data
-    into the PropertyState table.
+    Worker method for saving raw data. Chunk up the CSV, XLSX, geojson/json file and create the tasks
+    to save the raw data into the PropertyState table.
 
-    In the case of receiving PM Meter Usage, build tasks to import these directly
-    into Meters and MeterReadings.
 
     :param file_pk: int, ID of the file to import
     :return: Dict, result from progress data / cache
     """
     progress_data = ProgressData.from_key(progress_key)
 
-    # _log.debug('Attempting to access import_file')
     import_file = ImportFile.objects.get(pk=file_pk)
-    if import_file.raw_save_done:
-        return progress_data.finish_with_warning('Raw data already saved')
-
-    if import_file.source_type == 'PM Meter Usage':
-        return _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
-    elif import_file.source_type == 'GreenButton':
-        return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
-
     file_extension = os.path.splitext(import_file.file.name)[1]
 
     if file_extension == '.json' or file_extension == '.geojson':
@@ -990,8 +979,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.total = len(chunks)
     progress_data.save()
 
-    # return tasks and None as a placeholder for proposed data import summary
-    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks], None
+    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks]
 
 
 def save_raw_data(file_pk):
@@ -1006,23 +994,40 @@ def save_raw_data(file_pk):
     :return: Dict, from cache, containing the progress key to track
     """
     progress_data = ProgressData(func_name='save_raw_data', unique_id=file_pk)
-    # save_raw_data_run.s(file_pk, progress_data.key)
+
+    _save_raw_data(file_pk, progress_data.key)
+
+    # queue up the save raw data and immediately return. This is needed in the case of large files
+    # and slow transfers causing the website to timeout due to inactivity.
+    return progress_data.result()
+
+
+@shared_task(ignore_result=True)
+def _save_raw_data(file_pk, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
-        tasks, summary = _save_raw_data_create_tasks(file_pk, progress_data.key)
-        chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key, summary=summary))
+        import_file = ImportFile.objects.get(pk=file_pk)
+        if import_file.raw_save_done:
+            return progress_data.finish_with_warning('Raw data already saved')
+
+        if import_file.source_type == 'PM Meter Usage':
+            tasks = _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
+        elif import_file.source_type == 'GreenButton':
+            tasks = _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
+        else:
+            tasks = _save_raw_data_create_tasks(file_pk, progress_key)
+        chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
         progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
     except KeyError as e:
-        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"',
-                                        traceback.format_exc())
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
     except TypeError:
         progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
-        progress_data.finish_with_error('Unhandled Error: ' + str(e),
-                                        traceback.format_exc())
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
     _log.debug(progress_data.result())
     return progress_data.result()
 
