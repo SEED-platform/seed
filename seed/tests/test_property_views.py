@@ -135,6 +135,33 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
 
+    def test_first_lat_long_edit(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "latitude": 39.765251,
+                "longitude": -104.986138,
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
+
+        response = self.client.get(url, content_type='application/json')
+        data = json.loads(response.content)
+
+        self.assertEqual(data['status'], 'success')
+
+        self.assertIsNotNone(data['state']['long_lat'])
+        self.assertIsNotNone(data['state']['geocoding_confidence'])
+
     def test_merged_indicators_provided_on_filter_endpoint(self):
         _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
 
