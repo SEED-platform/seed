@@ -363,10 +363,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         users = []
         for u in org.organizationuser_set.all():
             user = u.user
+
+            user_orgs = OrganizationUser.objects.filter(user=user).count()
+
             users.append({
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'number_of_orgs': user_orgs,
                 'user_id': user.pk,
                 'role': _get_js_role(u.role_level)
             })
@@ -379,7 +383,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @detail_route(methods=['DELETE'])
     def remove_user(self, request, pk=None):
         """
-        Removes a user from an organization.
+        Removes a user from an organization and deletes orphaned users.
         ---
         parameter_strategy: replace
         parameters:
@@ -460,14 +464,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         ou.delete()
 
         # check the user and make sure they still have a valid organization to belong to
-        if request.user.default_organization == org:
-            # find the first org and set it to that. It is okay if first_org is none.
-            # it simply means the user has no allowed organizations and will need an admin to
-            # assign them to a new organization if they want to use the account again.
-            first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
-            if first_org_user:
-                request.user.default_organization = first_org_user.organization
-                request.user.save()
+        user_orgs = OrganizationUser.objects.filter(user=user)
+
+        if user_orgs.count() == 0:
+            # Remove orphaned user
+            user.delete()
+        elif user.default_organization == org:
+            first_org = user_orgs.order_by('id').first()
+            user.default_organization = first_org.organization
+            user.save()
 
         return JsonResponse({'status': 'success'})
 

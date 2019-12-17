@@ -33,7 +33,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails" translate>User Email:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org.email"></select>
+                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org.email"></select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -111,7 +111,7 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user" required></select>
+                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org_user.user" required></select>
                                 </div>
                             </div>
                             <div class="form-group">
@@ -127,14 +127,13 @@
                                 <tr>
                                     <th translate>User</th>
                                     <th></th>
-
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="user in org_user.users">
+                                <tr ng-repeat="user in org_user.users track by user.user_id">
                                     <td>{$:: user.email $}</td>
                                     <td>
-                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)" translate>Remove User</button>
+                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
                                     </td>
                                 </tr>
                             </tbody>
