@@ -338,44 +338,4 @@ describe('controller: mapping_controller', function () {
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  // Stale tests from mapping presets feature
-  // it('should get mappings in an API friendly way', function () {
-  //   create_mapping_controller();
-  //   mapping_controller_scope.$digest();
-  //   var mappings = mapping_controller_scope.get_mappings();
-  //   expect(mappings.length).toBe(5);
-  //   expect(mappings[0]).toEqual({
-  //     from_field: 'property id',
-  //     from_units: null,
-  //     to_field: 'pm_property_id',
-  //     to_field_display_name: 'PM Property ID',
-  //     to_table_name: 'PropertyState'
-  //   });
-  //   // everything in between is empty since we we're using only
-  //   // suggested mappings.
-  //   expect(mappings[3]).toEqual({
-  //     from_field: 'lot number',
-  //     from_units: null,
-  //     to_field: 'jurisdiction_tax_lot_id',
-  //     to_field_display_name: 'Jurisdiction Tax Lot ID',
-  //     to_table_name: 'TaxLotState'
-  //   });
-  // });
-
-  // Needs to be e2e test now.
-  // it('should show the "STEP 2" tab when reviewing mappings', function() {
-  //     // arrange
-  //     create_mapping_controller();
-  //     mapping_controller_scope.$digest();
-
-  //     // act
-  //     var mappings = mapping_controller_scope.get_mapped_buildings();
-
-  //     // assert
-  //     expect(mapping_controller_scope.tabs).toEqual({
-  //         one_active: false,
-  //         two_active: true,
-  //         three_active: false
-  //     });
-  // });
 });
