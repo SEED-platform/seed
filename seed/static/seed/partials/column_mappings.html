@@ -76,6 +76,9 @@
         <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
             <button type="button" class="btn btn-primary" ng-click="mirror_data_file_headers()" translate>Copy Data File Headers directly to SEED Headers</button>
         </div>
+        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
+            <button type="button" class="btn btn-primary" ng-click="suggestions_from_existing_columns()" translate>Populate SEED Headers with best known matches</button>
+        </div>
 
         <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>Please review Date File Headers.  Duplicate or empty values are not allowed.</div>
 

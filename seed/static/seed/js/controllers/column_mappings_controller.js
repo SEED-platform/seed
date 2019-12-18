@@ -270,6 +270,21 @@ angular.module('BE.seed.controller.column_mappings', [])
         $scope.flag_change();
       };
 
+      $scope.suggestions_from_existing_columns = function () {
+        var raw_headers = _.map($scope.current_preset.mappings, 'from_field');
+
+        column_mappings_service.get_header_suggestions(raw_headers).then(function (results) {
+          _.forEach($scope.current_preset.mappings, function (mapping) {
+            var suggestion = results.data[mapping.from_field];
+            mapping.to_table_name = suggestion[0];
+            mapping.to_field = suggestion[1];
+
+            mapping_db_to_display(mapping);
+          });
+          $scope.flag_change();
+        });
+      };
+
       // Identify individual header duplicates and if a preset has header duplicates
       $scope.is_file_header_duplicate = function (mapping) {
         var mapping_by_from_field = _.filter($scope.current_preset.mappings, {from_field: mapping.from_field});

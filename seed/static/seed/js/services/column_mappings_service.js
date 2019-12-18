@@ -48,6 +48,22 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       });
     };
 
+    column_mappings_factory.get_header_suggestions = function (headers) {
+      return column_mappings_factory.get_header_suggestions_for_org(user_service.get_organization().id, headers);
+    };
+
+    column_mappings_factory.get_header_suggestions_for_org = function (org_id, headers) {
+      return $http.post('/api/v2/column_mapping_presets/suggestions/', {
+        headers: headers,
+      }, {
+        params: {
+          organization_id: org_id,
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     column_mappings_factory.update_column_mapping_preset = function (org_id, id, data) {
       return $http.put('/api/v2/column_mapping_presets/' + id + '/', data, {
         params: {
