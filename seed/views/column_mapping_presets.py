@@ -4,8 +4,11 @@
 from django.core.exceptions import FieldDoesNotExist
 from django.http import JsonResponse
 
+from rest_framework.decorators import list_route
+from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    Column,
     ColumnMappingPreset,
     Organization,
 )
@@ -136,6 +139,56 @@ class ColumnMappingPresetViewSet(ViewSet):
             return JsonResponse({
                 'status': 'success',
                 'data': "Successfully deleted",
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'data': str(e),
+            }, status=HTTP_400_BAD_REQUEST)
+
+    @api_endpoint_class
+    @has_perm_class('requires_member')
+    @list_route(methods=['POST'])
+    def suggestions(self, request):
+        """
+        Retrieves suggestions given raw column headers.
+        parameters:
+           - headers:---------------------------------------------------------------------------------------------------------------------------
+           - name: organization_id
+             description: The organization_id for this user's organization
+             required: true (at least, nothing will be returned if not provided)
+             paramType: query
+        """
+        try:
+            org_id = request.query_params.get('organization_id', None)
+            raw_headers = request.data.get('headers', [])
+
+            suggested_mappings = mapper.build_column_mapping(
+                raw_headers,
+                Column.retrieve_all_by_tuple(org_id),
+                previous_mapping=None,
+                map_args=None,
+                thresh=80  # percentage match that we require. 80% is random value for now.
+            )
+            # replace None with empty string for column names and PropertyState for tables
+            # TODO #239: Move this fix to build_column_mapping
+            for m in suggested_mappings:
+                table, destination_field, _confidence = suggested_mappings[m]
+                if destination_field is None:
+                    suggested_mappings[m][1] = ''
+
+            # Fix the table name, eventually move this to the build_column_mapping
+            for m in suggested_mappings:
+                table, _destination_field, _confidence = suggested_mappings[m]
+                # Do not return the campus, created, updated fields... that is force them to be in the property state
+                if not table or table == 'Property':
+                    suggested_mappings[m][0] = 'PropertyState'
+                elif table == 'TaxLot':
+                    suggested_mappings[m][0] = 'TaxLotState'
+
+            return JsonResponse({
+                'status': 'success',
+                'data': suggested_mappings,
             })
         except Exception as e:
             return JsonResponse({

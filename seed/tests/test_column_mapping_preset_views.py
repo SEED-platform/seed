@@ -8,11 +8,12 @@ from json import loads, dumps
 from seed.tests.util import DataMappingBaseTestCase
 from seed.models import (
     ASSESSED_RAW,
+    Column,
     ColumnMappingPreset,
 )
 
 
-class ColumnMappingPresetViews(DataMappingBaseTestCase):
+class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars
@@ -108,3 +109,51 @@ class ColumnMappingPresetViews(DataMappingBaseTestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertFalse(ColumnMappingPreset.objects.exists())
+
+
+class ColumnMappingPresetViewsNonCrud(DataMappingBaseTestCase):
+    def setUp(self):
+        selfvars = self.set_up(ASSESSED_RAW)
+        self.user, self.org, _import_file, _import_record, _cycle = selfvars
+
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.client.login(**user_details)
+
+    def test_get_suggestion_given_raw_column_headers(self):
+        # Create ED col to test
+        Column.objects.create(
+            column_name='extra_data_test',
+            table_name='PropertyState',
+            organization=self.org,
+            is_extra_data=True
+        )
+
+        # Create a list of similarly named cols
+        mock_incoming_headers = dumps({
+            'headers': [
+                'Jurisdiction Tax Lot ID',
+                'PM Property ID',
+                'Zip',
+                'Extra Data',
+            ],
+        })
+
+        # hit new endpoint with this list
+        url = reverse('api:v2:column_mapping_presets-suggestions') + '?organization_id=' + str(self.org.id)
+
+        response = self.client.post(url, mock_incoming_headers, content_type='application/json')
+        results = loads(response.content)['data']
+
+        expected = {
+            'Extra Data': ['PropertyState', 'extra_data_test', 94],
+            'Jurisdiction Tax Lot ID': ['TaxLotState', 'jurisdiction_tax_lot_id', 100],
+            'PM Property ID': ['PropertyState', 'pm_property_id', 100],
+            'Zip': ['PropertyState', 'postal_code', 100]
+        }
+
+        for header in results:
+            self.assertEqual(expected[header], results[header])
