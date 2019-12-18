@@ -190,7 +190,7 @@ angular.module('BE.seed.controller.column_settings', [])
 
       $scope.toggle_matching_criteria_sort = function () {
         if ($scope.column_sort !== 'is_matching_criteria') {
-          $scope.columns = _.reverse(_.sortBy($scope.columns, 'is_matching_criteria'));
+          $scope.columns = _.reverse(_.sortBy($scope.columns, ['is_matching_criteria', 'is_extra_data']));
           $scope.column_sort = 'is_matching_criteria';
         } else {
           default_sort_toggle();
