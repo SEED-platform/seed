@@ -42,7 +42,6 @@ from seed.data_importer.models import (
     STATUS_READY_TO_MERGE,
 )
 from seed.data_importer.utils import usage_point_id
-from seed.decorators import lock_and_track
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -509,8 +508,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     progress_data.total = len(id_chunks)
     progress_data.save()
 
-    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
-             for ids in id_chunks]
+    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key) for ids in id_chunks]
 
     return tasks
 
@@ -715,7 +713,6 @@ def cache_first_rows(import_file, parser):
 
 
 @shared_task(ignore_result=True)
-@lock_and_track
 def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     """
     Create GreenButton import tasks. Notably, 1 GreenButton import contains
@@ -741,7 +738,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
     meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
-    proposed_imports = meters_parser.proposed_imports()
+    # proposed_imports = meters_parser.proposed_imports()
 
     readings = meter_readings['readings']
     meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
@@ -755,13 +752,11 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     progress_data.total = ceil(len(readings) / chunk_size)
     progress_data.save()
 
-    tasks = [
-        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
-        for batch_readings
-        in batch(readings, chunk_size)
-    ]
+    # Add in the save raw data chunks to the background tasks
+    for batch_readings in batch(readings, chunk_size):
+        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key).delay()
 
-    return tasks, proposed_imports
+    return progress_data.result()
 
 
 @shared_task
@@ -873,6 +868,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
     return result
 
 
+@shared_task(ignore_result=True)
 def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     """
     This takes a PM meters import file and restructures the data in order to
@@ -895,18 +891,15 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data)
     meters_and_readings = meters_parser.meter_and_reading_objs
-    proposed_imports = meters_parser.proposed_imports()
+    # proposed_imports = meters_parser.proposed_imports()
 
     progress_data.total = len(meters_and_readings)
     progress_data.save()
 
-    tasks = [
-        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key)
-        for meter_readings
-        in meters_and_readings
-    ]
+    for meter_readings in meters_and_readings:
+        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key).delay()
 
-    return tasks, proposed_imports
+    return progress_data.result()
 
 
 def _append_meter_import_results_to_summary(import_results, incoming_summary):
@@ -947,11 +940,11 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     return incoming_summary
 
 
+@shared_task(ignore_result=True)
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
     Worker method for saving raw data. Chunk up the CSV, XLSX, geojson/json file and create the tasks
     to save the raw data into the PropertyState table.
-
 
     :param file_pk: int, ID of the file to import
     :return: Dict, result from progress data / cache
@@ -979,7 +972,11 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.total = len(chunks)
     progress_data.save()
 
-    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks]
+    # Add in the save raw data chunks to the background tasks
+    for chunk in chunks:
+        _save_raw_data_chunk.s(chunk, file_pk, progress_data.key).delay()
+
+    return progress_data.result()
 
 
 def save_raw_data(file_pk):
@@ -994,17 +991,6 @@ def save_raw_data(file_pk):
     :return: Dict, from cache, containing the progress key to track
     """
     progress_data = ProgressData(func_name='save_raw_data', unique_id=file_pk)
-
-    _save_raw_data(file_pk, progress_data.key)
-
-    # queue up the save raw data and immediately return. This is needed in the case of large files
-    # and slow transfers causing the website to timeout due to inactivity.
-    return progress_data.result()
-
-
-@shared_task(ignore_result=True)
-def _save_raw_data(file_pk, progress_key):
-    progress_data = ProgressData.from_key(progress_key)
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
         import_file = ImportFile.objects.get(pk=file_pk)
@@ -1012,12 +998,15 @@ def _save_raw_data(file_pk, progress_key):
             return progress_data.finish_with_warning('Raw data already saved')
 
         if import_file.source_type == 'PM Meter Usage':
-            tasks = _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
+            task_cmd = _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key)
         elif import_file.source_type == 'GreenButton':
-            tasks = _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
+            task_cmd = _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key)
         else:
-            tasks = _save_raw_data_create_tasks(file_pk, progress_key)
-        chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+            task_cmd = _save_raw_data_create_tasks.s(file_pk, progress_data.key)
+
+        # queue up the save raw data and immediately return. This is needed in the case of large files
+        # and slow transfers causing the website to timeout due to inactivity.
+        chord(task_cmd, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
@@ -1028,20 +1017,8 @@ def _save_raw_data(file_pk, progress_key):
         progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
         progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
-    _log.debug(progress_data.result())
     return progress_data.result()
 
-
-# def save_raw_data_run(file_pk, progress_key):
-#     """
-#     Run the save_raw_data command. This adds more information to the progress_key that is given.
-#     Save the raw data from an imported file.
-#
-#     :param file_pk:
-#     :param progress_key:
-#     :return:
-#     """
-#     pass
 
 def geocode_buildings_task(file_pk):
     async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
