@@ -705,10 +705,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                     state=taxlot_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_taxlot_state_data:
-                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
-                taxlot_state_data.update(new_taxlot_state_data)
-
+                # if checks above pass, create an exact copy of the current state for historical purposes
                 if log.name == 'Import Creation':
                     # Add new state by removing the existing ID.
                     taxlot_state_data.pop('id')
@@ -743,16 +740,6 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
-
-                        count, view_id = match_merge_in_cycle(taxlot_view.id, 'TaxLotState')
-
-                        if view_id is not None:
-                            result.update({
-                                'view_id': view_id,
-                                'match_merged_count': count,
-                            })
-
-                        return JsonResponse(result, status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -760,8 +747,19 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                                 new_taxlot_state_serializer.errors)}
                         )
                         return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+
+                # redo assignment of this variable in case this was an initial edit
+                taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
+
+                if 'extra_data' in new_taxlot_state_data:
+                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
+                taxlot_state_data.update(new_taxlot_state_data)
+
+                log = TaxLotAuditLog.objects.select_related().filter(
+                    state=taxlot_view.state
+                ).order_by('-id').first()
+
+                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the
                     # previous values in the state object.
 

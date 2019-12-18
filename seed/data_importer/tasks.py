@@ -561,6 +561,15 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     DataQualityCheck.initialize_cache(import_file_id)
 
     import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # Check for duplicate column headers
+    column_headers = import_file.first_row_columns or []
+    duplicate_tracker = collections.defaultdict(lambda: 0)
+    for header in column_headers:
+        duplicate_tracker[header] += 1
+        if duplicate_tracker[header] > 1:
+            raise Exception("Duplicate column found in file: %s" % (header))
+
     if remap:
         # Check to ensure that import files has not already been matched/merged.
         if import_file.matching_done or import_file.matching_completion:

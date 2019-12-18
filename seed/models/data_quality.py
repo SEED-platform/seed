@@ -48,6 +48,10 @@ class UnitMismatchError(Exception):
     pass
 
 
+class MissingLabelError(Exception):
+    pass
+
+
 def format_pint_violation(rule, source_value):
     """
     Format a pint min, max violation for human readability.
@@ -110,9 +114,11 @@ class Rule(models.Model):
 
     SEVERITY_ERROR = 0
     SEVERITY_WARNING = 1
+    SEVERITY_VALID = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
-        (SEVERITY_WARNING, 'warning')
+        (SEVERITY_WARNING, 'warning'),
+        (SEVERITY_VALID, 'valid'),
     ]
 
     DEFAULT_RULES = [
@@ -714,9 +720,10 @@ class DataQualityCheck(models.Model):
                     # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -731,9 +738,10 @@ class DataQualityCheck(models.Model):
 
                     try:
                         if not rule.maximum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                label_applied = self.update_status_label(label, rule, linked_id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -744,6 +752,29 @@ class DataQualityCheck(models.Model):
                         continue
                     except UnitMismatchError:
                         self.add_result_dimension_error(row.id, rule, display_name, value)
+                        continue
+
+                    # Check for mandatory label for valid data:
+                    try:
+                        if rule.minimum_valid(value) and rule.maximum_valid(value):
+                            if rule.severity == Rule.SEVERITY_VALID:
+                                '''
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.results[row.id]['data_quality_results'].append(
+                                    {
+                                        'field': rule.field,
+                                        'formatted_field': display_name,
+                                        'value': s_value,
+                                        'table_name': rule.table_name,
+                                        'message': display_name + ' is valid',
+                                        'detailed_message': display_name + ' [' + s_value + '] is valid data',
+                                        'severity': rule.get_severity_display(),
+                                    }
+                                )
+                                '''
+                                label_applied = self.update_status_label(label, rule, linked_id)
+                    except MissingLabelError:
+                        self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
@@ -927,6 +958,18 @@ class DataQualityCheck(models.Model):
             'severity': rule.get_severity_display(),
         })
 
+    def add_result_missing_label(self, row_id, rule, display_name, value):
+        if rule.severity == Rule.SEVERITY_VALID:
+            self.results[row_id]['data_quality_results'].append({
+                'field': rule.field,
+                'formatted_field': rule.field,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': rule.status_label + ' is missing',
+                'detailed_message': rule.status_label + ' is required and missing',
+                'severity': rule.get_severity_display(),
+            })
+
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append({
             'field': rule.field,
@@ -974,7 +1017,6 @@ class DataQualityCheck(models.Model):
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
-
         if rule.status_label_id is not None and linked_id is not None:
             label_org_id = rule.status_label.super_organization_id
 

@@ -203,7 +203,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
           loadRules(rules);
           $scope.rules_updated = true;
-        }, function (data) {
+        }).then(function (data) {
+          $scope.$emit('app_success', data);
+        }).catch(function (data) {
           $scope.$emit('app_error', data);
         }).finally(function () {
           spinner_utility.hide();
