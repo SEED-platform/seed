@@ -27,6 +27,7 @@ class TestProgressData(TestCase):
         data_eql = {
             'status': 'not-started',
             'status_message': '',
+            'summary': None,
             'stacktrace': None,
             'func_name': 'test_func',
             'progress_key': ':1:SEED:test_func:PROG:abc123',
