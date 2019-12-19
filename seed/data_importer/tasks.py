@@ -661,7 +661,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
 
 @shared_task(ignore_result=True)
-def finish_raw_save(results, file_pk, progress_key, summary=None):
+def finish_raw_save(results, file_pk, progress_key):
     """
     Finish importing the raw file.
 
@@ -934,8 +934,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
         else:
             agg_results_summary[key] += success_count
 
-    # Next update summary of incoming meters imports with aggregated results. Do not change values of incoming_summary
-    # in place.
+    # Next update summary of incoming meters imports with aggregated results.
     for import_info in incoming_summary:
         key = "{} - {}".format(import_info['source_id'], import_info['type'])
         # check if there has already been a successfully_imported count on this key
