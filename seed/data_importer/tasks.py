@@ -679,11 +679,11 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and summary is not None:
+    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and progress_data.summary() is not None:
         import_file.cycle_id = None
 
-        _append_meter_import_results_to_summary(results, summary)
-        finished_progress_data = progress_data.finish_with_success(summary)
+        new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
+        finished_progress_data = progress_data.finish_with_success(new_summary)
     else:
         finished_progress_data = progress_data.finish_with_success()
 
@@ -712,7 +712,7 @@ def cache_first_rows(import_file, parser):
     import_file.save()
 
 
-@shared_task(ignore_result=True)
+@shared_task
 def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     """
     Create GreenButton import tasks. Notably, 1 GreenButton import contains
@@ -738,7 +738,6 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
     meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
-    # proposed_imports = meters_parser.proposed_imports()
 
     readings = meter_readings['readings']
     meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
@@ -749,14 +748,17 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     chunk_size = 1000
 
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.update_summary(meters_parser.proposed_imports())
     progress_data.total = ceil(len(readings) / chunk_size)
     progress_data.save()
 
+    tasks = []
     # Add in the save raw data chunks to the background tasks
     for batch_readings in batch(readings, chunk_size):
-        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key).delay()
+        tasks.append(_save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key))
 
-    return progress_data.result()
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 @shared_task
@@ -862,13 +864,12 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
         progress_data.finish_with_error('data failed to import')
         raise e
 
-    # Indicate progress
     progress_data.step()
 
     return result
 
 
-@shared_task(ignore_result=True)
+@shared_task
 def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     """
     This takes a PM meters import file and restructures the data in order to
@@ -891,15 +892,17 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data)
     meters_and_readings = meters_parser.meter_and_reading_objs
-    # proposed_imports = meters_parser.proposed_imports()
 
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.update_summary(meters_parser.proposed_imports())
     progress_data.total = len(meters_and_readings)
     progress_data.save()
 
+    tasks = []
     for meter_readings in meters_and_readings:
-        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key).delay()
+        tasks.append(_save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key))
 
-    return progress_data.result()
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 def _append_meter_import_results_to_summary(import_results, incoming_summary):
@@ -917,6 +920,9 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     agg_results_summary = collections.defaultdict(lambda: 0)
     error_comments = collections.defaultdict(lambda: set())
 
+    if not isinstance(import_results, list):
+        import_results = [import_results]
+
     # First aggregate import_results by key
     for result in import_results:
         key = list(result.keys())[0]
@@ -928,11 +934,13 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
         else:
             agg_results_summary[key] += success_count
 
-    # Next update summary of incoming meters imports with aggregated results.
+    # Next update summary of incoming meters imports with aggregated results. Do not change values of incoming_summary
+    # in place.
     for import_info in incoming_summary:
         key = "{} - {}".format(import_info['source_id'], import_info['type'])
-
-        import_info['successfully_imported'] = agg_results_summary.get(key, 0)
+        # check if there has already been a successfully_imported count on this key
+        successfully_imported = import_info.get('successfully_imported', 0)
+        import_info['successfully_imported'] = agg_results_summary.get(key, successfully_imported)
 
         if error_comments:
             import_info['errors'] = ' '.join(list(error_comments.get(key, '')))
@@ -940,7 +948,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     return incoming_summary
 
 
-@shared_task(ignore_result=True)
+@shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
     Worker method for saving raw data. Chunk up the CSV, XLSX, geojson/json file and create the tasks
@@ -973,10 +981,11 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     # Add in the save raw data chunks to the background tasks
+    tasks = []
     for chunk in chunks:
-        _save_raw_data_chunk.s(chunk, file_pk, progress_data.key).delay()
+        tasks.append(_save_raw_data_chunk.s(chunk, file_pk, progress_data.key))
 
-    return progress_data.result()
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 def save_raw_data(file_pk):
@@ -997,16 +1006,15 @@ def save_raw_data(file_pk):
         if import_file.raw_save_done:
             return progress_data.finish_with_warning('Raw data already saved')
 
+        # queue up the tasks and immediately return. This is needed in the case of large files
+        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
+        # large files can take quite some time.
         if import_file.source_type == 'PM Meter Usage':
-            task_cmd = _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key)
+            _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
         elif import_file.source_type == 'GreenButton':
-            task_cmd = _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key)
+            _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
-            task_cmd = _save_raw_data_create_tasks.s(file_pk, progress_data.key)
-
-        # queue up the save raw data and immediately return. This is needed in the case of large files
-        # and slow transfers causing the website to timeout due to inactivity.
-        chord(task_cmd, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+            _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:

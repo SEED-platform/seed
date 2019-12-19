@@ -74,3 +74,22 @@ class TestProgressData(TestCase):
 
         self.assertEqual(pd.result()['total'], 42)
         self.assertEqual(pd.result()['status_message'], 'Stepping')
+
+        # if we call step again, then the status message should not change
+        pd.step()
+        self.assertEqual(pd.result()['status_message'], 'Stepping')
+
+        # Now passing in empty string will reset
+        pd.step('')
+        self.assertEqual(pd.result()['status_message'], '')
+
+    def test_summary(self):
+        pd = ProgressData(func_name='test_func_6', unique_id='pokemon')
+        self.assertIsNone(pd.summary())
+
+        new_summary = {"Values": ["As", "A", "List"]}
+        pd.update_summary(new_summary)
+        self.assertEqual(pd.summary(), new_summary)
+
+        pd.step(new_summary=4815162342)
+        self.assertEqual(pd.summary(), 4815162342)
