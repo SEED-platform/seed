@@ -17,7 +17,7 @@ def deactivate_users_without_orgs(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0114_auto_20191211_0958'),
+        ('seed', '0115_rehash_postal_code'),
     ]
 
     operations = [
