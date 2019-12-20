@@ -260,10 +260,24 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.csv_headers = "";
 
       $scope.copy_csv_headers = function() {
-        _.forEach($scope.csv_headers.split(','), function (col_header) {
-          $scope.add_new_column();
-          _.last($scope.current_preset.mappings).from_field = col_header;
-        })
+        $uibModal.open({
+          template: '<div class="modal-header">' +
+                      '<h3 class="modal-title" translate>Replacing Existing Columns</h3>' +
+                    '</div>' +
+                    '<div class="modal-body" translate>This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?</div>' +
+                    '<div class="modal-footer">' +
+                      '<button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button>' +
+                      '<button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Yes</button>' +
+                    '</div>'
+        }).result.then(function () {
+          $scope.current_preset.mappings = [];
+          _.forEach($scope.csv_headers.split(','), function (col_header) {
+            $scope.add_new_column();
+            _.last($scope.current_preset.mappings).from_field = col_header;
+          });
+        }).catch(function () {
+          return;
+        });
       };
 
       // Copy Data File Header values into SEED Header values
