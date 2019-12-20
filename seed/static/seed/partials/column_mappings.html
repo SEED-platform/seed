@@ -84,7 +84,7 @@
 
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="table_list_container has_borders">
-              <table class="table table-striped" ng-hide="review_mappings">
+              <table class="table table-striped">
                   <thead>
                       <tr>
                           <th colspan="3" class="source_data">SEED</th>
@@ -94,7 +94,7 @@
                   <tbody>
                       <tr>
                           <td style="border-right: 0 none; max-width: 160px; width: 160px; text-align: right;">
-                              <span style="padding-right:5px;" ng-hide="import_file.matching_done">{$:: 'Set all fields to' | translate $}:</span>
+                              <span style="padding-right:5px;">{$:: 'Set all fields to' | translate $}:</span>
                               <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value"></select>
                           </td>
                           <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
@@ -108,7 +108,9 @@
                           <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
                           <th><translate>Measurement Units</translate></th>
                           <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
-                          <th></th>
+                          <th style='width: 120px;'>
+                              <button type="button" class="btn btn-danger btn-sm" ng-click="remove_all_columns()" ng-disabled="!current_preset.mappings.length" translate>Delete All Columns</button>
+                          </th>
                       </tr>
                   </thead>
                   <tbody id="mapped-table">
@@ -148,7 +150,7 @@
                           <td ng-repeat="cell_value in ::col.raw_data track by $index">
                               {$:: cell_value $}
                           </td>
-                          <td>
+                          <td style='text-align: center;'>
                               <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
                                   <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                               </button>

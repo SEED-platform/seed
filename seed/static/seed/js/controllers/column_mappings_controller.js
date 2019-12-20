@@ -251,6 +251,11 @@ angular.module('BE.seed.controller.column_mappings', [])
         $scope.flag_change();
       };
 
+      $scope.remove_all_columns = function () {
+        $scope.current_preset.mappings = [];
+        $scope.flag_change();
+      };
+
       // Copy Comma-delimited list into headers
       $scope.csv_headers = "";
 
