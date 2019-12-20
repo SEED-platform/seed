@@ -82,6 +82,9 @@ msgstr "Add a label"
 msgid "Add another file"
 msgstr "Add another file"
 
+msgid "Add Column"
+msgstr "Add Column"
+
 msgid "Add compliance information"
 msgstr "Add compliance information"
 
@@ -169,6 +172,9 @@ msgstr "api key"
 
 msgid "API Key"
 msgstr "API Key"
+
+msgid "Apply Preset"
+msgstr "Apply Preset"
 
 #: seed/models/projects.py:107 seed/models/projects.py:134
 #: seed/models/projects.py:159
@@ -333,6 +339,30 @@ msgstr "Change the display name of a column"
 msgid "COL_GEOCODING_TOGGLE"
 msgstr "Toggle geocoding involvement and, if enabled, change order of how column values are concatenated to construct a full address"
 
+msgid "COL_MAP_PRESET_IMPORT_ADVICE"
+msgstr "Column Mapping Presets can be used to help you easily and consistently map your data. Note that file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used."
+
+msgid "COL_MAP_PRESET_INTRO"
+msgstr "Column mapping presets can help you standardize and simplify your file import mapping process."
+
+msgid "COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE"
+msgstr "You can create mapping rows for a preset by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right."
+
+msgid "COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE"
+msgstr "Also, you can copy Data File header values directly over to SEED headers via the button below."
+
+msgid "COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE"
+msgstr "When using a preset for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated."
+
+msgid "COL_MAP_PRESET_MAPPING_INTRO"
+msgstr "Create mappings to specific Data File header values - mapping SEED headers, Inventory Types, and if applicable, Measurement Units."
+
+msgid "COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE"
+msgstr "Alternatively, you can get SEED header suggestions based on existing column names using the other button below."
+
+msgid "COL_MAP_PRESET_MAPPING_TYPING"
+msgstr "SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes."
+
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
 msgstr "For non-extra_data columns, toggle whether the column is matching criteria"
 
@@ -341,6 +371,12 @@ msgstr "Toggle merge protection for specific columns"
 
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
+
+msgid "Column Mapping Preset"
+msgstr "Column Mapping Preset"
+
+msgid "Column Mappings"
+msgstr "Column Mappings"
 
 msgid "Column Name"
 msgstr "Column Name"
@@ -396,6 +432,9 @@ msgstr "Confirm Save Mappings?"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
+msgid "CONFIRMING_DELETE_PRESET"
+msgstr "Are you sure you want to delete the preset"
+
 msgid "Contact"
 msgstr "Contact"
 
@@ -414,6 +453,12 @@ msgstr "Are you sure you want to continue?"
 
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
+
+msgid "Copy Data File Headers directly to SEED Headers"
+msgstr "Copy Data File Headers directly to SEED Headers"
+
+msgid "Copy into Data File Headers"
+msgstr "Copy into Data File Headers"
 
 msgid "Count #"
 msgstr "Count #"
@@ -473,6 +518,9 @@ msgstr "Create new sub-organization"
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
+msgid "Create Preset"
+msgstr "Create Preset"
+
 msgid "Create Project"
 msgstr "Create Project"
 
@@ -494,6 +542,9 @@ msgstr "Created new Cycle {cycle_name}"
 
 msgid "Cross-Cycles"
 msgstr "Cross-Cycles"
+
+msgid "Current Column Mapping Preset"
+msgstr "Current Column Mapping Preset"
 
 msgid "Current Name"
 msgstr "Current Name"
@@ -573,6 +624,9 @@ msgstr "Data Sets"
 msgid "Data Type"
 msgstr "Data Type"
 
+msgid "DATA_FILE_HEADER_DUP_WARNING"
+msgstr "Please review Date File Headers.  Duplicate or empty values are not allowed."
+
 msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
 
@@ -608,11 +662,17 @@ msgstr "Deadline:"
 msgid "Delete"
 msgstr "Delete"
 
+msgid "Delete All Columns"
+msgstr "Delete All Columns"
+
 msgid "Delete Organization"
 msgstr "Delete Organization"
 
 msgid "Delete Selected"
 msgstr "Delete Selected"
+
+msgid "Delete User?"
+msgstr "Delete User?"
 
 msgid "Delete your Data File"
 msgstr "Delete your Data File"
@@ -622,6 +682,9 @@ msgstr "Delete your Data Set"
 
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
+
+msgid "Delete your Preset"
+msgstr "Delete your Preset"
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
@@ -1707,6 +1770,9 @@ msgstr "Portfolio Manager Meter Import Results"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
 
+msgid "Populate SEED Headers with best known matches"
+msgstr "Populate SEED Headers with best known matches"
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Updated counts after geocoding"
 
@@ -1721,6 +1787,9 @@ msgstr "Potential Matches from Source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
+
+msgid "Preset Name"
+msgstr "Preset Name"
 
 msgid "Preview"
 msgstr "Preview"
@@ -1887,6 +1956,12 @@ msgstr "Remove User"
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
 
+msgid "Rename Preset"
+msgstr "Rename Preset"
+
+msgid "Rename your Preset"
+msgstr "Rename your Preset"
+
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
 
@@ -1895,6 +1970,9 @@ msgstr "Rename \"Column Name\", which specifies the underlying, system-level col
 
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
+
+msgid "Replacing Existing Columns"
+msgstr "Replacing Existing Columns"
 
 msgid "Reporting Deadline"
 msgstr "Reporting Deadline"
@@ -2221,6 +2299,9 @@ msgstr "Please verify before continuing."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Update the geocoding column settings in your organization's column settings page."
 
+msgid "Switch Presets"
+msgstr "Switch Presets"
+
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
@@ -2326,6 +2407,9 @@ msgstr "There is also a link to the SEED-Platform Users forum, where you can con
 
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
+
+msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgstr "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
 
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
@@ -2476,6 +2560,9 @@ msgstr "User First Name:"
 msgid "User Last Name:"
 msgstr "User Last Name:"
 
+msgid "USER_WILL_BE_DELETED"
+msgstr "The user <strong>{user}</strong> only belongs to this organization. Removing them will result in the user being deleted. Are you sure you want to continue?"
+
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
 msgstr "User's email address.  Used for auth as well."
@@ -2603,6 +2690,9 @@ msgstr "Yes, Delete Data Set"
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
 
+msgid "Yes, Delete User"
+msgstr "Yes, Delete User"
+
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 
@@ -2614,12 +2704,18 @@ msgstr "You cannot login without agreeing to the terms of this site."
 msgid "You have successfully logged out. You may log in again below."
 msgstr "You have successfully logged out. You may log in again below."
 
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
+
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "You should be receiving it shortly."
 msgstr "You should be receiving it shortly."
 
 msgid "You successfully created the project"
 msgstr "You successfully created the project"
+
+msgid "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
+msgstr "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"

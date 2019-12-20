@@ -28,7 +28,7 @@
 
         <!-- possibly generlize settings_profile? -->
         <div class="section_action_container right_wide settings_profile">
-          <span>Column Mapping Preset: </span>
+          <span>{$:: 'Column Mapping Preset' | translate $}: </span>
           <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-disabled="!presets.length" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
 
           <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present()" tooltip-placement="bottom" uib-tooltip="Save">
@@ -52,12 +52,13 @@
     <div class="section_tab_container">
         <div class="row" style="border-top: 1px solid #ddd;">
             <div class="col-sm-7 tab_content wide">
-                <p>Column mapping presets can help you standardize and simplify your file import mapping process.</p>
-                <p>Create mappings to specific Data File header values - mapping SEED headers, Inventory Types, and if applicable, Measurement Units.</p>
-                <p>SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes.</p>
-                <p>Also, you can copy Data File header values directly over to SEED headers via the button below.</p>
-                <p>You can create mapping rows for a preset by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right.</p>
-                <p><strong>When using a preset for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated.</strong></p>
+                <p translate>COL_MAP_PRESET_INTRO</p>
+                <p translate>COL_MAP_PRESET_MAPPING_INTRO</p>
+                <p translate>COL_MAP_PRESET_MAPPING_TYPING</p>
+                <p translate>COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE</p>
+                <p translate>COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE</p>
+                <p translate>COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE</p>
+                <strong><p translate>COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE</p></strong>
             </div>
 
             <div class="col-sm-5 key tab_content wide">
@@ -65,7 +66,7 @@
                 <br>
                 <textarea ng-model="csv_headers" rows="8" cols="45" style="resize: none;" placeholder="<File Column 1>,<File Column 2>,<File Column 3>,..."></textarea>
                 <br>
-                <button class="btn btn-info" ng-disabled="csv_headers === ''" type="button" ng-click="copy_csv_headers()" tooltip-placement="bottom" uib-tooltip="Creates rows given comma-separated columns.">
+                <button class="btn btn-info" ng-disabled="csv_headers === ''" type="button" ng-click="copy_csv_headers()" tooltip-placement="bottom" uib-tooltip="Creates rows given comma-separated columns." translate>
                     Copy into Data File Headers
                 </button>
             </div>
@@ -80,7 +81,7 @@
             <button type="button" class="btn btn-primary" ng-click="suggestions_from_existing_columns()" translate>Populate SEED Headers with best known matches</button>
         </div>
 
-        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>Please review Date File Headers.  Duplicate or empty values are not allowed.</div>
+        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>DATA_FILE_HEADER_DUP_WARNING</div>
 
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="table_list_container has_borders">
@@ -159,7 +160,7 @@
                   </tbody>
               </table>
             </div>
-            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New">
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New" translate>
                 Add Column
             </button>
         </div>
