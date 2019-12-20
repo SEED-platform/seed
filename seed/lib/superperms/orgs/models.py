@@ -184,6 +184,9 @@ class Organization(models.Model):
 
     def add_member(self, user, role=ROLE_OWNER):
         """Add a user to an organization."""
+        # Ensure that the user can login in case they had previously been deactivated due to no org associations
+        user.is_active = True
+        user.save()
         return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
 
     def remove_member(self, user):

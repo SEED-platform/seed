@@ -467,8 +467,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         user_orgs = OrganizationUser.objects.filter(user=user)
 
         if user_orgs.count() == 0:
-            # Remove orphaned user
-            user.delete()
+            # Deactivate orphaned user
+            user.is_active = False
+            user.save()
         elif user.default_organization == org:
             first_org = user_orgs.order_by('id').first()
             user.default_organization = first_org.organization
