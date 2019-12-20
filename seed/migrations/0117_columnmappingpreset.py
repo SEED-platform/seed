@@ -71,7 +71,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('orgs', '0011_auto_20190714_2159'),
-        ('seed', '0115_rehash_postal_code'),
+        ('seed', '0116_auto_20191219_1606'),
     ]
 
     operations = [
