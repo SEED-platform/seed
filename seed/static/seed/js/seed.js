@@ -52,6 +52,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_dataset_modal',
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
+  'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
