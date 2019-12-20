@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'profile_id',
   function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id) {
     $scope.export_name = '';
+    $scope.inventory_type = inventory_type;
 
     $scope.export_selected = function (export_type) {
       var filename = $scope.export_name;
