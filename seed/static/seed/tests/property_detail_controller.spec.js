@@ -330,7 +330,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
     inventory_detail_controller_scope.item_state.address_line_1 = 'ABC Main St.';
-    inventory_detail_controller_scope.on_save();
+    inventory_detail_controller_scope.save_item();
 
     // assertions
     expect(mock_inventory_service.update_property)

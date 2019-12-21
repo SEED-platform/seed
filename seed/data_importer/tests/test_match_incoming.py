@@ -530,10 +530,14 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         self.import_file_1.save()
         match_buildings(self.import_file_1.id)
 
-        # Make all those states match
-        PropertyState.objects.filter(pk__in=[ps_2.id, ps_3.id]).update(
-            pm_property_id='123MatchID'
-        )
+        # Update -States to make the roll up order be 1, 3, 2
+        refreshed_ps_3 = PropertyState.objects.get(id=ps_3.id)
+        refreshed_ps_3.pm_property_id = '123MatchID'
+        refreshed_ps_3.save()
+
+        refreshed_ps_2 = PropertyState.objects.get(id=ps_2.id)
+        refreshed_ps_2.pm_property_id = '123MatchID'
+        refreshed_ps_2.save()
 
         # Verify that none of the 3 have been merged
         self.assertEqual(Property.objects.count(), 3)
@@ -555,8 +559,8 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
         view = PropertyView.objects.first()
         self.assertNotIn(view.state_id, [ps_1.id, ps_2.id, ps_3.id, ps_4.id])
 
-        # It will have a -State having city as Philadelphia
-        self.assertEqual(view.state.city, 'Philadelphia')
+        # It will have a -State having city as Denver
+        self.assertEqual(view.state.city, 'Denver')
 
         # The corresponding log should be a System Match
         audit_log = PropertyAuditLog.objects.get(state_id=view.state_id)

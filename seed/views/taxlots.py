@@ -15,7 +15,7 @@ from rest_framework.decorators import detail_route, list_route
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.utils.match import match_merge_in_cycle
+from seed.utils.match import match_merge_link
 from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -61,6 +61,7 @@ from seed.utils.properties import (
     pair_unpair_property_taxlot,
     update_result_with_master
 )
+from seed.utils.taxlots import taxlots_across_cycles
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -203,6 +204,40 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         """
         return self._get_filtered_results(request, profile_id=-1)
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['POST'])
+    def cycles(self, request):
+        """
+        List all the taxlots with all columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
+            - name: cycle_ids
+              description: The IDs of the cycle to get taxlots
+              required: true
+              paramType: query
+        """
+        org_id = request.data.get('organization_id', None)
+        profile_id = request.data.get('profile_id', -1)
+        cycle_ids = request.data.get('cycle_ids', [])
+
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        response = taxlots_across_cycles(org_id, profile_id, cycle_ids)
+
+        return JsonResponse(response)
+
     # @require_organization_id
     # @require_organization_membership
     @api_endpoint_class
@@ -284,14 +319,16 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
         merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
-        count, view_id = match_merge_in_cycle(merged_state.taxlotview_set.first().id, 'TaxLotState')
+        merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
         result = {
             'status': 'success'
         }
 
-        if view_id is not None:
-            result.update({'match_merged_count': count})
+        result.update({
+            'match_merged_count': merge_count,
+            'match_link_count': link_count,
+        })
 
         return result
 
@@ -446,6 +483,73 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
             'status': 'success',
             'view_id': new_view1.id
         }
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def links(self, request, pk=None):
+        """
+        Get taxlot details for each linked taxlot across org cycles
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the TaxLotView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = request.data.get('organization_id', None)
+        base_view = TaxLotView.objects.select_related('cycle').filter(
+            pk=pk,
+            cycle__organization_id=organization_id
+        )
+
+        if base_view.exists():
+            result = {'data': []}
+
+            linked_views = TaxLotView.objects.select_related('cycle').filter(
+                taxlot_id=base_view.get().taxlot_id,
+                cycle__organization_id=organization_id
+            ).order_by('-cycle__start')
+            for linked_view in linked_views:
+                state_data = TaxLotStateSerializer(linked_view.state).data
+
+                state_data['cycle_id'] = linked_view.cycle.id
+                state_data['view_id'] = linked_view.id
+                result['data'].append(state_data)
+
+            return JsonResponse(result, status=status.HTTP_200_OK)
+        else:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist in given organization'.format(pk)
+            }
+            return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @detail_route(methods=['POST'])
+    def match_merge_link(self, request, pk=None):
+        """
+        Runs match merge link for an individual taxlot.
+
+        Note that this method can return a view_id of None if the given -View
+        was not involved in a merge.
+        """
+        merge_count, link_count, view_id = match_merge_link(pk, 'TaxLotState')
+
+        result = {
+            'view_id': view_id,
+            'match_merged_count': merge_count,
+            'match_link_count': link_count,
+        }
+
+        return JsonResponse(result)
 
     @api_endpoint_class
     @ajax_request_class
@@ -781,13 +885,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
 
-                        count, view_id = match_merge_in_cycle(taxlot_view.id, 'TaxLotState')
+                        merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
-                        if view_id is not None:
-                            result.update({
-                                'view_id': view_id,
-                                'match_merged_count': count,
-                            })
+                        result.update({
+                            'view_id': view_id,
+                            'match_merged_count': merge_count,
+                            'match_link_count': link_count,
+                        })
 
                         return JsonResponse(result, status=status.HTTP_200_OK)
                     else:

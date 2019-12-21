@@ -81,7 +81,7 @@ class Property(models.Model):
     def __str__(self):
         return 'Property - %s' % (self.pk)
 
-    def copy_meters(self, source_state_id, source_persists=True):
+    def copy_meters(self, source_property_id, source_persists=True):
         """
         Copies meters from a source Property to the current Property.
 
@@ -90,7 +90,7 @@ class Property(models.Model):
 
         The cases and logic are described in comments throughout.
         """
-        source_property = Property.objects.get(pk=source_state_id)
+        source_property = Property.objects.get(pk=source_property_id)
 
         # If the source property has no meters to copy, there's nothing to do.
         if not source_property.meters.exists():

@@ -13,12 +13,11 @@
     </div>
 </div>
 <div class="modal-body row">
-  <div class="alert alert-warning" translate>INDIVIDUAL_MATCH_MERGE_ROUND_ALERT</div>
   <div class="alert alert-warning" ng-show="has_meters">
     These records have energy readings that will be merged together. Readings of records with higher priority are used for overlapping readings.
   </div>
 </div>
 <div class="modal-footer" ng-class="{'no-click': processing}">
     <button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
-    <button type="button" class="btn btn-info" ng-click="merge()" autofocus>Merge</button>
+    <button type="button" class="btn btn-info" ng-click="open_match_merge_link_warning_modal()" autofocus>Merge</button>
 </div>

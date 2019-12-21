@@ -754,7 +754,9 @@ class FakeColumnListSettingsFactory(BaseFake):
 
     def get_columnlistsettings(self, organization=None,
                                inventory_type=VIEW_LIST_PROPERTY,
-                               location=VIEW_LIST, **kw):
+                               location=VIEW_LIST,
+                               table_name='PropertyState',
+                               **kw):
         """Get columnlistsettings instance."""
         if not organization:
             organization = self.organization
@@ -771,7 +773,7 @@ class FakeColumnListSettingsFactory(BaseFake):
         if 'columns' in kw:
             # add the columns to the list of items
             for c in kw.pop('columns'):
-                columns.append(Column.objects.get(organization=organization, column_name=c, table_name='PropertyState'))
+                columns.append(Column.objects.get(organization=organization, column_name=c, table_name=table_name))
         else:
             # use all the columns
             for c in Column.objects.filter(organization=organization):

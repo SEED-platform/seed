@@ -186,7 +186,29 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      $scope.changed_fields = inventory_payload.changed_fields;
+      // Detail Settings Profile
+      $scope.profiles = profiles;
+      $scope.currentProfile = current_profile;
+
+      // Flag columns whose values have changed between imports and edits.
+      var historical_states = _.map($scope.historical_items, 'state');
+
+      var historical_changes_check = function(column) {
+        var uniq_column_values = _.uniqBy(historical_states.concat($scope.item_state), column.column_name);
+        column['changed'] = uniq_column_values.length > 1;
+        return column;
+      };
+
+      if ($scope.currentProfile) {
+        $scope.columns = [];
+        _.forEach($scope.currentProfile.columns, function (col) {
+          var foundCol = _.find(columns, {id: col.id});
+          if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
+        });
+      } else {
+        // No profiles exist
+        $scope.columns = _.reject(columns, 'is_extra_data');
+      }
 
       // The server provides of *all* extra_data keys (across current state and all historical state)
       // Let's remember this.
@@ -360,59 +382,58 @@ angular.module('BE.seed.controller.inventory_detail', [])
        * User clicked 'save' button
        */
       $scope.on_save = function () {
-        $scope.save_item();
+        $scope.open_match_merge_link_warning_modal($scope.save_item, 'edit');
+      };
+
+      var notify_merges_and_links = function (result) {
+        var singular = ($scope.inventory_type === 'properties' ? ' property' : ' tax lot');
+        var plural = ($scope.inventory_type === 'properties' ? ' properties' : ' tax lots');
+        var merged_count = result.match_merged_count;
+        var link_count = result.match_link_count;
+
+        Notification.info({
+          message: (merged_count + ' total ' + (merged_count === 1 ? singular : plural) + ' merged'),
+          delay: 10000,
+        });
+        Notification.info({
+          message: (link_count + ' cross-cycle link' + (link_count === 1 ? '' : 's') + ' established'),
+          delay: 10000,
+        });
       };
 
       /**
        * save_item: saves the user's changes to the Property/TaxLot State object.
        */
+      var save_item_resolve = function (data) {
+        $scope.$emit('finished_saving');
+        notify_merges_and_links(data);
+        if (data.view_id) {
+          reload_with_view_id(data.view_id);
+        } else {
+          // In the short term, we're just refreshing the page after a save so the table
+          // shows new history.
+          // TODO: Refactor so that table is dynamically updated with new information
+          $state.reload();
+        }
+      };
+
+      var save_item_reject = function () {
+        $scope.$emit('finished_saving');
+      };
+
+      var save_item_catch = function (data) {
+        $log.error(String(data));
+      };
+
       $scope.save_item = function () {
         if ($scope.inventory_type === 'properties') {
           inventory_service.update_property($scope.inventory.view_id, $scope.diff())
-            .then(function (data) {
-              if (_.has(data, 'view_id')) {
-                $state.go('inventory_detail', {
-                  inventory_type: 'properties',
-                  view_id: data.view_id
-                });
-                var otherMergedRecords = data.match_merged_count - 1;
-                Notification.info({
-                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
-                  delay: 10000
-                });
-              } else {
-                // In the short term, we're just refreshing the page after a save so the table
-                // shows new history.
-                // TODO: Refactor so that table is dynamically updated with new information
-                $state.reload();
-              }
-            })
-            .catch(function (data) {
-              $log.error(String(data));
-            });
+            .then(save_item_resolve, save_item_reject)
+            .catch(save_item_catch);
         } else if ($scope.inventory_type === 'taxlots') {
           inventory_service.update_taxlot($scope.inventory.view_id, $scope.diff())
-            .then(function (data) {
-              if (_.has(data, 'view_id')) {
-                $state.go('inventory_detail', {
-                  inventory_type: 'taxlots',
-                  view_id: data.view_id
-                });
-                var otherMergedRecords = data.match_merged_count - 1;
-                Notification.info({
-                  message: otherMergedRecords === 1 ? '1 other record was matched and merged.' : otherMergedRecords + ' other records were matched and merged.',
-                  delay: 10000
-                });
-              } else {
-                // In the short term, we're just refreshing the page after a save so the table
-                // shows new history.
-                // TODO: Refactor so that table is dynamically updated with new information
-                $state.reload();
-              }
-            })
-            .catch(function (data) {
-              $log.error(String(data));
-            });
+            .then(save_item_resolve, save_item_reject)
+            .catch(save_item_catch);
         }
       };
 
@@ -517,6 +538,62 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $state.reload();
       };
 
+      var reload_with_view_id = function (view_id) {
+        $state.go('inventory_detail', {
+          inventory_type: $scope.inventory_type,
+          view_id: view_id,
+        });
+      }
+
+      $scope.match_merge_link_record = function () {
+        var new_view_id;
+        if ($scope.inventory_type === 'properties') {
+          inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
+            new_view_id = result.view_id;
+            notify_merges_and_links(result);
+            if (new_view_id) reload_with_view_id(new_view_id)
+          });
+        } else if ($scope.inventory_type === 'taxlots') {
+          inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
+            new_view_id = result.view_id;
+            notify_merges_and_links(result);
+            if (new_view_id) reload_with_view_id(new_view_id)
+          });
+        }
+      };
+
+      $scope.open_match_merge_link_warning_modal = function (accept_action, trigger) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/record_match_merge_link_modal.html',
+          controller: 'record_match_merge_link_modal_controller',
+          resolve: {
+            inventory_type: function () {
+              return $scope.inventory_type;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            headers: function () {
+              if (trigger === 'manual') {
+                return {
+                  properties: "Merge and Link Matching Properties",
+                  taxlots: "Merge and Link Matching Tax Lots",
+                };
+              } else if (trigger === 'edit') {
+                return {
+                  properties: "Updating this property will merge & link any matching properties.",
+                  taxlots: "Updating this tax lot will merge & link any matching tax lots.",
+                };
+              }
+            }
+          }
+        });
+
+        modalInstance.result.then(accept_action, function () {
+          // Do nothing if cancelled
+        });
+      };
+
       $scope.uploader = {
         invalid_xml_extension_alert: false,
         in_progress: false,
@@ -564,6 +641,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
           $scope.$apply();
         });
       };
+
+      // Horizontal scroll for "2 tables" that scroll together for fixed header effect.
+      var table_container = $('.table-xscroll-fixed-header-container');
+
+      table_container.scroll(function() {
+        $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(
+          table_container.width() + table_container.scrollLeft()
+        );
+      });
 
       /**
        *   init: sets default state of inventory detail page,

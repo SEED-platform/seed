@@ -33,7 +33,7 @@ from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
-    match_incoming_properties_and_taxlots,
+    match_and_link_incoming_properties_and_taxlots,
 )
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import (
@@ -1078,7 +1078,7 @@ def match_buildings(file_pk):
     progress_data.total = 3
     progress_data.save()
 
-    chord(match_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
         finish_matching.s(file_pk, progress_data.key))
 
     return progress_data.result()

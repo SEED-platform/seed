@@ -226,7 +226,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.make_copy_before_edit();
     inventory_detail_controller_scope.item_state.gross_floor_area = 43214;
-    inventory_detail_controller_scope.on_save();
+    inventory_detail_controller_scope.save_item();
     inventory_detail_controller_scope.$digest();
 
     // assertions

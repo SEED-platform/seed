@@ -5,8 +5,10 @@
 // organization services
 angular.module('BE.seed.service.organization', []).factory('organization_service', [
   '$http',
+  '$q',
+  '$timeout',
   'naturalSort',
-  function ($http, naturalSort) {
+  function ($http, $q, $timeout, naturalSort) {
 
     var organization_factory = {total_organizations_for_user: 0};
 
@@ -161,9 +163,53 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    organization_factory.match_merge_link = function (org_id, inventory_type) {
+      return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link/', {
+        inventory_type: inventory_type,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     organization_factory.geocoding_columns = function (org_id) {
       return $http.get('/api/v2/organizations/' + org_id + '/geocoding_columns').then(function (response) {
         return response.data;
+      });
+    };
+
+    organization_factory.match_merge_link_preview = function (org_id, inventory_type, criteria_change_columns) {
+      return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link_preview/', {
+        inventory_type: inventory_type,
+        add: criteria_change_columns.add,
+        remove: criteria_change_columns.remove,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.get_match_merge_link_result = function (org_id, match_merge_link_id) {
+      return $http.get('/api/v2/organizations/' + org_id + '/match_merge_link_result/' + '?match_merge_link_id=' + match_merge_link_id).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.check_match_merge_link_status = function (progress_key) {
+      var deferred = $q.defer();
+      checkStatusLoop(deferred, progress_key);
+      return deferred.promise;
+    };
+
+    var checkStatusLoop = function (deferred, progress_key) {
+      $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
+        $timeout(function () {
+          if (response.data.progress < 100) {
+            checkStatusLoop(deferred, progress_key);
+          } else {
+            deferred.resolve(response.data);
+          }
+        }, 750);
+      }, function (error) {
+        deferred.reject(error);
       });
     };
 

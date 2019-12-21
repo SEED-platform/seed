@@ -91,9 +91,10 @@ angular.module('ui.grid').config(['$provide', function ($provide) {
 
         // nested loop itself - foreachFilterCol, which in turn calls foreachRow
         var gridHasTree = _.has(grid.api, 'treeBase');
+        var gridIsYearOverYear = grid.api.table_category === 'year-over-year';
         var filterDataLength = filterData.length;
         for (var j = 0; j < filterDataLength; j++) {
-          if (gridHasTree) foreachFilterColIgnoringChildren(grid, filterData[j]);
+          if (gridHasTree && !gridIsYearOverYear) foreachFilterColIgnoringChildren(grid, filterData[j]);
           else foreachFilterCol(grid, filterData[j]);
         }
         // =============== END SEED CHANGE ===============
