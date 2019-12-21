@@ -24,6 +24,7 @@ from seed.views.certification import (
 from seed.views.columns import ColumnViewSet
 from seed.views.column_mappings import ColumnMappingViewSet
 from seed.views.column_list_settings import ColumnListingViewSet
+from seed.views.column_mapping_presets import ColumnMappingPresetViewSet
 from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
@@ -45,6 +46,7 @@ api_v2_router = routers.DefaultRouter()
 api_v2_router.register(r'building_file', BuildingFileViewSet, base_name='building_file')
 api_v2_router.register(r'columns', ColumnViewSet, base_name="columns")
 api_v2_router.register(r'column_mappings', ColumnMappingViewSet, base_name="column_mappings")
+api_v2_router.register(r'column_mapping_presets', ColumnMappingPresetViewSet, base_name="column_mapping_presets")
 api_v2_router.register(r'column_list_settings', ColumnListingViewSet, base_name="column_list_settings")
 api_v2_router.register(r'cycles', CycleViewSet, base_name="cycles")
 api_v2_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')

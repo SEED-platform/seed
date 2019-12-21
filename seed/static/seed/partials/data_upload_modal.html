@@ -62,11 +62,6 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
                 <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>

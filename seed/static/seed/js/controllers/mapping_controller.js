@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.mapping', [])
     '$log',
     '$q',
     '$filter',
+    'column_mapping_presets_payload',
     'import_file_payload',
     'suggested_mappings_payload',
     'raw_columns_payload',
@@ -20,17 +21,20 @@ angular.module('BE.seed.controller.mapping', [])
     '$uibModal',
     'user_service',
     'uploader_service',
+    'column_mappings_service',
     'data_quality_service',
     'inventory_service',
     'geocode_service',
     'organization_service',
     '$translate',
     'i18nService', // from ui-grid
+    'Notification',
     function (
       $scope,
       $log,
       $q,
       $filter,
+      column_mapping_presets_payload,
       import_file_payload,
       suggested_mappings_payload,
       raw_columns_payload,
@@ -43,13 +47,121 @@ angular.module('BE.seed.controller.mapping', [])
       $uibModal,
       user_service,
       uploader_service,
+      column_mappings_service,
       data_quality_service,
       inventory_service,
       geocode_service,
       organization_service,
       $translate,
-      i18nService
+      i18nService,
+      Notification
     ) {
+
+      $scope.presets = [
+        {id: 0, mappings: [], name: "<None selected>"},
+      ].concat(column_mapping_presets_payload);
+
+      // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
+      $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
+
+      // Track changes to help prevent losing changes when data could be lost
+      $scope.preset_change_possible = false;
+
+      $scope.flag_preset_change = function () {
+        $scope.preset_change_possible = true;
+      };
+
+      $scope.flag_mappings_change = function () {
+        $scope.mappings_change_possible = true;
+      };
+
+      var analyze_chosen_inventory_types = function () {
+        var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
+        var all_cols_have_table_name = !_.find($scope.mappings, {suggestion_table_name: undefined});
+
+        if (chosenTypes.length === 1 && all_cols_have_table_name) {
+          $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
+        } else {
+          $scope.setAllFields = '';
+        }
+      };
+
+      $scope.apply_preset = function () {
+        if ($scope.mappings_change_possible) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch presets without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Presets</button></div>'
+          }).result.then(function () {
+            $scope.preset_change_possible = false;
+            $scope.mappings_change_possible = false;
+            $scope.current_preset = $scope.dropdown_selected_preset;
+            $scope.initialize_mappings();
+            analyze_chosen_inventory_types();
+          }).catch(function () {
+            $scope.dropdown_selected_preset = $scope.current_preset;
+            return;
+          });
+        } else {
+          $scope.preset_change_possible = false;
+          $scope.current_preset = $scope.dropdown_selected_preset;
+          $scope.initialize_mappings();
+          analyze_chosen_inventory_types();
+        }
+      };
+
+      // Preset-level create and update modal-rending actions
+      var preset_mappings_from_working_mappings = function () {
+        // for to_field, try DB col name, if not use col display name
+        return _.reduce($scope.mappings, function (preset_mapping_data, mapping) {
+          preset_mapping_data.push({
+            from_field: mapping.name,
+            from_units: mapping.from_units,
+            to_field: mapping.suggestion_column_name || mapping.name,
+            to_table_name: mapping.suggestion_table_name,
+          });
+
+          return preset_mapping_data;
+        }, []);
+      }
+
+      $scope.new_preset = function () {
+        var preset_mapping_data = preset_mappings_from_working_mappings();
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
+          controller: 'column_mapping_preset_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant({mappings: preset_mapping_data}),
+            org_id: _.constant(user_service.get_organization().id),
+          }
+        });
+
+        modalInstance.result.then(function (new_preset) {
+          $scope.presets.push(new_preset);
+          $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+
+          $scope.preset_change_possible = false;
+          $scope.mappings_change_possible = false;
+          Notification.primary('Saved ' + $scope.current_preset.name);
+        });
+      };
+
+      $scope.save_preset = function () {
+        var preset_id = $scope.current_preset.id;
+        var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
+
+        var preset_mapping_data = preset_mappings_from_working_mappings();
+
+        column_mappings_service.update_column_mapping_preset(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
+          $scope.presets[preset_index].mappings = result.data.mappings;
+          $scope.presets[preset_index].updated = result.data.updated;
+
+          $scope.preset_change_possible = false;
+          $scope.mappings_change_possible = false;
+          Notification.primary('Saved ' + $scope.current_preset.name);
+        });
+      };
+
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
       var stripRegion = function (languageTag) {
@@ -185,6 +297,8 @@ angular.module('BE.seed.controller.mapping', [])
 
         col.from_units = get_default_quantity_units(col);
 
+        $scope.flag_mappings_change();
+
         if (!checkingMultiple) $scope.updateColDuplicateStatus();
       };
 
@@ -220,15 +334,18 @@ angular.module('BE.seed.controller.mapping', [])
        * initialize_mappings: prototypical inheritance for all the raw columns
        * called by init()
        */
-      var initialize_mappings = function () {
+      $scope.initialize_mappings = function () {
+        $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
-          var suggestion = $scope.suggested_mappings[name];
+          var suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
 
           var col = {
+            from_units: suggestion.from_units,
             name: name,
-            suggestion_column_name: suggestion[1],
-            suggestion_table_name: suggestion[0],
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
+            raw_data: _.map(first_five_rows_payload.first_five_rows, name),
+            suggestion: suggestion.to_field,
+            suggestion_column_name: suggestion.to_field,
+            suggestion_table_name: suggestion.to_table_name,
           };
 
           var match;
@@ -245,13 +362,7 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
-          } else {
-            // No match, generate title-cased name
-            col.suggestion = $filter('titleCase')(col.suggestion_column_name);
-            col.suggestion_column_name = null;
           }
-
-          col.from_units = get_default_quantity_units(col);
 
           $scope.mappings.push(col);
         });
@@ -617,7 +728,7 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var init = function () {
-        initialize_mappings();
+        $scope.initialize_mappings();
 
         if ($scope.import_file.matching_done) { display_cached_column_mappings(); }
 
