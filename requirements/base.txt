@@ -1,5 +1,5 @@
 # Django
-django==1.11.23
+django==1.11.26
 dj-database-url==0.4.2
 django-autoslug==1.9.3
 django-storages==1.6.5
@@ -10,11 +10,11 @@ modeltranslation==0.25
 psycopg2-binary==2.7.5
 
 # background process management
-celery==4.3.0
-django-redis-cache==2.0.0
-django_compressor==2.2
+celery==4.4.0
+django-redis-cache==2.1.0
+django_compressor==2.3
 django-compressor-autoprefixer==0.1.0
-django-extensions==1.9.6
+django-extensions==1.9.9
 django-libsass==0.7
 
 # Time zones support

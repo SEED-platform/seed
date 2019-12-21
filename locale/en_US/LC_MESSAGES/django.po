@@ -614,6 +614,9 @@ msgstr "Delete Organization"
 msgid "Delete Selected"
 msgstr "Delete Selected"
 
+msgid "Delete User?"
+msgstr "Delete User?"
+
 msgid "Delete your Data File"
 msgstr "Delete your Data File"
 
@@ -1125,6 +1128,9 @@ msgstr "kWh/m²/year"
 msgid "Label"
 msgstr "Label"
 
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "Label must be assigned when using Valid Data Severity."
+
 msgid "Label Name"
 msgstr "Label Name"
 
@@ -1358,8 +1364,26 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Merged properties"
 msgstr "Merged properties"
 
+msgid "Merged properties against existing records"
+msgstr "Merged properties against existing records"
+
+msgid "Merged properties between existing records"
+msgstr "Merged properties between existing records"
+
+msgid "Merged properties within import file"
+msgstr "Merged properties within import file"
+
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
+
+msgid "Merged tax lots against existing records"
+msgstr "Merged tax lots against existing records"
+
+msgid "Merged tax lots between existing records"
+msgstr "Merged tax lots between existing records"
+
+msgid "Merged tax lots within import file"
+msgstr "Merged tax lots within import file"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Meter energy display units (change one at a time)"
@@ -1650,8 +1674,8 @@ msgstr "Please go to the following page and setup your account:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Please review SEED headers.  Duplicate values are not allowed."
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Please review SEED headers.  Empty values are not allowed."
@@ -2455,6 +2479,9 @@ msgstr "User First Name:"
 msgid "User Last Name:"
 msgstr "User Last Name:"
 
+msgid "USER_WILL_BE_DELETED"
+msgstr "The user <strong>{user}</strong> only belongs to this organization. Removing them will result in the user being deleted. Are you sure you want to continue?"
+
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
 msgstr "User's email address.  Used for auth as well."
@@ -2581,6 +2608,9 @@ msgstr "Yes, Delete Data Set"
 
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
+
+msgid "Yes, Delete User"
+msgstr "Yes, Delete User"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."

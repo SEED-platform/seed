@@ -617,6 +617,9 @@ msgstr "Supprimer l'organisation"
 msgid "Delete Selected"
 msgstr "Supprimer la sélection"
 
+msgid "Delete User?"
+msgstr "Supprimer l'utilisateur?"
+
 msgid "Delete your Data File"
 msgstr "Supprimez votre fichier de données"
 
@@ -1130,6 +1133,9 @@ msgstr "kWh/m²/année"
 msgid "Label"
 msgstr "Étiquette"
 
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "L'étiquette doit être attribuée lors de l'utilisation de la gravité de données valide."
+
 msgid "Label Name"
 msgstr "Nom de l'étiquette"
 
@@ -1364,8 +1370,26 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "Merged properties"
 msgstr "Propriétés fusionnées"
 
+msgid "Merged properties against existing records"
+msgstr "Propriétés fusionnées avec des enregistrements existants"
+
+msgid "Merged properties between existing records"
+msgstr "Propriétés fusionnées entre des enregistrements existants"
+
+msgid "Merged properties within import file"
+msgstr "Propriétés fusionnées dans le fichier d'importation"
+
 msgid "Merged tax lots"
 msgstr "Lots d'impôt fusionnés"
+
+msgid "Merged tax lots against existing records"
+msgstr "Fusion de lots de taxes avec des enregistrements existants"
+
+msgid "Merged tax lots between existing records"
+msgstr "Fusion de lots de taxes entre des enregistrements existants"
+
+msgid "Merged tax lots within import file"
+msgstr "Fusion des lots de taxe dans le fichier d'importation"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Compteur d'énergie d'affichage (changer un à la fois)"
@@ -1656,8 +1680,8 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Veuillez consulter les en-têtes SEED. Les valeurs en double ne sont pas autorisées."
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Veuillez consulter les noms de colonnes SEED ou les noms de colonnes du fichier en cours d'importation. Les valeurs en double ne sont pas autorisées dans les deux cas."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Veuillez consulter les en-têtes SEED. Les valeurs vides ne sont pas autorisées."
@@ -2463,6 +2487,9 @@ msgstr "Prénom de l'utilisateur:"
 msgid "User Last Name:"
 msgstr "Nom de famille de l'utilisateur:"
 
+msgid "USER_WILL_BE_DELETED"
+msgstr "L'utilisateur <strong> {user} </strong> appartient uniquement à cette organisation. Les supprimer entraînera la suppression de l'utilisateur. Es-tu sur de vouloir continuer?"
+
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
 msgstr "Adresse e-mail de l'utilisateur. Utilisé également pour auth."
@@ -2590,6 +2617,9 @@ msgstr "Oui, supprimer le jeu de données"
 
 msgid "Yes, Delete Inventory"
 msgstr "Oui, supprimer l'inventaire"
+
+msgid "Yes, Delete User"
+msgstr "Oui, Supprimer l'utilisateur"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "Vous pouvez vérifier et modifier chaque correspondance en cliquant sur l'un des ID liés dans la table. Cela ouvrira une nouvelle table qui montre les données source pour l'enregistrement individuel que vous essayez de faire correspondre. Sous cet enregistrement est une liste consultable de toutes les correspondances existantes potentielles. Utilisez ce tableau pour explorer tous vos enregistrements et pour sélectionner un ou plusieurs enregistrements correspondant à vos données source."

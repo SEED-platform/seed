@@ -1054,11 +1054,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_property_state_data:
-                    property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
-                property_state_data.update(new_property_state_data)
-
+                # if checks above pass, create an exact copy of the current state for historical purposes
                 if log.name == 'Import Creation':
                     # Add new state by removing the existing ID.
                     property_state_data.pop('id')
@@ -1098,17 +1094,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
-
-                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
-
-                        result.update({
-                            'view_id': view_id,
-                            'match_merged_count': merge_count,
-                            'match_link_count': link_count
-                        })
-
-                        return JsonResponse(result, encoder=PintJSONEncoder,
-                                            status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -1117,8 +1102,20 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         )
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+
+                # redo assignment of this variable in case this was an initial edit
+                property_state_data = PropertyStateSerializer(property_view.state).data
+
+                if 'extra_data' in new_property_state_data:
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
+                property_state_data.update(new_property_state_data)
+
+                log = PropertyAuditLog.objects.select_related().filter(
+                    state=property_view.state
+                ).order_by('-id').first()
+
+                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 

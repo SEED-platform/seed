@@ -35,7 +35,14 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div style="display: flex; justify-content: space-between; padding: 10px">
+        <div class="section_content">
+            <div style="float:right; width:250px; text-align:right; margin: 10px 10px 0 0;" class="ellipsis">
+                 <span popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: cycle.name $}">
+                     <strong>{$:: 'Cycle' | translate $}:</strong> {$:: cycle.name $}
+                 </span>
+            </div>
+
+        <div style="margin:10px 250px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
             <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
                 <button id="btnInventoryActions"
                         type="button"
@@ -43,7 +50,7 @@
                         class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
-                <ul id="inventory-detail-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                <ul id="#inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
                         <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
                     </li>
@@ -67,13 +74,17 @@
                     <li role="menuitem">
                         <a ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')">Merge and Link Matches</a>
                     </li>
-                </ul>
-            </div>
 
-            <div class="ellipsis">
-                 <span popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: cycle.name $}">
-                     <strong>{$:: 'Cycle' | translate $}:</strong> {$:: cycle.name $}
-                 </span>
+                    <li class="divider"></li>
+
+                    <li role="menuitem">
+                        <a ng-click="open_show_populated_columns_modal()" translate>Only Show Populated Columns</a>
+                    </li>
+                </ul>
+
+                <div ng-if="::inventory_type === 'properties'" style="margin: 50px 25px 0;">
+                    <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+                </div>
             </div>
         </div>
 

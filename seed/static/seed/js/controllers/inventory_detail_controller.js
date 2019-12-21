@@ -55,6 +55,104 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
 
+      // Detail Settings Profile
+      $scope.profiles = profiles;
+      $scope.currentProfile = current_profile;
+
+      if ($scope.currentProfile) {
+        $scope.columns = [];
+        _.forEach($scope.currentProfile.columns, function (col) {
+          var foundCol = _.find(columns, {id: col.id});
+          if (foundCol) $scope.columns.push(foundCol);
+        });
+      } else {
+        // No profiles exist
+        $scope.columns = _.reject(columns, 'is_extra_data');
+      }
+
+      var profile_formatted_columns = function () {
+        return _.map($scope.columns, function (col, index) {
+          return {
+            column_name: col.column_name,
+            id: col.id,
+            order: index + 1,
+            pinned: false,
+            table_name: col.table_name,
+          };
+        });
+      };
+
+      $scope.newProfile = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/settings_profile_modal.html',
+          controller: 'settings_profile_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: profile_formatted_columns,
+            settings_location: _.constant('Detail View Settings'),
+            inventory_type: function () {
+              return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            }
+          }
+        });
+
+        return modalInstance.result.then(function (newProfile) {
+          $scope.profiles.push(newProfile);
+          ignoreNextChange = true;
+          $scope.currentProfile = _.last($scope.profiles);
+          inventory_service.save_last_profile(newProfile.id, $scope.inventory_type);
+        });
+      };
+
+      $scope.open_show_populated_columns_modal = function () {
+        if (!profiles.length) {
+          // Create a profile first
+          $scope.newProfile().then(function () {
+            populated_columns_modal();
+          });
+        } else {
+          populated_columns_modal();
+        }
+      };
+
+      function populated_columns_modal() {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
+          controller: 'show_populated_columns_modal_controller',
+          resolve: {
+            columns: function () {
+              return columns;
+            },
+            currentProfile: function () {
+              return $scope.currentProfile;
+            },
+            cycle: function () {
+              return null;
+            },
+            inventory_type: function () {
+              return $stateParams.inventory_type;
+            },
+            provided_inventory: function () {
+              var provided_inventory = [];
+
+              // Add historical items
+              _.each($scope.historical_items, function (item) {
+                var item_state_copy = angular.copy(item.state);
+                _.defaults(item_state_copy, item.state.extra_data);
+                provided_inventory.push(item_state_copy);
+              })
+
+              // add "master" copy
+              item_copy = angular.copy($scope.item_state);
+              _.defaults(item_copy, $scope.item_state.extra_data);
+
+              return provided_inventory;
+            },
+          }
+        });
+      }
+
       $scope.isDisabledField = function (name) {
         return _.includes([
           'analysis_end_time',

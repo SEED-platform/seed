@@ -35,6 +35,11 @@ TAXLOT_MAPPING = [
         "to_table_name": 'TaxLotState',
         "to_field": 'block_number'
     },
+    {
+        'from_field': 'postal code',
+        'to_table_name': 'TaxLotState',
+        'to_field': 'postal_code',
+    }
 ]
 
 PROPERTIES_MAPPING = [
@@ -122,6 +127,10 @@ PROPERTIES_MAPPING = [
         "from_field": 'recent sale date',
         "to_table_name": 'PropertyState',
         "to_field": 'recent_sale_date'
+    }, {
+        'from_field': 'postal code',
+        'to_table_name': 'PropertyState',
+        'to_field': 'postal_code',
     }
 ]
 
@@ -164,10 +173,6 @@ FAKE_MAPPINGS = {
         {
             'from_field': 'City',  # raw field in import file
             'to_field': 'city',
-            'to_table_name': 'PropertyState',
-        }, {
-            'from_field': 'Zip',  # raw field in import file
-            'to_field': 'postal_code',
             'to_table_name': 'PropertyState',
         }, {
             'from_field': 'GBA',  # raw field in import file

@@ -129,7 +129,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
             filter_str = {'property__organization_id': org_id}
             if ids:
                 filter_str['property__id__in'] = ids
-            # always export the labels
+            # always export the labels and notes
+            column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
 
         elif hasattr(view_klass, 'taxlot'):
@@ -138,7 +139,8 @@ class TaxLotPropertyViewSet(GenericViewSet):
             filter_str = {'taxlot__organization_id': org_id}
             if ids:
                 filter_str['taxlot__id__in'] = ids
-            # always export the labels
+            # always export the labels and notes
+            column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
 
         model_views = view_klass.objects.select_related(*select_related).prefetch_related(
@@ -147,18 +149,24 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
-        # add labels
+        # add labels and notes
         for i, record in enumerate(model_views):
             label_string = []
-            if hasattr(record, 'property'):
-                for label in list(record.labels.all().order_by('name')):
-                    label_string.append(label.name)
-                data[i]['property_labels'] = ','.join(label_string)
+            note_string = []
+            for label in list(record.labels.all().order_by('name')):
+                label_string.append(label.name)
+            for note in list(record.notes.all().order_by('created')):
+                note_string.append(
+                    note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
+                    note.text
+                )
 
+            if hasattr(record, 'property'):
+                data[i]['property_labels'] = ','.join(label_string)
+                data[i]['property_notes'] = '\n----------\n'.join(note_string)
             elif hasattr(record, 'taxlot'):
-                for label in list(record.labels.all().order_by('name')):
-                    label_string.append(label.name)
                 data[i]['taxlot_labels'] = ','.join(label_string)
+                data[i]['taxlot_notes'] = '\n----------\n'.join(note_string)
 
         # force the data into the same order as the IDs
         if ids:

@@ -7,7 +7,6 @@
 import json
 
 from django.core.urlresolvers import reverse_lazy
-from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -15,6 +14,7 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     Column,
+    Note,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -22,10 +22,11 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeStatusLabelFactory
 )
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 
-class TestTaxLotProperty(TestCase):
+class TestTaxLotProperty(DataMappingBaseTestCase):
     """Tests for exporting data to various formats."""
 
     def setUp(self):
@@ -109,6 +110,43 @@ class TestTaxLotProperty(TestCase):
         self.assertEqual(len(data), 53)
         # last row should be blank
         self.assertEqual(data[52], '')
+
+    def test_csv_export_with_notes(self):
+        multi_line_note = self.property_view.notes.create(name='Manually Created', note_type=Note.NOTE, text='multi\nline\nnote')
+        single_line_note = self.property_view.notes.create(name='Manually Created', note_type=Note.NOTE, text='single line')
+
+        self.properties.append(self.property_view.id)
+
+        columns = []
+        for c in Column.retrieve_all(self.org.id, 'property', False):
+            columns.append(c['name'])
+
+        # call the API
+        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        response = self.client.post(
+            url + '?{}={}&{}={}&{}={}'.format(
+                'organization_id', self.org.pk,
+                'cycle_id', self.cycle,
+                'inventory_type', 'properties'
+            ),
+            data=json.dumps({'columns': columns, 'export_type': 'csv'}),
+            content_type='application/json'
+        )
+
+        # parse the content as array
+        data = response.content.decode('utf-8').split('\r\n')
+        notes_string = (
+            multi_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
+            multi_line_note.text +
+            "\n----------\n" +
+            single_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
+            single_line_note.text
+        )
+
+        self.assertEqual(len(data), 3)
+        self.assertTrue('Property Notes' in data[0].split(','))
+
+        self.assertTrue(notes_string in data[1])
 
     def test_xlxs_export(self):
         for i in range(50):
