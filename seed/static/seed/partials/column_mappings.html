@@ -1,3 +1,9 @@
+<script type="text/ng-template" id="typeahead.html">
+    <a ng-class="{'typeahead-native': !match.model.is_extra_data}">
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container">
@@ -9,90 +15,154 @@
         <div class="right page_action_container"></div>
     </div>
 </div>
+
 <div class="section_nav_container">
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
+
+<div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+        <div class="section_action_container left">
+            <h2><i class="fa fa-sitemap"></i> <span translate>Column Mappings</span></h2>
+        </div>
+
+        <!-- possibly generlize settings_profile? -->
+        <div class="section_action_container right_wide settings_profile">
+          <span>{$:: 'Column Mapping Preset' | translate $}: </span>
+          <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-disabled="!presets.length" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
+
+          <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present()" tooltip-placement="bottom" uib-tooltip="Save">
+              <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+          </button>
+          <button class="btn btn-primary" type="button" ng-click="rename_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Rename">
+              <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+          </button>
+          <button class="btn btn-danger" type="button" ng-click="remove_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Delete">
+              <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+          </button>
+          <button class="btn btn-info" type="button" ng-click="new_preset()" tooltip-placement="bottom" uib-tooltip="New">
+              <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+          </button>
+        </div>
+    </div>
+</div>
+
+
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header has_no_padding fixed_height_short">
-            <div class="section_action_container left_40">
-                <h2><i class="fa fa-sitemap"></i> <span translate>Column Mappings</span></h2>
+    <div class="section_tab_container">
+        <div class="row" style="border-top: 1px solid #ddd;">
+            <div class="col-sm-7 tab_content wide">
+                <p translate>COL_MAP_PRESET_INTRO</p>
+                <p translate>COL_MAP_PRESET_MAPPING_INTRO</p>
+                <p translate>COL_MAP_PRESET_MAPPING_TYPING</p>
+                <p translate>COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE</p>
+                <p translate>COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE</p>
+                <p translate>COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE</p>
+                <strong><p translate>COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE</p></strong>
             </div>
-            <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-danger" ng-click="delete_all_mappings()" ng-disabled="!column_mappings.length">{$:: 'Delete All Mappings' | translate $}
-                    <i class="fa fa-check" ng-show="mappings_deleted"></i>
+
+            <div class="col-sm-5 key tab_content wide">
+                <p translate>IF_MARKED_AS_DUPLICATE_ADVICE</p>
+                <br>
+                <textarea ng-model="csv_headers" rows="8" cols="45" style="resize: none;" placeholder="<File Column 1>,<File Column 2>,<File Column 3>,..."></textarea>
+                <br>
+                <button class="btn btn-info" ng-disabled="csv_headers === ''" type="button" ng-click="copy_csv_headers()" tooltip-placement="bottom" uib-tooltip="Creates rows given comma-separated columns." translate>
+                    Copy into Data File Headers
                 </button>
             </div>
+
         </div>
     </div>
     <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
+            <button type="button" class="btn btn-primary" ng-click="mirror_data_file_headers()" translate>Copy Data File Headers directly to SEED Headers</button>
+        </div>
+        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
+            <button type="button" class="btn btn-primary" ng-click="suggestions_from_existing_columns()" translate>Populate SEED Headers with best known matches</button>
+        </div>
+
+        <div class="alert alert-danger" ng-show="header_duplicates_present()" translate>DATA_FILE_HEADER_DUP_WARNING</div>
+
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>Deleting Column Mappings</h3>
-            <p translate>From the table below, you may delete individual or all column mappings. These mappings are automatically created during file import and used to determine which SEED column to map the imported columns to.</p>
-            <div class="data-quality-tab-container">
-                <ul class="nav nav-tabs" style="margin-bottom:1px;">
-                    <li ui-sref-active="active">
-                        <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'properties'})">{$:: 'View by Property' | translate $} ({$ property_count $})</a>
-                    </li>
-                    <li ui-sref-active="active">
-                        <a ui-sref="organization_column_mappings(::{organization_id: org.id, inventory_type: 'taxlots'})">{$:: 'View by Tax Lot' | translate $} ({$ taxlot_count $})</a>
-                    </li>
-                </ul>
-            </div>
             <div class="table_list_container has_borders">
-                <table id="column-table" class="table has_no_btm_margin">
-                    <thead>
-                        <tr>
-                            <th translate>Originating Column</th>
-                            <th translate>Mapped Column</th>
-                            <th translate>Mapped Column Display Name</th>
-                            <th style="min-width: 54px; width: 54px;" translate>Delete</th>
-                        </tr>
-                        <tr class="sub_head">
-                            <th class="sub_head">
-                                <input type="text"
-                                     class="form-control input-sm"
-                                     ng-model="filter_params.column_raw.column_name"
-                                     placeholder="{$:: 'Search originating column' | translate $}"
-                                     ng-class="{active: filter_params.column_raw.column_name.length > 0}">
-                            </th>
-                            <th class="sub_head">
-                                <input type="text"
-                                     class="form-control input-sm"
-                                     ng-model="filter_params.column_mapped.column_name"
-                                     placeholder="{$:: 'Search mapped column' | translate $}"
-                                     ng-class="{active: filter_params.column_mapped.column_name.length > 0}">
-                            </th>
-                            <th class="sub_head">
-                                <input type="text"
-                                     class="form-control input-sm"
-                                     ng-model="filter_params.column_mapped.display_name"
-                                     placeholder="{$:: 'Search mapped column display name' | translate $}"
-                                     ng-class="{active: filter_params.column_mapped.display_name.length > 0}">
-                            </th>
-                            <th class="sub_head"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="mapping in column_mappings | filter:filter_params:strict">
-                            <td>
-                                {$ mapping.column_raw.column_name $}
-                            </td>
-                            <td>
-                                {$ mapping.column_mapped.column_name $}
-                            </td>
-                            <td>
-                                {$ mapping.column_mapped.display_name $}
-                            </td>
-                            <td class="check is_aligned_center">
-                                <button class="btn btn-xs btn-danger btn-rowform" ng-click="delete_mapping(mapping.id)">
-                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+              <table class="table table-striped">
+                  <thead>
+                      <tr>
+                          <th colspan="3" class="source_data">SEED</th>
+                          <th colspan="6" class="source_data">{$ current_preset.name $}</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr>
+                          <td style="border-right: 0 none; max-width: 160px; width: 160px; text-align: right;">
+                              <span style="padding-right:5px;">{$:: 'Set all fields to' | translate $}:</span>
+                              <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value"></select>
+                          </td>
+                          <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
+                          <td style="max-width: 128px; width: 128px;"></td>
+                          <td colspan="6"></td>
+                      </tr>
+                  </tbody>
+                  <thead>
+                      <tr>
+                          <th><translate>Inventory Type</translate></th>
+                          <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
+                          <th><translate>Measurement Units</translate></th>
+                          <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
+                          <th style='width: 120px;'>
+                              <button type="button" class="btn btn-danger btn-sm" ng-click="remove_all_columns()" ng-disabled="!current_preset.mappings.length" translate>Delete All Columns</button>
+                          </th>
+                      </tr>
+                  </thead>
+                  <tbody id="mapped-table">
+                      <tr ng-repeat="(index, col) in dropdown_selected_preset.mappings">
+                          <td style="text-align: right;" ng-attr-id="mapped-row-type-{$:: $index $}">
+                              <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
+                                  <option value="PropertyState" translate>Property</option>
+                                  <option value="TaxLotState" translate>Tax Lot</option>
+                              </select>
+                          </td>
+                          <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
+                              <input type="text"
+                                  uib-typeahead="column.displayName for column in (col.to_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20"
+                                  typeahead-template-url="typeahead.html"
+                                  ng-model="col.to_field"
+                                  class="form-control input-sm tcm_field"
+                                  ng-change="flag_change(col)"
+                                  typeahead-on-select="seed_header_change(col)"
+                                  ng-attr-id="mapped-row-input-box-{$ $index $}">
+                          </td>
+                          <td>
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)">
+                                  <option value="ft**2" translate>square feet</option>
+                                  <option value="m**2" translate>square metres</option>
+                              </select>
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)">
+                                  <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
+                                  <option value="kWh/m**2/year" translate>kWh/m²/year</option>
+                                  <option value="GJ/m**2/year" translate>GJ/m²/year</option>
+                                  <option value="MJ/m**2/year" translate>MJ/m²/year</option>
+                                  <option value="kBtu/m**2/year" translate>kBtu/m²/year</option>
+                              </select>
+                          </td>
+                          <td ng-class="{'danger': is_file_header_duplicate(col)}">
+                              <input type="text" class="form-control input-sm tcm_field" ng-model="col.from_field" ng-change="flag_change()">
+                          </td>
+                          <td ng-repeat="cell_value in ::col.raw_data track by $index">
+                              {$:: cell_value $}
+                          </td>
+                          <td style='text-align: center;'>
+                              <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
+                                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                              </button>
+                          </td>
+                      </tr>
+                  </tbody>
+              </table>
             </div>
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New" translate>
+                Add Column
+            </button>
         </div>
     </div>
 </div>

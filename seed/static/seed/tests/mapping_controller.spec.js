@@ -237,6 +237,7 @@ describe('controller: mapping_controller', function () {
       raw_columns_payload: raw_columns_payload,
       first_five_rows_payload: first_five_rows_payload,
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
+      column_mapping_presets_payload: [],
       cycles: mock_cycles,
       inventory_service: mock_inventory_service
     });
@@ -259,26 +260,12 @@ describe('controller: mapping_controller', function () {
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  it('should show suggested mappings', function () {
-    // arrange
-    create_mapping_controller();
-
-    // act
-    mapping_controller_scope.$digest();
-
-    // assertions
-    var mappings = mapping_controller_scope.mappings;
-    var first_column = mappings[0];
-
-    expect(first_column.suggestion).toBe('PM Property ID');
-    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
-    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
-  });
-
   it('should detect duplicates', function () {
     create_mapping_controller();
     mapping_controller_scope.$digest();
     console.log('mappings', angular.copy(mapping_controller_scope.mappings));
+    mapping_controller_scope.mappings[0].suggestion = 'PM Property ID';
+    mapping_controller_scope.mappings[1].suggestion = 'Property Name';
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
@@ -351,46 +338,4 @@ describe('controller: mapping_controller', function () {
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  it('should get mappings in an API friendly way', function () {
-    create_mapping_controller();
-    mapping_controller_scope.$digest();
-    var mappings = mapping_controller_scope.get_mappings();
-    expect(mappings.length).toBe(5);
-    expect(mappings[0]).toEqual({
-      from_field: 'property id',
-      from_units: null,
-      to_field: 'pm_property_id',
-      to_field_display_name: 'PM Property ID',
-      to_table_name: 'PropertyState'
-    });
-    // everything in between is empty since we we're using only
-    // suggested mappings.
-    expect(mappings[3]).toEqual({
-      from_field: 'lot number',
-      from_units: null,
-      to_field: 'jurisdiction_tax_lot_id',
-      to_field_display_name: 'Jurisdiction Tax Lot ID',
-      to_table_name: 'TaxLotState'
-    });
-
-  expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
-  expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
-  });
-
-  // Needs to be e2e test now.
-  // it('should show the "STEP 2" tab when reviewing mappings', function() {
-  //     // arrange
-  //     create_mapping_controller();
-  //     mapping_controller_scope.$digest();
-
-  //     // act
-  //     var mappings = mapping_controller_scope.get_mapped_buildings();
-
-  //     // assert
-  //     expect(mapping_controller_scope.tabs).toEqual({
-  //         one_active: false,
-  //         two_active: true,
-  //         three_active: false
-  //     });
-  // });
 });

@@ -38,6 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
+  'BE.seed.controller.column_mapping_preset_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
   'BE.seed.controller.create_sub_organization_modal',
@@ -513,6 +514,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
+          column_mapping_presets_payload: ['column_mappings_service', 'user_service', function (column_mappings_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
+            });
+          }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
@@ -834,36 +841,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
-          column_mappings: ['column_mappings_service', '$stateParams', 'naturalSort', function (column_mappings_service, $stateParams, naturalSort) {
+          mappable_property_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_property_columns().then(function (result) {
+              return result;
+            });
+          }],
+          mappable_taxlot_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_taxlot_columns().then(function (result) {
+              return result;
+            });
+          }],
+          column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-
-            return column_mappings_service.get_column_mappings_for_org(organization_id).then(function (data) {
-              var propertyMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'Property');
-              });
-              propertyMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-              var taxlotMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'TaxLot');
-              });
-              taxlotMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-
-              if ($stateParams.inventory_type === 'properties') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: propertyMappings
-                };
-              } else if ($stateParams.inventory_type === 'taxlots') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: taxlotMappings
-                };
-              }
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
             });
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
