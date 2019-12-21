@@ -1,3 +1,66 @@
+# SEED Version 2.7.0-Beta
+
+SEED Version 2.7.0-Beta includes several significant updates that need to be thoroughly tested on production data
+before being deployed. The most notable changes:
+
+- User can define which fields to match/merge/pair/link
+- Properties and Tax Lots are not linked across multiple years or compliance cycles
+- Users can define mapping profiles to save/recall mappings easier
+- 55 closed issues/new features
+
+Date Range: 09/30/19 - 12/20/19
+
+Closed Issues and Features:
+- Fixed [#94]( https://github.com/SEED-platform/seed/issues/94 ), Document how mapping works in the SEED-Platform / seed wiki
+- Feature [#417]( https://github.com/SEED-platform/seed/issues/417 ), Reports -- Save the last settings
+- Improved [#656]( https://github.com/SEED-platform/seed/issues/656 ), Add filename to modal reporting matches when there are no matches
+- Feature [#709]( https://github.com/SEED-platform/seed/issues/709 ), Allow user to disable columns in import files and handle redundant column names in import files
+- Fixed [#1024]( https://github.com/SEED-platform/seed/issues/1024 ), Can define user account without an organization
+- Fixed [#1117]( https://github.com/SEED-platform/seed/issues/1117 ), Filter doesn't display all the rolled up data under some circumstances
+- Improved [#1361]( https://github.com/SEED-platform/seed/issues/1361 ), Add a bit of space on left of mapping grid
+- Fixed [#1375]( https://github.com/SEED-platform/seed/issues/1375 ), DQ Check - Save makes labels disappear on Admin Screen
+- Improved [#1409]( https://github.com/SEED-platform/seed/issues/1409 ), Indicate that building/property records have merged/matched records
+- Fixed [#1480]( https://github.com/SEED-platform/seed/issues/1480 ), Five digit zip codes with leading 0
+- Fixed [#1511]( https://github.com/SEED-platform/seed/issues/1511 ), DQ results: Program doesn't tell user that a rule can't be applied due to data definition
+- Improved [#1563]( https://github.com/SEED-platform/seed/issues/1563 ), Need an indicator that a filter has been applied to the data
+- Fixed [#1571]( https://github.com/SEED-platform/seed/issues/1571 ), Update verbiage in dialog box(s) to reflect merging and pairing rather than matching
+- Feature [#1715]( https://github.com/SEED-platform/seed/issues/1715 ), Add "Only Show Populated Columns" option to Detail List Settings
+- Fixed [#1740]( https://github.com/SEED-platform/seed/issues/1740 ), Add UBID to BuildingSync and ensure it imports into SEED
+- Fixed [#1817]( https://github.com/SEED-platform/seed/issues/1817 ), DQ: Program "hangs" when DQ rules can't be applied
+- Fixed [#1818]( https://github.com/SEED-platform/seed/issues/1818 ), DQ: Program shows labels across all cycles in Filter by Labels list after running DQ check
+- Fixed [#1845]( https://github.com/SEED-platform/seed/issues/1845 ), DQ Checking hanging in mapping due (possibly) to units issue
+- Fixed [#1873]( https://github.com/SEED-platform/seed/issues/1873 ), data quality type error
+- Fixed [#1945]( https://github.com/SEED-platform/seed/issues/1945 ), 403 (Forbidden) when trying to geocode records from Inventory List view
+- Fixed [#1963]( https://github.com/SEED-platform/seed/issues/1963 ), Allow user to specify which fields are to be used for geocoding
+- Maintenance [#1965]( https://github.com/SEED-platform/seed/issues/1965 ), Re-enable sentry on systems
+- Fixed [#1970]( https://github.com/SEED-platform/seed/issues/1970 ), Problem importing a file into a specific org
+- Fixed [#1977]( https://github.com/SEED-platform/seed/issues/1977 ), Review and update post-import file summary
+- Fixed [#1979]( https://github.com/SEED-platform/seed/issues/1979 ), Detail View Edit of Custom ID 1 sometimes produces an error
+- Fixed [#1982]( https://github.com/SEED-platform/seed/issues/1982 ), Display geojson map
+- Fixed [#1989]( https://github.com/SEED-platform/seed/issues/1989 ), Unmerging records loses pairing
+- Fixed [#1990]( https://github.com/SEED-platform/seed/issues/1990 ), Nonexistent properties/taxlots return bad responses
+- Fixed [#1991]( https://github.com/SEED-platform/seed/issues/1991 ), Column Settings - Sort by MATCH CRITERIA needs some tweaks
+- Fixed [#1996]( https://github.com/SEED-platform/seed/issues/1996 ), Release specific installation constraint of PostGIS docker container
+- Fixed [#2005]( https://github.com/SEED-platform/seed/issues/2005 ), Unable to build docker image - Could not find library geos_c
+- Fixed [#2010]( https://github.com/SEED-platform/seed/issues/2010 ), Mapping: Instructions: Group Matching fields by table
+- Fixed [#2015]( https://github.com/SEED-platform/seed/issues/2015 ), Importing certain column names can break all future imports
+- Fixed [#2031]( https://github.com/SEED-platform/seed/issues/2031 ), Importing mixed types with duplicate records can cause a 500
+- Fixed [#2039]( https://github.com/SEED-platform/seed/issues/2039 ), Portfolio Manager Login URL Changed
+- Fixed [#2052]( https://github.com/SEED-platform/seed/issues/2052 ), Column Settings: Saving Geocoding field definitions: getting 400 and 502 errrors
+- Fixed [#1348]( https://github.com/SEED-platform/seed/issues/1348 ), DQ Checking -- for Valid data, not errors in data
+- Fixed [#786]( https://github.com/SEED-platform/seed/issues/786 ), Save Changes button sequence in Data Cleansing Admin
+- Fixed [#1998]( https://github.com/SEED-platform/seed/issues/1998 ), First edit including lat long change doesn't trigger manual geocoding logic
+- Improved [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name 
+- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file 
+- Feature [#1591]( https://github.com/SEED-platform/seed/issues/1591 ), Detail Screen: Highlight the changes in the columns
+- Feature [#1232]( https://github.com/SEED-platform/seed/issues/1232 ), Need easy way to view data year over year
+- Fixed [#1946]( https://github.com/SEED-platform/seed/issues/1946 ), Meter data visible on some cycles but not all
+- Feature [#1759]( https://github.com/SEED-platform/seed/issues/1759 ), Save mappings for specific input file data sources (ESPM, Tax Lot, Building List)
+- Fixed [#994]( https://github.com/SEED-platform/seed/issues/994 ), It is possible to have orphaned user accounts without an associated organization
+- Fixed [#2057]( https://github.com/SEED-platform/seed/issues/2057 ), Tax Lot Excel export 500 error
+- Fixed [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
+- Fixed [#1713]( https://github.com/SEED-platform/seed/issues/1713 ), Return progress status immediately when uploading large files
+
 # SEED Version 2.6.1-Patch0
 
 - This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.

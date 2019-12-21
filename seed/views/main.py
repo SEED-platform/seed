@@ -84,7 +84,7 @@ def version(request):
     """
     manifest_path = os.path.dirname(
         os.path.realpath(__file__)) + '/../../package.json'
-    with open(manifest_path) as package_json:
+    with open(manifest_path, encoding='utf-8') as package_json:
         manifest = json.load(package_json)
 
     sha = subprocess.check_output(
