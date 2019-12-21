@@ -11,9 +11,11 @@ from datetime import datetime
 from django.core.urlresolvers import reverse
 from django.utils.timezone import get_current_timezone
 
+from seed.data_importer.tasks import match_buildings
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
+    DATA_STATE_MAPPING,
     PropertyView,
     TaxLot,
     TaxLotProperty,

@@ -105,8 +105,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
     tax_lot_merges_within_file_count = 0
     tax_lot_new_count = 0
 
-    merged_property_views = []
-    merged_taxlot_views = []
+    merged_linked_property_views = []
+    merged_linked_taxlot_views = []
 
     # Get lists and counts of all the properties and tax lots based on the import file.
     incoming_properties = import_file.find_unmatched_property_states()
@@ -136,7 +136,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Look for links across Cycles
         log_debug('Start Properties link_views')
-        processed_property_views = link_views(merged_property_views, PropertyView)
+        merged_linked_property_views = link_views(merged_property_views, PropertyView)
 
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
@@ -151,7 +151,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
-        merged_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
+        merged_linked_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
             promoted_tax_lot_ids,
             org,
             import_file.cycle,
@@ -160,11 +160,11 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Look for links across Cycles
         log_debug('Start TaxLots link_views')
-        processed_taxlot_views = link_views(merged_taxlot_views, TaxLotView)
+        merged_linked_taxlot_views = link_views(merged_linked_taxlot_views, TaxLotView)
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
-    pair_new_states(processed_property_views, processed_taxlot_views)
+    pair_new_states(merged_linked_property_views, merged_linked_taxlot_views)
     log_debug('End pair_new_states')
 
     return {
