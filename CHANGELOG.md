@@ -6,6 +6,7 @@ This patch has address a couple issues including:
 - Update the deployment to automatically read the version of redis, postgres, and OEP from the docker-compose.build.yml file
 - Fix data comparisons when merging records
 - Fixed [#2039]( https://github.com/SEED-platform/seed/issues/2039 ), Portfolio Manager Login URL Changed
+- Fixed [#2058]( https://github.com/SEED-platform/seed/issues/2058 ), Portfolio Manager URL Changed (Flapping Issue)
 
 
 # SEED Version 2.6.0
