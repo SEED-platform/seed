@@ -65,6 +65,7 @@ Closed Issues and Features:
 
 - This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.
 - Fixed [#2039]( https://github.com/SEED-platform/seed/issues/2039 ), Portfolio Manager Login URL Changed
+- Fixed [#2058]( https://github.com/SEED-platform/seed/issues/2058 ), Portfolio Manager URL Changed (Flapping Issue)
 
 # SEED Version 2.6.1
 
