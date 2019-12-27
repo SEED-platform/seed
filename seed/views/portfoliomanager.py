@@ -191,8 +191,8 @@ class PortfolioManagerImport(object):
         """
 
         # First we need to log in to Portfolio Manager
-        login_url = "https://portfoliomanager.energystar.gov/pm/login"
-        payload = {"username": self.username, "password": self.password}
+        login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
+        payload = {"j_username": self.username, "j_password": self.password}
         try:
             response = requests.post(login_url, data=payload)
         except requests.exceptions.SSLError:
