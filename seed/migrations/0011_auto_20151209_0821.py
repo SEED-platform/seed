@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='statuslabel',
             name='super_organization',
-            field=models.ForeignKey(related_name='labels', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='labels', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True),
             preserve_default=True,
         ),
     ]
