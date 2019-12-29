@@ -7,7 +7,7 @@
 import json
 from datetime import datetime
 
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
 

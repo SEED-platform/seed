@@ -11,7 +11,7 @@ import os
 import time
 from unittest import skip
 
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse
 from django.test import TestCase
 from django.utils import timezone
 

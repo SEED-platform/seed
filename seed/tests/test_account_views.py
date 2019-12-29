@@ -7,7 +7,7 @@
 import json
 from datetime import date
 
-from django.core.urlresolvers import reverse_lazy, NoReverseMatch
+from django.urls import reverse_lazy, NoReverseMatch
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User

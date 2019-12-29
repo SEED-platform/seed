@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from datetime import datetime
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient

@@ -6,7 +6,7 @@
 """
 import json
 
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.utils.text import slugify
 
 from seed.data_importer.models import ImportRecord

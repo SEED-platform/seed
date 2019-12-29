@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import SetPasswordForm
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
