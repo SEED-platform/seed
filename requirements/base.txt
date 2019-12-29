@@ -1,7 +1,7 @@
 # Django
 django==2.0.13
 dj-database-url==0.4.2
-django-autoslug==1.9.3
+django-autoslug==1.9.6
 django-storages==1.6.5
 django-crispy-forms==1.7.2
 modeltranslation==0.25
