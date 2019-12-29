@@ -160,7 +160,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RangeValidationRule',
             fields=[
-                ('validationrule_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='data_importer.ValidationRule')),
+                ('validationrule_ptr', models.OneToOneField(on_delete=models.deletion.CASCADE, parent_link=True, auto_created=True, primary_key=True, serialize=False, to='data_importer.ValidationRule')),
                 ('max_value', models.FloatField(null=True, blank=True)),
                 ('min_value', models.FloatField(null=True, blank=True)),
                 ('limit_min', models.BooleanField(default=False)),
