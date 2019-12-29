@@ -15,8 +15,8 @@ from seed.lib.superperms.orgs.models import Organization
 
 
 class Cycle(models.Model):
-    organization = models.ForeignKey(Organization, related_name='cycles', blank=True, null=True)
-    user = models.ForeignKey(User, blank=True, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='cycles', blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255)
     start = models.DateTimeField()
     end = models.DateTimeField()

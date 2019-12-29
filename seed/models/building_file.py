@@ -52,7 +52,7 @@ class BuildingFile(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    property_state = models.ForeignKey('PropertyState', related_name='building_files', null=True)
+    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='building_files', null=True)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)

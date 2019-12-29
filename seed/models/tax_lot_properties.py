@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey('PropertyView')
-    taxlot_view = models.ForeignKey('TaxLotView')
-    cycle = models.ForeignKey('Cycle')
+    property_view = models.ForeignKey('PropertyView', on_delete=models.CASCADE)
+    taxlot_view = models.ForeignKey('TaxLotView', on_delete=models.CASCADE)
+    cycle = models.ForeignKey('Cycle', on_delete=models.CASCADE)
 
     # If there is a complex TaxLot/Property association, this field
     # lists the "main" tax lot that Properties should be reported under.

@@ -95,12 +95,12 @@ class ImportRecord(NotDeletableModel):
     app = models.CharField(max_length=64, blank=False, null=False, verbose_name='Destination App',
                            help_text='The application (e.g. BPD or SEED) for this dataset',
                            default='seed')
-    owner = models.ForeignKey('landing.SEEDUser', blank=True, null=True)
+    owner = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, blank=True, null=True)
     start_time = models.DateTimeField(blank=True, null=True)
     finish_time = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(blank=True, null=True)
     updated_at = models.DateTimeField(blank=True, null=True, auto_now=True)
-    last_modified_by = models.ForeignKey('landing.SEEDUser', related_name='modified_import_records',
+    last_modified_by = models.ForeignKey('landing.SEEDUser', on_delete=models.CASCADE, related_name='modified_import_records',
                                          blank=True,
                                          null=True)
     notes = models.TextField(blank=True, null=True)
@@ -119,7 +119,7 @@ class ImportRecord(NotDeletableModel):
     merge_completed_at = models.DateTimeField(blank=True, null=True)
     mcm_version = models.IntegerField(blank=True, null=True)
     super_organization = models.ForeignKey(
-        SuperOrganization, blank=True, null=True, related_name='import_records'
+        SuperOrganization, on_delete=models.CASCADE, blank=True, null=True, related_name='import_records'
     )
 
     # destination_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
@@ -651,8 +651,8 @@ class ImportRecord(NotDeletableModel):
 
 
 class ImportFile(NotDeletableModel, TimeStampedModel):
-    import_record = models.ForeignKey(ImportRecord)
-    cycle = models.ForeignKey('seed.Cycle', blank=True, null=True)
+    import_record = models.ForeignKey(ImportRecord, on_delete=models.CASCADE)
+    cycle = models.ForeignKey('seed.Cycle', on_delete=models.CASCADE, blank=True, null=True)
     file = models.FileField(
         upload_to='data_imports', max_length=500, blank=True, null=True
     )
@@ -1081,7 +1081,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 class TableColumnMapping(models.Model):
     app = models.CharField(max_length=64, default='')
     source_string = models.TextField()
-    import_file = models.ForeignKey(ImportFile)
+    import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE)
     destination_model = models.CharField(max_length=255, blank=True, null=True)
     destination_field = models.CharField(max_length=255, blank=True, null=True)
     order = models.IntegerField(blank=True, null=True)

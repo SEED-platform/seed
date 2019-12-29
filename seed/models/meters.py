@@ -78,8 +78,8 @@ class Meter(models.Model):
 
     property = models.ForeignKey(
         Property,
-        related_name='meters',
         on_delete=models.CASCADE,
+        related_name='meters',
         null=True,
         blank=True
     )
@@ -140,8 +140,8 @@ class Meter(models.Model):
 class MeterReading(models.Model):
     meter = models.ForeignKey(
         Meter,
-        related_name='meter_readings',
         on_delete=models.CASCADE,
+        related_name='meter_readings',
         null=True,
         blank=True
     )

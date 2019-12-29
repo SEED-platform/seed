@@ -49,7 +49,7 @@ class Measure(models.Model):
 
     # relationships
     properties = models.ManyToManyField('PropertyState', through='PropertyMeasure')
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

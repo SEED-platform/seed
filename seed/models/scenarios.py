@@ -47,10 +47,10 @@ class Scenario(models.Model):
                                           default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
-    property_state = models.ForeignKey('PropertyState', related_name='scenarios')
+    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='scenarios')
 
     # a scenario can point to a reference case scenario
-    reference_case = models.ForeignKey('Scenario', null=True)
+    reference_case = models.ForeignKey('Scenario', on_delete=models.CASCADE, null=True)
 
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)

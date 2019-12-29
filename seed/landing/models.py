@@ -63,10 +63,10 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         help_text=_('shows shared buildings within search results'))
     default_organization = models.ForeignKey(
         Organization,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name='default_users',
-        on_delete=models.SET_NULL
+        related_name='default_users'
     )
     api_key = models.CharField(
         _('api key'),
