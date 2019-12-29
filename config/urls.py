@@ -48,5 +48,5 @@ if settings.DEBUG:
         url(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
 
         # admin
-        url(r'^admin/', include(admin.site.urls)),
+        url(r'^admin/', admin.site.urls),
     ]
