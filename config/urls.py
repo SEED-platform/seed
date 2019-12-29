@@ -19,8 +19,8 @@ schema_view = get_schema_view(title='SEED API Schema')
 
 urlpatterns = [
     # Application
-    url(r'^', include('seed.landing.urls', namespace="landing", app_name="landing")),
-    url(r'^app/', include('seed.urls', namespace="seed", app_name="seed")),
+    url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
+    url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
 
     # root configuration items
     url(r'^i18n/', include('django.conf.urls.i18n')),
@@ -29,8 +29,8 @@ urlpatterns = [
     # API
     url(r'^api/schema/$', schema_view),
     url(r'^api/swagger/', get_swagger_view(title='SEED API'), name='swagger'),
-    url(r'^api/', include(api, namespace='api')),
-    url(r'^oauth/', include('oauth2_jwt_provider.urls', namespace='oauth2_provider'))
+    url(r'^api/', include((api, "seed"), namespace='api')),
+    url(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
 ]
 
 handler404 = 'seed.views.main.error404'
