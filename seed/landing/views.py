@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def landing_page(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
     return render(request, 'landing/home.html', locals())
