@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.mapping', [])
           preset_mapping_data.push({
             from_field: mapping.name,
             from_units: mapping.from_units,
-            to_field: mapping.suggestion_column_name || mapping.name,
+            to_field: mapping.suggestion_column_name || mapping.suggestion || '',
             to_table_name: mapping.suggestion_table_name,
           });
 
