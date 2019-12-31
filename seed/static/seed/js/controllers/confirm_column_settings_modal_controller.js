@@ -67,6 +67,18 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           displayName: 'Display Name Change',
         },
         {
+          field: 'geocoding_order',
+          displayName: 'Geocoding Order',
+          cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
+              '<span style="display: flex; align-items:center;">' +
+                '<span style="margin-right: 5px;">' +
+                  '<input type="checkbox" ng-checked="row.entity.geocoding_order" class="no-click">' +
+                '</span>' +
+                '<select class="form-control input-sm" ng-disabled=true><option value="">{$:: row.entity.geocoding_order || \'\' $}</option></select>' +
+              '</span>' +
+            '</div>',
+        },
+        {
           field: 'data_type',
           displayName: 'Data Type Change',
         },
@@ -95,6 +107,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         data: $scope.change_summary_data,
         columnDefs: $scope.change_summary_column_defs,
         enableColumnResizing: true,
+        rowHeight: 40,
         minRowsToShow: Math.min($scope.change_summary_data.length, 5),
       };
 
