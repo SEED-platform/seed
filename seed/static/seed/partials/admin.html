@@ -33,7 +33,7 @@
                         <div class="form-group">
                             <label class="col-sm-2 control-label" for="user_emails" translate>User Email:</label>
                             <div class="col-sm-4">
-                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org.email"></select>
+                                <select class="form-control" name="user_emails" id="user_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org.email"></select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -104,19 +104,19 @@
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="orgs">{$:: 'Organizations' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)"></select>
+                                    <select name="orgs" class="form-control" id="orgs" ng-options="o as o.name for o in org_user.organizations track by o.org_id" ng-model="org_user.organization" ng-change="get_organizations_users(org_user.organization)" required></select>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="col-sm-4 control-label" for="add_emails">{$:: 'Add user to organization' | translate $}:</label>
                                 <div class="col-sm-8">
-                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy:'email'" ng-model="org_user.user"></select>
+                                    <select name="user_emails" class="form-control" id="add_emails" ng-options="u as u.email for u in org.users | orderBy: 'email' track by u.user_id" ng-model="org_user.user" required></select>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <div class="col-sm-offset-4 col-sm-8">
-                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()" translate>Add user</button>
+                                    <button class="btn btn-primary" type="submit" ng-click="org_user.add()" ng-disabled="addRemoveForm.$invalid" translate>Add user</button>
                                 </div>
                             </div>
                         </form>
@@ -127,14 +127,13 @@
                                 <tr>
                                     <th translate>User</th>
                                     <th></th>
-
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="user in org_user.users">
+                                <tr ng-repeat="user in org_user.users track by user.user_id">
                                     <td>{$:: user.email $}</td>
                                     <td>
-                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user.user_id, org_user.organization.org_id)" translate>Remove User</button>
+                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -184,9 +183,6 @@
                                     <td style="width: 470px;">
                                         <div>
                                             <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
-                                            <button class="btn btn-warning" type="button" style="margin-left:10px;" ng-click="confirm_column_mappings_delete(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i> {$:: 'Remove Column Mappings' | translate $}
-                                            </button>
                                             <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-disabled="org.progress > -1">
                                                 <i class="fa fa-exclamation-triangle"></i> {$:: 'Delete Organization' | translate $}
                                             </button>

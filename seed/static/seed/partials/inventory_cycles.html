@@ -1,0 +1,80 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls" style="display: flex; justify-content: space-between;">
+    <div class="form-group settings_profile" style="display:flex; justify-content: space-between;flex-direction: column;">
+          <div uib-dropdown is-open="cycles_options.isopen" auto-close="outsideClick" on-toggle="cycle_selection_toggled(open)">
+              <label>{$:: 'Cycle' | translate $}:</label>
+              <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                  Selected  (<span ng-bind='included_cycle_ids.length'></span>) <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
+                  <li ng-repeat="cycle in cycle_options">
+                      <div>
+                          <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                              {$:: cycle.label $}<input type="checkbox" ng-model="cycle.selected" name="cycle.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                          </label>
+                      </div>
+                  </li>
+              </ul>
+          </div>
+
+          <div style="font-weight: bold;font-size: smaller;" translate>MATCHING_COLUMN_SORT_PRIORITY</div>
+    </div>
+
+    <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-end;">
+        <div class="btn-group" ng-show="profiles.length > 0">
+            <label>{$:: 'List Settings Profile' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id" ng-change="profile_change()"></select>
+            </div>
+        </div>
+
+        <div class="btn-group" style="padding-top: 15px">
+            <button type="button" ng-click="gridApi.grid.clearAllFilters();" class="btn btn-default btn-sm" translate>Clear Filters</button>
+        </div>
+    </div>
+</div>
+
+<div class="inventory-list-tab-container">
+    <div class="item-count">
+        <span ng-if="::inventory_type === 'properties'">
+            <i class="fa fa-building-o"></i>
+            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (data.length | number: 0) }"></span>
+        </span>
+
+        <span ng-if="::inventory_type === 'taxlots'">
+            <i class="fa fa-map-o"></i>
+            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (data.length | number: 0) }"></span>
+        </span>
+    </div>
+    <ul class="nav nav-tabs" style="margin-bottom:1px;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+            <a ui-sref="inventory_cycles(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_cycles(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-grouping ui-grid-pinning ui-grid-resize-columns></div>
+        </div>
+    </div>
+</div>

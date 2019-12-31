@@ -34,12 +34,8 @@ from seed.models import (
 
 def merge_states_with_views(state_ids, org_id, log_name, StateClass):
     """
-    This merge ultimately ignores merge protection settings and orders merge
-    priority -States by most recent AuditLog.
-
-    Calling the submethods below without the 'ignore_merge_protection' flag or with
-    it set to false is how to specify that merge protection settings should be
-    used.
+    This merge ultimately ignores merge protection settings. It's expected that
+    the given state_ids have already been ordered from least to most priority.
     """
     if StateClass == PropertyState:
         return merge_properties(state_ids, org_id, log_name, True)

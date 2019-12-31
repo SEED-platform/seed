@@ -83,6 +83,9 @@ msgstr "Ajouter une étiquette"
 msgid "Add another file"
 msgstr "Ajouter un autre fichier"
 
+msgid "Add Column"
+msgstr "Ajouter une colonne"
+
 msgid "Add compliance information"
 msgstr "Ajouter des informations sur la conformité"
 
@@ -170,6 +173,9 @@ msgstr "clé API"
 
 msgid "API Key"
 msgstr "Clé API"
+
+msgid "Apply Preset"
+msgstr "Appliquer un préréglage"
 
 #: seed/models/projects.py:107 seed/models/projects.py:134
 #: seed/models/projects.py:159
@@ -336,6 +342,30 @@ msgstr "Changer le nom d'affichage d'une colonne"
 msgid "COL_GEOCODING_TOGGLE"
 msgstr "Activer / désactiver l’implication du géocodage et, si elle est activée, modifier l’ordre dans lequel les valeurs de colonne sont concaténées pour construire une adresse complète"
 
+msgid "COL_MAP_PRESET_IMPORT_ADVICE"
+msgstr "Les préréglages de mappage de colonnes peuvent être utilisés pour vous aider à mapper facilement et de manière cohérente vos données. Notez que les colonnes d'en-tête de fichier définies dans le préréglage doivent correspondre exactement (espaces, minuscules, majuscules, etc.) pour que les informations de colonne SEED correspondantes soient utilisées."
+
+msgid "COL_MAP_PRESET_INTRO"
+msgstr "Les préréglages de mappage de colonnes peuvent vous aider à normaliser et à simplifier votre processus de mappage d'importation de fichiers."
+
+msgid "COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE"
+msgstr "Vous pouvez créer des lignes de mappage pour un préréglage en les ajoutant individuellement ou en copiant les valeurs d'en-tête du fichier de données dans une liste délimitée par des virgules en utilisant la zone de saisie à droite."
+
+msgid "COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE"
+msgstr "En outre, vous pouvez copier les valeurs d'en-tête du fichier de données directement sur les en-têtes SEED via le bouton ci-dessous."
+
+msgid "COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE"
+msgstr "Lorsque vous utilisez un préréglage pour un fichier entrant, les valeurs d'en-tête du fichier de données doivent correspondre exactement pour que les mappages soient préremplis."
+
+msgid "COL_MAP_PRESET_MAPPING_INTRO"
+msgstr "Créez des mappages à des valeurs d'en-tête de fichier de données spécifiques - mappant les en-têtes SEED, les types d'inventaire et, le cas échéant, les unités de mesure."
+
+msgid "COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE"
+msgstr "Alternativement, vous pouvez obtenir des suggestions d'en-tête SEED basées sur les noms de colonnes existants en utilisant l'autre bouton ci-dessous."
+
+msgid "COL_MAP_PRESET_MAPPING_TYPING"
+msgstr "Les valeurs d'en-tête SEED peuvent être saisies manuellement. Au fur et à mesure que vous tapez, une liste de suggestions apparaîtra si la valeur est similaire à une colonne déjà reconnue par SEED."
+
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
 msgstr "Pour les colonnes non extra_data, indiquez si la colonne correspond aux critères"
 
@@ -344,6 +374,12 @@ msgstr "Basculer la protection de fusion pour des colonnes spécifiques"
 
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
+
+msgid "Column Mapping Preset"
+msgstr "Préréglage de mappage de colonne"
+
+msgid "Column Mappings"
+msgstr "Mappages de colonnes"
 
 msgid "Column Name"
 msgstr "Nom de colonne"
@@ -399,6 +435,9 @@ msgstr "Confirmer enregistrer les mappages?"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 
+msgid "CONFIRMING_DELETE_PRESET"
+msgstr "Voulez-vous vraiment supprimer le préréglage"
+
 msgid "Contact"
 msgstr "Contact"
 
@@ -417,6 +456,12 @@ msgstr "Es-tu sur de vouloir continuer?"
 
 msgid "Copy Buildings"
 msgstr "Copier des bâtiments"
+
+msgid "Copy Data File Headers directly to SEED Headers"
+msgstr "Copiez les en-têtes de fichiers de données directement dans les en-têtes SEED"
+
+msgid "Copy into Data File Headers"
+msgstr "Copier dans les en-têtes de fichiers de données"
 
 msgid "Count #"
 msgstr "Compte #"
@@ -476,6 +521,9 @@ msgstr "Créer une nouvelle sous-organisation"
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
 
+msgid "Create Preset"
+msgstr "Créer un préréglage"
+
 msgid "Create Project"
 msgstr "Créer un projet"
 
@@ -497,6 +545,9 @@ msgstr "Nouveau cycle créé avec nom {cycle_name}"
 
 msgid "Cross-Cycles"
 msgstr "Entre les Cycles"
+
+msgid "Current Column Mapping Preset"
+msgstr "Préréglage de mappage de colonne actuel"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
@@ -576,6 +627,9 @@ msgstr "Ensembles de données"
 msgid "Data Type"
 msgstr "Type de données"
 
+msgid "DATA_FILE_HEADER_DUP_WARNING"
+msgstr "Veuillez consulter les en-têtes des fichiers de date. Les valeurs en double ou vides ne sont pas autorisées."
+
 msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Mappage des données et Validation ({filename})"
 
@@ -611,11 +665,17 @@ msgstr "Date limite:"
 msgid "Delete"
 msgstr "Supprimer"
 
+msgid "Delete All Columns"
+msgstr "Supprimer toutes les colonnes"
+
 msgid "Delete Organization"
 msgstr "Supprimer l'organisation"
 
 msgid "Delete Selected"
 msgstr "Supprimer la sélection"
+
+msgid "Delete User?"
+msgstr "Supprimer l'utilisateur?"
 
 msgid "Delete your Data File"
 msgstr "Supprimez votre fichier de données"
@@ -625,6 +685,9 @@ msgstr "Supprimez votre ensemble de données"
 
 msgid "Delete your Inventory"
 msgstr "Supprimez votre inventaire"
+
+msgid "Delete your Preset"
+msgstr "Supprimer votre préréglage"
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
@@ -1713,6 +1776,9 @@ msgstr "Résultats d'importation de Portfolio Manager"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "La suppression de l'ID de propriété PM des critères de correspondance peut entraîner des problèmes inattendus pour les importations de compteurs Portfolio Manager."
 
+msgid "Populate SEED Headers with best known matches"
+msgstr "Remplissez les en-têtes SEED avec les correspondances les plus connues"
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Nombre mis à jour après le géocodage"
 
@@ -1727,6 +1793,9 @@ msgstr "Correspondances possibles à partir de la source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
+
+msgid "Preset Name"
+msgstr "Nom de préréglage"
 
 msgid "Preview"
 msgstr "Aperçu"
@@ -1893,6 +1962,12 @@ msgstr "Supprimer l'utilisateur"
 msgid "Removing buildings from project"
 msgstr "Retrait des bâtiments du projet"
 
+msgid "Rename Preset"
+msgstr "Renommer le préréglage"
+
+msgid "Rename your Preset"
+msgstr "Renommez votre préréglage"
+
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Renommer la Colonne"
 
@@ -1901,6 +1976,9 @@ msgstr "Renommez \"Nom de colonne\", qui spécifie la colonne sous-jacente à ut
 
 msgid "Reorder Columns"
 msgstr "Réorganiser les colonnes"
+
+msgid "Replacing Existing Columns"
+msgstr "Remplacement des colonnes existantes"
 
 msgid "Reporting Deadline"
 msgstr "Date limite de déclaration"
@@ -2230,6 +2308,9 @@ msgstr "Veuillez vérifier les points suivants avant de continuer."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
 
+msgid "Switch Presets"
+msgstr "Commuter les préréglages"
+
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
 
@@ -2333,6 +2414,9 @@ msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez 
 
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Choix de Conversion Thermique"
+
+msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgstr "Cette action remplace n'importe laquelle de vos colonnes actuelles par les colonnes délimitées par des virgules que vous avez fournies. Voulez-vous continuer?"
 
 msgid "This cycle name is already taken."
 msgstr "Ce nom de cycle est déjà pris."
@@ -2484,6 +2568,9 @@ msgstr "Prénom de l'utilisateur:"
 msgid "User Last Name:"
 msgstr "Nom de famille de l'utilisateur:"
 
+msgid "USER_WILL_BE_DELETED"
+msgstr "L'utilisateur <strong> {user} </strong> appartient uniquement à cette organisation. Les supprimer entraînera la suppression de l'utilisateur. Es-tu sur de vouloir continuer?"
+
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
 msgstr "Adresse e-mail de l'utilisateur. Utilisé également pour auth."
@@ -2612,6 +2699,9 @@ msgstr "Oui, supprimer le jeu de données"
 msgid "Yes, Delete Inventory"
 msgstr "Oui, supprimer l'inventaire"
 
+msgid "Yes, Delete User"
+msgstr "Oui, Supprimer l'utilisateur"
+
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "Vous pouvez vérifier et modifier chaque correspondance en cliquant sur l'un des ID liés dans la table. Cela ouvrira une nouvelle table qui montre les données source pour l'enregistrement individuel que vous essayez de faire correspondre. Sous cet enregistrement est une liste consultable de toutes les correspondances existantes potentielles. Utilisez ce tableau pour explorer tous vos enregistrements et pour sélectionner un ou plusieurs enregistrements correspondant à vos données source."
 
@@ -2623,12 +2713,18 @@ msgstr "Vous ne pouvez pas vous connecter sans accepter les termes de ce site."
 msgid "You have successfully logged out. You may log in again below."
 msgstr "Vous vous êtes déconnecté avec succès. Vous pouvez vous reconnecter ci-dessous."
 
+msgid "You have unsaved changes"
+msgstr "Vous avez des changements non enregistrés"
+
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "You should be receiving it shortly."
 msgstr "Vous devriez le recevoir sous peu."
 
 msgid "You successfully created the project"
 msgstr "Vous avez réussi à créer le projet"
+
+msgid "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
+msgstr "Vous perdrez vos modifications non enregistrées si vous changez de préréglage sans enregistrer. Voulez-vous continuer?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"

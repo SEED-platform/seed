@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.admin', [])
   .controller('admin_controller', [
     '$scope',
     '$log',
+    '$uibModal',
     'user_service',
     'organization_service',
     'column_mappings_service',
@@ -16,9 +17,11 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
+    'urls',
     function (
       $scope,
       $log,
+      $uibModal,
       user_service,
       organization_service,
       column_mappings_service,
@@ -28,7 +31,8 @@ angular.module('BE.seed.controller.admin', [])
       user_profile_payload,
       users_payload,
       Notification,
-      $window
+      $window,
+      urls
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
@@ -137,12 +141,16 @@ angular.module('BE.seed.controller.admin', [])
       };
 
       $scope.get_organizations_users = function (org) {
-        organization_service.get_organization_users(org).then(function (data) {
-          $scope.org_user.users = data.users;
-        }).catch(function (response) {
-          $log.log({message: 'error from data call', status: response.status, data: response.data});
-          update_alert(false, 'error getting organizations: ' + response.data.message);
-        });
+        if (org) {
+          organization_service.get_organization_users(org).then(function (data) {
+            $scope.org_user.users = data.users;
+          }).catch(function (response) {
+            $log.log({message: 'error from data call', status: response.status, data: response.data});
+            update_alert(false, 'error getting organizations: ' + response.data.message);
+          });
+        } else {
+          $scope.org_user.users = [];
+        }
       };
 
       $scope.org_user.add = function () {
@@ -158,15 +166,38 @@ angular.module('BE.seed.controller.admin', [])
         });
       };
 
-      $scope.org_user.remove_user = function (user_id, org_id) {
-        organization_service.remove_user(user_id, org_id).then(function () {
+      $scope.org_user.remove_user = function (user, org_id) {
+        // Only do this if the user only belongs to one org
+        if (user.number_of_orgs === 1) {
+          var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/delete_user_modal.html',
+            controller: 'delete_user_modal_controller',
+            resolve: {
+              user: function () {
+                return user.email;
+              }
+            }
+          });
+          modalInstance.result.then(function () {
+            confirm_remove_user(user, org_id);
+          }).catch(function () {
+            // Do nothing
+          });
+        } else {
+          confirm_remove_user(user, org_id);
+        }
+      };
+
+      function confirm_remove_user(user, org_id) {
+        organization_service.remove_user(user.user_id, org_id).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
+          get_users();
           update_alert(true, 'user removed organization');
         }).catch(function (response) {
           $log.log({message: 'error from data call', status: response.status, data: response.data});
           update_alert(false, 'error removing user from organization: ' + response.data.message);
         });
-      };
+      }
 
       $scope.confirm_column_mappings_delete = function (org) {
         var yes = confirm('Are you sure you want to delete the \'' + org.name + '\' column mappings?  This will invalidate preexisting mapping review data');
