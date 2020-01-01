@@ -84,6 +84,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.all_labels = labels_payload;
       // console.log(labels_payload)
+
       var loadRules = function (rules_payload) {
         var ruleGroups = {
           properties: {},
