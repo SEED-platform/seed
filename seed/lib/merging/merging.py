@@ -116,6 +116,7 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
         # Since these are handled here, remove them from canonical attributes
         del can_attrs[geocoding_col]
 
+    # Multiple elif's here is necessary since empty checks should be first, followed by merge protection settings
     if new_results_empty:
         geo_state = state1
     elif existing_results_empty:
