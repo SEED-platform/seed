@@ -167,6 +167,7 @@ class Column(models.Model):
         'BooleanField': 'boolean',
         'JSONField': 'string',
         'PolygonField': 'geometry',
+        'PointField': 'geometry',
     }
 
     # These are the default columns (also known as the fields in the database)
