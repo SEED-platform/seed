@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import base64
@@ -10,6 +10,8 @@ import json
 import os
 import time
 from unittest import skip
+
+from datetime import date
 
 from django.urls import reverse_lazy, reverse
 from django.test import TestCase
@@ -169,7 +171,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                'name': '2018 Calendar Year',
+                'name': str(date.today().year - 1) + ' Calendar Year',
                 'num_properties': 0,
                 'num_taxlots': 0,
                 'cycle_id': self.default_cycle.pk,
