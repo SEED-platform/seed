@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle: lastCycleId ? _.find(cycles.cycles, {id: lastCycleId}) : _.first(cycles.cycles),
+        selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
         cycles: cycles.cycles
       };
 
@@ -614,4 +614,3 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
       });
     }]);
-
