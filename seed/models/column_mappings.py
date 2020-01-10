@@ -114,9 +114,9 @@ class ColumnMapping(models.Model):
     same field in subsequent data loads.
 
     """
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     source_type = models.IntegerField(choices=SEED_DATA_SOURCES, null=True, blank=True)
-    super_organization = models.ForeignKey(SuperOrganization, verbose_name=_('SeedOrg'),
+    super_organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, verbose_name=_('SeedOrg'),
                                            blank=True, null=True, related_name='column_mappings')
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )

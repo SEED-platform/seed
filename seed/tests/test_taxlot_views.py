@@ -8,7 +8,7 @@ import json
 
 from datetime import datetime
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.tasks import match_buildings

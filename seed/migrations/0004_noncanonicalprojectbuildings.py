@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='NonCanonicalProjectBuildings',
             fields=[
-                ('projectbuilding', models.ForeignKey(primary_key=True, serialize=False, to='seed.ProjectBuilding')),
+                ('projectbuilding', models.ForeignKey(on_delete=models.deletion.CASCADE, primary_key=True, serialize=False, to='seed.ProjectBuilding')),
             ],
             options={
             },
