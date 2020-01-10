@@ -88,6 +88,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                     self.PropertyViewLabels,
                     Rule.objects.get(pk=org_1_ps_rule.id),
                     org_1_propertyview.id,
+                    org_1_propertystate.id
                 )
 
         self.assertFalse(PropertyView.objects.get(pk=org_1_propertyview.id).labels.all().exists())
@@ -128,6 +129,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                     self.TaxlotViewLabels,
                     Rule.objects.get(pk=org_1_tls_rule.id),
                     org_1_taxlot.id,
+                    org_1_taxlotstate.id
                 )
 
         self.assertFalse(TaxLotView.objects.get(pk=org_1_taxlotview.id).labels.all().exists())
