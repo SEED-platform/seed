@@ -9,7 +9,7 @@ import json
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord

@@ -12,7 +12,7 @@ import os
 import requests
 from unittest import skip, skipIf
 
-from django.core.urlresolvers import reverse_lazy
+from django.urls import reverse_lazy
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User

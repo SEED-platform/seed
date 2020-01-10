@@ -6,7 +6,7 @@
 """
 import json
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User

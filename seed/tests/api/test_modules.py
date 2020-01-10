@@ -431,7 +431,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     result = requests.post(main_url + '/api/v2/properties/filter/',
                            headers=header,
                            params=params)
-    inventory_ids = [prop['id'] for prop in result.json()['results']]
+    inventory_ids = [prop['property_view_id'] for prop in result.json()['results']]
 
     # Apply label to properties
     print('API Function: apply_label\n')

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from json import loads, dumps
 
