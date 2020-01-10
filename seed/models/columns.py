@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -565,7 +565,7 @@ class Column(models.Model):
             'data_type': 'string',
         }
     ]
-    organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
+    organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
     # name of the table which the column name applies, if the column name
     # is a db field. Options now are only PropertyState and TaxLotState
@@ -578,10 +578,10 @@ class Column(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    unit = models.ForeignKey(Unit, blank=True, null=True)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
-    import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
+    import_file = models.ForeignKey('data_importer.ImportFile', on_delete=models.CASCADE, blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
 
     # 0 is deactivated. Order used to construct full address.

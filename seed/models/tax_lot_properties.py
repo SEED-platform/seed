@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -28,9 +28,9 @@ logger = logging.getLogger(__name__)
 
 
 class TaxLotProperty(models.Model):
-    property_view = models.ForeignKey('PropertyView')
-    taxlot_view = models.ForeignKey('TaxLotView')
-    cycle = models.ForeignKey('Cycle')
+    property_view = models.ForeignKey('PropertyView', on_delete=models.CASCADE)
+    taxlot_view = models.ForeignKey('TaxLotView', on_delete=models.CASCADE)
+    cycle = models.ForeignKey('Cycle', on_delete=models.CASCADE)
 
     # If there is a complex TaxLot/Property association, this field
     # lists the "main" tax lot that Properties should be reported under.

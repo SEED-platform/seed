@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -12,7 +12,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models.aggregates import Count
 from django.db.models import Subquery
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo

@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
 
 from django.db import (
@@ -78,8 +78,8 @@ class Meter(models.Model):
 
     property = models.ForeignKey(
         Property,
-        related_name='meters',
         on_delete=models.CASCADE,
+        related_name='meters',
         null=True,
         blank=True
     )
@@ -140,8 +140,8 @@ class Meter(models.Model):
 class MeterReading(models.Model):
     meter = models.ForeignKey(
         Meter,
-        related_name='meter_readings',
         on_delete=models.CASCADE,
+        related_name='meter_readings',
         null=True,
         blank=True
     )

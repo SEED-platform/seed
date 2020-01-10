@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -30,13 +30,14 @@ class Project(TimeStampedModel):
         _('slug'), populate_from='name', unique=True, editable=True
     )
     owner = models.ForeignKey(
-        User, verbose_name=_('User'), blank=True, null=True
+        User, on_delete=models.CASCADE, verbose_name=_('User'), blank=True, null=True
     )
     last_modified_by = models.ForeignKey(
-        User, blank=True, null=True, related_name='last_modified_user'
+        User, on_delete=models.CASCADE, blank=True, null=True, related_name='last_modified_user'
     )
     super_organization = models.ForeignKey(
         Organization,
+        on_delete=models.CASCADE,
         verbose_name=_('SeedOrg'),
         blank=True,
         null=True,
@@ -93,17 +94,17 @@ class Project(TimeStampedModel):
 
 class ProjectPropertyView(TimeStampedModel):
     property_view = models.ForeignKey(
-        'PropertyView', related_name='project_property_views'
+        'PropertyView', on_delete=models.CASCADE, related_name='project_property_views'
     )
     project = models.ForeignKey(
-        'Project', related_name='project_property_views'
+        'Project', on_delete=models.CASCADE, related_name='project_property_views'
     )
     compliant = models.NullBooleanField(null=True, )
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )
     approver = models.ForeignKey(
-        User, verbose_name=_('User'), blank=True, null=True
+        User, on_delete=models.CASCADE, verbose_name=_('User'), blank=True, null=True
     )
 
     class Meta:
@@ -118,17 +119,17 @@ class ProjectPropertyView(TimeStampedModel):
 
 class ProjectTaxLotView(TimeStampedModel):
     taxlot_view = models.ForeignKey(
-        'TaxLotView', related_name='project_taxlot_views'
+        'TaxLotView', on_delete=models.CASCADE, related_name='project_taxlot_views'
     )
     project = models.ForeignKey(
-        'Project', related_name='project_taxlot_views'
+        'Project', on_delete=models.CASCADE, related_name='project_taxlot_views'
     )
     compliant = models.NullBooleanField(null=True, )
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )
     approver = models.ForeignKey(
-        User, verbose_name=_('User'), blank=True, null=True
+        User, on_delete=models.CASCADE, verbose_name=_('User'), blank=True, null=True
     )
 
     class Meta:
