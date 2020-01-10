@@ -12,7 +12,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models.aggregates import Count
 from django.db.models import Subquery
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo

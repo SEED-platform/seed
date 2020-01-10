@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='buildingsnapshot',
             name='duplicate',
-            field=models.ForeignKey(related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='+', blank=True, to='seed.BuildingSnapshot', null=True),
             preserve_default=True,
         ),
     ]

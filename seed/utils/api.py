@@ -84,10 +84,10 @@ def get_all_urls(urllist, prefix=''):
     for entry in urllist:
         if hasattr(entry, 'url_patterns'):
             for url in get_all_urls(entry.url_patterns,
-                                    prefix + entry.regex.pattern):
+                                    prefix + entry.pattern.regex.pattern):
                 yield url
         else:
-            yield (prefix + entry.regex.pattern, entry.callback)
+            yield (prefix + entry.pattern.regex.pattern, entry.callback)
 
 
 # pylint: disable=global-variable-not-assigned

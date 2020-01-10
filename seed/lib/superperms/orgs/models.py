@@ -45,8 +45,8 @@ class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
 
-    user = models.ForeignKey(USER_MODEL)
-    organization = models.ForeignKey('Organization')
+    user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     status = models.CharField(
         max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES
     )
@@ -138,7 +138,7 @@ class Organization(models.Model):
         related_name='orgs',
     )
 
-    parent_org = models.ForeignKey('Organization', blank=True, null=True, related_name='child_orgs')
+    parent_org = models.ForeignKey('Organization', on_delete=models.CASCADE, blank=True, null=True, related_name='child_orgs')
 
     display_units_eui = models.CharField(max_length=32,
                                          choices=MEASUREMENT_CHOICES_EUI,

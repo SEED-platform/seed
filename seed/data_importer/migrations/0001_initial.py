@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('building_pk', models.CharField(max_length=40, null=True, blank=True)),
                 ('was_in_database', models.BooleanField(default=False)),
                 ('is_missing_from_import', models.BooleanField(default=False)),
-                ('building_model_content_type', models.ForeignKey(blank=True, to='contenttypes.ContentType', null=True)),
+                ('building_model_content_type', models.ForeignKey(on_delete=models.deletion.CASCADE, blank=True, to='contenttypes.ContentType', null=True)),
             ],
             options={
             },
@@ -107,9 +107,9 @@ class Migration(migrations.Migration):
                 ('import_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('merge_completed_at', models.DateTimeField(null=True, blank=True)),
                 ('mcm_version', models.IntegerField(max_length=10, null=True, blank=True)),
-                ('last_modified_by', models.ForeignKey(related_name='modified_import_records', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('owner', models.ForeignKey(blank=True, to=settings.AUTH_USER_MODEL, null=True)),
-                ('super_organization', models.ForeignKey(related_name='import_records', blank=True, to='orgs.Organization', null=True)),
+                ('last_modified_by', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='modified_import_records', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('owner', models.ForeignKey(on_delete=models.deletion.CASCADE, blank=True, to=settings.AUTH_USER_MODEL, null=True)),
+                ('super_organization', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='import_records', blank=True, to='orgs.Organization', null=True)),
             ],
             options={
                 'ordering': ('-updated_at',),
@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
                 ('was_a_human_decision', models.BooleanField(default=False)),
                 ('error_message_text', models.TextField(null=True, blank=True)),
                 ('active', models.BooleanField(default=True)),
-                ('import_file', models.ForeignKey(to='data_importer.ImportFile')),
+                ('import_file', models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.ImportFile')),
             ],
             options={
                 'ordering': ('order',),
@@ -160,7 +160,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='RangeValidationRule',
             fields=[
-                ('validationrule_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='data_importer.ValidationRule')),
+                ('validationrule_ptr', models.OneToOneField(on_delete=models.deletion.CASCADE, parent_link=True, auto_created=True, primary_key=True, serialize=False, to='data_importer.ValidationRule')),
                 ('max_value', models.FloatField(null=True, blank=True)),
                 ('min_value', models.FloatField(null=True, blank=True)),
                 ('limit_min', models.BooleanField(default=False)),
@@ -173,31 +173,31 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='validationrule',
             name='table_column_mapping',
-            field=models.ForeignKey(to='data_importer.TableColumnMapping'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.TableColumnMapping'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='validationoutlier',
             name='rule',
-            field=models.ForeignKey(to='data_importer.ValidationRule'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.ValidationRule'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='importfile',
             name='import_record',
-            field=models.ForeignKey(to='data_importer.ImportRecord'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.ImportRecord'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='datacoercionmapping',
             name='table_column_mapping',
-            field=models.ForeignKey(to='data_importer.TableColumnMapping'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.TableColumnMapping'),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='buildingimportrecord',
             name='import_record',
-            field=models.ForeignKey(to='data_importer.ImportRecord'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, to='data_importer.ImportRecord'),
             preserve_default=True,
         ),
     ]

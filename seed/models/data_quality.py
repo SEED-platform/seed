@@ -300,9 +300,9 @@ class Rule(models.Model):
     ]
     name = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=1000, blank=True)
-    data_quality_check = models.ForeignKey('DataQualityCheck', related_name='rules',
-                                           on_delete=models.CASCADE, null=True)
-    status_label = models.ForeignKey(StatusLabel, null=True, on_delete=models.DO_NOTHING)
+    data_quality_check = models.ForeignKey('DataQualityCheck', on_delete=models.CASCADE,
+                                           related_name='rules', null=True)
+    status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
@@ -511,7 +511,7 @@ class DataQualityCheck(models.Model):
         'TaxLotState': ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id'],
     }
 
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, default='Default Data Quality Check')
 
     @classmethod

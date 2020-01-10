@@ -16,8 +16,8 @@ from seed.models import (
 class ColumnListSettingColumn(models.Model):
     """Join table between column list settings and the column. Adds in pinned and index (order)"""
 
-    column_list_setting = models.ForeignKey(ColumnListSetting)
-    column = models.ForeignKey(Column)
+    column_list_setting = models.ForeignKey(ColumnListSetting, on_delete=models.CASCADE)
+    column = models.ForeignKey(Column, on_delete=models.CASCADE)
     order = models.IntegerField(null=True)
     pinned = models.BooleanField(default=False)
 
