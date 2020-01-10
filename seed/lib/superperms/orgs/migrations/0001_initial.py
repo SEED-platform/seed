@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=100)),
                 ('query_threshold', models.IntegerField(null=True, blank=True)),
-                ('parent_org', models.ForeignKey(related_name='child_orgs', blank=True, to='orgs.Organization', null=True)),
+                ('parent_org', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='child_orgs', blank=True, to='orgs.Organization', null=True)),
             ],
             options={
                 'ordering': ['name'],
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='exportablefield',
             name='organization',
-            field=models.ForeignKey(related_name='exportable_fields', to='orgs.Organization'),
+            field=models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='exportable_fields', to='orgs.Organization'),
             preserve_default=True,
         ),
         migrations.AlterUniqueTogether(

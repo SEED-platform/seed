@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -45,7 +45,7 @@ _log = logging.getLogger(__name__)
 class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -61,10 +61,10 @@ class TaxLotState(models.Model):
     # communicating with the cities.
 
     # Support finding the property by the import_file
-    import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+    import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 
     # Add organization to the tax lot states
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
@@ -379,8 +379,7 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
-                               on_delete=models.CASCADE)
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
@@ -458,23 +457,23 @@ def post_save_taxlot_view(sender, **kwargs):
 
 
 class TaxLotAuditLog(models.Model):
-    organization = models.ForeignKey(Organization)
-    parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    parent1 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='taxlotauditlog_parent1')
-    parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+    parent2 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='taxlotauditlog_parent2')
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
-    parent_state1 = models.ForeignKey(TaxLotState, blank=True, null=True,
+    parent_state1 = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='taxlotauditlog_parent_state1')
-    parent_state2 = models.ForeignKey(TaxLotState, blank=True, null=True,
+    parent_state2 = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='taxlotauditlog_parent_state2')
 
-    state = models.ForeignKey('TaxLotState',
+    state = models.ForeignKey('TaxLotState', on_delete=models.CASCADE,
                               related_name='taxlotauditlog_state')
-    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog_view',
+    view = models.ForeignKey('TaxLotView', on_delete=models.CASCADE, related_name='taxlotauditlog_view',
                              null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

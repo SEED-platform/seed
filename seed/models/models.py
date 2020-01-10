@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.db import models
@@ -95,6 +95,7 @@ class StatusLabel(TimeStampedModel):
     )
     super_organization = models.ForeignKey(
         SuperOrganization,
+        on_delete=models.CASCADE,
         verbose_name=_('SeedOrg'),
         blank=True,
         null=True,
@@ -139,7 +140,7 @@ class Compliance(TimeStampedModel):
     start_date = models.DateField(_('start_date'), null=True, blank=True)
     end_date = models.DateField(_('end_date'), null=True, blank=True)
     deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
-    project = models.ForeignKey(Project, verbose_name=_('Project'), )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name=_('Project'), )
 
     def __str__(self):
         return 'Compliance %s for project %s' % (

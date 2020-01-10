@@ -1,14 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 
 from datetime import datetime
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.tasks import match_buildings
