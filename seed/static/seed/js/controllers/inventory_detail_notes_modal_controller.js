@@ -6,37 +6,37 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
   .controller('inventory_detail_notes_modal_controller', [
     '$scope',
     '$uibModalInstance',
+    'action',
     'note_service',
     'inventoryType',
     'viewId',
+    'note',
     'orgId',
     function (
       $scope,
       $uibModalInstance,
+      action,
       note_service,
       inventoryType,
       viewId,
+      note,
       orgId
     ) {
       $scope.inventoryType = inventoryType;
-      $scope.newNote = '';
       $scope.viewId = viewId;
       $scope.orgId = orgId;
-
-      $scope.isNoteEmpty = function () {
-        return _.isEmpty(_.trim($scope.newNote));
-      };
+      $scope.action = action;
+      $scope.note = note;
 
       $scope.close = function () {
         $uibModalInstance.dismiss();
       };
 
-      $scope.save = function () {
-        //note_factory.create_note = function (org_id, inventory_type, inventory_id, note_data) {
+      $scope.create = function () {
         var data = {
           name: 'Manually Created',
           note_type: 'Note',
-          text: $scope.newNote
+          text: note.text,
         };
         note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(function () {
           $uibModalInstance.close();

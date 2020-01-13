@@ -60,6 +60,14 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       });
     };
 
+    note_factory.update_note = function (org_id, inventory_type, view_id, note_id, note_data) {
+      var payload = note_data;
+      payload.organization_id = org_id;
+      return $http.put('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', payload).then(function (response) {
+        return response.data;
+      });
+    };
+
     return note_factory;
 
   }]);

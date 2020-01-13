@@ -54,9 +54,6 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
         });
       };
 
-      /**
-       * open_data_quality_modal: modal to present data data_quality warnings and errors
-       */
       $scope.open_create_note_modal = function () {
         var newNoteModalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
@@ -71,7 +68,9 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
             },
             orgId: function () {
               return $scope.org_id;
-            }
+            },
+            note: _.constant({text: ''}),
+            action: _.constant('new'),
           }
         });
 
