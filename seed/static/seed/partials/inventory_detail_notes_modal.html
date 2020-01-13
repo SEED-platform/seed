@@ -1,5 +1,6 @@
 <div class="modal-header" ng-switch on="action">
     <h4 class="modal-title" ng-switch-when="new" translate>Add New Note</h4>
+    <h4 class="modal-title" ng-switch-when="update">{$:: 'Update' | translate $} {$:: note.name $} ({$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $})</h4>
 </div>
 
 <div class="modal-body no_bottom_padding">
@@ -16,4 +17,5 @@
 <div class="modal-footer" ng-switch on="action">
     <button type="button" class="btn btn-default" ng-click="close()" translate>Cancel</button>
     <button type="submit" class="btn btn-primary" ng-click="create()" ng-switch-when="new" ng-disabled="!note.text" translate>Add Note</button>
+    <button type="submit" class="btn btn-primary" ng-click="update()" ng-switch-when="update" ng-disabled="!note.text" translate>Update</button>
 </div>

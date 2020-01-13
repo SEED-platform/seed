@@ -42,4 +42,15 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
           $uibModalInstance.close();
         });
       };
+
+      $scope.update = function () {
+        var data = {
+          name: note.name,
+          note_type: note.note_type,
+          text: note.text,
+        };
+        note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, note.id, data).then(function () {
+          $uibModalInstance.close();
+        });
+      };
     }]);
