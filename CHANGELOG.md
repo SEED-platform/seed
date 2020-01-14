@@ -1,3 +1,7 @@
+# SEED Version 2.6.1-Patch1
+
+- Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
+
 # SEED Version 2.6.1-Patch0
 
 - This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.
