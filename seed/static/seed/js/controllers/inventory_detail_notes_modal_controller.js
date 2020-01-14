@@ -53,4 +53,10 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
           $uibModalInstance.close();
         });
       };
+
+      $scope.delete = function () {
+        note_service.delete_note($scope.inventoryType, $scope.viewId, note.id).then(function () {
+          $uibModalInstance.close();
+        });
+      };
     }]);

@@ -105,4 +105,31 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
           refreshNotes();
         });
       };
+
+      $scope.open_delete_note_modal = function (note) {
+        var noteModalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: function () {
+              return $scope.inventory_type;
+            },
+            viewId: function () {
+              return $scope.inventory.view_id;
+            },
+            orgId: function () {
+              return $scope.org_id;
+            },
+            note: function () {
+              return note;
+            },
+            action: _.constant('delete'),
+          }
+        });
+
+        noteModalInstance.result.finally(function () {
+          refreshNotes();
+        });
+      };
     }]);

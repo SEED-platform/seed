@@ -35,8 +35,8 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       });
     };
 
-    note_factory.delete_note = function (inventory_type, view_id) {
-      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, {}).then(function (response) {
+    note_factory.delete_note = function (inventory_type, view_id, note_id) {
+      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', {}).then(function (response) {
         return response.data;
       });
     };
