@@ -172,14 +172,14 @@ angular.module('BE.seed.controller.column_settings', [])
 
       default_sort_toggle();
 
-      var display_name_order_sort = function () {
+      var column_name_order_sort = function () {
         $scope.columns = _.sortBy($scope.columns, 'name');
       };
 
-      $scope.toggle_display_name_order_sort = function () {
-        if (($scope.column_sort !== 'display_name_order')) {
-          display_name_order_sort();
-          $scope.column_sort = 'display_name_order';
+      $scope.toggle_column_name_order_sort = function () {
+        if (($scope.column_sort !== 'column_name_order')) {
+          column_name_order_sort();
+          $scope.column_sort = 'column_name_order';
         } else {
           default_sort_toggle();
         }
