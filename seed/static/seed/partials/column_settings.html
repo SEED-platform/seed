@@ -56,7 +56,9 @@
                 <table id="column-table" class="table has_no_btm_margin">
                     <thead>
                         <tr>
-                            <th translate>Display Name</th>
+                            <th class="text-left" ng-click="toggle_display_name_order_sort()">
+                                <span>Display Name<i class="glyphicon glyphicon-sort"></i></span>
+                            </th>
                             <th translate>Column Name</th>
                             <th class="text-center" style="min-width: 80px; width: 80px;" ng-click="toggle_geocoding_order_sort()">
                                 <span>Geocoding Order<i class="glyphicon glyphicon-list"></i></span>
