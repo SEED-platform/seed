@@ -173,11 +173,6 @@ angular.module('BE.seed.controller.column_settings', [])
       default_sort_toggle();
 
       var display_name_order_sort = function () {
-        // $scope.columns = _.sortBy($scope.columns, function (col) {
-        //   // infinity at 0, increasing after
-        //   console.log(col.name)
-        //   return (1 / col.geocoding_order + col.geocoding_order);
-        // });
         $scope.columns = _.sortBy($scope.columns, 'name');
       };
 
