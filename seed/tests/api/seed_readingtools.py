@@ -15,6 +15,7 @@ import requests
 import urllib3
 from http.client import RemoteDisconnected
 
+
 def report_memory():
     mem = psutil.virtual_memory()
     print(mem)
