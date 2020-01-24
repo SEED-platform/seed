@@ -172,6 +172,19 @@ angular.module('BE.seed.controller.column_settings', [])
 
       default_sort_toggle();
 
+      var display_name_order_sort = function () {
+        $scope.columns = _.sortBy($scope.columns, 'displayName');
+      };
+
+      $scope.toggle_display_name_order_sort = function () {
+        if (($scope.column_sort !== 'display_name_order')) {
+          display_name_order_sort();
+          $scope.column_sort = 'display_name_order';
+        } else {
+          default_sort_toggle();
+        }
+      };
+
       var column_name_order_sort = function () {
         $scope.columns = _.sortBy($scope.columns, 'name');
       };
