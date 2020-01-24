@@ -1,4 +1,3 @@
-sudo: required
 dist: xenial
 cache:
   directories:
@@ -7,6 +6,7 @@ cache:
     - "$HOME/.pip-cache/"
     - "$HOME/.nvm"
     - ".tox"
+os: linux
 language: python
 python:
   - "3.6"
@@ -19,7 +19,7 @@ addons:
       - gdal-bin
 services:
   - docker
-  - redis-server
+  - redis
   - postgresql
   - xvfb
 before_install:
@@ -43,7 +43,7 @@ install:
 before_script:
   - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
   - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
-  - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - cp config/settings/test_local_untracked.py config/settings/local_untracked.py
   - sudo add-apt-repository ppa:timescale/timescaledb-ppa -y
   - sudo apt-get update -q
   - sudo apt-get install -y timescaledb-postgresql-11 timescaledb-tools
@@ -51,6 +51,7 @@ before_script:
   - sudo service postgresql restart
   - psql -c "CREATE DATABASE seeddb;" -U postgres
   - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
+  - free -tm
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.16.0
@@ -73,3 +74,16 @@ jobs:
       before_script: skip
       script: travis_wait 30 docker/travis_build_docker.sh
       env: DJANGO_SETTINGS_MODULE=config.settings.docker
+after_failure:
+  - echo "Job Failed... Maybe these logs will help?"
+  - free -tm
+  - ls -alt ~
+  - ls -alt /home/travis/build/SEED-platform/seed/
+  - echo "============================================ celery log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/celery.log
+  - echo "============================================ celery console log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/celery_console.log
+  - echo "============================================ server log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/runserver.log
+  - echo "============================================ syslog ============================================"
+  - sudo cat /var/log/syslog
