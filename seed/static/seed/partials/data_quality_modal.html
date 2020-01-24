@@ -41,7 +41,7 @@
                             <tbody ng-repeat="row in dataQualityResults | filter: {visible: true}">
                                 <tr ng-repeat="result in row.data_quality_results | filter: {visible: true}" ng-class="::{'data-quality-error': result.severity === 'error', 'data-quality-warning': result.severity === 'warning'}">
                                     <td ng-repeat="c in ::columns" ng-class="{sorted: search.sort_column === c.sort_column}">
-                                        {$:: (_.includes(['detailed_message', 'formatted_field', 'table_name'], c.sort_column) ? result[c.sort_column] : row[c.sort_column]) || '--' $}
+                                        {$:: (_.includes(['detailed_message', 'formatted_field', 'table_name', 'label'], c.sort_column) ? result[c.sort_column] : row[c.sort_column]) || '--' $}
                                     </td>
                                 </tr>
                             </tbody>

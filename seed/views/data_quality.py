@@ -169,7 +169,7 @@ class DataQualityViews(viewsets.ViewSet):
 
         writer.writerow(
             ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Error Message', 'Severity'])
+             'Applied Label', 'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -180,6 +180,7 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
+                    result.get('label', None),
                     # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
                     unidecode(result['detailed_message']),
                     result['severity']
