@@ -9,10 +9,9 @@ import json
 import pprint
 import time
 import uuid
-
-import requests
 from builtins import str
 
+import requests
 from seed_readingtools import (
     check_status,
     check_progress,
