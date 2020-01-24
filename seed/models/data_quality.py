@@ -704,18 +704,18 @@ class DataQualityCheck(models.Model):
                     # field that wasn't mapped
                     if rule.required:
                         self.add_result_missing_req(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
                     # Empty fields
                     if rule.required:
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     elif rule.not_null:
                         self.add_result_is_null(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
-                    label_applied = self.update_status_label(label, rule, linked_id)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
                     # check the min and max values
                     try:
@@ -723,7 +723,7 @@ class DataQualityCheck(models.Model):
                             if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                label_applied = self.update_status_label(label, rule, linked_id)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
@@ -741,7 +741,7 @@ class DataQualityCheck(models.Model):
                             if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                label_applied = self.update_status_label(label, rule, linked_id)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
@@ -772,7 +772,7 @@ class DataQualityCheck(models.Model):
                                     }
                                 )
                                 '''
-                                label_applied = self.update_status_label(label, rule, linked_id)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
@@ -1009,7 +1009,7 @@ class DataQualityCheck(models.Model):
             'severity': rule.get_severity_display(),
         })
 
-    def update_status_label(self, label_class, rule, linked_id):
+    def update_status_label(self, label_class, rule, linked_id, row_id):
         """
 
         :param label_class: statuslabel object, either propertyview label or taxlotview label
@@ -1046,6 +1046,9 @@ class DataQualityCheck(models.Model):
                             taxlot_parent_org_id
                         )
                     )
+
+            self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
+
             return True
 
     def remove_status_label(self, label_class, rule, linked_id):
