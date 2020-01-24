@@ -6,6 +6,7 @@ autopep8==1.4.4
 coverage==4.5.4
 coveralls==1.9.2
 tox==3.14.3
+psutil==5.6.7
 
 # python testing
 django-nose==1.4.6

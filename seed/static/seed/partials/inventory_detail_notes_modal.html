@@ -1,18 +1,23 @@
-<div class="modal-header">
-    <h4 class="modal-title" translate>Add New Note</h4>
+<div class="modal-header" ng-switch on="action">
+    <h4 class="modal-title" ng-switch-when="new" translate>Add New Note</h4>
+    <h4 class="modal-title" ng-switch-when="update">{$:: 'Update' | translate $} {$:: note.name $} ({$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $})</h4>
+    <h4 class="modal-title" ng-switch-when="delete">{$:: 'Delete' | translate $} {$:: note.name $} ({$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $})</h4>
 </div>
+
 <div class="modal-body no_bottom_padding">
     <div class="data_upload_steps form-horizontal">
         <div class="form-group" ng-class="{'has-error': data.alert, 'has-feedback': data.alert}">
-            <label class="control-label col-lg-3 col-sm-3" for="createNote" translate>Note</label>
+            <label class="control-label col-lg-3 col-sm-3" for="noteText" translate>Note</label>
             <div class="col-lg-8 col-sm-8">
-                <textarea class="form-control" id="createNote" ng-model="newNote" rows="4" autofocus required></textarea>
+                <textarea class="form-control" ng-disabled="action === 'delete'" id="noteText" ng-model="note.text" rows="4" autofocus required></textarea>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal-footer">
+<div class="modal-footer" ng-switch on="action">
     <button type="button" class="btn btn-default" ng-click="close()" translate>Cancel</button>
-    <button type="submit" class="btn btn-primary" ng-click="save()" ng-disabled="isNoteEmpty()" translate>Add Note</button>
+    <button type="submit" class="btn btn-primary" ng-click="create()" ng-switch-when="new" ng-disabled="!note.text" translate>Add Note</button>
+    <button type="submit" class="btn btn-primary" ng-click="update()" ng-switch-when="update" ng-disabled="!note.text" translate>Update</button>
+    <button type="button" class="btn btn-danger" ng-click="delete()" ng-switch-when="delete" translate>Delete</button>
 </div>
