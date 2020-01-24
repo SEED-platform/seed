@@ -7,9 +7,11 @@
 from django.forms.models import model_to_dict
 from quantityfield import ureg
 
+from seed.models import PropertyView
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
+    StatusLabel,
     DataQualityTypeCastError,
     UnitMismatchError,
 )
@@ -18,7 +20,6 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
-    FakePropertyViewFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -31,7 +32,6 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_default_create(self):
@@ -128,6 +128,42 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
                     self.assertEqual(violation['detailed_message'], 'Site EUI [525600] > 1000')
 
         self.assertEqual(error_found, True)
+
+    def test_check_property_state_example_data_with_labels(self):
+        dq = DataQualityCheck.retrieve(self.org.id)
+
+        # Create labels and apply them to the rules being triggered later
+        site_eui_label = StatusLabel.objects.create(name='Check Site EUI', super_organization=self.org)
+        site_eui_rule = dq.rules.get(table_name='PropertyState', field='site_eui', max='1000')
+        site_eui_rule.status_label = site_eui_label
+        site_eui_rule.save()
+
+        year_built_label = StatusLabel.objects.create(name='Check Year Built', super_organization=self.org)
+        year_built_rule = dq.rules.get(table_name='PropertyState', field='year_built')
+        year_built_rule.status_label = year_built_label
+        year_built_rule.save()
+
+        # Create state and associate it to view
+        ps_data = {
+            'no_default_data': True,
+            'custom_id_1': 'abcd',
+            'address_line_1': '742 Evergreen Terrace',
+            'pm_property_id': 'PMID',
+            'site_eui': 525600,
+            'year_built': 1699,
+        }
+        ps = self.property_state_factory.get_property_state(None, **ps_data)
+        property = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=property, cycle=self.cycle, state=ps
+        )
+
+        dq.check_data(ps.__class__.__name__, [ps])
+
+        dq_results = dq.results[ps.id]['data_quality_results']
+        labels = [r['label'] for r in dq_results]
+
+        self.assertCountEqual(['Check Site EUI', 'Check Year Built'], labels)
 
     def test_text_match(self):
         dq = DataQualityCheck.retrieve(self.org.id)
