@@ -41,6 +41,8 @@
                 <th width="1%" class="ellipsis-resizable">Type</th>
                 <th width="1%" class="ellipsis-resizable">Name</th>
                 <th class="ellipsis-resizable">Text</th>
+                <th width="1%"></th>
+                <th width="1%"></th>
             </tr>
         </thead>
         <tbody>
@@ -49,6 +51,16 @@
                 <td style="white-space: nowrap;">{$:: note.note_type $}</td>
                 <td style="white-space: nowrap;">{$:: note.name $}</td>
                 <td>{$:: note.text $}</td>
+                <td>
+                    <button class="btn btn-primary" type="button" ng-click="open_edit_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Edit">
+                        <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
+                    </button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" type="button" ng-click="open_delete_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Delete">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </button>
+                </td>
             </tr>
         </tbody>
     </table>
