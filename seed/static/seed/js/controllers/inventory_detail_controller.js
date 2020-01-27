@@ -194,7 +194,17 @@ angular.module('BE.seed.controller.inventory_detail', [])
       var historical_states = _.map($scope.historical_items, 'state');
 
       var historical_changes_check = function(column) {
-        var uniq_column_values = _.uniqBy(historical_states.concat($scope.item_state), column.column_name);
+        var uniq_column_values;
+        var states = historical_states.concat($scope.item_state);
+
+        if (column.is_extra_data) {
+          uniq_column_values = _.uniqBy(states, function (state) {
+            return state.extra_data[column.column_name];
+          });
+        } else {
+          uniq_column_values = _.uniqBy(states, column.column_name);
+        }
+
         column['changed'] = uniq_column_values.length > 1;
         return column;
       };
