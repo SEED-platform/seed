@@ -60,6 +60,10 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         sortable: false,
         title: 'Field'
       }, {
+        sort_column: 'label',
+        sortable: false,
+        title: 'Applied Label'
+      }, {
         sort_column: 'detailed_message',
         sortable: false,
         title: 'Error Message'
