@@ -337,10 +337,10 @@ msgid "Close Preview"
 msgstr "Fermer l'aperçu"
 
 msgid "COL_CHANGE_DISPLAY"
-msgstr "Changer le nom d'affichage d'une colonne"
+msgstr "Modifiez le nom d'affichage (qui apparaît tout au long du programme) d'une colonne. Ceci est défini par l'utilisateur et peut avoir n'importe quelle valeur (?)"
 
 msgid "COL_GEOCODING_TOGGLE"
-msgstr "Activer / désactiver l’implication du géocodage et, si elle est activée, modifier l’ordre dans lequel les valeurs de colonne sont concaténées pour construire une adresse complète"
+msgstr "Vérifiez les champs appropriés, ainsi que leur ordre pour que le programme concatène une adresse complète, que SEED utilisera pour générer des valeurs de latitude et de longitude pour chaque enregistrement"
 
 msgid "COL_MAP_PRESET_IMPORT_ADVICE"
 msgstr "Les préréglages de mappage de colonnes peuvent être utilisés pour vous aider à mapper facilement et de manière cohérente vos données. Notez que les colonnes d'en-tête de fichier définies dans le préréglage doivent correspondre exactement (espaces, minuscules, majuscules, etc.) pour que les informations de colonne SEED correspondantes soient utilisées."
@@ -367,10 +367,10 @@ msgid "COL_MAP_PRESET_MAPPING_TYPING"
 msgstr "Les valeurs d'en-tête SEED peuvent être saisies manuellement. Au fur et à mesure que vous tapez, une liste de suggestions apparaîtra si la valeur est similaire à une colonne déjà reconnue par SEED."
 
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
-msgstr "Pour les colonnes non extra_data, indiquez si la colonne correspond aux critères"
+msgstr "Cocher cette case pour un champ permettra de l'utiliser comme champ correspondant."
 
 msgid "COL_MERGE_PROTECTION_TOGGLE"
-msgstr "Basculer la protection de fusion pour des colonnes spécifiques"
+msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un autre enregistrement, la valeur la plus récente remplace un ancien. La protection contre la fusion empêche cela et est particulièrement utile pour les colonnes où vous avez modifié manuellement des valeurs que vous souhaitez conserver même après l'importation et la fusion de nouvelles données."
 
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
@@ -892,7 +892,7 @@ msgid "Export your Properties and Tax Lots"
 msgstr "Exportez vos propriétés et vos lots d'impôt"
 
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
-msgstr "Spécifiez le type de données des colonnes de données supplémentaires"
+msgstr "Pour les champs données supplémentaires, cela permet à l'utilisateur de définir le type, tel que Texte, Numéro, Date, etc.Pour les champs données supplémentaires, cela permet à l'utilisateur de définir le type, tel que Texte, Numéro, Date, etc."
 
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
@@ -1972,7 +1972,7 @@ msgid "RENAME_COLUMN_TITLE"
 msgstr "Renommer la Colonne"
 
 msgid "RENAME_SYS_LEVEL_COL"
-msgstr "Renommez \"Nom de colonne\", qui spécifie la colonne sous-jacente à utiliser au niveau du système."
+msgstr "Renommer permet aux utilisateurs de modifier le nom du champ sous-jacent affiché dans Nom de colonne / Nom de champ. Renommer un champ signifie que ce champ sera modifié dans toutes les données de l'organisation."
 
 msgid "Reorder Columns"
 msgstr "Réorganiser les colonnes"

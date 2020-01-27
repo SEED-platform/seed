@@ -26,22 +26,49 @@
         </div>
     </div>
     <div class="section_content_container">
+        <div class="section_tab_container">
+            <uib-tabset>
+                <uib-tab heading="{$:: 'Modify Column Settings' | translate $}" active="tabs.one_active">
+                    <div class="section_content with_padding" style="margin-bottom:15px;">
+                        <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
+                        <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+                        <h3 translate>Display Name</h3>
+                            <ul>
+                               <li translate>COL_CHANGE_DISPLAY</li>
+                            </ul>
+                        <h3 translate>Column Name</h3>
+                            <ul>
+                              <li translate>COL_CHANGE_NAME</li>
+                              <li translate>GEOCODING_NEEDS_THREE_COLS</li>
+                            </ul>
+                        <h3 translate>Geocoding Order</h3>
+                            <ul>
+                              <li translate>COL_GEOCODING_TOGGLE</li>
+                              <li translate>COL_GEOCODING_TOGGLE_EXT</li>
+                            </ul>
+                        <h3 translate>Rename</h3>
+                            <ul>
+                              <li translate>RENAME_SYS_LEVEL_COL</li>
+                            </ul>
+                        <h3 translate>Data Type</h3>
+                            <ul>
+                              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+                            </ul>
+                        <h3 translate>Merge Protection</h3>
+                            <ul>
+                              <li translate>MERGE_PROTECTION_EXPLANATION</li>
+                            </ul>
+                         <h3 translate>Match Criteria</h3>
+                            <ul>
+                                <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+                                <li><p style="font-weight: 600;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</p></li>
+                            </ul>
+                    </div>
+                </uib-tab>
+                <uib-tab class="pull-right" heading="{$:: 'Collapse Help' | translate $}"></uib-tab>
+            </uib-tabset>
+        </div>
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>MODIFYING_COLUMN_SETTINGS</h3>
-            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
-            <ul>
-              <li translate>COL_CHANGE_DISPLAY</li>
-              <li translate>COL_GEOCODING_TOGGLE</li>
-              <li translate>RENAME_SYS_LEVEL_COL</li>
-              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
-              <li translate>COL_MERGE_PROTECTION_TOGGLE</li>
-              <li>
-                  <span translate>COL_MATCHING_CRITERIA_TOGGLE</span>
-                  <p style="font-weight: 600;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</p>
-              </li>
-            </ul>
-            <p translate>GEOCODING_NEEDS_THREE_COLS</p>
-            <p translate>MERGE_PROTECTION_EXPLANATION</p>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
