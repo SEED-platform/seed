@@ -39,5 +39,14 @@ angular.module('BE.seed.service.modified', []).factory('modified_service', [
       return modalInstance.result;
     };
 
+    modified_service.showResetDialog = function () {
+      var modalInstance = $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/reset_modal.html',
+        controller: 'reset_modal_controller'
+      });
+
+      return modalInstance.result;
+    };
+
     return modified_service;
   }]);

@@ -4,12 +4,10 @@
  */
 angular.module('BE.seed.controller.reset_modal', [])
   .controller('reset_modal_controller', [
-    '$rootScope',
     '$scope',
     '$uibModalInstance',
-    function ($rootScope, $scope, $uibModalInstance) {
+    function ($scope, $uibModalInstance) {
       $scope.reset = function () {
-        $rootScope.$broadcast('reset_all_rules');
         $uibModalInstance.close();
       };
 
