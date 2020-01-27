@@ -43,7 +43,16 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
 
       // Flag columns whose values have changed between cycles.
       var changes_check = function(column) {
-        var uniq_column_values = _.uniqBy($scope.states, column.column_name);
+        var uniq_column_values;
+
+        if (column.is_extra_data) {
+          uniq_column_values = _.uniqBy($scope.states, function (state) {
+            return state.extra_data[column.column_name];
+          });
+        } else {
+          uniq_column_values = _.uniqBy($scope.states, column.column_name);
+        }
+
         column['changed'] = uniq_column_values.length > 1;
         return column;
       };
