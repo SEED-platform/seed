@@ -172,6 +172,32 @@ angular.module('BE.seed.controller.column_settings', [])
 
       default_sort_toggle();
 
+      var display_name_order_sort = function () {
+        $scope.columns = _.sortBy($scope.columns, 'displayName');
+      };
+
+      $scope.toggle_display_name_order_sort = function () {
+        if (($scope.column_sort !== 'display_name_order')) {
+          display_name_order_sort();
+          $scope.column_sort = 'display_name_order';
+        } else {
+          default_sort_toggle();
+        }
+      };
+
+      var column_name_order_sort = function () {
+        $scope.columns = _.sortBy($scope.columns, 'name');
+      };
+
+      $scope.toggle_column_name_order_sort = function () {
+        if (($scope.column_sort !== 'column_name_order')) {
+          column_name_order_sort();
+          $scope.column_sort = 'column_name_order';
+        } else {
+          default_sort_toggle();
+        }
+      };
+
       var geocoding_order_sort = function () {
         $scope.columns = _.sortBy($scope.columns, function (col) {
           // infinity at 0, increasing after
@@ -190,14 +216,14 @@ angular.module('BE.seed.controller.column_settings', [])
 
       $scope.toggle_matching_criteria_sort = function () {
         if ($scope.column_sort !== 'is_matching_criteria') {
-          $scope.columns = _.sortBy($scope.columns, function(col) {
-              if (col.is_matching_criteria) {
-                return 0;
-              } else if (col.is_extra_data) {
-                return 2;
-              } else {
-                return 1;
-              }
+          $scope.columns = _.sortBy($scope.columns, function (col) {
+            if (col.is_matching_criteria) {
+              return 0;
+            } else if (col.is_extra_data) {
+              return 2;
+            } else {
+              return 1;
+            }
           });
           $scope.column_sort = 'is_matching_criteria';
         } else {
@@ -211,7 +237,7 @@ angular.module('BE.seed.controller.column_settings', [])
         Notification.success('Successfully updated ' + diff_count + ' column' + (diff_count === 1 ? '' : 's'));
 
         if (match_link_summary) {
-          _.forOwn(match_link_summary, function(state_summary, state) {
+          _.forOwn(match_link_summary, function (state_summary, state) {
             if (state === 'PropertyState') {
               var type = 'Property';
             } else {
@@ -223,11 +249,11 @@ angular.module('BE.seed.controller.column_settings', [])
 
             if (merged_count) Notification.info({
               message: type + ' merge count: ' + merged_count,
-              delay: 10000,
+              delay: 10000
             });
             if (linked_sets_count) Notification.info({
               message: type + ' linked sets count: ' + linked_sets_count,
-              delay: 10000,
+              delay: 10000
             });
           });
         }
@@ -237,9 +263,9 @@ angular.module('BE.seed.controller.column_settings', [])
       };
 
       $scope.complete_column_update = function () {
-        var matching_criteria_changed = _.find(_.values(diff), function(delta) {
-          return _.has(delta, 'is_matching_criteria')
-        })
+        var matching_criteria_changed = _.find(_.values(diff), function (delta) {
+          return _.has(delta, 'is_matching_criteria');
+        });
 
         if (matching_criteria_changed) {
           // reset the spinner and run whole org match merge link
@@ -249,7 +275,7 @@ angular.module('BE.seed.controller.column_settings', [])
             organization_service.check_match_merge_link_status(response.progress_key).then(function (completion_notice) {
               organization_service.get_match_merge_link_result($scope.org.id, completion_notice.unique_id).then(column_update_complete);
             });
-          }).catch(function() {
+          }).catch(function () {
             Notification.error('There was an error trying to match, merge, link records for this organization.');
           });
         } else {
@@ -273,7 +299,7 @@ angular.module('BE.seed.controller.column_settings', [])
         }
 
         var modal_instance = $scope.open_confirm_column_settings_modal();
-        modal_instance.result.then(function () {  // User confirmed
+        modal_instance.result.then(function () { // User confirmed
           var promises = [];
           _.forOwn(diff, function (delta, column_id) {
             promises.push(columns_service.patch_column_for_org($scope.org.id, column_id, delta));
@@ -282,31 +308,31 @@ angular.module('BE.seed.controller.column_settings', [])
           spinner_utility.show();
           $q.all(promises).then($scope.complete_column_update, function (data) {
             $scope.$emit('app_error', data);
-          })
-        }).catch(function () {  // User cancelled
+          });
+        }).catch(function () { // User cancelled
           return;
         });
       };
 
-      $scope.open_confirm_column_settings_modal = function() {
+      $scope.open_confirm_column_settings_modal = function () {
         return $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/confirm_column_settings_modal.html',
           controller: 'confirm_column_settings_modal_controller',
-          size: "lg",
+          size: 'lg',
           resolve: {
-              proposed_changes: function () {
-                return diff;
-              },
-              all_columns: function () {
-                return $scope.columns;
-              },
-              inventory_type: function () {
-                return $scope.inventory_type;
-              },
-              org_id: function () {
-                return $scope.org.id;
-              },
-          },
+            proposed_changes: function () {
+              return diff;
+            },
+            all_columns: function () {
+              return $scope.columns;
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
+            },
+            org_id: function () {
+              return $scope.org.id;
+            }
+          }
         });
       };
 
