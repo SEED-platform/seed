@@ -19,8 +19,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'cycles',
     'organization_payload',
     'flippers',
+    'urls',
     '$sce',
     '$translate',
+    '$uibModal',
     function (
       $scope,
       $log,
@@ -31,8 +33,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
       cycles,
       organization_payload,
       flippers,
+      urls,
       $sce,
-      $translate
+      $translate,
+      $uibModal
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
@@ -304,6 +308,29 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
       }
 
+      $scope.open_export_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_report_modal.html',
+          controller: 'export_report_modal_controller',
+          resolve: {
+            axes_data: function () {
+              return {
+                xVar: $scope.chartData.xAxisVarName,
+                xLabel: $scope.chartData.xAxisTitle,
+                yVar: $scope.chartData.yAxisVarName,
+                yLabel: $scope.chartData.yAxisTitle,
+              };
+            },
+            cycle_start: function () {
+              return $scope.fromCycle.selected_cycle.start;
+            },
+            cycle_end: function () {
+              return $scope.toCycle.selected_cycle.end;
+            },
+          }
+        });
+      };
+
       /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
        The user's selections are already stored as properties on the scope, so use
        those for the parameters that need to be sent to the server.
@@ -331,7 +358,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
               series: $scope.chartSeries,
               chartData: data.chart_data,
               xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              xAxisVarName: $scope.xAxisSelectedItem.varName,
               yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
@@ -376,6 +405,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
           data = data.aggregated_data;
+          console.log(data);
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
