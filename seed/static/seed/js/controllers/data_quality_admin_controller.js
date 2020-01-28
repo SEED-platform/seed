@@ -128,6 +128,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.setModified = function () {
         $scope.rules_updated = false;
         $scope.rules_reset = false;
+        $scope.defaults_restored = false;
         var cleanRules = angular.copy($scope.ruleGroups);
         _.each(originalRules, function (rules, index) {
           $scope.rules = rules;
