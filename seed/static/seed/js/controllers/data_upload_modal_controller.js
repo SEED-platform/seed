@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       organization
     ) {
       $scope.cycles = cycles.cycles;
-      if ($scope.cycles.length) $scope.selectedCycle = $scope.cycles[0];
+      if ($scope.cycles.length) $scope.selectedCycle = inventory_service.get_last_selected_cycle();
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';
       $scope.step = {
@@ -142,6 +142,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       $scope.cycleChanged = function (selected) {
         $scope.selectedCycle = selected;
+        inventory_service.save_last_selected_cycle(selected);
       };
 
       /**
