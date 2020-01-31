@@ -75,10 +75,6 @@ angular.module('BE.seed.controller.menu', [])
             return true;
           }
           return true;
-        } else if ($rootScope.stay_on_page) {
-          if(menu_item === ('/' + $state.current.url.split('/')[1])) {
-            return true;
-          }
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
           return true;
         } else if (menu_item === '/seed/data' && !_.includes($location.absUrl(), '#')) {
