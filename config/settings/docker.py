@@ -113,7 +113,7 @@ LOGGING = {
 }
 
 if 'default' in SECRET_KEY:
-    print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECKET_KEY in local_untracked or env var")
+    print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import raven
