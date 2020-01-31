@@ -65,6 +65,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.$on('organization_list_updated', function () {
         init();
       });
+
       $scope.is_active = function (menu_item) {
         if ($state.current.url !== '^') {
           $location.search($location.path(), $state.current.url);
@@ -105,7 +106,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
         $scope.wide_controller = !isNavExpanded;
-      }
+      };
 
       // returns true if menu toggle has never been clicked, i.e. first run, else returns false
       $scope.menu_toggle_has_never_been_clicked = function () {
