@@ -67,7 +67,7 @@ angular.module('BE.seed.controller.menu', [])
       });
 
       $scope.is_active = function (menu_item) {
-        if ($state.current.url !== '^') {
+        if ($state.current.url.split('/').length > 1) {
           $location.search($location.path(), $state.current.url);
         }
         if($rootScope.stay_on_page && menu_item === '/' + $state.current.url.split('/')[1]) {
