@@ -61,14 +61,25 @@ angular.module('BE.seed.controller.menu', [])
       });
       $scope.$on('app_success', function () {
         $rootScope.route_load_error = false;
-      })
+      });
       $scope.$on('organization_list_updated', function () {
         init();
       });
-
       $scope.is_active = function (menu_item) {
-        if (menu_item === $location.path()) {
+        if($rootScope.stay_on_page && menu_item === '/' + $state.current.url.split('/')[1]) {
           return true;
+        } else if (menu_item === $location.path()) {
+          if ($rootScope.stay_on_page) {
+            return false;
+          } else if (!$rootScope.stay_on_page && menu_item === ('/' + $state.current.url.split('/')[1])) {
+            return true;
+          }
+          return true;
+        } else if ($rootScope.stay_on_page) {
+          if(menu_item === ('/' + $state.current.url.split('/')[1])) {
+            return true;
+          } else if (('/' + $state.current.url.split('/')[1]) === $location.path()) {
+          }
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
           return true;
         } else if (menu_item === '/seed/data' && !_.includes($location.absUrl(), '#')) {
