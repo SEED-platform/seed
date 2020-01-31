@@ -64,12 +64,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       organization
     ) {
       $scope.cycles = cycles.cycles;
-      var cached_cycle = inventory_service.get_last_selected_cycle();
-      if ($scope.cycles.length && cached_cycle == null){
-        $scope.selectedCycle = cycles.cycles[0];
-      } else {
-        $scope.selectedCycle = cached_cycle;
-      }
+      var cached_cycle = inventory_service.get_last_cycle();
+      $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
+
       $scope.step_10_style = 'info';
       $scope.step_10_title = 'load more data';
       $scope.step = {
@@ -147,7 +144,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
       $scope.cycleChanged = function (selected) {
         $scope.selectedCycle = selected;
-        inventory_service.save_last_selected_cycle(selected);
+        inventory_service.save_last_cycle(selected.id);
       };
 
       /**
