@@ -51,6 +51,7 @@ angular.module('BE.seed.controller.column_settings', [])
       var diff = {};
 
       $scope.filter_params = {};
+      $scope.btnText = 'Expand Help';
 
       $scope.data_types = [
         {id: 'None', label: ''},
@@ -66,6 +67,14 @@ angular.module('BE.seed.controller.column_settings', [])
         {id: 'geometry', label: $translate.instant('Geometry')}
       ];
 
+      $scope.changeText = function(btnText) {
+        console.log(btnText);
+        if(btnText === 'Expand Help'){
+          $scope.btnText = 'Collapse Help' ;
+        } else {
+          $scope.btnText = 'Expand Help';
+        }
+      }
       $scope.change_merge_protection = function (column) {
         column.merge_protection = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
         $scope.setModified();

@@ -26,61 +26,56 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_tab_container">
-            <uib-tabset>
-                <uib-tab heading="{$:: 'Modify Column Settings' | translate $}" active="tabs.one_active">
-                    <div class="section_content with_padding" style="margin-bottom:15px;">
-                        <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
-                        <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
-                        <table style="">
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Display Name</td>
-                                <td style="padding-bottom: 20px;"><li translate>COL_CHANGE_DISPLAY</li></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold">Column Name</td>
-                                <td><li translate>COL_CHANGE_NAME</li></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td style="padding-bottom: 20px;"><li translate>COL_CHANGE_NAME_EXT</li></td>
-                            </tr>
+        <div class="section_content with_padding" style="padding: 15px;">
+            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click="changeText(btnText)">{$ btnText $}</button>
+        </div>
+        <div class="section_content with_padding" style="margin-bottom:15px;"  id="instruction" class="collapse">
+            <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
+            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+            <table style="">
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Display Name</td>
+                    <td style="padding-bottom: 20px;"><li translate>COL_CHANGE_DISPLAY</li></td>
+                </tr>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold">Column Name</td>
+                    <td><li translate>COL_CHANGE_NAME</li></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="padding-bottom: 20px;"><li translate>COL_CHANGE_NAME_EXT</li></td>
+                </tr>
 
 
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold">Geocoding Order</td>
-                                <td><li translate>COL_GEOCODING_TOGGLE</li></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td style="padding-bottom: 20px;"><li translate>COL_GEOCODING_TOGGLE_EXT</li></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Rename</td>
-                                <td style="padding-bottom: 20px;"><li translate>RENAME_SYS_LEVEL_COL</li></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Data Type</td>
-                                <td style="padding-bottom: 20px;"><li translate>EXTRA_DATA_COL_TYPE_CHANGE</li></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Merge Protection</td>
-                                <td style="padding-bottom: 20px;"><li translate>MERGE_PROTECTION_EXPLANATION</li></td>
-                            </tr>
-                            <tr>
-                                <td style="padding-right: 10px; font-weight: bold">Match Criteria</td>
-                                <td><li translate>COL_MATCHING_CRITERIA_TOGGLE</li></td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td style="padding-bottom: 20px; font-weight: 600;"><li translate>MATCHING_CRITERIA_PREVIEW_WARNING</li></td>
-                            </tr>
-
-                        </table>
-                    </div>
-                </uib-tab>
-                <uib-tab class="pull-right" heading="{$:: 'Collapse Help' | translate $}"></uib-tab>
-            </uib-tabset>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold">Geocoding Order</td>
+                    <td><li translate>COL_GEOCODING_TOGGLE</li></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="padding-bottom: 20px;"><li translate>COL_GEOCODING_TOGGLE_EXT</li></td>
+                </tr>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Rename</td>
+                    <td style="padding-bottom: 20px;"><li translate>RENAME_SYS_LEVEL_COL</li></td>
+                </tr>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Data Type</td>
+                    <td style="padding-bottom: 20px;"><li translate>EXTRA_DATA_COL_TYPE_CHANGE</li></td>
+                </tr>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold;padding-bottom: 20px;">Merge Protection</td>
+                    <td style="padding-bottom: 20px;"><li translate>MERGE_PROTECTION_EXPLANATION</li></td>
+                </tr>
+                <tr>
+                    <td style="padding-right: 10px; font-weight: bold">Match Criteria</td>
+                    <td><li translate>COL_MATCHING_CRITERIA_TOGGLE</li></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="padding-bottom: 20px; font-weight: 600;"><li translate>MATCHING_CRITERIA_PREVIEW_WARNING</li></td>
+                </tr>
+            </table>
         </div>
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="data-quality-tab-container">
