@@ -25,7 +25,7 @@
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>
@@ -34,7 +34,9 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <h3 translate>Modifying Data Quality Rules</h3>
-            <p translate>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.</p>
+            <p ng-bind-html-unsafe>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
+            Restore Default Rules: reset only default rules.<br>
+            Reset All Rules: delete all rules and reinitialize the default set of rules</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
@@ -66,7 +68,7 @@
                         </tr>
                     </thead>
                     <tbody ng-repeat="field in sortedRuleGroups()">
-                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
+                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }" ng-click="change_rules()">
                             <td class="check is_aligned_center" ng-click="rule.rule_type = 1; rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
@@ -139,7 +141,7 @@
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated"></i>
                 </button>
             </div>

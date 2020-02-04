@@ -76,7 +76,18 @@ angular.module('BE.seed.controller.column_settings', [])
         }
       }
       $scope.change_merge_protection = function (column) {
-        column.merge_protection = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
+        // Keep geocoding results columns aligned in merge protection settings
+        var change_to = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
+
+        var geocoding_results_columns = ['geocoding_confidence', 'longitude', 'latitude'];
+        if (_.includes(geocoding_results_columns, column.column_name) ) {
+          geocoding_results_columns.forEach(function (geo_col) {
+            _.find($scope.columns, { 'column_name': geo_col }).merge_protection = change_to;
+          })
+        } else {
+          column.merge_protection = change_to;
+        }
+
         $scope.setModified();
       };
 

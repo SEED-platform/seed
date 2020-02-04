@@ -182,16 +182,16 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       $scope.save_preset = function () {
         // If applicable, convert display names to db names for saving
-        var preset_id = $scope.current_preset.id;
-        var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
+        _.forEach($scope.current_preset.mappings, mapping_display_to_db);
+        var updated_data = {mappings: $scope.current_preset.mappings};
 
-        _.forEach($scope.presets[preset_index].mappings, mapping_display_to_db);
-        var updated_data = {mappings: $scope.presets[preset_index].mappings};
-
-        column_mappings_service.update_column_mapping_preset($scope.org.id, preset_id, updated_data).then(function (result) {
+        column_mappings_service.update_column_mapping_preset($scope.org.id, $scope.current_preset.id, updated_data).then(function (result) {
           // If applicable, convert db names back to display names for rendering
-          _.forEach($scope.presets[preset_index].mappings, mapping_db_to_display);
-          $scope.presets[preset_index].updated = result.data.updated;
+          _.forEach($scope.current_preset.mappings, mapping_db_to_display);
+          $scope.current_preset.updated = result.data.updated;
+
+          var preset_id = $scope.current_preset.id;
+          _.find($scope.presets, ['id', preset_id]).mappings = $scope.current_preset.mappings;
 
           $scope.changes_possible = false;
           Notification.primary('Saved ' + $scope.current_preset.name);

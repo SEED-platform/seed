@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     'auth_payload',
     'labels_payload',
     'data_quality_service',
+    'modified_service',
     'organization_service',
     'label_service',
     'spinner_utility',
@@ -33,6 +34,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       auth_payload,
       labels_payload,
       data_quality_service,
+      modified_service,
       organization_service,
       label_service,
       spinner_utility,
@@ -115,13 +117,39 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
       loadRules(data_quality_rules_payload);
 
+      $scope.isModified = function() {
+        return modified_service.isModified();
+      };
+      var originalRules = angular.copy(data_quality_rules_payload.rules);
+      $scope.original = originalRules;
+      $scope.change_rules = function() {
+        $scope.setModified();
+      };
+      $scope.setModified = function () {
+        $scope.rules_updated = false;
+        $scope.rules_reset = false;
+        $scope.defaults_restored = false;
+        var cleanRules = angular.copy($scope.ruleGroups);
+        _.each(originalRules, function (rules, index) {
+          $scope.rules = rules;
+          Object.keys(rules).forEach(function (key) {
+            _.reduce(cleanRules[index][rules[key].field], function (result, value) {
+              return _.isEqual(value, rules[key]) ? modified_service.setModified() : modified_service.resetModified();
+            }, []);
+          });
+        });
+      };
+
       // Restores the default rules
       $scope.restore_defaults = function () {
         spinner_utility.show();
         $scope.defaults_restored = false;
+        $scope.rules_reset = false;
         data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
           loadRules(rules);
           $scope.defaults_restored = true;
+          $scope.rules_updated = false;
+          modified_service.resetModified();
         }, function (data) {
           $scope.$emit('app_error', data);
         }).finally(function () {
@@ -131,21 +159,28 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Reset all rules
       $scope.reset_all_rules = function () {
-        spinner_utility.show();
-        $scope.rules_reset = false;
-        data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
-          loadRules(rules);
-          $scope.rules_reset = true;
-        }, function (data) {
-          $scope.$emit('app_error', data);
-        }).finally(function () {
-          spinner_utility.hide();
+        return modified_service.showResetDialog().then(function () {
+          spinner_utility.show();
+          $scope.rules_reset = false;
+          $scope.defaults_restored = false;
+          $scope.rules_updated = false;
+          return data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
+            loadRules(rules);
+            $scope.rules_reset = true;
+            modified_service.resetModified();
+          }, function (data) {
+            $scope.$emit('app_error', data);
+          }).finally(function () {
+            spinner_utility.hide();
+          });
         });
       };
 
       // Saves the configured rules
       $scope.save_settings = function () {
         $scope.rules_updated = false;
+        $scope.defaults_restored = false;
+        $scope.rules_reset = false;
         var rules = {
           properties: [],
           taxlots: []
@@ -197,6 +232,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
           loadRules(rules);
           $scope.rules_updated = true;
+          modified_service.resetModified();
         }).then(function (data) {
           $scope.$emit('app_success', data);
         }).catch(function (data) {
@@ -304,6 +340,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
+        $scope.change_rules();
       };
 
       // create label and assign to that rule
@@ -329,7 +366,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // set rule as deleted.
       $scope.delete_rule = function (rule, index) {
-        if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) delete $scope.ruleGroups[$scope.inventory_type][rule.field];
+        if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
+          delete $scope.ruleGroups[$scope.inventory_type][rule.field];
+          $scope.change_rules();
+        }
         else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
       };
 
