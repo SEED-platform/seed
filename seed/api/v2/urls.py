@@ -126,6 +126,11 @@ urlpatterns = [
         name='testviewarg'
     ),
     url(
+        r'^export_reports_data/$',
+        Report.as_view({'get': 'export_reports_data'}),
+        name='export_reports_data'
+    ),
+    url(
         r'^get_property_report_data/$',
         Report.as_view({'get': 'get_property_report_data'}),
         name='property_report_data'

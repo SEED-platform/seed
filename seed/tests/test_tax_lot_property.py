@@ -24,6 +24,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from xlrd import open_workbook
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):
@@ -166,19 +167,18 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
                 'inventory_type', 'properties'
             ),
             data=json.dumps({'columns': columns, 'export_type': 'xlsx'}),
-            content_type='application/x-www-form-urlencoded'
+            content_type='application/json'
         )
 
         # parse the content as array
-        data = response.content.decode('utf-8').split('\n')
+        wb = open_workbook(file_contents=response.content)
 
-        self.assertTrue('Address Line 1' in data[0].split(','))
-        self.assertTrue('Property Labels\r' in data[0].split(','))
+        data = [row.value for row in wb.sheet_by_index(0).row(0)]
 
-        self.assertEqual(len(data), 53)
+        self.assertTrue('Address Line 1' in data)
+        self.assertTrue('Property Labels' in data)
 
-        # last row should be blank
-        self.assertEqual(data[52], '')
+        self.assertEqual(len([r for r in wb.sheet_by_index(0).get_rows()]), 52)
 
     def test_json_export(self):
         """Test to make sure get_related returns the fields"""

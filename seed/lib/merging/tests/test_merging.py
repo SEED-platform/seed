@@ -16,6 +16,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeTaxLotViewFactory
 )
+from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -74,10 +75,12 @@ class StateFieldsTest(TestCase):
                     ('energy_alerts', 'energy_alerts'),
                     ('energy_score', 'energy_score'),
                     ('generation_date', 'generation_date'),
+                    ('geocoding_confidence', 'geocoding_confidence'),
                     ('gross_floor_area', 'gross_floor_area'),
                     ('home_energy_score_id', 'home_energy_score_id'),
                     ('jurisdiction_property_id', 'jurisdiction_property_id'),
                     ('latitude', 'latitude'),
+                    ('long_lat', 'long_lat'),
                     ('longitude', 'longitude'),
                     ('lot_number', 'lot_number'),
                     ('occupied_floor_area', 'occupied_floor_area'),
@@ -120,8 +123,10 @@ class StateFieldsTest(TestCase):
             ('city', 'city'),
             ('custom_id_1', 'custom_id_1'),
             ('district', 'district'),
+            ('geocoding_confidence', 'geocoding_confidence'),
             ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
             ('latitude', 'latitude'),
+            ('long_lat', 'long_lat'),
             ('longitude', 'longitude'),
             ('number_properties', 'number_properties'),
             ('postal_code', 'postal_code'),
@@ -150,6 +155,167 @@ class StateFieldsTest(TestCase):
         self.assertEqual(result.address_line_1, 'original_address')
         self.assertEqual(result.address_line_2, 'new')
         self.assertEqual(result.extra_data['field_1'], 'orig_value')
+
+    def test_merge_geocoding_results_no_merge_protection(self):
+        """
+        When merging records that have geocoding results, if none of the
+        geocoding results columns have merge protection but both records have
+        some form of geocoding results, completely "take" the results from
+        the "new" state.
+        """
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            latitude=39.765251,
+            longitude=-104.986138,
+            geocoding_confidence='High (P1AAA)',
+            long_lat='POINT (-104.986138 39.765251)',
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1='new_address',
+            geocoding_confidence='Low - check address (Z1XAA)',
+        )
+
+        # Column priorities while purposely leaving out long_lat (as it's not available to users)
+        column_priorities = {
+            'address_line_1': 'Favor New',
+            'geocoding_confidence': 'Favor New',
+            'latitude': 'Favor New',
+            'longitude': 'Favor New',
+            'extra_data': {}
+        }
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities)
+        self.assertEqual(result.geocoding_confidence, 'Low - check address (Z1XAA)')
+        self.assertIsNone(result.latitude)
+        self.assertIsNone(result.longitude)
+        self.assertIsNone(result.long_lat)
+
+    def test_merge_geocoding_results_with_merge_protection(self):
+        """
+        When merging records that have geocoding results, if any of the
+        geocoding results columns have merge protection, and both records have
+        some form of geocoding results, completely "take" the results from
+        the "existing" state.
+        """
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            latitude=39.765251,
+            longitude=-104.986138,
+            geocoding_confidence='High (P1AAA)',
+            long_lat='POINT (-104.986138 39.765251)',
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1='new_address',
+            geocoding_confidence='Low - check address (Z1XAA)',
+        )
+
+        # Column priorities while purposely leaving out long_lat (as it's not available to users)
+        column_priorities = {
+            'address_line_1': 'Favor New',
+            'geocoding_confidence': 'Favor Existing',
+            'latitude': 'Favor New',
+            'longitude': 'Favor New',
+            'extra_data': {}
+        }
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities)
+        self.assertEqual(result.geocoding_confidence, 'High (P1AAA)')
+        self.assertEqual(result.latitude, 39.765251)
+        self.assertEqual(result.longitude, -104.986138)
+        self.assertEqual(long_lat_wkt(result), 'POINT (-104.986138 39.765251)')
+
+    def test_merge_geocoding_results_unpopulated_existing_state_ignores_merge_protections(self):
+        """
+        When merging records with geocoding columns that have merge protection
+        active, if only one record has geocoding results, always take the
+        geocoding results from the one record, regardless of merge
+        protection settings.
+        """
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1='new_address',
+            geocoding_confidence='Low - check address (Z1XAA)',
+        )
+
+        # Column priorities while purposely leaving out long_lat (as it's not available to users)
+        column_priorities = {
+            'address_line_1': 'Favor New',
+            'geocoding_confidence': 'Favor Existing',
+            'latitude': 'Favor Existing',
+            'longitude': 'Favor Existing',
+            'extra_data': {}
+        }
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities)
+        self.assertEqual(result.geocoding_confidence, 'Low - check address (Z1XAA)')
+        self.assertIsNone(result.latitude)
+        self.assertIsNone(result.longitude)
+        self.assertIsNone(result.long_lat)
+
+    def test_merge_geocoding_results_no_merge_protection_unpopulated_existing_state(self):
+        """
+        When merging records with geocoding columns that have merge protection
+        active, if only one record has geocoding results, always take the
+        geocoding results from the one record, regardless of merge
+        protection settings.
+        """
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            geocoding_confidence='Low - check address (Z1XAA)',
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1='new_address',
+        )
+
+        # Column priorities while purposely leaving out long_lat (as it's not available to users)
+        column_priorities = {
+            'address_line_1': 'Favor New',
+            'geocoding_confidence': 'Favor New',
+            'latitude': 'Favor New',
+            'longitude': 'Favor New',
+            'extra_data': {}
+        }
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities)
+        self.assertEqual(result.geocoding_confidence, 'Low - check address (Z1XAA)')
+        self.assertIsNone(result.latitude)
+        self.assertIsNone(result.longitude)
+        self.assertIsNone(result.long_lat)
+
+    def test_merge_geocoding_ignore_merge_protection(self):
+        """
+        When merging records with geocoding columns including the
+        ignore_merge_protection flag as True always takes the "new" state's
+        geocoding results regardless of geocoding columns merge protection setting.
+        """
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            geocoding_confidence='Low - check address (Z1XAA)',
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1='new_address',
+            latitude=39.765251,
+            longitude=-104.986138,
+            geocoding_confidence='High (P1AAA)',
+            long_lat='POINT (-104.986138 39.765251)',
+        )
+
+        # Column priorities while purposely leaving out long_lat (as it's not available to users)
+        column_priorities = {
+            'address_line_1': 'Favor New',
+            'geocoding_confidence': 'Favor Existing',
+            'latitude': 'Favor New',
+            'longitude': 'Favor New',
+            'extra_data': {}
+        }
+
+        result = merging.merge_state(pv1.state, pv1.state, pv2.state, column_priorities, True)
+        self.assertEqual(result.geocoding_confidence, 'High (P1AAA)')
+        self.assertEqual(result.latitude, 39.765251)
+        self.assertEqual(result.longitude, -104.986138)
+        self.assertEqual(long_lat_wkt(result), 'POINT (-104.986138 39.765251)')
 
     def test_merge_extra_data(self):
         ed1 = {'field_1': 'orig_value_1', 'field_2': 'orig_value_1', 'field_3': 'only_in_ed1'}
