@@ -300,8 +300,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var required = !rule.required;
         _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
           currentRule.required = required;
-          if (required) currentRule.not_null = true;
-          else currentRule.not_null = false;
+          currentRule.not_null = required;
         });
       };
 
