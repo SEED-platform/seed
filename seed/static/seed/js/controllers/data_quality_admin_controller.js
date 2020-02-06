@@ -303,19 +303,26 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Keep "required field" consistent for identical fields
       $scope.change_required = function (rule) {
+        /*
         var required = !rule.required;
         _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
           currentRule.required = required;
           currentRule.not_null = required;
         });
+        */
+        rule.required = !rule.required;
+        rule.not_null = rule.required;
       };
 
       // Keep "not null" consistent for identical fields
       $scope.change_not_null = function (rule) {
+        /*
         var not_null = !rule.not_null;
         _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
           currentRule.not_null = not_null;
         });
+        */
+        rule.not_null = !rule.not_null;
       };
 
       $scope.removeLabelFromRule = function (rule) {
