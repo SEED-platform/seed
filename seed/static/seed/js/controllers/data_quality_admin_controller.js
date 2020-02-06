@@ -131,7 +131,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.defaults_restored = false;
         var cleanRules = angular.copy($scope.ruleGroups);
         _.each(originalRules, function (rules, index) {
-          $scope.rules = rules;
           Object.keys(rules).forEach(function (key) {
             _.reduce(cleanRules[index][rules[key].field], function (result, value) {
               return _.isEqual(value, rules[key]) ? modified_service.setModified() : modified_service.resetModified();
@@ -198,8 +197,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 rule_type: rule.rule_type,
                 required: rule.required,
                 not_null: rule.not_null,
-                min: rule.min || null,
-                max: rule.max || null,
+                min: rule.min,
+                max: rule.max,
                 text_match: rule.text_match,
                 severity: rule.severity,
                 units: rule.units,
@@ -221,6 +220,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
                 if (match) {
                   r.label = match.id;
+                }
+              }
+              if(!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
+                if (r.max < r.min) {
+                  var min = r.min;
+                  r.min = r.max;
+                  r.max = min;
                 }
               }
               rules[inventory_type].push(r);
