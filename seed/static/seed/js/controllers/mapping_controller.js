@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.mapping', [])
       Notification
     ) {
       $scope.presets = [
-        {id: 0, mappings: [], name: "<None selected>"},
+        {id: 0, mappings: [], name: "<None selected>"}
       ].concat(column_mapping_presets_payload);
 
       // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
@@ -120,7 +120,7 @@ angular.module('BE.seed.controller.mapping', [])
 
           return preset_mapping_data;
         }, []);
-      }
+      };
 
       $scope.new_preset = function () {
         var preset_mapping_data = preset_mappings_from_working_mappings();
@@ -131,7 +131,7 @@ angular.module('BE.seed.controller.mapping', [])
           resolve: {
             action: _.constant('new'),
             data: _.constant({mappings: preset_mapping_data}),
-            org_id: _.constant(user_service.get_organization().id),
+            org_id: _.constant(user_service.get_organization().id)
           }
         });
 
@@ -345,7 +345,7 @@ angular.module('BE.seed.controller.mapping', [])
             raw_data: _.map(first_five_rows_payload.first_five_rows, name),
             suggestion: suggestion.to_field,
             suggestion_column_name: suggestion.to_field,
-            suggestion_table_name: suggestion.to_table_name,
+            suggestion_table_name: suggestion.to_table_name
           };
 
           var match;
@@ -732,7 +732,7 @@ angular.module('BE.seed.controller.mapping', [])
           var mappable_column = _.find(
             $scope.mappable_property_columns.concat($scope.mappable_taxlot_columns),
             {column_name: cached_col.to_field, table_name: cached_col.to_table_name}
-          )
+          );
           if (mappable_column) {
             col.suggestion = mappable_column.display_name;
           } else {
