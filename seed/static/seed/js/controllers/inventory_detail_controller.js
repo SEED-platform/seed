@@ -199,7 +199,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
         if (column.is_extra_data) {
           uniq_column_values = _.uniqBy(states, function (state) {
-            return state.extra_data[column.column_name];
+            // Normalize missing column_name keys returning undefined to return null.
+            return state.extra_data[column.column_name] || null;
           });
         } else {
           uniq_column_values = _.uniqBy(states, column.column_name);
