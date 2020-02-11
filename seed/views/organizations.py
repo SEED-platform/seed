@@ -883,7 +883,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             annotate(column_names=ArrayAgg('column_name')).
             values_list('table_name', 'column_names')
         )
-
+        print('matching criteria column names: ', matching_criteria_column_names)
         return JsonResponse(matching_criteria_column_names)
 
     @api_endpoint_class

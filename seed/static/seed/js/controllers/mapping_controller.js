@@ -197,6 +197,8 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
 
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
+        console.log('mappable: ', $scope.mappable_property_columns);
+        console.log('col_name: ', column_name);
         var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
         return {
           column_name: column_name,
@@ -471,6 +473,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       var required_property_fields = [];
       _.forEach(matching_criteria_columns_payload.PropertyState, function (column) {
+        console.log('required matching: ', column);
         required_property_fields.push({column_name: column.column_name, inventory_type: 'PropertyState'});
       });
       /*

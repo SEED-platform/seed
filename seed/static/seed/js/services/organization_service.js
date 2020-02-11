@@ -169,6 +169,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       }).then(function (response) {
         return response.data;
       });
+
     };
 
     organization_factory.geocoding_columns = function (org_id) {
