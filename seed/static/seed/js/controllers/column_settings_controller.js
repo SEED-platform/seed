@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.column_settings', [])
       var diff = {};
 
       $scope.filter_params = {};
-      $scope.btnText = 'Expand Help';
+      $scope.btnText = 'Collapse Help';
 
       $scope.data_types = [
         {id: 'None', label: ''},
@@ -68,10 +68,10 @@ angular.module('BE.seed.controller.column_settings', [])
       ];
 
       $scope.changeText = function(btnText) {
-        if(btnText === 'Expand Help'){
-          $scope.btnText = 'Collapse Help' ;
+        if(btnText === 'Collapse Help'){
+          $scope.btnText = 'Expand Help' ;
         } else {
-          $scope.btnText = 'Expand Help';
+          $scope.btnText = 'Collapse Help';
         }
       };
       $scope.change_merge_protection = function (column) {
