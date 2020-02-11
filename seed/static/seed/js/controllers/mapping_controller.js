@@ -182,7 +182,6 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       $scope.import_file = import_file_payload.import_file;
-      console.log($scope.import_file);
       $scope.import_file.matching_finished = false;
       $scope.suggested_mappings = suggested_mappings_payload.suggested_column_mappings;
 
@@ -721,13 +720,10 @@ angular.module('BE.seed.controller.mapping', [])
         var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
         _.forEach($scope.mappings, function (col) {
           var cached_col = _.find(cached_mappings, {from_field: col.name})
-          if (cached_col == null) {
-            cached_col ='';
-          } else {
-            col.suggestion_column_name = cached_col.to_field;
-            col.suggestion_table_name = cached_col.to_table_name;
-            col.from_units = cached_col.from_units;
-          }
+          col.suggestion_column_name = cached_col.to_field;
+          col.suggestion_table_name = cached_col.to_table_name;
+          col.from_units = cached_col.from_units;
+
           // If available, use display_name, else use raw field name.
           var mappable_column = _.find(
             $scope.mappable_property_columns.concat($scope.mappable_taxlot_columns),
