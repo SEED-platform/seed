@@ -196,9 +196,10 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
 
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
-        console.log('mappable: ', $scope.mappable_property_columns);
-        console.log('col_name: ', column_name);
-        var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
+        var display_name = '';
+        if (_.find($scope.mappable_property_columns, {column_name: column_name})) {
+          display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
+        }
         return {
           column_name: column_name,
           display_name: display_name
@@ -472,7 +473,6 @@ angular.module('BE.seed.controller.mapping', [])
 
       var required_property_fields = [];
       _.forEach(matching_criteria_columns_payload.PropertyState, function (column) {
-        console.log('required matching: ', column);
         required_property_fields.push({column_name: column.column_name, inventory_type: 'PropertyState'});
       });
       /*
@@ -722,7 +722,7 @@ angular.module('BE.seed.controller.mapping', [])
       var display_cached_column_mappings = function () {
         var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
         _.forEach($scope.mappings, function (col) {
-          var cached_col = _.find(cached_mappings, {from_field: col.name})
+          var cached_col = _.find(cached_mappings, {from_field: col.name});
           col.suggestion_column_name = cached_col.to_field;
           col.suggestion_table_name = cached_col.to_table_name;
           col.from_units = cached_col.from_units;
