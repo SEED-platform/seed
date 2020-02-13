@@ -714,14 +714,10 @@ class DataQualityCheck(models.Model):
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     elif rule.not_null:
                         if rule.status_label is None:
-                            return JsonResponse({
-                                'status': 'error',
-                                'message': 'Label must be assigned when using Valid Data Severity.'
-                            }, status=status.HTTP_400_BAD_REQUEST)
-                        else:
-                            if rule.severity == Rule.SEVERITY_ERROR:
-                                self.add_result_is_null(row.id, rule, display_name, value)
-                                self.update_status_label(label, rule, linked_id, row.id)
+                            print('place holder: to return missing label error')
+                        if rule.severity == Rule.SEVERITY_ERROR:
+                            self.add_result_is_null(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
