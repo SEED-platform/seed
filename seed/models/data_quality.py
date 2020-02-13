@@ -713,15 +713,15 @@ class DataQualityCheck(models.Model):
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     elif rule.not_null:
-                        self.add_result_is_null(row.id, rule, display_name, value)
-                        if rule.status_label is None or rule.status_label == '':
+                        if rule.status_label is None:
                             return JsonResponse({
                                 'status': 'error',
                                 'message': 'Label must be assigned when using Valid Data Severity.'
                             }, status=status.HTTP_400_BAD_REQUEST)
                         else:
-                            self.update_status_label(label, rule, linked_id, row.id)
-                            break
+                            if rule.severity == Rule.SEVERITY_ERROR:
+                                self.add_result_is_null(row.id, rule, display_name, value)
+                                self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
@@ -767,6 +767,7 @@ class DataQualityCheck(models.Model):
                     try:
                         if rule.minimum_valid(value) and rule.maximum_valid(value):
                             if rule.severity == Rule.SEVERITY_VALID:
+                                '''
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.results[row.id]['data_quality_results'].append(
                                     {
@@ -779,6 +780,7 @@ class DataQualityCheck(models.Model):
                                         'severity': rule.get_severity_display(),
                                     }
                                 )
+                                '''
                                 label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)
@@ -1053,8 +1055,8 @@ class DataQualityCheck(models.Model):
                             taxlot_parent_org_id
                         )
                     )
-
-            self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
+            if rule.severity != Rule.SEVERITY_VALID:
+                self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
 
             return True
 
