@@ -759,6 +759,7 @@ class DataQualityCheck(models.Model):
                         if rule.minimum_valid(value) and rule.maximum_valid(value):
                             if rule.severity == Rule.SEVERITY_VALID:
                                 '''
+
                                 s_min, s_max, s_value = rule.format_strings(value)
                                 self.results[row.id]['data_quality_results'].append(
                                     {
@@ -1046,6 +1047,11 @@ class DataQualityCheck(models.Model):
                             taxlot_parent_org_id
                         )
                     )
+
+            if 'is null' in self.results[row_id]['data_quality_results'][-1]['detailed_message']:
+                # try to find actual value;
+                print(self.results[row_id]['data_quality_results'][-1]['detailed_message'])
+                print(rule.field, rule.status_label.name)
 
             self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
 
