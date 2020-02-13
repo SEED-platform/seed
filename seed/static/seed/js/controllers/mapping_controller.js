@@ -56,9 +56,8 @@ angular.module('BE.seed.controller.mapping', [])
       i18nService,
       Notification
     ) {
-
       $scope.presets = [
-        {id: 0, mappings: [], name: "<None selected>"},
+        {id: 0, mappings: [], name: "<None selected>"}
       ].concat(column_mapping_presets_payload);
 
       // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
@@ -116,12 +115,12 @@ angular.module('BE.seed.controller.mapping', [])
             from_field: mapping.name,
             from_units: mapping.from_units,
             to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-            to_table_name: mapping.suggestion_table_name,
+            to_table_name: mapping.suggestion_table_name
           });
 
           return preset_mapping_data;
         }, []);
-      }
+      };
 
       $scope.new_preset = function () {
         var preset_mapping_data = preset_mappings_from_working_mappings();
@@ -132,7 +131,7 @@ angular.module('BE.seed.controller.mapping', [])
           resolve: {
             action: _.constant('new'),
             data: _.constant({mappings: preset_mapping_data}),
-            org_id: _.constant(user_service.get_organization().id),
+            org_id: _.constant(user_service.get_organization().id)
           }
         });
 
@@ -345,7 +344,7 @@ angular.module('BE.seed.controller.mapping', [])
             raw_data: _.map(first_five_rows_payload.first_five_rows, name),
             suggestion: suggestion.to_field,
             suggestion_column_name: suggestion.to_field,
-            suggestion_table_name: suggestion.to_table_name,
+            suggestion_table_name: suggestion.to_table_name
           };
 
           var match;
@@ -720,15 +719,16 @@ angular.module('BE.seed.controller.mapping', [])
       var display_cached_column_mappings = function () {
         var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
         _.forEach($scope.mappings, function (col) {
-          var cached_col = _.find(cached_mappings, {from_field: col.name, to_table_name: col.suggestion_table_name})
+          var cached_col = _.find(cached_mappings, {from_field: col.name})
           col.suggestion_column_name = cached_col.to_field;
+          col.suggestion_table_name = cached_col.to_table_name;
           col.from_units = cached_col.from_units;
 
           // If available, use display_name, else use raw field name.
           var mappable_column = _.find(
             $scope.mappable_property_columns.concat($scope.mappable_taxlot_columns),
             {column_name: cached_col.to_field, table_name: cached_col.to_table_name}
-          )
+          );
           if (mappable_column) {
             col.suggestion = mappable_column.display_name;
           } else {
@@ -736,7 +736,6 @@ angular.module('BE.seed.controller.mapping', [])
           }
         });
       };
-
       var init = function () {
         $scope.initialize_mappings();
 
