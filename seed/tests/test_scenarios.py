@@ -12,6 +12,7 @@ from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 from seed.models import Scenario, Meter, MeterReading
 
+
 class TestMeasures(DeleteModelsTestCase):
     def setUp(self):
         user_details = {
