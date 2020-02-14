@@ -713,8 +713,6 @@ class DataQualityCheck(models.Model):
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     elif rule.not_null:
-                        if rule.status_label is None:
-                            print('place holder: to return missing label error')
                         if rule.severity == Rule.SEVERITY_ERROR:
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)

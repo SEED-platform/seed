@@ -77,7 +77,14 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         field.static = false;
         field.data_type = 'string';
       });
-
+      $scope.label_missing_error = false;
+      _.forEach($scope.dataQualityResults, function (result) {
+        _.forEach(result.data_quality_results, function (detail) {
+          if (detail.message.includes('is null') && !detail.label) {
+            $scope.label_missing_error = true;
+          }
+        });
+      });
       $scope.sortData = function () {
         var result = originalDataQualityResults.slice().sort(function (a, b) {
           return naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]);

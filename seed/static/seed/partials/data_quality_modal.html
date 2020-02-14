@@ -1,5 +1,10 @@
 <div class="modal-header">
     <h4 class="modal-title" translate>Data Quality Results</h4>
+    <div class="alert warning" ng-show="label_missing_error">
+        <div class="alert alert-danger">
+            {$ ('Missing labels for non-null fields that include null values' | translate) $}
+        </div>
+    </div>
 </div>
 <div class="modal-body" style="padding-bottom: 0;">
     <div ng-switch on="::dataQualityResults.length">
@@ -53,7 +58,7 @@
     </div>
 </div>
 <div class="modal-footer">
-  <!-- TODO: make the ng-href a method that resuts the data and not a hard coded URL -->
+  <!-- TODO: make the ng-href a method that results the data and not a hard coded URL -->
   <a ng-href="/api/v2/data_quality_checks/{$ ::importFileId $}/csv/?organization_id={$ ::orgId $}" download>
     <button type="button" class="btn btn-default" ng-show="::importFileId" translate>Export</button>
   </a>
