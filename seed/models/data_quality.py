@@ -709,11 +709,12 @@ class DataQualityCheck(models.Model):
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
                     # Empty fields
-                    if rule.required:
-                        self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    elif rule.not_null:
-                        if rule.severity != Rule.SEVERITY_VALID:
+                    #if rule.required:
+                    #    self.add_result_missing_and_none(row.id, rule, display_name, value)
+                    #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    if rule.not_null:
+                        if rule.severity != Rule.SEVERITY_VALID and rule.min is None and rule.max is None:
+                            print('what are the results? ', self.results)
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
@@ -980,7 +981,7 @@ class DataQualityCheck(models.Model):
             'value': value,
             'table_name': rule.table_name,
             'message': display_name + ' is missing',
-            'detailed_message': display_name + ' is required and is None',
+            'detailed_message': display_name + ' is required but is None',
             'severity': rule.get_severity_display(),
         })
 
