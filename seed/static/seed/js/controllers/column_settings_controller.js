@@ -51,6 +51,7 @@ angular.module('BE.seed.controller.column_settings', [])
       var diff = {};
 
       $scope.filter_params = {};
+      $scope.btnText = 'Collapse Help';
 
       $scope.data_types = [
         {id: 'None', label: ''},
@@ -66,6 +67,13 @@ angular.module('BE.seed.controller.column_settings', [])
         {id: 'geometry', label: $translate.instant('Geometry')}
       ];
 
+      $scope.changeText = function(btnText) {
+        if(btnText === 'Collapse Help'){
+          $scope.btnText = 'Expand Help' ;
+        } else {
+          $scope.btnText = 'Collapse Help';
+        }
+      };
       $scope.change_merge_protection = function (column) {
         // Keep geocoding results columns aligned in merge protection settings
         var change_to = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
