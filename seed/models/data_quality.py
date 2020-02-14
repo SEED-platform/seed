@@ -714,7 +714,6 @@ class DataQualityCheck(models.Model):
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
                         if rule.severity != Rule.SEVERITY_VALID and rule.min is None and rule.max is None:
-                            print('what are the results? ', self.results)
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
