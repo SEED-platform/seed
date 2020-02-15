@@ -26,22 +26,75 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>MODIFYING_COLUMN_SETTINGS</h3>
+        <div class="section_content with_padding" style="padding: 15px;">
+            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click=changeText(btnText)>{$ btnText $}</button>
+        </div>
+        <div class="section_content with_padding collapse in" style="margin-bottom:15px;" id="instruction">
+            <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
             <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
-            <ul>
-              <li translate>COL_CHANGE_DISPLAY</li>
-              <li translate>COL_GEOCODING_TOGGLE</li>
-              <li translate>RENAME_SYS_LEVEL_COL</li>
-              <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
-              <li translate>COL_MERGE_PROTECTION_TOGGLE</li>
-              <li>
-                  <span translate>COL_MATCHING_CRITERIA_TOGGLE</span>
-                  <p style="font-weight: 600;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</p>
-              </li>
-            </ul>
-            <p translate>GEOCODING_NEEDS_THREE_COLS</p>
-            <p translate>MERGE_PROTECTION_EXPLANATION</p>
+            <table class="column-settings-instructions">
+             <tr>
+                    <td translate>Display Name</td>
+                    <td>
+                        <ul>
+                           <li translate>COL_CHANGE_DISPLAY</li>
+                        </ul>
+                   </td>
+                </tr>
+                <tr>
+                    <td translate>Column Name</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_CHANGE_NAME</li>
+                            <li translate>GEOCODING_NEEDS_THREE_COLS</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Geocoding Order</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_GEOCODING_TOGGLE</li>
+                            <li translate>COL_GEOCODING_TOGGLE_EXT</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Rename</td>
+                    <td>
+                        <ul>
+                            <li translate>RENAME_SYS_LEVEL_COL</li>
+                        </ul>
+                    </td>
+                </tr>
+               <tr>
+                    <td translate>Data Type</td>
+                    <td>
+                        <ul>
+                            <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Merge Protection</td>
+                    <td>
+                       <ul>
+                            <li translate>MERGE_PROTECTION_EXPLANATION</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Match Criteria</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+                            <li style="font-weight: bold;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="section_content with_padding" style="margin-bottom:15px;">
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">

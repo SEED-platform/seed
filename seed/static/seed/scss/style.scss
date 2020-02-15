@@ -3505,3 +3505,13 @@ $pairedCellWidth: 60px;
   justify-content: center;
   align-items: center;
 }
+.column-settings-instructions {
+  td:first-child {
+    font-weight: bold;
+    vertical-align: top;
+    min-width: 110px;
+  }
+  td:last-child {
+    padding-bottom: 5px;
+  }
+}
