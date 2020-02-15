@@ -334,10 +334,19 @@ msgid "Close Preview"
 msgstr "Close Preview"
 
 msgid "COL_CHANGE_DISPLAY"
-msgstr "Change the display name of a column"
+msgstr "Change the display name (that appears throughout the program) of a column. This is user-defined and can be any value (?)"
+
+msgid "COL_CHANGE_NAME"
+msgstr "Specifies the underlying field name represented by the Display Name. These field names are not user defined, but are generated from imported user files as well as program-defined fields."
+
+msgid "COL_CHANGE_NAME_EXT"
+msgstr "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section."
 
 msgid "COL_GEOCODING_TOGGLE"
-msgstr "Toggle geocoding involvement and, if enabled, change order of how column values are concatenated to construct a full address"
+msgstr "Check the appropriate fields, as well as their order for the program to concatenate a full address, which SEED will use to generate latitude and longitude values for each record"
+
+msgid "COL_GEOCODING_TOGGLE_EXT"
+msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
 
 msgid "COL_MAP_PRESET_IMPORT_ADVICE"
 msgstr "Column Mapping Presets can be used to help you easily and consistently map your data. Note that file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used."
@@ -364,10 +373,10 @@ msgid "COL_MAP_PRESET_MAPPING_TYPING"
 msgstr "SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes."
 
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
-msgstr "For non-extra_data columns, toggle whether the column is matching criteria"
+msgstr "Checking this box for a field will allow it to be used as a matching field."
 
 msgid "COL_MERGE_PROTECTION_TOGGLE"
-msgstr "Toggle merge protection for specific columns"
+msgstr "Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data."
 
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
@@ -888,7 +897,7 @@ msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
 
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
-msgstr "Specify the data type of extra data columns"
+msgstr "For “extra data” fields, this allows the user to set the type, such as Text, Number, Date, etc."
 
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
@@ -1966,7 +1975,7 @@ msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
 
 msgid "RENAME_SYS_LEVEL_COL"
-msgstr "Rename \"Column Name\", which specifies the underlying, system-level column to use"
+msgstr "Rename allows users to change the name of the underlying field shown in Column Name / Field Name. Renaming a field means that field will be changed in all the data for the organization."
 
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
