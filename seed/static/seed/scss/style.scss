@@ -2032,15 +2032,28 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     background-color: white;
   }
 
-  tbody td:nth-child(2) {
+  tbody td:first-child {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
     left: 0;
     background-color: lightblue;
   }
 
-  thead th:nth-child(2) {
+   tbody td:nth-child(2) {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 223px;
+    background-color: lightblue;
+  }
+
+  thead th:first-child {
     left: 0;
+    z-index: 1;
+    background-color: grey;
+  }
+
+  thead th:nth-child(2) {
+    left: 223px;
     z-index: 1;
     background-color: grey;
   }
