@@ -1979,6 +1979,79 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   }
 }
 
+.table-xscroll-unfrozen{
+
+  overflow: auto;
+  height: 600px;
+  margin: 20px 5px;
+  border: 1px solid #F1F1F1;
+
+  table {
+    table-layout: fixed;
+    margin-bottom: 0px;
+  }
+
+  th, td {
+    width: 225px;
+  }
+
+  thead th {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    top: 0;
+    background-color: white;
+  }
+
+  .table_item_detail {
+    border: 0px;
+    margin: 0px;
+  }
+
+}
+
+.table-xscroll-frozen {
+
+  overflow: auto;
+  height: 600px;
+  margin: 20px 5px;
+  border: 1px solid #F1F1F1;
+
+  table {
+    table-layout: fixed;
+    margin-bottom: 0px;
+  }
+
+  th, td {
+    width: 225px;
+  }
+
+  thead th {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    top: 0;
+    background-color: white;
+  }
+
+  tbody td:nth-child(2) {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 0;
+    background-color: lightblue;
+  }
+
+  thead th:nth-child(2) {
+    left: 0;
+    z-index: 1;
+    background-color: grey;
+  }
+
+  .table_item_detail {
+    border: 0px;
+    margin: 0px;
+  }
+
+}
+
 .tbody-striped > tbody:nth-child(odd) td, .tbody-striped > tbody:nth-child(odd) > th {
   background-color: #F9F9F9
 }
@@ -3514,4 +3587,7 @@ $pairedCellWidth: 60px;
   td:last-child {
     padding-bottom: 5px;
   }
+}
+.lock:hover .glyphicon-pushpin {
+  Display: inline;
 }
