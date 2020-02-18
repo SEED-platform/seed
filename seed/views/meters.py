@@ -87,14 +87,14 @@ class MeterViewSet(viewsets.ViewSet):
             else:
                 source = 'PM'
                 source_id = meter.source_id
-            
+
             res.append({
                 'id': meter.id,
                 'type': energy_types[meter.type],
                 'source': source,
                 'source_id': source_id,
             })
-        
+
         return res
 
     @ajax_request_class
