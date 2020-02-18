@@ -2036,7 +2036,7 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
     left: 0px;
-    z-index: 1;
+    z-index: 0;
     background-color: #F9F9F9;
   }
 
@@ -2044,7 +2044,7 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
     left: 223px;
-    z-index: 1;
+    z-index: 0;
     background-color: #F9F9F9;
 
   }
