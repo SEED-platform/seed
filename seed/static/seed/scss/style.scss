@@ -2040,15 +2040,14 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     background-color: #F9F9F9;
   }
 
-   tbody td:nth-child(2) {
+  tbody td:nth-child(2) {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
     left: 223px;
-     z-index: 1;
-     background-color: #F9F9F9;
+    z-index: 1;
+    background-color: #F9F9F9;
 
   }
-
 
   thead th:first-child {
     left: 0px;
