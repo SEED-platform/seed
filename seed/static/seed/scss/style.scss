@@ -2021,7 +2021,7 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     margin-bottom: 0px;
   }
 
-  th, td {
+  thead th, tbody td {
     width: 225px;
   }
 
@@ -2035,19 +2035,23 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   tbody td:first-child {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
-    left: 0;
-    background-color: lightblue;
+    left: 0px;
+    z-index: 1;
+    background-color: #F9F9F9;
   }
 
    tbody td:nth-child(2) {
     position: -webkit-sticky; /* for Safari */
     position: sticky;
     left: 223px;
-    background-color: lightblue;
+     z-index: 1;
+     background-color: #F9F9F9;
+
   }
 
+
   thead th:first-child {
-    left: 0;
+    left: 0px;
     z-index: 1;
     background-color: grey;
   }
