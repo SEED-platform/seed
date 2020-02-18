@@ -368,8 +368,8 @@
                                     <td> {$ scenario.name $}</td>
                                     <td> {$ scenario.temporal_status $}</td>
                                     <td>
-                                        Electricity savings: {$ scenario.annual_electricity_savings $}<br>
-                                        Natural gas savings: {$ scenario.annual_natural_gas_savings $}
+                                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
+                                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
                                     </td>
                                     <td>
                                         <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
