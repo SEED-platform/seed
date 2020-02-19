@@ -713,9 +713,20 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
-                        if rule.severity != Rule.SEVERITY_VALID and rule.min is None and rule.max is None:
-                            self.add_result_is_null(row.id, rule, display_name, value)
-                            self.update_status_label(label, rule, linked_id, row.id)
+                        if rule.severity != Rule.SEVERITY_VALID:
+                            if rule.min is None and rule.max is None:
+                                self.add_result_is_null(row.id, rule, display_name, value)
+                                self.update_status_label(label, rule, linked_id, row.id)
+                                break
+                            else:
+                                if rule.severity == Rule.SEVERITY_ERROR:
+                                    self.add_result_is_null(row.id, rule, display_name, value)
+                                    self.update_status_label(label, rule, linked_id, row.id)
+                                    break
+                                else:
+                                    self.add_result_is_null(row.id, rule, display_name, value)
+                                    self.update_status_label(label, rule, linked_id, row.id)
+                                    break
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)

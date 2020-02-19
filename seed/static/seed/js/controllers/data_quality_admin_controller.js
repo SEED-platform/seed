@@ -187,18 +187,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
             var order = ruleGroup;
-            var reorder = [];
             if (order.length > 1) {
-              reorder = order.sort(function (a, b) {
+              order.sort(function (a, b) {
                 return (a.min === null && a.max === null) ? (b.min === null && b.max === null ? 0 : -1) : (b.min === null && b.max === null ? 1 : 0);
               });
-              console.log('reorder: ', reorder);
-              ruleGroup = reorder;
+              ruleGroup = order;
             }
-            //  _.forEach(ruleGroup, function (rule) {
-            //    console.log('still ruleGroup: ', rule.min, rule.max);
-            //  });
-            //}
             _.forEach(ruleGroup, function (rule) {
               // Skip rules that haven't been assigned to a field yet
               if (rule.field === null) return;
@@ -400,14 +394,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       });
 
       $scope.sortedRuleGroups = function () {
-        // Show re-ordered rule list:
-        /*_.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
-          if (ruleGroup.length > 1) {
-            ruleGroup.sort(function (a, b) {
-              return (a.min === null && a.max === null) ? (b.min === null && b.max === null ? 0 : -1) : (b.min === null && b.max === null ? 1 : 0);
-            });
-          }
-        })*/
         var sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort(function (a, b) {
           return naturalSort(displayNames[a], displayNames[b]);
         });
