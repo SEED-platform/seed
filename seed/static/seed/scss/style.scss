@@ -2002,6 +2002,20 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     background-color: white;
   }
 
+  thead th:first-child {
+    left: 0px;
+    z-index: 1;
+    background-color: white;
+  }
+
+  tbody td:first-child {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 0px;
+    z-index: 0;
+    background-color:#F9F9F9
+  }
+
   .table_item_detail {
     border: 0px;
     margin: 0px;
@@ -2032,13 +2046,6 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     background-color: white;
   }
 
-  tbody td:first-child {
-    position: -webkit-sticky; /* for Safari */
-    position: sticky;
-    left: 0px;
-    z-index: 0;
-    background-color: #F9F9F9;
-  }
 
   tbody td:nth-child(2) {
     position: -webkit-sticky; /* for Safari */
@@ -2049,16 +2056,24 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
 
   }
 
-  thead th:first-child {
-    left: 0px;
-    z-index: 1;
-    background-color: grey;
-  }
-
   thead th:nth-child(2) {
     left: 223px;
     z-index: 1;
-    background-color: grey;
+    background-color: white;
+  }
+
+  thead th:first-child {
+    left: 0px;
+    z-index: 1;
+    background-color: white;
+  }
+
+  tbody td:first-child {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 0px;
+    z-index: 0;
+    background-color: #F9F9F9;
   }
 
   .table_item_detail {
