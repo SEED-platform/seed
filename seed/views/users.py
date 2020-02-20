@@ -224,6 +224,7 @@ class UserViewSet(viewsets.ViewSet):
             ).update(role_level=_get_role_from_js(role))
 
         if created:
+            user.set_unusable_password()
             user.email = email
             user.first_name = first_name
             user.last_name = last_name
