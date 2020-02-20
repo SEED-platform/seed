@@ -11,7 +11,7 @@ All rights reserved.  # NOQA
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
@@ -207,7 +207,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def cycles(self, request):
         """
         List all the taxlots with all columns
@@ -243,7 +243,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
         List all the properties
@@ -282,7 +282,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def merge(self, request):
         """
         Merge multiple tax lot records into a single new record, and run this
@@ -335,7 +335,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a taxlot view into two taxlot views
@@ -487,7 +487,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def links(self, request, pk=None):
         """
         Get taxlot details for each linked taxlot across org cycles
@@ -533,7 +533,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Runs match merge link for an individual taxlot.
@@ -554,7 +554,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a property to this taxlot
@@ -583,7 +583,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a property from this taxlot
@@ -614,7 +614,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def columns(self, request):
         """
         List all tax lot columns
@@ -642,7 +642,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def mappable_columns(self, request):
         """
         List only taxlot columns that are mappable
@@ -660,7 +660,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['DELETE'])
+    @action(detail=False, methods=['DELETE'])
     def batch_delete(self, request):
         """
         Batch delete several tax lots
@@ -730,7 +730,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def properties(self, pk):
         """
         Get related properties for this tax lot

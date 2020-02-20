@@ -9,7 +9,7 @@
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
@@ -32,7 +32,7 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Measure.objects.all()
     pagination_class = None
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def reset(self, request):
         """
         Reset all the measures back to the defaults (as provided by BuildingSync)

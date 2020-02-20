@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -16,7 +16,7 @@ class UbidViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def decode_by_ids(self, request):
         body = dict(request.data)
         property_ids = body.get('property_ids')
@@ -31,7 +31,7 @@ class UbidViews(viewsets.ViewSet):
             decode_unique_ids(taxlots)
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def decode_results(self, request):
         body = dict(request.data)
 

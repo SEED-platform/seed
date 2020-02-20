@@ -14,7 +14,7 @@ from rest_framework import (
     status,
     viewsets
 )
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -109,7 +109,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         return self._get_labels(request)
 

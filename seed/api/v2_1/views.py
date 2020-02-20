@@ -15,7 +15,7 @@ from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
 from rest_framework import status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -153,7 +153,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             }
         return result
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def building_sync(self, request, pk):
         """
         Return BuildingSync representation of the property
@@ -192,7 +192,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
             return HttpResponse(xml, content_type='application/xml')
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):
         """
         Return HPXML representation of the property
@@ -259,7 +259,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         return new_state
 
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     @has_perm_class('can_modify_data')
     def update_with_building_sync(self, request, pk):
         """
