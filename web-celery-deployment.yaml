@@ -1,0 +1,51 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.20.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-celery
+  name: web-celery
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.20.0 ()
+      creationTimestamp: null
+      labels:
+        io.kompose.service: web-celery
+    spec:
+      containers:
+      - args:
+        - /seed/docker/start_celery_docker.sh
+        env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: config.settings.docker
+        - name: POSTGRES_DB
+          value: seed
+        - name: POSTGRES_PASSWORD
+          value: super-secret-password
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: seed
+        - name: SECRET_KEY
+          value: ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+        image: seedplatform/seed:latest
+        name: web-celery
+        resources: {}
+        volumeMounts:
+        - mountPath: /seed/media
+          name: seed-media
+      restartPolicy: Always
+      volumes:
+      - name: seed-media
+        persistentVolumeClaim:
+          claimName: seed-media
+status: {}
