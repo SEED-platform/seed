@@ -38,11 +38,11 @@ class PropertyViewFilterSet(FilterSet, OrgMixin):
     """
     Advanced filtering for PropertyView sets version 2.1.
     """
-    address_line_1 = CharFilter(name="state__address_line_1", lookup_expr='contains')
+    address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     analysis_state = CharFilter(method='analysis_state_filter')
     identifier = CharFilter(method='identifier_filter')
-    cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
-    cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+    cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
 
     class Meta:
         model = PropertyView
