@@ -13,6 +13,8 @@ modeltranslation==0.25
 psycopg2-binary==2.8.4
 
 # background process management
+# celery dependency that needs its version locked down
+billiard==3.6.1.0
 celery==4.4.0
 django-redis-cache==2.1.0
 django_compressor==2.3
