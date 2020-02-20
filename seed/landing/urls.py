@@ -6,8 +6,9 @@
 """
 
 from django.conf.urls import url
+from django.contrib.auth import logout
 from django.contrib.auth.views import (
-    logout, password_change, password_change_done
+    PasswordChangeView, PasswordChangeDoneView
 )
 
 from seed.landing.views import (
@@ -49,13 +50,13 @@ urlpatterns = [
     ),
     url(
         r'^password_change/$',
-        password_change,
+        PasswordChangeView.as_view(),
         {'template_name': 'landing/password_change_form.html'},
         name="password_change"
     ),
     url(
         r'^password_change/done/$',
-        password_change_done,
+        PasswordChangeDoneView.as_view(),
         {'template_name': 'landing/password_change_done.html'}
     ),
 ]

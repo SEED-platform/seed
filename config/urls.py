@@ -12,12 +12,18 @@ from rest_framework_swagger.views import get_swagger_view
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
+from seed.landing.views import password_reset_complete
 from seed.views.main import angular_js_tests
 
 from rest_framework.schemas import get_schema_view
 schema_view = get_schema_view(title='SEED API Schema')
 
 urlpatterns = [
+    url(
+        r'^accounts/password/reset/complete/$',
+        password_reset_complete,
+        name='password_reset_complete',
+    ),
     # Application
     url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
