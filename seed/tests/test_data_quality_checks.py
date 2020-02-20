@@ -89,8 +89,10 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         with self.assertRaises(Exception) as exc:
             dq.add_rule(ex_rule)
-        self.assertEqual(str(exc.exception),
-                         "Rule data is not defined correctly: 'table_name_does_not_exist' is an invalid keyword argument for this function")
+        self.assertEqual(
+            str(exc.exception),
+            "Rule data is not defined correctly: Rule() got an unexpected keyword argument 'table_name_does_not_exist'"
+        )
 
     def test_check_property_state_example_data(self):
         dq = DataQualityCheck.retrieve(self.org.id)
