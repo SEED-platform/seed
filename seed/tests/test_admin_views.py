@@ -175,7 +175,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": token
         })
 
@@ -221,7 +221,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": token
         })
 
