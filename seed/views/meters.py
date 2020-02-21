@@ -93,8 +93,8 @@ class MeterViewSet(viewsets.ViewSet):
                 'type': energy_types[meter.type],
                 'source': source,
                 'source_id': source_id,
-                'scenario_id': meter.scenario.id,
-                'scenario_name': meter.scenario.name
+                'scenario_id': meter.scenario.id if meter.scenario is not None else None,
+                'scenario_name': meter.scenario.name if meter.scenario is not None else None
             })
 
         return res
