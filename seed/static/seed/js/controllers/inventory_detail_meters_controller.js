@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           id: meter.scenario_id,
           name: meter.scenario_name
         }
-      }), 'id');
+      }), 'id').filter(scenario => scenario.id !== undefined && scenario.id !== null)
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -148,6 +148,10 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         ],
         selected: 'meter'
       };
+      // remove option to filter by scenario if there are no scenarios
+      if ($scope.scenarios.length === 0) {
+        $scope.filterMethod.options = ['meter']
+      }
 
       // given a list of meter labels, it returns the filtered readings and column defs
       // This is used by the primary filterBy... functions
