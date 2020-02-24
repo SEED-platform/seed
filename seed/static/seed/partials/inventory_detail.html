@@ -186,11 +186,11 @@
 
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
+                                <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
                                     <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state[col.column_name] $}</span>
                                     <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
-                                <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
+                                <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
                                     <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state.extra_data[col.column_name] $}</span>
                                     <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
