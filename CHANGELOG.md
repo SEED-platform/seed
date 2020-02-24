@@ -1,3 +1,6 @@
+# SEED Version 2.6.1-Patch2
+
+- Fixed [#2119]( https://github.com/SEED-platform/seed/issues/2119 ), Re-enable created and updated fields for master records on the front end
 # SEED Version 2.6.1-Patch1
 
 - Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
