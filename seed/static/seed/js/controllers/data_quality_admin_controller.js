@@ -51,6 +51,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.state = $state.current;
 
+      $scope.conditions = [
+        {id: 'check not null', label: 'Not Null Value Check'},
+        {id: 'check null', label: 'Null Value Check'}
+      ];
+
       $scope.data_types = [
         {id: null, label: ''},
         {id: 'number', label: $translate.instant('Number')},
@@ -199,6 +204,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
               var r = {
                 enabled: rule.enabled,
+                condition: rule.condition,
                 field: rule.field,
                 data_type: rule.data_type,
                 rule_type: rule.rule_type,
@@ -255,6 +261,23 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
       };
 
+      $scope.change_condition = function (rule) {
+        if (rule.condition === '') rule.condition = null;
+        if (rule.condition === 'check null') {
+          rule.min = null;
+          rule.max = null;
+        } else {
+          rule.not_null = true;
+        }
+      };
+      $scope.filter_null = function (rule) {
+        $scope.check_null = false; //to disable min and max values
+        if (rule.condition === 'check null') {
+          $scope.check_null = true;
+        }
+        return $scope.check_null;
+      };
+
       // capture rule field dropdown change.
       $scope.change_field = function (rule, oldField, index) {
         if (oldField === '') oldField = null;
@@ -267,6 +290,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (newDataType !== original) {
           rule.text_match = null;
           rule.units = '';
+          rule.condition = '';
 
           if (!_.includes([null, 'number'], original) || !_.includes([null, 'number'], newDataType)) {
             // Reset min/max if the data type is something other than null <-> number
@@ -338,6 +362,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
+          condition: '',
           field: field,
           displayName: field,
           data_type: 'number',
