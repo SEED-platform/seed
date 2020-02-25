@@ -6,9 +6,8 @@
 """
 
 from django.conf.urls import url
-from django.contrib.auth import logout
 from django.contrib.auth.views import (
-    PasswordChangeView, PasswordChangeDoneView
+    logout_then_login, PasswordChangeView, PasswordChangeDoneView
 )
 
 from seed.landing.views import (
@@ -21,8 +20,7 @@ urlpatterns = [
     url(r'^accounts/login/$', login_view, name='login'),
     url(
         r'^accounts/logout/$',
-        logout,
-        {'next_page': '/?logout'},
+        logout_then_login,
         name='logout'
     ),
     url(r'^accounts/password/reset/$', password_reset, name='password_reset'),
