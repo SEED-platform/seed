@@ -61,13 +61,23 @@ angular.module('BE.seed.controller.menu', [])
       });
       $scope.$on('app_success', function () {
         $rootScope.route_load_error = false;
-      })
+      });
       $scope.$on('organization_list_updated', function () {
         init();
       });
 
       $scope.is_active = function (menu_item) {
-        if (menu_item === $location.path()) {
+        if ($state.current.url.split('/').length > 1) {
+          $location.search('', $state.current.url);
+        }
+        if($rootScope.stay_on_page && menu_item === '/' + $state.current.url.split('/')[1]) {
+          return true;
+        } else if (menu_item === $location.path()) {
+          if ($rootScope.stay_on_page) {
+            return false;
+          } else if (!$rootScope.stay_on_page && menu_item === ('/' + $state.current.url.split('/')[1])) {
+            return true;
+          }
           return true;
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
           return true;
@@ -96,7 +106,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
         $scope.wide_controller = !isNavExpanded;
-      }
+      };
 
       // returns true if menu toggle has never been clicked, i.e. first run, else returns false
       $scope.menu_toggle_has_never_been_clicked = function () {
