@@ -802,6 +802,9 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
             result[key] = {'error': 'Overlapping readings.'}
+        else:
+            progress_data.finish_with_error('data failed to import')
+            raise e
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -860,6 +863,9 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             type_lookup = dict(Meter.ENERGY_TYPES)
             key = "{} - {}".format(meter_readings.get('source_id'), type_lookup[meter_readings['type']])
             result[key] = {'error': 'Overlapping readings.'}
+        else:
+            progress_data.finish_with_error('data failed to import')
+            raise e
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
