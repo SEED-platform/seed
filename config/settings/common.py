@@ -271,13 +271,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS':
         'seed.utils.pagination.ResultsListPagination',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
-
 }
 
 SWAGGER_SETTINGS = {
