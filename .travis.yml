@@ -27,7 +27,6 @@ before_install:
   - sudo apt-get remove -y postgresql\*
   - sudo apt-get install -y postgresql-11 postgresql-client-11
   - sudo apt-get install -y postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
-  - sudo cat /etc/postgresql/9.6/main/pg_hba.conf
   - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
   - sudo service postgresql restart 11
   - sudo rm /usr/local/bin/docker-compose
@@ -42,19 +41,19 @@ install:
   - npm --version
   - nvm install stable
 before_script:
-  - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
-  - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
+  - psql -p 5433 -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
+  - psql -p 5433 -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
   - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
   - sudo add-apt-repository ppa:timescale/timescaledb-ppa -y
   - sudo apt-get update -q
   - sudo apt-get install -y timescaledb-postgresql-11 timescaledb-tools
   - sudo timescaledb-tune -yes
   - sudo service postgresql restart
-  - psql -c "CREATE DATABASE seeddb;" -U postgres
-  - psql -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
+  - psql -p 5433 -c "CREATE DATABASE seeddb;" -U postgres
+  - psql -p 5433 -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
 env:
   global:
-    - DOCKER_COMPOSE_VERSION=1.16.0
+    - DOCKER_COMPOSE_VERSION=1.23.1
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
     - COVERALLS_REPO_TOKEN=y8UqJm8Bri5ZP8hr3YZM3guBaUKpsfoCv
