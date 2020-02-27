@@ -74,7 +74,8 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.condition" ng-options="condition.id as condition.label for condition in ::conditions" ng-change="rule.rule_type = 1; change_condition(rule)"></select>
+                                <!--2/25/20 Edit option value to be able to uncheck 'check null' to initiate normal non null value check rule-->
+                                <select class="form-control input-sm" ng-model="rule.condition" ng-options="condition.id as condition.label for condition in ::conditions" ng-change="rule.rule_type = 1; change_condition(rule, '{$ rule.condition $}')"><option value=""></option></select>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.field" ng-options="col.column_name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>

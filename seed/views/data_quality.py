@@ -37,6 +37,7 @@ class RulesSubSerializer(serializers.Serializer):
 class RulesSubSerializerB(serializers.Serializer):
     field = serializers.CharField(max_length=100)
     enabled = serializers.BooleanField()
+    condition= serializers.CharField(max_length=100)
     data_type = serializers.CharField(max_length=100)
     min = serializers.FloatField()
     max = serializers.FloatField()
@@ -229,6 +230,7 @@ class DataQualityViews(viewsets.ViewSet):
                 'properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
                     'field': rule.field,
                     'enabled': rule.enabled,
+                    'condition': rule.condition,
                     'data_type': _get_js_rule_type(rule.data_type),
                     'rule_type': rule.rule_type,
                     'required': rule.required,
@@ -368,6 +370,7 @@ class DataQualityViews(viewsets.ViewSet):
                     'field': rule['field'],
                     'table_name': 'PropertyState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],
@@ -387,6 +390,7 @@ class DataQualityViews(viewsets.ViewSet):
                     'field': rule['field'],
                     'table_name': 'TaxLotState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],

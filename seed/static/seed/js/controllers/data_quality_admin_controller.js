@@ -52,7 +52,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
-        {id: 'check not null', label: 'Not Null Value Check'},
         {id: 'check null', label: 'Null Value Check'}
       ];
 
@@ -217,6 +216,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 units: rule.units,
                 label: null
               };
+              if (rule.condition === 'check null') {
+                r.min = null;
+                r.max = null;
+                r.condition = rule.condition;
+              } else {
+                r.condition = 0;
+              }
+
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
                 if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
@@ -235,6 +242,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.label = match.id;
                 }
               }
+
               if(!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
                 if (r.max < r.min) {
                   var min = r.min;
@@ -260,10 +268,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           spinner_utility.hide();
         });
       };
-
       $scope.change_condition = function (rule) {
-        if (rule.condition === '') rule.condition = null;
-        if (rule.condition === 'check null') {
+        if (!rule.condition) rule.condition = null;
+        var condition = rule.condition;
+        if (condition === 'check null') {
           rule.min = null;
           rule.max = null;
         } else {
@@ -273,6 +281,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.filter_null = function (rule) {
         $scope.check_null = false; //to disable min and max values
         if (rule.condition === 'check null') {
+          rule.not_null = true;
           $scope.check_null = true;
         }
         return $scope.check_null;
