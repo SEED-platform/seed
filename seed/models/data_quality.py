@@ -123,7 +123,7 @@ class Rule(models.Model):
         (SEVERITY_VALID, 'valid'),
     ]
 
-    RULE_CHECK_NOT_NULL = 'check not null'
+    RULE_CHECK_NOT_NULL = ''
     RULE_CHECK_NULL = 'check null'
 
     DEFAULT_RULES = [
@@ -211,7 +211,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'occupied_floor_area',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_NUMBER,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 100,

@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
-        {id: null, label: ''},
+        {id: 'check not null', label: ''},
         {id: 'check null', label: 'Null Value Check'}
       ];
 
@@ -220,10 +220,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               if (rule.condition === 'check null') {
                 r.min = null;
                 r.max = null;
-                r.condition = rule.condition;
-              } else {
-                r.condition = 0;
               }
+              r.condition = rule.condition;
 
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
