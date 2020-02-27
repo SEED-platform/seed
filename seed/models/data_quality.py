@@ -123,17 +123,13 @@ class Rule(models.Model):
         (SEVERITY_VALID, 'valid'),
     ]
 
-    RULE_CHECK_NOT_NULL = 0
-    RULE_CHECK_NULL = 1
-    CONDITION = [
-        (RULE_CHECK_NOT_NULL, ''),
-        (RULE_CHECK_NULL, 'check null'),
-    ]
+    RULE_CHECK_NOT_NULL = 'check not null'
+    RULE_CHECK_NULL = 'check null'
+
     DEFAULT_RULES = [
         {
             'table_name': 'PropertyState',
             'field': 'address_line_1',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_STRING,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
@@ -141,7 +137,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'pm_property_id',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_STRING,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
@@ -149,28 +144,24 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'custom_id_1',
-            'condition': RULE_CHECK_NOT_NULL,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
         }, {
             'table_name': 'TaxLotState',
             'field': 'jurisdiction_tax_lot_id',
-            'condition': RULE_CHECK_NOT_NULL,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
         }, {
             'table_name': 'TaxLotState',
             'field': 'address_line_1',
-            'condition': RULE_CHECK_NOT_NULL,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
         }, {
             'table_name': 'PropertyState',
             'field': 'conditioned_floor_area',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_AREA,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 0,
@@ -180,7 +171,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'conditioned_floor_area',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_AREA,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 100,
@@ -189,7 +179,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'energy_score',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_NUMBER,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 0,
@@ -198,7 +187,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'energy_score',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_NUMBER,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 10,
@@ -206,7 +194,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'generation_date',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
@@ -215,7 +202,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'gross_floor_area',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_NUMBER,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 100,
@@ -235,7 +221,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'recent_sale_date',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
@@ -244,7 +229,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'release_date',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
@@ -253,7 +237,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 0,
@@ -263,7 +246,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 10,
@@ -272,7 +254,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui_weather_normalized',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 0,
@@ -282,7 +263,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 0,
@@ -292,7 +272,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 10,
@@ -301,7 +280,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui_weather_normalized',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_EUI,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 10,
@@ -311,7 +289,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'year_built',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_YEAR,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 1700,
@@ -320,7 +297,6 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'year_ending',
-            'condition': RULE_CHECK_NOT_NULL,
             'data_type': TYPE_DATE,
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 18890101,
@@ -336,7 +312,7 @@ class Rule(models.Model):
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
-    condition = models.CharField(max_length=200)
+    condition = models.CharField(max_length=200, default=RULE_CHECK_NOT_NULL)
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
     rule_type = models.IntegerField(choices=RULE_TYPE, null=True)
     required = models.BooleanField(default=False)
@@ -742,20 +718,12 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
-                        if rule.severity != Rule.SEVERITY_VALID:
-                            if rule.min is None and rule.max is None:
-                                self.add_result_is_null(row.id, rule, display_name, value)
-                                self.update_status_label(label, rule, linked_id, row.id)
-                                break
-                            else:
-                                if rule.severity == Rule.SEVERITY_ERROR:
-                                    self.add_result_is_null(row.id, rule, display_name, value)
-                                    self.update_status_label(label, rule, linked_id, row.id)
-                                    break
-                                else:
-                                    self.add_result_is_null(row.id, rule, display_name, value)
-                                    self.update_status_label(label, rule, linked_id, row.id)
-                                    break
+                        if rule.condition == Rule.RULE_CHECK_NULL:
+                            self.add_result_is_null(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
+                            continue
+                        self.add_result_is_null(row.id, rule, display_name, value)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)

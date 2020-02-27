@@ -412,6 +412,11 @@ class DataQualityViews(viewsets.ViewSet):
                     'status': 'error',
                     'message': 'Label must be assigned when using Valid Data Severity.'
                 }, status=status.HTTP_400_BAD_REQUEST)
+            if rule['condition'] == Rule.RULE_CHECK_NULL and rule['status_label_id'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Label must be assigned for filtering null values.'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 dq.add_rule(rule)
