@@ -667,7 +667,6 @@ class DataQualityCheck(models.Model):
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
                 #                                             len(model_labels['label_ids'])))
-
         for rule in rules:
             # create an extra data flag for the rule
             is_extra_data = rule.field in row.extra_data
@@ -717,12 +716,10 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
-                        if rule.condition == Rule.RULE_CHECK_NULL:
-                            self.add_result_is_null(row.id, rule, display_name, value)
-                            self.update_status_label(label, rule, linked_id, row.id)
-                            continue
                         self.add_result_is_null(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                        self.update_status_label(label, rule, linked_id, row.id)
+                        if rule.condition == Rule.RULE_CHECK_NULL:
+                            value = 'N/A'
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
@@ -789,6 +786,7 @@ class DataQualityCheck(models.Model):
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
+
 
     def save_to_cache(self, identifier):
         """
@@ -1000,6 +998,7 @@ class DataQualityCheck(models.Model):
             'message': display_name + ' is null',
             'detailed_message': display_name + ' is null',
             'severity': rule.get_severity_display(),
+            'condition': rule.condition
         })
 
     def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):

@@ -27,10 +27,30 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.name = name;
       $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
       var originalDataQualityResults = dataQualityResults || [];
-      $scope.dataQualityResults = originalDataQualityResults;
+      //$scope.dataQualityResults = originalDataQualityResults;
       $scope.importFileId = importFileId;
       $scope.orgId = orgId;
-
+      _.forEach(originalDataQualityResults, function (results) {
+        if (results.data_quality_results.length > 1) {
+          var check_null = false;
+          var oldField = '';
+          var index = 0;
+          _.forEach(results.data_quality_results, function (result) {
+            if (result.condition === 'check null' && result.value === null) check_null = true;
+            if (result.formatted_field === oldField) {
+              if (result.value === null && check_null) {
+                console.log('dirty: ', index, results);
+              }
+            } else {
+              console.log('clean: ', index);
+            }
+            oldField = result.formatted_field;
+            index += 1;
+          });
+        }
+        console.log('\n');
+      });
+      $scope.dataQualityResults = originalDataQualityResults;
       $scope.close = function () {
         $uibModalInstance.close();
       };
@@ -63,6 +83,10 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         sort_column: 'label',
         sortable: false,
         title: 'Applied Label'
+      }, {
+        sort_column: 'condition',
+        sortable: false,
+        title: 'Condition'
       }, {
         sort_column: 'detailed_message',
         sortable: false,
@@ -160,7 +184,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
           value = value.toLowerCase();
           _.forEach($scope.dataQualityResults, function (result) {
             if (result.visible) {
-              if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
+              if (_.includes(['detailed_message', 'formatted_field', 'table_name', 'condition'], column)) {
                 _.forEach(result.data_quality_results, function (row) {
                   if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
                 });
