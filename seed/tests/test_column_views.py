@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -138,11 +138,13 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
+            'geocoding_order': 0,
             'related': False,
             'sharedFieldType': 'None',
             'pinnedLeft': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
 
         # randomly check a column

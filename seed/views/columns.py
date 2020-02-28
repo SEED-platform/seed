@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -22,7 +22,6 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
-from seed.pagination import NoPagination
 from seed.renderers import SEEDJSONRenderer
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
@@ -53,7 +52,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
     model = Column
-    pagination_class = NoPagination
+    pagination_class = None
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnViewSetFilterBackend,)
 

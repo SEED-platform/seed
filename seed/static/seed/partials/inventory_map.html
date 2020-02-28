@@ -15,38 +15,31 @@
 </div>
 
 <div class="inventory-list-controls">
-    <form name="listControlsForm"
-          class="form-inline"
-          role="form"
-          ng-submit="submitNewLabelForm(newLabelForm.$valid)"
-          novalidate>
+    <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="form-group">
             <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
-                <button id="btnInventoryActions"
-                        type="button"
-                        uib-dropdown-toggle
-                        class="btn btn-default btn-sm">
+                <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.hexbin_layer.zIndex)">Toggle Hexbins</a>
+                        <a ng-click="toggle_layer(layers.hexbin_layer.zIndex)">Toggle Hexbins</a>
                     </li>
                     <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.points_layer.zIndex)">Toggle Points</a>
+                        <a ng-click="toggle_layer(layers.points_layer.zIndex)">Toggle Points</a>
                     </li>
                     <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.building_bb_layer.zIndex)">Toggle UBID Bounding Boxes</a>
+                        <a ng-click="toggle_layer(layers.building_bb_layer.zIndex)">Toggle UBID Bounding Boxes</a>
                     </li>
-                   <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.building_centroid_layer.zIndex)">Toggle UBID Centroids</a>
-                   </li>
-                   <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.taxlot_bb_layer.zIndex)">Toggle ULID Bounding Boxes</a>
-                   </li>
-                   <li role="menuitem">
-                      <a ng-click="toggle_layer(layers.taxlot_centroid_layer.zIndex)">Toggle ULID Centroids</a>
-                   </li>
+                    <li role="menuitem">
+                        <a ng-click="toggle_layer(layers.building_centroid_layer.zIndex)">Toggle UBID Centroids</a>
+                    </li>
+                    <li role="menuitem">
+                        <a ng-click="toggle_layer(layers.taxlot_bb_layer.zIndex)">Toggle ULID Bounding Boxes</a>
+                    </li>
+                    <li role="menuitem">
+                        <a ng-click="toggle_layer(layers.taxlot_centroid_layer.zIndex)">Toggle ULID Centroids</a>
+                    </li>
 
                 </ul>
             </div>
@@ -54,20 +47,8 @@
         <div class="form-group">
             <label for="tagsInput" translate>Filter by label:</label>
             <div class="btn-group">
-                <tags-input id="tagsInput"
-                            ng-model="selected_labels"
-                            min-length="1"
-                            placeholder="{$:: 'Add a label' | translate $}"
-                            replace-spaces-with-dashes="false"
-                            add-from-autocomplete-only="true"
-                            ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)"
-                                   max-results-to-show="255"
-                                   min-length="0"
-                                   load-on-empty="true"
-                                   load-on-focus="true"
-                                   ng-disabled="!labels.length">
-                    </auto-complete>
+                <tags-input id="tagsInput" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
             </div>
         </div>
@@ -85,21 +66,20 @@
         <span>
             <label>{$:: 'Cycle' | translate $}:</label>
             <div style="display: inline-block;">
-                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)"
-                        ng-options="option.name for option in ::cycle.cycles track by option.id">
+                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
                 </select>
             </div>
         </span>
 
         <span ng-show="layerVisible(1)" style="width: 500px">
-          <p class="text-center">Total Site EUI (kBtu/ft2)</p>
-          <div>
-            <p class="col-sm-2 text-right" style="float: left">20 -</p>
-            <p class="col-sm-2 text-left" style="float: right">+ 750</p>
-          </div>
-          <div>
-            <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
-          </div>
+            <p class="text-center">Total Site EUI (kBtu/ft2)</p>
+            <div>
+                <p class="col-sm-2 text-right" style="float: left">20 -</p>
+                <p class="col-sm-2 text-left" style="float: right">+ 750</p>
+            </div>
+            <div>
+                <uib-progressbar value=0 ng-style=hexbinInfoBarColor()></uib-progressbar>
+            </div>
         </span>
 
     </div>
@@ -127,5 +107,5 @@
 
 </div>
 <div id="map">
-  <div id="popup-element"></div>
+    <div id="popup-element"></div>
 </div>

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -169,7 +169,7 @@ class DataQualityViews(viewsets.ViewSet):
 
         writer.writerow(
             ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Error Message', 'Severity'])
+             'Applied Label', 'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -180,6 +180,7 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
+                    result.get('label', None),
                     # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
                     unidecode(result['detailed_message']),
                     result['severity']
@@ -402,6 +403,12 @@ class DataQualityViews(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
+            if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Label must be assigned when using Valid Data Severity.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 dq.add_rule(rule)
             except TypeError as e:

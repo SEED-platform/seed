@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
@@ -29,7 +29,6 @@ from seed.models import (
     PropertyView,
     TaxLotView,
 )
-from seed.pagination import NoPagination
 from seed.serializers.labels import (
     LabelSerializer,
 )
@@ -59,7 +58,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
     parser_classes = (JSONParser, FormParser)
     queryset = Label.objects.none()
     filter_backends = (LabelFilterBackend,)
-    pagination_class = NoPagination
+    pagination_class = None
 
     _organization = None
 
@@ -92,7 +91,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
             request=self.request,
         )
         kwargs['inventory'] = inventory
-        return super(LabelViewSet, self).get_serializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
 
     def _get_labels(self, request):
         qs = self.get_queryset()

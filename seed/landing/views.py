@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import SetPasswordForm
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def landing_page(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
     return render(request, 'landing/home.html', locals())

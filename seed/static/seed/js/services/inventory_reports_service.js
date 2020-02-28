@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.service.inventory_reports',
@@ -118,6 +118,33 @@ angular.module('BE.seed.service.inventory_reports',
       });
     }
 
+    function export_reports_data (axes_data, start, end) {
+      var xVar = axes_data.xVar;
+      var xLabel = axes_data.xLabel;
+      var yVar = axes_data.yVar;
+      var yLabel = axes_data.yLabel;
+            // Error checks
+      if (_.isNil(xVar) || _.isNil(xLabel) || _.isNil(yVar) || _.isNil(yLabel) || _.isNil(start) || _.isNil(end)) {
+        $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
+        throw new Error('Invalid Parameter');
+      }
+
+      return $http.get('/api/v2/export_reports_data/', {
+        params: {
+          organization_id: user_service.get_organization().id,
+          x_var: xVar,
+          x_label: xLabel,
+          y_var: yVar,
+          y_label: yLabel,
+          start: start,
+          end: end,
+        },
+        responseType: 'arraybuffer'
+      }).then(function (response) {
+        return response
+      });
+    }
+
     /* Public API */
 
     var building_reports_factory = {
@@ -130,7 +157,8 @@ angular.module('BE.seed.service.inventory_reports',
       //functions
       //get_summary_data : get_summary_data,
       get_report_data: get_report_data,
-      get_aggregated_report_data: get_aggregated_report_data
+      get_aggregated_report_data: get_aggregated_report_data,
+      export_reports_data: export_reports_data,
 
     };
 

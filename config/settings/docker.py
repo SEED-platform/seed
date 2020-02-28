@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -65,9 +65,9 @@ if 'REDIS_PASSWORD' in os.environ:
         }
     }
     CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-       CACHES['default']['OPTIONS']['PASSWORD'],
-       CACHES['default']['LOCATION'],
-       CACHES['default']['OPTIONS']['DB']
+        CACHES['default']['OPTIONS']['PASSWORD'],
+        CACHES['default']['LOCATION'],
+        CACHES['default']['OPTIONS']['DB']
     )
 else:
     CACHES = {
@@ -113,7 +113,7 @@ LOGGING = {
 }
 
 if 'default' in SECRET_KEY:
-    print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECKET_KEY in local_untracked or env var")
+    print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import raven
@@ -124,4 +124,3 @@ if 'SENTRY_RAVEN_DSN' in os.environ:
         'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
     }
 # SENTRY_JS_DSN is directly passed through to the Sentry configuration for JS.
-

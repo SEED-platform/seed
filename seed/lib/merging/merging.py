@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -60,6 +60,10 @@ def get_state_to_state_tuple(inventory):
         if c['table_name'] == inventory:
             fields.append(c['column_name'])
 
+    # Include geocoding results columns that are left out when generating duplicate hashes
+    fields.append('long_lat')
+    fields.append('geocoding_confidence')
+
     return tuple([(k, k) for k in sorted(fields)])
 
 
@@ -84,7 +88,51 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def _merge_extra_data(ed1, ed2, priorities):
+def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs, ignore_merge_protection=False):
+    """
+    Geocoding results need to be handled separately since they should generally
+    "stick together". In one sense, all 4 result columns should be treated as
+    one column. Specifically, the complete geocoding results of either the new
+    state or the existing state is used - not a combination of the geocoding
+    results from each.
+    """
+    geocoding_attr_cols = [
+        'geocoding_confidence',
+        'longitude',
+        'latitude',
+        'long_lat',  # note this col shouldn't have priority set
+    ]
+
+    existing_results_empty = True
+    new_results_empty = True
+    geocoding_favor_new = True
+
+    for geocoding_col in geocoding_attr_cols:
+        existing_results_empty = existing_results_empty and can_attrs[geocoding_col][state1] is None
+        new_results_empty = new_results_empty and can_attrs[geocoding_col][state2] is None
+
+        geocoding_favor_new = geocoding_favor_new and priorities.get(geocoding_col, 'Favor New') == 'Favor New'
+
+        # Since these are handled here, remove them from canonical attributes
+        del can_attrs[geocoding_col]
+
+    # Multiple elif's here is necessary since empty checks should be first, followed by merge protection settings
+    if new_results_empty:
+        geo_state = state1
+    elif existing_results_empty:
+        geo_state = state2
+    elif ignore_merge_protection:
+        geo_state = state2
+    elif geocoding_favor_new:
+        geo_state = state2
+    else:   # favor existing
+        geo_state = state1
+
+    for geo_attr in geocoding_attr_cols:
+        setattr(merged_state, geo_attr, getattr(geo_state, geo_attr, None))
+
+
+def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -101,7 +149,7 @@ def _merge_extra_data(ed1, ed2, priorities):
         if val1 and val2:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
-            if col_prior == 'Favor New':
+            if ignore_merge_protection or col_prior == 'Favor New':
                 extra_data[key] = val2
             else:  # favor the existing field
                 extra_data[key] = val1
@@ -111,7 +159,7 @@ def _merge_extra_data(ed1, ed2, priorities):
     return extra_data
 
 
-def merge_state(merged_state, state1, state2, priorities):
+def merge_state(merged_state, state1, state2, priorities, ignore_merge_protection=False):
     """
     Set attributes on our Canonical model, saving differences.
 
@@ -124,6 +172,8 @@ def merge_state(merged_state, state1, state2, priorities):
     # Calculate the difference between the two states and save into a dictionary
     can_attrs = get_state_attrs([state1, state2])
 
+    _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs, ignore_merge_protection)
+
     default = state2
     for attr in can_attrs:
         # Do we have any differences between these fields? - Check if not None instead of if value.
@@ -135,7 +185,7 @@ def merge_state(merged_state, state1, state2, priorities):
         if len(attr_values) > 1:
             # If we have more than one value for this field, choose based on the column priority
             col_prior = priorities.get(attr, 'Favor New')
-            if col_prior == 'Favor New':
+            if ignore_merge_protection or col_prior == 'Favor New':
                 attr_value = can_attrs[attr][state2]
             else:  # favor the existing field
                 attr_value = can_attrs[attr][state1]
@@ -154,7 +204,12 @@ def merge_state(merged_state, state1, state2, priorities):
         else:
             setattr(merged_state, attr, attr_value)
 
-    merged_state.extra_data = _merge_extra_data(state1.extra_data, state2.extra_data, priorities['extra_data'])
+    merged_state.extra_data = _merge_extra_data(
+        state1.extra_data,
+        state2.extra_data,
+        priorities['extra_data'],
+        ignore_merge_protection
+    )
 
     # merge measures, scenarios, simulations
     if isinstance(merged_state, PropertyState):

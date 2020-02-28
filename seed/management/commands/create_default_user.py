@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.core.management.base import BaseCommand
@@ -52,13 +52,13 @@ class Command(BaseCommand):
 
             if options['usertype'] == 'superuser':
                 u = User.objects.create_superuser(
-                    options['username'],
+                    options['username'].lower(),
                     options['username'],
                     options['password']
                 )
             else:
                 u = User.objects.create_user(
-                    options['username'],
+                    options['username'].lower(),
                     options['username'],
                     options['password']
                 )

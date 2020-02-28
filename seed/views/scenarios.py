@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework.parsers import JSONParser, FormParser
@@ -10,7 +10,6 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import (
     Scenario,
 )
-from seed.pagination import NoPagination
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.viewsets import (
     SEEDOrgReadOnlyModelViewSet
@@ -25,7 +24,7 @@ class ScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Scenario.objects.all()
-    pagination_class = NoPagination
+    pagination_class = None
     orgfilter = 'property_state__organization_id'
 
     def get_queryset(self):

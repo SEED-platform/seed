@@ -1,0 +1,61 @@
+<div class="modal-header" ng-switch on="step.number">
+    <h4 class="modal-title" ng-switch-when="1" translate>Review Changes</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>Matching Criteria Preview</h4>
+</div>
+
+<div class="modal-body no_bottom_padding" ng-switch on="step.number">
+    <div class="container-fluid" ng-switch-when="1" ng-show="checks.matching_criteria_excludes_pm_property_id">
+      <div class="alert alert-danger" translate="PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"></div>
+      <div style="margin: 5px;">
+          <input type="checkbox" id="warnings-acknowledged" ng-model="checks.warnings_acknowledged">
+          <label for="warnings-acknowledged" translate>Acknowledge</label>
+      </div>
+    </div>
+
+    <div class="container-fluid" ng-switch-when="1">
+        <div class="row" style="padding-bottom: 30px;">
+            <div ui-grid="change_summary" ui-grid-resize-columns></div>
+        </div>
+    </div>
+
+    <div class="container-fluid" ng-if="matching_criteria_exists">
+        <div class="alert alert-warning" translate>ORG_MATCH_MERGE_LINK_WARNING</div>
+
+        <div class="row text-center" ng-switch-when="1" style="padding-bottom: 30px;display: flex;">
+            <button type="button" class="btn btn-warning center-block" ng-show="preview_loading" ng-disabled="true">
+                <span style="position: relative; display: flex;justify-content: space-between;">
+                    <div translate>Preview Loading</div>
+                    <div id="spinner_placeholder" style="width: 15px;"></div>
+                </span>
+            </button>
+            <button type="button" class="btn btn-warning center-block" ng-show="!preview_loading" ng-click="goto_step(2)" translate>Preview</button>
+        </div>
+    </div>
+
+    <div class="container-fluid" ng-switch-when="2">
+        <div ng-show="!preview_loading" class="row" style="padding-bottom: 30px;">
+            <div ui-grid="match_merge_link_preview" ui-grid-grouping ui-grid-pinning ui-grid-resize-columns></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer container-fluid" ng-switch on="step.number">
+    <div ng-switch-when="1">
+        <div class="row text-center" ng-show="preview_loading">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="true"  translate>Confirm</button>
+        </div>
+        <div class="row text-center" ng-show="!preview_loading">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" ng-disabled="!checks.warnings_acknowledged" translate>Confirm</button>
+        </div>
+    </div>
+
+    <div ng-switch-when="2">
+        <div class="row text-center">
+            <button type="button" class="btn btn-warning col-sm-6 center-block" ng-click="goto_step(1)" translate>Close Preview</button>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Cancel</button>
+    </div>
+</div>

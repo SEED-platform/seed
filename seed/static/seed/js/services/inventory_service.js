@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -50,6 +50,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).catch(_.constant('Error fetching cycles'));
     };
 
+    inventory_service.properties_cycle = function (profile_id, cycle_ids) {
+      return $http.post('/api/v2/properties/cycles/', {
+        organization_id: user_service.get_organization().id,
+        profile_id: profile_id,
+        cycle_ids: cycle_ids,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
     /** Get Property information from server for a specified Property and Cycle and Organization.
      *
@@ -139,6 +148,38 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.get_property_links = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_property_links(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/' + view_id + '/links/', {
+        organization_id: user_service.get_organization().id,
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.property_match_merge_link = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.property_match_merge_link(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/properties/' + view_id + '/match_merge_link/').then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();
@@ -243,6 +284,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).catch(_.constant('Error fetching cycles'));
     };
 
+    inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
+      return $http.post('/api/v2/taxlots/cycles/', {
+        organization_id: user_service.get_organization().id,
+        profile_id: profile_id,
+        cycle_ids: cycle_ids,
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
     /** Get TaxLot information from server for a specified TaxLot and Cycle and Organization.
      *
@@ -333,6 +383,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_taxlot_links = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.get_taxlot_links(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
+        organization_id: user_service.get_organization().id,
+      }).then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
+
+    inventory_service.taxlot_match_merge_link = function (view_id) {
+      // Error checks
+      if (_.isNil(view_id)) {
+        $log.error('#inventory_service.taxlot_match_merge_link(): view_id is undefined');
+        throw new Error('Invalid Parameter');
+      }
+
+      spinner_utility.show();
+      return $http.post('/api/v2/taxlots/' + view_id + '/match_merge_link/').then(function (response) {
+        return response.data;
+      }).finally(function () {
+        spinner_utility.hide();
+      });
+    };
 
     /** Update Tax Lot State for a specified Tax Lot View and organization.
      *
@@ -377,6 +458,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
+    };
+
+    inventory_service.get_last_selected_cycles = function () {
+      var organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('selected_cycles')) || {})[organization_id];
+    };
+
+    inventory_service.save_last_selected_cycles = function (ids) {
+      var organization_id = user_service.get_organization().id;
+      var selected_cycles = JSON.parse(localStorage.getItem('selected_cycles')) || {};
+      selected_cycles[organization_id] = ids;
+      localStorage.setItem('selected_cycles', JSON.stringify(selected_cycles));
     };
 
     inventory_service.get_last_profile = function (key) {
@@ -865,17 +958,19 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
       return $http.get('/api/v2/column_list_settings/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: inventory_type,
+          settings_location: settings_location
         }
       }).then(function (response) {
-        var profiles = _.filter(response.data.data, {
-          settings_location: settings_location,
-          inventory_type: inventory_type
-        }).sort(function (a, b) {
+        var profiles = response.data.data.sort(function (a, b) {
           return naturalSort(a.name, b.name);
         });
 
         _.forEach(profiles, function (profile) {
+          // Remove exact duplicates - this shouldn't be necessary, but it has occurred and will avoid errors and cleanup the database at the same time
+          profile.columns = _.uniqWith(profile.columns, _.isEqual);
+
           profile.columns = _.sortBy(profile.columns, ['order', 'column_name']);
         });
 

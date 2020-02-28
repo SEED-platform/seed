@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -19,8 +19,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
     'cycles',
     'organization_payload',
     'flippers',
+    'urls',
     '$sce',
     '$translate',
+    '$uibModal',
     function (
       $scope,
       $log,
@@ -31,10 +33,15 @@ angular.module('BE.seed.controller.inventory_reports', [])
       cycles,
       organization_payload,
       flippers,
+      urls,
       $sce,
-      $translate
+      $translate,
+      $uibModal
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
+
+      var org_id = organization_payload.organization.id;
+      var base_storage_key = 'report.' + org_id + '.' + $scope.inventory_type;
 
       var pretty_unit = function (pint_spec) {
         var mappings = {
@@ -175,9 +182,12 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.chartSeries = ['id', 'yr_e'];
       $scope.aggChartSeries = ['use_description', 'yr_e'];
 
-      //Currently selected x and y variables
-      $scope.xAxisSelectedItem = $scope.xAxisVars[0]; //initialize to first var
-      $scope.yAxisSelectedItem = $scope.yAxisVars[0]; //initialize to first var
+      var localStorageXAxisKey = base_storage_key + '.xaxis';
+      var localStorageYAxisKey = base_storage_key + '.yaxis';
+
+      //Currently selected x and y variables - check local storage first, otherwise initialize to first choice
+      $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+      $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
 
       //Chart data
       $scope.chartData = [];
@@ -250,6 +260,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
         getChartData();
         getAggChartData();
         updateChartTitles();
+        updateStorage();
       };
 
 
@@ -297,6 +308,29 @@ angular.module('BE.seed.controller.inventory_reports', [])
         $scope.chart2Title = $translate.instant('X_VERSUS_Y_AGGREGATED', interpolationParams);
       }
 
+      $scope.open_export_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_report_modal.html',
+          controller: 'export_report_modal_controller',
+          resolve: {
+            axes_data: function () {
+              return {
+                xVar: $scope.chartData.xAxisVarName,
+                xLabel: $scope.chartData.xAxisTitle,
+                yVar: $scope.chartData.yAxisVarName,
+                yLabel: $scope.chartData.yAxisTitle,
+              };
+            },
+            cycle_start: function () {
+              return $scope.fromCycle.selected_cycle.start;
+            },
+            cycle_end: function () {
+              return $scope.toCycle.selected_cycle.end;
+            },
+          }
+        });
+      };
+
       /** Get the 'raw' (unaggregated) chart data from the server for the scatter plot chart.
        The user's selections are already stored as properties on the scope, so use
        those for the parameters that need to be sent to the server.
@@ -324,7 +358,9 @@ angular.module('BE.seed.controller.inventory_reports', [])
               series: $scope.chartSeries,
               chartData: data.chart_data,
               xAxisTitle: $scope.xAxisSelectedItem.axisLabel,
+              xAxisVarName: $scope.xAxisSelectedItem.varName,
               yAxisTitle: $scope.yAxisSelectedItem.axisLabel,
+              yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
@@ -369,6 +405,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
           data = data.aggregated_data;
+          console.log(data);
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -396,6 +433,15 @@ angular.module('BE.seed.controller.inventory_reports', [])
           });
       }
 
+      function updateStorage () {
+        // Save axis and cycle selections
+        localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem));
+        localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem));
+
+        localStorage.setItem(localStorageFromCycleKey, JSON.stringify($scope.fromCycle.selected_cycle));
+        localStorage.setItem(localStorageToCycleKey, JSON.stringify($scope.toCycle.selected_cycle));
+      };
+
       /*  Generate an array of color objects to be used as part of chart configuration
        Each color object should have the following properties:
        {
@@ -421,6 +467,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
         return colorsArr;
       }
 
+      var localStorageFromCycleKey = base_storage_key + '.fromcycle';
+      var localStorageToCycleKey = base_storage_key + '.tocycle';
 
       /* Call the update method so the page initializes
        with the values set in the scope */
@@ -428,12 +476,14 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
         // Initialize pulldowns
         $scope.fromCycle = {
-          selected_cycle: _.head($scope.cycles)
+          selected_cycle: JSON.parse(localStorage.getItem(localStorageFromCycleKey)) || _.head($scope.cycles)
         };
         $scope.toCycle = {
-          selected_cycle: _.last($scope.cycles)
+          selected_cycle: JSON.parse(localStorage.getItem(localStorageToCycleKey)) || _.last($scope.cycles)
         };
 
+        // Attempt to load selections
+        $scope.updateChartData();
       }
 
       init();

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -9,7 +9,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse
 from django.test import TestCase
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -175,7 +175,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
             "token": token
         })
 
@@ -221,7 +221,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
             "token": token
         })
 

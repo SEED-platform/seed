@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.members', [])
@@ -43,26 +43,44 @@ angular.module('BE.seed.controller.members', [])
        * @param {obj} user The user to be removed
        */
       $scope.remove_member = function (user) {
+        if (user.number_of_orgs === 1) {
+          var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/delete_user_modal.html',
+            controller: 'delete_user_modal_controller',
+            resolve: {
+              user: function () {
+                return user.email;
+              }
+            }
+          });
+          modalInstance.result.then(function () {
+            confirm_remove_user(user);
+          }).catch(function () {
+            // Do nothing
+          });
+        } else {
+          confirm_remove_user(user);
+        }
+      };
+
+      function confirm_remove_user(user) {
         organization_service.remove_user(user.user_id, $scope.org.id).then(function () {
           organization_service.get_organization_users({org_id: $scope.org.id}).then(function (data) {
             $scope.users = data.users;
             init();
           });
-        }, function (data) {
-          $scope.$emit('app_error', data);
+        }).catch(function (response) {
+          $scope.$emit('app_error', response);
         });
-      };
+      }
 
       /**
        * saves the changed role for the user
        * @param  {obj} user
        */
       $scope.update_role = function (user) {
-        $scope.$emit('show_saving');
         organization_service.update_role(user.user_id, $scope.org.id, user.role)
-          .then(function () {
-            $scope.$emit('finished_saving');
-          }, function (data) {
+          .catch(function (data) {
             $scope.$emit('app_error', data);
           });
 

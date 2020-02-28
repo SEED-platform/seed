@@ -1,13 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 from datetime import datetime
 
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.test import TestCase
 from django.utils import timezone
 
@@ -19,14 +19,13 @@ from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models import (
     Column,
     ColumnMapping,
-    ColumnListSetting,
     PropertyView,
     StatusLabel,
     TaxLot,
     TaxLotProperty,
     TaxLotView,
     Unit,
-)
+    VIEW_LIST_TAXLOT)
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeColumnFactory,
@@ -1057,7 +1056,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         Column.save_column_names(state)
         # get the columnlistsetting (default) for all columns
         columnlistsetting = self.column_list_factory.get_columnlistsettings(
-            inventory_type=ColumnListSetting.VIEW_LIST_TAXLOT
+            inventory_type=VIEW_LIST_TAXLOT
         )
 
         column_name_mappings = {}
@@ -1469,6 +1468,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
             'data_type': 'string',
+            'geocoding_order': 0,
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
@@ -1476,6 +1476,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
         self.assertIn(pm_property_id_col, results)
 
@@ -1485,11 +1486,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Property Extra Data Column',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
+            'geocoding_order': 0,
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1499,11 +1502,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Taxlot Extra Data Column (Tax Lot)',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
+            'geocoding_order': 0,
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)
 
@@ -1541,11 +1546,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
+            'geocoding_order': 0,
             'sharedFieldType': 'None',
             'related': False,
             'pinnedLeft': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': True,
         }
         self.assertIn(jurisdiction_tax_lot_id_col, results)
 
@@ -1555,11 +1562,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Property Extra Data Column (Property)',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
+            'geocoding_order': 0,
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': True,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_property_extra_data_column, results)
 
@@ -1569,10 +1578,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             'display_name': 'Taxlot Extra Data Column',
             'is_extra_data': True,
             'merge_protection': 'Favor New',
+            'geocoding_order': 0,
             'data_type': 'None',
             'sharedFieldType': 'None',
             'related': False,
             'unit_name': None,
             'unit_type': None,
+            'is_matching_criteria': False,
         }
         self.assertIn(expected_taxlot_extra_data_column, results)

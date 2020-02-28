@@ -1,23 +1,25 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
 from django.forms.models import model_to_dict
+from quantityfield import ureg
 
+from seed.models import PropertyView
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
+    StatusLabel,
     DataQualityTypeCastError,
+    UnitMismatchError,
 )
 from seed.models.models import ASSESSED_RAW
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
-    FakePropertyViewFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -30,7 +32,6 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_default_create(self):
@@ -128,6 +129,42 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         self.assertEqual(error_found, True)
 
+    def test_check_property_state_example_data_with_labels(self):
+        dq = DataQualityCheck.retrieve(self.org.id)
+
+        # Create labels and apply them to the rules being triggered later
+        site_eui_label = StatusLabel.objects.create(name='Check Site EUI', super_organization=self.org)
+        site_eui_rule = dq.rules.get(table_name='PropertyState', field='site_eui', max='1000')
+        site_eui_rule.status_label = site_eui_label
+        site_eui_rule.save()
+
+        year_built_label = StatusLabel.objects.create(name='Check Year Built', super_organization=self.org)
+        year_built_rule = dq.rules.get(table_name='PropertyState', field='year_built')
+        year_built_rule.status_label = year_built_label
+        year_built_rule.save()
+
+        # Create state and associate it to view
+        ps_data = {
+            'no_default_data': True,
+            'custom_id_1': 'abcd',
+            'address_line_1': '742 Evergreen Terrace',
+            'pm_property_id': 'PMID',
+            'site_eui': 525600,
+            'year_built': 1699,
+        }
+        ps = self.property_state_factory.get_property_state(None, **ps_data)
+        property = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=property, cycle=self.cycle, state=ps
+        )
+
+        dq.check_data(ps.__class__.__name__, [ps])
+
+        dq_results = dq.results[ps.id]['data_quality_results']
+        labels = [r['label'] for r in dq_results]
+
+        self.assertCountEqual(['Check Site EUI', 'Check Year Built'], labels)
+
     def test_text_match(self):
         dq = DataQualityCheck.retrieve(self.org.id)
         dq.remove_all_rules()
@@ -179,3 +216,59 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         self.assertEqual(d.strftime("%Y-%m-%d"), '2000-07-04')
         self.assertEqual(rule.str_to_data_type(None), None)
         self.assertEqual(rule.str_to_data_type(27.5), 27.5)  # floats should return float
+
+    def test_min_value(self):
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_NUMBER, min=0.5)
+        self.assertTrue(rule.minimum_valid(1000))
+        self.assertTrue(rule.minimum_valid('1000'))
+        self.assertFalse(rule.minimum_valid(0.1))
+        self.assertFalse(rule.minimum_valid('0.1'))
+        with self.assertRaises(DataQualityTypeCastError):
+            self.assertEqual(rule.minimum_valid('not-a-number'), '')
+
+    def test_max_value(self):
+        rule = Rule.objects.create(name='max_str_rule', data_type=Rule.TYPE_NUMBER, max=1000)
+        self.assertTrue(rule.maximum_valid(0.1))
+        self.assertTrue(rule.maximum_valid('0.1'))
+        self.assertFalse(rule.maximum_valid(9999))
+        self.assertFalse(rule.maximum_valid('9999'))
+        with self.assertRaises(DataQualityTypeCastError):
+            self.assertEqual(rule.maximum_valid('not-a-number'), '')
+
+    def test_min_value_quantities(self):
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='kBtu/ft**2/year')
+        self.assertTrue(rule.minimum_valid(15))
+        self.assertTrue(rule.minimum_valid('15'))
+        self.assertTrue(rule.maximum_valid(15))
+        self.assertTrue(rule.maximum_valid('15'))
+        self.assertFalse(rule.minimum_valid(5))
+        self.assertFalse(rule.minimum_valid('5'))
+        self.assertFalse(rule.maximum_valid(150))
+        self.assertFalse(rule.maximum_valid('150'))
+
+        # All of these should value since they are less than 10 (e.g. 5 kbtu/m2/year =~ 0.5 kbtu/ft2/year)
+        # different units on check data
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))  # ~ 0.5 kbtu/ft2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/ft**2/year")))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(1100, "kBtu/m**2/year")))  # ~ 102.2 kbtu/ft2/year
+
+        # these should all pass
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(10, "kBtu/ft**2/year")))
+        self.assertTrue(rule.minimum_valid(ureg.Quantity(110, "kBtu/m**2/year")))  # 10.22 kbtu/ft2/year
+
+        # test the rule with different units
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='kBtu/m**2/year')
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(0.05, "kBtu/ft**2/year")))  # ~ 0.538 kbtu/m2/year
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(15, "kBtu/ft**2/year")))  # ~ 161 kbtu/m2/year
+        self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/m**2/year")))
+        self.assertFalse(rule.maximum_valid(ureg.Quantity(110, "kBtu/m**2/year")))
+
+    def test_incorrect_pint_unit_conversions(self):
+        rule = Rule.objects.create(name='min_str_rule', data_type=Rule.TYPE_EUI, min=10, max=100, units='ft**2')
+        # this should error out nicely
+        with self.assertRaises(UnitMismatchError):
+            self.assertFalse(rule.minimum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+
+        with self.assertRaises(UnitMismatchError):
+            self.assertFalse(rule.maximum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))

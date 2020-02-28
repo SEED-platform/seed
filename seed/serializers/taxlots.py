@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import serializers
@@ -37,7 +37,7 @@ class TaxLotStateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, data):
         """Overwritten to handle extra_data null fields"""
-        result = super(TaxLotStateSerializer, self).to_representation(data)
+        result = super().to_representation(data)
 
         if data.extra_data:
             organization = data.organization

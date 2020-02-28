@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -45,8 +45,8 @@ class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
 
-    user = models.ForeignKey(USER_MODEL)
-    organization = models.ForeignKey('Organization')
+    user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     status = models.CharField(
         max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES
     )
@@ -71,7 +71,7 @@ class OrganizationUser(models.Model):
                     other_user.save()
                 else:
                     raise UserWarning('Did not find suitable user to promote')
-        super(OrganizationUser, self).delete(*args, **kwargs)
+        super().delete(*args, **kwargs)
 
     def __str__(self):
         return 'OrganizationUser: {0} <{1}> ({2})'.format(
@@ -138,7 +138,7 @@ class Organization(models.Model):
         related_name='orgs',
     )
 
-    parent_org = models.ForeignKey('Organization', blank=True, null=True, related_name='child_orgs')
+    parent_org = models.ForeignKey('Organization', on_delete=models.CASCADE, blank=True, null=True, related_name='child_orgs')
 
     display_units_eui = models.CharField(max_length=32,
                                          choices=MEASUREMENT_CHOICES_EUI,
@@ -170,7 +170,7 @@ class Organization(models.Model):
         if self.parent_org is not None and self.parent_org.parent_org is not None:
             raise TooManyNestedOrgs
 
-        super(Organization, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         # Create a default cycle for the organization if there isn't one already
         from seed.models import Cycle
@@ -184,6 +184,9 @@ class Organization(models.Model):
 
     def add_member(self, user, role=ROLE_OWNER):
         """Add a user to an organization."""
+        # Ensure that the user can login in case they had previously been deactivated due to no org associations
+        user.is_active = True
+        user.save()
         return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
 
     def remove_member(self, user):
