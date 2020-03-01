@@ -35,21 +35,24 @@ angular.module('BE.seed.controller.data_quality_modal', [])
           var check_null = false;
           var oldField = '';
           var index = 0;
+          var remove = [];
           _.forEach(results.data_quality_results, function (result) {
             if (result.condition === 'check null' && result.value === null) check_null = true;
             if (result.formatted_field === oldField) {
               if (result.value === null && check_null) {
-                console.log('dirty: ', index, results);
+                remove.push(index);
               }
-            } else {
-              console.log('clean: ', index);
             }
             oldField = result.formatted_field;
             index += 1;
           });
+          remove = remove.reverse();
+          for (var i = 0; i <= remove.length - 1; i++) {
+            results.data_quality_results.splice(remove[i], 1);
+          }
         }
-        console.log('\n');
       });
+      //console.log(originalDataQualityResults);
       $scope.dataQualityResults = originalDataQualityResults;
       $scope.close = function () {
         $uibModalInstance.close();
