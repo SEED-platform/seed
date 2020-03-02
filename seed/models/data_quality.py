@@ -665,6 +665,7 @@ class DataQualityCheck(models.Model):
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
                 #                                             len(model_labels['label_ids'])))
+
         for rule in rules:
             # create an extra data flag for the rule
             is_extra_data = rule.field in row.extra_data
@@ -784,7 +785,6 @@ class DataQualityCheck(models.Model):
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
-
 
     def save_to_cache(self, identifier):
         """
