@@ -191,13 +191,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         };
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
-            var order = ruleGroup;
-            if (order.length > 1) {
-              order.sort(function (a, b) {
-                return (a.min === null && a.max === null) ? (b.min === null && b.max === null ? 0 : -1) : (b.min === null && b.max === null ? 1 : 0);
-              });
-              ruleGroup = order;
-            }
             _.forEach(ruleGroup, function (rule) {
               // Skip rules that haven't been assigned to a field yet
               if (rule.field === null) return;

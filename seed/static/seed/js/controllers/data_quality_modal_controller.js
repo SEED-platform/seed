@@ -27,7 +27,6 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.name = name;
       $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
       var originalDataQualityResults = dataQualityResults || [];
-      //$scope.dataQualityResults = originalDataQualityResults;
       $scope.importFileId = importFileId;
       $scope.orgId = orgId;
       _.forEach(originalDataQualityResults, function (results) {
@@ -46,13 +45,11 @@ angular.module('BE.seed.controller.data_quality_modal', [])
             oldField = result.formatted_field;
             index += 1;
           });
-          remove = remove.reverse();
-          for (var i = 0; i <= remove.length - 1; i++) {
+          for (var i = remove.length - 1; i >= 0; i--) {
             results.data_quality_results.splice(remove[i], 1);
           }
         }
       });
-      //console.log(originalDataQualityResults);
       $scope.dataQualityResults = originalDataQualityResults;
       $scope.close = function () {
         $uibModalInstance.close();
@@ -104,15 +101,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         field.static = false;
         field.data_type = 'string';
       });
-      /*
-      $scope.label_missing_error = false;
-      _.forEach($scope.dataQualityResults, function (result) {
-        _.forEach(result.data_quality_results, function (detail) {
-          if (detail.message.includes('is null') && !detail.label) {
-            $scope.label_missing_error = true;
-          }
-        });
-      });*/
+
       $scope.sortData = function () {
         var result = originalDataQualityResults.slice().sort(function (a, b) {
           return naturalSort(a[$scope.search.sort_column], b[$scope.search.sort_column]);
