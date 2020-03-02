@@ -715,10 +715,12 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
-                        self.add_result_is_null(row.id, rule, display_name, value)
-                        self.update_status_label(label, rule, linked_id, row.id)
                         if rule.condition == Rule.RULE_CHECK_NULL:
-                            value = 'N/A'
+                            self.add_result_is_null(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
+                            continue
+                        self.add_result_missing_req(row.id, rule, display_name, value)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
@@ -764,20 +766,6 @@ class DataQualityCheck(models.Model):
                     try:
                         if rule.minimum_valid(value) and rule.maximum_valid(value):
                             if rule.severity == Rule.SEVERITY_VALID:
-                                '''
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.results[row.id]['data_quality_results'].append(
-                                    {
-                                        'field': rule.field,
-                                        'formatted_field': display_name,
-                                        'value': s_value,
-                                        'table_name': rule.table_name,
-                                        'message': display_name + ' is valid',
-                                        'detailed_message': display_name + ' [' + s_value + '] is valid data',
-                                        'severity': rule.get_severity_display(),
-                                    }
-                                )
-                                '''
                                 label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)

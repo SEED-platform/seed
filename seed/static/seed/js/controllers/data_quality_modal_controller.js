@@ -86,10 +86,6 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         sortable: false,
         title: 'Applied Label'
       }, {
-        sort_column: 'condition',
-        sortable: false,
-        title: 'Condition'
-      }, {
         sort_column: 'detailed_message',
         sortable: false,
         title: 'Error Message'
@@ -178,7 +174,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
           value = value.toLowerCase();
           _.forEach($scope.dataQualityResults, function (result) {
             if (result.visible) {
-              if (_.includes(['detailed_message', 'formatted_field', 'table_name', 'condition'], column)) {
+              if (_.includes(['detailed_message', 'formatted_field', 'table_name'], column)) {
                 _.forEach(result.data_quality_results, function (row) {
                   if (!_.includes(row[column].toLowerCase(), value)) row.visible = false;
                 });
