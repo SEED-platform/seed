@@ -221,8 +221,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               if (rule.condition === 'not null' || rule.condition === 'required') {
                 r.min = null;
                 r.max = null;
-                r.condition = 'check null';
               }
+              r.condition = rule.condition;
 
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));

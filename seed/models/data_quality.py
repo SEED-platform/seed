@@ -720,7 +720,7 @@ class DataQualityCheck(models.Model):
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
                             continue
-                        self.add_result_missing_req(row.id, rule, display_name, value)
+                        self.add_result_is_null(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
