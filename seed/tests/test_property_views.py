@@ -558,7 +558,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         self.client.post(url, post_params, content_type='application/json')
 
         # There should only be _two_ PropertyViews (our setUp creates an additional one that's not merged)
-        self.assertEqual(PropertyView.objects.count(), 1)
+        self.assertEqual(PropertyView.objects.count(), 2)
 
         # The Property of the *newest* -View has all of the Meters now.
         meters = PropertyView.objects.last().property.meters
