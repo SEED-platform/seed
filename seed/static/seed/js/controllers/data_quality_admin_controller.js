@@ -275,7 +275,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (condition === 'required') {
           //TODO: 3-3-2020, need to check field, data type, and units to disable unrelated fields:
           //rule.not_null = rule.required = true;
-          //rule.required = false;
+          rule.required = false;
           $scope.change_required(rule);
         } else if (condition === 'not null') {
           rule.required = false;
