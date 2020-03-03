@@ -122,7 +122,7 @@ class Rule(models.Model):
     ]
 
     RULE_CHECK_NOT_NULL = ''
-    RULE_CHECK_NULL = 'check null'
+    RULE_CHECK_NULL = 'not null'
 
     DEFAULT_RULES = [
         {
@@ -715,6 +715,7 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
+                        print('here? ', rule.condition)
                         if rule.condition == Rule.RULE_CHECK_NULL:
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)

@@ -51,9 +51,17 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.state = $state.current;
 
-      $scope.conditions = [
+      /*$scope.conditions = [
         {id: 'check not null', label: ''},
         {id: 'check null', label: 'Null Value Check'}
+      ];*/
+      $scope.conditions = [
+        {id: null, label: ''},
+        {id: 'field', label: 'Field'},
+        //{id: 'data type', label: 'Data Type'},
+        {id: 'required', label: 'Required'},
+        {id: 'not null', label: 'Not Null'},
+        {id: 'units', label: 'Units'}
       ];
 
       $scope.data_types = [
@@ -210,11 +218,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 units: rule.units,
                 label: null
               };
-              if (rule.condition === 'check null') {
+              if (rule.condition === 'not null' || rule.condition === 'required') {
                 r.min = null;
                 r.max = null;
+                r.condition = 'check null';
               }
-              r.condition = rule.condition;
 
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
@@ -263,16 +271,24 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.change_condition = function (rule) {
         if (!rule.condition) rule.condition = null;
         var condition = rule.condition;
-        if (condition === 'check null') {
-          rule.min = null;
-          rule.max = null;
-        } else {
-          rule.not_null = true;
+        //if (condition === 'check null') {
+        if (condition === 'required') {
+          //TODO: 3-3-2020, need to check field, data type, and units to disable unrelated fields:
+          //rule.not_null = rule.required = true;
+          //rule.required = false;
+          $scope.change_required(rule);
+        } else if (condition === 'not null') {
+          rule.required = false;
+          rule.not_null = rule.required;
+          $scope.change_not_null(rule);
         }
+        rule.units = '';
+        rule.min = null;
+        rule.max = null;
       };
       $scope.filter_null = function (rule) {
         $scope.check_null = false; //to disable min and max values
-        if (rule.condition === 'check null') {
+        if (rule.condition === 'required' || rule.condition === 'not null') {
           rule.not_null = true;
           $scope.check_null = true;
         }
@@ -338,15 +354,18 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var required = !rule.required;
         _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
           currentRule.required = required;
-          currentRule.not_null = required;
+          if (required) currentRule.not_null = required;
         });
       };
 
       // Keep "not null" consistent for identical fields
       $scope.change_not_null = function (rule) {
+        if (rule.required) rule.required = false;
         var not_null = !rule.not_null;
+        var required = rule.required;
         _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
           currentRule.not_null = not_null;
+          currentRule.required = required;
         });
       };
 

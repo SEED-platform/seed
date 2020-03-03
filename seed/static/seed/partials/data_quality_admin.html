@@ -74,7 +74,6 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <!--2/25/20 Edit option value to be able to uncheck 'check null' to initiate normal non null value check rule-->
                                 <select class="form-control input-sm" ng-model="rule.condition" ng-options="condition.id as condition.label for condition in ::conditions" ng-change="rule.rule_type = 1; change_condition(rule)"></select>
                             </td>
                             <td>
@@ -101,7 +100,7 @@
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'" ng-disabled="filter_null(rule)">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1" ng-disabled="filter_null(rule)"></select>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'valid-bg': rule.severity === 'valid', 'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
