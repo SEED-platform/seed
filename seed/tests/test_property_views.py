@@ -537,7 +537,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         }
         self.client.post(pm_import_url, pm_import_post_params)
 
-        # For second Property, add GreenButton Meters containing 2 readings for Electricity only
+        # For second Property, add BuildingSync file containing 6 meters
         bs_filename = "buildingsync_v2_0_bricr_workflow.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/../building_sync/tests/data/" + bs_filename
         bs_file = open(filepath, 'rb')
@@ -560,7 +560,7 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
         # There should only be _two_ PropertyViews (our setUp creates an additional one that's not merged)
         self.assertEqual(PropertyView.objects.count(), 1)
 
-        # The Property of the (only) -View has all of the Meters now.
+        # The Property of the *newest* -View has all of the Meters now.
         meters = PropertyView.objects.last().property.meters
 
         self.assertEqual(meters.count(), 8)  # 2 from PM, 6 from BS
