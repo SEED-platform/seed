@@ -58,7 +58,8 @@ class TestMeasures(DeleteModelsTestCase):
         meter = Meter.objects.create(scenario_id=source_scenario.id)
         MeterReading.objects.create(meter=meter,
                                     start_time=parse_datetime('2016-10-03T19:00:00+0200'),
-                                    end_time=parse_datetime('2016-10-04T19:00:00+0200'))
+                                    end_time=parse_datetime('2016-10-04T19:00:00+0200'),
+                                    conversion_factor=1.0)
         self.assertEqual(MeterReading.objects.filter(meter_id=meter.id).count(), 1)
 
         # -- Act
