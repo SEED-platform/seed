@@ -358,11 +358,12 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         mock_serializer.return_value.is_valid.return_value = True
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
+        property = FakePropertyFactory(organization=self.org).get_property()
         data = {
             'org_id': 1,
             'cycle': 2,
             'state': {'test': 3},
-            'property': 4
+            'property': property.id
         }
 
         serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
@@ -380,11 +381,12 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
         mock_request.method = 'PATCH'
+        property = FakePropertyFactory(organization=self.org).get_property()
         data = {
             'org_id': 1,
             'cycle': 2,
             'state': {'test': 3},
-            'property': 4
+            'property': property.id
         }
         serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
         serializer.update(self.property_view, data)

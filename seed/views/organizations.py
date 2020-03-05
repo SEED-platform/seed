@@ -18,7 +18,7 @@ from random import randint
 
 from rest_framework import status
 from rest_framework import viewsets, serializers
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 
 from seed import tasks
 from seed.decorators import ajax_request_class
@@ -379,7 +379,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def users(self, request, pk=None):
         """
         Retrieve all users belonging to an org.
@@ -419,7 +419,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['DELETE'])
+    @action(detail=True, methods=['DELETE'])
     def remove_user(self, request, pk=None):
         """
         Removes a user from an organization and deletes orphaned users.
@@ -568,7 +568,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def add_user(self, request, pk=None):
         """
         Adds an existing user to an organization.
@@ -613,7 +613,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def save_settings(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields
@@ -723,7 +723,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def query_threshold(self, request, pk=None):
         """
         Returns the "query_threshold" for an org.  Searches from
@@ -758,7 +758,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     # TODO: Shared fields structure has a "class" attribute that won't serialize
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
         Retrieves all fields marked as shared for the organization. Will only return used fields.
@@ -794,7 +794,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def sub_org(self, request, pk=None):
         """
         Creates a child org of a parent org.
@@ -855,7 +855,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def matching_criteria_columns(self, request, pk=None):
         """
         Retrieve all matching criteria columns for an org.
@@ -889,7 +889,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Run match_merge_link for an org.
@@ -923,7 +923,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link_preview(self, request, pk=None):
         """
         Run match_merge_link preview for an org and record type.
@@ -974,7 +974,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def match_merge_link_result(self, request, pk=None):
         try:
             Organization.objects.get(pk=pk)
@@ -991,7 +991,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def geocoding_columns(self, request, pk=None):
         """
         Retrieve all geocoding columns for an org.

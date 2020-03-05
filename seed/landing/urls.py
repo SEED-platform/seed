@@ -7,7 +7,7 @@
 
 from django.conf.urls import url
 from django.contrib.auth.views import (
-    logout, password_change, password_change_done
+    logout_then_login, PasswordChangeView, PasswordChangeDoneView
 )
 
 from seed.landing.views import (
@@ -20,8 +20,7 @@ urlpatterns = [
     url(r'^accounts/login/$', login_view, name='login'),
     url(
         r'^accounts/logout/$',
-        logout,
-        {'next_page': '/?logout'},
+        logout_then_login,
         name='logout'
     ),
     url(r'^accounts/password/reset/$', password_reset, name='password_reset'),
@@ -49,13 +48,13 @@ urlpatterns = [
     ),
     url(
         r'^password_change/$',
-        password_change,
+        PasswordChangeView.as_view(),
         {'template_name': 'landing/password_change_form.html'},
         name="password_change"
     ),
     url(
         r'^password_change/done/$',
-        password_change_done,
+        PasswordChangeDoneView.as_view(),
         {'template_name': 'landing/password_change_done.html'}
     ),
 ]

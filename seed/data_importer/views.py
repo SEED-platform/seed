@@ -18,7 +18,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, \
+from rest_framework.decorators import api_view, action, parser_classes, \
     permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -189,7 +189,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def create_from_pm_import(self, request):
         """
         Create an import_record from a PM import request.
@@ -538,7 +538,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def first_five_rows(self, request, pk=None):
         """
         Retrieves the first five rows of an ImportFile.
@@ -583,7 +583,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def raw_column_names(self, request, pk=None):
         """
         Retrieves a list of all column names from an ImportFile.
@@ -611,7 +611,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['POST'], url_path='filtered_mapping_results')
+    @action(detail=True, methods=['POST'], url_path='filtered_mapping_results')
     def filtered_mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
@@ -755,7 +755,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def perform_mapping(self, request, pk=None):
         """
         Starts a background task to convert imported raw data into
@@ -793,7 +793,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def start_system_matching_and_geocoding(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
@@ -828,7 +828,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def start_data_quality_checks(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
@@ -860,7 +860,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def data_quality_progress(self, request, pk=None):
         """
         Return the progress of the data quality check.
@@ -889,7 +889,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def save_raw_data(self, request, pk=None):
         """
         Starts a background task to import raw data from an ImportFile
@@ -959,7 +959,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def mapping_done(self, request, pk=None):
         """
         Tell the backend that the mapping is complete.
@@ -1001,7 +1001,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def save_column_mappings(self, request, pk=None):
         """
         Saves the mappings between the raw headers of an ImportFile and the
@@ -1050,7 +1050,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def matching_and_geocoding_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
@@ -1212,7 +1212,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @permission_classes((SEEDOrgPermissions,))
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
         Returns suggested mappings from an uploaded file's headers to known
