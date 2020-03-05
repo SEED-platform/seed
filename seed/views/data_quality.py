@@ -10,7 +10,7 @@ import csv
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import action
 from unidecode import unidecode
 
 from seed.data_importer.tasks import do_checks
@@ -146,7 +146,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def csv(self, request, pk):
         """
         Download a csv of the data quality checks by the pk which is the cache_key
@@ -193,7 +193,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def data_quality_rules(self, request):
         """
         Returns the data_quality rules for an org.
@@ -249,7 +249,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['PUT'])
+    @action(detail=False, methods=['PUT'])
     def reset_all_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
@@ -287,7 +287,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['PUT'])
+    @action(detail=False, methods=['PUT'])
     def reset_default_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
@@ -325,7 +325,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def save_data_quality_rules(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields.
@@ -427,7 +427,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def results(self, request):
         """
         Return the result of the data quality based on the ID that was given during the

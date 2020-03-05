@@ -41,6 +41,33 @@ STATUS_CHOICES = (
 )
 
 
+def _get_default_display_meter_units():
+    return {
+        'Coal (anthracite)': 'kBtu (thousand Btu)',
+        'Coal (bituminous)': 'kBtu (thousand Btu)',
+        'Coke': 'kBtu (thousand Btu)',
+        'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
+        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
+        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
+        'District Chilled Water - Other': 'kBtu (thousand Btu)',
+        'District Hot Water': 'kBtu (thousand Btu)',
+        'District Steam': 'kBtu (thousand Btu)',
+        'Electric - Grid': 'kWh (thousand Watt-hours)',
+        'Electric - Solar': 'kWh (thousand Watt-hours)',
+        'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
+        'Kerosene': 'kBtu (thousand Btu)',
+        'Natural Gas': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',
+        'Propane': 'kBtu (thousand Btu)',
+        'Wood': 'kBtu (thousand Btu)'
+    }
+
+
 class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
@@ -154,7 +181,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = JSONField(default=_default_display_meter_units.copy())
+    display_meter_units = JSONField(default=_get_default_display_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.

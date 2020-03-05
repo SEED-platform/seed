@@ -16,7 +16,7 @@ import requests
 import xmltodict
 from django.http import JsonResponse
 from rest_framework import serializers, status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
 try:
@@ -41,7 +41,7 @@ class PortfolioManagerViewSet(GenericViewSet):
     """
     serializer_class = PortfolioManagerSerializer
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def template_list(self, request):
         """
         This API view makes a request to ESPM for the list of available report templates, including root templates and
@@ -79,7 +79,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def report(self, request):
         """
         This API view makes a request to ESPM to generate and download a report based on a specific template.

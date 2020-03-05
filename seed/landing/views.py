@@ -78,18 +78,17 @@ def login_view(request):
 
 
 def password_set(request, uidb64=None, token=None):
-    return auth.views.password_reset_confirm(
+    return auth.views.PasswordResetConfirmView.as_view(template_name='landing/password_set.html')(
         request,
         uidb64=uidb64,
         token=token,
-        template_name='landing/password_set.html',
         post_reset_redirect=reverse('landing:password_set_complete')
     )
 
 
 def password_reset(request):
-    return auth.views.password_reset(
-        request, template_name='landing/password_reset.html',
+    return auth.views.PasswordResetView.as_view(template_name='landing/password_reset.html')(
+        request,
         subject_template_name='landing/password_reset_subject.txt',
         email_template_name='landing/password_reset_email.html',
         post_reset_redirect=reverse('landing:password_reset_done'),
@@ -98,20 +97,18 @@ def password_reset(request):
 
 
 def password_reset_done(request):
-    return auth.views.password_reset_done(
-        request,
+    return auth.views.PasswordResetDoneView.as_view(
         template_name='landing/password_reset_done.html'
-    )
+    )(request)
 
 
 def password_reset_confirm(request, uidb64=None, token=None):
-    return auth.views.password_reset_confirm(
+    return auth.views.PasswordResetConfirmView.as_view(template_name='landing/password_reset_confirm.html')(
         request,
         uidb64=uidb64,
         token=token,
-        template_name='landing/password_reset_confirm.html',
         set_password_form=SetPasswordForm,
-        post_reset_redirect=reverse('landing:password_reset_complete')
+        success_url=reverse('landing:password_reset_complete')
     )
 
 
@@ -120,11 +117,10 @@ def password_reset_complete(request):
 
 
 def signup(request, uidb64=None, token=None):
-    return auth.views.password_reset_confirm(
+    return auth.views.PasswordResetConfirmView.as_view(template_name='landing/signup.html')(
         request,
         uidb64=uidb64,
         token=token,
-        template_name='landing/signup.html',
         set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:landing_page') + "?setup_complete"
     )

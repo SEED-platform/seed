@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 
@@ -21,7 +21,7 @@ class GeocodeViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def geocode_by_ids(self, request):
         body = dict(request.data)
         property_ids = body.get('property_ids')
@@ -36,7 +36,7 @@ class GeocodeViews(viewsets.ViewSet):
             geocode_buildings(taxlots)
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def confidence_summary(self, request):
         body = dict(request.data)
         property_ids = body.get('property_ids')
@@ -95,7 +95,7 @@ class GeocodeViews(viewsets.ViewSet):
         return result
 
     @ajax_request_class
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def api_key_exists(self, request):
         org_id = request.GET.get("organization_id")
         org = Organization.objects.get(id=org_id)

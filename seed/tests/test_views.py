@@ -519,7 +519,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -581,7 +581,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -606,7 +606,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
         results = result['results'][0]
 
@@ -678,7 +678,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -724,7 +724,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -774,7 +774,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
 
         column_name_mappings_related = {}
@@ -803,7 +803,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 'one',
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -822,7 +822,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 10,
             'per_page', 999999999
         )
-        response = self.client.post(filter_properties_url, data={'profile_id': None})
+        response = self.client.post(filter_properties_url, data={})
         result = response.json()
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -1016,7 +1016,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 1,
             'per_page', 999999999,
             'cycle', self.cycle.pk
-        ), data={'profile_id': None})
+        ), data={})
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1109,7 +1109,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 1,
             'per_page', 999999999,
         )
-        response = self.client.post(url, data={'profile_id': None})
+        response = self.client.post(url, data={})
         results = response.json()['results']
 
         self.assertEquals(len(results), 1)
@@ -1128,7 +1128,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'page', 1,
             'per_page', 999999999
         )
-        data = {'profile_id': None}
+        data = {}
         response = self.client.post(url, data=data)
         result = response.json()
 
@@ -1185,7 +1185,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': None})
+        ), data={})
         results = response.json()['results']
         self.assertEquals(len(results), 2)
 
@@ -1256,7 +1256,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={'profile_id': None})
+        ), data={})
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1295,7 +1295,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'cycle', self.cycle.pk,
             'page', 'bad',
             'per_page', 999999999,
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -1331,7 +1331,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={'profile_id': None})
+        ), data={})
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
