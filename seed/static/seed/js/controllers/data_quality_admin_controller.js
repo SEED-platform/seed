@@ -51,14 +51,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.state = $state.current;
 
-      /*$scope.conditions = [
-        {id: 'check not null', label: ''},
-        {id: 'check null', label: 'Null Value Check'}
-      ];*/
       $scope.conditions = [
-        {id: null, label: ''},
+        {id: '', label: ''},
         {id: 'field', label: 'Field'},
-        //{id: 'data type', label: 'Data Type'},
+        {id: 'data type', label: 'Data Type'},
         {id: 'required', label: 'Required'},
         {id: 'not null', label: 'Not Null'},
         {id: 'units', label: 'Units'}
@@ -224,6 +220,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               }
               r.condition = rule.condition;
 
+              if (rule.condition === 'units') {
+                r.units = '';
+              }
+              r.units = rule.units;
+
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
                 if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
@@ -271,10 +272,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.change_condition = function (rule) {
         if (!rule.condition) rule.condition = null;
         var condition = rule.condition;
-        //if (condition === 'check null') {
+        //TODO: 3-3-2020, need to check field, data type, and units to disable unrelated fields:
+        // check empty (empty field) or incorrect data type;
         if (condition === 'required') {
-          //TODO: 3-3-2020, need to check field, data type, and units to disable unrelated fields:
-          //rule.not_null = rule.required = true;
           rule.required = false;
           $scope.change_required(rule);
         } else if (condition === 'not null') {
@@ -292,6 +292,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           rule.not_null = true;
           $scope.check_null = true;
         }
+        if (rule.condition === 'units') $scope.check_null = true;
         return $scope.check_null;
       };
 

@@ -121,8 +121,11 @@ class Rule(models.Model):
         (SEVERITY_VALID, 'valid'),
     ]
 
-    RULE_CHECK_NOT_NULL = ''
-    RULE_CHECK_NULL = 'not null'
+    RULE_FIELD = 'field'
+    RULE_DATA_TYPE = DATA_TYPES
+    RULE_REQUIRED = 'required'
+    RULE_NOT_NULL = 'not null'
+    RULE_UNITS = 'units'
 
     DEFAULT_RULES = [
         {
@@ -309,7 +312,7 @@ class Rule(models.Model):
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
-    condition = models.CharField(max_length=200, default=RULE_CHECK_NOT_NULL)
+    condition = models.CharField(max_length=200, default='', blank=True)
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
     rule_type = models.IntegerField(choices=RULE_TYPE, null=True)
     required = models.BooleanField(default=False)
@@ -715,8 +718,7 @@ class DataQualityCheck(models.Model):
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
-                        print('here? ', rule.condition)
-                        if rule.condition == Rule.RULE_CHECK_NULL:
+                        if rule.condition == Rule.RULE_NOT_NULL or rule.condition == Rule.RULE_REQUIRED:
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
                             continue

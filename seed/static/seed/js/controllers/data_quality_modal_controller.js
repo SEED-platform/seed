@@ -36,7 +36,6 @@ angular.module('BE.seed.controller.data_quality_modal', [])
           var index = 0;
           var remove = [];
           _.forEach(results.data_quality_results, function (result) {
-            console.log(result);
             if (_.isMatch(result, {value: null, condition: 'not null'}) || _.isMatch(result, {value: null, condition: 'required'})) {
               check_null = true;
             }
