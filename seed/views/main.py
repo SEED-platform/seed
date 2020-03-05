@@ -96,7 +96,7 @@ def version(request):
     })
 
 
-def error404(request):
+def error404(request, exception):
     # Okay, this is a bit of a hack. Needed to move on.
     if '/api/' in request.path:
         return JsonResponse({

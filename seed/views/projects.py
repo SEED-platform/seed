@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.utils import timezone
 from rest_framework import viewsets, status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -907,7 +907,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
 
     @api_endpoint_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def count(self, request):
         """
         Returns the number of projects within the org tree to which
