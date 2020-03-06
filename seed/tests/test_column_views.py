@@ -144,6 +144,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': True,
+            'recognize_empty': False,
         }
 
         # randomly check a column
