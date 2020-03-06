@@ -37,7 +37,7 @@ class RulesSubSerializer(serializers.Serializer):
 class RulesSubSerializerB(serializers.Serializer):
     field = serializers.CharField(max_length=100)
     enabled = serializers.BooleanField()
-    condition= serializers.CharField(max_length=100)
+    condition = serializers.CharField(max_length=100)
     data_type = serializers.CharField(max_length=100)
     min = serializers.FloatField()
     max = serializers.FloatField()

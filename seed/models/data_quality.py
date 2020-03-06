@@ -714,7 +714,7 @@ class DataQualityCheck(models.Model):
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
                     # Empty fields
-                    #if rule.required:
+                    # if rule.required:
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.not_null:
@@ -1040,6 +1040,7 @@ class DataQualityCheck(models.Model):
                     raise IntegrityError(
                         'Label with super_organization_id={} cannot be applied to a record with parent '
                         'organization_id={}.'.format(
+                            label_org_id,
                             label_org_id,
                             taxlot_parent_org_id
                         )
