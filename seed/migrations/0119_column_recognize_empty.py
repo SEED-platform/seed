@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0112_refresh_matching_criteria'),
+        ('seed', '0118_match_merge_link_all_orgs'),
     ]
 
     operations = [
