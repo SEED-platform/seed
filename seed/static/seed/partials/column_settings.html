@@ -64,6 +64,9 @@
                             <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
                             <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
                             <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_recognize_empty_sort()">
+                              <span>Recognize Empty</span> <i class="glyphicon glyphicon-sort"></i>
+                            </th>
                             <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_matching_criteria_sort()">
                                 <span>Match Criteria</span> <i class="glyphicon glyphicon-list"></i>
                             </th>
@@ -83,6 +86,7 @@
                                      placeholder="{$:: 'Search column name' | translate $}"
                                      ng-class="{active: filter_params.column_name.length > 0}">
                             </th>
+                            <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
@@ -118,6 +122,9 @@
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+                            <td class="text-center" ng-click="change_recognize_empty(column)">
+                                <input type="checkbox" ng-checked="column.recognize_empty" class="no-click">
                             </td>
 
                             <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
