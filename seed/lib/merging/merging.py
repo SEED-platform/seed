@@ -84,7 +84,7 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
+def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -96,9 +96,10 @@ def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
     all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
+        recognize_empty = key in recognize_empty_columns
         val1 = ed1.get(key, None)
         val2 = ed2.get(key, None)
-        if val1 and val2:
+        if (val1 and val2) or recognize_empty:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
             if ignore_merge_protection or col_prior == 'Favor New':
@@ -124,11 +125,22 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     # Calculate the difference between the two states and save into a dictionary
     can_attrs = get_state_attrs([state1, state2])
 
+    recognize_empty_columns = state2.organization.column_set.filter(
+        table_name=state2.__class__.__name__,
+        recognize_empty=True,
+        is_extra_data=False
+    ).values_list('column_name', flat=True)
+
     default = state2
     for attr in can_attrs:
-        # Do we have any differences between these fields? - Check if not None instead of if value.
-        attr_values = [value for value in list(can_attrs[attr].values()) if value is not None]
-        attr_values = [v for v in attr_values if v is not None]
+        recognize_empty = attr in recognize_empty_columns
+
+        attr_values = [
+            value
+            for value
+            in list(can_attrs[attr].values())
+            if value is not None or recognize_empty
+        ]
 
         attr_value = None
         # Two, differing values are set.
@@ -154,10 +166,17 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         else:
             setattr(merged_state, attr, attr_value)
 
+    recognize_empty_ed_columns = state2.organization.column_set.filter(
+        table_name=state2.__class__.__name__,
+        recognize_empty=True,
+        is_extra_data=True
+    ).values_list('column_name', flat=True)
+
     merged_state.extra_data = _merge_extra_data(
         state1.extra_data,
         state2.extra_data,
         priorities['extra_data'],
+        recognize_empty_ed_columns,
         ignore_merge_protection
     )
 
