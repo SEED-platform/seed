@@ -104,12 +104,11 @@ class Meter(models.Model):
         bulk_create is used.
         """
         if overlaps_possible:
-            reading_strings = []
-            for reading in source_meter.meter_readings.all():
-                conversion_factor = reading.conversion_factor if reading.conversion_factor is not None else 'NULL'
-                reading_strings.append(
-                    f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {conversion_factor})"
-                )
+            reading_strings = [
+                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
+                for reading
+                in source_meter.meter_readings.all()
+            ]
 
             sql = (
                 "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +

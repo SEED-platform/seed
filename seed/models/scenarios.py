@@ -94,14 +94,15 @@ class Scenario(models.Model):
         try:
             property_ = PropertyView.objects.get(state=self.property_state).property
         except PropertyView.DoesNotExist:
-            property_ = None
+            # Since meters are linked to a specific property, we need to ensure the
+            # property already exists
+            raise Exception('Expected PropertyState to already be associated with a Property.')
 
         for source_meter in source_scenario.meter_set.all():
             # create new meter and copy over the readings from the source_meter
             meter = Meter.objects.get(pk=source_meter.id)
             meter.pk = None
             meter.scenario_id = self.id
-            if property_ is not None:
-                meter.property = property_
+            meter.property = property_
             meter.save()  # save to get new id / association
             meter.copy_readings(source_meter, overlaps_possible=False)

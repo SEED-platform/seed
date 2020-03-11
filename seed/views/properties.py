@@ -497,7 +497,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
             # create new property state for merging into
             merged_state = state.objects.create(organization_id=organization_id)
-            merged_state.save()
 
             # Create new view for the merged property
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,

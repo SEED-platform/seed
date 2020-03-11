@@ -611,7 +611,7 @@ class PropertyState(models.Model):
         return coparents, len(coparents)
 
     @classmethod
-    def merge_relationships(cls, merged_state, state1, state2, property_id=None):
+    def merge_relationships(cls, merged_state, state1, state2):
         """
         Merge together the old relationships with the new.
         """
