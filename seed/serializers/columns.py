@@ -29,7 +29,7 @@ class ColumnSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'organization_id', 'table_name', 'merge_protection', 'shared_field_type',
             'column_name', 'is_extra_data', 'unit_name', 'unit_type', 'display_name', 'data_type',
-            'is_matching_criteria',
+            'is_matching_criteria', 'recognize_empty',
         )
 
     def concat_name(self, obj):

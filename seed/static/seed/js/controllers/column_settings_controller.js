@@ -76,6 +76,11 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+      $scope.change_recognize_empty = function (column) {
+        column.recognize_empty = !column.recognize_empty;
+        $scope.setModified();
+      };
+
       $scope.setModified = function () {
         $scope.columns_updated = false;
         updateDiff();
