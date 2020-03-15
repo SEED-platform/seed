@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import (
@@ -22,7 +22,7 @@ from seed.utils.meters import PropertyMeterReadingsExporter
 class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def parsed_meters_confirmation(self, request):
         body = dict(request.data)
         file_id = body['file_id']
@@ -43,7 +43,7 @@ class MeterViewSet(viewsets.ViewSet):
         return result
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def greenbutton_parsed_meters_confirmation(self, request):
         body = dict(request.data)
         file_id = body['file_id']
@@ -68,7 +68,7 @@ class MeterViewSet(viewsets.ViewSet):
         return result
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def property_meters(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
@@ -100,7 +100,7 @@ class MeterViewSet(viewsets.ViewSet):
         return res
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def property_meter_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
@@ -116,7 +116,7 @@ class MeterViewSet(viewsets.ViewSet):
         return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def valid_types_units(self, request):
         return {
             type: list(units.keys())

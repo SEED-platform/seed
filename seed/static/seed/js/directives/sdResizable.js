@@ -29,6 +29,9 @@
         elem.on('resizestop', function () {
           if (scope.callback) scope.callback();
         });
+        elem.on('resize', function (event, ui) {
+          elem.css('minWidth', ui.size.width + 'px');
+        });
         // keeping this here for when we are ready to add in the double-click
         /*elem.on('dblclick', function(e) {
          console.log('dbl-clicked, elem: ' + elem + ', e: ' + e);
