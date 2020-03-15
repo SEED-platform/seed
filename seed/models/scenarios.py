@@ -97,5 +97,5 @@ class Scenario(models.Model):
             meter = Meter.objects.get(pk=source_meter.id)
             meter.pk = None
             meter.scenario_id = self.id
-            meter.copy_readings(source_meter, overlaps_possible=False)
             meter.save()  # save to get new id / association
+            meter.copy_readings(source_meter, overlaps_possible=False)
