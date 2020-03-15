@@ -480,8 +480,31 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 state1 = merged_state
             state2 = state.objects.get(id=state_ids[index])
 
-            priorities = Column.retrieve_priorities(organization_id)
+            # Create new inventory record for the merged result
+            inventory_record = inventory(organization_id=organization_id)
+            inventory_record.save()
+
+            # grab existing views for the properties we're merging
+            views = view.objects.filter(state_id__in=[state1.id, state2.id])
+            view_ids = list(views.values_list('id', flat=True))
+
+            # Find unique notes for the views for later
+            notes = list(Note.objects.values(
+                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
+            ).filter(property_view_id__in=view_ids).distinct())
+
+            cycle_id = views.first().cycle_id
+
+            # create new property state for merging into
             merged_state = state.objects.create(organization_id=organization_id)
+
+            # Create new view for the merged property
+            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
+                            property_id=inventory_record.id)
+            new_view.save()
+
+            # merge states
+            priorities = Column.retrieve_priorities(organization_id)
             merged_state = merging.merge_state(
                 merged_state, state1, state2, priorities['PropertyState']
             )
@@ -509,25 +532,11 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             state2.merge_state = MERGE_STATE_UNKNOWN
             state2.save()
 
-            # Delete existing views and inventory records
-            views = view.objects.filter(state_id__in=[state1.id, state2.id])
-            view_ids = list(views.values_list('id', flat=True))
-
-            # Find unique notes
-            notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
-            ).filter(property_view_id__in=view_ids).distinct())
-
-            cycle_id = views.first().cycle_id
             label_ids = []
             # Get paired view ids
             paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
                                    .order_by('taxlot_view_id').distinct('taxlot_view_id')
                                    .values_list('taxlot_view_id', flat=True))
-
-            # Create new inventory record
-            inventory_record = inventory(organization_id=organization_id)
-            inventory_record.save()
 
             # Add meters in the following order without regard for the source persisting.
             inventory_record.copy_meters(
@@ -539,15 +548,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 source_persists=False
             )
 
+            # grab labels from previous views and delete the old properties
             for v in views:
                 label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
                 v.property.delete()
             label_ids = list(set(label_ids))
 
-            # Create new labels and view
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
-                            property_id=inventory_record.id)
-            new_view.save()
+            # add previous labels to the new property view
             for label_id in label_ids:
                 label(propertyview_id=new_view.id, statuslabel_id=label_id).save()
 
