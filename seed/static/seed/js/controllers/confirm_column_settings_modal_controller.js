@@ -90,13 +90,6 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
             '</div>',
         },
         {
-          field: 'recognize_empty',
-          displayName: 'Recognize Empty',
-          cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.recognize_empty === undefined $}" ng-checked="{$ row.entity.recognize_empty === true $}" style="margin: 0px;">' +
-            '</div>',
-        },
-        {
           field: 'is_matching_criteria',
           displayName: 'Matching Criteria Change',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +

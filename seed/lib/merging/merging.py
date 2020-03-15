@@ -95,9 +95,6 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
     one column. Specifically, the complete geocoding results of either the new
     state or the existing state is used - not a combination of the geocoding
     results from each.
-
-    Note, to avoid unnecessary complications, it's intended for these fields to
-    be left out of the logic involving recognize_empty.
     """
     geocoding_attr_cols = [
         'geocoding_confidence',
@@ -135,7 +132,7 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
         setattr(merged_state, geo_attr, getattr(geo_state, geo_attr, None))
 
 
-def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False):
+def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -147,10 +144,9 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
     all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
-        recognize_empty = key in recognize_empty_columns
         val1 = ed1.get(key, None)
         val2 = ed2.get(key, None)
-        if (val1 and val2) or recognize_empty:
+        if val1 and val2:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
             if ignore_merge_protection or col_prior == 'Favor New':
@@ -176,25 +172,13 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     # Calculate the difference between the two states and save into a dictionary
     can_attrs = get_state_attrs([state1, state2])
 
-    # Handle geocoding results first so that recognize_empty logic is not processed on them.
     _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs, ignore_merge_protection)
-
-    recognize_empty_columns = state2.organization.column_set.filter(
-        table_name=state2.__class__.__name__,
-        recognize_empty=True,
-        is_extra_data=False
-    ).values_list('column_name', flat=True)
 
     default = state2
     for attr in can_attrs:
-        recognize_empty = attr in recognize_empty_columns
-
-        attr_values = [
-            value
-            for value
-            in list(can_attrs[attr].values())
-            if value is not None or recognize_empty
-        ]
+        # Do we have any differences between these fields? - Check if not None instead of if value.
+        attr_values = [value for value in list(can_attrs[attr].values()) if value is not None]
+        attr_values = [v for v in attr_values if v is not None]
 
         attr_value = None
         # Two, differing values are set.
@@ -220,17 +204,10 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         else:
             setattr(merged_state, attr, attr_value)
 
-    recognize_empty_ed_columns = state2.organization.column_set.filter(
-        table_name=state2.__class__.__name__,
-        recognize_empty=True,
-        is_extra_data=True
-    ).values_list('column_name', flat=True)
-
     merged_state.extra_data = _merge_extra_data(
         state1.extra_data,
         state2.extra_data,
         priorities['extra_data'],
-        recognize_empty_ed_columns,
         ignore_merge_protection
     )
 
