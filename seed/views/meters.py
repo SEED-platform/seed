@@ -76,28 +76,16 @@ class MeterViewSet(viewsets.ViewSet):
         property_id = PropertyView.objects.get(pk=property_view_id).property.id
         energy_types = dict(Meter.ENERGY_TYPES)
 
-        res = []
-        for meter in Meter.objects.filter(property_id=property_id):
-            if meter.source == meter.GREENBUTTON:
-                source = 'GB'
-                source_id = usage_point_id(meter.source_id)
-            elif meter.source == meter.BUILDINGSYNC:
-                source = 'BS'
-                source_id = meter.source_id
-            else:
-                source = 'PM'
-                source_id = meter.source_id
-
-            res.append({
+        return [
+            {
                 'id': meter.id,
                 'type': energy_types[meter.type],
-                'source': source,
-                'source_id': source_id,
-                'scenario_id': meter.scenario.id if meter.scenario is not None else None,
-                'scenario_name': meter.scenario.name if meter.scenario is not None else None
-            })
-
-        return res
+                'source': "PM" if meter.source == Meter.PORTFOLIO_MANAGER else "GB",
+                'source_id': meter.source_id if meter.source == Meter.PORTFOLIO_MANAGER else usage_point_id(meter.source_id),
+            }
+            for meter
+            in Meter.objects.filter(property_id=property_id)
+        ]
 
     @ajax_request_class
     @action(detail=False, methods=['POST'])

@@ -379,7 +379,6 @@
                                 <tr>
                                     <th sd-resizable>Scenario</th>
                                     <th sd-resizable class="ellipsis-resizable">Type</th>
-                                    <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
                                     <th sd-resizable class="ellipsis-resizable">Measures</th>
                                 </tr>
                             </thead>
@@ -387,10 +386,6 @@
                                 <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
                                     <td> {$ scenario.name $}</td>
                                     <td> {$ scenario.temporal_status $}</td>
-                                    <td>
-                                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
-                                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
-                                    </td>
                                     <td>
                                         <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
                                             <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>

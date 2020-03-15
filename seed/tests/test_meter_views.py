@@ -363,7 +363,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         })
 
         result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = json.loads(result.content)
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         electric_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.ELECTRICITY_GRID)
         gas_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.NATURAL_GAS, source=Meter.PORTFOLIO_MANAGER)
@@ -373,22 +373,16 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 'type': 'Electric - Grid',
                 'source': 'PM',
                 'source_id': '5766973-0',
-                'scenario_id': None,
-                'scenario_name': None
             }, {
                 'id': gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'PM',
                 'source_id': '5766973-1',
-                'scenario_id': None,
-                'scenario_name': None
             }, {
                 'id': gb_gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'GB',
                 'source_id': '123fakeID',
-                'scenario_id': None,
-                'scenario_name': None
             },
         ]
 

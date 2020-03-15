@@ -1,11 +1,8 @@
 #!/bin/bash -x
 
-# 2019-09-11: Build images for bricr dev for testing and can be removed after merged into develop.
 IMAGETAG=skip
 if [ "${TRAVIS_BRANCH}" == "develop" ]; then
     IMAGETAG=develop
-elif [ "${TRAVIS_BRANCH}" == "bricr-dev" ]; then
-    IMAGETAG=bricr-dev
 elif [ "${TRAVIS_BRANCH}" == "master" ]; then
     # Retrieve the version number from package.json
     IMAGETAG=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
