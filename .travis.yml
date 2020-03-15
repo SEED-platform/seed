@@ -27,7 +27,6 @@ before_install:
   - sudo apt-get remove -y postgresql\*
   - sudo apt-get install -y postgresql-11 postgresql-client-11
   - sudo apt-get install -y postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
-  - sudo cat /etc/postgresql/9.6/main/pg_hba.conf
   - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
   - sudo service postgresql restart 11
   - sudo rm /usr/local/bin/docker-compose
@@ -64,7 +63,7 @@ env:
     - TOX_ENV=python
     - TOX_ENV=flake8
     - TOX_ENV=docs
-#    - TOX_ENV=functional
+    - TOX_ENV=functional
     - TOX_ENV=apitest
 script:
   - tox -e $TOX_ENV
