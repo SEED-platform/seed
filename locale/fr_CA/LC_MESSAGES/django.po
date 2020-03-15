@@ -1936,16 +1936,6 @@ msgstr "Lire la suite ici."
 msgid "Recent Sale Date"
 msgstr "Date de vente récente"
 
-msgid "Recognize Empty"
-msgstr "Reconnaître vide"
-
-msgid "RECOGNIZE_EMPTY_EXPLANATION"
-msgstr "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\"."
-
-#, fuzzy
-msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
-msgstr "Avertissement: Lorsque cette case est cochée pour un champ et que ce champ n'est pas mappé lors de l'importation, les enregistrements entrants seront lus comme ayant des valeurs vides pour ce champ. Toutes les fusions résultantes auront des valeurs vides pour ce champ."
-
 msgid "Record from Source"
 msgstr "Enregistrement de la source"
 
