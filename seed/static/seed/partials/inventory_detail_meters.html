@@ -38,9 +38,19 @@
                     style="margin-left: 10px;">
                 </select>
             </div>
+            <br><br>
+            <label>Filter By:</label>
+            <div style="display: inline-block;">
+                <select class="form-control"
+                    ng-model="filterMethod.selected"
+                    ng-change="applyFilters()"
+                    ng-options="option for option in filterMethod.options"
+                    style="margin-left: 10px;">
+                </select>
+            </div>
         </div>
-        <div class="form-group" uib-dropdown is-open="meters_options.isopen" auto-close="outsideClick" on-toggle="meter_selection_toggled(open)" style="margin-top: 15px;">
-            <button type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="!has_meters">
+        <div class="form-group" uib-dropdown is-open="meters_options.isopen" auto-close="outsideClick" on-toggle="meter_selection_toggled(open)" style="margin-top: 15px;" ng-hide="filterMethod.selected !== 'meter'">
+            <button type="button" class="btn btn-default" uib-dropdown-toggle>
                 Filter Meters <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
@@ -48,6 +58,20 @@
                     <div>
                         <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
                             {$:: meter.label $}<input type="checkbox" ng-model="meter.selected" name="meter.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                        </label>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="form-group" uib-dropdown is-open="scenarios_options.isopen" auto-close="outsideClick" on-toggle="scenario_selection_toggled(open)" style="margin-top: 15px;" ng-hide="filterMethod.selected !== 'scenario'">
+            <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                Filter Scenarios <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
+                <li ng-repeat="scenario in scenario_selections">
+                    <div>
+                        <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                            {$:: scenario.label $}<input type="checkbox" ng-model="scenario.selected" name="scenario.label" style="width: 14px; height: 14px; margin-left: 10px;">
                         </label>
                     </div>
                 </li>
