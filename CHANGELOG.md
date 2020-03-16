@@ -1,3 +1,7 @@
+# SEED Version 2.6.1-Patch3
+
+- Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), New column setting to allow a field's empty values to be recognized as normal, non-empty values during record merges.
+
 # SEED Version 2.6.1-Patch2
 
 - Fixed [#2119]( https://github.com/SEED-platform/seed/issues/2119 ), Re-enable created and updated fields for master records on the front end
