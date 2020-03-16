@@ -33,7 +33,7 @@ def set_conversion_factor(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0109_auto_20190724_1251'),
+        ('seed', '0119_column_recognize_empty'),
     ]
 
     operations = [
