@@ -1927,6 +1927,15 @@ msgstr "Read more here."
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
 
+msgid "Recognize Empty"
+msgstr "Recognize Empty"
+
+msgid "RECOGNIZE_EMPTY_EXPLANATION"
+msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
+
+msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
+msgstr "Warning: When this is checked for a field and that field is not mapped during import, the incoming records will be read as having an empty values for that field. Any resulting merges will have empty values for this field."
+
 msgid "Record from Source"
 msgstr "Record from Source"
 
