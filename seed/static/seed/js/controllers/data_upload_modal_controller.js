@@ -152,7 +152,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.goto_data_mapping = function () {
         $uibModalInstance.close();
-        $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
+        if ($scope.source_type.includes('BuildingSync')) {
+          $state.go('mapping_xml', {importfile_id: $scope.dataset.import_file_id});
+        } else {
+          $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
+        }
       };
       $scope.view_my_properties = function () {
         $uibModalInstance.close();
@@ -329,6 +333,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.status_message = 'upload complete';
             $scope.dataset.filename = file.filename;
             $scope.step_14_message = null;
+            $scope.source_type = file.source_type;
 
             if (file.source_type === 'BuildingSync') {
               $scope.uploader.complete = true;

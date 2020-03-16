@@ -22,6 +22,7 @@ from itertools import chain
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
 from django.db.utils import ProgrammingError
@@ -43,6 +44,7 @@ from seed.decorators import lock_and_track
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
+from seed.lib.xml_mapping import reader as xml_reader
 from seed.lib.merging import merging
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
@@ -51,6 +53,7 @@ from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
+    BUILDINGSYNC_RAW,
     Column,
     ColumnMapping,
     Meter,
@@ -66,6 +69,7 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
     DATA_STATE_UNKNOWN)
+from seed.models import BuildingFile
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
@@ -436,6 +440,71 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     return True
 
 
+@shared_task(ignore_result=True)
+def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
+    """Does the work of matching a mapping to a source type and saving
+
+    :param ids: list of PropertyState IDs to map.
+    :param file_pk: int, the PK for an ImportFile obj.
+    :param file_type: int, represented by either BUILDINGSYNC or HPXML
+    :param prog_key: string, key of the progress key
+    :param increment: double, value by which to increment progress key
+    """
+    progress_data = ProgressData.from_key(prog_key)
+    import_file = ImportFile.objects.get(pk=file_pk)
+
+    org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
+
+    # TODO: get the custom mapping for the organization
+    try:
+        with transaction.atomic():
+            raw_property_states = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+            # for each raw state (xml file), create a new BuildingFile and process the data
+            for raw_property_state in raw_property_states:
+                filename = raw_property_state.extra_data['_filename']
+                property_xml = raw_property_state.extra_data['_xml']
+
+                the_file = SimpleUploadedFile(
+                    name=filename,
+                    content=property_xml.encode(),
+                    content_type="application/xml"
+                )
+                building_file = BuildingFile.objects.create(
+                    file=the_file,
+                    filename=the_file.name,
+                    file_type=file_type,
+                )
+
+                p_status, property_state, property_view, messages = building_file.process(org.id, import_file.cycle)
+                property_state.import_file = import_file
+                property_state.save()
+
+                PropertyAuditLog.objects.create(
+                    organization=org,
+                    state=property_state,
+                    name='Import Creation',
+                    description='Creation from Import file.',
+                    import_filename=import_file,
+                    record_type=AUDIT_IMPORT
+                )
+
+    except IntegrityError as e:
+        progress_data.finish_with_error('Could not map_row_chunk with error', str(e))
+        raise IntegrityError("Could not map_row_chunk with error: %s" % str(e))
+    except DataError as e:
+        _log.error(traceback.format_exc())
+        progress_data.finish_with_error('Invalid data found', str(e))
+        raise DataError("Invalid data found: %s" % (e))
+    except TypeError as e:
+        _log.error('Error mapping data with error: %s' % str(e))
+        progress_data.finish_with_error('Invalid type found while mapping data', (e))
+        raise DataError("Invalid type found while mapping data: %s" % (e))
+
+    progress_data.step()
+
+    return True
+
+
 def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
     column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
 
@@ -491,6 +560,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
+        'BuildingSync Raw': BUILDINGSYNC_RAW
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
@@ -504,9 +574,12 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     progress_data.total = len(id_chunks)
     progress_data.save()
-
-    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
-             for ids in id_chunks]
+    if source_type == BUILDINGSYNC_RAW:
+        tasks = [map_xml_chunk.si(ids, import_file_id, BuildingFile.BUILDINGSYNC, progress_data.key)
+                 for ids in id_chunks]
+    else:
+        tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
+                 for ids in id_chunks]
 
     return tasks
 
@@ -629,7 +702,10 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     if key == "bounding_box":  # capture bounding_box GIS field on raw record
                         raw_property.bounding_box = v
                     elif isinstance(v, basestring):
-                        new_chunk[key] = unidecode(v)
+                        try:
+                            new_chunk[key] = unidecode(v)
+                        except Exception:
+                            new_chunk[key] = v.decode('ASCII')
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
@@ -960,6 +1036,8 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     if file_extension == ".json" or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
+    elif import_file.source_type == 'BuildingSync Raw':
+        parser = xml_reader.BuildingSyncParser(import_file.file)
     else:
         parser = reader.MCMParser(import_file.local_file)
 

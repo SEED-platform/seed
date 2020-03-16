@@ -10,6 +10,7 @@ import datetime
 import json
 import logging
 import os.path as osp
+import zipfile
 
 from dateutil import parser
 from django.core.files import File
@@ -142,6 +143,105 @@ class TestDataImport(DataMappingBaseTestCase):
         self.assertListEqual(
             sorted([d.column_name for d in data_columns]), ['Double Tester']
         )
+
+
+class TestBuildingSyncImportZip(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        # setup the ImportFile for using the example zip file
+        filename = 'example-bsync-single.zip'
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+
+        # Verify we have the expected number of BuildingSync files in the zip file
+        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+            filelist = openzip.infolist()
+            xml_files_found = 0
+            for f in filelist:
+                if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    xml_files_found += 1
+
+            self.assertEqual(xml_files_found, 1)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/zip"
+        )
+        self.import_file.save()
+
+    def test_save_raw_data_zip(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        raw_saved = PropertyState.objects.filter(
+            import_file=self.import_file,
+        ).latest('id')
+        self.assertEqual(raw_saved.organization, self.org)
+
+    def test_map_data_zip(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # -- Act
+        tasks.map_data(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual(len(ps), 1)
+
+
+class TestBuildingSyncImportXml(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        filename = 'example-bsync-v1.xml'
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/xml"
+        )
+        self.import_file.save()
+
+    def test_save_raw_data_xml(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        raw_saved = PropertyState.objects.filter(
+            import_file=self.import_file,
+        ).latest('id')
+        self.assertEqual(raw_saved.organization, self.org)
+
+    def test_map_data_xml(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # -- Act
+        tasks.map_data(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual(len(ps), 1)
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
