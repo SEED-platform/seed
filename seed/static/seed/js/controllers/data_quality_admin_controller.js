@@ -52,12 +52,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
-        {id: '', label: ''},
-        {id: 'field', label: 'Field'},
-        {id: 'data type', label: 'Data Type'},
+        {id: 'default', label: '-- Select Condition --'},
         {id: 'required', label: 'Required'},
         {id: 'not null', label: 'Not Null'},
-        {id: 'units', label: 'Units'}
+        {id: 'range', label: 'Range'}, // this is based on data_type;
+        {id: 'include', label: 'Must Contain'}, // this is for text data_type;
+        {id: 'exclude', label: 'Must Not Contain'} // this is for text data_type;
+        //{id: 'units', label: 'Units'}
       ];
 
       $scope.data_types = [
@@ -271,9 +272,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
       $scope.change_condition = function (rule) {
         if (!rule.condition) rule.condition = null;
+        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
+        if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
         var condition = rule.condition;
-        //TODO: 3-3-2020, need to check field, data type, and units to disable unrelated fields:
-        // check empty (empty field) or incorrect data type;
         if (condition === 'required') {
           rule.required = false;
           $scope.change_required(rule);
@@ -286,6 +287,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         rule.min = null;
         rule.max = null;
       };
+      // solution #2
+      /*$scope.filterDataType = function (rule) {
+        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
+      };*/
       $scope.filter_null = function (rule) {
         $scope.check_null = false; //to disable min and max values
         if (rule.condition === 'required' || rule.condition === 'not null') {
@@ -334,7 +339,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
         rule.autofocus = true;
       };
-
       // Keep field types consistent for identical fields
       $scope.change_data_type = function (rule, oldValue) {
         var data_type = rule.data_type;

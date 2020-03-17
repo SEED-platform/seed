@@ -58,8 +58,6 @@
                             <th style="min-width: 140px;" translate>Condition Check</th>
                             <th style="min-width: 140px;" translate>Field</th>
                             <th style="min-width: 100px; width: 100px;" translate>Data Type</th>
-                            <th style="min-width: 70px; width: 70px;" translate>Required</th>
-                            <th style="min-width: 70px; width: 70px;" translate>Not Null</th>
                             <th translate>Minimum</th>
                             <th translate>Maximum</th>
                             <th translate>Units</th>
@@ -80,13 +78,8 @@
                                 <select class="form-control input-sm" ng-model="rule.field" ng-options="col.column_name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
                             <td>
+                                <!--<select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types | filter:filterDataType(rule)" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>-->
                                 <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
-                            </td>
-                            <td ng-click="change_required(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.required" class="no-click" ng-change="rule.rule_type = 1">
-                            </td>
-                            <td ng-click="change_not_null(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
                                 <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$:: '(field must contain this text)' | translate $}" ng-disabled="filter_null(rule)">
