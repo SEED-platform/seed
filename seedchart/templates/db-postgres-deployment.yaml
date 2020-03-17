@@ -31,9 +31,15 @@ spec:
           value: seed
         image: seedplatform/postgres-seed:11.2
         name: db-postgres
+#        command: ["tail"]
+#        args: ['-f', '/dev/null']
         ports:
         - containerPort: 5432
-        resources: {}
+        resources:
+          limits:
+            cpu: "300m"
+          requests:
+            cpu: "300m"
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: seed-pgdata
