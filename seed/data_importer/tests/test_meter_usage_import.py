@@ -379,6 +379,46 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
+    def test_meters_and_readings_are_associated_to_every_record_across_all_cycles_with_a_given_pm_property_id(self):
+        # new, in-cycle state NOT associated to existing record but has same PM Property ID
+        property_details_1 = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details_1['organization_id'] = self.org.id
+        property_details_1['pm_property_id'] = self.state_1.pm_property_id
+        property_details_1['custom_id_1'] = "values that forces non-match"
+        new_property_1 = PropertyState(**property_details_1)
+        new_property_1.save()
+
+        property_3 = self.property_factory.get_property()
+        PropertyView.objects.create(property=property_3, cycle=self.cycle, state=new_property_1)
+
+        # new, out-cycle state NOT associated to existing record but has same PM Property ID
+        property_details_2 = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details_2['organization_id'] = self.org.id
+        property_details_2['pm_property_id'] = self.state_1.pm_property_id
+        property_details_2['custom_id_1'] = "second value that forces non-match"
+        new_property_2 = PropertyState(**property_details_2)
+        new_property_2.save()
+
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2011, 10, 10, tzinfo=get_current_timezone()))
+        property_4 = self.property_factory.get_property()
+        PropertyView.objects.create(property=property_4, cycle=new_cycle, state=new_property_2)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
+        self.assertEqual(refreshed_property_1.meters.all().count(), 2)
+
+        refreshed_property_3 = Property.objects.get(pk=property_3.id)
+        self.assertEqual(refreshed_property_3.meters.all().count(), 2)
+
+        refreshed_property_4 = Property.objects.get(pk=property_4.id)
+        self.assertEqual(refreshed_property_4.meters.all().count(), 2)
+
     def test_pm_property_id_existing_across_two_different_orgs_wont_lead_to_misassociated_meters(self):
         new_org, _, _ = create_organization(self.user)
 

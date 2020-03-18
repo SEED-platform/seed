@@ -749,7 +749,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     chunk_size = 1000
 
     # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
-    progress_data.update_summary(meters_parser.proposed_imports())
+    progress_data.update_summary(meters_parser.proposed_imports)
     progress_data.total = ceil(len(readings) / chunk_size)
     progress_data.save()
 
@@ -900,7 +900,7 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     meters_and_readings = meters_parser.meter_and_reading_objs
 
     # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
-    progress_data.update_summary(meters_parser.proposed_imports())
+    progress_data.update_summary(meters_parser.proposed_imports)
     progress_data.total = len(meters_and_readings)
     progress_data.save()
 

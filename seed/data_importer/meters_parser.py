@@ -133,6 +133,9 @@ class MetersParser(object):
         readings to a previously parsed meter without creating duplicates.
         """
         if self._cache_meter_and_reading_objs is None:
+            # reset _cache_proposed_imports
+            self._cache_proposed_imports = None
+
             if self._source_type == Meter.PORTFOLIO_MANAGER:
                 self._parse_pm_meter_details()
             elif self._source_type == Meter.GREENBUTTON:
@@ -141,6 +144,46 @@ class MetersParser(object):
             self._cache_meter_and_reading_objs = list(self._unique_meters.values())
 
         return self._cache_meter_and_reading_objs
+
+    @property
+    def proposed_imports(self):
+        """
+        Summarizes meters and readings that will be created via file import.
+
+        If this is a GreenButton import, take the UsagePoint as the source_id.
+        """
+        if self._cache_meter_and_reading_objs is None:
+            # Making sure to build out meters and meter readings first
+            self.meter_and_reading_objs
+
+        if self._cache_proposed_imports is None:
+            self._cache_proposed_imports = []
+            energy_type_lookup = dict(Meter.ENERGY_TYPES)
+
+            property_ids_info = {}
+            for pm_property_id, property_ids in self._source_to_property_ids.items():
+                for property_id in property_ids:
+                    property_ids_info[property_id] = {'pm_id': pm_property_id}
+
+            # Put summaries together based on source type
+            for meter in self.meter_and_reading_objs:
+                meter_summary = {
+                    'type': energy_type_lookup[meter['type']],
+                    'incoming': len(meter.get("readings")),
+                }
+
+                id = meter.get("source_id")
+                if meter['source'] == Meter.PORTFOLIO_MANAGER:
+                    property_id_info = property_ids_info[meter.get("property_id")]
+
+                    meter_summary['source_id'] = id
+                    meter_summary['pm_property_id'] = property_id_info['pm_id']
+                else:
+                    meter_summary['source_id'] = usage_point_id(id)
+
+                self._cache_proposed_imports.append(meter_summary)
+
+        return self._cache_proposed_imports
 
     def _parse_pm_meter_details(self):
         for details in self._meters_and_readings_details:
@@ -181,7 +224,7 @@ class MetersParser(object):
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
             if successful_parse and details.get('Cost ($)', 'Not Available') != 'Not Available':
-                carry_overs = ['property_id', 'source', 'source_id', 'type']
+                carry_overs = ['property_ids', 'source', 'source_id', 'type']
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
                 self._parse_cost_meter_reading(details, meter_details_copy, start_time, end_time)
 
@@ -190,7 +233,7 @@ class MetersParser(object):
             meter_details = {
                 'source': self._source_type,
                 'source_id': details['source_id'],
-                'property_id': self._property_id,
+                'property_ids': [self._property_id],
             }
 
             # Define start_time and end_time
@@ -201,44 +244,43 @@ class MetersParser(object):
 
     def _get_property_id(self, source_id, shared_details):
         """
-        Find and cache property_ids to avoid querying for the same property_id
-        more than once. This assumes a Property model connects like PropertyStates
-        across Cycles within an Organization. Return True when a property_id is found.
+        Using pm_property_id, find and cache property_ids to avoid querying for
+        the same property_id more than once. Return True when a property_id is
+        found.
 
         If no ProperyStates (and subsequent Properties) are found, flag the
         PM ID as unlinkable, and False is returned.
         """
-        property_id = self._source_to_property_ids.get(source_id, None)
-
         # If the PM ID has been previously found to be unlinkable, return False
         if source_id in self._unlinkable_pm_ids:
             return False
 
-        if property_id is not None:
-            shared_details['property_id'] = property_id
+        # Check cached property_ids
+        target_property_ids = self._source_to_property_ids.get(source_id, None)
+        if target_property_ids is not None:
+            shared_details['property_ids'] = target_property_ids
+            return True
+
+        # Start looking for possible matches - if some are found, capture all property_ids
+        possible_matches = PropertyState.objects.filter(
+            pm_property_id=source_id,
+            organization_id=self._org_id
+        )
+        if possible_matches.count() == 0:
+            self._unlinkable_pm_ids.add(source_id)
+            return False
         else:
-            try:
-                """
-                QuerySet filters() used to find resulting property_id because
-                multiple PropertyStates can be found, but the underlying
-                Property amongst them should be the same. So take the first.
-                """
-                possible_matches = PropertyState.objects.filter(
-                    pm_property_id__exact=source_id,
-                    organization_id__exact=self._org_id
-                )
+            target_property_ids = list(
+                PropertyView.objects.
+                filter(state_id__in=Subquery(possible_matches.values('pk'))).
+                distinct('property_id').
+                values_list('property_id', flat=True)
+            )
 
-                property_id = PropertyView.objects.filter(
-                    state_id__in=Subquery(possible_matches.values('pk'))
-                )[0].property_id
+            shared_details['property_ids'] = target_property_ids
+            self._source_to_property_ids[source_id] = target_property_ids
 
-                shared_details['property_id'] = property_id
-                self._source_to_property_ids[source_id] = property_id
-            except IndexError:
-                self._unlinkable_pm_ids.add(source_id)
-                return False
-
-        return True
+            return True
 
     def _parse_meter_readings(self, details, meter_details, start_time, end_time):
         """
@@ -264,16 +306,22 @@ class MetersParser(object):
             'conversion_factor': conversion_factor
         }
 
-        meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
+        # Associate this meter reading to each meter and property_id combination
+        for property_id in meter_details.get('property_ids', []):
+            meter_details_copy = meter_details.copy()
+            del meter_details_copy['property_ids']
+            meter_details_copy['property_id'] = property_id
 
-        existing_property_meter = self._unique_meters.get(meter_identifier, None)
+            meter_identifier = '-'.join([str(meter_details_copy[k]) for k in sorted(meter_details_copy)])
 
-        if existing_property_meter is None:
-            meter_details['readings'] = [meter_reading]
+            existing_property_meter = self._unique_meters.get(meter_identifier, None)
 
-            self._unique_meters[meter_identifier] = meter_details
-        else:
-            existing_property_meter['readings'].append(meter_reading)
+            if existing_property_meter is None:
+                meter_details_copy['readings'] = [meter_reading]
+
+                self._unique_meters[meter_identifier] = meter_details_copy
+            else:
+                existing_property_meter['readings'].append(meter_reading)
 
         return True
 
@@ -297,16 +345,22 @@ class MetersParser(object):
             'conversion_factor': 1
         }
 
-        meter_identifier = '-'.join([str(v) for k, v in meter_details.items()])
+        # Associate this meter reading to each meter and property_id combination
+        for property_id in meter_details.get('property_ids', []):
+            meter_details_copy = meter_details.copy()
+            del meter_details_copy['property_ids']
+            meter_details_copy['property_id'] = property_id
 
-        existing_property_meter = self._unique_meters.get(meter_identifier, None)
+            meter_identifier = '-'.join([str(meter_details_copy[k]) for k in sorted(meter_details_copy)])
 
-        if existing_property_meter is None:
-            meter_details['readings'] = [meter_reading]
+            existing_property_meter = self._unique_meters.get(meter_identifier, None)
 
-            self._unique_meters[meter_identifier] = meter_details
-        else:
-            existing_property_meter['readings'].append(meter_reading)
+            if existing_property_meter is None:
+                meter_details_copy['readings'] = [meter_reading]
+
+                self._unique_meters[meter_identifier] = meter_details_copy
+            else:
+                existing_property_meter['readings'].append(meter_reading)
 
     def validated_type_units(self):
         """
@@ -334,30 +388,3 @@ class MetersParser(object):
             for type_unit
             in type_unit_combinations
         ]
-
-    def proposed_imports(self):
-        """
-        Summarizes meters and readings that will be created via file import.
-
-        If this is a GreenButton import, take the UsagePoint as the source_id.
-        """
-        summaries = []
-        energy_type_lookup = dict(Meter.ENERGY_TYPES)
-        property_ids_to_pm_ids = {v: k for k, v in self._source_to_property_ids.items()}
-
-        for meter in self.meter_and_reading_objs:
-            meter_summary = {
-                'type': energy_type_lookup[meter['type']],
-                'incoming': len(meter.get("readings")),
-            }
-
-            id = meter.get("source_id")
-            if meter['source'] == Meter.PORTFOLIO_MANAGER:
-                meter_summary['source_id'] = id
-                meter_summary['pm_property_id'] = property_ids_to_pm_ids[meter.get("property_id")]
-            else:
-                meter_summary['source_id'] = usage_point_id(id)
-
-            summaries.append(meter_summary)
-
-        return summaries
