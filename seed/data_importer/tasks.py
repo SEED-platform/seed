@@ -779,6 +779,12 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     meter = Meter.objects.get(pk=meter_id)
 
     result = {}
+    result_summary_key = "{} - {} - {}".format(
+        meter.property_id,
+        meter_usage_point_id,
+        meter.get_type_display()
+    )
+
     try:
         with transaction.atomic():
             reading_strings = [
@@ -796,12 +802,10 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
-                result[key] = {'count': len(cursor.fetchall())}
+                result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
-            key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
-            result[key] = {'error': 'Overlapping readings.'}
+            result[result_summary_key] = {'error': 'Overlapping readings.'}
         else:
             progress_data.finish_with_error('data failed to import')
             raise e
@@ -856,12 +860,20 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                key = "{} - {}".format(meter.source_id, meter.get_type_display())
+                key = "{} - {} - {}".format(
+                    meter.property_id,
+                    meter.source_id,
+                    meter.get_type_display()
+                )
                 result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
         if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             type_lookup = dict(Meter.ENERGY_TYPES)
-            key = "{} - {}".format(meter_readings.get('source_id'), type_lookup[meter_readings['type']])
+            key = "{} - {} - {}".format(
+                meter_readings.get('property_id'),
+                meter_readings.get('source_id'),
+                type_lookup[meter_readings['type']]
+            )
             result[key] = {'error': 'Overlapping readings.'}
         else:
             progress_data.finish_with_error('data failed to import')
@@ -942,7 +954,12 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
 
     # Next update summary of incoming meters imports with aggregated results.
     for import_info in incoming_summary:
-        key = "{} - {}".format(import_info['source_id'], import_info['type'])
+        key = "{} - {} - {}".format(
+            import_info['property_id'],
+            import_info['source_id'],
+            import_info['type']
+        )
+
         # check if there has already been a successfully_imported count on this key
         successfully_imported = import_info.get('successfully_imported', 0)
         import_info['successfully_imported'] = agg_results_summary.get(key, successfully_imported)

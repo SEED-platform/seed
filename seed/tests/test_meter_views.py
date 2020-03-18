@@ -165,21 +165,29 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         expectation = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
@@ -229,31 +237,43 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         proposed_imports = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
@@ -302,6 +322,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         proposed_imports = [
             {
                 "source_id": '409483',
+                "property_id": self.property_1.id,
                 "type": 'Electric - Grid',
                 "incoming": 2,
             },

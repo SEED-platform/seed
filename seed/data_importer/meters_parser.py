@@ -160,16 +160,26 @@ class MetersParser(object):
             self._cache_proposed_imports = []
             energy_type_lookup = dict(Meter.ENERGY_TYPES)
 
+            # Gather info based on property_id - cycles (query) and related pm_property_ids (parsed in different method)
             property_ids_info = {}
             for pm_property_id, property_ids in self._source_to_property_ids.items():
                 for property_id in property_ids:
                     property_ids_info[property_id] = {'pm_id': pm_property_id}
+
+                    cycle_names = list(
+                        PropertyView.objects.select_related('cycle').
+                        order_by('cycle__end').
+                        filter(property_id=property_id).
+                        values_list('cycle__name', flat=True)
+                    )
+                    property_ids_info[property_id]['cycles'] = ', '.join(cycle_names)
 
             # Put summaries together based on source type
             for meter in self.meter_and_reading_objs:
                 meter_summary = {
                     'type': energy_type_lookup[meter['type']],
                     'incoming': len(meter.get("readings")),
+                    'property_id': meter['property_id'],
                 }
 
                 id = meter.get("source_id")
@@ -178,6 +188,7 @@ class MetersParser(object):
 
                     meter_summary['source_id'] = id
                     meter_summary['pm_property_id'] = property_id_info['pm_id']
+                    meter_summary['cycles'] = property_id_info['cycles']
                 else:
                     meter_summary['source_id'] = usage_point_id(id)
 
