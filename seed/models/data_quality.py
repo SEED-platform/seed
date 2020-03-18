@@ -121,11 +121,11 @@ class Rule(models.Model):
         (SEVERITY_VALID, 'valid'),
     ]
 
-    RULE_FIELD = 'field'
-    RULE_DATA_TYPE = DATA_TYPES
     RULE_REQUIRED = 'required'
     RULE_NOT_NULL = 'not null'
-    RULE_UNITS = 'units'
+    RULE_RANGE = 'range'
+    RULE_INCLUDE = 'include'
+    RULE_EXCLUDE = 'exclude'
 
     DEFAULT_RULES = [
         {
@@ -333,13 +333,15 @@ class Rule(models.Model):
         :param value: Value to validate rule against
         :return: bool, True is valid, False if the value does not match
         """
-
         if self.data_type == self.TYPE_STRING and isinstance(value, basestring):
             if self.text_match is None or self.text_match == '':
                 return True
-
-            if not re.search(self.text_match, value, re.IGNORECASE):
-                return False
+            elif self.condition == Rule.RULE_INCLUDE:
+                if not re.search(self.text_match, value, re.IGNORECASE):
+                    return False
+            elif self.condition == Rule.RULE_EXCLUDE:
+                if re.search(self.text_match, value, re.IGNORECASE):
+                    return False
 
         return True
 
@@ -717,16 +719,27 @@ class DataQualityCheck(models.Model):
                     # if rule.required:
                     #    self.add_result_missing_and_none(row.id, rule, display_name, value)
                     #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    if rule.not_null:
-                        if rule.condition == Rule.RULE_NOT_NULL or rule.condition == Rule.RULE_REQUIRED:
-                            self.add_result_is_null(row.id, rule, display_name, value)
-                            self.update_status_label(label, rule, linked_id, row.id)
-                            continue
-                        self.add_result_is_null(row.id, rule, display_name, value)
+                    # if rule.not_null:
+                    #    if rule.condition == Rule.RULE_NOT_NULL or rule.condition == Rule.RULE_REQUIRED:
+                    #        self.add_result_is_null(row.id, rule, display_name, value)
+                    #        self.update_status_label(label, rule, linked_id, row.id)
+                    #        continue
+                    #    self.add_result_is_null(row.id, rule, display_name, value)
+                    #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    if rule.condition == Rule.RULE_REQUIRED:
+                        self.add_result_missing_and_none(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                elif not rule.valid_text(value):
-                    self.add_result_string_error(row.id, rule, display_name, value)
+                        continue
+                    if rule.condition == Rule.RULE_NOT_NULL:
+                        self.add_result_is_null(row.id, rule, display_name, value)
+                        self.update_status_label(label, rule, linked_id, row.id)
+                        continue
+                    self.add_result_is_null(row.id, rule, display_name, value)
                     label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
+                    if not rule.valid_text(value):
+                        self.add_result_string_error(row.id, rule, display_name, value)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
                     # check the min and max values
                     try:
@@ -866,6 +879,11 @@ class DataQualityCheck(models.Model):
             self.add_rule(rule)
 
     def add_result_string_error(self, row_id, rule, display_name, value):
+        text = ''
+        if rule.condition == Rule.RULE_INCLUDE:
+            text = '] does not contain "'
+        elif rule.condition == Rule.RULE_EXCLUDE:
+            text = '] contains "'
         self.results[row_id]['data_quality_results'].append(
             {
                 'field': rule.field,
@@ -874,7 +892,7 @@ class DataQualityCheck(models.Model):
                 'table_name': rule.table_name,
                 'message': display_name + ' does not match expected value',
                 'detailed_message': display_name + ' [' + str(
-                    value) + '] does not contain "' + rule.text_match + '"',
+                    value) + text + rule.text_match + '"',
                 'severity': rule.get_severity_display(),
             }
         )

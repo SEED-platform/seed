@@ -82,7 +82,7 @@
                                 <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$:: '(field must contain this text)' | translate $}" ng-disabled="filter_null(rule)">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$:: placeholder | translate $}" ng-disabled="filter_null(rule)">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)">
