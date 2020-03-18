@@ -197,27 +197,37 @@ class MetersParser(object):
         return self._cache_proposed_imports
 
     def _parse_pm_meter_details(self):
-        for details in self._meters_and_readings_details:
+        """
+        For each given raw meter and reading detail, go through the multi-step
+        process to separate and parse details for both meters and related
+        meter_readings that will later be used to build the meter and
+        meter_reading objects.
+
+        The main difference between PM and GB meter imports are how
+        start and end times are read. Also, PM meters have the possibility of
+        having cost associated to individual raw details.
+        """
+        for raw_details in self._meters_and_readings_details:
             meter_details = {
                 'source': self._source_type,
             }
 
-            meter_details['source_id'] = str(details['Portfolio Manager Meter ID'])
+            meter_details['source_id'] = str(raw_details['Portfolio Manager Meter ID'])
 
             # Continue/skip, if no property is found.
-            given_property_id = str(details['Portfolio Manager ID'])
+            given_property_id = str(raw_details['Portfolio Manager ID'])
             if not self._get_property_id(given_property_id, meter_details):
                 continue
 
             # Define start_time and end_time
-            raw_start = details['Start Date']
+            raw_start = raw_details['Start Date']
             if raw_start == 'Not Available':
                 """
                 In this case, the meter is delivered, so the start and end times
                 are set to the first of delivery date month to the first of the
                 following month.
                 """
-                delivery_date = datetime.strptime(details['Delivery Date'], "%Y-%m-%d %H:%M:%S")
+                delivery_date = datetime.strptime(raw_details['Delivery Date'], "%Y-%m-%d %H:%M:%S")
                 year = delivery_date.year
                 month = delivery_date.month
                 _start_day, days_in_month = monthrange(year, month)
@@ -226,32 +236,41 @@ class MetersParser(object):
                 unaware_end = datetime(year, month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
             else:
                 unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
-                unaware_end = datetime.strptime(details['End Date'], "%Y-%m-%d %H:%M:%S")
+                unaware_end = datetime.strptime(raw_details['End Date'], "%Y-%m-%d %H:%M:%S")
 
             start_time = make_aware(unaware_start, timezone=self._tz)
             end_time = make_aware(unaware_end, timezone=self._tz)
 
-            successful_parse = self._parse_meter_readings(details, meter_details, start_time, end_time)
+            successful_parse = self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
             # If Cost field is present and value is available, create Cost Meter and MeterReading
-            if successful_parse and details.get('Cost ($)', 'Not Available') != 'Not Available':
+            if successful_parse and raw_details.get('Cost ($)', 'Not Available') != 'Not Available':
                 carry_overs = ['property_ids', 'source', 'source_id', 'type']
                 meter_details_copy = {k: meter_details[k] for k in carry_overs}
-                self._parse_cost_meter_reading(details, meter_details_copy, start_time, end_time)
+                self._parse_cost_meter_reading(raw_details, meter_details_copy, start_time, end_time)
 
     def _parse_gb_meter_details(self):
-        for details in self._meters_and_readings_details:
+        """
+        For each given raw meter and reading detail, go through the multi-step
+        process to separate and parse details for both meters and related
+        meter_readings that will later be used to build the meter and
+        meter_reading objects.
+
+        The main difference between PM and GB meter imports are how
+        start and end times are read.
+        """
+        for raw_details in self._meters_and_readings_details:
             meter_details = {
                 'source': self._source_type,
-                'source_id': details['source_id'],
+                'source_id': raw_details['source_id'],
                 'property_ids': [self._property_id],
             }
 
             # Define start_time and end_time
-            start_time = datetime.fromtimestamp(details['start_time'], tz=self._tz)
-            end_time = datetime.fromtimestamp((details['start_time'] + details['duration']), tz=self._tz)
+            start_time = datetime.fromtimestamp(raw_details['start_time'], tz=self._tz)
+            end_time = datetime.fromtimestamp((raw_details['start_time'] + raw_details['duration']), tz=self._tz)
 
-            self._parse_meter_readings(details, meter_details, start_time, end_time)
+            self._parse_meter_readings(raw_details, meter_details, start_time, end_time)
 
     def _get_property_id(self, source_id, shared_details):
         """
@@ -293,17 +312,19 @@ class MetersParser(object):
 
             return True
 
-    def _parse_meter_readings(self, details, meter_details, start_time, end_time):
+    def _parse_meter_readings(self, raw_details, meter_details, start_time, end_time):
         """
-        Meter types (key/value pairs) of raw meter details are iterated over to
-        generate individual meter readings. If a meter has not yet been parsed, it's
-        first reading details are saved in a list. If a meter was previously parsed
-        and has readings already, any new readings are appended to that list.
-        """
-        type_name = details['Meter Type']
-        unit = details['Usage Units']
-        conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
+        Raw details containing meter and meter reading details are iterated over
+        to generate dictionaries that will become individual meter readings.
 
+        If a meter has not yet been parsed, its first reading details are saved
+        in a list. If a meter was previously parsed and has readings already,
+        any new readings are appended to that list.
+        """
+        # Parse the conversion factor else return False
+        type_name = raw_details['Meter Type']
+        unit = raw_details['Usage Units']
+        conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
         if conversion_factor is None:
             return False
 
@@ -312,7 +333,7 @@ class MetersParser(object):
         meter_reading = {
             'start_time': start_time,
             'end_time': end_time,
-            'reading': float(details['Usage/Quantity']) * conversion_factor,
+            'reading': float(raw_details['Usage/Quantity']) * conversion_factor,
             'source_unit': unit,
             'conversion_factor': conversion_factor
         }
@@ -336,9 +357,10 @@ class MetersParser(object):
 
         return True
 
-    def _parse_cost_meter_reading(self, details, meter_details, start_time, end_time):
+    def _parse_cost_meter_reading(self, raw_details, meter_details, start_time, end_time):
         """
-        Creates details for Meter and MeterReading cost objects.
+        Raw details containing cost meter and meter reading details are iterated over
+        to generate dictionaries that will become individual meter readings.
 
         The logic is very similar to _parse_pm_meter_details, except this is
         specifically for cost. Also, it's assumed all meter_details are
@@ -351,7 +373,7 @@ class MetersParser(object):
         meter_reading = {
             'start_time': start_time,
             'end_time': end_time,
-            'reading': float(details['Cost ($)']),
+            'reading': float(raw_details['Cost ($)']),
             'source_unit': unit,
             'conversion_factor': 1
         }
