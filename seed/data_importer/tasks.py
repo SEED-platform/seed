@@ -155,7 +155,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_checking.si(progress_data.key))
     else:
-        finish_checking.s(progress_data.key)
+        progress_data.finish_with_success()
 
     # always return something so that the code works with always eager
     return progress_data.result()

@@ -444,6 +444,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
+          $scope.hasMappedProperties = $scope.mappedData.properties.length > 0;
           var data = $scope.mappedData;
 
           var gridOptions = {
