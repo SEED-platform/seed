@@ -478,11 +478,11 @@ def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
                 p_status, property_state, property_view, messages = building_file.process(org.id, import_file.cycle)
                 if not p_status or len(messages.get('errors', [])) > 0:
                     # failed to create the property, save the messages and skip this file
-                    progress_data.add_file_info(filename, messages)
+                    progress_data.add_file_info(os.path.basename(filename), messages)
                     continue
                 elif len(messages.get('warnings', [])) > 0:
                     # non-fatal warnings, add the info and continue to save the file
-                    progress_data.add_file_info(filename, messages)
+                    progress_data.add_file_info(os.path.basename(filename), messages)
 
                 property_state.import_file = import_file
                 property_state.save()
