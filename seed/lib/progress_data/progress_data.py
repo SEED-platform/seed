@@ -165,6 +165,20 @@ class ProgressData(object):
         else:
             return 0
 
+    def add_file_info(self, filename, info):
+        """
+        Add info for a file. Used when mapping xml data and errors/warnings are encountered.
+        After mapping, the frontend checks for the 'file_info' attribute and displays
+        the messages.
+        """
+        self.load()
+
+        file_info = self.data.get('file_info', {})
+        file_info[filename] = info
+        self.data['file_info'] = file_info
+
+        self.save()
+
 
 # Not sure I want to use this class at the moment. We really aren't tracking the result of a task
 # by watching the AsyncResult object.

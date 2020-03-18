@@ -244,6 +244,43 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 1)
 
 
+class TestBuildingSyncImportInvalid(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        filename = 'ex_1_no_street_address.xml'
+        filepath = osp.join(osp.dirname(__file__), '../../..', 'building_sync', 'tests', 'data', filename)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/xml"
+        )
+        self.import_file.save()
+
+    def test_map_xml_missing_street_address_fails(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # -- Act
+        progress_info = tasks.map_data(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual(len(ps), 0)
+
+        self.assertIn('file_info', progress_info)
+        # grab the file name which is changed on upload by django (ie we can't reference directly)
+        uploaded_file_name = list(progress_info['file_info'].keys())[0]
+        self.assertNotEqual(0, len(progress_info['file_info'][uploaded_file_name]['errors']))
+
+
 class TestMappingExampleData(DataMappingBaseTestCase):
     def setUp(self):
         filename = getattr(self, 'filename', 'example-data-properties.xlsx')

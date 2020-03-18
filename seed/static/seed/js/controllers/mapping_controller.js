@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     '$translate',
     'i18nService', // from ui-grid
+    'simple_modal_service',
     function (
       $scope,
       $log,
@@ -42,7 +43,8 @@ angular.module('BE.seed.controller.mapping', [])
       data_quality_service,
       inventory_service,
       $translate,
-      i18nService
+      i18nService,
+      simple_modal_service,
     ) {
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
@@ -374,7 +376,19 @@ angular.module('BE.seed.controller.mapping', [])
           progress_key, // key
           0, //starting prog bar percentage
           1.0, // progress multiplier
-          function () {
+          function (progress_data) {
+            // if there was file_info in the result, display the messages in a modal
+            if (progress_data.file_info !== undefined) {
+              simple_modal_service.showModal({
+                type: 'default',
+                okButtonText: 'Ok',
+                cancelButtonText: null,
+                headerText: 'Mapping Errors and Warnings',
+                bodyText: 'One or more files had errors or warnings while mapping.',
+                bodyJson: progress_data.file_info,
+                okResult: 'Ok'
+              })
+            }
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
