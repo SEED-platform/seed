@@ -7,12 +7,12 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: db-postgres
-  name: db-postgres
+  name: {{ .Values.database.name }}
 spec:
   ports:
   - name: "5432"
-    port: 5432
-    targetPort: 5432
+    port: {{ .Values.database.containerPort }}
+    targetPort: {{ .Values.database.containerPort }}
   selector:
     io.kompose.service: db-postgres
 status:

@@ -7,7 +7,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: db-redis
-  name: db-redis
+  name: {{ .Values.redis.name }}
 spec:
   replicas: 1
   strategy: {}
@@ -21,8 +21,8 @@ spec:
         io.kompose.service: db-redis
     spec:
       containers:
-      - image: redis:5.0.1
-        name: db-redis
+      - image: {{ .Values.redis.image.repo }}
+        name: {{ .Values.redis.name }}
         resources: {}
       restartPolicy: Always
 status: {}

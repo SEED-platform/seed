@@ -7,7 +7,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: web
-  name: web
+  name: {{ .Values.web.name }}
 spec:
   replicas: 1
   strategy:
@@ -41,10 +41,10 @@ spec:
           value: super-secret-password
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
-        image: seedplatform/seed:latest
-        name: web
+        image: {{ .Values.web.image.repo }}
+        name: {{ .Values.web.name }}
         ports:
-        - containerPort: 80
+        - containerPort: {{ .Values.web.containerPort }}
         resources: {}
         volumeMounts:
         - mountPath: /seed/media

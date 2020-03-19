@@ -7,13 +7,12 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: web
-  name: web
+  name: {{ .Values.web.name }}
 spec:
   ports:
   - name: "80"
-    port: 80
-    targetPort: 80
+    port: {{ .Values.web.containerPort }}
+    targetPort: {{ .Values.web.containerPort }}
   selector:
     io.kompose.service: web
-status:
-  loadBalancer: {}
+  type: LoadBalancer

@@ -7,7 +7,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: db-postgres
-  name: db-postgres
+  name: {{ .Values.database.name }}
 spec:
   replicas: 1
   strategy:
@@ -29,12 +29,12 @@ spec:
           value: super-secret-password
         - name: POSTGRES_USER
           value: seed
-        image: seedplatform/postgres-seed:11.2
-        name: db-postgres
-#        command: ["tail"]
-#        args: ['-f', '/dev/null']
+        image: {{ .Values.database.image.repo }}
+        name: {{ .Values.database.name }}
+        command: ["tail"]
+        args: ['-f', '/dev/null']
         ports:
-        - containerPort: 5432
+        - containerPort: {{ .Values.database.containerPort }}
         resources:
           limits:
             cpu: "300m"
