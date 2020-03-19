@@ -711,24 +711,13 @@ class DataQualityCheck(models.Model):
                 if (rule.table_name, rule.field) not in self.column_lookup:
                     # If the rule is not in the column lookup, then it may have been a required
                     # field that wasn't mapped
-                    if rule.required:
+                    if rule.condition == Rule.RULE_REQUIRED:
                         self.add_result_missing_req(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
-                    # Empty fields
-                    # if rule.required:
-                    #    self.add_result_missing_and_none(row.id, rule, display_name, value)
-                    #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    # if rule.not_null:
-                    #    if rule.condition == Rule.RULE_NOT_NULL or rule.condition == Rule.RULE_REQUIRED:
-                    #        self.add_result_is_null(row.id, rule, display_name, value)
-                    #        self.update_status_label(label, rule, linked_id, row.id)
-                    #        continue
-                    #    self.add_result_is_null(row.id, rule, display_name, value)
-                    #    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     if rule.condition == Rule.RULE_REQUIRED:
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                        self.update_status_label(label, rule, linked_id, row.id)
                         continue
                     if rule.condition == Rule.RULE_NOT_NULL:
                         self.add_result_is_null(row.id, rule, display_name, value)
@@ -741,7 +730,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_string_error(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
-                    # check the min and max values
+                    print('3-18-20, 5:07 PM, rule condition should be range: ', rule.condition, rule.field)
                     try:
                         if not rule.minimum_valid(value):
                             if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:

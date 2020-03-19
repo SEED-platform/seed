@@ -52,7 +52,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
-        {id: '', label: ''},
         {id: 'required', label: 'Required'},
         {id: 'not null', label: 'Not Null'},
         {id: 'range', label: 'Range'}, // this is based on data_type;
