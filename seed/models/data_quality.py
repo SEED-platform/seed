@@ -723,49 +723,50 @@ class DataQualityCheck(models.Model):
                         self.add_result_is_null(row.id, rule, display_name, value)
                         self.update_status_label(label, rule, linked_id, row.id)
                         continue
-                    self.add_result_is_null(row.id, rule, display_name, value)
-                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    if rule.condition == Rule.RULE_RANGE:
+                        self.add_result_is_null(row.id, rule, display_name, value)
+                        continue
                 elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
                     if not rule.valid_text(value):
                         self.add_result_string_error(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
-                    print('3-18-20, 5:07 PM, rule condition should be range: ', rule.condition, rule.field)
-                    try:
-                        if not rule.minimum_valid(value):
-                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    except ComparisonError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
-                        continue
-                    except DataQualityTypeCastError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_type_error(row.id, rule, display_name, s_value)
-                        continue
-                    except UnitMismatchError:
-                        self.add_result_dimension_error(row.id, rule, display_name, value)
-                        continue
+                    if rule.condition == '' or rule.condition == 'range':
+                        try:
+                            if not rule.minimum_valid(value):
+                                if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                        except ComparisonError:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
+                            continue
+                        except DataQualityTypeCastError:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_type_error(row.id, rule, display_name, s_value)
+                            continue
+                        except UnitMismatchError:
+                            self.add_result_dimension_error(row.id, rule, display_name, value)
+                            continue
 
-                    try:
-                        if not rule.maximum_valid(value):
-                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    except ComparisonError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
-                        continue
-                    except DataQualityTypeCastError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_type_error(row.id, rule, display_name, s_value)
-                        continue
-                    except UnitMismatchError:
-                        self.add_result_dimension_error(row.id, rule, display_name, value)
-                        continue
+                        try:
+                            if not rule.maximum_valid(value):
+                                if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                    s_min, s_max, s_value = rule.format_strings(value)
+                                    self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                        except ComparisonError:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
+                            continue
+                        except DataQualityTypeCastError:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_type_error(row.id, rule, display_name, s_value)
+                            continue
+                        except UnitMismatchError:
+                            self.add_result_dimension_error(row.id, rule, display_name, value)
+                            continue
 
                     # Check for mandatory label for valid data:
                     try:
