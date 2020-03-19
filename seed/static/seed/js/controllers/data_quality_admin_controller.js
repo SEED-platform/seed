@@ -101,6 +101,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         };
         _.forEach(rules_payload.rules, function (inventory_type, index) {
           _.forEach(inventory_type, function (rule) {
+
+            if (rule.condition === '' || rule.condition === 'include') rule.placeholder = '(field must contain this text)';
+            else if (rule.condition === 'exclude') rule.placeholder = '(field must not contain this text)';
+
             if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
             var row = rule;
             if (row.data_type === 'date') {
@@ -275,8 +279,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
         if (_.isMatch(rule, {condition: 'required', data_type: 'string'}) || _.isMatch(rule, {condition: 'not null', data_type: 'string'})) rule.text_match = '';
 
-        if (rule.condition === 'include') $scope.placeholder = '(field must contain this text)';
-        else if (rule.condition === 'exclude') $scope.placeholder = '(field must not contain this text)';
+        if (rule.condition === 'include') rule.placeholder = '(field must contain this text)';
+        else if (rule.condition === 'exclude') rule.placeholder = '(field must not contain this text)';
 
         var condition = rule.condition;
         if (condition === 'required') {
