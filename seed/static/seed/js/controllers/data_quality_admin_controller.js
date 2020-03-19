@@ -287,9 +287,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           rule.not_null = rule.required;
           $scope.change_not_null(rule);
         }
-        rule.units = '';
-        rule.min = null;
-        rule.max = null;
+        if (rule.condition !== 'range') {
+          rule.units = '';
+          rule.min = null;
+          rule.max = null;
+        }
       };
       // solution #2
       /*$scope.filterDataType = function (rule) {
