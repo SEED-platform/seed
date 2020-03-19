@@ -169,7 +169,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                'name': '2018 Calendar Year',
+                'name': '2019 Calendar Year',
                 'num_properties': 0,
                 'num_taxlots': 0,
                 'cycle_id': self.default_cycle.pk,
