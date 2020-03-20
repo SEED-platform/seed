@@ -29,6 +29,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       var originalDataQualityResults = dataQualityResults || [];
       $scope.importFileId = importFileId;
       $scope.orgId = orgId;
+
       _.forEach(originalDataQualityResults, function (results) {
         if (results.data_quality_results.length > 1) {
           var check_null = false;
@@ -36,10 +37,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
           var index = 0;
           var remove = [];
           _.forEach(results.data_quality_results, function (result) {
-            //if (_.isMatch(result, {value: null, condition: 'not null'}) || _.isMatch(result, {value: null, condition: 'required'}) || _.isMatch(result, {value: null, condition: 'range'})) {
-            if (_.isMatch(result, {value: null})) {
-              check_null = true;
-            }
+            if (_.isMatch(result, {value: null})) check_null = true;
             if (result.formatted_field === oldField) {
               if (result.value === null && check_null) {
                 remove.push(index);

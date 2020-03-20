@@ -211,8 +211,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 rule_type: rule.rule_type,
                 required: rule.required,
                 not_null: rule.not_null,
-                min: rule.min,
-                max: rule.max,
+                min: rule.min || null,
+                max: rule.max || null,
                 text_match: rule.text_match,
                 severity: rule.severity,
                 units: rule.units,
@@ -297,10 +297,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           rule.max = null;
         }
       };
-      // solution #2
-      /*$scope.filterDataType = function (rule) {
-        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
-      };*/
+
       $scope.filter_null = function (rule) {
         $scope.check_null = false; //to disable min and max values
         if (rule.condition === 'required' || rule.condition === 'not null') {

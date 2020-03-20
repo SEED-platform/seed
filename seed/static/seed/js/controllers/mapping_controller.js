@@ -197,9 +197,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
         var display_name = _.find($scope.mappable_property_columns, {column_name: column_name});
-        if (display_name) {
-          display_name = display_name.display_name;
-        }
+        if (display_name) display_name = display_name.display_name;
         return {
           column_name: column_name,
           display_name: display_name
@@ -207,9 +205,7 @@ angular.module('BE.seed.controller.mapping', [])
       });
       matching_criteria_columns_payload.TaxLotState = _.map(matching_criteria_columns_payload.TaxLotState, function (column_name) {
         var display_name = _.find($scope.mappable_taxlot_columns, {column_name: column_name});
-        if (display_name) {
-          display_name = display_name.display_name;
-        }
+        if (display_name) display_name = display_name.display_name;
         return {
           column_name: column_name,
           display_name: display_name
