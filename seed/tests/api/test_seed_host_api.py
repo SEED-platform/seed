@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -47,7 +47,7 @@ from subprocess import Popen
 import requests
 
 from seed_readingtools import check_status, setup_logger
-from test_modules import cycles, upload_match_sort, account, delete_set
+from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality, export_data
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))
@@ -135,11 +135,13 @@ print('\n\n|-------Cycles-------|')
 cycle_id = cycles(header, main_url, organization_id, log)
 
 # Create a dataset
-print('\n\n|-------Create Dateset-------|')
+print('\n\n|-------Create Dataset-------|')
 partmsg = 'create_dataset'
+params = {'organization_id': organization_id}
 payload = {'name': 'API Test'}
-result = requests.post(main_url + '/api/v2/datasets/?organization_id=%s' % organization_id,
+result = requests.post(main_url + '/api/v2/datasets/',
                        headers=header,
+                       params=params,
                        data=payload)
 check_status(result, partmsg, log)
 
@@ -153,11 +155,24 @@ upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_b
                   raw_map_file, log)
 
 # Upload and test the portfolio manager file
-print('\n|---Portfolio Manager File---|\n')
+# print ('\n|---Portfolio Manager File---|\n')
 # upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, pm_building_file, 'Portfolio Raw',
 #                   pm_map_file, log)
 
-# Delete dataset and building
+# Data quality
+print('\n|---Data Quality---|\n')
+data_quality(header, main_url, organization_id, log)
+
+# -- Labels
+print('\n\n|-------Labels-------|')
+labels(header, main_url, organization_id, cycle_id, log)
+
+# Export dataset
+print('\n|---Export Dataset---|\n')
+export_data(header, main_url, organization_id, cycle_id, log)
+
+# Delete dataset
+print('\n|---Delete Dataset---|\n')
 delete_set(header, main_url, organization_id, dataset_id, log)
 
 time2 = dt.datetime.now()
@@ -165,4 +180,3 @@ diff = time2 - time1
 log.info('Processing Time:{}min, {}sec'.format(diff.seconds / 60, diff.seconds % 60))
 
 exit(0)
-#

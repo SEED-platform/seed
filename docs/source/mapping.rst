@@ -16,10 +16,9 @@ Import
 
 From the web UI, the import process invokes `seed.views.main.save_raw_data` to save the data. When the data is
 done uploading, we need to know whether it is a Portfolio Manager file, so we can add metadata to the record in the
-database. The end of the upload happens in `seed.data_importer.views.DataImportBackend.upload_complete` or
-`seed.data_importer.views.handle_s3_upload_complete`, depending on whether it is using a local file system or
-Amazon S3-based backend. At this point, the request object has additional attributes for Portfolio Manager files.
-These are saved in the model `seed.data_importer.models.ImportFile`.
+database. The end of the upload happens in `seed.data_importer.views.DataImportBackend.upload_complete`. At this
+point, the request object has additional attributes for Portfolio Manager files. These are saved in the model
+`seed.data_importer.models.ImportFile`.
 
 Mapping
 -------

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -16,8 +16,6 @@ from seed.models import (
     TaxLotState)
 
 _log = get_task_logger(__name__)
-
-STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
 
 class EquivalencePartitioner(object):
@@ -116,6 +114,7 @@ class EquivalencePartitioner(object):
         """
         tax_lot_equivalence_fields = [
             ("jurisdiction_tax_lot_id", "custom_id_1"),
+            ("ulid",),
             ("custom_id_1",),
             ("normalized_address",)
         ]

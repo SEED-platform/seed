@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -90,6 +90,7 @@ class StateFieldsTest(TestCase):
                     ('pm_parent_property_id', 'pm_parent_property_id'),
                     ('pm_property_id', 'pm_property_id'),
                     ('postal_code', 'postal_code'),
+                    ('property_footprint', 'property_footprint'),
                     ('property_name', 'property_name'),
                     ('property_notes', 'property_notes'),
                     ('property_type', 'property_type'),
@@ -113,12 +114,20 @@ class StateFieldsTest(TestCase):
 
     def test_taxlot_state(self):
         expected = (
-            ('address_line_1', 'address_line_1'), ('address_line_2', 'address_line_2'),
-            ('block_number', 'block_number'), ('city', 'city'),
+            ('address_line_1', 'address_line_1'),
+            ('address_line_2', 'address_line_2'),
+            ('block_number', 'block_number'),
+            ('city', 'city'),
             ('custom_id_1', 'custom_id_1'),
-            ('district', 'district'), ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
-            ('number_properties', 'number_properties'), ('postal_code', 'postal_code'),
-            ('state', 'state'))
+            ('district', 'district'),
+            ('jurisdiction_tax_lot_id', 'jurisdiction_tax_lot_id'),
+            ('latitude', 'latitude'),
+            ('longitude', 'longitude'),
+            ('number_properties', 'number_properties'),
+            ('postal_code', 'postal_code'),
+            ('state', 'state'),
+            ('taxlot_footprint', 'taxlot_footprint'),
+            ('ulid', 'ulid'))
         result = get_state_to_state_tuple('TaxLotState')
         self.assertSequenceEqual(expected, result)
 

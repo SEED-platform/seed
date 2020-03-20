@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -11,32 +11,35 @@ import collections
 import copy
 import datetime as dt
 import hashlib
-import operator
+import os
+import json
 import traceback
 from _csv import Error
+from builtins import str
 from collections import namedtuple
-from functools import reduce
 from itertools import chain
 
-from builtins import str
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError, DataError
-from django.db import transaction
-from django.db.models import Q
+from django.db import connection, transaction
+from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
+from math import ceil
 from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
     STATUS_READY_TO_MERGE,
 )
+from seed.data_importer.utils import usage_point_id
 from seed.decorators import lock_and_track
-from seed.green_button import xml_importer
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -46,11 +49,11 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    GREEN_BUTTON_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
     Column,
     ColumnMapping,
+    Meter,
     PropertyState,
     PropertyView,
     TaxLotView,
@@ -67,8 +70,13 @@ from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
 from seed.models.auditlog import AUDIT_IMPORT
-from seed.models.data_quality import DataQualityCheck
+from seed.models.data_quality import (
+    DataQualityCheck,
+    Rule,
+)
 from seed.utils.buildings import get_source_type
+from seed.utils.geocode import geocode_buildings
+from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
@@ -307,15 +315,21 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # This may be historic, but we need to pull out the extra_data_fields here to pass
                 # into mapper.map_row. apply_columns are extra_data columns (the raw column names)
                 extra_data_fields = []
+                footprint_details = {}
                 for k, v in mappings.items():
                     # the 3rd element is the is_extra_data flag.
                     # Need to convert this to a dict and not a tuple.
                     if v[3]:
                         extra_data_fields.append(k)
+
+                    if v[1] in ['taxlot_footprint', 'property_footprint']:
+                        footprint_details['raw_field'] = k
+                        footprint_details['obj_field'] = v[1]
                 # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
-                data = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
+                data = PropertyState.objects.filter(id__in=ids).only('extra_data',
+                                                                     'bounding_box').iterator()
 
                 # Since we are importing CSV, then each extra_data field will have the same fields.
                 # So save the map_model_obj outside of for loop to pass into the `save_column_names`
@@ -355,6 +369,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # model's collection as well.
 
                         # Assign some other arguments here
+                        map_model_obj.bounding_box = original_row.bounding_box
                         map_model_obj.import_file = import_file
                         map_model_obj.source_type = save_type
                         map_model_obj.organization = import_file.import_record.super_organization
@@ -376,6 +391,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             _log.warn(
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
+
+                        # If a footprint was provided but footprint was not populated/valid,
+                        # create a new extra_data column to store the raw, invalid data.
+                        # Also create a new rule for this new column
+                        if footprint_details.get('obj_field'):
+                            if getattr(map_model_obj, footprint_details['obj_field']) is None:
+                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -414,6 +436,39 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     return True
 
 
+def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj):
+    column_name = footprint_details['raw_field'] + ' (Invalid Footprint)'
+
+    column_mapping_for_cache = {
+        'from_field': column_name,
+        'from_units': None,
+        'to_field': column_name,
+        'to_table_name': table
+    }
+
+    column_mapping = column_mapping_for_cache.copy()
+    column_mapping['to_field_display_name'] = column_name
+
+    # Create column without updating the mapped columns cache, then update cache separately
+    Column.create_mappings([column_mapping], org, import_file.import_record.last_modified_by)
+
+    cached_column_mapping = json.loads(import_file.cached_mapped_columns)
+    cached_column_mapping.append(column_mapping_for_cache)
+    import_file.save_cached_mapped_columns(cached_column_mapping)
+
+    map_model_obj.extra_data[column_name] = original_row.extra_data[footprint_details['raw_field']]
+
+    rule = {
+        'table_name': table,
+        'field': column_name,
+        'rule_type': Rule.RULE_TYPE_CUSTOM,
+        'severity': Rule.SEVERITY_ERROR,
+    }
+
+    dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
+    dq.add_rule_if_new(rule)
+
+
 def _map_data_create_tasks(import_file_id, progress_key):
     """
     Get all of the raw data and process it using appropriate mapping.
@@ -436,7 +491,6 @@ def _map_data_create_tasks(import_file_id, progress_key):
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
-        'Green Button Raw': GREEN_BUTTON_RAW,
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
@@ -571,7 +625,10 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 for k, v in c.items():
                     # remove extra spaces surrounding keys.
                     key = k.strip()
-                    if isinstance(v, basestring):
+
+                    if key == "bounding_box":  # capture bounding_box GIS field on raw record
+                        raw_property.bounding_box = v
+                    elif isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(
@@ -594,20 +651,34 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
 
 @shared_task(ignore_result=True)
-def finish_raw_save(results, file_pk, progress_key):
+def finish_raw_save(results, file_pk, progress_key, summary=None):
     """
     Finish importing the raw file.
 
-    :param results: List of results from the parent task, not used at the moment
+    If the file is a PM Meter Usage or GreenButton import, remove the cycle association.
+    If the file is of one of those types and a summary is provided, add import results
+    to this summary and save it to the ProgressData.
+
+    :param results: List of results from the parent task
     :param file_pk: ID of the file that was being imported
+    :param summary: Summary to be saved on ProgressData as a message
     :return: results: results from the other tasks before the chord ran
     """
     progress_data = ProgressData.from_key(progress_key)
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
+
+    if import_file.source_type in ["PM Meter Usage", "GreenButton"] and summary is not None:
+        import_file.cycle_id = None
+
+        _append_meter_import_results_to_summary(results, summary)
+        finished_progress_data = progress_data.finish_with_success(summary)
+    else:
+        finished_progress_data = progress_data.finish_with_success()
+
     import_file.save()
 
-    return progress_data.finish_with_success()
+    return finished_progress_data
 
 
 def cache_first_rows(import_file, parser):
@@ -632,30 +703,243 @@ def cache_first_rows(import_file, parser):
 
 @shared_task(ignore_result=True)
 @lock_and_track
-def _save_raw_green_button_data(file_pk, progress_key):
+def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     """
-    Pulls identifying information out of the XML data, find_or_creates
-    a building_snapshot for the data, parses and stores the time series
-    meter data and associates it with the building snapshot.
+    Create GreenButton import tasks. Notably, 1 GreenButton import contains
+    data for 1 Property and 1 energy type. Subsequently, this means 1
+    GreenButton import contains MeterReadings for only 1 Meter.
+
+    By first getting or creating the single Meter for this file's MeterReadings,
+    the ID of this Meter can be passed to the individual tasks that will
+    actually create the readings.
     """
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    import_file.raw_save_done = True
+    org_id = import_file.cycle.organization.id
+    property_id = import_file.matching_results_data['property_id']
+
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
     import_file.save()
 
-    res = xml_importer.import_xml(import_file)
+    parser = reader.GreenButtonParser(import_file.local_file)
+    raw_meter_data = list(parser.data)
 
-    if res:
-        return progress_data.finish_with_success()
-    else:
-        return progress_data.finish_with_error('data failed to import')
+    meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+    meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
+    proposed_imports = meters_parser.proposed_imports()
+
+    readings = meter_readings['readings']
+    meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+    meter, _created = Meter.objects.get_or_create(**meter_only_details)
+    meter_id = meter.id
+
+    meter_usage_point_id = usage_point_id(meter.source_id)
+
+    chunk_size = 1000
+
+    progress_data.total = ceil(len(readings) / chunk_size)
+    progress_data.save()
+
+    tasks = [
+        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
+        for batch_readings
+        in batch(readings, chunk_size)
+    ]
+
+    return tasks, proposed_imports
+
+
+@shared_task
+def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progress_key):
+    """
+    This method defines an individual task to save MeterReadings for a single
+    Meter. Each task returns the results of the import.
+
+    The query creates or updates readings while associating them to the meter
+    via raw SQL upsert. Specifically, meter_id, start_time, and end_time must be
+    unique or an update occurs. Otherwise, a new reading entry is created.
+
+    If the query leads to an error regarding trying to update the same row
+    within the same query, the error is logged in the results and none of the
+    readings for that batch are saved.
+    """
+    progress_data = ProgressData.from_key(progress_key)
+    meter = Meter.objects.get(pk=meter_id)
+
+    result = {}
+    try:
+        with transaction.atomic():
+            reading_strings = [
+                f"({meter_id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
+                for reading
+                in readings
+            ]
+
+            sql = (
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                " VALUES " + ", ".join(reading_strings) +
+                " ON CONFLICT (meter_id, start_time, end_time)" +
+                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                " RETURNING reading;"
+            )
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
+    except ProgrammingError as e:
+        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+            key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
+            result[key] = {"error": "Overlapping readings."}
+    except Exception as e:
+        progress_data.finish_with_error('data failed to import')
+        raise e
+
+    # Indicate progress
+    progress_data.step()
+
+    return result
+
+
+@shared_task
+def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
+    """
+    This method defines an individual task to get or create a single Meter and its
+    corresponding MeterReadings. Each task returns the results of the import.
+
+    Within the query, get or create the meter without it's readings. Then,
+    create or update readings while associating them to the meter via raw SQL upsert.
+    Specifically, meter_id, start_time, and end_time must be unique or an update
+    occurs. Otherwise, a new reading entry is created.
+
+    If the query leads to an error regarding trying to update the same row
+    within the same query, the error is logged in the results and all the
+    MeterReadings and their Meter (if that was created in this transaction) are
+    not saved.
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    result = {}
+    try:
+        with transaction.atomic():
+            readings = meter_readings['readings']
+            meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+
+            meter, _created = Meter.objects.get_or_create(**meter_only_details)
+
+            reading_strings = [
+                f"({meter.id}, '{reading['start_time'].isoformat(' ')}', '{reading['end_time'].isoformat(' ')}', {reading['reading']}, '{reading['source_unit']}', {reading['conversion_factor']})"
+                for reading
+                in readings
+            ]
+
+            sql = (
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                " VALUES " + ", ".join(reading_strings) +
+                " ON CONFLICT (meter_id, start_time, end_time)" +
+                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                " RETURNING reading;"
+            )
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                key = "{} - {}".format(meter.source_id, meter.get_type_display())
+                result[key] = {'count': len(cursor.fetchall())}
+    except ProgrammingError as e:
+        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+            type_lookup = dict(Meter.ENERGY_TYPES)
+            key = "{} - {}".format(meter_readings.get("source_id"), type_lookup[meter_readings['type']])
+            result[key] = {"error": "Overlapping readings."}
+    except Exception as e:
+        progress_data.finish_with_error('data failed to import')
+        raise e
+
+    # Indicate progress
+    progress_data.step()
+
+    return result
+
+
+def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
+    """
+    This takes a PM meters import file and restructures the data in order to
+    create and return the tasks to import Meters and their corresponding
+    MeterReadings.
+
+    In addition, a snapshot of the proposed imports are passed back to later
+    create a before and after summary of the import.
+
+    :param file_pk: int, ID of the file to import
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    org_id = import_file.cycle.organization.id
+
+    parser = reader.MCMParser(import_file.local_file, 'Meter Entries')
+    raw_meter_data = list(parser.data)
+
+    meters_parser = MetersParser(org_id, raw_meter_data)
+    meters_and_readings = meters_parser.meter_and_reading_objs
+    proposed_imports = meters_parser.proposed_imports()
+
+    progress_data.total = len(meters_and_readings)
+    progress_data.save()
+
+    tasks = [
+        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key)
+        for meter_readings
+        in meters_and_readings
+    ]
+
+    return tasks, proposed_imports
+
+
+def _append_meter_import_results_to_summary(import_results, incoming_summary):
+    """
+    This appends meter import result counts and, if applicable, error messages.
+
+    Note, import_results will be of the form:
+        [
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'count': 100}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+            {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
+        ]
+    """
+    agg_results_summary = collections.defaultdict(lambda: 0)
+    error_comments = collections.defaultdict(lambda: set())
+
+    # First aggregate import_results by key
+    for result in import_results:
+        key = list(result.keys())[0]
+
+        success_count = result[key].get('count')
+
+        if success_count is None:
+            error_comments[key].add(result[key].get("error"))
+        else:
+            agg_results_summary[key] += success_count
+
+    # Next update summary of incoming meters imports with aggregated results.
+    for import_info in incoming_summary:
+        key = "{} - {}".format(import_info['source_id'], import_info['type'])
+
+        import_info["successfully_imported"] = agg_results_summary.get(key, 0)
+
+        if error_comments:
+            import_info["errors"] = " ".join(list(error_comments.get(key, "")))
+
+    return incoming_summary
 
 
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
     Worker method for saving raw data. Chunk up the CSV or XLSX file and save the raw data
     into the PropertyState table.
+
+    In the case of receiving PM Meter Usage, build tasks to import these directly
+    into Meters and MeterReadings.
 
     :param file_pk: int, ID of the file to import
     :return: Dict, result from progress data / cache
@@ -667,11 +951,18 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     if import_file.raw_save_done:
         return progress_data.finish_with_warning('Raw data already saved')
 
-    if import_file.source_type == "Green Button Raw":
-        # TODO #239: Should remove green button from here until later.
-        return _save_raw_green_button_data(file_pk)
+    if import_file.source_type == "PM Meter Usage":
+        return _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
+    elif import_file.source_type == "GreenButton":
+        return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
 
-    parser = reader.MCMParser(import_file.local_file)
+    file_extension = os.path.splitext(import_file.file.name)[1]
+
+    if file_extension == ".json" or file_extension == '.geojson':
+        parser = reader.GeoJSONParser(import_file.local_file)
+    else:
+        parser = reader.MCMParser(import_file.local_file)
+
     cache_first_rows(import_file, parser)
     import_file.num_rows = 0
     import_file.num_columns = parser.num_columns()
@@ -685,13 +976,17 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.total = len(chunks)
     progress_data.save()
 
-    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks]
+    # return tasks and None as a placeholder for proposed data import summary
+    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks], None
 
 
 def save_raw_data(file_pk):
     """
     Simply report to the user that we have queued up the save_run_data to run. This is the entry
     point into saving the data.
+
+    In the case of meter reading imports, it's possible to receive a summary of
+    what the tasks intend to accomplish.
 
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track
@@ -700,11 +995,8 @@ def save_raw_data(file_pk):
     # save_raw_data_run.s(file_pk, progress_data.key)
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
-        tasks = _save_raw_data_create_tasks(file_pk, progress_data.key)
-        if tasks:
-            chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
-        else:
-            finish_raw_save.s(file_pk, progress_data.key)
+        tasks, summary = _save_raw_data_create_tasks(file_pk, progress_data.key)
+        chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key, summary=summary))
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
@@ -731,6 +1023,28 @@ def save_raw_data(file_pk):
 #     :return:
 #     """
 #     pass
+
+def geocode_buildings_task(file_pk):
+    async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+    result = [r for r in async_result.collect()]
+
+    return result
+
+
+@shared_task
+def _geocode_properties_or_tax_lots(file_pk):
+    if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
+        qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(
+            data_state=DATA_STATE_IMPORT)
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
+
+    if TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
+        qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(
+            data_state=DATA_STATE_IMPORT)
+        decode_unique_ids(qs)
+        geocode_buildings(qs)
+
 
 # @cprofile()
 def match_buildings(file_pk):
@@ -813,6 +1127,8 @@ def hash_state_object(obj, include_extra_data=True):
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
             m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode('utf-8'))
+        elif isinstance(obj_val, GEOSGeometry):
+            m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode('utf-8'))
         else:
             m.update(str(obj_val).encode('utf-8'))
 
@@ -1186,42 +1502,6 @@ def list_canonical_property_states(org_id):
     return PropertyState.objects.filter(pk__in=ids)
 
 
-def query_property_matches(properties, pm_id, custom_id, ubid):
-    """
-    Returns query set of PropertyStates that match at least one of the specified ids
-
-    :param properties: QuerySet, PropertyStates
-    :param pm_id: string, PM Property ID
-    :param custom_id: String, Custom ID
-    :param ubid: String, Unique Building Identifier
-    :return: QuerySet of objects that meet criteria.
-    """
-
-    """"""
-    params = []
-    # Not sure what the point of this logic is here. If we are passing in a custom_id then
-    # why would we want to check pm_property_id against the custom_id, what if we pass both in?
-    # Seems like this favors pm_id
-    if pm_id:
-        params.append(Q(pm_property_id=pm_id))
-        params.append(Q(custom_id_1=pm_id))
-        params.append(Q(ubid=pm_id))
-    if custom_id:
-        params.append(Q(pm_property_id=custom_id))
-        params.append(Q(custom_id_1=custom_id))
-        params.append(Q(ubid=custom_id))
-    if ubid:
-        params.append(Q(pm_property_id=ubid))
-        params.append(Q(custom_id_1=ubid))
-        params.append(Q(ubid=ubid))
-
-    if not params:
-        # Return an empty QuerySet if we don't have any params.
-        return properties.none()
-
-    return properties.filter(reduce(operator.or_, params)).order_by('id')
-
-
 def save_state_match(state1, state2, priorities):
     """
     Merge the contents of state2 into state1
@@ -1305,6 +1585,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 
     tax_cmp_fmt = [
         ('jurisdiction_tax_lot_id', 'custom_id_1'),
+        ('ulid',),
         ('custom_id_1',),
         ('normalized_address',),
         ('custom_id_1',),

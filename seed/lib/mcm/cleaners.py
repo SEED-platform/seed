@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import re
@@ -10,6 +10,7 @@ from datetime import datetime, date
 
 import dateutil
 import dateutil.parser
+from django.contrib.gis.geos import GEOSGeometry
 from django.utils import timezone
 from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
@@ -40,7 +41,7 @@ def default_cleaner(value, *args):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
         # guard against `''` coming in from an Excel empty cell
-        if (value == ''):
+        if value == '':
             return None
     return value
 
@@ -144,6 +145,11 @@ def int_cleaner(value, *args):
 
 def pint_cleaner(value, units, *args):
     """Try to convert value to a meaningful (magnitude, units) object."""
+
+    # If value is already a Quantity don't multiply the units
+    if isinstance(value, ureg.Quantity):
+        return value
+
     value = float_cleaner(value)
     # API breakage if None does not return None
     if value is None:
@@ -158,6 +164,17 @@ def pint_cleaner(value, units, *args):
         raise TypeError(message)
 
     return value
+
+
+def geometry_cleaner(value):
+    try:
+        return GEOSGeometry(value, srid=4326)
+    except ValueError as e:
+        if "String or unicode input unrecognized as WKT EWKT, and HEXEWKB." in str(e):
+            return None
+    except TypeError as e:
+        if "Improper geometry input type" in str(e):
+            return None
 
 
 class Cleaner(object):
@@ -181,6 +198,9 @@ class Cleaner(object):
         ))
         self.int_columns = list(filter(
             lambda x: self.schema[x] == 'integer', self.schema
+        ))
+        self.geometry_columns = list(filter(
+            lambda x: self.schema[x] == 'geometry', self.schema
         ))
         self.pint_column_map = self._build_pint_column_map()
 
@@ -226,6 +246,9 @@ class Cleaner(object):
 
             if column_name in self.int_columns:
                 return int_cleaner(value)
+
+            if column_name in self.geometry_columns:
+                return geometry_cleaner(value)
 
             if not is_extra_data:
                 # If the object is not extra data, then check if the data are in the

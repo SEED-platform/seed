@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -47,13 +47,13 @@ class ColumnListSetting(models.Model):
     @classmethod
     def return_columns(cls, organization_id, profile_id, inventory_type='properties'):
         """
-        Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it will return
-        the list of raw database fields for the organization (i.e. all the fields).
+        Return a list of columns based on the profile_id. If the profile ID doesn't exist, then it
+        will return the list of raw database fields for the organization (i.e. all the fields).
 
-        :param organization_id:
-        :param profile_id:
-        :param inventory_type:
-        :return:
+        :param organization_id: int, ID of the organization
+        :param profile_id: int, ID of the profile id to retrieve
+        :param inventory_type: str, type of inventory (either properties or taxlots)
+        :return: list, column_ids, column_name_mappings, and selected_columns_from_database
         """
         try:
             profile = ColumnListSetting.objects.get(

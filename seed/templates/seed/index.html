@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %}
-<div ng-controller="menu_controller">
+<div ng-controller="menu_controller" class="ng-cloak">
 
 	{% include "seed/_sidebar.html" %}
 
@@ -20,7 +20,7 @@
                         {$ load_error_message || ('There was an error loading the page' | translate) $}
                     </div>
                 </div>
-                <div ui-view></div>
+                <div ui-view class="ui-view-container"></div>
             </div>
         </div>
     </div>

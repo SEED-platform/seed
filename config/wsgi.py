@@ -15,7 +15,7 @@ framework.
 """
 
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -26,7 +26,7 @@ from sys import path
 BASE_DIR = dirname(dirname(abspath(__file__)))
 path.append(BASE_DIR)
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.prod")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION

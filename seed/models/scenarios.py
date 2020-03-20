@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -55,9 +55,18 @@ class Scenario(models.Model):
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)
     annual_source_energy_savings = models.FloatField(null=True)
+    annual_electricity_savings = models.FloatField(null=True)
+    annual_natural_gas_savings = models.FloatField(null=True)
     annual_cost_savings = models.FloatField(null=True)
     summer_peak_load_reduction = models.FloatField(null=True)
     winter_peak_load_reduction = models.FloatField(null=True)
+    annual_site_energy = models.FloatField(null=True)
+    annual_source_energy = models.FloatField(null=True)
+    annual_natural_gas_energy = models.FloatField(null=True)
+    annual_electricity_energy = models.FloatField(null=True)
+    annual_peak_demand = models.FloatField(null=True)
+    annual_site_energy_use_intensity = models.FloatField(null=True)
+    annual_source_energy_use_intensity = models.FloatField(null=True)
     hdd = models.FloatField(null=True)
     hdd_base_temperature = models.FloatField(null=True)
     cdd = models.FloatField(null=True)
@@ -72,4 +81,21 @@ class Scenario(models.Model):
 
     measures = models.ManyToManyField(PropertyMeasure)
 
-    # TODO: add in meters -- meters are linked from Class Meter
+    def copy_initial_meters(self, source_scenario_id):
+        """
+        Copy meters from another scenario.
+
+        As hinted by the name, this method is meant to be used when there are no
+        meters currently associated to this scenario.
+        """
+        from seed.models.meters import Meter
+
+        source_scenario = Scenario.objects.get(pk=source_scenario_id)
+
+        for source_meter in source_scenario.meter_set.all():
+            # create new meter and copy over the readings from the source_meter
+            meter = Meter.objects.get(pk=source_meter.id)
+            meter.pk = None
+            meter.scenario_id = self.id
+            meter.copy_readings(source_meter, overlaps_possible=False)
+            meter.save()  # save to get new id / association

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -250,4 +250,15 @@ FAKE_MAPPINGS = {
         'address_line_1': 'Address Line 1',
         'year_built': 'Year Built'
     },
+}
+
+TAXLOT_FOOTPRINT_MAPPING = {
+    "from_field": 'Tax Lot Coordinates',
+    "to_table_name": 'TaxLotState',
+    "to_field": 'taxlot_footprint',
+}
+PROPERTY_FOOTPRINT_MAPPING = {
+    "from_field": 'Property Coordinates',
+    "to_table_name": 'PropertyState',
+    "to_field": 'property_footprint',
 }

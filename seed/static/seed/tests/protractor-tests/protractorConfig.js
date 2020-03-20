@@ -1,7 +1,8 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
+
 // config for protractor tests
 exports.config = {
   specs: [
@@ -30,12 +31,22 @@ exports.config = {
       childRename: 'Protractor sub rename',
       cycle: 'Protractor test cycle'
     }
+  },
+  capabilities: {
+    browserName: 'chrome',
+    chromeOptions: {
+      args: [
+        '--headless',
+        '--disable-gpu',
+        '--no-sandbox',
+        '--window-size=800,600',
+        '--disable-extensions',
+        '--disable-dev-shm-usage'
+      ]
+    }
   }
 };
 if (process.env.TRAVIS) {
-  exports.config.capabilities = {
-    browserName: 'chrome',
-    'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
-    build: process.env.TRAVIS_BUILD_NUMBER
-  };
+  exports.config.capabilities['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
+  exports.config.capabilities.build = process.env.TRAVIS_BUILD_NUMBER;
 }

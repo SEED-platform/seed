@@ -1,19 +1,18 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 :license: see LICENSE for more details.
 
 seed local_untracked.py
 
     For this to work with dev settings:
-        - run with dev settings (add this line to the .bashrc):
+        - run with dev settings:
             $ export DJANGO_SETTINGS_MODULE=config.settings.dev
             or
             $ ./manage.py runserver --settings=config.settings.dev
-        - add your setting to the DATABASES, AWS S3 config,
-            CACHES, and CELERY_BROKER_URL
-            i.e. everything here starting with 'your-'
-    For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
+        - add your settings. Make sure to update the DATABASES, AWS related configurations, and
+            CACHES (i.e. everything here starting with 'your-')
+    For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 import os
 
@@ -22,7 +21,7 @@ DEBUG = True
 # postgres DB config
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seeddb',
         'USER': 'postgres',
         'PASSWORD': 'postgres',

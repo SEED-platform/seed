@@ -6,7 +6,7 @@
 # system. Also, the location of the backups is hardcoded to ~/seed-backups.
 
 # To create nightly backups, add the following to your crontab
-# 0 0 * * * /home/ubuntu/prj/seed/docker/backup_database.sh <db_name> <db_username>
+# 0 0 * * * /home/ubuntu/prj/seed/docker/backup_database.sh <db_name> <db_username> >> /home/ubuntu/seed-backups/cron.log 2>&1
 
 DB_NAME=$1
 DB_USERNAME=$2
@@ -25,7 +25,7 @@ if [[ (-z ${DB_NAME}) || (-z ${DB_USERNAME}) ]] ; then
 fi
 
 # currently the backup directory is hard coded
-BACKUP_DIR=~/seed-backups
+BACKUP_DIR=/home/ubuntu/seed-backups
 mkdir -p ${BACKUP_DIR}
 
 # db_password is set from the environment variables in docker-compose. The docker stack must
@@ -37,8 +37,8 @@ docker exec $(docker ps -f "name=db-postgres" --format "{{.ID}}") pg_dump -U ${D
 # Backup the media directory (uploads, especially buildingsync). In docker-land this is
 # just a container volume, so create a new container with the volume attached and tar it up.
 echo "docker run --rm -it -v seed_media:/backup/media -v $BACKUP_DIR:/backup/dir/ alpine:3.8 tar zcvf $(media_file_name) /backup/media"
-docker run --rm -it -v seed_media:/backup/media -v $BACKUP_DIR:/backup/dir/ alpine:3.8 tar zcvf $(media_file_name) /backup/media
+docker run --rm -v seed_media:/backup/media -v $BACKUP_DIR:/backup/dir/ alpine:3.8 tar zcvf $(media_file_name) /backup/media
 
-# Delete files older than 45 days.
-find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
-find ${BACKUP_DIR} -mtime +45 -type f -name '*.tgz' -delete
+# Delete files older than 30 days.
+find ${BACKUP_DIR} -mtime +30 -type f -name '*.dump' -delete
+find ${BACKUP_DIR} -mtime +30 -type f -name '*.tgz' -delete

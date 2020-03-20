@@ -15,12 +15,18 @@
 import os
 import sys
 import json
+from shutil import copyfile
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-# sets the default settings module for read the docs
+# Copy over the local_untracked if it does not exist yet.
+if not os.path.exists('../../config/settings/local_untracked.py'):
+    copyfile('../../config/settings/local_untracked.py.dist',
+             '../../config/settings/local_untracked.py')
+
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -34,13 +40,16 @@ sys.path.insert(0, os.path.abspath('../..'))
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    # 'sphinx.ext.doctest',
-    # 'sphinx.ext.coverage',
-    # 'sphinx.ext.mathjax',
-    # 'sphinx.ext.ifconfig',
     'sphinx.ext.todo',
     'sphinxcontrib.spelling',
     'sphinx.ext.inheritance_diagram',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.coverage',
+]
+
+autodoc_mock_imports = [
+    'ubid.v2',
+    'ubid.v3',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -370,25 +379,3 @@ epub_exclude_files = ['search.html']
 
 # If false, no index is generated.
 #epub_use_index = True
-
-
-def process_remove_copyright_author(app, what, name, obj, options, docstringlines):
-    """
-    Clean up the docstrings and remove any of the copyright and author strings in the headers
-    """
-
-    if len(docstringlines) <= 1:
-        return
-
-    first_line = docstringlines[0]
-    if first_line.startswith(':copyright') and 'University of California' in first_line:
-        # Remove the copyright and the author lines from the files
-        docstringlines.pop(0)
-        docstringlines.pop(0)
-
-
-def setup(app):
-    """
-    Called by sphinx to hook up event handlers.
-    """
-    app.connect("autodoc-process-docstring", process_remove_copyright_author)

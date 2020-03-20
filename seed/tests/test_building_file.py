@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -13,6 +13,8 @@ from django.test import TestCase
 from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
+from seed.models.scenarios import Scenario
+from seed.models.meters import Meter, MeterReading
 from seed.utils.organizations import create_organization
 
 
@@ -34,7 +36,6 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(BuildingFile.str_to_file_type('BuildingSync'), 1)
         self.assertEqual(BuildingFile.str_to_file_type('BUILDINGSYNC'), 1)
         self.assertEqual(BuildingFile.str_to_file_type('Unknown'), 0)
-        self.assertEqual(BuildingFile.str_to_file_type('GeoJSON'), 2)
         self.assertEqual(BuildingFile.str_to_file_type('hpxml'), 3)
 
     def test_buildingsync_constructor(self):
@@ -51,6 +52,7 @@ class TestBuildingFiles(TestCase):
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
         self.assertTrue(status)
         self.assertEqual(property_state.address_line_1, '123 Main St')
+        self.assertEqual(property_state.property_type, 'Office')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
     def test_buildingsync_constructor_diff_ns(self):
@@ -69,6 +71,47 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(property_state.address_line_1, '1215 - 18th St')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
+    def test_buildingsync_constructor_single_scenario(self):
+        # test having only 1 measure and 1 scenario
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'test_single_scenario.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status)
+        self.assertEqual(property_state.address_line_1, '123 Main St')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+    def test_buildingsync_bricr_import(self):
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status)
+        self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        # look for scenarios, meters, and meterreadings
+        scenarios = Scenario.objects.filter(property_state_id=property_state.id)
+        self.assertTrue(len(scenarios) > 0)
+        meters = Meter.objects.filter(scenario_id=scenarios[0].id)
+        self.assertTrue(len(meters) > 0)
+        readings = MeterReading.objects.filter(meter_id=meters[0].id)
+        self.assertTrue(len(readings) > 0)
+
     def test_hpxml_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')
         file = open(filename, 'rb')
@@ -85,18 +128,3 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(property_state.owner, 'Jane Customer')
         self.assertEqual(property_state.energy_score, 8)
         self.assertEqual(messages, {'errors': [], 'warnings': []})
-
-    def test_geojson_error(self):
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
-
-        bf = BuildingFile.objects.create(
-            file=simple_uploaded_file,
-            filename=filename,
-            file_type=BuildingFile.GEOJSON,
-        )
-
-        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
-        self.assertFalse(status)
-        self.assertEqual(property_view, None)

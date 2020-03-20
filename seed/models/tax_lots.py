@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -11,11 +11,10 @@ import logging
 import re
 from os import path
 
-from .auditlog import AUDIT_IMPORT
-from .auditlog import DATA_UPDATE_TYPE
+from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
@@ -31,8 +30,14 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
 )
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import split_model_fields, obj_to_dict
+from seed.utils.generic import (
+    compare_orgs_between_label_and_target,
+    split_model_fields,
+    obj_to_dict,
+)
 from seed.utils.time import convert_to_js_timestamp
+from .auditlog import AUDIT_IMPORT
+from .auditlog import DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
 
@@ -41,7 +46,6 @@ class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
     organization = models.ForeignKey(Organization)
-    labels = models.ManyToManyField(StatusLabel)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -80,6 +84,20 @@ class TaxLotState(models.Model):
 
     extra_data = JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
+
+    # taxlots can now have lat/long and polygons, points.
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    long_lat = geomodels.PointField(geography=True, null=True, blank=True)
+    centroid = geomodels.PolygonField(geography=True, null=True, blank=True)
+    bounding_box = geomodels.PolygonField(geography=True, null=True, blank=True)
+    taxlot_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
+    # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
+    # Note that ulid is not an actual project at the moment, but it is similar to UBID in that it
+    # is a unique string that represents the bounding box of the Land (or Lot)
+    ulid = models.CharField(max_length=255, null=True, blank=True)
+
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
     class Meta:
         index_together = [
@@ -236,7 +254,8 @@ class TaxLotState(models.Model):
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (
+                            log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
                     # initalize the tree to None everytime. If not new tree is found, then we will not iterate
@@ -331,6 +350,7 @@ class TaxLotState(models.Model):
                       ps.extra_data,
                       ps.number_properties,
                       ps.jurisdiction_tax_lot_id,
+                      ps.geocoding_confidence,
                       NULL
                     FROM seed_taxlotstate ps, audit_id aid
                     WHERE (ps.id = aid.parent_state1_id AND
@@ -361,7 +381,7 @@ class TaxLotView(models.Model):
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
-    # labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel)
 
     def __str__(self):
         return 'TaxLot View - %s' % self.pk
@@ -393,7 +413,8 @@ class TaxLotView(models.Model):
         # forwent the use of list comprehension to make the code more readable.
         # get the related property_view__state as well to save time, if needed.
         result = []
-        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related('property_view', 'property_view__state'):
+        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, taxlot_view=self).select_related(
+                'property_view', 'property_view__state'):
             if tlp.taxlot_view:
                 result.append(tlp.property_view)
 
@@ -462,3 +483,6 @@ class TaxLotAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLotView.labels.through)

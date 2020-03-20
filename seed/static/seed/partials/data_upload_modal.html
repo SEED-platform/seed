@@ -13,6 +13,9 @@
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
     <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
+    <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
+
 </div>
 <div class="modal-body no_bottom_padding" ng-switch on="step.number">
     <!-- Step 1 -->
@@ -30,7 +33,8 @@
     <!-- Step 2: Choose upload type -->
     <div class="data_upload_steps container-fluid" ng-switch-when="2">
         <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
-        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_geojson_extension_alert" translate="INVALID_GEOJSON_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_xml_zip_extension_alert" translate="INVALID_XML_ZIP_EXTENSION_ALERT"></div>
         <div class="row">
             <div class="col-sm-10 col-sm-offset-1" ng-hide="uploader.in_progress">
                 <div class="row">
@@ -53,7 +57,17 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
                 <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>
         <div class="row">
@@ -153,6 +167,23 @@
                     <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
                     <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
                     <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+
+                    <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
+                      <br>
+                      <div translate>Geocoding Results for Properties</div>
+                      <li ng-if="properties_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ properties_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="properties_geocoded_manually">{$:: 'Successful using prepopulated Longitude and Latitude' | translate $}: {$ properties_geocoded_manually|number:0 $}</li>
+                      <li ng-if="properties_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ properties_geocoded_low_confidence|number:0 $}</li>
+                      <li ng-if="properties_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ properties_geocode_not_possible|number:0 $}</li>
+                    </div>
+
+                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
+                      <br>
+                      <div translate>Geocoding Results for Tax Lots</div>
+                      <li ng-if="tax_lots_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ tax_lots_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ tax_lots_geocoded_low_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ tax_lots_geocode_not_possible|number:0 $}</li>
+                    </div>
                 </ul>
             </div>
         </div>
@@ -177,6 +208,23 @@
                     <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
                     <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
                     <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+
+                    <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
+                      <br>
+                      <div translate>Geocoding Results for Properties</div>
+                      <li ng-if="properties_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ properties_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="properties_geocoded_manually">{$:: 'Successful using prepopulated Longitude and Latitude' | translate $}: {$ properties_geocoded_manually|number:0 $}</li>
+                      <li ng-if="properties_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ properties_geocoded_low_confidence|number:0 $}</li>
+                      <li ng-if="properties_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ properties_geocode_not_possible|number:0 $}</li>
+                    </div>
+
+                    <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocode_not_possible">
+                      <br>
+                      <div translate>Geocoding Results for Tax Lots</div>
+                      <li ng-if="tax_lots_geocoded_high_confidence">{$:: 'Successful using external service' | translate $}: {$ tax_lots_geocoded_high_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ tax_lots_geocoded_low_confidence|number:0 $}</li>
+                      <li ng-if="tax_lots_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ tax_lots_geocode_not_possible|number:0 $}</li>
+                    </div>
                 </ul>
             </div>
             <div class="alert alert-{$ step_10_style $}">
@@ -197,8 +245,11 @@
         <div class="row">
             <div class="col-sm-12">
                 <div>
-                    <p translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <pre ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message $}</pre>
+
+                    <p ng-if="!building_sync_files" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                    <p ng-if="building_sync_files && bulk_upload" translate>Error(s) occurred while processing the BuildingSync data bulk upload, potentially resulting in a partial import.  Fix the errors and re-upload the corrected files.</p>
+                    <p ng-if="building_sync_files && !bulk_upload" translate>An error occurred while processing the BuildingSync xml file. Please ensure that your file meets the required specifications.</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | json $}</pre>
                 </div>
             </div>
         </div>
@@ -242,7 +293,60 @@
         <div class="row">
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
+            translate-values="{ dataset_name: dataset.name, dataset_filename: dataset.filename }"></div>
+             <div class="col-sm-12">
+                <div ng-if="step_14_message.length > 0">
+                    <p translate>Warnings:</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_14_message.length >= 300}" ng-show="step_14_message">{$ step_14_message | json $}</pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- Step 15:  Upload PM Meter Readings -->
+    <div class="data_upload_steps" ng-switch-when="15">
+        <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+
+        <div class="progress_bar_container" ng-show="uploader.in_progress">
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: dataset.filename }"></div>
+
+            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        </div>
+        <div ng-hide="uploader.in_progress">
+            <div class="row">
+                <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
+                    <div ng-if="proposed_imports_options.data.length">
+                        <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                        <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
+                    </div>
+                    <br>
+                    <div ng-if="parsed_type_units_options.data.length">
+                        <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
+                        <div ui-grid="parsed_type_units_options" ui-grid-resize-columns></div>
+                    </div>
+                    <br>
+                </div>
+                <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
+                    <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                    <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Step 16:  Meter Import Results -->
+    <div class="data_upload_steps" ng-switch-when="16">
+        <div class="row">
+            <div class="alert alert-info">
+                <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                <div ui-grid="import_results_options"></div>
+            </div>
+            <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
+                <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                <div ui-grid="unlinkable_pm_ids_options"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -300,6 +404,11 @@
         </div>
         <div class="row text-center">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+        </div>
+    </div>
+    <div ng-switch-when="15">
+        <div class="row text-center" ng-hide="uploader.in_progress" ng-if="proposed_imports_options.data.length">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_meters(file_id, cycle_id)" translate>Confirm</button>
         </div>
     </div>
     <div class="row text-center">

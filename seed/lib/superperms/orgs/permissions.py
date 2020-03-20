@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
@@ -125,6 +125,12 @@ class SEEDOrgPermissions(BasePermission):
     def has_perm(self, request):
         """Determine if user has required permission"""
         # pylint: disable=no-member
+
+        # Allow superuser to have permissions. This method is similar to the
+        # previous has_perm method orgs/decorators.py:has_perm_class
+        if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
+            return True
+
         has_perm = False
         # defaults to OWNER if not specified.
         required_perm = self.perm_map.get(request.method, ROLE_OWNER)

@@ -1,6 +1,5 @@
 -r base.txt
 boto==2.49.0
-django-ses==0.8.7
 django-sslify==0.2.7
-
-uWSGI==2.0.15
+django-ses==0.8.9
+uWSGI==2.0.17.1

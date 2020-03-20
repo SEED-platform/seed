@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -11,6 +11,10 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
+    PropertyState,
+    TaxLotState,
+    DATA_STATE_MATCHING,
+
 )
 from seed.utils.organizations import create_organization
 
@@ -21,6 +25,10 @@ DEFAULT_CUSTOM_COLUMNS = [
     'city',
     'state_province',
 ]
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory,
+)
 
 from seed.tests.util import DeleteModelsTestCase
 
@@ -36,12 +44,28 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
+        user_details_2 = {
+            'username': 'test_user_2@demo.com',
+            'password': 'test_pass_2',
+            'email': 'test_user_2@demo.com'
+        }
         self.user = User.objects.create_superuser(**user_details)
+        self.user_2 = User.objects.create_superuser(**user_details_2)
         self.org, _, _ = create_organization(self.user, "test-organization-a")
+        self.org_2, _, _ = create_organization(self.user_2, "test-organization-b")
 
-        Column.objects.create(column_name='test')
-        Column.objects.create(column_name='extra_data_test', table_name='PropertyState',
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        Column.objects.create(column_name='test', organization=self.org)
+        Column.objects.create(column_name='extra_data_test',
+                              table_name='PropertyState',
+                              organization=self.org,
                               is_extra_data=True)
+        self.cross_org_column = Column.objects.create(column_name='extra_data_test',
+                                                      table_name='PropertyState',
+                                                      organization=self.org_2,
+                                                      is_extra_data=True)
 
         self.client.login(**user_details)
 
@@ -72,8 +96,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # get show_shared_buildings
         url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
         response = self.client.get(url)
-        json_string = response.content
-        data = json.loads(json_string)
+        data = response.json()
         self.assertEqual(data['show_shared_buildings'], True)
 
         # set show_shared_buildings to False
@@ -124,3 +147,144 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # randomly check a column
         self.assertIn(expected, data)
+
+    def test_rename_column_property(self):
+        column = Column.objects.filter(
+            organization=self.org, table_name='PropertyState', column_name='address_line_1'
+        ).first()
+
+        for i in range(1, 10):
+            self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
+            self.tax_lot_state_factory.get_taxlot_state(data_state=DATA_STATE_MATCHING)
+
+        for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
+            # orig_data = [{"al1": ps.address_line_1,
+            #               "ed": ps.extra_data,
+            #               "na": ps.normalized_address}]
+            expected_data = [{"al1": None,
+                              "ed": {"address_line_1_extra_data": ps.address_line_1},
+                              "na": None}]
+
+        # test building list columns
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[column.pk]),
+            content_type='application/json',
+            data=json.dumps({
+                'new_column_name': 'address_line_1_extra_data',
+                'overwrite': False
+            })
+        )
+        result = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(result['success'])
+
+        for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
+            new_data = [{"al1": ps.address_line_1,
+                         "ed": ps.extra_data,
+                         "na": ps.normalized_address}]
+
+        self.assertListEqual(expected_data, new_data)
+
+    def test_rename_column_property_existing(self):
+        column = Column.objects.filter(
+            organization=self.org, table_name='PropertyState', column_name='address_line_1'
+        ).first()
+
+        for i in range(1, 10):
+            self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
+
+        for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
+            expected_data = [{"al1": None,
+                              "pn": ps.address_line_1,
+                              "na": None}]
+
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[column.pk]),
+            content_type='application/json',
+            data=json.dumps({
+                'new_column_name': 'property_name',
+                'overwrite': False
+            })
+        )
+        result = response.json()
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(result['success'])
+
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[column.pk]),
+            content_type='application/json',
+            data=json.dumps({
+                'new_column_name': 'property_name',
+                'overwrite': True
+            })
+        )
+        result = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(result['success'])
+
+        for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
+            new_data = [{"al1": ps.address_line_1,
+                         "pn": ps.property_name,
+                         "na": ps.normalized_address}]
+
+        self.assertListEqual(expected_data, new_data)
+
+    def test_rename_column_taxlot(self):
+        column = Column.objects.filter(
+            organization=self.org, table_name='TaxLotState', column_name='address_line_1'
+        ).first()
+
+        for i in range(1, 10):
+            self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
+            self.tax_lot_state_factory.get_taxlot_state(data_state=DATA_STATE_MATCHING)
+
+        for ps in TaxLotState.objects.filter(organization=self.org).order_by("pk"):
+            # orig_data = [{"al1": ps.address_line_1,
+            #               "ed": ps.extra_data,
+            #               "na": ps.normalized_address}]
+            expected_data = [{"al1": None,
+                              "ed": {"address_line_1_extra_data": ps.address_line_1},
+                              "na": None}]
+
+        # test building list columns
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[column.pk]),
+            content_type='application/json',
+            data=json.dumps({
+                'new_column_name': 'address_line_1_extra_data',
+                'overwrite': False
+            })
+        )
+        result = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(result['success'])
+
+        for ps in TaxLotState.objects.filter(organization=self.org).order_by("pk"):
+            new_data = [{"al1": ps.address_line_1,
+                         "ed": ps.extra_data,
+                         "na": ps.normalized_address}]
+
+        self.assertListEqual(expected_data, new_data)
+
+    def test_rename_column_wrong_org(self):
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[self.cross_org_column.pk]),
+            content_type='application/json',
+        )
+        result = response.json()
+        # self.assertFalse(result['success'])
+        self.assertEqual(
+            'Cannot find column in org=%s with pk=%s' % (self.org.id, self.cross_org_column.pk),
+            result['message'],
+        )
+
+    def test_rename_column_dne(self):
+        # test building list columns
+        response = self.client.post(
+            reverse('api:v2:columns-rename', args=[-999]),
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 404)
+        result = response.json()
+        self.assertFalse(result['success'])
+        self.assertEqual(result['message'], 'Cannot find column in org=%s with pk=-999' % self.org.id)

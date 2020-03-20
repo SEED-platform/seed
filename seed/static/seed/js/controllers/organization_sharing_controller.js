@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_sharing', []).controller('organization_sharing_controller', [
@@ -11,14 +11,16 @@ angular.module('BE.seed.controller.organization_sharing', []).controller('organi
   'auth_payload',
   'organization_service',
   '$filter',
-  function ($scope,
-            all_columns,
-            organization_payload,
-            query_threshold_payload,
-            shared_fields_payload,
-            auth_payload,
-            organization_service,
-            $filter) {
+  function (
+    $scope,
+    all_columns,
+    organization_payload,
+    query_threshold_payload,
+    shared_fields_payload,
+    auth_payload,
+    organization_service,
+    $filter
+  ) {
     $scope.fields = all_columns.columns;
     $scope.org = organization_payload.organization;
     $scope.filter_params = {};

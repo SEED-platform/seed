@@ -1,14 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import serializers
 
-from seed.models import (
-    StatusLabel as Label,
-    Property, TaxLot, PropertyView, TaxLotView)
+from seed.models import StatusLabel as Label
 
 
 class LabelSerializer(serializers.ModelSerializer):
@@ -50,16 +48,8 @@ class LabelSerializer(serializers.ModelSerializer):
         model = Label
 
     def get_is_applied(self, obj):
-        filtered_result = False
+        filtered_result = []
         if self.inventory:
-            result = self.inventory.filter(
-                labels=obj,
-            ).values_list('id', flat=True)
-
-            # Limit results to ones attached to view
-            if self.inventory.model is Property:
-                filtered_result = PropertyView.objects.filter(property_id__in=result).values_list('pk', flat=True)
-            elif self.inventory.model is TaxLot:
-                filtered_result = TaxLotView.objects.filter(taxlot_id__in=result).values_list('pk', flat=True)
+            filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
 
         return filtered_result

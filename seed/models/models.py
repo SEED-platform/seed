@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
@@ -18,8 +17,6 @@ PORTFOLIO_RAW = 1
 ASSESSED_BS = 2
 PORTFOLIO_BS = 3
 COMPOSITE_BS = 4
-GREEN_BUTTON_RAW = 5
-GREEN_BUTTON_BS = 6
 
 SEED_DATA_SOURCES = (
     (ASSESSED_RAW, 'Assessed Raw'),
@@ -27,7 +24,6 @@ SEED_DATA_SOURCES = (
     (PORTFOLIO_RAW, 'Portfolio Raw'),
     (PORTFOLIO_BS, 'Portfolio'),
     (COMPOSITE_BS, 'BuildingSnapshot'),  # I don't think we need this, but I am leaving it for now.
-    (GREEN_BUTTON_RAW, 'Green Button Raw'),
 )
 
 # State of the data that was imported. This will be used to flag which

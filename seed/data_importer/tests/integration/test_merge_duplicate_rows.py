@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -146,6 +146,42 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
 
         # Hashes will be right though
         self.assertEqual(ps1.hash_object, ps2.hash_object)
+
+    def test_hash_geometry(self):
+        # The hash_state_object method can handle Geometry objects such as Polygon.
+        ps1_and_3_footprint = "POLYGON ((0 0, 1 1, 1 0, 0 0))"
+        ps2_footprint = "POLYGON ((2 2, 3 3, 3 2, 2 2))"
+
+        ps1 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={'a': 'result'},
+            property_footprint=ps1_and_3_footprint,
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        ps2 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={'a': 'result'},
+            property_footprint=ps2_footprint,
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+        ps3 = PropertyState.objects.create(
+            organization=self.org,
+            address_line_1='123 fake st',
+            extra_data={'a': 'result'},
+            property_footprint=ps1_and_3_footprint,
+            data_state=DATA_STATE_IMPORT,
+            import_file_id=0,
+        )
+
+        # ps1 and ps2 footprints are not equal
+        self.assertNotEqual(ps1.hash_object, ps2.hash_object)
+
+        # ps1 and ps3 footprints are equal
+        self.assertEqual(ps1.hash_object, ps3.hash_object)
 
     def test_import_duplicates(self):
         # Check to make sure all the properties imported

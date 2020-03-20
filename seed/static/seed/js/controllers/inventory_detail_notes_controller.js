@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_notes', [])
@@ -10,12 +10,14 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
     '$stateParams',
     'urls',
     'inventory_service',
+    'inventory_payload',
     'user_service',
     'note_service',
     '$translate',
     'i18nService', // from ui-grid
     'notes',
-    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, user_service, note_service, $translate, i18nService, notes) {
+    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, inventory_payload, user_service, note_service, $translate, i18nService, notes) {
+      $scope.item_state = inventory_payload.state;
       $scope.notes = notes;
       $scope.translations = {};
 

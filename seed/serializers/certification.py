@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -144,7 +144,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
     metric = serializers.FloatField(required=False, allow_null=True)
     rating = serializers.CharField(
         required=False, allow_null=True, max_length=100)
-    expiration_date = serializers.DateField()
+    expiration_date = serializers.DateField(allow_null=True, required=False)
     # ensure reuqest.users org matches that of view and assessment
     org_validators = [ASSESSMENT_VALIDATOR, PROPERTY_VIEW_VALIDATOR]
 

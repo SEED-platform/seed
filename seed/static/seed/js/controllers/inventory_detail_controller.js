@@ -1,9 +1,10 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail', [])
   .controller('inventory_detail_controller', [
+    '$http',
     '$state',
     '$scope',
     '$uibModal',
@@ -25,27 +26,30 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'profiles',
     'current_profile',
     'labels_payload',
-    function ($state,
-              $scope,
-              $uibModal,
-              $log,
-              $filter,
-              $stateParams,
-              $anchorScroll,
-              $location,
-              $window,
-              urls,
-              spinner_utility,
-              label_service,
-              inventory_service,
-              matching_service,
-              pairing_service,
-              user_service,
-              inventory_payload,
-              columns,
-              profiles,
-              current_profile,
-              labels_payload) {
+    function (
+      $http,
+      $state,
+      $scope,
+      $uibModal,
+      $log,
+      $filter,
+      $stateParams,
+      $anchorScroll,
+      $location,
+      $window,
+      urls,
+      spinner_utility,
+      label_service,
+      inventory_service,
+      matching_service,
+      pairing_service,
+      user_service,
+      inventory_payload,
+      columns,
+      profiles,
+      current_profile,
+      labels_payload
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = user_service.get_organization();
 
@@ -70,6 +74,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           'analysis_start_time',
           'analysis_state',
           'analysis_state_message',
+          'geocoding_confidence',
           'campus',
           'created',
           'updated'
@@ -90,7 +95,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.item_state = inventory_payload.state;
 
       // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
-      if($scope.inventory_type === 'properties'){
+      if ($scope.inventory_type === 'properties') {
         $scope.item_parent = inventory_payload.property;
       } else {
         $scope.item_parent = inventory_payload.taxlot;
@@ -122,7 +127,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       var ignoreNextChange = true;
-      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+      $scope.$watch('currentProfile', function (newProfile) {
         if (ignoreNextChange) {
           ignoreNextChange = false;
           return;
@@ -133,7 +138,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $window.location.reload();
       });
 
-      $scope.gotoMeasureAnchor = function(x) {
+      $scope.gotoMeasureAnchor = function (x) {
         $location.hash('measureAnchor' + x);
         $anchorScroll();
       };
@@ -317,7 +322,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return [$scope.item_parent.id];
+              return [$scope.inventory.view_id];
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -325,7 +330,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
         modalInstance.result.then(function () {
-          label_service.get_labels([$scope.item_parent.id], {
+          label_service.get_labels([$scope.inventory.view_id], {
             inventory_type: $scope.inventory_type
           }).then(function (labels) {
             $scope.labels = _.filter(labels, function (label) {
@@ -359,6 +364,46 @@ angular.module('BE.seed.controller.inventory_detail', [])
             inventory_type: $scope.inventory_type,
             view_id: result.view_id
           });
+        });
+      };
+
+      $scope.export_building_sync = function () {
+        var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
+        $http.get(the_url, {})
+          .then(function (response) {
+            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;'});
+            var downloadLink = angular.element('<a></a>');
+            var filename = 'buildingsync_property_' + $stateParams.view_id + '.xml';
+            downloadLink.attr('href', $window.URL.createObjectURL(blob));
+            downloadLink.attr('download', filename);
+            downloadLink[0].click();
+          });
+      };
+
+      $scope.export_building_sync_xlsx = function () {
+        var filename = 'buildingsync_property_' + $stateParams.view_id + '.xlsx';
+        // var profileId = null;
+        // if ($scope.currentProfile) {
+        //   profileId = $scope.currentProfile.id;
+        // }
+
+        $http.post('/api/v2.1/tax_lot_properties/export/', {
+          ids: [$stateParams.view_id],
+          filename: filename,
+          profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
+          export_type: 'xlsx'
+        }, {
+          params: {
+            organization_id: $scope.organization.id,
+            cycle_id: $scope.cycle.id,
+            inventory_type: $scope.inventory_type
+          },
+          responseType: 'arraybuffer'
+        }).then(function (response) {
+          var blob_type = response.headers()['content-type'];
+
+          var blob = new Blob([response.data], {type: blob_type});
+          saveAs(blob, filename);
         });
       };
 

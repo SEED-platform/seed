@@ -22,6 +22,8 @@ to emulate the same checks as the CI machine.
 +------+--------------------------------------------------+
 | W503 | line break occurred before a binary operator     |
 +------+--------------------------------------------------+
+| W504 | line break occurred after a binary operator      |
++------+--------------------------------------------------+
 
 To run flake locally call:
 
@@ -37,13 +39,14 @@ Adding New Fields to Database
 Adding new fields to SEED can be complicated since SEED has a mix of typed fields (database fields) and extra data
 fields. Follow the steps below to add new fields to the SEED database:
 
-1. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot is more
-complicated and not documented yet.
-2. Add field to list in the following locations:
-    * models/columns.py: Column.DATABASE_COLUMNS
-    * TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
-3. Run `./manage.py makemigrations`
-4. Add in a Python script in the new migration to add in the new column into every organizations list of columns
+#. Add the field to the PropertyState or the TaxLotState model. Adding fields to the Property or TaxLot models is more complicated and not documented yet.
+#. Add field to list in the following locations:
+
+- models/columns.py: Column.DATABASE_COLUMNS
+- TaxLotState.coparent or PropertyState.coparent: SQL query and keep_fields
+
+#. Run `./manage.py makemigrations`
+#. Add in a Python script in the new migration to add in the new column into every organizations list of columns. Note that the new_db_fields will be the same as the data in the Column.DATABASE_COLUMNS that were added.
 
     .. code-block:: python
 
@@ -51,35 +54,44 @@ complicated and not documented yet.
             Column = apps.get_model("seed", "Column")
             Organization = apps.get_model("orgs", "Organization")
 
-            # from seed.lib.superperms.orgs.models import (
-            new_db_field = {
-                'column_name': 'pm_property_id',
-                'table_name': 'PropertyState',
-                'display_name': 'PM Property ID',
-                'data_type': 'string',
-            }
+            new_db_fields = [
+                {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'PropertyState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }, {
+                    'column_name': 'geocoding_confidence',
+                    'table_name': 'TaxLotState',
+                    'display_name': 'Geocoding Confidence',
+                    'data_type': 'number',
+                }
+            ]
 
             # Go through all the organizatoins
             for org in Organization.objects.all():
-                 columns = Column.objects.filter(
-                    organization_id=org.id,
-                    table_name=new_db_field['table_name'],
-                    column_name=new_db_field['column_name'],
-                    is_extra_data=False,
-                )
+                for new_db_field in new_db_fields:
+                    columns = Column.objects.filter(
+                        organization_id=org.id,
+                        table_name=new_db_field['table_name'],
+                        column_name=new_db_field['column_name'],
+                        is_extra_data=False,
+                    )
 
-                if not columns.count():
-                    details.update(new_db_field)
-                    Column.objects.create(**details)
-                elif columns.count() == 1:
-                    c = columns.first()
-                    if c.display_name is None or c.display_name == '':
-                        c.display_name = new_db_field['display_name']
-                    if c.data_type is None or c.data_type == '' or c.data_type == 'None':
-                        c.data_type = new_db_field['data_type']
-                    c.save()
-                else:
-                    print "  More than one column returned"
+                    if not columns.count():
+                        new_db_field['organization_id'] = org.id
+                        Column.objects.create(**new_db_field)
+                    elif columns.count() == 1:
+                        # If the column exists, then just update the display_name and data_type if empty
+                        c = columns.first()
+                        if c.display_name is None or c.display_name == '':
+                            c.display_name = new_db_field['display_name']
+                        if c.data_type is None or c.data_type == '' or c.data_type == 'None':
+                            c.data_type = new_db_field['data_type']
+                        c.save()
+                    else:
+                        print("  More than one column returned")
+
 
         class Migration(migrations.Migration):
             dependencies = [
@@ -87,38 +99,20 @@ complicated and not documented yet.
             ]
 
             operations = [
+                ... existing db migrations ...,
                 migrations.RunPython(forwards),
             ]
 
 
-5. Run migrations `./manage.py migrate`
-6. Run unit tests, fix failures. Below is a list of files that need to be fixed (this is not an exhaustive list):
-    * test_mapping_data.py:test_keys
-    * test_columns.py:test_column_retrieve_schema
-    * test_columns.py:test_column_retrieve_db_fields
-7. (Optional) Update example files to include new fields
-8. Test import workflow with mapping to new fields
+#. Run migrations `./manage.py migrate`
+#. Run unit tests, fix failures. Below is a list of files that need to be fixed (this is not an exhaustive list)
 
+- test_mapping_data.py:test_keys
+- test_columns.py:test_column_retrieve_schema
+- test_columns.py:test_column_retrieve_db_fields
 
-AWS S3
-^^^^^^
-
-Amazon AWS S3 Expires headers should be set on the AngularJS partials if using S3 with the management command:
-set_s3_expires_headers_for_angularjs_partials
-
-Example::
-
-    python manage.py set_s3_expires_headers_for_angularjs_partials --verbosity=3
-
-The default user invite reply-to email can be overridden in the config/settings/common.py file. The `SERVER_EMAIL`
-settings var is the reply-to email sent along with new account emails.
-
-.. code-block:: console
-
-    # config/settings/common.py
-    PASSWORD_RESET_EMAIL = 'reset@seed.lbl.gov'
-    SERVER_EMAIL = 'no-reply@seed.lbl.gov'
-
+#. (Optional) Update example files to include new fields
+#. Test import workflow with mapping to new fields
 
 
 AngularJS Integration Notes
@@ -159,41 +153,31 @@ Routes in `static/seed/js/seed.js` (the normal angularjs `app.js`)
 
 .. code-block:: JavaScript
 
-    window.BE.apps.seed.config(['$routeProvider', function ($routeProvider) {
-            $routeProvider
-                .when('/', {
-                    templateUrl: static_url + '/seed/partials/home.html'
-                })
-                .when('/projects', {
-                    controller: 'project_list_controller',
-                    templateUrl: static_url + '/seed/partials/projects.html'
-                })
-                .when('/buildings', {
-                    templateUrl: static_url + '/seed/partials/buildings.html'
-                })
-                .when('/admin', {
-                    controller: 'seed_admin_controller',
-                    templateUrl: static_url + '/seed/partials/admin.html'
-                })
-                .otherwise({ redirectTo: '/' });
-        }]);
+  SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider', function (stateHelperProvider, $urlRouterProvider, $locationProvider) {
+    stateHelperProvider
+      .state({
+        name: 'home',
+        url: '/',
+        templateUrl: static_url + 'seed/partials/home.html'
+      })
+      .state({
+        name: 'profile',
+        url: '/profile',
+        templateUrl: static_url + 'seed/partials/profile.html',
+        controller: 'profile_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      });
+  }]);
 
 HTML partials in `static/seed/partials/`
-
-on production and staging servers on AWS, or for the partial html templates loaded on S3, or a CDN,
-the external resource should be added to the white list in `static/seed/js/seed/js`
-
-.. code-block:: JavaScript
-
-    // white list for s3
-    window.BE.apps.seed.config(function( $sceDelegateProvider ) {
-    $sceDelegateProvider.resourceUrlWhitelist([
-        // localhost
-        'self',
-        // AWS s3
-        'https://be-*.amazonaws.com/**'
-        ]);
-    });
 
 Logging
 -------
@@ -253,25 +237,38 @@ user:
     psql -c 'DROP DATABASE "seeddb"'
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER USER seeduser CREATEDB;'
-
-    psql -c 'ALTER USER seeduser CREATEROLE;'
+    psql -c 'ALTER ROLE seeduser SUPERUSER;
+    psql -d seeddb -c "CREATE EXTENSION postgis;"
     ./manage.py migrate
     ./manage.py create_default_user \
-        --username=testuser@seed.org \
+        --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg
+
+
+Migrating the Database
+----------------------
+
+Migrations are handles through Django; however, various versions have customs actions for the migrations. See the :doc:`migrations page <migrations>` for more information based on the version of SEED.
+
 
 Testing
 -------
 
-JS tests can be run with Jasmine at the url `app/angular_js_tests/`.
+JS tests can be run with Jasmine at the url `/angular_js_tests/`.
 
 Python unit tests are run with
 
 .. code-block:: console
 
     python manage.py test --settings=config.settings.test
+
+Note on geocode-related testing:
+    Most of these tests use VCR.py and cassettes to capture and reuse recordings of HTTP requests and responses. Given that, unless you want to make changes and/or refresh the cassettes/recordings, there isn't anything needed to run the geocode tests.
+
+    In the case that the geocoding logic/code is changed or you'd like to the verify the MapQuest API is still working as expected, you'll need to run the tests with a small change. Namely, you'll want to provide the tests with an API key via an environment variable called "TESTING_MAPQUEST_API_KEY" or within your local_untracked.py file with that same variable name.
+
+    In order to refresh the actual cassettes, you'll just need to delete or move the old ones which can be found at ".seed/tests/data/vcr_cassettes". The API key should be hidden within the cassettes, so these new cassettes can and should be pushed to GitHub.
 
 Run coverage using
 
@@ -294,3 +291,23 @@ JS Compliance uses jshint
 
     jshint seed/static/seed/js
 
+Release Instructions
+--------------------
+
+To make a release do the following:
+
+1. Github admin user, on develop branch: update the ``package.json`` file with the most recent version number. Always use MAJOR.MINOR.RELEASE.
+2. Update the ``docs/sources/migrations.rst`` file with any required actions.
+3. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for the range of time between last release and this release. Only add the *Closed Issues*. Also make sure that all the pull requests have a related Issue in order to be included in the change log.
+
+.. code-block:: console
+
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2018-02-26 –e 2018-05-30
+
+4. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
+5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.co project. (see :doc:`translation documentation <translation>`).
+6. Once develop passes, then create a new PR from develop to master.
+7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
+8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
+9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
+10. Go to Read the Docs and enable the latest version to be active (https://readthedocs.org/dashboard/seed-platform/versions/)

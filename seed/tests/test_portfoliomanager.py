@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -9,7 +9,8 @@ All rights reserved.  # NOQA
 """
 import json
 import os
-from unittest import skipIf
+import requests
+from unittest import skip, skipIf
 
 from django.core.urlresolvers import reverse_lazy
 from django.test import TestCase
@@ -17,6 +18,28 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport
+
+
+PM_UN = 'SEED_PM_UN'
+PM_PW = 'SEED_PM_PW'
+pm_skip_test_check = skipIf(
+    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
+    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
+)
+
+# override this decorator for more pressing conditions
+try:
+    pm_avail_check = requests.get('http://isthewallbuilt.us/api.json', timeout=5)
+    string_response = pm_avail_check.json()['status']
+    if string_response != 'no':
+        skip_due_to_espm_down = False
+    else:
+        skip_due_to_espm_down = True
+
+    if skip_due_to_espm_down:
+        pm_skip_test_check = skip('ESPM is likely down temporarily, ESPM tests will not run')
+except Exception:
+    pass
 
 
 class PortfolioManagerImportTest(TestCase):
@@ -86,6 +109,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing password', data['message'])
 
+    @pm_skip_test_check
     def test_template_list_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-template-list'),
@@ -101,14 +125,6 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
         self.assertIn('message', data)
         self.assertEqual('error', data['status'])
         self.assertIn('Check credentials.', data['message'])
-
-
-PM_UN = 'SEED_PM_UN'
-PM_PW = 'SEED_PM_PW'
-pm_skip_test_check = skipIf(
-    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
-    'Cannot run "expect-pass" PM unit tests without %s and %s in environment' % (PM_UN, PM_PW)
-)
 
 
 class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
@@ -231,6 +247,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
         self.assertEqual('error', data['status'])
         self.assertIn('missing template', data['message'])
 
+    @pm_skip_test_check
     def test_report_invalid_credentials(self):
         resp = self.client.post(
             reverse_lazy('api:v2.1:portfolio_manager-report'),

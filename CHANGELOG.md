@@ -1,3 +1,94 @@
+# SEED Version 2.6.0
+
+2.6.0-beta includes support for meters and time series data storage. In order to use this release, you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started). Note that this is a Beta release and should not be used on production datasets until we have completed testing.
+
+# SEED Version 2.5.2
+
+Date Range: 04/15/19 - 05/04/19
+
+Closed Issues and Features:
+- Feature [#1855]( https://github.com/SEED-platform/seed/issues/1855 ), Add ULID as a matching field on taxlots
+- Feature [#1856]( https://github.com/SEED-platform/seed/issues/1856 ), Import building and taxlot footprints from WKT format
+- Feature [#1861]( https://github.com/SEED-platform/seed/issues/1861 ), Allow renaming of columns
+- Fixed [#1867]( https://github.com/SEED-platform/seed/issues/1867 ), Allow Bldg to be parsed as part of the normalized address
+
+# SEED Version 2.5.1
+
+Date Range: 03/28/19 - 04/15/19
+
+Closed Issues and Features:
+- Fixed [#1734]( https://github.com/SEED-platform/seed/issues/1734 ), segfault when loading a lot of records to view in Inventory List
+- Fixed [#1815]( https://github.com/SEED-platform/seed/issues/1815 ), Property labels are not in the export file
+- Feature [#1832]( https://github.com/SEED-platform/seed/issues/1832 ), Update BuildingSync to Version 1.0
+- Feature [#1833]( https://github.com/SEED-platform/seed/issues/1833 ), Add ULID, Building Footprint, and Tax Lot Footprint to Database
+- Feature [#1855]( https://github.com/SEED-platform/seed/issues/1855 ), Add ULID as a matching field on taxlots
+- Feature [#1856]( https://github.com/SEED-platform/seed/issues/1856 ), Import building and taxlot footprints from WKT format
+
+# SEED Version 2.5.0
+
+Date Range: 02/19/19 - 03/27/19
+
+Add GIS related functionality. Make sure to review the [migrations.mst](docs/source/migrations.rst) file on how to deploy the update.
+
+Closed Issues:
+- Fixed [#421]( https://github.com/SEED-platform/seed/issues/421 ), Reports - Message saying why there is no data
+- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
+- Fixed [#1734]( https://github.com/SEED-platform/seed/issues/1734 ), segfault when loading a lot of records to view in Inventory List
+- Feature [#1741]( https://github.com/SEED-platform/seed/issues/1741 ), BuildingSync batch import from UI
+- Fixed [#1811]( https://github.com/SEED-platform/seed/issues/1811 ), Unmerge Last doesn't work for BuildingSync XML files
+- Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
+- Fixed [#1815]( https://github.com/SEED-platform/seed/issues/1815 ), Property labels are not in the export file
+- Fixed [#1831]( https://github.com/SEED-platform/seed/issues/1831 ), Clean up database tables
+- Feature [#1832]( https://github.com/SEED-platform/seed/issues/1832 ), Update BuildingSync to Version 1.0
+- Fixed [#1833]( https://github.com/SEED-platform/seed/issues/1833 ), Add ULID, Building Footprint, and Tax Lot Footprint to Database
+- Fixed [#1837]( https://github.com/SEED-platform/seed/issues/1837 ), Dimensionality Error
+- Fixed [#1838]( https://github.com/SEED-platform/seed/issues/1838 ), Column Mappings can fail to load in the UI
+
+
+# SEED Version 2.4.2
+
+Date Range: 01/05/19 - 02/19/19
+
+Closed Issues:
+- Fixed [#421]( https://github.com/SEED-platform/seed/issues/421 ), Reports - Message saying why there is no data
+- Fixed [#1124]( https://github.com/SEED-platform/seed/issues/1124 ), Linux install instructions
+- Fixed [#1626]( https://github.com/SEED-platform/seed/issues/1626 ), 403 Error deleting Inventory from Org in Admin
+- Fixed [#1730]( https://github.com/SEED-platform/seed/issues/1730 ), Error importing BuildingSync File
+- Fixed [#1738]( https://github.com/SEED-platform/seed/issues/1738 ), No email sent to set password when I created a new organization
+- Feature [#1741]( https://github.com/SEED-platform/seed/issues/1741 ), BuildingSync batch import from UI
+- Feature [#1782]( https://github.com/SEED-platform/seed/issues/1782 ), Add OEI to docker deployment
+- Fixed [#1797]( https://github.com/SEED-platform/seed/issues/1797 ), Ability to remove user who only belongs to a single organization
+- Fixed [#1800]( https://github.com/SEED-platform/seed/issues/1800 ), Add managed task for adding user to organization via cli
+- Feature [#1801]( https://github.com/SEED-platform/seed/issues/1801 ), Add dropdown for actions on inventory detail page
+- Fixed [#1807]( https://github.com/SEED-platform/seed/issues/1807 ), Only fields in property or tax lot DB are shown in mapping screen (not showing Extra Data fields)
+- Fixed [#1812]( https://github.com/SEED-platform/seed/issues/1812 ), Merge screen doesn't show extra data fields
+- Fixed [#1813]( https://github.com/SEED-platform/seed/issues/1813 ), When merging records, the merged records don't show up in the detail view, only the final Master Record
+
+# SEED Version 2.4.1
+
+Date Range: 10/06/18 - 01/04/19:
+
+Closed Issues:
+- Fixed [#17]( https://github.com/SEED-platform/seed/issues/17 ), Ability to change mapping after it has been saved
+- Fixed [#43]( https://github.com/SEED-platform/seed/issues/43 ), Internationalization of units
+- Fixed [#343]( https://github.com/SEED-platform/seed/issues/343 ), Edit Organization Mappings screen -- add it
+- Fixed [#1561]( https://github.com/SEED-platform/seed/issues/1561 ), Program Drops 2nd tax lot pairing (in mapping?) to do discarding duplicate tax lot record
+- Fixed [#1594]( https://github.com/SEED-platform/seed/issues/1594 ), List view -- fields with long strings need popup like in building detail
+- Fixed [#1645]( https://github.com/SEED-platform/seed/issues/1645 ), Release Date not being mapped as "Release Date" (defaulting to PM Release Date)
+- Fixed [#1718]( https://github.com/SEED-platform/seed/issues/1718 ), Deleting all records for an org doesn't delete values in column settings
+- Fixed [#1724]( https://github.com/SEED-platform/seed/issues/1724 ), KeyError: u'measures'
+- Fixed [#1733]( https://github.com/SEED-platform/seed/issues/1733 ), Newly created column will not show up in API until data exists
+- Fixed [#1739]( https://github.com/SEED-platform/seed/issues/1739 ), Admin Screen needs scroll bar at the bottom of the screen to scroll right
+- Improved [#1743]( https://github.com/SEED-platform/seed/issues/1743 ), Remove deprecated repositories
+- Fixed [#1767]( https://github.com/SEED-platform/seed/issues/1767 ), IDs for labels API return false
+- Improved [#1768]( https://github.com/SEED-platform/seed/issues/1768 ), Upgrade to Python 3
+- Improved [#1769]( https://github.com/SEED-platform/seed/issues/1769 ), Deploy script for docker stack deploy
+- Fixed [#1770]( https://github.com/SEED-platform/seed/issues/1770 ), Update the update datetime field when changing tax lot or property
+- Improved [#1771]( https://github.com/SEED-platform/seed/issues/1771 ), Remove Unused Django Models and Migration Code
+- Fixed [#1772]( https://github.com/SEED-platform/seed/issues/1772 ), Return PropertyView ID from Label Filter API
+- Fixed [#1773]( https://github.com/SEED-platform/seed/issues/1773 ), No measures in scenario break BuildingSync
+- Improved [#1774]( https://github.com/SEED-platform/seed/issues/1774 ), Use alpine linux in Docker
+
 # SEED Version 2.4.0
 
 Date Range: 07/04/18 - 10/05/18:

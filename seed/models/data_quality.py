@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -13,7 +13,7 @@ from random import randint
 import pytz
 from builtins import str
 from django.apps import apps
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
 from quantityfield import ureg
@@ -55,7 +55,10 @@ def format_pint_violation(rule, source_value):
     formatted_min = formatted_max = None
     incoming_data_units = source_value.units
     rule_units = ureg(rule.units)
-    rule_value = source_value.to(rule_units)
+    if rule_units.dimensionless:
+        rule_value = source_value
+    else:
+        rule_value = source_value.to(rule_units)
 
     pretty_source_units = pretty_units(source_value)
     pretty_rule_units = pretty_units(rule_value)
@@ -612,21 +615,21 @@ class DataQualityCheck(models.Model):
         # check if the row has any rules applied to it
         model_labels = {'linked_id': None, 'label_ids': []}
         if row.__class__.__name__ == 'PropertyState':
-            label = apps.get_model('seed', 'Property_labels')
+            label = apps.get_model('seed', 'PropertyView_labels')
             if PropertyView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = PropertyView.objects.get(state=row).property_id
+                model_labels['linked_id'] = PropertyView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(property_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(propertyview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("Property {} has {} labels".format(model_labels['linked_id'],
                 #                                               len(model_labels['label_ids'])))
         elif row.__class__.__name__ == 'TaxLotState':
-            label = apps.get_model('seed', 'TaxLot_labels')
+            label = apps.get_model('seed', 'TaxLotView_labels')
             if TaxLotView.objects.filter(state=row).exists():
-                model_labels['linked_id'] = TaxLotView.objects.get(state=row).taxlot_id
+                model_labels['linked_id'] = TaxLotView.objects.get(state=row).id
                 model_labels['label_ids'] = list(
-                    label.objects.filter(taxlot_id=model_labels['linked_id']).values_list(
+                    label.objects.filter(taxlotview_id=model_labels['linked_id']).values_list(
                         'statuslabel_id', flat=True)
                 )
                 # _log.debug("TaxLot {} has {} labels".format(model_labels['linked_id'],
@@ -641,8 +644,17 @@ class DataQualityCheck(models.Model):
 
                 if hasattr(row, rule.field):
                     value = getattr(row, rule.field)
+                    # TODO cleanup after the cleaner is better able to handle fields with units on import
+                    # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
+                    if isinstance(value, ureg.Quantity) and rule.units == '':
+                        value = value.magnitude
                 elif rule.field in row.extra_data:
                     value = row.extra_data[rule.field]
+
+                    if ' (Invalid Footprint)' in rule.field:
+                        self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
+                        continue
+
                     try:
                         value = rule.str_to_data_type(value)
                     except DataQualityTypeCastError:
@@ -773,6 +785,17 @@ class DataQualityCheck(models.Model):
 
         self.rules.add(r)
 
+    def add_rule_if_new(self, rule):
+        """
+        Add a new rule to the Data Quality Checks only if rule does not exist
+
+        :param rule: dict to be added as a new rule
+        :return: None
+        """
+        rule_exists = self.rules.get_queryset().filter(**rule).exists()
+        if not rule_exists:
+            self.add_rule(rule)
+
     def add_result_string_error(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append(
             {
@@ -872,22 +895,61 @@ class DataQualityCheck(models.Model):
             'severity': rule.get_severity_display(),
         })
 
+    def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):
+        detailed_message = " is not a valid geometry"
+        if len(str(value)) <= 25:
+            detailed_message = "'{}'".format(str(value)) + detailed_message
+        else:
+            detailed_message = "'{}...'".format(str(value)[0:25]) + detailed_message
+
+        self.results[row_id]['data_quality_results'].append({
+            'field': rule.field,
+            'formatted_field': display_name,
+            'value': value,
+            'table_name': rule.table_name,
+            'message': display_name + ' should be in WKT format',
+            'detailed_message': detailed_message,
+            'severity': rule.get_severity_display(),
+        })
+
     def update_status_label(self, label_class, rule, linked_id):
         """
 
-        :param label_class: statuslabel object, either property label or taxlot label
+        :param label_class: statuslabel object, either propertyview label or taxlotview label
         :param rule: rule object
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
 
         if rule.status_label_id is not None and linked_id is not None:
+            label_org_id = rule.status_label.super_organization_id
+
             if rule.table_name == 'PropertyState':
-                label_class.objects.get_or_create(property_id=linked_id,
-                                                  statuslabel_id=rule.status_label_id)
+                property_parent_org_id = PropertyView.objects.get(pk=linked_id).property.organization.get_parent().id
+                if property_parent_org_id == label_org_id:
+                    label_class.objects.get_or_create(propertyview_id=linked_id,
+                                                      statuslabel_id=rule.status_label_id)
+                else:
+                    raise IntegrityError(
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
+                        'organization_id={}.'.format(
+                            label_org_id,
+                            property_parent_org_id
+                        )
+                    )
             else:
-                label_class.objects.get_or_create(taxlot_id=linked_id,
-                                                  statuslabel_id=rule.status_label_id)
+                taxlot_parent_org_id = TaxLotView.objects.get(pk=linked_id).taxlot.organization.get_parent().id
+                if taxlot_parent_org_id == label_org_id:
+                    label_class.objects.get_or_create(taxlotview_id=linked_id,
+                                                      statuslabel_id=rule.status_label_id)
+                else:
+                    raise IntegrityError(
+                        'Label with super_organization_id={} cannot be applied to a record with parent '
+                        'organization_id={}.'.format(
+                            label_org_id,
+                            taxlot_parent_org_id
+                        )
+                    )
             return True
 
     def remove_status_label(self, label_class, rule, linked_id):

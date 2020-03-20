@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_settings', [])
@@ -21,24 +21,25 @@ angular.module('BE.seed.controller.inventory_settings', [])
     'flippers',
     '$translate',
     'i18nService', // from ui-grid
-    function ($scope,
-              $window,
-              $uibModalInstance,
-              $stateParams,
-              $uibModal,
-              Notification,
-              inventory_service,
-              modified_service,
-              user_service,
-              urls,
-              all_columns,
-              profiles,
-              current_profile,
-              shared_fields_payload,
-              flippers,
-              $translate,
-              i18nService) {
-
+    function (
+      $scope,
+      $window,
+      $uibModalInstance,
+      $stateParams,
+      $uibModal,
+      Notification,
+      inventory_service,
+      modified_service,
+      user_service,
+      urls,
+      all_columns,
+      profiles,
+      current_profile,
+      shared_fields_payload,
+      flippers,
+      $translate,
+      i18nService
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
         id: $stateParams.inventory_id
@@ -113,7 +114,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         }
       });
 
-      function switchProfile(newProfile) {
+      function switchProfile (newProfile) {
         ignoreNextChange = true;
         if (newProfile) {
           $scope.currentProfile = _.find($scope.profiles, {id: newProfile.id});

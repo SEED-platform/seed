@@ -1,27 +1,34 @@
-sudo: required
-dist: trusty
-group: deprecated-2017Q4
+dist: xenial
 cache:
   directories:
     - node_modules
-    - seed/static/vendors/bower_components
+    - vendors/node_modules
     - "$HOME/.pip-cache/"
     - "$HOME/.nvm"
     - ".tox"
+os: linux
 language: python
 python:
-  - 3.6
+  - "3.6"
 addons:
-  postgresql: '9.6'
+  chrome: stable
+  postgresql: "11.2"
   apt:
     packages:
       - enchant
-      - google-chrome-stable
+      - gdal-bin
 services:
   - docker
-  - redis-server
+  - redis
   - postgresql
+  - xvfb
 before_install:
+  - sudo apt-get update
+  - sudo apt-get remove -y postgresql\*
+  - sudo apt-get install -y postgresql-11 postgresql-client-11
+  - sudo apt-get install -y postgis postgresql-11-postgis-2.5 postgresql-11-postgis-2.5-scripts
+  - sudo cp /etc/postgresql/{9.6,11}/main/pg_hba.conf
+  - sudo service postgresql restart 11
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
@@ -29,23 +36,29 @@ before_install:
 install:
   - pip install --upgrade pip
   - pip install tox==2.7.0
+  - psql --version
   - node --version
   - npm --version
   - nvm install stable
 before_script:
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start &
-  - sleep 3
-  - psql -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
-  - psql -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
-  - mv config/settings/test_local_untracked.py config/settings/local_untracked.py
-  - psql -c "CREATE DATABASE seeddb;" -U postgres
+  - psql -p 5433 -c "DROP DATABASE IF EXISTS seeddb;" -U postgres
+  - psql -p 5433 -c "DROP DATABASE IF EXISTS test_seeddb;" -U postgres
+  - cp config/settings/test_local_untracked.py config/settings/local_untracked.py
+  - sudo add-apt-repository ppa:timescale/timescaledb-ppa -y
+  - sudo apt-get update -q
+  - sudo apt-get install -y timescaledb-postgresql-11 timescaledb-tools
+  - sudo timescaledb-tune -yes
+  - sudo service postgresql restart
+  - psql -p 5433 -c "CREATE DATABASE seeddb;" -U postgres
+  - psql -p 5433 -d seeddb -c "CREATE EXTENSION postgis;" -U postgres
+  - free -tm
 env:
   global:
-    - DOCKER_COMPOSE_VERSION=1.16.0
+    - DOCKER_COMPOSE_VERSION=1.23.1
     - DJANGO_SETTINGS_MODULE=config.settings.travis
     - DISPLAY=:99.0
     - COVERALLS_REPO_TOKEN=y8UqJm8Bri5ZP8hr3YZM3guBaUKpsfoCv
+    - secure: HtOAAxPiA2NnSxXTBsmmXlFURH6WxnXXeaJLkjKc8cPWMsPX2QSouggtFYCPJxikrvN6bOYvDii67v2++E0qpuPO28LtywaLWu7AdDYxJ+rp4ysVjdi2Pp1bh723SZj2Xi3OMOLPz/kekT41DLKtoEzmBUEFEBIuJ27oU/phNGU=
   matrix:
     - TOX_ENV=python
     - TOX_ENV=flake8
@@ -59,5 +72,18 @@ jobs:
     - stage: publish
       install: skip
       before_script: skip
-      script: docker/travis_build_docker.sh
+      script: travis_wait 30 docker/travis_build_docker.sh
       env: DJANGO_SETTINGS_MODULE=config.settings.docker
+after_failure:
+  - echo "Job Failed... Maybe these logs will help?"
+  - free -tm
+  - ls -alt ~
+  - ls -alt /home/travis/build/SEED-platform/seed/
+  - echo "============================================ celery log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/celery.log
+  - echo "============================================ celery console log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/celery_console.log
+  - echo "============================================ server log ============================================"
+  - cat /home/travis/build/SEED-platform/seed/runserver.log
+  - echo "============================================ syslog ============================================"
+  - sudo cat /var/log/syslog

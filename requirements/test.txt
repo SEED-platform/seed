@@ -3,8 +3,8 @@
 
 # general
 autopep8==1.4
-coverage==4.5.1
-coveralls==1.5.1
+coverage==4.5.2
+coveralls==1.6.0
 tox==2.9.1
 
 # python testing
@@ -13,9 +13,11 @@ Faker==0.9.1
 mock==2.0.0
 nose-exclude==0.5.0
 coveralls-merge==0.0.3
+vcrpy==2.0.1
 
 # static code analysis
-flake8==3.5.0
+flake8==3.7.7
+pycodestyle==2.5.0
 
 # documentation and spelling
 Sphinx==1.8.1

@@ -1,85 +1,159 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
 
-from django.db import models
-
-from seed.models import PropertyView, Scenario
+from django.db import (
+    connection,
+    models,
+)
+from seed.models import Property, Scenario
 
 
 class Meter(models.Model):
-    NATURAL_GAS = 1
-    ELECTRICITY = 2
-    FUEL_OIL = 3
-    FUEL_OIL_NO_1 = 4
-    FUEL_OIL_NO_2 = 5
-    FUEL_OIL_NO_4 = 6
-    FUEL_OIL_NO_5_AND_NO_6 = 7
-    DISTRICT_STEAM = 8
+    COAL_ANTHRACITE = 1
+    COAL_BITUMINOUS = 2
+    COKE = 3
+    DIESEL = 4
+    DISTRICT_CHILLED_WATER_ABSORPTION = 5
+    DISTRICT_CHILLED_WATER_ELECTRIC = 6
+    DISTRICT_CHILLED_WATER_ENGINE = 7
+    DISTRICT_CHILLED_WATER_OTHER = 8
     DISTRICT_HOT_WATER = 9
-    DISTRICT_CHILLED_WATER = 10
-    PROPANE = 11
-    LIQUID_PROPANE = 12
-    KEROSENE = 13
-    DIESEL = 14
-    COAL = 15
-    COAL_ANTHRACITE = 16
-    COAL_BITUMINOUS = 17
-    COKE = 18
-    WOOD = 19
+    DISTRICT_STEAM = 10
+    ELECTRICITY_GRID = 11
+    ELECTRICITY_SOLAR = 12
+    ELECTRICITY_WIND = 13
+    FUEL_OIL_NO_1 = 14
+    FUEL_OIL_NO_2 = 15
+    FUEL_OIL_NO_4 = 16
+    FUEL_OIL_NO_5_AND_NO_6 = 13
+    KEROSENE = 18
+    NATURAL_GAS = 19
     OTHER = 20
-    WATER = 21
+    PROPANE = 21
+    WOOD = 22
+    COST = 23
 
+    # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
-        (NATURAL_GAS, 'Natural Gas'),
-        (ELECTRICITY, 'Electricity'),
-        (FUEL_OIL, 'Fuel Oil'),
-        (FUEL_OIL_NO_1, 'Fuel Oil No. 1'),
-        (FUEL_OIL_NO_2, 'Fuel Oil No. 2'),
-        (FUEL_OIL_NO_4, 'Fuel Oil No. 4'),
-        (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil No. 5 and No. 6'),
-        (DISTRICT_STEAM, 'District Steam'),
-        (DISTRICT_HOT_WATER, 'District Hot Water'),
-        (DISTRICT_CHILLED_WATER, 'District Chilled Water'),
-        (PROPANE, 'Propane'),
-        (LIQUID_PROPANE, 'Liquid Propane'),
-        (KEROSENE, 'Kerosene'),
-        (DIESEL, 'Diesel'),
-        (COAL, 'Coal'),
-        (COAL_ANTHRACITE, 'Coal Anthracite'),
-        (COAL_BITUMINOUS, 'Coal Bituminous'),
+        (COAL_ANTHRACITE, 'Coal (anthracite)'),
+        (COAL_BITUMINOUS, 'Coal (bituminous)'),
         (COKE, 'Coke'),
+        (DIESEL, 'Diesel'),
+        (DISTRICT_CHILLED_WATER_ABSORPTION, 'District Chilled Water - Absorption'),
+        (DISTRICT_CHILLED_WATER_ELECTRIC, 'District Chilled Water - Electric'),
+        (DISTRICT_CHILLED_WATER_ENGINE, 'District Chilled Water - Engine'),
+        (DISTRICT_CHILLED_WATER_OTHER, 'District Chilled Water - Other'),
+        (DISTRICT_HOT_WATER, 'District Hot Water'),
+        (DISTRICT_STEAM, 'District Steam'),
+        (ELECTRICITY_GRID, 'Electric - Grid'),
+        (ELECTRICITY_SOLAR, 'Electric - Solar'),
+        (ELECTRICITY_WIND, 'Electric - Wind'),
+        (FUEL_OIL_NO_1, 'Fuel Oil (No. 1)'),
+        (FUEL_OIL_NO_2, 'Fuel Oil (No. 2)'),
+        (FUEL_OIL_NO_4, 'Fuel Oil (No. 4)'),
+        (FUEL_OIL_NO_5_AND_NO_6, 'Fuel Oil (No. 5 and No. 6)'),
+        (KEROSENE, 'Kerosene'),
+        (NATURAL_GAS, 'Natural Gas'),
+        (OTHER, 'Other:'),
+        (PROPANE, 'Propane'),
         (WOOD, 'Wood'),
-        (OTHER, 'Other'),
+        (COST, 'Cost'),
     )
 
-    KILOWATT_HOURS = 1
-    THERMS = 2
-    WATT_HOURS = 3
+    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
 
-    ENERGY_UNITS = (
-        (KILOWATT_HOURS, 'kWh'),
-        (THERMS, 'Therms'),
-        (WATT_HOURS, 'Wh'),
+    PORTFOLIO_MANAGER = 1
+    GREENBUTTON = 2
+    BUILDINGSYNC = 3
+
+    SOURCES = (
+        (PORTFOLIO_MANAGER, 'Portfolio Manager'),
+        (GREENBUTTON, 'GreenButton'),
+        (BUILDINGSYNC, 'BuildingSync'),
     )
 
-    name = models.CharField(max_length=100)
-    property_view = models.ForeignKey(PropertyView, related_name='meters',
-                                      on_delete=models.CASCADE, null=True, blank=True)
-    scenario = models.ForeignKey(Scenario, related_name='meters',
-                                 on_delete=models.CASCADE, null=True)
-    energy_type = models.IntegerField(choices=ENERGY_TYPES)
-    energy_units = models.IntegerField(choices=ENERGY_UNITS)
+    is_virtual = models.BooleanField(default=False)
+
+    property = models.ForeignKey(
+        Property,
+        related_name='meters',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    source = models.IntegerField(choices=SOURCES, default=None, null=True)
+    source_id = models.CharField(max_length=255, null=True, blank=True)
+
+    type = models.IntegerField(choices=ENERGY_TYPES, default=None, null=True)
+
+    scenario = models.ForeignKey(
+        Scenario,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    def copy_readings(self, source_meter, overlaps_possible=True):
+        """
+        Copies MeterReadings of another Meter. By default, overlapping readings
+        are considered possible so a SQL bulk upsert is used. But if overlapping
+        readings are explicitly specified as not possible, a more efficient
+        bulk_create is used.
+        """
+        if overlaps_possible:
+            reading_strings = [
+                f"({self.id}, '{reading.start_time}', '{reading.end_time}', {reading.reading}, '{reading.source_unit}', {reading.conversion_factor})"
+                for reading
+                in source_meter.meter_readings.all()
+            ]
+
+            sql = (
+                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
+                " VALUES " + ", ".join(reading_strings) +
+                " ON CONFLICT (meter_id, start_time, end_time)" +
+                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
+                " RETURNING reading;"
+            )
+
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+        else:
+            readings = {
+                MeterReading(
+                    start_time=reading.start_time,
+                    end_time=reading.end_time,
+                    reading=reading.reading,
+                    source_unit=reading.source_unit,
+                    conversion_factor=reading.conversion_factor,
+                    meter_id=self.id,
+                )
+                for reading
+                in source_meter.meter_readings.all()
+            }
+
+            MeterReading.objects.bulk_create(readings)
 
 
-class TimeSeries(models.Model):
-    """For storing energy use over time."""
-    begin_time = models.DateTimeField(null=True, blank=True, db_index=True)
-    end_time = models.DateTimeField(null=True, blank=True, db_index=True)
+class MeterReading(models.Model):
+    meter = models.ForeignKey(
+        Meter,
+        related_name='meter_readings',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    start_time = models.DateTimeField(db_index=True, primary_key=True)
+    end_time = models.DateTimeField(db_index=True)
+
     reading = models.FloatField(null=True)
-    cost = models.DecimalField(max_digits=11, decimal_places=4, null=True)
-    meter = models.ForeignKey(Meter, null=True, blank=True)
+
+    # The following two fields are tracked for historical purposes
+    source_unit = models.CharField(max_length=255, null=True, blank=True)
+    conversion_factor = models.FloatField(null=True, blank=True)
 
     class Meta:
-        index_together = [['begin_time', 'end_time']]
+        unique_together = ('meter', 'start_time', 'end_time')

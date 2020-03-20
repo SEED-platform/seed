@@ -58,6 +58,9 @@ msgstr "Accept"
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
 
+msgid "Acknowledge"
+msgstr "Acknowledge"
+
 msgid "Actions"
 msgstr "Actions"
 
@@ -205,8 +208,8 @@ msgstr "Associated Tax Lot IDs"
 msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
 msgstr "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
 
-msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID."
-msgstr "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, or Jurisdiction Tax Lot ID."
+msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
+msgstr "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
 
 #: seed/models/models.py:136
 msgid "Auditing"
@@ -333,11 +336,20 @@ msgstr "Column Name"
 msgid "Column Order/Visibility"
 msgstr "Column Order/Visibility"
 
+msgid "COLUMN_NAME_DUPLICATE_ERROR"
+msgstr "Error: New column name cannot match previous name."
+
+msgid "COLUMN_NAME_EXISTS_WARNING"
+msgstr "Warning: Column name already exists."
+
 msgid "Commercial"
 msgstr "Commercial"
 
 msgid "Complete"
 msgstr "Complete"
+
+msgid "COMPLETE_AND_REFRESH"
+msgstr "Complete and Refresh Page"
 
 msgid "Compliance"
 msgstr "Compliance"
@@ -467,6 +479,9 @@ msgstr "Created label {label_name}"
 
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
+
+msgid "Current Name"
+msgstr "Current Name"
 
 msgid "Current password"
 msgstr "Current password"
@@ -608,6 +623,9 @@ msgstr "Designates whether the user can log into this admin site."
 msgid "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 msgstr "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
 
+msgid "Desired Name"
+msgstr "Desired Name"
+
 msgid "Determine Time Period from Field:"
 msgstr "Determine Time Period from Field:"
 
@@ -690,6 +708,9 @@ msgstr "Email Address:"
 msgid "end_date"
 msgstr "end_date"
 
+msgid "Energy"
+msgstr "Energy"
+
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
 
@@ -698,6 +719,12 @@ msgstr "Energy data file"
 
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
+
+msgid "ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose energy type----"
+
+msgid "ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Change display unit----"
 
 #: config/settings/common.py:214
 msgid "English"
@@ -761,11 +788,17 @@ msgstr "Export"
 msgid "Export Buildings"
 msgstr "Export Buildings"
 
+msgid "Export BuildingSync"
+msgstr "Export BuildingSync"
+
 msgid "Export Name"
 msgstr "Export Name"
 
 msgid "Export Selected"
 msgstr "Export Selected"
+
+msgid "Export Spreadsheet"
+msgstr "Export Spreadsheet"
 
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
@@ -780,7 +813,7 @@ msgid "Field Name"
 msgstr "Field Name"
 
 msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>, and <strong>UBID</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
+msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>, <strong>UBID</strong>, and <strong>ULID</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -792,7 +825,7 @@ msgid "File Source:"
 msgstr "File Source:"
 
 msgid "FILE_TYPES_SUPPORTED"
-msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong>."
+msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
 msgid "Files (Master State Only)"
 msgstr "Files (Master State Only)"
@@ -889,6 +922,9 @@ msgstr "gray"
 msgid "green"
 msgstr "green"
 
+msgid "GREENBUTTON_CONTENTS_TITLE"
+msgstr "Confirm GreenButton File Contents"
+
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
 
@@ -951,11 +987,20 @@ msgstr "Include in your Tax Lot List all tax lots shared with you."
 msgid "INTERNAL"
 msgstr "INTERNAL"
 
+msgid "Interval"
+msgstr "Interval"
+
 msgid "INVALID_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, and <strong>.xml</strong> files are supported."
 
+msgid "INVALID_GEOJSON_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.geojson</strong> and <strong>.json</strong> files are supported."
+
 msgid "INVALID_XML_EXTENSION_ALERT"
 msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> files are supported."
+
+msgid "INVALID_XML_ZIP_EXTENSION_ALERT"
+msgstr "<strong>Sorry!</strong> SEED doesn't currently support that file format. Only <strong>.xml</strong> and <strong>.zip</strong> files are supported."
 
 msgid "Inventory"
 msgstr "Inventory"
@@ -977,6 +1022,9 @@ msgstr "Invite a New Member"
 
 msgid "Invite an Owner"
 msgstr "Invite an Owner"
+
+msgid "IRREVERSIBLE_OPERATION_WARNING"
+msgstr "This operation is irreversible."
 
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
@@ -1070,6 +1118,9 @@ msgstr "Log in to SEED Platform"
 
 msgid "Logout"
 msgstr "Logout"
+
+msgid "LONG_OPERATION_WARNING"
+msgstr "This operation may take a while."
 
 msgid "Make this a snapshot project."
 msgstr "Make this a snapshot project."
@@ -1202,6 +1253,12 @@ msgstr "Merged properties"
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
 
+msgid "METER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter energy display units (change one at a time)"
+
+msgid "METER_READING_COUNTS_TITLE"
+msgstr "Meter Reading Counts"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1258,6 +1315,9 @@ msgstr "New properties"
 
 msgid "New tax lots"
 msgstr "New tax lots"
+
+msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
+msgstr "A new column will be created, and/or existing data can be replaced."
 
 msgid "Next"
 msgstr "Next"
@@ -1376,6 +1436,9 @@ msgstr "Organizations I Manage"
 msgid "Organizations:"
 msgstr "Organizations:"
 
+msgid "OVERWRITE_COLUMN_DATA_QUESTION"
+msgstr "Overwrite data?"
+
 msgid "Owner"
 msgstr "Owner"
 
@@ -1417,6 +1480,9 @@ msgstr "Pairing Settings"
 
 msgid "Parent ID"
 msgstr "Parent ID"
+
+msgid "PARSED_ENERGY_TYPES_AND_UNITS_TITLE"
+msgstr "Parsed Energy Types and Units"
 
 #: seed/landing/forms.py:20
 msgid "Password"
@@ -1484,6 +1550,15 @@ msgstr "PM Property ID"
 
 msgid "PM Release Date"
 msgstr "PM Release Date"
+
+msgid "PM_METER_IMPORT_BUTTON"
+msgstr "Upload Portfolio Manager Meter Usage"
+
+msgid "PM_METER_IMPORT_NO_ASSOCIATION"
+msgstr "Unable to Import - No associations to previously imported properties"
+
+msgid "PM_METER_IMPORT_RESULTS"
+msgstr "Portfolio Manager Meter Import Results"
 
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
@@ -1653,6 +1728,9 @@ msgstr "Remove User"
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
 
+msgid "RENAME_COLUMN_TITLE"
+msgstr "Rename Column"
+
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
 
@@ -1793,6 +1871,9 @@ msgstr "Select the type of file(s) you would like to add to"
 
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
+
+msgid "SELECT_DATA_SET_TITLE"
+msgstr "Select Data Set"
 
 msgid "SELECT_THE_TYPE_OF_FILE_TO_ADD_TO_DATASET"
 msgstr "Select the type of file(s) you would like to add to {dataset_name}."
@@ -2069,6 +2150,9 @@ msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software app
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 
+msgid "THERMAL_CONV_ASSUMPTION_TITLE"
+msgstr "Thermal Conversion Assumption"
+
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
 
@@ -2167,8 +2251,23 @@ msgstr "Upload your energy data file(s)"
 msgid "Upload your energy data."
 msgstr "Upload your energy data."
 
+msgid "UPLOAD_COMPLETE_TITLE"
+msgstr "Upload Complete"
+
+msgid "UPLOAD_FILE"
+msgstr "Upload File"
+
+msgid "UPLOAD_GB_DATA_BUTTON"
+msgstr "Upload GreenButton Data"
+
+msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
+msgstr "Upload Portfolio Manager Meter Readings"
+
 msgid "uploading file"
 msgstr "uploading file"
+
+msgid "UPLOADING_FILE_TITLE"
+msgstr "Uploading File"
 
 msgid "UPLOADING_PROGRESS"
 msgstr "Uploading <strong>{dataset_filename}</strong>"
@@ -2218,6 +2317,9 @@ msgstr "users"
 #: seed/landing/templates/landing/_browser_supported.html:5
 msgid "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
 msgstr "Using your current browser will prevent you from accessing features on our website. Use the links below to download a new browser or upgrade your existing browser."
+
+msgid "USING_DEFAULT_UNITS_WARNING"
+msgstr "For columns with unit settings, default units will be used for conversions."
 
 msgid "Version"
 msgstr "Version"

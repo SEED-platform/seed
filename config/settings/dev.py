@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -10,14 +10,17 @@ from kombu import Exchange, Queue
 from django.conf import settings
 
 DEBUG = True
-COMPRESS_ENABLED = False
+compress = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+
+COMPRESS_ENABLED = compress
+COMPRESS_OFFLINE = compress
 
 # override this in local_untracked.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
@@ -27,15 +30,6 @@ DATABASES = {
 }
 
 MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE
-
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "127.0.0.1:6379",
-        'OPTIONS': {'DB': 1},
-        'TIMEOUT': 300
-    }
-}
 
 LOGGING = {
     'version': 1,
@@ -70,17 +64,6 @@ LOGGING = {
         }
     },
 }
-
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
-CELERY_DEFAULT_QUEUE = 'seed-dev'
-CELERY_QUEUES = (
-    Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
-    ),
-)
 
 REQUIRE_UNIQUE_EMAIL = False
 

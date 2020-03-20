@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -13,13 +13,13 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
     var matching_service = {};
 
     /**
-     *Start system matching
+     *Start system matching. For now, geocoding is also kicked off here.
      *
      *@param import_file_id: int, the database id of the import file
      * we wish to match against other buildings for an organization.
      */
     matching_service.start_system_matching = function (import_file_id) {
-      return $http.post('/api/v2/import_files/' + import_file_id + '/start_system_matching/', {
+      return $http.post('/api/v2/import_files/' + import_file_id + '/start_system_matching_and_geocoding/', {
         organization_id: user_service.get_organization().id
       }).then(function (response) {
         return response.data;

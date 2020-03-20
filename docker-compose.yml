@@ -3,22 +3,37 @@
 version: '3'
 services:
   db-postgres:
-    image: postgres
+    image: seedplatform/postgres-seed:11.2
+    build:
+      context: ./docker/postgres
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
   db-redis:
-    image: redis
+    image: redis:5.0.1
   web:
     image: seedplatform/seed:latest
     build: .
     environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
+      # - REDIS_PASSWORD=optional-need-to-configure-redis
       - SEED_ADMIN_USER=user@seed-platform.org
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default
@@ -31,14 +46,20 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
   web-celery:
     image: seedplatform/seed:latest
     build: .
     command: /seed/docker/start_celery_docker.sh
     environment:
       - POSTGRES_DB=seed
+      - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
+      # - REDIS_PASSWORD=optional-need-to-configure-redis
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
@@ -48,6 +69,21 @@ services:
       - web
     volumes:
       - seed_media:/seed/media
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: seedplatform/oep:1.2
+    depends_on:
+      - web
+    environment:
+      - OEP_DISABLED=true
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
 volumes:
   seed_pgdata:
     external: true

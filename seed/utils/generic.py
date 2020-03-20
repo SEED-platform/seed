@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -11,6 +11,7 @@ from datetime import datetime
 
 from django.contrib.postgres.fields import JSONField
 from django.core import serializers
+from django.db import IntegrityError
 from past.builtins import basestring
 
 
@@ -105,3 +106,16 @@ def json_serializer(obj):
     if isinstance(obj, datetime):
         serial = obj.isoformat()
         return serial
+
+
+def compare_orgs_between_label_and_target(sender, pk_set, instance, model, action, **kwargs):
+    for id in pk_set:
+        label = model.objects.get(pk=id)
+        if instance.cycle.organization.get_parent().id != label.super_organization_id:
+            raise IntegrityError(
+                'Label with super_organization_id={} cannot be applied to a record with parent '
+                'organization_id={}.'.format(
+                    label.super_organization_id,
+                    instance.cycle.organization.get_parent().id
+                )
+            )

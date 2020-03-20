@@ -16,9 +16,12 @@
     "inject": true,
     "module": true,
     "moment": true,
+    "ol": true,
     "protractor": true,
     "qq": true,
-    "Spinner": true
+    "saveAs": true,
+    "Spinner": true,
+    "Terraformer": true
   },
   "plugins": ["angular", "lodash", "protractor"],
   "rules": {

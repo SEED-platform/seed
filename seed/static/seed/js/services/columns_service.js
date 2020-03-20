@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.service.columns', []).factory('columns_service', [
@@ -20,6 +20,23 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
         }
       }).then(function (response) {
         return response.data;
+      });
+    };
+
+    columns_service.rename_column = function (column_id, column_name, overwrite_preference) {
+      return $http.post('/api/v2/columns/' + column_id + '/rename/', {
+        organization_id: user_service.get_organization().id,
+        new_column_name: column_name,
+        overwrite: overwrite_preference
+      }).then(function (response) {
+        return response;
+      }).catch(function (error_response) {
+        return {
+          data: {
+            success: false,
+            message: 'Unsuccessful: ' + error_response.data.message
+          }
+        };
       });
     };
 

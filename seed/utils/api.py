@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -22,9 +22,12 @@ from past.builtins import basestring
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
+from seed.models import (
+    Column,
+    ColumnListSetting,
+    ColumnListSettingColumn,
+)
 
-# Data Structures
-# see OrgValidateMixin
 OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
 
 
@@ -225,18 +228,73 @@ def get_org_id_from_validator(instance, field):
     return rgetattr(instance, fields)
 
 
+class ProfileIdMixin(object):
+    """
+    Provides methods to get the columns to show based on a profile ID
+    """
+
+    def get_show_columns(self, org_id, profile_id):
+        """Get list of columns from the profile_id. The result will be in the form of
+
+        show_columns = {
+            'fields': ['field_1', 'field_2', ...]
+            'extra_data': ['extra_data_field_1', 'extra_data_field_2', ...]
+        }
+
+        :param org_id: str, id of organization
+        :param profile_id: str, id of profile to retrieve
+        :return: dist of lists
+        """
+        show_columns = {
+            # TODO: decide if we want to make these visible in the result
+            'fields': ['extra_data', 'id'],  # , 'bounding_box', 'long_lat', 'centroid',
+            'extra_data': []
+        }
+        profile_exists = ColumnListSetting.objects.filter(
+            organization_id=org_id,
+            id=profile_id,
+            settings_location=ColumnListSetting.VIEW_LIST,
+            inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+        ).exists()
+        if profile_id is None or profile_id == -1 or not profile_exists:
+            show_columns['fields'] += list(Column.objects.filter(
+                organization_id=org_id,
+                table_name='PropertyState',
+                is_extra_data=False).values_list('column_name', flat=True))
+            show_columns['extra_data'] += list(Column.objects.filter(
+                organization_id=org_id,
+                table_name='PropertyState',
+                is_extra_data=True).values_list('column_name', flat=True))
+        else:
+            profile = ColumnListSetting.objects.get(
+                organization_id=org_id,
+                id=profile_id,
+                settings_location=ColumnListSetting.VIEW_LIST,
+                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+            )
+            for col in list(ColumnListSettingColumn.objects.filter(column_list_setting_id=profile.id).values(
+                    'column__column_name', 'column__is_extra_data')):
+                if col['column__is_extra_data']:
+                    show_columns['extra_data'].append(col['column__column_name'])
+                else:
+                    show_columns['fields'].append(col['column__column_name'])
+
+        return show_columns
+
+
 class OrgMixin(object):
     """
     Provides get_organization and get_parent_org method
     """
 
-    def get_organization(self, request, return_obj=None):
+    def get_organization(self, request, return_obj=False):
         """Get org from query param or request.user.
         :param request: request object.
         :param return_obj: bool. Set to True if obj vs pk is desired.
         :return: int representing a valid organization pk or
             organization object.
         """
+        # print("my return obj is set to %s" % return_obj)
         if not request.user:
             return None
 
@@ -246,12 +304,17 @@ class OrgMixin(object):
             if not org_id:
                 org = get_user_org(request.user)
                 org_id = int(getattr(org, 'pk'))
-            if return_obj and not org:
-                try:
-                    org = request.user.orgs.get(pk=org_id)
-                except ObjectDoesNotExist:
-                    raise PermissionDenied('Incorrect org id.')
-            self._organization = org_id if not return_obj else org
+            if return_obj:
+                if not org:
+                    try:
+                        org = request.user.orgs.get(pk=org_id)
+                        self._organization = org
+                    except ObjectDoesNotExist:
+                        raise PermissionDenied('Incorrect org id.')
+                else:
+                    self._organization = org
+            else:
+                self._organization = org_id
         return self._organization
 
     def get_parent_org(self, request):

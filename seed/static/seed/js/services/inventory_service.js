@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -11,8 +11,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   'cycle_service',
   'spinner_utility',
   'naturalSort',
-  'flippers',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort, flippers) {
+  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -118,6 +117,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *  }
      *
      */
+
+    inventory_service.properties_meters_exist = function (inventory_ids) {
+      return $http.post('/api/v2/properties/meters_exist/', {
+        inventory_ids: inventory_ids
+      }).then(function (response) {
+        return response.data;
+      });
+    };
 
     inventory_service.get_property = function (view_id) {
       // Error checks
@@ -414,7 +421,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -431,7 +438,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate property column names detected:', duplicates);
+          $log.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -451,7 +458,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -468,7 +475,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate property column names detected:', duplicates);
+          $log.error('Duplicate property column names detected:', duplicates);
         }
 
         return columns;
@@ -492,7 +499,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -509,7 +516,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate tax lot column names detected:', duplicates);
+          $log.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;
@@ -529,7 +536,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         // Rename display_name to displayName (ui-grid compatibility)
         columns = _.map(columns, function (col) {
-          return _.mapKeys(col, function(value, key) {
+          return _.mapKeys(col, function (value, key) {
             return key === 'display_name' ? 'displayName' : key;
           });
         });
@@ -546,7 +553,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           return _.includes(iteratee, value, index + 1);
         });
         if (duplicates.length) {
-          console.error('Duplicate tax lot column names detected:', duplicates);
+          $log.error('Duplicate tax lot column names detected:', duplicates);
         }
 
         return columns;
@@ -845,21 +852,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_matching_results = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_results/', {
+    inventory_service.get_matching_and_geocoding_results = function (import_file_id) {
+      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
         params: {
           organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
-    inventory_service.get_matching_status = function (import_file_id, inventory_type) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_status/', {
-        params: {
-          organization_id: user_service.get_organization().id,
-          inventory_type: inventory_type
         }
       }).then(function (response) {
         return response.data;
@@ -924,7 +920,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        console.log(angular.copy(response));
         return response.data.data;
       });
     };

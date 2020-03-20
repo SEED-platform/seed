@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -20,11 +20,12 @@ class TestMeasures(TestCase):
         Measure.populate_measures(self.org.id)
 
     def test_populate_measures(self):
-        self.assertEqual(Measure.objects.count(), 174)
+        # BuildingSync v1.0.0 has 222 enums
+        self.assertEqual(Measure.objects.count(), 222)
 
         # if we run it again, it shouldn't add anything new
         Measure.populate_measures(self.org.id)
-        self.assertEqual(Measure.objects.count(), 174)
+        self.assertEqual(Measure.objects.count(), 222)
 
     def test_snake_case(self):
         self.assertEqual(_snake_case("AbCdEf"), "ab_cd_ef")
@@ -106,8 +107,8 @@ class TestPropertyMeasures(TestCase):
         self.assertEqual(PropertyMeasure.str_to_application_scale(None), None)
 
     def test_populate_measures(self):
-        self.assertEqual(Measure.objects.count(), 174)
+        self.assertEqual(Measure.objects.count(), 222)
 
         # if we run it again, it shouldn't add anything new
         Measure.populate_measures(self.org.id)
-        self.assertEqual(Measure.objects.count(), 174)
+        self.assertEqual(Measure.objects.count(), 222)

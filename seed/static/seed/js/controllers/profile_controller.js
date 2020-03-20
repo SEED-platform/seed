@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.profile', [])
@@ -9,11 +9,13 @@ angular.module('BE.seed.controller.profile', [])
     'auth_payload',
     'user_profile_payload',
     'user_service',
-    function ($scope,
-              urls,
-              auth_payload,
-              user_profile_payload,
-              user_service) {
+    function (
+      $scope,
+      urls,
+      auth_payload,
+      user_profile_payload,
+      user_service
+    ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = user_profile_payload;
       $scope.user_updated = false;

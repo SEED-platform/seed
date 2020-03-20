@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -26,6 +26,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
 )
 from seed.models import Cycle, PropertyView, TaxLotView, Column
+from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.organizations import create_organization, create_suborganization
 
@@ -84,6 +85,9 @@ def _dict_org(request, organizations):
             'display_significant_figures': o.display_significant_figures,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
+            'mapquest_api_key': o.mapquest_api_key or '',
+            'display_meter_units': o.display_meter_units,
+            'thermal_conversion_assumption': o.thermal_conversion_assumption,
         }
         orgs.append(org)
 
@@ -419,12 +423,15 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'user does not exist'
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not OrganizationUser.objects.filter(
+        # A super user can remove a user. The superuser logic is also part of the decorator which
+        # checks if super permissions have been limited per the ALLOW_SUPER_USER_PERMS setting.
+        org_owner = OrganizationUser.objects.filter(
             user=request.user, organization=org, role_level=ROLE_OWNER
-        ).exists():
+        ).exists()
+        if not request.user.is_superuser and not org_owner:
             return JsonResponse({
                 'status': 'error',
-                'message': 'only the organization owner can remove a member'
+                'message': 'only the organization owner or superuser can remove a member'
             }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_member = not OrganizationUser.objects.filter(
@@ -453,11 +460,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # check the user and make sure they still have a valid organization to belong to
         if request.user.default_organization == org:
-            # find the first org and set it to that
+            # find the first org and set it to that. It is okay if first_org is none.
+            # it simply means the user has no allowed organizations and will need an admin to
+            # assign them to a new organization if they want to use the account again.
             first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
-            # it is okay if first_org is none. It means the user has no allowed organizations
-            request.user.default_organization = first_org_user.organization
-            request.user.save()
+            if first_org_user:
+                request.user.default_organization = first_org_user.organization
+                request.user.save()
 
         return JsonResponse({'status': 'success'})
 
@@ -541,7 +550,17 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         user = User.objects.get(pk=body['user_id'])
 
-        org.add_member(user)
+        _orguser, status = org.add_member(user)
+
+        # Send an email if a new user has been added to the organization
+        if status:
+            try:
+                domain = request.get_host()
+            except Exception:
+                domain = 'seed-platform.org'
+            invite_to_organization(
+                domain, user, request.user.username, org.name
+            )
 
         return JsonResponse({'status': 'success'})
 
@@ -590,7 +609,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if desired_name is not None:
             org.name = desired_name
 
-        def is_valid_pint_spec(choice_tuples, s):
+        def is_valid_choice(choice_tuples, s):
             """choice_tuples is std model ((value, label), ...)"""
             return (s is not None) and (s in [choice[0] for choice in choice_tuples])
 
@@ -604,24 +623,35 @@ class OrganizationViewSet(viewsets.ViewSet):
                 kind, unit_string, org.name))
 
         desired_display_units_eui = posted_org.get('display_units_eui')
-        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
             org.display_units_eui = desired_display_units_eui
         else:
             warn_bad_pint_spec('eui', desired_display_units_eui)
 
         desired_display_units_area = posted_org.get('display_units_area')
-        if is_valid_pint_spec(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
+        if is_valid_choice(Organization.MEASUREMENT_CHOICES_AREA, desired_display_units_area):
             org.display_units_area = desired_display_units_area
         else:
             warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) \
-                and desired_display_significant_figures >= 0:
+        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
             org.display_significant_figures = desired_display_significant_figures
         elif desired_display_significant_figures is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
                 desired_display_significant_figures, org.name))
+
+        desired_display_meter_units = posted_org.get('display_meter_units')
+        if desired_display_meter_units:
+            org.display_meter_units = desired_display_meter_units
+
+        desired_thermal_conversion_assumption = posted_org.get('thermal_conversion_assumption')
+        if is_valid_choice(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, desired_thermal_conversion_assumption):
+            org.thermal_conversion_assumption = desired_thermal_conversion_assumption
+
+        # Update MapQuest API Key if it's been changed
+        if posted_org.get('mapquest_api_key', '') != org.mapquest_api_key:
+            org.mapquest_api_key = posted_org.get('mapquest_api_key')
 
         org.save()
 
@@ -763,7 +793,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'User with email address (%s) does not exist' % email
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'], ROLE_OWNER)
+        created, mess_or_org, _ = create_suborganization(user, org, body['sub_org_name'],
+                                                         ROLE_OWNER)
         if created:
             return JsonResponse({
                 'status': 'success',

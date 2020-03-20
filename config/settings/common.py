@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
 
     'compressor',
     'django_extensions',
@@ -120,10 +121,9 @@ HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
-# apps to auto load name spaced URLs for JS use (see seed.urls and seed.main.views.home)
+# apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (
     'seed',
-    'audit_logs',
 )
 
 MEDIA_URL = '/media/'
@@ -131,13 +131,22 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
+COMPRESS_CSS_FILTERS = [
+    'compressor.filters.css_default.CssAbsoluteFilter',
+    'django_compressor_autoprefixer.AutoprefixerFilter',
+    'compressor.filters.cssmin.CSSMinFilter'
+]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'vendors')
+]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
 COMPRESS_PRECOMPILERS = (
-    ('text/less', 'lessc {infile} {outfile}'),
+    ('text/x-scss', 'django_libsass.SassCompiler'),
 )
 AWS_QUERYSTRING_AUTH = False
 
@@ -193,26 +202,11 @@ LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
-PASSWORD_RESET_EMAIL = 'reset@seed-platform.org'
-SERVER_EMAIL = 'no-reply@seed-platform.org'
-
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
-
-# Default queue
-CELERY_TASK_DEFAULT_QUEUE = 'seed-common'
-CELERY_TASK_QUEUES = (
-    Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
-    ),
-)
-
 # Register our custom JSON serializer so we can serialize datetime objects in celery.
 register('seed_json', CeleryDatetimeSerializer.seed_dumps,
          CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
-
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ['seed_json']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
@@ -223,6 +217,8 @@ CELERY_TASK_COMPRESSION = 'gzip'
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+SERVER_EMAIL = 'info@seed-platform.org'
+PASSWORD_RESET_EMAIL = SERVER_EMAIL
 
 # Added By Gavin on 1/27/2014
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -230,7 +226,6 @@ NOSE_PLUGINS = [
     'nose_exclude.NoseExclude',
 ]
 
-# Django 1.5+ way of doing user profiles
 AUTH_USER_MODEL = 'landing.SEEDUser'
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -286,7 +281,7 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    "exclude_namespaces": ["app"],  # List URL namespaces to ignore
+    'exclude_namespaces': ['app'],  # List URL namespaces to ignore
     'APIS_SORTER': 'alpha',
     'LOGOUT_URL': '/accounts/logout',
 }

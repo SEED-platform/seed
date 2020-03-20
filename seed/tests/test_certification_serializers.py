@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-copyright (c) 2014 - 2018 The Regents of the University of California,
+copyright (c) 2014 - 2019 The Regents of the University of California,
 through Lawrence Berkeley National Laboratory(subject to receipt of any
 required approvals from the US. Department of Energy) and contributors.
 All rights reserved
@@ -189,11 +189,9 @@ class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):
 
     def test_validate(self):
         """Test (overriden) validate method"""
-        serializer = GreenAssessmentPropertySerializer()
-        # add context
         mock_request = mock.MagicMock()
         mock_request.user = self.user
-        serializer.context = {'request': mock_request}
+        serializer = GreenAssessmentPropertySerializer(context={'request': mock_request})
 
         # assert raises error if rating and metric supplied
         data = self.data.copy()

@@ -1,28 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-import base64
 import csv
 import datetime
-import hashlib
-import hmac
-import json
 import logging
 import os
 
 from past.builtins import basestring
 import pint
-from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ImproperlyConfigured, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
-from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import api_view, detail_route, list_route, parser_classes, \
@@ -37,6 +30,7 @@ from seed.data_importer.models import ROW_DELIMITER
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
+    geocode_buildings_task as task_geocode_buildings,
     match_buildings as task_match_buildings,
     save_raw_data as task_save_raw
 )
@@ -44,7 +38,6 @@ from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
-from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -63,86 +56,19 @@ from seed.models import (
     MERGE_STATE_UNKNOWN,
     MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
-    MERGE_STATE_DELETE,
     Cycle,
     Column,
     PropertyAuditLog,
     TaxLotAuditLog,
-    PropertyView,
-    TaxLotView,
-    AUDIT_IMPORT,
     AUDIT_USER_EDIT,
-    Property,
-    TaxLot,
     TaxLotProperty,
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
+from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def handle_s3_upload_complete(request):
-    """
-    Notify the system that an upload to S3 has been completed. This is
-    a necessary step after uploading to S3 or the SEED instance will not
-    be aware the file exists.
-
-    Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-    :GET: Expects the following in the query string:
-
-        key: The full path to the file, within the S3 bucket.
-            E.g. data_importer/buildings.csv
-
-        source_type: The source of the file.
-            E.g. 'Assessed Raw' or 'Portfolio Raw'
-
-        source_program: Optional value from common.mapper.Programs
-        source_version: e.g. "4.1"
-
-        import_record: The ID of the ImportRecord this file belongs to.
-
-    Returns::
-
-        {
-            'success': True,
-            'import_file_id': The ID of the newly-created ImportFile object.
-        }
-    """
-    if 'S3' not in settings.DEFAULT_FILE_STORAGE:
-        return {
-            'success': False,
-            'message': "Direct-to-S3 uploads not enabled"
-        }
-
-    import_record_pk = request.POST['import_record']
-    try:
-        record = ImportRecord.objects.get(pk=import_record_pk)
-    except ImportRecord.DoesNotExist:
-        # TODO: Remove the file from S3?
-        return {
-            'success': False,
-            'message': "Import Record %s not found" % import_record_pk
-        }
-
-    filename = request.POST['key']
-    source_type = request.POST['source_type']
-    # Add Program & Version fields (empty string if not given)
-    kw_fields = {
-        f: request.POST.get(f, '') for f in ['source_program', 'source_program_version']
-    }
-
-    f = ImportFile.objects.create(import_record=record,
-                                  file=filename,
-                                  source_type=source_type,
-                                  **kw_fields)
-    return JsonResponse({'success': True, "import_file_id": f.pk})
 
 
 class LocalUploaderViewSet(viewsets.ViewSet):
@@ -210,12 +136,6 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-
-        # The s3 stuff needs to be redone someday... delete?
-        if 'S3' in settings.DEFAULT_FILE_STORAGE:
-            os.unlink(path)
-            raise ImproperlyConfigured(
-                "Local upload not supported")  # TODO: Is this wording correct?
 
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
@@ -365,10 +285,9 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         # Create a single row for each building
         for pm_property in request.data['properties']:
 
-            # report some helpful info
+            # report some helpful info every 20 properties
             property_num += 1
-            # TODO: PYTHON3 check division
-            if property_num / 20.0 == property_num / 20:
+            if property_num % 20 == 0:
                 new_time = datetime.datetime.now()
                 _log.debug("On property number %s; current time: %s" % (property_num, new_time))
 
@@ -427,22 +346,10 @@ class LocalUploaderViewSet(viewsets.ViewSet):
             rows.append(this_row)
 
         # Then write the actual data out as csv
-        # Note that the Python 2.x csv module doesn't allow easily specifying an encoding, and it was failing on a few
-        # rows here and there with a large test dataset.  This local function allows converting to utf8 before writing
-        def py2_unicode_to_str(u):
-            # TODO: PYTHON3 check unicode check
-            if isinstance(u, basestring):
-                return u.encode('utf-8')
-            else:
-                return u
-        with open(path, 'wb') as csv_file:
+        with open(path, 'w', encoding='utf-8') as csv_file:
             pm_csv_writer = csv.writer(csv_file)
             for row_num, row in enumerate(rows):
-                try:
-                    pm_csv_writer.writerow(row)
-                except UnicodeEncodeError:
-                    cleaned_row_data = [py2_unicode_to_str(datum) for datum in row]
-                    pm_csv_writer.writerow(cleaned_row_data)
+                pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)
         import_record_pk = request.data['import_record_id']
@@ -465,7 +372,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
                                          'source_program_version': '1.0'})
 
         # Return the newly created import file ID
-        return JsonResponse({'success': True, "import_file_id": f.pk})
+        return JsonResponse({'success': True, 'import_file_id': f.pk})
 
 
 @api_endpoint
@@ -478,82 +385,15 @@ def get_upload_details(request):
 
     Returns::
 
-        If S3 mode:
-
         {
-            'upload_mode': 'S3',
-            'upload_complete': A url to notify that upload is complete,
-            'signature': The url to post file details to for auth to upload to S3.
-        }
-
-        If local file system mode:
-
-        {
-            'upload_mode': 'filesystem',
             'upload_path': The url to POST files to (see local_uploader)
         }
 
     """
-    ret = {}
-    if 'S3' in settings.DEFAULT_FILE_STORAGE:
-        # S3 mode
-        ret['upload_mode'] = 'S3'
-        ret['upload_complete'] = reverse('api:v2:s3_upload_complete')
-        ret['signature'] = reverse('api:v2:sign_policy_document')
-        ret['aws_bucket_name'] = settings.AWS_BUCKET_NAME
-        ret['aws_client_key'] = settings.AWS_UPLOAD_CLIENT_KEY
-    else:
-        ret['upload_mode'] = 'filesystem'
-        ret['upload_path'] = '/api/v2/upload/'
+    ret = {
+        'upload_path': '/api/v2/upload/'
+    }
     return JsonResponse(ret)
-
-
-@api_endpoint
-@ajax_request
-@login_required
-@api_view(['POST'])
-def sign_policy_document(request):
-    """
-    Sign and return the policy document for a simple upload.
-    http://aws.amazon.com/articles/1434/#signyours3postform
-
-    Payload::
-
-        {
-         "expiration": ISO-encoded timestamp for when signature should expire,
-                       e.g. "2014-07-16T00:20:56.277Z",
-         "conditions":
-             [
-                 {"acl":"private"},
-                 {"bucket": The name of the bucket from get_upload_details},
-                 {"Content-Type":"text/csv"},
-                 {"success_action_status":"200"},
-                 {"key": filename of upload, prefixed with 'data_imports/',
-                         suffixed with a unique timestamp.
-                         e.g. 'data_imports/my_buildings.csv.1405469756'},
-                 {"x-amz-meta-category":"data_imports"},
-                 {"x-amz-meta-qqfilename": original filename}
-             ]
-        }
-
-    Returns::
-
-        {
-            "policy": A hash of the policy document. Using during upload to S3.
-            "signature": A signature of the policy document.  Also used during upload to S3.
-        }
-    """
-    policy_document = request.data
-    policy = base64.b64encode(json.dumps(policy_document))
-    signature = base64.b64encode(
-        hmac.new(
-            settings.AWS_UPLOAD_CLIENT_SECRET_KEY, policy, hashlib.sha1
-        ).digest()
-    )
-    return JsonResponse({
-        'policy': policy,
-        'signature': signature
-    })
 
 
 class MappingResultsPayloadSerializer(serializers.Serializer):
@@ -690,25 +530,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         if not import_file.uploaded_filename:
             f['uploaded_filename'] = import_file.filename
         f['dataset'] = obj_to_dict(import_file.import_record)
-        # add the importfiles for the matching select
-        f['dataset']['importfiles'] = []
-        files = f['dataset']['importfiles']
-        for i in import_file.import_record.files:
-            tmp_uploaded_filename = i.filename_only
-            if i.uploaded_filename:
-                tmp_uploaded_filename = i.uploaded_filename
-
-            files.append({
-                'name': i.filename_only,
-                'uploaded_filename': tmp_uploaded_filename,
-                'mapping_done': i.mapping_done,
-                'cycle': i.cycle.id,
-                'id': i.pk
-            })
-
-        # make the first element in the list the current import file
-        i = next(index for (index, d) in enumerate(files) if d["id"] == import_file.pk)
-        files[0], files[i] = files[i], files[0]
 
         return JsonResponse({
             'status': 'success',
@@ -864,7 +685,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 prop_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         prop.extra_data,
-                        property_column_name_mapping
+                        property_column_name_mapping,
+                        fields=prop.extra_data.keys(),
                     ).items()
                 )
                 property_results.append(prop_dict)
@@ -889,7 +711,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 tax_lot_dict.update(
                     TaxLotProperty.extra_data_to_dict_with_mapping(
                         tax_lot.extra_data,
-                        taxlot_column_name_mapping
+                        taxlot_column_name_mapping,
+                        fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
                 tax_lot_results.append(tax_lot_dict)
@@ -928,401 +751,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             )
 
         return audit_entry[0]
-
-    @api_endpoint_class
-    @ajax_request_class
-    @detail_route(methods=['POST'])
-    def unmatch(self, request, pk=None):
-        body = request.data
-
-        # import_file_id = int(pk)
-        inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = int(body.get('state_id', None))
-        coparent_id = int(body.get('coparent_id', None))
-
-        # Make sure the state isn't already unmatched
-        coparent = self.has_coparent(source_state_id, inventory_type, ['id'])
-        if not coparent:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Source state is already unmatched'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        if coparent['id'] != coparent_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Coparent ID in audit history doesn\'t match coparent_id parameter',
-                'found': coparent.id,
-                'passed_in': coparent_id
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        if inventory_type == 'properties':
-            audit_log = PropertyAuditLog
-            label = apps.get_model('seed', 'Property_labels')
-            state = PropertyState
-            view = PropertyView
-        else:
-            audit_log = TaxLotAuditLog
-            label = apps.get_model('seed', 'TaxLot_labels')
-            state = TaxLotState
-            view = TaxLotView
-
-        state1 = state.objects.get(id=coparent['id'])
-        state2 = state.objects.get(id=source_state_id)
-
-        merged_record = audit_log.objects.select_related('state', 'parent1', 'parent2').get(
-            parent_state1__in=[state1, state2],
-            parent_state2__in=[state1, state2]
-        )
-
-        # Ensure that state numbers line up with parent numbers
-        if merged_record.parent_state1_id != state1.id:
-            state1_copy = state1
-            state1 = state2
-            state2 = state1_copy
-
-        merged_state = merged_record.state
-
-        # Check if we are at the end of a merge tree
-        if view.objects.filter(state=merged_state).exists():
-            old_view = view.objects.get(state=merged_state)
-            cycle_id = old_view.cycle_id
-
-            # Clone the property/taxlot record, then the labels
-            if inventory_type == 'properties':
-                old_inventory = old_view.property
-                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-                new_inventory = old_inventory
-                new_inventory.id = None
-                new_inventory.save()
-
-                for label_id in label_ids:
-                    label(property_id=new_inventory.id, statuslabel_id=label_id).save()
-            else:
-                old_inventory = old_view.taxlot
-                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-                new_inventory = old_inventory
-                new_inventory.id = None
-                new_inventory.save()
-
-                for label_id in label_ids:
-                    label(taxlot_id=new_inventory.id, tatuslabel_id=label_id).save()
-
-            # Create the views
-            if inventory_type == 'properties':
-                new_view1 = view(
-                    cycle_id=cycle_id,
-                    property_id=new_inventory.id,
-                    state=state1
-                )
-                new_view2 = view(
-                    cycle_id=cycle_id,
-                    property_id=old_view.property_id,
-                    state=state2
-                )
-            else:
-                new_view1 = view(
-                    cycle_id=cycle_id,
-                    taxlot_id=new_inventory.id,
-                    state=state1
-                )
-                new_view2 = view(
-                    cycle_id=cycle_id,
-                    taxlot_id=old_view.taxlot_id,
-                    state=state2
-                )
-
-            # Mark the merged state as deleted
-            merged_state.merge_state = MERGE_STATE_DELETE
-            merged_state.save()
-
-            # Change the merge_state of the individual states
-            if merged_record.parent1.name in ['Import Creation',
-                                              'Manual Edit'] and merged_record.parent1.import_filename is not None:
-                # State belongs to a new record
-                state1.merge_state = MERGE_STATE_NEW
-            else:
-                state1.merge_state = MERGE_STATE_MERGED
-            if merged_record.parent2.name in ['Import Creation',
-                                              'Manual Edit'] and merged_record.parent2.import_filename is not None:
-                # State belongs to a new record
-                state2.merge_state = MERGE_STATE_NEW
-            else:
-                state2.merge_state = MERGE_STATE_MERGED
-            state1.save()
-            state2.save()
-
-            # Delete the audit log entry for the merge
-            merged_record.delete()
-
-            # Duplicate pairing
-            if inventory_type == 'properties':
-                paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
-                                                                               flat=True))
-            else:
-                paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                                       .order_by('property_view_id').values_list('property_view_id',
-                                                                                 flat=True))
-
-            old_view.delete()
-            new_view1.save()
-            new_view2.save()
-
-            if inventory_type == 'properties':
-                for paired_view_id in paired_view_ids:
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   property_view_id=new_view1.id,
-                                   taxlot_view_id=paired_view_id).save()
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   property_view_id=new_view2.id,
-                                   taxlot_view_id=paired_view_id).save()
-            else:
-                for paired_view_id in paired_view_ids:
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   taxlot_view_id=new_view1.id,
-                                   property_view_id=paired_view_id).save()
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   taxlot_view_id=new_view2.id,
-                                   property_view_id=paired_view_id).save()
-
-        else:
-            # We are somewhere in the middle of a merge tree
-            # Climb the tree and find the final merge state
-            done_searching = False
-            current_merged_record = merged_record
-            while not done_searching:
-                # current_merged_record = audit_log.objects.select_related('state', 'parent1', 'parent2').filter(
-                #     parent1__in=[state1, state2],
-                #     parent_state2__in=[state1, state2]
-                # )
-                record = audit_log.objects.only('parent1_id', 'parent2_id') \
-                    .filter(
-                    Q(parent1_id=current_merged_record.id) | Q(parent2_id=current_merged_record.id))
-                if record.exists():
-                    current_merged_record = record.first()
-                else:
-                    final_merged_state = current_merged_record.state
-                    done_searching = True
-
-            old_view = view.objects.get(state=final_merged_state)
-            cycle_id = old_view.cycle_id
-
-            # Clone the property/taxlot record, then the labels
-            if inventory_type == 'properties':
-                old_inventory = old_view.property
-                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-                new_inventory = old_inventory
-                new_inventory.id = None
-                new_inventory.save()
-
-                for label_id in label_ids:
-                    label(property_id=new_inventory.id, statuslabel_id=label_id).save()
-            else:
-                old_inventory = old_view.taxlot
-                label_ids = list(old_inventory.labels.all().values_list('id', flat=True))
-                new_inventory = old_inventory
-                new_inventory.id = None
-                new_inventory.save()
-
-                for label_id in label_ids:
-                    label(taxlot_id=new_inventory.id, statuslabel_id=label_id).save()
-
-            # Create the view
-            if inventory_type == 'properties':
-                new_view = view(
-                    cycle_id=cycle_id,
-                    property_id=new_inventory.id,
-                    state=state.objects.get(id=source_state_id)
-                )
-            else:
-                new_view = view(
-                    cycle_id=cycle_id,
-                    taxlot_id=new_inventory.id,
-                    state=state.objects.get(id=source_state_id)
-                )
-
-            # Change the merge_state of the individual states
-            if merged_record.parent1.name in ['Import Creation',
-                                              'Manual Edit'] and merged_record.parent1.import_filename is not None:
-                # State belongs to a new record
-                state1.merge_state = MERGE_STATE_NEW
-            else:
-                state1.merge_state = MERGE_STATE_MERGED
-            if merged_record.parent2.name in ['Import Creation',
-                                              'Manual Edit'] and merged_record.parent2.import_filename is not None:
-                # State belongs to a new record
-                state2.merge_state = MERGE_STATE_NEW
-            else:
-                state2.merge_state = MERGE_STATE_MERGED
-            state1.save()
-            state2.save()
-
-            # Remove the parent from the original merge state record and make sure only parent1 is populated
-            if merged_record.parent_state1_id == source_state_id:
-                merged_record.parent_state1_id = merged_record.parent_state2_id
-                merged_record.parent1_id = merged_record.parent2_id
-            merged_record.parent_state2_id = None
-            merged_record.parent2_id = None
-            merged_record.save()
-
-            # Duplicate pairing
-            if inventory_type == 'properties':
-                paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                                       .order_by('taxlot_view_id').values_list('taxlot_view_id',
-                                                                               flat=True))
-            else:
-                paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id=old_view.id)
-                                       .order_by('property_view_id').values_list('property_view_id',
-                                                                                 flat=True))
-
-            new_view.save()
-
-            if inventory_type == 'properties':
-                for paired_view_id in paired_view_ids:
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   property_view_id=new_view.id,
-                                   taxlot_view_id=paired_view_id).save()
-            else:
-                for paired_view_id in paired_view_ids:
-                    TaxLotProperty(primary=True,
-                                   cycle_id=cycle_id,
-                                   taxlot_view_id=new_view.id,
-                                   property_view_id=paired_view_id).save()
-
-        return {
-            'status': 'success'
-        }
-
-    @api_endpoint_class
-    @ajax_request_class
-    @permission_classes((SEEDOrgPermissions,))
-    @detail_route(methods=['POST'])
-    def match(self, request, pk=None):
-        body = request.data
-
-        # import_file_id = pk
-        inventory_type = body.get('inventory_type', 'properties')
-        source_state_id = int(body.get('state_id', None))
-        matching_state_id = int(body.get('matching_state_id', None))
-        organization_id = int(request.query_params.get('organization_id', None))
-
-        # Make sure the state isn't already matched
-        if self.has_coparent(source_state_id, inventory_type):
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Source state is already matched'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        if inventory_type == 'properties':
-            audit_log = PropertyAuditLog
-            inventory = Property
-            label = apps.get_model('seed', 'Property_labels')
-            state = PropertyState
-            view = PropertyView
-        else:
-            audit_log = TaxLotAuditLog
-            inventory = TaxLot
-            label = apps.get_model('seed', 'TaxLot_labels')
-            state = TaxLotState
-            view = TaxLotView
-
-        state1 = state.objects.get(id=matching_state_id)
-        state2 = state.objects.get(id=source_state_id)
-
-        priorities = Column.retrieve_priorities(organization_id)
-        merged_state = state.objects.create(organization_id=organization_id)
-        merged_state = merging.merge_state(
-            merged_state, state1, state2, priorities[PropertyState.__name__]
-        )
-
-        state_1_audit_log = audit_log.objects.filter(state=state1).first()
-        state_2_audit_log = audit_log.objects.filter(state=state2).first()
-
-        audit_log.objects.create(organization=state1.organization,
-                                 parent1=state_1_audit_log,
-                                 parent2=state_2_audit_log,
-                                 parent_state1=state1,
-                                 parent_state2=state2,
-                                 state=merged_state,
-                                 name='Manual Match',
-                                 description='Automatic Merge',
-                                 import_filename=None,
-                                 record_type=AUDIT_IMPORT)
-
-        # Set the merged_state to merged
-        merged_state.data_state = DATA_STATE_MATCHING
-        merged_state.merge_state = MERGE_STATE_MERGED
-        merged_state.save()
-        state2.merge_state = MERGE_STATE_UNKNOWN
-        state2.save()
-
-        # Delete existing views and inventory records
-        views = view.objects.filter(state_id__in=[source_state_id, matching_state_id])
-        view_ids = list(views.values_list('id', flat=True))
-        cycle_id = views.first().cycle_id
-        label_ids = []
-        # Get paired view ids
-        if inventory_type == 'properties':
-            paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
-                                   .order_by('taxlot_view_id').distinct('taxlot_view_id')
-                                   .values_list('taxlot_view_id', flat=True))
-        else:
-            paired_view_ids = list(TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids)
-                                   .order_by('property_view_id').distinct('property_view_id')
-                                   .values_list('property_view_id', flat=True))
-        for v in views:
-            if inventory_type == 'properties':
-                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
-                v.property.delete()
-            else:
-                label_ids.extend(list(v.taxlot.labels.all().values_list('id', flat=True)))
-                v.taxlot.delete()
-        label_ids = list(set(label_ids))
-
-        # Create new inventory record
-        inventory_record = inventory(organization_id=organization_id)
-        inventory_record.save()
-
-        # Create new labels and view
-        if inventory_type == 'properties':
-            for label_id in label_ids:
-                label(property_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
-                            property_id=inventory_record.id)
-        else:
-            for label_id in label_ids:
-                label(taxlot_id=inventory_record.id, statuslabel_id=label_id).save()
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
-                            taxlot_id=inventory_record.id)
-        new_view.save()
-
-        # Delete existing pairs and re-pair all to new view
-        if inventory_type == 'properties':
-            # Probably already deleted by cascade
-            TaxLotProperty.objects.filter(property_view_id__in=view_ids).delete()
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=new_view.id,
-                               taxlot_view_id=paired_view_id).save()
-        else:
-            # Probably already deleted by cascade
-            TaxLotProperty.objects.filter(taxlot_view_id__in=view_ids).delete()
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=paired_view_id,
-                               taxlot_view_id=new_view.id).save()
-
-        return {
-            'status': 'success'
-        }
 
     @api_endpoint_class
     @ajax_request_class
@@ -1366,7 +794,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @detail_route(methods=['POST'])
-    def start_system_matching(self, request, pk=None):
+    def start_system_matching_and_geocoding(self, request, pk=None):
         """
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
@@ -1386,6 +814,15 @@ class ImportFileViewSet(viewsets.ViewSet):
               required: true
               paramType: path
         """
+        try:
+            task_geocode_buildings(pk)
+        except MapQuestAPIKeyError:
+            result = JsonResponse({
+                'status': 'error',
+                'message': 'MapQuest API key may be invalid or at its limit.'
+            }, status=status.HTTP_403_FORBIDDEN)
+            return result
+
         return task_match_buildings(pk)
 
     @api_endpoint_class
@@ -1603,9 +1040,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file = ImportFile.objects.get(pk=pk)
         organization = import_file.import_record.super_organization
         mappings = body.get('mappings', [])
-        status = Column.create_mappings(mappings, organization, request.user, import_file.id)
+        result = Column.create_mappings(mappings, organization, request.user, import_file.id)
 
-        if status:
+        if result:
             return JsonResponse({'status': 'success'})
         else:
             return JsonResponse({'status': 'error'})
@@ -1614,7 +1051,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @detail_route(methods=['GET'])
-    def matching_results(self, request, pk=None):
+    def matching_and_geocoding_results(self, request, pk=None):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
@@ -1692,6 +1129,48 @@ class ImportFileViewSet(viewsets.ViewSet):
             else:
                 tax_lots_new.append(state.id)
 
+        # Construct Geocode Results
+        property_geocode_results = {
+            'high_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'manual': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Manually geocoded (N/A)'
+            )),
+            'missing_address_components': len(PropertyState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
+        tax_lot_geocode_results = {
+            'high_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='High'
+            )),
+            'low_confidence': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence__startswith='Low'
+            )),
+            'missing_address_components': len(TaxLotState.objects.filter(
+                import_file__pk=import_file.pk,
+                data_state=DATA_STATE_MATCHING,
+                geocoding_confidence='Missing address components (N/A)'
+            )),
+        }
+
         # merge in any of the matching results from the JSON field
         return {
             'status': 'success',
@@ -1706,6 +1185,10 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'property_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('property_unmatched', None),
+                'geocoded_high_confidence': property_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': property_geocode_results.get('low_confidence'),
+                'geocoded_manually': property_geocode_results.get('manual'),
+                'geocode_not_possible': property_geocode_results.get('missing_address_components'),
             },
             'tax_lots': {
                 'matched': len(tax_lots_matched),
@@ -1716,131 +1199,11 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'duplicates_of_existing': import_file.matching_results_data.get(
                     'tax_lot_duplicates_of_existing', None),
                 'unmatched_copy': import_file.matching_results_data.get('tax_lot_unmatched', None),
+                'geocoded_high_confidence': tax_lot_geocode_results.get('high_confidence'),
+                'geocoded_low_confidence': tax_lot_geocode_results.get('low_confidence'),
+                'geocode_not_possible': tax_lot_geocode_results.get('missing_address_components'),
             }
         }
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
-    def matching_status(self, request, pk=None):
-        """
-        Retrieves the number and ids of matched and unmatched properties & tax lots for
-        a given ImportFile record.  Specifically for hand-matching
-
-        :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-        Returns::
-
-            {
-                'status': 'success',
-                'properties': {
-                    'matched': Number of PropertyStates that have been matched,
-                    'matched_ids': Array of matched PropertyState ids,
-                    'unmatched': Number of PropertyStates that are unmatched records,
-                    'unmatched_ids': Array of unmatched PropertyState ids
-                },
-                'tax_lots': {
-                    'matched': Number of TaxLotStates that have been matched,
-                    'matched_ids': Array of matched TaxLotState ids,
-                    'unmatched': Number of TaxLotStates that are unmatched records,
-                    'unmatched_ids': Array of unmatched TaxLotState ids
-                }
-            }
-
-        """
-        import_file_id = pk
-
-        inventory_type = request.query_params.get('inventory_type', 'all')
-
-        result = {
-            'status': 'success',
-        }
-
-        if inventory_type == 'properties' or inventory_type == 'all':
-            # property views associated with this imported file (including merges)
-            properties_new = []
-            properties_matched = list(PropertyState.objects.filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_MERGED,
-            ).values_list('id', flat=True))
-
-            # Check audit log in case PropertyStates are listed as "new" but were merged into a different property
-            properties = list(PropertyState.objects.filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_NEW,
-            ))
-            # If a record was manually edited then remove the edited version
-            properties_to_remove = list(PropertyAuditLog.objects.filter(
-                state__in=properties,
-                name='Manual Edit'
-            ).values_list('state_id', flat=True))
-            properties = [p for p in properties if p.id not in properties_to_remove]
-
-            for state in properties:
-                audit_creation_id = PropertyAuditLog.objects.only('id').exclude(
-                    import_filename=None).get(
-                    state_id=state.id,
-                    name='Import Creation'
-                )
-                if PropertyAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                    parent1_id=audit_creation_id
-                ).exists():
-                    properties_matched.append(state.id)
-                else:
-                    properties_new.append(state.id)
-
-            result['properties'] = {
-                'matched': len(properties_matched),
-                'matched_ids': properties_matched,
-                'unmatched': len(properties_new),
-                'unmatched_ids': properties_new
-            }
-
-        if inventory_type == 'taxlots' or inventory_type == 'all':
-            tax_lots_new = []
-            tax_lots_matched = list(TaxLotState.objects.only('id').filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_MERGED,
-            ).values_list('id', flat=True))
-
-            # Check audit log in case TaxLotStates are listed as "new" but were merged into a different tax lot
-            taxlots = list(TaxLotState.objects.filter(
-                import_file__pk=import_file_id,
-                data_state=DATA_STATE_MATCHING,
-                merge_state=MERGE_STATE_NEW,
-            ))
-            # If a record was manually edited then remove the edited version
-            taxlots_to_remove = list(TaxLotAuditLog.objects.filter(
-                state__in=taxlots,
-                name='Manual Edit'
-            ).values_list('state_id', flat=True))
-            taxlots = [t for t in taxlots if t.id not in taxlots_to_remove]
-
-            for state in taxlots:
-                audit_creation_id = TaxLotAuditLog.objects.only('id').exclude(
-                    import_filename=None).get(
-                    state_id=state.id,
-                    name='Import Creation'
-                )
-                if TaxLotAuditLog.objects.exclude(record_type=AUDIT_USER_EDIT).filter(
-                    parent1_id=audit_creation_id
-                ).exists():
-                    tax_lots_matched.append(state.id)
-                else:
-                    tax_lots_new.append(state.id)
-
-            result['tax_lots'] = {
-                'matched': len(tax_lots_matched),
-                'matched_ids': tax_lots_matched,
-                'unmatched': len(tax_lots_new),
-                'unmatched_ids': tax_lots_new
-            }
-
-        return result
 
     @api_endpoint_class
     @ajax_request_class

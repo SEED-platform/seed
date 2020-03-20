@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -70,6 +70,9 @@ class AccountsViewTests(TestCase):
             'display_units_eui': 'kBtu/ft**2/year',
             'user_role': 'owner',
             'is_parent': True,
+            'mapquest_api_key': '',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
             'org_id': self.org.pk,
             'id': self.org.pk,
@@ -129,6 +132,9 @@ class AccountsViewTests(TestCase):
                 'name': 'sub',
                 'user_role': 'owner',
                 'is_parent': False,
+                'mapquest_api_key': '',
+                'display_meter_units': Organization._default_display_meter_units,
+                'thermal_conversion_assumption': Organization.US,
                 'parent_id': self.org.pk,
                 'org_id': new_org.pk,
                 'id': new_org.pk,
@@ -153,6 +159,9 @@ class AccountsViewTests(TestCase):
             'name': 'my org',
             'user_role': 'owner',
             'is_parent': True,
+            'mapquest_api_key': '',
+            'display_meter_units': Organization._default_display_meter_units,
+            'thermal_conversion_assumption': Organization.US,
             'parent_id': self.org.pk,
             'org_id': self.org.pk,
             'id': self.org.pk,

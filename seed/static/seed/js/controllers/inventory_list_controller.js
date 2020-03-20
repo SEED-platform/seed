@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_list', [])
@@ -8,10 +8,12 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$filter',
     '$window',
     '$uibModal',
+    '$sce',
     '$stateParams',
     'inventory_service',
     'label_service',
     'data_quality_service',
+    'geocode_service',
     'user_service',
     'inventory',
     'cycles',
@@ -23,27 +25,33 @@ angular.module('BE.seed.controller.inventory_list', [])
     'spinner_utility',
     'naturalSort',
     '$translate',
+    'uiGridConstants',
     'i18nService', // from ui-grid
-    function ($scope,
-              $filter,
-              $window,
-              $uibModal,
-              $stateParams,
-              inventory_service,
-              label_service,
-              data_quality_service,
-              user_service,
-              inventory,
-              cycles,
-              profiles,
-              current_profile,
-              labels,
-              all_columns,
-              urls,
-              spinner_utility,
-              naturalSort,
-              $translate,
-              i18nService) {
+    function (
+      $scope,
+      $filter,
+      $window,
+      $uibModal,
+      $sce,
+      $stateParams,
+      inventory_service,
+      label_service,
+      data_quality_service,
+      geocode_service,
+      user_service,
+      inventory,
+      cycles,
+      profiles,
+      current_profile,
+      labels,
+      all_columns,
+      urls,
+      spinner_utility,
+      naturalSort,
+      $translate,
+      uiGridConstants,
+      i18nService
+    ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
@@ -103,7 +111,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
 
       var ignoreNextChange = true;
-      $scope.$watch('currentProfile', function (newProfile, oldProfile) {
+      $scope.$watch('currentProfile', function (newProfile) {
         if (ignoreNextChange) {
           ignoreNextChange = false;
           return;
@@ -147,8 +155,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
       };
 
-      function populated_columns_modal() {
-        var modalInstance = $uibModal.open({
+      function populated_columns_modal () {
+        $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
           controller: 'show_populated_columns_modal_controller',
@@ -181,7 +189,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels() {
+      function updateApplicableLabels () {
         var inventoryIds;
         if ($scope.inventory_type === 'properties') {
           inventoryIds = _.map($scope.data, 'property_view_id').sort();
@@ -257,7 +265,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), 'id');
+              var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -293,7 +302,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               var data = new Array($scope.selectedOrder.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
+                return inventory_service.get_properties(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -303,7 +312,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   return data;
                 });
               } else if ($scope.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlots(1, undefined, undefined, undefined, selectedOrder).then(function (inventory_data) {
+                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
                   _.forEach(selectedOrder, function (id, index) {
                     var match = _.find(inventory_data.results, {id: id});
                     if (match) {
@@ -316,6 +325,16 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             inventory_type: function () {
               return $scope.inventory_type;
+            },
+            has_meters: function () {
+              if ($scope.inventory_type === 'properties') {
+                var inventory_ids = $scope.selectedOrder.slice().reverse();
+                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
+                  return has_meters;
+                });
+              } else {
+                return false;
+              }
             }
           }
         });
@@ -324,6 +343,55 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.selectedOrder = [];
           refresh_objects();
         });
+      };
+
+      var propertyPolygonCache = {};
+      var taxlotPolygonCache = {};
+      var propertyFootprintColumn = _.find($scope.columns, {column_name: 'property_footprint', table_name: 'PropertyState'});
+      var taxlotFootprintColumn = _.find($scope.columns, {column_name: 'taxlot_footprint', table_name: 'TaxLotState'});
+      $scope.polygon = function (record, tableName) {
+        var outputSize = 180;
+
+        var cache, field;
+        if (tableName === 'PropertyState') {
+          cache = propertyPolygonCache;
+          field = propertyFootprintColumn.name;
+        } else {
+          cache = taxlotPolygonCache;
+          field = taxlotFootprintColumn.name;
+        }
+
+        if (!_.has(cache, record.id)) {
+          var footprint;
+          try {
+            footprint = Terraformer.WKT.parse(record[field]);
+          } catch (e) {
+            return record[field];
+          }
+          var coords = Terraformer.toMercator(footprint).coordinates[0];
+          var envelope = Terraformer.Tools.calculateEnvelope(footprint);
+
+          // padding to allow for svg stroke
+          var padding = 2;
+          var scale = (outputSize - padding) / Math.max(envelope.h, envelope.w);
+
+          var width = (envelope.w <= envelope.h) ? Math.ceil(envelope.w * scale + padding) : outputSize;
+          var height = (envelope.h <= envelope.w) ? Math.ceil(envelope.h * scale + padding) : outputSize;
+
+          var xOffset = (width - envelope.w * scale) / 2;
+          var yOffset = (height - envelope.h * scale) / 2;
+
+          var points = _.map(coords, function (coord) {
+            var x = _.round((coord[0] - envelope.x) * scale + xOffset, 2);
+            var y = _.round(height - ((coord[1] - envelope.y) * scale + yOffset), 2);
+            return x + ',' + y;
+          });
+
+          var svg = '<svg height="' + height + '" width="' + width + '"><polygon points="' + _.initial(points).join(' ') + '" style="fill:#ffab66;stroke:#aaa;stroke-width:1;" /></svg>';
+
+          cache[record.id] = $sce.trustAsHtml(svg);
+        }
+        return cache[record.id];
       };
 
       $scope.run_data_quality_check = function () {
@@ -341,7 +409,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function(dq_result) {
+            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function (dq_result) {
               var modalInstance = $uibModal.open({
                 templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
                 controller: 'data_quality_modal_controller',
@@ -380,6 +448,13 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
+        if (_.isMatch(col, {column_name: 'property_footprint', table_name: 'PropertyState'})) {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'PropertyState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        } else if (_.isMatch(col, {column_name: 'taxlot_footprint', table_name: 'TaxLotState'})) {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'TaxLotState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        } else {
+          col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
+        }
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
           options.filter = inventory_service.dateFilter();
@@ -440,7 +515,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       });
 
       // Data
-      var processData = function () {
+      var processData = function (data) {
+        if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
           .concat(['$$treeLevel', 'notes_count', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
@@ -450,7 +526,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         }, {});
         var columnNamesToAggregate = _.keys(columnsToAggregate);
 
-        var data = $scope.data;
         var roots = data.length;
         for (var i = 0, trueIndex = 0; i < roots; ++i, ++trueIndex) {
           data[trueIndex].$$treeLevel = 0;
@@ -501,21 +576,23 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       var refresh_objects = function () {
         spinner_utility.show();
+        var promise;
         if ($scope.inventory_type === 'properties') {
-          inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
-            $scope.data = properties.results;
+          promise = inventory_service.get_properties($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (properties) {
+            processData(properties.results);
             $scope.pagination = properties.pagination;
-            processData();
             spinner_utility.hide();
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (taxlots) {
-            $scope.data = taxlots.results;
+          promise = inventory_service.get_taxlots($scope.pagination.page, $scope.number_per_page, $scope.cycle.selected_cycle, _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined).then(function (taxlots) {
+            processData(taxlots.results);
             $scope.pagination = taxlots.pagination;
-            processData();
             spinner_utility.hide();
           });
         }
+        return promise.then(function () {
+          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
+        });
       };
 
       $scope.update_cycle = function (cycle) {
@@ -539,6 +616,56 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.labels = _.filter(labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
+        });
+      };
+
+      $scope.open_ubid_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
+          controller: 'ubid_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            }
+          }
+        });
+      };
+
+      $scope.open_geocode_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
+          controller: 'geocode_modal_controller',
+          resolve: {
+            property_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_state_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            },
+            org_id: function () {
+              return user_service.get_organization().id;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (/*result*/) {
+          // dialog was closed with 'Close' button.
+          refresh_objects();
         });
       };
 
@@ -661,7 +788,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function currentColumns() {
+      function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'id'], col.name) && col.visible;
@@ -762,15 +889,16 @@ angular.module('BE.seed.controller.inventory_list', [])
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
             // Ensure that 'notes_count' and 'id' remain first
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
+            var col, idIndex;
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'notes_count'});
             if (idIndex !== 2) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(2, 0, col);
             }
-            var idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            idIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
             if (idIndex !== 3) {
-              var col = $scope.gridApi.grid.columns[idIndex];
+              col = $scope.gridApi.grid.columns[idIndex];
               $scope.gridApi.grid.columns.splice(idIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
             }

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -21,6 +21,8 @@ from seed.models import (
     PropertyAuditLog,
     AUDIT_IMPORT,
     Scenario,
+    Meter,
+    MeterReading,
     MERGE_STATE_MERGED,
 )
 
@@ -35,13 +37,11 @@ class BuildingFile(models.Model):
     """
     UNKNOWN = 0
     BUILDINGSYNC = 1
-    GEOJSON = 2
     HPXML = 3
 
     BUILDING_FILE_TYPES = (
         (UNKNOWN, 'Unknown'),
         (BUILDINGSYNC, 'BuildingSync'),
-        (GEOJSON, 'GeoJSON'),
         (HPXML, 'HPXML')
     )
 
@@ -192,6 +192,11 @@ class BuildingFile(models.Model):
             # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
             #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
 
+            # If the scenario does not have a name then log a warning and continue
+            if not s.get('name'):
+                messages['warnings'].append('Scenario does not have a name. ID = %s' % s.get('id'))
+                continue
+
             scenario, _ = Scenario.objects.get_or_create(
                 name=s.get('name'),
                 property_state_id=self.property_state_id,
@@ -206,6 +211,15 @@ class BuildingFile(models.Model):
             scenario.hdd_base_temperature = s.get('hdd_base_temperature')
             scenario.cdd = s.get('cdd')
             scenario.cdd_base_temperature = s.get('cdd_base_temperature')
+            scenario.annual_electricity_savings = s.get('annual_electricity_savings')
+            scenario.annual_natural_gas_savings = s.get('annual_natural_gas_savings')
+            scenario.annual_site_energy = s.get('annual_site_energy')
+            scenario.annual_source_energy = s.get('annual_source_energy')
+            scenario.annual_site_energy_use_intensity = s.get('annual_site_energy_use_intensity')
+            scenario.annual_source_energy_use_intensity = s.get('annual_source_energy_use_intensity')
+            scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
+            scenario.annual_electricity_energy = s.get('annual_electricity_energy')
+            scenario.annual_peak_demand = s.get('annual_peak_demand')
 
             # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
             #                                       default=TEMPORAL_STATUS_CURRENT)
@@ -235,6 +249,35 @@ class BuildingFile(models.Model):
                 scenario.measures.add(measure)
 
             scenario.save()
+
+            # meters
+            for m in s.get('meters', []):
+                # print("BUILDING FILE METER: {}".format(m))
+                # check by scenario_id and source_id
+                meter, _ = Meter.objects.get_or_create(
+                    scenario_id=scenario.id,
+                    source_id=m.get('source_id'),
+                )
+                meter.source = m.get('source')
+                meter.type = m.get('type')
+                meter.is_virtual = m.get('is_virtual')
+                meter.save()
+
+                # meterreadings
+                # TODO: need to check that these are in kBtu already?
+                readings = {
+                    MeterReading(
+                        start_time=mr.get('start_time'),
+                        end_time=mr.get('end_time'),
+                        reading=mr.get('reading'),
+                        source_unit=mr.get('source_unit'),
+                        meter_id=meter.id,
+                    )
+                    for mr
+                    in m.get('readings', [])
+                }
+
+                MeterReading.objects.bulk_create(readings)
 
         if property_view:
             # create a new blank state to merge the two together

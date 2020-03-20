@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California,
+:copyright (c) 2014 - 2019, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -36,6 +36,7 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
+    Meter,
     Measure,
     Note,
     Property,
@@ -62,7 +63,7 @@ from seed.serializers.properties import (
 from seed.serializers.taxlots import (
     TaxLotViewSerializer,
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import ProfileIdMixin, api_endpoint_class
 from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
@@ -200,7 +201,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     queryset = PropertyView.objects.all().select_related('state')
 
 
-class PropertyViewSet(GenericViewSet):
+class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
@@ -209,6 +210,9 @@ class PropertyViewSet(GenericViewSet):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
+        # check if there is a query paramater for the profile_id. If so, then use that one
+        profile_id = request.query_params.get('profile_id', profile_id)
+
         if not org_id:
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
@@ -259,6 +263,8 @@ class PropertyViewSet(GenericViewSet):
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
+        # This uses an old method of returning the show_columns. There is a new method that
+        # is prefered in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -395,7 +401,30 @@ class PropertyViewSet(GenericViewSet):
             else:
                 profile_id = request.data['profile_id']
 
+                # ensure that profile_id is an int
+                try:
+                    profile_id = int(profile_id)
+                except TypeError:
+                    pass
+
         return self._get_filtered_results(request, profile_id=profile_id)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @list_route(methods=['POST'])
+    def meters_exist(self, request):
+        """
+        Check to see if the given Properties (given by ID) have Meters.
+        ---
+        parameters:
+            - name: inventory_ids
+              description: Array containing Property IDs.
+              paramType: body
+        """
+        body = request.data
+        property_ids = body.get('inventory_ids', [])
+
+        return Meter.objects.filter(property_id__in=property_ids).exists()
 
     @api_endpoint_class
     @ajax_request_class
@@ -436,7 +465,7 @@ class PropertyViewSet(GenericViewSet):
 
         audit_log = PropertyAuditLog
         inventory = Property
-        label = apps.get_model('seed', 'Property_labels')
+        label = apps.get_model('seed', 'PropertyView_labels')
         state = PropertyState
         view = PropertyView
 
@@ -495,21 +524,32 @@ class PropertyViewSet(GenericViewSet):
             paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
                                    .order_by('taxlot_view_id').distinct('taxlot_view_id')
                                    .values_list('taxlot_view_id', flat=True))
-            for v in views:
-                label_ids.extend(list(v.property.labels.all().values_list('id', flat=True)))
-                v.property.delete()
-            label_ids = list(set(label_ids))
 
             # Create new inventory record
             inventory_record = inventory(organization_id=organization_id)
             inventory_record.save()
 
+            # Add meters in the following order without regard for the source persisting.
+            inventory_record.copy_meters(
+                view.objects.get(state_id=state1.id).property_id,
+                source_persists=False
+            )
+            inventory_record.copy_meters(
+                view.objects.get(state_id=state2.id).property_id,
+                source_persists=False
+            )
+
+            for v in views:
+                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
+                v.property.delete()
+            label_ids = list(set(label_ids))
+
             # Create new labels and view
-            for label_id in label_ids:
-                label(property_id=inventory_record.id, statuslabel_id=label_id).save()
             new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
                             property_id=inventory_record.id)
             new_view.save()
+            for label_id in label_ids:
+                label(propertyview_id=new_view.id, statuslabel_id=label_id).save()
 
             # Assign notes to the new view
             for note in notes:
@@ -583,20 +623,18 @@ class PropertyViewSet(GenericViewSet):
                 'message': 'property view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'Property_labels')
+        label = apps.get_model('seed', 'PropertyView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the property record, then the labels
+        # Clone the property record, then copy over meters
         old_property = old_view.property
-        label_ids = list(old_property.labels.all().values_list('id', flat=True))
         new_property = old_property
         new_property.id = None
         new_property.save()
 
-        for label_id in label_ids:
-            label(property_id=new_property.id, statuslabel_id=label_id).save()
+        Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
 
         # Create the views
         new_view1 = PropertyView(
@@ -609,6 +647,13 @@ class PropertyViewSet(GenericViewSet):
             property_id=old_view.property_id,
             state=state2
         )
+
+        # Save old labels to both views
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
+
+        for label_id in label_ids:
+            label(propertyview_id=new_view1.id, statuslabel_id=label_id).save()
+            label(propertyview_id=new_view2.id, statuslabel_id=label_id).save()
 
         # Mark the merged state as deleted
         merged_state.merge_state = MERGE_STATE_DELETE
@@ -853,7 +898,7 @@ class PropertyViewSet(GenericViewSet):
     def _get_taxlots(self, pk):
         lot_view_pks = TaxLotProperty.objects.filter(property_view_id=pk).values_list(
             'taxlot_view_id', flat=True)
-        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state')
+        lot_views = TaxLotView.objects.filter(pk__in=lot_view_pks).select_related('cycle', 'state').prefetch_related('labels')
         lots = []
         for lot in lot_views:
             lots.append(TaxLotViewSerializer(lot).data)
@@ -909,7 +954,16 @@ class PropertyViewSet(GenericViewSet):
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
-            result['state'] = PropertyStateSerializer(property_view.state).data
+
+            # Grab extra_data columns to be shown in the result
+            organization_id = request.query_params['organization_id']
+            all_extra_data_columns = Column.objects.filter(
+                organization_id=organization_id,
+                is_extra_data=True,
+                table_name='PropertyState').values_list('column_name', flat=True)
+
+            result['state'] = PropertyStateSerializer(property_view.state,
+                                                      all_extra_data_columns=all_extra_data_columns).data
             result['taxlots'] = self._get_taxlots(property_view.pk)
             result['history'], master = self.get_history(property_view)
             result = update_result_with_master(result, master)

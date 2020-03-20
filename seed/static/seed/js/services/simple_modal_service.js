@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -45,9 +45,9 @@ angular.module('BE.seed.service.simple_modal', [])
       var validModalTypes = [TYPE_DEFAULT, TYPE_ERROR];
 
       var modalDefaults = {
-        type: TYPE_DEFAULT,             //can be "default" or "error"
-        backdrop: 'static',             //user cannot click anywhere on screen to close modal, only buttons
-        keyboard: true,                 //user can use ESC key to close
+        type: TYPE_DEFAULT, //can be "default" or "error"
+        backdrop: 'static', //user cannot click anywhere on screen to close modal, only buttons
+        keyboard: true, //user can use ESC key to close
         modalFade: true,
         templateUrl: urls.static_url + 'seed/partials/simple_modal.html'
       };

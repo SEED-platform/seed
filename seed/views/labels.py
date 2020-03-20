@@ -1,12 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
 
 from django.apps import apps
+from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import (
     response,
@@ -25,8 +26,8 @@ from seed.filters import (
 )
 from seed.models import (
     StatusLabel as Label,
-    Property,
-    TaxLot,
+    PropertyView,
+    TaxLotView,
 )
 from seed.pagination import NoPagination
 from seed.serializers.labels import (
@@ -47,7 +48,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
                         'name': Name given to label
                         'color': Color of label,
                         'organization_id': Id of organization label belongs to,
-                        'is_applied': Whether or not the label is applied
+                        'is_applied': Will be empty array if not applied to property/taxlots
                     }
                 ]
 
@@ -120,7 +121,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
 class UpdateInventoryLabelsAPIView(APIView):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
-    inventory_models = {'property': Property, 'taxlot': TaxLot}
+    inventory_models = {'property': PropertyView, 'taxlot': TaxLotView}
     errors = {
         'disjoint': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -140,8 +141,8 @@ class UpdateInventoryLabelsAPIView(APIView):
         Used for bulk_create operations.
         """
         return {
-            'property': apps.get_model('seed', 'Property_labels'),
-            'taxlot': apps.get_model('seed', 'TaxLot_labels')
+            'property': apps.get_model('seed', 'PropertyView_labels'),
+            'taxlot': apps.get_model('seed', 'TaxLotView_labels')
         }
 
     def get_queryset(self, inventory_type, organization_id):
@@ -156,7 +157,7 @@ class UpdateInventoryLabelsAPIView(APIView):
         ).values('id', 'color', 'name')
 
     def get_inventory_id(self, q, inventory_type):
-        return getattr(q, "{}_id".format(inventory_type))
+        return getattr(q, "{}view_id".format(inventory_type))
 
     def exclude(self, qs, inventory_type, label_ids):
         exclude = {label: [] for label in label_ids}
@@ -169,18 +170,33 @@ class UpdateInventoryLabelsAPIView(APIView):
     def filter_by_inventory(self, qs, inventory_type, inventory_ids):
         if inventory_ids:
             filterdict = {
-                "{}__pk__in".format(inventory_type): inventory_ids
+                "{}view__pk__in".format(inventory_type): inventory_ids
             }
             qs = qs.filter(**filterdict)
         return qs
 
     def label_factory(self, inventory_type, label_id, inventory_id):
         Model = self.models[inventory_type]
-        create_dict = {
-            'statuslabel_id': label_id,
-            "{}_id".format(inventory_type): inventory_id
-        }
-        return Model(**create_dict)
+
+        # Ensure the the label org and inventory org are the same
+        inventory_parent_org_id = getattr(Model, "{}view".format(inventory_type)).get_queryset().get(pk=inventory_id)\
+            .cycle.organization.get_parent().id
+        label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
+        if inventory_parent_org_id == label_super_org_id:
+            create_dict = {
+                'statuslabel_id': label_id,
+                "{}view_id".format(inventory_type): inventory_id
+            }
+
+            return Model(**create_dict)
+        else:
+            raise IntegrityError(
+                'Label with super_organization_id={} cannot be applied to a record with parent '
+                'organization_id={}.'.format(
+                    label_super_org_id,
+                    inventory_parent_org_id
+                )
+            )
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
         added = []

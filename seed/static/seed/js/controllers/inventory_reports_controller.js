@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -15,22 +15,25 @@ angular.module('BE.seed.controller.inventory_reports', [])
     '$stateParams',
     'inventory_reports_service',
     'simple_modal_service',
+    'columns',
     'cycles',
     'organization_payload',
     'flippers',
     '$sce',
     '$translate',
-    function ($scope,
-              $log,
-              $stateParams,
-              inventory_reports_service,
-              simple_modal_service,
-              cycles,
-              organization_payload,
-              flippers,
-              $sce,
-              $translate) {
-
+    function (
+      $scope,
+      $log,
+      $stateParams,
+      inventory_reports_service,
+      simple_modal_service,
+      columns,
+      cycles,
+      organization_payload,
+      flippers,
+      $sce,
+      $translate
+    ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       var pretty_unit = function (pint_spec) {
@@ -75,58 +78,54 @@ angular.module('BE.seed.controller.inventory_reports', [])
         return str;
       };
 
+      var parse_axis_label = function (column) {
+        if (column.column_name.includes('eui')) {
+          return translateAxisLabel(column.displayName, eui_units());
+        } else if (column.column_name.includes('area')) {
+          return translateAxisLabel(column.displayName, area_units());
+        } else {
+          return $translate.instant(column.displayName);
+        }
+      };
+
       /* SCOPE VARS */
       /* ~~~~~~~~~~ */
 
       /** Chart variables :
-       these next two arrays, $scope.xAxisVars and $scope.yAxisVars, define the various properties
+       These next two scoped arrays, $scope.xAxisVars and $scope.yAxisVars, define the various properties
        of the variables the user can select for graphing.
 
-       Each object contains information used by the dropdown controls as well as information
-       used to customize the chart specifically for that value (e.g. axisTickFormat)
+       Each object contains information used by the dropdown controls.
 
+       $scope.xAxisVars consists of columns specified as numeric types.
+
+       $scope.uAxisVars consists of manually defined columns specified.
        Ideally, if we need to add new variables, we should just be able to add a new object to
        either of these arrays. (However, at first when adding new variables we might need to add
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
        */
-      $scope.xAxisVars = [
-        {
-          name: $translate.instant('Site EUI'),                     //short name for variable, used in pulldown
-          label: $translate.instant('Site Energy Use Intensity'),   //full name for variable
-          varName: 'site_eui',                  //name of variable, to be sent to server
-          axisLabel: translateAxisLabel('Site EUI', eui_units()),     //label to be used in charts, should include units
-          axisType: 'Measure',                  //DimpleJS property for axis type
-          axisTickFormat: ',.0f'                //DimpleJS property for axis tick format
-        }, {
-          name: $translate.instant('Source EUI'),
-          label: $translate.instant('Source Energy Use Intensity'),
-          varName: 'source_eui',
-          axisLabel: translateAxisLabel('Source EUI', eui_units()),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: $translate.instant('Weather Norm. Site EUI'),
-          label: $translate.instant('Weather Normalized Site Energy Use Intensity'),
-          varName: 'site_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Site EUI', eui_units()),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: $translate.instant('Weather Norm. Source EUI'),
-          label: $translate.instant('Weather Normalized Source Energy Use Intensity'),
-          varName: 'source_eui_weather_normalized',
-          axisLabel: translateAxisLabel('Weather Normalized Source EUI', eui_units()),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }, {
-          name: $translate.instant('ENERGY STAR Score'),
-          label: $translate.instant('ENERGY STAR Score'),
-          varName: 'energy_score',
-          axisLabel: translateAxisLabel('ENERGY STAR Score'),
-          axisType: 'Measure',
-          axisTickFormat: ',.0f'
-        }
+
+      var acceptable_column_types = [
+        'area',
+        'eui',
+        'float',
+        'integer',
+        'number'
       ];
+      var filtered_columns = _.filter(columns, function (column) {
+        return _.includes(acceptable_column_types, column.data_type);
+      });
+
+      $scope.xAxisVars = _.map(filtered_columns, function (column) {
+        return {
+          name: $translate.instant(column.displayName), //short name for variable, used in pulldown
+          label: $translate.instant(column.displayName), //full name for variable
+          varName: column.column_name, //name of variable, to be sent to server
+          axisLabel: parse_axis_label(column), //label to be used in charts, should include units
+          axisType: 'Measure', //DimpleJS property for axis type
+          axisTickFormat: ',.0f' //DimpleJS property for axis tick format
+        };
+      });
 
       $scope.yAxisVars = [
         {
@@ -177,8 +176,8 @@ angular.module('BE.seed.controller.inventory_reports', [])
       $scope.aggChartSeries = ['use_description', 'yr_e'];
 
       //Currently selected x and y variables
-      $scope.xAxisSelectedItem = $scope.xAxisVars[0];  //initialize to first var
-      $scope.yAxisSelectedItem = $scope.yAxisVars[0];  //initialize to first var
+      $scope.xAxisSelectedItem = $scope.xAxisVars[0]; //initialize to first var
+      $scope.yAxisSelectedItem = $scope.yAxisVars[0]; //initialize to first var
 
       //Chart data
       $scope.chartData = [];
@@ -288,7 +287,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
             y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
           };
         } catch (e) {
-          console.error('$sce issue... missing translation');
+          $log.error('$sce issue... missing translation');
           interpolationParams = {
             x_axis_label: $scope.xAxisSelectedItem.label,
             y_axis_label: $scope.yAxisSelectedItem.label
@@ -338,10 +337,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
               $scope.chartStatusMessage = 'No Data';
             }
           },
-            function (data, status) {
-              $scope.chartStatusMessage = 'Data Load Error';
-              $log.error('#InventoryReportsController: Error loading chart data : ' + status);
-            })
+          function (data, status) {
+            $scope.chartStatusMessage = 'Data Load Error';
+            $log.error('#InventoryReportsController: Error loading chart data : ' + status);
+          })
           .finally(function () {
             $scope.chartIsLoading = false;
           });
@@ -388,10 +387,10 @@ angular.module('BE.seed.controller.inventory_reports', [])
             $scope.aggChartStatusMessage = 'No Data';
           }
         },
-          function (data, status) {
-            $scope.aggChartStatusMessage = 'Data Load Error';
-            $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
-          })
+        function (data, status) {
+          $scope.aggChartStatusMessage = 'Data Load Error';
+          $log.error('#InventoryReportsController: Error loading agg chart data : ' + status);
+        })
           .finally(function () {
             $scope.aggChartIsLoading = false;
           });

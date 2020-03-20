@@ -1,36 +1,54 @@
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 :license: see LICENSE for more details.
 
 seed local_untracked.py
 
     For this to work with dev settings:
-        - run with dev settings (add this line to the .bashrc):
+        - run with dev settings:
             $ export DJANGO_SETTINGS_MODULE=config.settings.dev
             or
             $ ./manage.py runserver --settings=config.settings.dev
-        - add your setting to the DATABASES, AWS S3 config,
-            CACHES, and CELERY_BROKER_URL
-            i.e. everything here starting with 'your-'
-    For local dev, all these services can run locally on localhost or 127.0.0.1 except for S3.
+        - add your settings. Make sure to update the DATABASES, AWS related configurations, and
+            CACHES (i.e. everything here starting with 'your-')
+    For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
+from __future__ import absolute_import
+
 import os
 
-# Optional AWS Settings (if using RDS, SES, S3, etc)
-#AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
-#AWS_UPLOAD_CLIENT_KEY = AWS_ACCESS_KEY_ID
-#AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-#AWS_UPLOAD_CLIENT_SECRET_KEY = AWS_SECRET_ACCESS_KEY
-#AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "seed-dev-uploads")
-#AWS_STORAGE_BUCKET_NAME = AWS_BUCKET_NAME
+from kombu import Exchange, Queue
+
+# ============================ General settings and flags ============================
+COMPRESS_ENABLED = False
+DOMAIN_URLCONFS = {'default': 'config.urls'}
+DEBUG = True  # Set to False if this is being used in production mode. If this is set as false, then
+# you will need to configure nginx to serve the static assets. Deploying with docker is recommended
+# and handles setting up nginx.
+INTERNAL_IPS = ('127.0.0.1',)
+
+# MapQuestAPI key for geocoding
+MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', 'a-mapquest-api-key')
+
+# SECRET_KEY is set here (or in your env variable)
+# You can create a key from https://www.miniwebtool.com/django-secret-key-generator/
+#SECRET_KEY = 'default-your-secret-key-here'
+
+# MapQuest API key for testing only - A valid key is only needed when refreshing VCR cassettes.
+# Keys for app users are attached to each organization.
+TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 
 # email through SES (django-ses)
 #EMAIL_BACKEND = 'django_ses.SESBackend'
+#AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+#AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+#AWS_SES_REGION_NAME = 'us-west-2'
+#AWS_SES_REGION_ENDPOINT = 'email.us-west-2.amazonaws.com'
+#SERVER_EMAIL = 'info@seed-platform.org'
 
-# Optional Sentry Configuration
+# Sentry Configuration (Optional)
 # import raven
-
 # RAVEN_CONFIG = {
 #    'dsn': 'https://<user>:<key>@sentry.io/<job_id>',
 #    # If you are using git, you can also automatically configure the
@@ -39,10 +57,21 @@ import os
 # }
 # SENTRY_JS_DSN = 'https://<key>@sentry.io/<job_id>'
 
-# postgres DB config
+# OAuth2 Configuration (Optional)
+# Token request Url is a common choice for audience
+# see https://tools.ietf.org/html/rfc7523#section-3 and
+# https://github.com/GreenBuildingRegistry/jwt-oauth2 for additional details
+# OAUTH2_JWT_PROVIDER = {
+#     'JWT_AUDIENCE': 'https://example.com/oauth/token/',
+#     'DEVELOPER_GROUP': 'developers',
+#     'TRUSTED_OAUTH_GROUP': 'trusted_developers',
+# }
+
+
+# ================================= Database settings ===============================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'seed',
         'USER': 'your-username',
         'PASSWORD': 'your-password',
@@ -51,31 +80,59 @@ DATABASES = {
     }
 }
 
-# Make sure to set a SECRET_KEY here or in your env variable
-# Go here to generate a secret key: https://www.miniwebtool.com/django-secret-key-generator/
-# SECRET_KEY = 'default-your-secret-key-here'
-
-# Redis cache config.
-#   If using AWS ElastiCache redis, the LOCATION setting looks something like:
-#   'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
+# =============================== Celery/Redis Cache Settings (No Password) =========
 CACHES = {
     'default': {
         'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "your-cache-url:your-cache-port",
+        'LOCATION': 'your-cache-url:your-cache-port',
         'OPTIONS': {'DB': 1},
         'TIMEOUT': 300
     }
 }
-CELERY_BROKER_URL = 'redis://your-cache-url:your-cache-port/1'
 
-# If using AWS S3 for filesystem storage, then uncomment this, otherwise, leave it commented
-# out to keep the media files in the correct location.
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-# STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
-# STATIC_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
+CELERY_BROKER_URL = 'redis://%s/%s' % (
+    CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+)
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+CELERY_TASK_QUEUES = (
+    Queue(
+        CELERY_TASK_DEFAULT_QUEUE,
+        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+        routing_key=CELERY_TASK_DEFAULT_QUEUE
+    ),
+)
 
-INTERNAL_IPS = ('127.0.0.1',)
+# =============================== Celery/Redis Cache Settings (w/Password) =========
+#CACHES = {
+#   'default': {
+#        'BACKEND': 'redis_cache.cache.RedisCache',
+#        'LOCATION': 'your-cache-url:your-cache-port',
+#        'OPTIONS': {
+#            'DB': 1,
+#             'PASSWORD': 'your-redis-password',
+#        },
+#        'TIMEOUT': 300
+#    }
+#}
+#
+#CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+#    CACHES['default']['OPTIONS']['PASSWORD'],
+#    CACHES['default']['LOCATION'],
+#    CACHES['default']['OPTIONS']['DB']
+#)
+#CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+#CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+#CELERY_TASK_QUEUES = (
+#    Queue(
+#        CELERY_TASK_DEFAULT_QUEUE,
+#        Exchange(CELERY_TASK_DEFAULT_QUEUE),
+#        routing_key=CELERY_TASK_DEFAULT_QUEUE
+#    ),
+#)
 
+
+# =================================== Logging =======================================
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -91,13 +148,4 @@ LOGGING = {
             'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         },
     },
-}
-
-# Token request Url is a common choice for audience
-# see https://tools.ietf.org/html/rfc7523#section-3 and
-# https://github.com/GreenBuildingRegistry/jwt-oauth2 for additional details
-OAUTH2_JWT_PROVIDER = {
-    'JWT_AUDIENCE': 'https://example.com/oauth/token/',
-    'DEVELOPER_GROUP': 'developers',
-    'TRUSTED_OAUTH_GROUP': 'trusted_developers',
 }

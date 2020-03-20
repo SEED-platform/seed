@@ -1,6 +1,7 @@
-# Docker Compose for deployment. This removes the hard coded usernames and
-# passwords and pulls Docker Hub seedplatform/seed for the latest version.
+# Docker Compose for deployment using a local registry.
 # Must set the following environment variables
+#   POSTGRES_DB
+#   POSTGRES_PORT
 #   POSTGRES_USER
 #   POSTGRES_PASSWORD
 #   SEED_ADMIN_USER
@@ -11,14 +12,20 @@
 version: '3'
 services:
   db-postgres:
-    image: 127.0.0.1:5000/postgres
+    image: 127.0.0.1:5000/postgres-seed
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
     volumes:
       - seed_pgdata:/var/lib/postgresql/data
       - $HOME/seed-backups:/backups
+    ports:
+      - "5432:5432"
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -27,6 +34,10 @@ services:
         window: 120s
   db-redis:
     image: 127.0.0.1:5000/redis
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -36,13 +47,22 @@ services:
   web:
     image: 127.0.0.1:5000/seed
     environment:
-      - POSTGRES_DB=seed
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_SES_REGION_NAME
+      - AWS_SES_REGION_ENDPOINT
+      - SERVER_EMAIL
+      - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+      # - REDIS_PASSWORD
       - SEED_ADMIN_USER
       - SEED_ADMIN_PASSWORD
       - SEED_ADMIN_ORG
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
@@ -51,6 +71,10 @@ services:
       - seed_media:/seed/media
     ports:
       - "80:80"
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
@@ -60,10 +84,13 @@ services:
   web-celery:
     image: 127.0.0.1:5000/seed
     environment:
-      - POSTGRES_DB=seed
+      - POSTGRES_DB
+      - POSTGRES_PORT=5432
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - SECRET_KEY
+      - SENTRY_JS_DSN
+      - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
     depends_on:
@@ -73,12 +100,21 @@ services:
     volumes:
       - seed_media:/seed/media
     command: /seed/docker/start_celery_docker.sh
+    logging:
+      options:
+        max-size: 50m
+        max-file: '5'
     deploy:
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
+  oep-city-1:
+    # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    image: 127.0.0.1:5000/oep
+    environment:
+      - OEP_DISABLED=true
 volumes:
   seed_pgdata:
     external: true

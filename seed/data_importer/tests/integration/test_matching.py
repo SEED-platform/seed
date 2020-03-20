@@ -1,13 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
+import operator
 import os.path as osp
+from functools import reduce
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Q
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
@@ -46,6 +49,45 @@ class TestMatching(DataMappingBaseTestCase):
         )
         self.import_file.save()
 
+    def query_property_matches(self, properties, pm_id, custom_id, ubid, ulid):
+        """
+        Helper method to return a queryset of PropertyStates that match at least one of the specified
+        ids
+
+        :param properties: QuerySet, PropertyStates
+        :param pm_id: string, PM Property ID
+        :param custom_id: String, Custom ID
+        :param ubid: String, Unique Building Identifier
+        :param ulid: String, Unique Land/Lot Identifier
+        :return: QuerySet of objects that meet criteria.
+        """
+
+        """"""
+        params = []
+        # Not sure what the point of this logic is here. If we are passing in a custom_id then
+        # why would we want to check pm_property_id against the custom_id, what if we pass both in?
+        # Seems like this favors pm_id
+        if pm_id:
+            params.append(Q(pm_property_id=pm_id))
+            params.append(Q(custom_id_1=pm_id))
+            params.append(Q(ubid=pm_id))
+        if custom_id:
+            params.append(Q(pm_property_id=custom_id))
+            params.append(Q(custom_id_1=custom_id))
+            params.append(Q(ubid=custom_id))
+        if ubid:
+            params.append(Q(pm_property_id=ubid))
+            params.append(Q(custom_id_1=ubid))
+            params.append(Q(ubid=ubid))
+        if ulid:
+            params.append(Q(ulid=ulid))
+
+        if not params:
+            # Return an empty QuerySet if we don't have any params.
+            return properties.none()
+
+        return properties.filter(reduce(operator.or_, params)).order_by('id')
+
     def test_single_id_matches(self):
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
@@ -62,9 +104,9 @@ class TestMatching(DataMappingBaseTestCase):
         property_states = tasks.list_canonical_property_states(self.org)
         self.assertEqual(len(property_states), 1)
 
-        matches = tasks.query_property_matches(property_states, None, None, None)
+        matches = self.query_property_matches(property_states, None, None, None, None)
         self.assertEqual(len(matches), 0)
-        matches = tasks.query_property_matches(property_states, '2264', None, None)
+        matches = self.query_property_matches(property_states, '2264', None, None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps)
 
@@ -90,32 +132,32 @@ class TestMatching(DataMappingBaseTestCase):
         self.assertEqual(len(property_states), 2)
 
         # no arguments passed should return no results
-        matches = tasks.query_property_matches(property_states, None, None, None)
+        matches = self.query_property_matches(property_states, None, None, None, None)
         self.assertEqual(len(matches), 0)
         # should return 2 properties
-        matches = tasks.query_property_matches(property_states, None, '13', None)
+        matches = self.query_property_matches(property_states, None, '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # should return only the second property
-        matches = tasks.query_property_matches(property_states, '2342', None, None)
+        matches = self.query_property_matches(property_states, '2342', None, None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
         # should return both properties, the first one should be the pm match, i.e. the first prop
-        matches = tasks.query_property_matches(property_states, '481516', '13', None)
+        matches = self.query_property_matches(property_states, '481516', '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)
         # if passing in the second pm then it will not be the first
-        matches = tasks.query_property_matches(property_states, '2342', '13', None)
+        matches = self.query_property_matches(property_states, '2342', '13', None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[1], ps_test_2)
         # pass the pm id into the custom id. it should still return the correct buildings.
         # not sure that this is the right behavior, but this is what it does, so just testing.
-        matches = tasks.query_property_matches(property_states, None, '2342', None)
+        matches = self.query_property_matches(property_states, None, '2342', None, None)
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0], ps_test_2)
-        matches = tasks.query_property_matches(property_states, '13', None, None)
+        matches = self.query_property_matches(property_states, '13', None, None, None)
         self.assertEqual(len(matches), 2)
         self.assertEqual(matches[0], ps_test)
         self.assertEqual(matches[1], ps_test_2)

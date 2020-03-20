@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Nightly backups - crontab
-# 0 0 * * * /home/ubuntu/prj/seed/bin/backup_database.sh <db_name> <db_username> <db_password> <media_dir>
+# 0 0 * * * /home/ubuntu/prj/seed/bin/backup_database.sh <db_name> <db_username> <db_password> <media_dir> >> /home/ubuntu/seed-backups/cron.log 2>&1
 
 DB_NAME=$1
 DB_USERNAME=$2
@@ -39,4 +39,3 @@ fi
 # Delete files older than 45 days
 find ${BACKUP_DIR} -mtime +45 -type f -name '*.dump' -delete
 find ${BACKUP_DIR} -mtime +45 -type f -name '*.tgz' -delete
-

@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -44,6 +44,8 @@ class Measure(models.Model):
     display_name = models.CharField(max_length=255)
     category = models.CharField(max_length=255)
     category_display_name = models.CharField(max_length=255)
+    schema_type = models.CharField(max_length=255, default='BuildingSync')
+    schema_version = models.CharField(max_length=15, default='1.0.0')
 
     # relationships
     properties = models.ManyToManyField('PropertyState', through='PropertyMeasure')
@@ -61,9 +63,10 @@ class Measure(models.Model):
         unique_together = ('organization', 'category', 'name')
 
     @classmethod
-    def populate_measures(cls, organization_id):
+    def populate_measures(cls, organization_id, schema_type='BuildingSync', schema_version="1.0.0"):
         """
         Populate the list of measures from the BuildingSync
+        Default is BuildingSync 1.0.0
 
         :param organization_id: integer, ID of the organization to populate measures
         :return:
@@ -91,6 +94,8 @@ class Measure(models.Model):
                             category_display_name=datum["documentation"],
                             name=_snake_case(enum),
                             display_name=enum,
+                            schema_type=schema_type,
+                            schema_version=schema_version
                         )
 
     @classmethod

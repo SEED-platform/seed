@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+# If Lokalise CLI isn't installed, download fr_CA.po and en_US.po files with
+# the settings listed below (including comments, sorting from A-Z, and replacing
+# empty translations with the base language).
+
+# Then, as shown in the code below, rename the unzipped .po files to django.po
+# and move them into the corresponding directories:
+# - locale/fr_CA/LC_MESSAGES/
+# - locale/en_US/LC_MESSAGES/
+
+# Then, assuming msgfmt is installed, run the `msgfmt` command
+# with the -o option referencing each of these django.po files.
+
 tmp=tmp/python_locales
 dest=locale
 
@@ -18,9 +30,9 @@ lokalise                \
 unzip $tmp/SEED_Platform-locale.zip -d $tmp
 
 mv $tmp/locale/fr_CA.po $dest/fr_CA/LC_MESSAGES/django.po
-/usr/local/opt/gettext/bin/msgfmt -o $dest/fr_CA/LC_MESSAGES/django.{mo,po}
+msgfmt -o $dest/fr_CA/LC_MESSAGES/django.{mo,po}
 
 mv $tmp/locale/en_US.po $dest/en_US/LC_MESSAGES/django.po
-/usr/local/opt/gettext/bin/msgfmt -o $dest/en_US/LC_MESSAGES/django.{mo,po}
+msgfmt -o $dest/en_US/LC_MESSAGES/django.{mo,po}
 
 rm -rf $tmp

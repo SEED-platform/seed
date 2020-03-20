@@ -1,13 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2018, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 import logging
 
 import coreapi
+from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -29,7 +30,7 @@ from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 _log = logging.getLogger(__name__)
 
 
-class ColumnMappingiewSetFilterBackend(BaseFilterBackend):
+class ColumnMappingViewSetFilterBackend(BaseFilterBackend):
     """
     Specify the schema for the column view set. This allows the user to see the other
     required columns in Swagger.
@@ -50,9 +51,14 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     model = ColumnMapping
     pagination_class = NoPagination
     parser_classes = (JSONParser, FormParser)
-    filter_backends = (ColumnMappingiewSetFilterBackend,)
+    filter_backends = (ColumnMappingViewSetFilterBackend,)
     orgfilter = 'super_organization_id'
-    queryset = ColumnMapping.objects.all()
+    # Do not return column mappings where the column_raw or the column_mapped fields are NULL.
+    # This needs to be cleaned up in the near future to have the API clean up the column mappings
+    # upon the deletion of a column.
+    queryset = ColumnMapping.objects.exclude(
+        Q(column_mapped__isnull=True) | Q(column_raw__isnull=True)
+    )
 
     @ajax_request_class
     def retrieve(self, request, pk=None):
