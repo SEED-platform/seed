@@ -36,7 +36,6 @@ def backwards(apps, schema_editor):
     ).update(table_name='Property')
 
 
-
 class Migration(migrations.Migration):
 
     dependencies = [
