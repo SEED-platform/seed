@@ -147,6 +147,48 @@ class BuildingFile(models.Model):
         self.property_state_id = property_state.id
         self.save()
 
+        # merge or create the property state's view
+        if property_view:
+            # create a new blank state to merge the two together
+            merged_state = PropertyState.objects.create(organization_id=organization_id)
+
+            # assume the same cycle id as the former state.
+            # should merge_state also copy/move over the relationships?
+            priorities = Column.retrieve_priorities(organization_id)
+            merged_state = merge_state(
+                merged_state, property_view.state, property_state, priorities['PropertyState']
+            )
+
+            # log the merge
+            # Not a fan of the parent1/parent2 logic here, seems error prone, what this
+            # is also in here: https://github.com/SEED-platform/seed/blob/63536e99cf5be3a9a86391c5cead6dd4ff74462b/seed/data_importer/tasks.py#L1549
+            PropertyAuditLog.objects.create(
+                organization_id=organization_id,
+                parent1=PropertyAuditLog.objects.filter(state=property_view.state).first(),
+                parent2=PropertyAuditLog.objects.filter(state=property_state).first(),
+                parent_state1=property_view.state,
+                parent_state2=property_state,
+                state=merged_state,
+                name='System Match',
+                description='Automatic Merge',
+                import_filename=None,
+                record_type=AUDIT_IMPORT
+            )
+
+            property_view.state = merged_state
+            property_view.save()
+
+            merged_state.merge_state = MERGE_STATE_MERGED
+            merged_state.save()
+
+            # set the property_state to the new one
+            property_state = merged_state
+        elif not property_view:
+            property_view = property_state.promote(cycle)
+        else:
+            # invalid arguments, must pass both or neither
+            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+
         # add in the measures
         for m in data.get('measures', []):
             # Find the measure in the database
@@ -257,6 +299,7 @@ class BuildingFile(models.Model):
                 meter, _ = Meter.objects.get_or_create(
                     scenario_id=scenario.id,
                     source_id=m.get('source_id'),
+                    property=property_view.property,
                 )
                 meter.source = m.get('source')
                 meter.type = m.get('type')
@@ -272,52 +315,12 @@ class BuildingFile(models.Model):
                         reading=mr.get('reading'),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
+                        conversion_factor=1.00,  # assuming kBtu
                     )
                     for mr
                     in m.get('readings', [])
                 }
 
                 MeterReading.objects.bulk_create(readings)
-
-        if property_view:
-            # create a new blank state to merge the two together
-            merged_state = PropertyState.objects.create(organization_id=organization_id)
-
-            # assume the same cycle id as the former state.
-            # should merge_state also copy/move over the relationships?
-            priorities = Column.retrieve_priorities(organization_id)
-            merged_state = merge_state(
-                merged_state, property_view.state, property_state, priorities['PropertyState']
-            )
-
-            # log the merge
-            # Not a fan of the parent1/parent2 logic here, seems error prone, what this
-            # is also in here: https://github.com/SEED-platform/seed/blob/63536e99cf5be3a9a86391c5cead6dd4ff74462b/seed/data_importer/tasks.py#L1549
-            PropertyAuditLog.objects.create(
-                organization_id=organization_id,
-                parent1=PropertyAuditLog.objects.filter(state=property_view.state).first(),
-                parent2=PropertyAuditLog.objects.filter(state=property_state).first(),
-                parent_state1=property_view.state,
-                parent_state2=property_state,
-                state=merged_state,
-                name='System Match',
-                description='Automatic Merge',
-                import_filename=None,
-                record_type=AUDIT_IMPORT
-            )
-
-            property_view.state = merged_state
-            property_view.save()
-
-            merged_state.merge_state = MERGE_STATE_MERGED
-            merged_state.save()
-
-            # set the property_state to the new one
-            property_state = merged_state
-        elif not property_view:
-            property_view = property_state.promote(cycle)
-        else:
-            # invalid arguments, must pass both or neither
-            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
 
         return True, property_state, property_view, messages
