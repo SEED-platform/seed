@@ -661,6 +661,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
           // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
           if (_.isNil(cellValue)) cellValue = '';
+          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
           var match = true;
           var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
           // Loop over multiple comma-separated filters
@@ -737,6 +738,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
           // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
           if (_.isNil(cellValue)) cellValue = '';
+          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
           var match = true;
           var d = moment.utc(cellValue);
           var cellDate = d.valueOf();
