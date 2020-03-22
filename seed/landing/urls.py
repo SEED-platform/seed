@@ -12,7 +12,7 @@ from django.contrib.auth.views import (
 
 from seed.landing.views import (
     landing_page, login_view, password_reset, password_reset_done,
-    password_reset_confirm, password_reset_complete, signup
+    password_reset_complete, signup
 )
 
 urlpatterns = [
