@@ -176,8 +176,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
 
         response = self.client.post(url, fsysparams)
-        self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200, f'Expected 200 response. Message body: {result}')
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1889)

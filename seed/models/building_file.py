@@ -101,11 +101,7 @@ class BuildingFile(models.Model):
 
         parser = Parser()
         parser.import_file(self.file.path)
-        parser_args = []
-        parser_kwargs = {}
-        if self.file_type == self.BUILDINGSYNC:
-            parser_args.append(BuildingSync.BRICR_STRUCT)
-        data, messages = parser.process(*parser_args, **parser_kwargs)
+        data, messages = parser.process()
 
         if len(messages['errors']) > 0 or not data:
             return False, None, None, messages
