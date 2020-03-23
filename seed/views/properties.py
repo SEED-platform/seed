@@ -492,14 +492,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
