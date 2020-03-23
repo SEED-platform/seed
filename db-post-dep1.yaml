@@ -30,9 +30,9 @@ spec:
         - name: POSTGRES_USER
           value: seed
         image: seedplatform/postgres-seed:11.2
-        name: db-postrgres
-#        command: ["tail"]
-#        args: ['-f', '/dev/null']
+        name: db-postgres
+        command: ["tail"]
+        args: ['-f', '/dev/null']
         ports:
         - containerPort: 5432
         resources:

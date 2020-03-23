@@ -9,12 +9,12 @@ web:
         tag: latest
     containerPort: 80
 
-database:
-    name: db-postgres
-    image:
-        repo: seedplatform/postgres-seed:11.2
-        tag: latest
-    containerPort: 5432
+#database:
+#    name: db-postgres
+#    image:
+#        repo: seedplatform/postgres-seed:11.2
+#        tag: latest
+#    containerPort: 5432
 
 redis:
     name: db-redis
