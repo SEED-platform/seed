@@ -135,6 +135,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=self.tz_obj),
             end_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=self.tz_obj),
             reading=12345,
+            conversion_factor=1.0
         )
         unsaved_meter_reading.save()
         existing_meter_reading = MeterReading.objects.get(reading=12345)
