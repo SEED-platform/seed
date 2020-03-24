@@ -9,7 +9,6 @@ import random
 
 from django.test import TestCase
 from lxml import etree
-import xmlschema
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import (
