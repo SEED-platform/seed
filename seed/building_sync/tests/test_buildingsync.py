@@ -81,7 +81,7 @@ class TestProcess(TestCase):
             'premise_identifier': 'SF000011',
             'custom_id_1': '1',
             'gross_floor_area': 77579.0,
-            'net_floor_area': None,
+            'net_floor_area': 99887766.0,
             'footprint_floor_area': 215643.97259999998,
         }
 
@@ -114,7 +114,7 @@ class TestProcess(TestCase):
             'premise_identifier': 'SF000011',
             'custom_id_1': '1',
             'gross_floor_area': 77579.0,
-            'net_floor_area': None,
+            'net_floor_area': 99887766.0,
             'footprint_floor_area': 215643.97259999998,
         }
 
@@ -162,7 +162,7 @@ class TestExport(TestCase):
         self.assertEqual(expected_xml, actual_xml)
         # assert the exported file is valid according to the schema
         schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_PR1)
-        schema.validate(actual_xml)
+        schema.validate(actual_xml.decode())
 
     def test_export_with_property_state(self):
         """Exporting _with_ a property state that differs from the xml on exported fields should update the xml"""

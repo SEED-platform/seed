@@ -45,12 +45,15 @@ class BuildingSync(object):
 
     def __init__(self):
         self.filename = None
-        self.data = None
-        self.raw_data = {}
         self.element_tree = None
         self.version = None
 
-    def import_file(self, filename):
+    def import_file(self, filename, require_version=True):
+        """imports BuildingSync file
+
+        :param filename: string, path to file
+        :param require_version: bool, if true it raises an exception if unable to find version info
+        """
         self.filename = filename
 
         if not os.path.isfile(filename):
@@ -61,23 +64,37 @@ class BuildingSync(object):
             self.element_tree = etree.parse(f)
 
         # TODO: once xml translator has been implemented and used to convert
-        # files from 2.0-pr1 to 2.0, REMOVE the default argument so it fails
-        # if no proper version is found
-        self.version = self._parse_version(default=self.BUILDINGSYNC_V2_PR1)
+        # files from 2.0-pr1 to 2.0, make sure all calls to import_file either don't
+        # pass require_version (default is True) or they set it to True so that we
+        # will ALWAYS require a version
+        default_version = None if require_version else self.BUILDINGSYNC_V2_PR1
+        self.version = self._parse_version(default=default_version)
 
-        # if the namespace map is missing the auc prefix, fix the tree to include it
-        if self.element_tree.getroot().nsmap.get('auc') is None:
+        # if the namespace map is missing the auc or xsi prefix, fix the tree to include it
+        root_nsmap = self.element_tree.getroot().nsmap
+        if root_nsmap.get('auc') is None or root_nsmap.get('xsi') is None:
             self.fix_namespaces()
+
+        # ensure schema location is properly set
+        # this is only necessary because we are temporarily allowing the import of
+        # files without this information.
+        # TODO: consider removing once all files have explicit versions
+        root = self.element_tree.getroot()
+        root.set('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{}/BuildingSync.xsd'.format(self.version))
 
         return True
 
     def fix_namespaces(self):
-        """This method should be called when auc prefix is missing from the namespace map.
+        """This method should be called when then namespace map is not correct.
         It will clone the tree, ensuring all nodes have the proper namespace prefixes
         """
         original_tree = self.element_tree
 
         etree.register_namespace('auc', BUILDINGSYNC_URI)
+        # only necessary because we are temporarily allowing the import of files
+        # without xsi:schemaLocation
+        # TODO: consider removing once all files have explicit versions
+        etree.register_namespace('xsi', 'http://www.w3.org/2001/XMLSchema-instance')
         self.init_tree(version=self.version)
         new_root = self.element_tree.getroot()
         original_root = original_tree.getroot()
@@ -299,4 +316,4 @@ class BuildingSync(object):
             _log.warn(f'Unable to parse BuildingSync version. Using provided default of "{default}"')
             return default
 
-        raise Exception(f'Invalid or missing schema specification. Expected a schema reference in root element matching the regex: {schema_regex}')
+        raise Exception('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')

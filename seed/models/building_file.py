@@ -100,7 +100,10 @@ class BuildingFile(models.Model):
             return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
 
         parser = Parser()
-        parser.import_file(self.file.path)
+        try:
+            parser.import_file(self.file.path)
+        except Exception as e:
+            return False, None, None, {'errors': [str(e)]}
         data, messages = parser.process()
 
         if len(messages['errors']) > 0 or not data:
@@ -198,20 +201,16 @@ class BuildingFile(models.Model):
 
             # Add the measure to the join table.
             # Need to determine what constitutes the unique measure for a property
+            implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
+            application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
+            category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
                 property_measure_name=m.get('property_measure_name'),
-                implementation_status=PropertyMeasure.str_to_impl_status(
-                    m.get('implementation_status', 'Proposed')
-                ),
-                application_scale=PropertyMeasure.str_to_application_scale(
-                    m.get('application_scale_of_application',
-                          PropertyMeasure.SCALE_ENTIRE_FACILITY)
-                ),
-                category_affected=PropertyMeasure.str_to_category_affected(
-                    m.get('system_category_affected', PropertyMeasure.CATEGORY_OTHER)
-                ),
+                implementation_status=PropertyMeasure.str_to_impl_status(implementation_status),
+                application_scale=PropertyMeasure.str_to_application_scale(application_scale),
+                category_affected=PropertyMeasure.str_to_category_affected(category_affected),
                 recommended=m.get('recommended', 'false') == 'true',
             )
             join.description = m.get('description')
@@ -232,7 +231,7 @@ class BuildingFile(models.Model):
 
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
-                messages['warnings'].append('Scenario does not have a name. ID = %s' % s.get('id'))
+                messages['warnings'].append('Skipping scenario because it does not have a name. ID = %s' % s.get('id'))
                 continue
 
             scenario, _ = Scenario.objects.get_or_create(

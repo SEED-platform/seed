@@ -13,6 +13,7 @@ NAMESPACES = {
 }
 etree.register_namespace('auc', BUILDINGSYNC_URI)
 
+
 #
 # -- IMPORT functions
 #
@@ -326,7 +327,10 @@ def update_tree(schema, tree, xpath, target, value, namespaces):
         # element already exists, update its value
         update_element(last_element, target, value)
 
+
 # Base mapping for BuildingSync schema version 2.0-pr1
+# NOTE: this is actually a mix of 2.0-pr1 and 1.0 as it uses 'TimeStamp' rather than 'Timestamp'
+# and it allows the 'Reports' element to exist or not exist.
 BASE_MAPPING_V2_PR1 = {
     'property': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site',
@@ -485,7 +489,9 @@ BASE_MAPPING_V2_PR1 = {
         }
     },
     'scenarios': {
-        'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Report/auc:Scenarios/auc:Scenario',
+        # NOTE: Handling both Facility/Reports/Report and Facility/Report
+        # a vestage of the fact that the original parser handled all pre-2.0 BuildingSync versions
+        'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility//auc:Report/auc:Scenarios/auc:Scenario',
         'type': 'list',
         'items': {
             'id': {

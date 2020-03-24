@@ -67,6 +67,10 @@
                   <auc:FloorAreaType>Footprint</auc:FloorAreaType>
                   <auc:FloorAreaValue>215643.97259999998</auc:FloorAreaValue>
                 </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Net</auc:FloorAreaType>
+                  <auc:FloorAreaValue>99887766</auc:FloorAreaValue>
+                </auc:FloorArea>
               </auc:FloorAreas>
               <auc:AspectRatio>3.0045476571084526</auc:AspectRatio>
               <auc:Perimeter>2145</auc:Perimeter>
