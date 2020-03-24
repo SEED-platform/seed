@@ -31,6 +31,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Column,
+    BuildingFile,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -516,6 +517,79 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
 
         # Overlapping reading that wasn't prioritized should not exist
         self.assertFalse(MeterReading.objects.filter(reading=property_2_reading).exists())
+
+    def test_properties_merge_combining_bsync_and_pm_sources(self):
+        # -- SETUP
+        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # This file has multiple tabs
+        pm_filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
+        pm_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=pm_filename,
+            file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+        )
+        pm_import_url = reverse("api:v2:import_files-save-raw-data", args=[pm_import_file.id])
+        pm_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(pm_import_url, pm_import_post_params)
+
+        # For second Property, add BuildingSync file containing 6 meters
+        bs_filename = "buildingsync_v2_0_bricr_workflow.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/../building_sync/tests/data/" + bs_filename
+        bs_file = open(filepath, 'rb')
+        uploaded_file = SimpleUploadedFile(bs_file.name, bs_file.read())
+        bs_buildingfile = BuildingFile.objects.create(
+            file=uploaded_file,
+            filename=bs_filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+        p_status, bs_property_state, _, _ = bs_buildingfile.process(self.org.pk, self.cycle)
+        self.assertTrue(p_status)
+
+        # verify we're starting with the assumed number of meters
+        self.assertEqual(2, PropertyView.objects.get(state=self.state_1).property.meters.count())
+        self.assertEqual(6, PropertyView.objects.get(state=bs_property_state).property.meters.count())
+
+        # -- ACT
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_1.pk, bs_property_state.pk]  # priority given to bs_property_state
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # -- ASSERT
+        # There should only be _two_ PropertyViews
+        #  - the merged property view
+        #  - our setUp method creates an additional one that's we don't touch in this test)
+        self.assertEqual(PropertyView.objects.count(), 2)
+
+        # get the merged property view by excluding the state we didn't touch (only one other view should exist)
+        merged_property_view = PropertyView.objects.all().exclude(state__pk=self.state_2.pk)
+        self.assertEqual(merged_property_view.count(), 1)
+        merged_property_view = merged_property_view[0]
+
+        meters = merged_property_view.property.meters
+
+        self.assertEqual(meters.count(), 8)  # 2 from PM, 6 from BS
+        self.assertEqual(meters.filter(type=Meter.ELECTRICITY_GRID, source=Meter.BUILDINGSYNC).count(), 3)
+        self.assertEqual(meters.filter(type=Meter.NATURAL_GAS, source=Meter.BUILDINGSYNC).count(), 3)
+        self.assertEqual(meters.filter(type=Meter.ELECTRICITY_GRID, source=Meter.PORTFOLIO_MANAGER).count(), 1)
+        self.assertEqual(meters.filter(type=Meter.NATURAL_GAS, source=Meter.PORTFOLIO_MANAGER).count(), 1)
+
+        # The BuildingSync data should retain their scenario information
+        scenarios = merged_property_view.state.scenarios
+        self.assertEqual(scenarios.count(), 3)
+
+        # Old meters deleted, so only merged meters exist
+        self.assertEqual(Meter.objects.count(), 8)
+        # Combined total of 76 readings
+        self.assertEqual(MeterReading.objects.count(), 76)
 
 
 class PropertyUnmergeViewTests(DeleteModelsTestCase):

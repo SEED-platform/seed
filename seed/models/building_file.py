@@ -315,6 +315,7 @@ class BuildingFile(models.Model):
                         reading=mr.get('reading'),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
+                        conversion_factor=1.00,  # assuming kBtu
                     )
                     for mr
                     in m.get('readings', [])

@@ -10,7 +10,7 @@ from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import FakePropertyMeasureFactory, FakePropertyStateFactory
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from seed.models import Scenario, Meter, MeterReading
+from seed.models import Scenario, Meter, MeterReading, Property, PropertyView
 
 
 class TestMeasures(DeleteModelsTestCase):
@@ -51,14 +51,20 @@ class TestMeasures(DeleteModelsTestCase):
         # -- Setup
         property_state = self.property_state_factory.get_property_state()
         source_scenario = Scenario.objects.create(property_state=property_state)
+
+        # create new property, state, and view
         new_property_state = self.property_state_factory.get_property_state()
+        new_property = Property.objects.create(organization_id=1)
+        _ = PropertyView.objects.create(cycle_id=1, state_id=new_property_state.id,
+                                        property_id=new_property.id)
         new_scenario = Scenario.objects.create(property_state=new_property_state)
 
         # create a meter and meter readings for the source
         meter = Meter.objects.create(scenario_id=source_scenario.id)
         MeterReading.objects.create(meter=meter,
                                     start_time=parse_datetime('2016-10-03T19:00:00+0200'),
-                                    end_time=parse_datetime('2016-10-04T19:00:00+0200'))
+                                    end_time=parse_datetime('2016-10-04T19:00:00+0200'),
+                                    conversion_factor=1.0)
         self.assertEqual(MeterReading.objects.filter(meter_id=meter.id).count(), 1)
 
         # -- Act
@@ -66,6 +72,6 @@ class TestMeasures(DeleteModelsTestCase):
         new_scenario.copy_initial_meters(source_scenario.id)
 
         # -- Assert
-        new_meter = Meter.objects.filter(scenario=new_scenario)
+        new_meter = Meter.objects.filter(scenario=new_scenario, property=new_property)
         self.assertEqual(new_meter.count(), 1)
         self.assertEqual(new_meter.first().meter_readings.count(), 1)
