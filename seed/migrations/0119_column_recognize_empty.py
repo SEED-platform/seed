@@ -12,9 +12,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='column',
-            name='recognize_empty',
-            field=models.BooleanField(default=False),
-        ),
+        migrations.RunSQL(
+            'ALTER TABLE seed_column'
+            '    ADD COLUMN IF NOT EXISTS recognize_empty BOOLEAN NOT NULL DEFAULT FALSE;'
+        )
     ]
