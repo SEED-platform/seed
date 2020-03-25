@@ -6,17 +6,25 @@ from django.db import connection, migrations
 
 def forwards(apps, schema_editor):
     property_sql = (
-        "UPDATE seed_propertystate " +
-        "SET updated = seed_propertyauditlog.created " +
-        "FROM seed_propertyauditlog " +
-        "WHERE seed_propertystate.id = state_id;"
+        'UPDATE seed_propertystate '
+        'SET updated = (SELECT created '
+        '               FROM seed_propertyauditlog '
+        '               WHERE seed_propertystate.id = state_id '
+        '               ORDER BY created DESC '
+        '               LIMIT 1) '
+        'FROM seed_propertyauditlog '
+        'WHERE seed_propertystate.id = state_id;'
     )
 
     taxlot_sql = (
-        "UPDATE seed_taxlotstate " +
-        "SET updated = seed_taxlotauditlog.created " +
-        "FROM seed_taxlotauditlog " +
-        "WHERE seed_taxlotstate.id = state_id;"
+        'UPDATE seed_taxlotstate '
+        'SET updated = (SELECT created '
+        '               FROM seed_taxlotauditlog '
+        '               WHERE seed_taxlotstate.id = state_id '
+        '               ORDER BY created DESC '
+        '               LIMIT 1) '
+        'FROM seed_taxlotauditlog '
+        'WHERE seed_taxlotstate.id = state_id;'
     )
 
     with connection.cursor() as cursor:
