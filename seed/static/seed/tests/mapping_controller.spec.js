@@ -263,7 +263,6 @@ describe('controller: mapping_controller', function () {
   it('should detect duplicates', function () {
     create_mapping_controller();
     mapping_controller_scope.$digest();
-    console.log('mappings', angular.copy(mapping_controller_scope.mappings));
     mapping_controller_scope.mappings[0].suggestion = 'PM Property ID';
     mapping_controller_scope.mappings[1].suggestion = 'Property Name';
 

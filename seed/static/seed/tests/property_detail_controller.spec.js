@@ -24,7 +24,6 @@ describe('controller: inventory_detail_controller', function () {
       ngUrls = urls;
       mock_uib_modal = $uibModal;
       mock_label_service = label_service;
-      mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
 

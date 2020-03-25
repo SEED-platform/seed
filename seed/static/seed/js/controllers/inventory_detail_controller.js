@@ -592,8 +592,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 };
               } else if (trigger === 'edit') {
                 return {
-                  properties: 'Updating this property will merge & link any matching properties.',
-                  taxlots: 'Updating this tax lot will merge & link any matching tax lots.'
+                  properties: 'Updating this property will trigger a matching round for this record.',
+                  taxlots: 'Updating this tax lot will trigger a matching round for this record.'
                 };
               }
             }
