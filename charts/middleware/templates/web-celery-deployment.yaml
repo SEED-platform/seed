@@ -40,12 +40,12 @@ spec:
         image: seedplatform/seed:latest
         name: web-celery
         resources: {}
-        volumeMounts:
-        - mountPath: /seed/media
-          name: seed-media
+#        volumeMounts:
+#        - mountPath: /seed/media
+#          name: seed-media
       restartPolicy: Always
-      volumes:
-      - name: seed-media
-        persistentVolumeClaim:
-          claimName: seed-media
+#      volumes:
+#      - name: seed-media
+#        persistentVolumeClaim:
+#          claimName: seed-media
 status: {}
