@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -46,7 +46,6 @@ class PortfolioManagerViewSet(GenericViewSet):
         """
         This API view makes a request to ESPM for the list of available report templates, including root templates and
         child data requests.
-
         :param request: A request with a POST body containing the ESPM credentials (username and password)
         :return: This API responds with a JSON object with two keys: status, which will be a string -
         either error or success.  If successful, a second key, templates, will hold the list of templates from ESPM. If
@@ -83,7 +82,6 @@ class PortfolioManagerViewSet(GenericViewSet):
     def report(self, request):
         """
         This API view makes a request to ESPM to generate and download a report based on a specific template.
-
         :param request: A request with a POST body containing the ESPM credentials (username and password) as well as
         a template key that contains one of the template objects retrieved using the /template_list/ endpoint
         :return: This API responds with a JSON object with two keys: status, which will be a string -
@@ -167,7 +165,6 @@ class PortfolioManagerImport(object):
         """
         To instantiate this class, provide ESPM username and password.  Currently, this constructor doesn't do anything
         except store the credentials.
-
         :param m_username: The ESPM username
         :param m_password: The ESPM password
         """
@@ -182,13 +179,12 @@ class PortfolioManagerImport(object):
         """
         This method calls out to ESPM to perform a login operation and get a session authentication token.  This token
         is then stored in the proper form to allow authenticated calls into ESPM.
-
         :return: None
         """
 
         # First we need to log in to Portfolio Manager
-        login_url = "https://portfoliomanager.energystar.gov/pm/login"
-        payload = {"username": self.username, "password": self.password}
+        login_url = "https://portfoliomanager.energystar.gov/pm/j_spring_security_check"
+        payload = {"j_username": self.username, "j_password": self.password}
         try:
             response = requests.post(login_url, data=payload)
         except requests.exceptions.SSLError:
@@ -216,7 +212,6 @@ class PortfolioManagerImport(object):
     def get_list_of_report_templates(self):
         """
         New method to support update to ESPM
-
         :return: Returns a list of template objects. All rows will have a z_seed_child_row key that is False for main
         rows and True for child rows
         """
@@ -283,7 +278,6 @@ class PortfolioManagerImport(object):
     def get_template_by_name(templates, template_name):
         """
         This method searches through a list of templates for a template that matches the specific template name
-
         :param templates: A list of template objects, each of which will have a name key
         :param template_name: A string name to match in the list of templates
         :return: Returns a single template object that matches the name, raises a PMExcept if no match
@@ -299,7 +293,6 @@ class PortfolioManagerImport(object):
     def parse_template_response(self, response_text):
         """
         This method is for the updated ESPM where the response is escaped JSON string in a JSON response.
-
         :param response_text: str, repsonse to parse
         :return: dict
         """
@@ -324,12 +317,10 @@ class PortfolioManagerImport(object):
         This method calls out to ESPM to trigger generation of a report for the supplied template.  The process requires
         calling out to the generateData/ endpoint on ESPM, followed by a waiting period for the template status to be
         updated to complete.  Once complete, a download URL allows download of the report in XML format.
-
         This response content can be enormous, so ...
         TODO: Evaluate whether we should just download this XML to file here.  It would require re-reading the file
         TODO: afterwards, but it would 1) be downloaded and available for inspection/debugging, and 2) reduce the size
         TODO: of data coming through in memory during these calls, which seems to have been problematic at times
-
         :param matched_template: A template object down-selected from the full list found using the /template_list/ API
         :return: Full XML data report from ESPM report generation and download process
         """
@@ -408,13 +399,10 @@ class PortfolioManagerImport(object):
     def generate_and_download_child_data_request_report(self, matched_data_request):
         """
         Updated for recent update of ESPM
-
         This method calls out to ESPM to get the report data for a child template (a data request).  For child
         templates, the process simply requires calling out the download URL and getting the data in XML format.
-
         This response content can be enormous, so the same message applies here as with the main report download method
         where we should consider downloading the file itself instead of passing the XML data around in memory.
-
         :param matched_data_request: A child template object (template where z_seed_child_row is True)
         :return: Full XML data report from ESPM report generation and download process
         """
