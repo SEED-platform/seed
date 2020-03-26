@@ -14,7 +14,7 @@ describe('The search_service service', function () {
 
   beforeEach(function () {
     module('searchTestApp');
-    inject(function (search_service, $httpBackend, $q, spinner_utility) {
+    inject(function (search_service, $httpBackend, spinner_utility) {
       saas = search_service;
       httpBackend = $httpBackend;
       httpBackend.when('POST', test_url).respond('ok');
