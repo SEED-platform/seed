@@ -459,6 +459,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
           options.filter = inventory_service.dateFilter();
+        } else if (col.data_type === 'date') {
+          options.filter = inventory_service.dateFilter();
         } else {
           options.filter = inventory_service.combinedFilter();
           options.sortingAlgorithm = naturalSort;
