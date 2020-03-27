@@ -380,6 +380,46 @@ class MeterUsageImportTest(TestCase):
         refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
         self.assertEqual(refreshed_property_1.meters.all().count(), 2)
 
+    def test_meters_and_readings_are_associated_to_every_record_across_all_cycles_with_a_given_pm_property_id(self):
+        # new, in-cycle state NOT associated to existing record but has same PM Property ID
+        property_details_1 = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details_1['organization_id'] = self.org.id
+        property_details_1['pm_property_id'] = self.state_1.pm_property_id
+        property_details_1['custom_id_1'] = "values that forces non-match"
+        new_property_1 = PropertyState(**property_details_1)
+        new_property_1.save()
+
+        property_3 = self.property_factory.get_property()
+        PropertyView.objects.create(property=property_3, cycle=self.cycle, state=new_property_1)
+
+        # new, out-cycle state NOT associated to existing record but has same PM Property ID
+        property_details_2 = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details_2['organization_id'] = self.org.id
+        property_details_2['pm_property_id'] = self.state_1.pm_property_id
+        property_details_2['custom_id_1'] = "second value that forces non-match"
+        new_property_2 = PropertyState(**property_details_2)
+        new_property_2.save()
+
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2011, 10, 10, tzinfo=get_current_timezone()))
+        property_4 = self.property_factory.get_property()
+        PropertyView.objects.create(property=property_4, cycle=new_cycle, state=new_property_2)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(url, post_params)
+
+        refreshed_property_1 = Property.objects.get(pk=self.property_1.id)
+        self.assertEqual(refreshed_property_1.meters.all().count(), 2)
+
+        refreshed_property_3 = Property.objects.get(pk=property_3.id)
+        self.assertEqual(refreshed_property_3.meters.all().count(), 2)
+
+        refreshed_property_4 = Property.objects.get(pk=property_4.id)
+        self.assertEqual(refreshed_property_4.meters.all().count(), 2)
+
     def test_pm_property_id_existing_across_two_different_orgs_wont_lead_to_misassociated_meters(self):
         new_org, _, _ = create_organization(self.user)
 
@@ -413,7 +453,7 @@ class MeterUsageImportTest(TestCase):
         refreshed_new_property = Property.objects.get(pk=new_property.id)
         self.assertEqual(refreshed_new_property.meters.count(), 0)
 
-    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids(self):
+    def test_the_response_contains_expected_and_actual_reading_counts_single_cycle(self):
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -425,6 +465,8 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
@@ -432,6 +474,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
@@ -439,6 +483,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
@@ -446,6 +492,155 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+        ]
+
+        self.assertCountEqual(result['message'], expectation)
+
+    def test_the_response_contains_expected_and_actual_reading_counts_across_cycles_for_linked_properties(self):
+        property_details = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details['organization_id'] = self.org.id
+
+        # new state will be linked to existing record and has same PM Property ID
+        property_details['pm_property_id'] = self.state_1.pm_property_id
+        state = PropertyState(**property_details)
+        state.save()
+
+        new_property_state = PropertyState.objects.get(pk=state.id)
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2011, 10, 10, tzinfo=get_current_timezone()))
+
+        PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+
+        result = json.loads(response.content)
+
+        expectation = [
+            {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name + ", " + new_cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name + ", " + new_cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+        ]
+
+        self.assertCountEqual(result['message'], expectation)
+
+    def test_the_response_contains_expected_and_actual_reading_counts_by_property_id_even_in_the_same_cycle(self):
+        property_details = FakePropertyStateFactory(organization=self.org).get_details()
+        property_details['organization_id'] = self.org.id
+
+        # Create new state NOT associated to existing record but has same PM Property ID
+        property_details['pm_property_id'] = self.state_1.pm_property_id
+        property_details['custom_id_1'] = "values that forces non-match"
+        state = PropertyState(**property_details)
+        state.save()
+        new_property_state = PropertyState.objects.get(pk=state.id)
+
+        # new state in cycle associated to old property
+        property_3 = self.property_factory.get_property()
+        PropertyView.objects.create(property=property_3, cycle=self.cycle, state=new_property_state)
+
+        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        response = self.client.post(url, post_params)
+
+        result = json.loads(response.content)
+
+        expectation = [
+            {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": property_3.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": property_3.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766973",
+                "source_id": "5766973-1",
+                "type": "Natural Gas",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
+                "pm_property_id": "5766975",
+                "source_id": "5766975-0",
+                "type": "Electric - Grid",
+                "incoming": 2,
+                "successfully_imported": 2,
+            },
+            {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
@@ -479,6 +674,8 @@ class MeterUsageImportTest(TestCase):
 
         expectation = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
@@ -486,6 +683,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
@@ -493,6 +692,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Cost",
@@ -500,6 +701,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Cost",
@@ -507,6 +710,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
@@ -514,6 +719,8 @@ class MeterUsageImportTest(TestCase):
                 "successfully_imported": 2,
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",
@@ -558,6 +765,8 @@ class MeterUsageImportTest(TestCase):
 
         expected_import_summary = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": "Electric - Grid",
@@ -566,6 +775,8 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": "Natural Gas",
@@ -574,6 +785,8 @@ class MeterUsageImportTest(TestCase):
                 "errors": "",
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": "Electric - Grid",
@@ -582,6 +795,8 @@ class MeterUsageImportTest(TestCase):
                 "errors": "Overlapping readings.",
             },
             {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": "Natural Gas",

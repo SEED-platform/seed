@@ -205,7 +205,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.assertEqual(meter_reading.source_unit, 'kWh (thousand Watt-hours)')
         self.assertEqual(meter_reading.conversion_factor, 3.41)
 
-    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids(self):
+    def test_the_response_contains_expected_and_actual_reading_counts(self):
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -218,6 +218,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "409483",
+                "property_id": self.property_1.id,
                 "incoming": 2,
                 "type": "Electric - Grid",
                 "successfully_imported": 2,
@@ -250,6 +251,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "409483",
+                "property_id": self.property_1.id,
                 "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,

@@ -37,7 +37,7 @@ class MeterViewSet(viewsets.ViewSet):
         result = {}
 
         result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports()
+        result["proposed_imports"] = meters_parser.proposed_imports
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
@@ -60,7 +60,7 @@ class MeterViewSet(viewsets.ViewSet):
         result = {}
 
         result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports()
+        result["proposed_imports"] = meters_parser.proposed_imports
 
         import_file.matching_results_data['property_id'] = property_id
         import_file.save()
