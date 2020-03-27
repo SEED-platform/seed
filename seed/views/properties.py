@@ -16,7 +16,6 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
 from seed.utils.match import match_merge_link
-from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -491,14 +490,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'status': 'error',
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
 
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
