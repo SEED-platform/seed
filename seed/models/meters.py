@@ -153,7 +153,7 @@ class MeterReading(models.Model):
 
     # The following two fields are tracked for historical purposes
     source_unit = models.CharField(max_length=255, null=True, blank=True)
-    conversion_factor = models.FloatField(null=True, blank=True)
+    conversion_factor = models.FloatField()
 
     class Meta:
         unique_together = ('meter', 'start_time', 'end_time')
