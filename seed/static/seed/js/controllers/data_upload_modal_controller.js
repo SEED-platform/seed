@@ -207,6 +207,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             enableHiding: false,
             type: 'string'
           }, {
+            field: 'cycles',
+            displayName: 'Cycles',
+            enableHiding: false,
+            type: 'string'
+          }, {
             field: 'source_id',
             displayName: 'PM Meter ID',
             enableHiding: false,
@@ -451,6 +456,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         var column_defs = [{
           field: 'pm_property_id',
           displayName: 'PM Property ID',
+          enableHiding: false,
+          type: 'string'
+        }, {
+          field: 'cycles',
+          displayName: 'Cycles',
           enableHiding: false,
           type: 'string'
         }, {

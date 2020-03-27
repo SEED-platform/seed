@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['*']
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
 EMAIL_BACKEND = 'django_ses.SESBackend'
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # PostgreSQL DB config
 DATABASES = {
