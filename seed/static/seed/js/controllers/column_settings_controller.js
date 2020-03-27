@@ -76,6 +76,11 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.setModified();
       };
 
+      $scope.change_recognize_empty = function (column) {
+        column.recognize_empty = !column.recognize_empty;
+        $scope.setModified();
+      };
+
       // Seperate array used to capture and track geocoding-enabled columns and their order
       // Any change to the array leading to position switching should be followed by a
       // recalulation of geocoding_order values using indeces.
@@ -183,6 +188,16 @@ angular.module('BE.seed.controller.column_settings', [])
         if (($scope.column_sort !== 'geocoding_order')) {
           geocoding_order_sort();
           $scope.column_sort = 'geocoding_order';
+        } else {
+          default_sort_toggle();
+        }
+      };
+
+      $scope.toggle_recognize_empty_sort = function () {
+        if ($scope.column_sort !== 'recognize_empty') {
+          $scope.columns = _.orderBy($scope.columns, 'recognize_empty', 'desc');
+          
+          $scope.column_sort = 'recognize_empty';
         } else {
           default_sort_toggle();
         }

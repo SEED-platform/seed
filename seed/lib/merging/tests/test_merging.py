@@ -158,7 +158,7 @@ class StateFieldsTest(TestCase):
         # this also tests a priority on the new field but with an existing value that doesn't exist
         # in the new data.
         priorities = {'field_1': 'Favor Existing', 'field_3': 'Favor New'}
-        result = merging._merge_extra_data(ed1, ed2, priorities)
+        result = merging._merge_extra_data(ed1, ed2, priorities, [])
         expected = {
             'field_1': 'orig_value_1',
             'field_2': 'new_value_2',
@@ -166,3 +166,107 @@ class StateFieldsTest(TestCase):
             'field_4': 'only_in_ed2'
         }
         self.assertDictEqual(result, expected)
+
+    def test_recognize_empty_column_setting_allows_empty_values_to_overwrite_nonempty_values(self):
+        # create 2 records
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            energy_score=None,
+            extra_data={
+                'ed_field_1': 'ed_original_value',
+                'ed_field_2': None
+            }
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1=None,
+            energy_score=86,
+            extra_data={
+                'ed_field_1': None,
+                'ed_field_2': 'ED eighty-six'
+            }
+        )
+
+        # Update and create columns with recognize_empty = True
+        self.org.column_set.filter(
+            table_name='PropertyState',
+            column_name__in=['address_line_1', 'energy_score']
+        ).update(recognize_empty=True)
+        Column.objects.create(
+            column_name='ed_field_1',
+            table_name='PropertyState',
+            organization=self.org,
+            is_extra_data=True,
+            recognize_empty=True
+        )
+        Column.objects.create(
+            column_name='ed_field_2',
+            table_name='PropertyState',
+            organization=self.org,
+            is_extra_data=True,
+            recognize_empty=True
+        )
+
+        # Treat pv1.state as "newer"
+        result = merging.merge_state(pv2.state, pv2.state, pv1.state, {'extra_data': {}})
+
+        # should be all the values from state 1
+        self.assertEqual(result.address_line_1, 'original_address')
+        self.assertIsNone(result.energy_score)
+        self.assertEqual(result.extra_data['ed_field_1'], 'ed_original_value')
+        self.assertIsNone(result.extra_data['ed_field_2'])
+
+    def test_recognize_empty_and_favor_new_column_settings_together(self):
+        # create 2 records
+        pv1 = self.property_view_factory.get_property_view(
+            address_line_1='original_address',
+            energy_score=None,
+            extra_data={
+                'ed_field_1': 'ed_original_value',
+                'ed_field_2': None
+            }
+        )
+        pv2 = self.property_view_factory.get_property_view(
+            address_line_1=None,
+            energy_score=86,
+            extra_data={
+                'ed_field_1': None,
+                'ed_field_2': 'ED eighty-six'
+            }
+        )
+
+        # Update and create columns with recognize_empty = True
+        self.org.column_set.filter(
+            table_name='PropertyState',
+            column_name__in=['address_line_1', 'energy_score']
+        ).update(recognize_empty=True)
+        Column.objects.create(
+            column_name='ed_field_1',
+            table_name='PropertyState',
+            organization=self.org,
+            is_extra_data=True,
+            recognize_empty=True
+        )
+        Column.objects.create(
+            column_name='ed_field_2',
+            table_name='PropertyState',
+            organization=self.org,
+            is_extra_data=True,
+            recognize_empty=True
+        )
+
+        # Treat pv1.state as "newer" and favor existing for all priorities
+        priorities = {
+            'address_line_1': 'Favor Existing',
+            'energy_score': 'Favor Existing',
+            'extra_data': {
+                'ed_field_1': 'Favor Existing',
+                'ed_field_2': 'Favor Existing'
+            }
+        }
+        result = merging.merge_state(pv2.state, pv2.state, pv1.state, priorities)
+
+        # should be all the values from state 2
+        self.assertIsNone(result.address_line_1)
+        self.assertEqual(result.energy_score, 86)
+        self.assertIsNone(result.extra_data['ed_field_1'])
+        self.assertEqual(result.extra_data['ed_field_2'], 'ED eighty-six')
