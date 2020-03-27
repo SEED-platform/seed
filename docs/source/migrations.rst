@@ -51,6 +51,7 @@ Version 2.7.1
 -------------
 
 - There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- Note that the API endpoint get_applied_labels needs to be updated and is not working in 2.7.1. This endpoint is used in OEP.
 
 Version 2.7.0
 -------------
