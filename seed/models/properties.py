@@ -102,7 +102,9 @@ class Property(models.Model):
         else:
             # In any other case, copy over the readings from source one meter at
             # a time, checking to see if self has a similar meter each time.
-            for source_meter in source_property.meters.all():
+            # Note that we only copy meters not linked to scenarios because it's assumed
+            # the property has already gone through merge_relationships()
+            for source_meter in source_property.meters.filter(scenario_id=None):
                 with transaction.atomic():
                     target_meter, created = self.meters.get_or_create(
                         is_virtual=source_meter.is_virtual,
@@ -630,9 +632,13 @@ class PropertyState(models.Model):
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
+            source_scenario_id = new_s.pk
             new_s.pk = None
             new_s.save()
             merged_state.scenarios.add(new_s)
+
+            # copy meters
+            new_s.copy_initial_meters(source_scenario_id)
 
         for new_bf in building_files:
             # save the created and modified data from the original file
