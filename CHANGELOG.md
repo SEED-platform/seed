@@ -61,6 +61,10 @@ Closed Issues and Features:
 - Fixed [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
 - Fixed [#1713]( https://github.com/SEED-platform/seed/issues/1713 ), Return progress status immediately when uploading large files
 
+# SEED Version 2.6.1-Patch1
+
+- Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
+
 # SEED Version 2.6.1-Patch0
 
 - This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.
@@ -88,6 +92,9 @@ This patch has address a couple issues including:
 - Update the deployment to automatically read the version of redis, postgres, and OEP from the docker-compose.build.yml file
 - Fix data comparisons when merging records
 - Use OEP Version 1.4
+- Fixed [#2039]( https://github.com/SEED-platform/seed/issues/2039 ), Portfolio Manager Login URL Changed
+- Fixed [#2058]( https://github.com/SEED-platform/seed/issues/2058 ), Portfolio Manager URL Changed (Flapping Issue)
+- Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
 
 # SEED Version 2.6.0
 
