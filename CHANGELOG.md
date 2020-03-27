@@ -1,3 +1,44 @@
+# SEED Version 2.7.1
+
+Date Range: 12/21/19 - 03/26/20
+
+- Fixed [#94]( https://github.com/SEED-platform/seed/issues/94 ), Document how mapping works in the SEED-Platform / seed wiki
+- Fixed [#994]( https://github.com/SEED-platform/seed/issues/994 ), It is possible to have orphaned user accounts without an associated organization
+- Fixed [#1232]( https://github.com/SEED-platform/seed/issues/1232 ), Need easy way to view data year over year
+- Feature [#1348]( https://github.com/SEED-platform/seed/issues/1348 ), DQ Checking -- for Valid data, not errors in data
+- Fixed [#1480]( https://github.com/SEED-platform/seed/issues/1480 ), Five digit zip codes with leading 0
+- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name
+- Fixed [#1713]( https://github.com/SEED-platform/seed/issues/1713 ), Return progress status immediately when uploading large files
+- Feature [#1759]( https://github.com/SEED-platform/seed/issues/1759 ), Save mappings for specific input file data sources (ESPM, Tax Lot, Building List)
+- Feature [#1760]( https://github.com/SEED-platform/seed/issues/1760 ), Save Reports to CSV / PNG files
+- Feature [#1819]( https://github.com/SEED-platform/seed/issues/1819 ), DQ: Add label field to DQ Results Modal and Export file
+- Improved [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
+- Fixed [#1933]( https://github.com/SEED-platform/seed/issues/1933 ), BRICR BuildingSync exports after Update with BuildingSync
+- Maintenance [#1965]( https://github.com/SEED-platform/seed/issues/1965 ), Re-enable sentry on systems
+- Fixed [#1984]( https://github.com/SEED-platform/seed/issues/1984 ), 403 error when trying to view the Users in an Organization
+- Fixed [#1992]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file
+- Fixed [#1998]( https://github.com/SEED-platform/seed/issues/1998 ), First edit including lat long change doesn't trigger manual geocoding logic
+- Fixed [#2009]( https://github.com/SEED-platform/seed/issues/2009 ), Update to Django 2.0.13
+- Feature [#2013]( https://github.com/SEED-platform/seed/issues/2013 ), Notes: add option to delete notes
+- Fixed [#2017]( https://github.com/SEED-platform/seed/issues/2017 ), Column Settings: Add ability to sort by Display Name or Column Name
+- Fixed [#2018]( https://github.com/SEED-platform/seed/issues/2018 ), Geocoding Confidence in Master record are blank for merged records
+- Fixed [#2023]( https://github.com/SEED-platform/seed/issues/2023 ), Data Import: when importing a new file to a dataset, default to the last cycle imported rather than the first cycle in the pulldown list
+- Improved [#2027]( https://github.com/SEED-platform/seed/issues/2027 ), Column Settings: Improve Help Text at the top of the page
+- Fixed [#2057]( https://github.com/SEED-platform/seed/issues/2057 ), Tax Lot Excel export 500 error
+- Fixed [#2058]( https://github.com/SEED-platform/seed/issues/2058 ), Portfolio Manager URL Changed (Flapping Issue)
+- Fixed [#2059]( https://github.com/SEED-platform/seed/issues/2059 ), Geocoding order changes aren't included in column setting change preview
+- Fixed [#2060]( https://github.com/SEED-platform/seed/issues/2060 ), Column mapping preset creation during import not created with current snapshot
+- Fixed [#2072]( https://github.com/SEED-platform/seed/issues/2072 ), Inventory Detail no highlights for changes between extra_data
+- Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
+- Fixed [#2080]( https://github.com/SEED-platform/seed/issues/2080 ), Historical mapping page bug from mapping preset changes
+- Fixed [#2082]( https://github.com/SEED-platform/seed/issues/2082 ), Static SEED Webpage Development
+- Improved [#2084]( https://github.com/SEED-platform/seed/issues/2084 ), Print logs when CI fails
+- Improved [#2089]( https://github.com/SEED-platform/seed/issues/2089 ), Add Best Practices to Documentation
+- Fixed [#2091]( https://github.com/SEED-platform/seed/issues/2091 ), 500 Error Importing Tax Lot Data
+- Fixed [#2095]( https://github.com/SEED-platform/seed/issues/2095 ), Upgrade Django and API-related dependencies
+- Fixed [#2114]( https://github.com/SEED-platform/seed/issues/2114 ), Deleting a rule after saving previous changes does not reactive save buttons
+- Fixed [#2131]( https://github.com/SEED-platform/seed/issues/2131 ), Bricr-dev testing for potential merge into develop
+
 # SEED Version 2.7.0-Beta
 
 SEED Version 2.7.0-Beta includes several significant updates that need to be thoroughly tested on production data
@@ -50,8 +91,8 @@ Closed Issues and Features:
 - Fixed [#1348]( https://github.com/SEED-platform/seed/issues/1348 ), DQ Checking -- for Valid data, not errors in data
 - Fixed [#786]( https://github.com/SEED-platform/seed/issues/786 ), Save Changes button sequence in Data Cleansing Admin
 - Fixed [#1998]( https://github.com/SEED-platform/seed/issues/1998 ), First edit including lat long change doesn't trigger manual geocoding logic
-- Improved [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name 
-- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file 
+- Improved [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name
+- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file
 - Feature [#1591]( https://github.com/SEED-platform/seed/issues/1591 ), Detail Screen: Highlight the changes in the columns
 - Feature [#1232]( https://github.com/SEED-platform/seed/issues/1232 ), Need easy way to view data year over year
 - Fixed [#1946]( https://github.com/SEED-platform/seed/issues/1946 ), Meter data visible on some cycles but not all
