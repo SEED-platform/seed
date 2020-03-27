@@ -1,12 +1,12 @@
-# SEED Version 2.7.0-Beta
+# SEED Version 2.7.0
 
-SEED Version 2.7.0-Beta includes several significant updates that need to be thoroughly tested on production data
+SEED Version 2.7.0 includes several significant updates that need to be thoroughly tested on production data
 before being deployed. The most notable changes:
 
 - User can define which fields to match/merge/pair/link
-- Properties and Tax Lots are not linked across multiple years or compliance cycles
+- Properties and Tax Lots are now linked across multiple years or compliance cycles
 - Users can define mapping profiles to save/recall mappings easier
-- 55 closed issues/new features
+- 57 closed issues/new features
 
 Date Range: 09/30/19 - 12/20/19
 
@@ -50,8 +50,8 @@ Closed Issues and Features:
 - Fixed [#1348]( https://github.com/SEED-platform/seed/issues/1348 ), DQ Checking -- for Valid data, not errors in data
 - Fixed [#786]( https://github.com/SEED-platform/seed/issues/786 ), Save Changes button sequence in Data Cleansing Admin
 - Fixed [#1998]( https://github.com/SEED-platform/seed/issues/1998 ), First edit including lat long change doesn't trigger manual geocoding logic
-- Improved [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name 
-- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file 
+- Improved [#1592]( https://github.com/SEED-platform/seed/issues/1592 ), Prevent adding an org with existing name
+- Fixed [#1592]( https://github.com/SEED-platform/seed/issues/1992 ), Data Mapping for imported files does not reflect the actual mapping for that data file
 - Feature [#1591]( https://github.com/SEED-platform/seed/issues/1591 ), Detail Screen: Highlight the changes in the columns
 - Feature [#1232]( https://github.com/SEED-platform/seed/issues/1232 ), Need easy way to view data year over year
 - Fixed [#1946]( https://github.com/SEED-platform/seed/issues/1946 ), Meter data visible on some cycles but not all
@@ -60,6 +60,11 @@ Closed Issues and Features:
 - Fixed [#2057]( https://github.com/SEED-platform/seed/issues/2057 ), Tax Lot Excel export 500 error
 - Fixed [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
 - Fixed [#1713]( https://github.com/SEED-platform/seed/issues/1713 ), Return progress status immediately when uploading large files
+
+The item(s) below are patched applied to 2.7.0-Beta
+- Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
+- Update ESPM connection to support latest update.
+- Fixed [#2119]( https://github.com/SEED-platform/seed/issues/2119 ), Re-enable created and updated fields for master records on the front end
 
 # SEED Version 2.6.1-Patch1
 

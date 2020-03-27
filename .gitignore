@@ -29,6 +29,7 @@ web_root/uploads/*
 web_root/images/sites/*
 config/settings_local.py
 config/local_untracked.py
+config/settings/local_untracked.py.dist.*
 config/settings/local_untracked.py
 node_modules/*
 web_root/CACHE
