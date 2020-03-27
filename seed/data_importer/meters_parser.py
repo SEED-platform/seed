@@ -314,12 +314,8 @@ class MetersParser(object):
 
     def _parse_meter_readings(self, raw_details, meter_details, start_time, end_time):
         """
-        Raw details containing meter and meter reading details are iterated over
-        to generate dictionaries that will become individual meter readings.
-
-        If a meter has not yet been parsed, its first reading details are saved
-        in a list. If a meter was previously parsed and has readings already,
-        any new readings are appended to that list.
+        Build a meter reading object and distribute it to meters according to
+        the meter details' property_ids.
         """
         # Parse the conversion factor else return False
         type_name = raw_details['Meter Type']
@@ -338,30 +334,12 @@ class MetersParser(object):
             'conversion_factor': conversion_factor
         }
 
-        # Associate this meter reading to each meter and property_id combination
-        for property_id in meter_details.get('property_ids', []):
-            meter_details_copy = meter_details.copy()
-            del meter_details_copy['property_ids']
-            meter_details_copy['property_id'] = property_id
-
-            meter_identifier = '-'.join([str(meter_details_copy[k]) for k in sorted(meter_details_copy)])
-
-            existing_property_meter = self._unique_meters.get(meter_identifier, None)
-
-            if existing_property_meter is None:
-                meter_details_copy['readings'] = [meter_reading]
-
-                self._unique_meters[meter_identifier] = meter_details_copy
-            else:
-                existing_property_meter['readings'].append(meter_reading)
+        self.distribute_meter_reading(meter_reading, meter_details)
 
         return True
 
     def _parse_cost_meter_reading(self, raw_details, meter_details, start_time, end_time):
         """
-        Raw details containing cost meter and meter reading details are iterated over
-        to generate dictionaries that will become individual meter readings.
-
         The logic is very similar to _parse_pm_meter_details, except this is
         specifically for cost. Also, it's assumed all meter_details are
         populated except for type.
@@ -378,7 +356,14 @@ class MetersParser(object):
             'conversion_factor': 1
         }
 
-        # Associate this meter reading to each meter and property_id combination
+        self.distribute_meter_reading(meter_reading, meter_details)
+
+    def distribute_meter_reading(self, meter_reading, meter_details):
+        """
+        If a meter has not yet been parsed, its first reading details are saved
+        in a list. If a meter was previously parsed and has readings already,
+        any new readings are appended to that list.
+        """
         for property_id in meter_details.get('property_ids', []):
             meter_details_copy = meter_details.copy()
             del meter_details_copy['property_ids']
