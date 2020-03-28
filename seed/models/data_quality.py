@@ -575,7 +575,6 @@ class DataQualityCheck(models.Model):
         if dq.rules.count() == 0:
             # _log.debug("No rules found in DataQualityCheck, initializing default rules")
             dq.initialize_rules()
-            print('got here no rules found?')
 
         return dq
 
