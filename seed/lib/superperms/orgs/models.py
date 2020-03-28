@@ -41,6 +41,7 @@ STATUS_CHOICES = (
 )
 
 
+# This should be cleaned/DRYed up with Organization._default_display_meter_units
 def _get_default_display_meter_units():
     return {
         'Coal (anthracite)': 'kBtu (thousand Btu)',
@@ -130,6 +131,7 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
+    # This should be cleaned/DRYed up with the ._get_default_display_meter_units method
     _default_display_meter_units = {
         'Coal (anthracite)': 'kBtu (thousand Btu)',
         'Coal (bituminous)': 'kBtu (thousand Btu)',
