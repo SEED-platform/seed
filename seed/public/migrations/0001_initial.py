@@ -20,8 +20,8 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(default=django.utils.timezone.now, verbose_name='created', editable=False, blank=True)),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(default=django.utils.timezone.now, verbose_name='modified', editable=False, blank=True)),
                 ('field_type', models.IntegerField(default=0, choices=[(0, b'Internal'), (1, b'Public')])),
-                ('field', models.ForeignKey(to='orgs.ExportableField')),
-                ('org', models.ForeignKey(to='orgs.Organization')),
+                ('field', models.ForeignKey(on_delete=models.deletion.CASCADE, to='orgs.ExportableField')),
+                ('org', models.ForeignKey(on_delete=models.deletion.CASCADE, to='orgs.Organization')),
             ],
             options={
                 'ordering': ('-modified', '-created'),

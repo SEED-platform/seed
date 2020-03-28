@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -16,7 +16,7 @@ import requests
 import xmltodict
 from django.http import JsonResponse
 from rest_framework import serializers, status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
 try:
@@ -41,7 +41,7 @@ class PortfolioManagerViewSet(GenericViewSet):
     """
     serializer_class = PortfolioManagerSerializer
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def template_list(self, request):
         """
         This API view makes a request to ESPM for the list of available report templates, including root templates and
@@ -79,7 +79,7 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def report(self, request):
         """
         This API view makes a request to ESPM to generate and download a report based on a specific template.
@@ -125,10 +125,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 else:
                     content = pm.generate_and_download_template_report(template)
             except PMExcept as pme:
-                return JsonResponse(
-                    {'status': 'error', 'message': str(pme)},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return JsonResponse({'status': 'error', 'message': str(pme)}, status=status.HTTP_400_BAD_REQUEST)
             try:
                 content_object = xmltodict.parse(content, dict_constructor=dict)
             except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions
@@ -158,8 +155,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
             return JsonResponse({'status': 'success', 'properties': properties})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': e},
-                                status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'status': 'error', 'message': e}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PortfolioManagerImport(object):
@@ -199,7 +195,8 @@ class PortfolioManagerImport(object):
             raise PMExcept("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
 
         # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
-        if 'The username and/or password you entered is not correct. Please try again.' in response.content.decode('utf-8'):
+        if 'The username and/or password you entered is not correct. Please try again.' in response.content.decode(
+                'utf-8'):
             raise PMExcept('Unsuccessful response from login attempt; aborting.  Check credentials.')
 
         # Upon successful logging in, we should have received a cookie header that we can reuse later
@@ -218,36 +215,31 @@ class PortfolioManagerImport(object):
 
     def get_list_of_report_templates(self):
         """
-        This method calls out to the ESPM API to get the full list of template rows.  For each row, it checks to see if
-        it has children rows, and if so, it calls out to the API for the child rows and retrieves IDs and names for
-        those as well.
+        New method to support update to ESPM
 
-        :return: Returns a list of template objects.  All rows will have a z_seed_child_row key that is False for main
+        :return: Returns a list of template objects. All rows will have a z_seed_child_row key that is False for main
         rows and True for child rows
         """
-
         # login if needed
         if not self.authenticated_headers:
             self.login_and_set_cookie_header()
 
-        # Get the report templates
-        url = 'https://portfoliomanager.energystar.gov/pm/reports/templateTableRows'
+        # get the report data
+        url = 'https://portfoliomanager.energystar.gov/pm/reports/reportData'
         try:
             response = requests.get(url, headers=self.authenticated_headers)
+
         except requests.exceptions.SSLError:
             raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
         if not response.status_code == status.HTTP_200_OK:
             raise PMExcept('Unsuccessful response from report template rows query; aborting.')
-        try:
-            template_object = json.loads(response.text)
-        except ValueError:
-            raise PMExcept('Malformed JSON response from report template rows query; aborting.')
-        _log.debug('Received the following JSON return: ' + json.dumps(template_object, indent=2))
+
+        template_object = self.parse_template_response(response.text)
 
         # We need to parse the list of report templates
-        if 'rows' not in template_object:
-            raise PMExcept('Could not find rows key in template response; aborting.')
-        templates = template_object['rows']
+        if 'customReportsData' not in template_object:
+            raise PMExcept('Could not find customReportsData key in template response; aborting.')
+        templates = template_object['customReportsData']
         template_response = []
         sorted_templates = sorted(templates, key=lambda x: x['name'])
         for t in sorted_templates:
@@ -260,16 +252,24 @@ class PortfolioManagerImport(object):
             _log.debug('Found template,\n id=' + str(t['id']) + '\n name=' + str(t['name']))
             if 'hasChildrenRows' in t and t['hasChildrenRows']:
                 _log.debug('Template row has children data request rows, trying to get them now')
-                children_url = \
-                    'https://portfoliomanager.energystar.gov/pm/reports/templateTableChildrenRows/TEMPLATE/{0}'.format(
-                        t['id']
-                    )
+                children_url = f'https://portfoliomanager.energystar.gov/pm/reports/templateChildrenRows/TEMPLATE/{t["id"]}'
+
                 # SSL errors would have been caught earlier in this function and raised, so this should be ok
                 children_response = requests.get(children_url, headers=self.authenticated_headers)
                 if not children_response.status_code == status.HTTP_200_OK:
                     raise PMExcept('Unsuccessful response from child row template lookup; aborting.')
                 try:
-                    child_object = json.loads(children_response.text)
+                    # the data are now in the string of the data key of the returned dictionary with an excessive amount of
+                    # escaped doublequotes.
+                    # e.g., response = {"data": "{"customReportsData":"..."}"}
+                    decoded = json.loads(children_response.text)  # .encode('utf-8').decode('unicode_escape')
+
+                    # the beginning and end of the string needs to be without the doublequote. Remove the escaped double quotes
+                    data_to_parse = decoded['data'].replace('"{', '{').replace('}"', '}').replace('"[{', '[{').replace(
+                        '}]"', '}]').replace('\\"', '"')
+
+                    # print(f'data to parse: {data_to_parse}')
+                    child_object = json.loads(data_to_parse)['childrenRows']
                 except ValueError:
                     raise PMExcept('Malformed JSON response from report template child row query; aborting.')
                 _log.debug('Received the following child JSON return: ' + json.dumps(child_object, indent=2))
@@ -295,6 +295,29 @@ class PortfolioManagerImport(object):
             raise PMExcept("Could not find a matching template for this name, try a different name")
         _log.debug("Desired report name found, template info: " + json.dumps(matched_template, indent=2))
         return matched_template
+
+    def parse_template_response(self, response_text):
+        """
+        This method is for the updated ESPM where the response is escaped JSON string in a JSON response.
+
+        :param response_text: str, repsonse to parse
+        :return: dict
+        """
+        try:
+            # the data are now in the string of the data key of the returned dictionary with an excessive amount of
+            # escaped doublequotes.
+            # e.g., response = {"data": "{"customReportsData":"..."}"}
+            decoded = json.loads(response_text)  # .encode('utf-8').decode('unicode_escape')
+
+            # the beginning and end of the string needs to be without the doublequote. Remove the escaped double quotes
+            data_to_parse = decoded['data'].replace('"[{', '[{').replace('}]"', '}]').replace('\\"', '"')
+
+            # print(f'data to parse: {data_to_parse}')
+            template_object = json.loads(data_to_parse)
+            _log.debug('Received the following JSON return: ' + json.dumps(template_object, indent=2))
+            return template_object
+        except ValueError:
+            raise PMExcept('Malformed JSON response from report template rows query; aborting.')
 
     def generate_and_download_template_report(self, matched_template):
         """
@@ -329,18 +352,21 @@ class PortfolioManagerImport(object):
             response.headers))
 
         # Now we need to wait while the report is being generated
-        url = 'https://portfoliomanager.energystar.gov/pm/reports/templateTableRows'
+        url = 'https://portfoliomanager.energystar.gov/pm/reports/reportData'
         attempt_count = 0
         report_generation_complete = False
         while attempt_count < 10:
             attempt_count += 1
+
+            # get the report data
             try:
                 response = requests.get(url, headers=self.authenticated_headers)
             except requests.exceptions.SSLError:
                 raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
             if not response.status_code == status.HTTP_200_OK:
-                raise PMExcept('Unsuccessful response from GET trying to check status on generated report; aborting.')
-            template_objects = json.loads(response.text)['rows']
+                raise PMExcept('Unsuccessful response from report template rows query; aborting.')
+
+            template_objects = self.parse_template_response(response.text)['customReportsData']
             for t in template_objects:
                 if 'id' in t and t['id'] == matched_template['id']:
                     this_matched_template = t
@@ -355,6 +381,7 @@ class PortfolioManagerImport(object):
             else:
                 report_generation_complete = True
                 break
+
         if report_generation_complete:
             _log.debug('Report appears to have been generated successfully (attempt_count=' + str(attempt_count) + ')')
         else:
@@ -362,24 +389,26 @@ class PortfolioManagerImport(object):
 
         # Finally we can download the generated report
         template_report_name = quote(matched_template['name']) + '.xml'
-        sanitized_template_report_name = template_report_name.replace('/', '_')
-        d_url = 'https://portfoliomanager.energystar.gov/pm/reports/template/download/%s/XML/false/%s?testEnv=false' % (
-            str(template_report_id), sanitized_template_report_name
+        url = 'https://portfoliomanager.energystar.gov/pm/reports/template/download/{0}/XML/false/{1}?testEnv=false'
+        download_url = url.format(
+            str(template_report_id), template_report_name
         )
         try:
-            response = requests.get(d_url, headers=self.authenticated_headers)
+            response = requests.get(download_url, headers=self.authenticated_headers)
         except requests.exceptions.SSLError:
             raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
         if not response.status_code == status.HTTP_200_OK:
             error_message = 'Unsuccessful response from GET trying to download generated report;'
             error_message += ' Generated report name: ' + template_report_name + ';'
-            error_message += ' Tried to download report from URL: ' + d_url + ';'
+            error_message += ' Tried to download report from URL: ' + download_url + ';'
             error_message += ' Returned with a status code = ' + response.status_code + ';'
             raise PMExcept(error_message)
         return response.content
 
     def generate_and_download_child_data_request_report(self, matched_data_request):
         """
+        Updated for recent update of ESPM
+
         This method calls out to ESPM to get the report data for a child template (a data request).  For child
         templates, the process simply requires calling out the download URL and getting the data in XML format.
 
@@ -408,9 +437,11 @@ class PortfolioManagerImport(object):
             str(template_report_id), sanitized_template_report_name
         )
         try:
-            response = requests.get(download_url, headers=self.authenticated_headers)
+            response = requests.get(download_url, headers=self.authenticated_headers, allow_redirects=True)
         except requests.exceptions.SSLError:
             raise PMExcept('SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.')
+
         if not response.status_code == status.HTTP_200_OK:
             raise PMExcept('Unsuccessful response from GET trying to download generated report; aborting.')
+
         return response.content

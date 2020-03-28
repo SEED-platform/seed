@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -38,12 +38,12 @@ class NumberInFilter(BaseInFilter, NumberFilter):
 
 
 class GreenAssessmentFilterSet(FilterSet):
-    name = CharFilter(name='name', lookup_expr='exact')
-    award_body = CharFilter(name='award_body', lookup_expr='exact')
-    name_icontains = CharFilter(name='name', lookup_expr='icontains')
-    award_body_icontains = CharFilter(name='name', lookup_expr='icontains')
+    name = CharFilter(field_name='name', lookup_expr='exact')
+    award_body = CharFilter(field_name='award_body', lookup_expr='exact')
+    name_icontains = CharFilter(field_name='name', lookup_expr='icontains')
+    award_body_icontains = CharFilter(field_name='name', lookup_expr='icontains')
     recognition_type = CharFilter(
-        name='recognition_type', lookup_expr='iexact'
+        field_name='recognition_type', lookup_expr='iexact'
     )
 
     class Meta:
@@ -52,9 +52,9 @@ class GreenAssessmentFilterSet(FilterSet):
 
 
 class GAPropertyFilterSet(FilterSet):
-    assessment = CharFilter(name='assessment__name', lookup_expr='iexact')
-    rating = CharFilter(name='_rating', lookup_expr='iexact')
-    year = NumberFilter(name='date', lookup_expr='year')
+    assessment = CharFilter(field_name='assessment__name', lookup_expr='iexact')
+    rating = CharFilter(field_name='_rating', lookup_expr='iexact')
+    year = NumberFilter(field_name='date', lookup_expr='year')
 
     class Meta:
         model = GreenAssessmentProperty
@@ -63,8 +63,8 @@ class GAPropertyFilterSet(FilterSet):
 
 class LabelFilterSet(FilterSet):
     """Provide filtering for Label by property id, taxlot id, name or color."""
-    property = NumberInFilter(name='property__pk', lookup_expr='in')
-    taxlot = NumberInFilter(name='taxlot__pk', lookup_expr='in')
+    property = NumberInFilter(field_name='property__pk', lookup_expr='in')
+    taxlot = NumberInFilter(field_name='taxlot__pk', lookup_expr='in')
 
     class Meta:
         model = Label
@@ -74,8 +74,8 @@ class LabelFilterSet(FilterSet):
 class CycleFilterSet(FilterSet):
     """Provide filtering for Cycle by name, start date, end date or
     calendar year."""
-    start_lte = DateFilter(name='start', lookup_expr='lte')
-    end_gte = DateFilter(name='end', lookup_expr='gte')
+    start_lte = DateFilter(field_name='start', lookup_expr='lte')
+    end_gte = DateFilter(field_name='end', lookup_expr='gte')
     year = CharFilter(method='year_filter')
 
     class Meta:
@@ -109,22 +109,22 @@ class PropertyViewFilterSet(FilterSet):
     Filter options for propertyviews by cycle (id), property (id),
     cycle_start (lte), and cycle_end (gte)
     """
-    cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
-    cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+    cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
     address_line_1 = CharFilter(
-        name='state__address_line_1', lookup_expr='iexact'
+        field_name='state__address_line_1', lookup_expr='iexact'
     )
     address_line_2 = CharFilter(
-        name='state__address_line_2', lookup_expr='iexact'
+        field_name='state__address_line_2', lookup_expr='iexact'
     )
     city = CharFilter(
-        name='state__city', lookup_expr='iexact'
+        field_name='state__city', lookup_expr='iexact'
     )
     state = CharFilter(
-        name='state__state', lookup_expr='iexact'
+        field_name='state__state', lookup_expr='iexact'
     )
     postal_code = CharFilter(
-        name='state__postal_code', lookup_expr='iexact'
+        field_name='state__postal_code', lookup_expr='iexact'
     )
     property_identifier = CharFilter(method='identifier_filter')
 
@@ -168,7 +168,7 @@ class PropertyStateFilterSet(FilterSet):
     (jurisdiction_property_id, custom_id_1, pm_property_id or
     home_energy_score_id)
     """
-    energy_score = NumberFilter(name='energy_score', lookup_expr='gte')
+    energy_score = NumberFilter(field_name='energy_score', lookup_expr='gte')
     property_identifier = CharFilter(method='identifier_filter')
 
     class Meta:

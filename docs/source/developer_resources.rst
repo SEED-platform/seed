@@ -291,6 +291,22 @@ JS Compliance uses jshint
 
     jshint seed/static/seed/js
 
+Best Practices
+--------------
+
+1. Make sure there is an issue created for items you are working on (for tracking purposes and so that the item appears in the changelog for the release)
+2. Use the following labels on the GitHub issue:
+    **Feature** (features will appear as “New” item in the changelog)
+    **Enhancement** (these will appear as “Improved" in the changelog)
+    **Bug** (these will appear as “Fixed” in the changelog)
+3. Move the ticket/issue to ‘In Progress’ in the GitHub project tracker when you begin work
+4. Branch off of the ‘develop’ branch (unless it’s a hotfix for production) 
+5. Write a test for the code added.  
+6. Make sure to test locally.  note that all branches created and pushed to GitHub will also be tested automatically.
+7. When done, create a pull request (you can group related issues together in the same PR).  Assign a reviewer to look over the code
+8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
+9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.    
+
 Release Instructions
 --------------------
 
@@ -305,7 +321,7 @@ To make a release do the following:
     python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2018-02-26 –e 2018-05-30
 
 4. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
-5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.co project. (see :doc:`translation documentation <translation>`).
+5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
 6. Once develop passes, then create a new PR from develop to master.
 7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
 8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)

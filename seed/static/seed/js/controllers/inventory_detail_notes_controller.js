@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_notes', [])
@@ -54,9 +54,6 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
         });
       };
 
-      /**
-       * open_data_quality_modal: modal to present data data_quality warnings and errors
-       */
       $scope.open_create_note_modal = function () {
         var newNoteModalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
@@ -71,11 +68,67 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
             },
             orgId: function () {
               return $scope.org_id;
-            }
+            },
+            note: _.constant({text: ''}),
+            action: _.constant('new'),
           }
         });
 
         newNoteModalInstance.result.finally(function () {
+          refreshNotes();
+        });
+      };
+
+      $scope.open_edit_note_modal = function (note) {
+        var noteModalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: function () {
+              return $scope.inventory_type;
+            },
+            viewId: function () {
+              return $scope.inventory.view_id;
+            },
+            orgId: function () {
+              return $scope.org_id;
+            },
+            note: function () {
+              return note;
+            },
+            action: _.constant('update'),
+          }
+        });
+
+        noteModalInstance.result.finally(function () {
+          refreshNotes();
+        });
+      };
+
+      $scope.open_delete_note_modal = function (note) {
+        var noteModalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_notes_modal.html',
+          controller: 'inventory_detail_notes_modal_controller',
+          size: 'lg',
+          resolve: {
+            inventoryType: function () {
+              return $scope.inventory_type;
+            },
+            viewId: function () {
+              return $scope.inventory.view_id;
+            },
+            orgId: function () {
+              return $scope.org_id;
+            },
+            note: function () {
+              return note;
+            },
+            action: _.constant('delete'),
+          }
+        });
+
+        noteModalInstance.result.finally(function () {
           refreshNotes();
         });
       };

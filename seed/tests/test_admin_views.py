@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -9,7 +9,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.core.urlresolvers import reverse_lazy, reverse
+from django.urls import reverse_lazy, reverse
 from django.test import TestCase
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
@@ -188,13 +188,17 @@ class AdminViewsTest(TestCase):
 
         # actually go to that url to make sure it works
         res = self.client.get(signup_url)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, 302)
 
         # post the new password
         password_post = {'new_password1': 'newpassS2',
                          'new_password2': 'newpassS2'}
 
-        res = self.client.post(signup_url, data=password_post)
+        set_password_url = reverse("landing:signup", kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": 'set-password'
+        })
+        res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)
@@ -232,15 +236,19 @@ class AdminViewsTest(TestCase):
         self.assertTrue(signup_url in msg.body)
         self.assertTrue(data['email'] in msg.to)
 
-        # actually go to that url to make sure it works
-        res = self.client.get(signup_url)
-        self.assertEqual(res.status_code, 200)
+        # Follow link to be redirected to new password page
+        res = self.client.get(signup_url, data)
+        self.assertEqual(res.status_code, 302)
 
         # post the new password
         password_post = {'new_password1': 'newpassS3',
                          'new_password2': 'newpassS3'}
 
-        res = self.client.post(signup_url, data=password_post)
+        set_password_url = reverse("landing:signup", kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": 'set-password'
+        })
+        res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)

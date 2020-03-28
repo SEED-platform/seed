@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -29,7 +29,7 @@ class ColumnSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'organization_id', 'table_name', 'merge_protection', 'shared_field_type',
             'column_name', 'is_extra_data', 'unit_name', 'unit_type', 'display_name', 'data_type',
-            'is_matching_criteria',
+            'is_matching_criteria', 'geocoding_order', 'recognize_empty',
         )
 
     def concat_name(self, obj):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -65,11 +65,11 @@ class Property(models.Model):
 
     If the property can be a campus. The property can also reference a parent property.
     """
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     # Handle properties that may have multiple properties (e.g. buildings)
     campus = models.BooleanField(default=False)
-    parent_property = models.ForeignKey('Property', blank=True, null=True)
+    parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -81,7 +81,7 @@ class Property(models.Model):
     def __str__(self):
         return 'Property - %s' % (self.pk)
 
-    def copy_meters(self, source_state_id, source_persists=True):
+    def copy_meters(self, source_property_id, source_persists=True):
         """
         Copies meters from a source Property to the current Property.
 
@@ -90,7 +90,7 @@ class Property(models.Model):
 
         The cases and logic are described in comments throughout.
         """
-        source_property = Property.objects.get(pk=source_state_id)
+        source_property = Property.objects.get(pk=source_property_id)
 
         # If the source property has no meters to copy, there's nothing to do.
         if not source_property.meters.exists():
@@ -102,7 +102,9 @@ class Property(models.Model):
         else:
             # In any other case, copy over the readings from source one meter at
             # a time, checking to see if self has a similar meter each time.
-            for source_meter in source_property.meters.all():
+            # Note that we only copy meters not linked to scenarios because it's assumed
+            # the property has already gone through merge_relationships()
+            for source_meter in source_property.meters.filter(scenario_id=None):
                 with transaction.atomic():
                     target_meter, created = self.meters.get_or_create(
                         is_virtual=source_meter.is_virtual,
@@ -141,12 +143,12 @@ class PropertyState(models.Model):
     )
 
     # Support finding the property by the import_file and source_type
-    import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+    import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 
     # FIXME: source_type needs to be a foreign key or make it import_file.source_type
     source_type = models.IntegerField(null=True, blank=True, db_index=True)
 
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
@@ -630,9 +632,13 @@ class PropertyState(models.Model):
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
+            source_scenario_id = new_s.pk
             new_s.pk = None
             new_s.save()
             merged_state.scenarios.add(new_s)
+
+            # copy meters
+            new_s.copy_initial_meters(source_scenario_id)
 
         for new_bf in building_files:
             # save the created and modified data from the original file
@@ -726,7 +732,7 @@ class PropertyView(models.Model):
 
     """
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, related_name='views', on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='views')
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
@@ -805,22 +811,22 @@ def post_save_property_view(sender, **kwargs):
 
 
 class PropertyAuditLog(models.Model):
-    organization = models.ForeignKey(Organization)
-    parent1 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    parent1 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='propertyauditlog_parent1')
-    parent2 = models.ForeignKey('PropertyAuditLog', blank=True, null=True,
+    parent2 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='propertyauditlog_parent2')
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
-    parent_state1 = models.ForeignKey(PropertyState, blank=True, null=True,
+    parent_state1 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='parent_state1')
-    parent_state2 = models.ForeignKey(PropertyState, blank=True, null=True,
+    parent_state2 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='parent_state2')
 
-    state = models.ForeignKey('PropertyState', related_name='propertyauditlog_state')
-    view = models.ForeignKey('PropertyView', related_name='propertyauditlog_view', null=True)
+    state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='propertyauditlog_state')
+    view = models.ForeignKey('PropertyView', on_delete=models.CASCADE, related_name='propertyauditlog_view', null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)

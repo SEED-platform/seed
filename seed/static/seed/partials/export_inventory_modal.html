@@ -11,7 +11,7 @@
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="export_selected('csv')" ng-disabled="!export_name.length" translate>Export CSV</button>
-    <button type="button" class="btn btn-primary" ng-click="export_selected('xlsx')" ng-disabled="!export_name.length" translate>Export BuildingSync in Excel format</button>
+    <button type="button" class="btn btn-primary" ng-click="export_selected('xlsx')" ng-disabled="!export_name.length" ng-if="inventory_type === 'properties'" translate>Export BuildingSync in Excel format</button>
     <button type="button" class="btn btn-primary" ng-click="export_selected('geojson')" ng-disabled="!export_name.length" translate>Export GeoJSON</button>
 
 </div>

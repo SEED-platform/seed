@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -30,7 +30,8 @@ from seed.models import (
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
     ColumnListSettingColumn,
-)
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
@@ -80,14 +81,20 @@ class BaseFake(object):
             self.fake.random_element(elements=STREET_SUFFIX)
         )
 
-    def owner(self, city=None, state=None):
-        """Return Owner named tuple"""
-        email = self.fake.company_email()
+    def company(self, email=None):
+        if not email:
+            email = self.fake.company_email()
         ergx = re.compile(r'.*@(.*)\..*')
         company = "{} {}".format(
             string.capwords(ergx.match(email).group(1), '-').replace('-', ' '),
             self.fake.company_suffix()
         )
+        return company
+
+    def owner(self, city=None, state=None):
+        """Return Owner named tuple"""
+        email = self.fake.company_email()
+        company = self.company(email)
         return Owner(
             company, email, self.fake.phone_number(), self.address_line_1(),
             "{}, {}".format(city if city else self.fake.city(),
@@ -746,8 +753,10 @@ class FakeColumnListSettingsFactory(BaseFake):
         self.organization = organization
 
     def get_columnlistsettings(self, organization=None,
-                               inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY,
-                               location=ColumnListSetting.VIEW_LIST, **kw):
+                               inventory_type=VIEW_LIST_PROPERTY,
+                               location=VIEW_LIST,
+                               table_name='PropertyState',
+                               **kw):
         """Get columnlistsettings instance."""
         if not organization:
             organization = self.organization
@@ -764,7 +773,7 @@ class FakeColumnListSettingsFactory(BaseFake):
         if 'columns' in kw:
             # add the columns to the list of items
             for c in kw.pop('columns'):
-                columns.append(Column.objects.get(organization=organization, column_name=c, table_name='PropertyState'))
+                columns.append(Column.objects.get(organization=organization, column_name=c, table_name=table_name))
         else:
             # use all the columns
             for c in Column.objects.filter(organization=organization):

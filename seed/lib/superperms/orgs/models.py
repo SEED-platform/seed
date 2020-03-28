@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -41,12 +41,40 @@ STATUS_CHOICES = (
 )
 
 
+# This should be cleaned/DRYed up with Organization._default_display_meter_units
+def _get_default_display_meter_units():
+    return {
+        'Coal (anthracite)': 'kBtu (thousand Btu)',
+        'Coal (bituminous)': 'kBtu (thousand Btu)',
+        'Coke': 'kBtu (thousand Btu)',
+        'Diesel': 'kBtu (thousand Btu)',
+        'District Chilled Water - Absorption': 'kBtu (thousand Btu)',
+        'District Chilled Water - Electric': 'kBtu (thousand Btu)',
+        'District Chilled Water - Engine': 'kBtu (thousand Btu)',
+        'District Chilled Water - Other': 'kBtu (thousand Btu)',
+        'District Hot Water': 'kBtu (thousand Btu)',
+        'District Steam': 'kBtu (thousand Btu)',
+        'Electric - Grid': 'kWh (thousand Watt-hours)',
+        'Electric - Solar': 'kWh (thousand Watt-hours)',
+        'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
+        'Fuel Oil (No. 5 and No. 6)': 'kBtu (thousand Btu)',
+        'Kerosene': 'kBtu (thousand Btu)',
+        'Natural Gas': 'kBtu (thousand Btu)',
+        'Other:': 'kBtu (thousand Btu)',
+        'Propane': 'kBtu (thousand Btu)',
+        'Wood': 'kBtu (thousand Btu)'
+    }
+
+
 class OrganizationUser(models.Model):
     class Meta:
         ordering = ['organization', '-role_level']
 
-    user = models.ForeignKey(USER_MODEL)
-    organization = models.ForeignKey('Organization')
+    user = models.ForeignKey(USER_MODEL, on_delete=models.CASCADE)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     status = models.CharField(
         max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES
     )
@@ -103,6 +131,7 @@ class Organization(models.Model):
         (CAN, 'CAN'),
     )
 
+    # This should be cleaned/DRYed up with the ._get_default_display_meter_units method
     _default_display_meter_units = {
         'Coal (anthracite)': 'kBtu (thousand Btu)',
         'Coal (bituminous)': 'kBtu (thousand Btu)',
@@ -138,7 +167,7 @@ class Organization(models.Model):
         related_name='orgs',
     )
 
-    parent_org = models.ForeignKey('Organization', blank=True, null=True, related_name='child_orgs')
+    parent_org = models.ForeignKey('Organization', on_delete=models.CASCADE, blank=True, null=True, related_name='child_orgs')
 
     display_units_eui = models.CharField(max_length=32,
                                          choices=MEASUREMENT_CHOICES_EUI,
@@ -154,7 +183,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = JSONField(default=_default_display_meter_units.copy())
+    display_meter_units = JSONField(default=_get_default_display_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
@@ -184,6 +213,9 @@ class Organization(models.Model):
 
     def add_member(self, user, role=ROLE_OWNER):
         """Add a user to an organization."""
+        # Ensure that the user can login in case they had previously been deactivated due to no org associations
+        user.is_active = True
+        user.save()
         return OrganizationUser.objects.get_or_create(user=user, organization=self, role_level=role)
 
     def remove_member(self, user):

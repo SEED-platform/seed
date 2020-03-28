@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -38,8 +38,10 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
+  'BE.seed.controller.column_mapping_preset_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
+  'BE.seed.controller.confirm_column_settings_modal',
   'BE.seed.controller.create_sub_organization_modal',
   'BE.seed.controller.cycle_admin',
   'BE.seed.controller.data_quality_admin',
@@ -51,11 +53,15 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_dataset_modal',
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
+  'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
+  'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
+  'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
+  'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
@@ -77,7 +83,9 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.pairing',
   'BE.seed.controller.pairing_settings',
   'BE.seed.controller.profile',
+  'BE.seed.controller.record_match_merge_link_modal',
   'BE.seed.controller.rename_column_modal',
+  'BE.seed.controller.reset_modal',
   'BE.seed.controller.security',
   'BE.seed.controller.settings_profile_modal',
   'BE.seed.controller.show_populated_columns_modal',
@@ -512,6 +520,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
+          column_mapping_presets_payload: ['column_mappings_service', 'user_service', function (column_mappings_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
+            });
+          }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
@@ -833,36 +847,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
-          column_mappings: ['column_mappings_service', '$stateParams', 'naturalSort', function (column_mappings_service, $stateParams, naturalSort) {
+          mappable_property_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_property_columns().then(function (result) {
+              return result;
+            });
+          }],
+          mappable_taxlot_columns_payload: ['inventory_service' , function (inventory_service) {
+            return inventory_service.get_mappable_taxlot_columns().then(function (result) {
+              return result;
+            });
+          }],
+          column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-
-            return column_mappings_service.get_column_mappings_for_org(organization_id).then(function (data) {
-              var propertyMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'Property');
-              });
-              propertyMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-              var taxlotMappings = _.filter(data, function (datum) {
-                return _.startsWith(datum.column_mapped.table_name, 'TaxLot');
-              });
-              taxlotMappings.sort(function (a, b) {
-                return naturalSort(a.column_raw.column_name, b.column_raw.column_name);
-              });
-
-              if ($stateParams.inventory_type === 'properties') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: propertyMappings
-                };
-              } else if ($stateParams.inventory_type === 'taxlots') {
-                return {
-                  property_count: propertyMappings.length,
-                  taxlot_count: taxlotMappings.length,
-                  column_mappings: taxlotMappings
-                };
-              }
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
             });
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
@@ -891,8 +889,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         controller: 'data_quality_admin_controller',
         resolve: {
           columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+            var organization_id = $stateParams.organization_id;
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns().then(function (columns) {
+              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
@@ -903,7 +902,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return columns;
               });
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns().then(function (columns) {
+              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
                 columns = _.reject(columns, 'related');
                 columns = _.map(columns, function (col) {
                   return _.omit(col, ['pinnedLeft', 'related']);
@@ -1072,14 +1071,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_list.html',
         controller: 'inventory_list_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', 'current_profile', function ($stateParams, inventory_service, current_profile) {
-            var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
-            if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_properties(1, undefined, undefined, profile_id);
-            } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlots(1, undefined, undefined, profile_id);
-            }
-          }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
@@ -1098,9 +1089,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
@@ -1121,24 +1110,60 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {
-          inventory: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
-            // if ($stateParams.inventory_type === 'properties') {
-            return inventory_service.get_properties(1, undefined, undefined, undefined);
-            // } else if ($stateParams.inventory_type === 'taxlots') {
-            //   return inventory_service.get_taxlots(1, undefined, undefined, undefined);
-            // }
-          }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
           }],
           labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels([], {
-              inventory_type: $stateParams.inventory_type
-            }).then(function (labels) {
+            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
               return _.filter(labels, function (label) {
                 return !_.isEmpty(label.is_applied);
               });
             });
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_cycles',
+        url: '/{inventory_type:properties|taxlots}/cycles',
+        templateUrl: static_url + 'seed/partials/inventory_cycles.html',
+        controller: 'inventory_cycles_controller',
+        resolve: {
+          inventory: ['$stateParams', 'inventory_service', 'current_profile', function ($stateParams, inventory_service, current_profile) {
+            var last_selected_cycle_ids = inventory_service.get_last_selected_cycles() || [];
+            var profile_id = _.has(current_profile, 'id') ? current_profile.id : undefined;
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.properties_cycle(profile_id, last_selected_cycle_ids);
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.taxlots_cycle(profile_id, last_selected_cycle_ids);
+            }
+          }],
+          matching_criteria_columns: ['user_service', 'organization_service', function (user_service, organization_service) {
+            var org_id = user_service.get_organization().id;
+            return organization_service.matching_criteria_columns(org_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return inventory_service.get_settings_profiles('List View Settings', inventory_type);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
+          }],
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns();
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns();
+            }
           }]
         }
       })
@@ -1195,9 +1220,64 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return currentProfile;
           }],
           labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
-            return label_service.get_labels([$stateParams.view_id], {
-              inventory_type: $stateParams.inventory_type
+            return label_service.get_labels($stateParams.inventory_type, [$stateParams.view_id]);
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_cycles',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/cycles',
+        templateUrl: static_url + 'seed/partials/inventory_detail_cycles.html',
+        controller: 'inventory_detail_cycles_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise;
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property_links(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot_links(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
             });
+            return promise;
+          }],
+          columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                _.remove(columns, {column_name: 'lot_number', table_name: 'PropertyState'});
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns().then(function (columns) {
+                _.remove(columns, 'related');
+                return _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+              });
+            }
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+            return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+          }],
+          current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
+            var validProfileIds = _.map(profiles, 'id');
+            var lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
+            if (_.includes(validProfileIds, lastProfileId)) {
+              return _.find(profiles, {id: lastProfileId});
+            }
+            var currentProfile = _.first(profiles);
+            if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
+            return currentProfile;
           }]
         }
       })

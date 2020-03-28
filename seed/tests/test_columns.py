@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -862,11 +862,13 @@ class TestColumnsByInventory(TestCase):
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
+            'geocoding_order': 0,
             'related': False,
             'sharedFieldType': 'Public',
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -878,11 +880,13 @@ class TestColumnsByInventory(TestCase):
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
+            'geocoding_order': 0,
             'related': False,
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -894,11 +898,13 @@ class TestColumnsByInventory(TestCase):
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'data_type': 'None',
+            'geocoding_order': 0,
             'related': False,
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -910,12 +916,14 @@ class TestColumnsByInventory(TestCase):
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',
+            'geocoding_order': 0,
             'pinnedLeft': True,
             'related': False,
             'sharedFieldType': 'None',
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': True,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -925,6 +933,7 @@ class TestColumnsByInventory(TestCase):
             'column_name': 'state',
             'display_name': 'State (Tax Lot)',
             'data_type': 'string',
+            'geocoding_order': 4,
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
@@ -932,6 +941,7 @@ class TestColumnsByInventory(TestCase):
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -940,6 +950,7 @@ class TestColumnsByInventory(TestCase):
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area (Tax Lot)',
             'data_type': 'None',
+            'geocoding_order': 0,
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
@@ -947,6 +958,7 @@ class TestColumnsByInventory(TestCase):
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 
@@ -966,6 +978,7 @@ class TestColumnsByInventory(TestCase):
             'column_name': 'Gross Floor Area',
             'display_name': 'Gross Floor Area',
             'data_type': 'None',
+            'geocoding_order': 0,
             'is_extra_data': True,
             'merge_protection': 'Favor New',
             'sharedFieldType': 'None',
@@ -973,6 +986,7 @@ class TestColumnsByInventory(TestCase):
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': False,
+            'recognize_empty': False,
         }
         self.assertIn(c, columns)
 

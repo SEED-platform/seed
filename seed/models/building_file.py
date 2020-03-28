@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -52,7 +52,7 @@ class BuildingFile(models.Model):
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    property_state = models.ForeignKey('PropertyState', related_name='building_files', null=True)
+    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='building_files', null=True)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
@@ -146,6 +146,48 @@ class BuildingFile(models.Model):
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
         self.save()
+
+        # merge or create the property state's view
+        if property_view:
+            # create a new blank state to merge the two together
+            merged_state = PropertyState.objects.create(organization_id=organization_id)
+
+            # assume the same cycle id as the former state.
+            # should merge_state also copy/move over the relationships?
+            priorities = Column.retrieve_priorities(organization_id)
+            merged_state = merge_state(
+                merged_state, property_view.state, property_state, priorities['PropertyState']
+            )
+
+            # log the merge
+            # Not a fan of the parent1/parent2 logic here, seems error prone, what this
+            # is also in here: https://github.com/SEED-platform/seed/blob/63536e99cf5be3a9a86391c5cead6dd4ff74462b/seed/data_importer/tasks.py#L1549
+            PropertyAuditLog.objects.create(
+                organization_id=organization_id,
+                parent1=PropertyAuditLog.objects.filter(state=property_view.state).first(),
+                parent2=PropertyAuditLog.objects.filter(state=property_state).first(),
+                parent_state1=property_view.state,
+                parent_state2=property_state,
+                state=merged_state,
+                name='System Match',
+                description='Automatic Merge',
+                import_filename=None,
+                record_type=AUDIT_IMPORT
+            )
+
+            property_view.state = merged_state
+            property_view.save()
+
+            merged_state.merge_state = MERGE_STATE_MERGED
+            merged_state.save()
+
+            # set the property_state to the new one
+            property_state = merged_state
+        elif not property_view:
+            property_view = property_state.promote(cycle)
+        else:
+            # invalid arguments, must pass both or neither
+            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
 
         # add in the measures
         for m in data.get('measures', []):
@@ -257,6 +299,7 @@ class BuildingFile(models.Model):
                 meter, _ = Meter.objects.get_or_create(
                     scenario_id=scenario.id,
                     source_id=m.get('source_id'),
+                    property=property_view.property,
                 )
                 meter.source = m.get('source')
                 meter.type = m.get('type')
@@ -272,52 +315,12 @@ class BuildingFile(models.Model):
                         reading=mr.get('reading'),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
+                        conversion_factor=1.00,  # assuming kBtu
                     )
                     for mr
                     in m.get('readings', [])
                 }
 
                 MeterReading.objects.bulk_create(readings)
-
-        if property_view:
-            # create a new blank state to merge the two together
-            merged_state = PropertyState.objects.create(organization_id=organization_id)
-
-            # assume the same cycle id as the former state.
-            # should merge_state also copy/move over the relationships?
-            priorities = Column.retrieve_priorities(organization_id)
-            merged_state = merge_state(
-                merged_state, property_view.state, property_state, priorities['PropertyState']
-            )
-
-            # log the merge
-            # Not a fan of the parent1/parent2 logic here, seems error prone, what this
-            # is also in here: https://github.com/SEED-platform/seed/blob/63536e99cf5be3a9a86391c5cead6dd4ff74462b/seed/data_importer/tasks.py#L1549
-            PropertyAuditLog.objects.create(
-                organization_id=organization_id,
-                parent1=PropertyAuditLog.objects.filter(state=property_view.state).first(),
-                parent2=PropertyAuditLog.objects.filter(state=property_state).first(),
-                parent_state1=property_view.state,
-                parent_state2=property_state,
-                state=merged_state,
-                name='System Match',
-                description='Automatic Merge',
-                import_filename=None,
-                record_type=AUDIT_IMPORT
-            )
-
-            property_view.state = merged_state
-            property_view.save()
-
-            merged_state.merge_state = MERGE_STATE_MERGED
-            merged_state.save()
-
-            # set the property_state to the new one
-            property_state = merged_state
-        elif not property_view:
-            property_view = property_state.promote(cycle)
-        else:
-            # invalid arguments, must pass both or neither
-            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
 
         return True, property_state, property_view, messages

@@ -41,54 +41,64 @@
                      <strong>{$:: 'Cycle' | translate $}:</strong> {$:: cycle.name $}
                  </span>
             </div>
+        </div>
 
-            <div style="margin:10px 250px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
-                <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
-                    <button id="btnInventoryActions"
-                            type="button"
-                            uib-dropdown-toggle
-                            class="btn btn-default btn-sm">
-                        {$:: 'Actions' | translate $} <span class="caret"></span>
-                    </button>
-                    <ul id="inventory-detail-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-                        <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
-                            <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
-                        </li>
+        <div style="margin:10px 250px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
+            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+                <button id="btnInventoryActions"
+                        type="button"
+                        uib-dropdown-toggle
+                        class="btn btn-default btn-sm">
+                    {$:: 'Actions' | translate $} <span class="caret"></span>
+                </button>
+                <ul id="#inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
+                    <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+                        <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
+                    </li>
 
-                        <li ng-if="::inventory_type === 'properties'" role="menuitem">
-                            <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
-                        </li>
+                    <li ng-if="::inventory_type === 'properties'" role="menuitem">
+                        <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
+                    </li>
 
-                        <li ng-if="::inventory_type === 'properties'" role="menuitem">
-                            <a ng-click="export_building_sync_xlsx()">Export BuildingSync (Excel)</a>
-                        </li>
+                    <li ng-if="::inventory_type === 'properties'" role="menuitem">
+                        <a ng-click="export_building_sync_xlsx()">Export BuildingSync (Excel)</a>
+                    </li>
 
-                        <li role="menuitem">
-                            <a ng-click="open_update_labels_modal()" ng-disabled="selectedCount === 0">{$:: 'Add/Remove Labels' | translate $}</a>
-                        </li>
+                    <li role="menuitem">
+                        <a ng-click="open_update_labels_modal()" ng-disabled="selectedCount === 0">{$:: 'Add/Remove Labels' | translate $}</a>
+                    </li>
 
-                        <li role="menuitem" ng-if="::historical_items.length > 1">
-                            <a ng-click="unmerge()" class="yellow-bg">{$:: 'Unmerge Last' | translate $}</a>
-                        </li>
+                    <li role="menuitem" ng-if="::historical_items.length > 1">
+                        <a ng-click="unmerge()" class="yellow-bg">{$:: 'Unmerge Last' | translate $}</a>
+                    </li>
 
-                    </ul>
-                    <div ng-if="::inventory_type === 'properties'" style="margin: 50px 25px 0;">
-                        <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
-                    </div>
+                    <li role="menuitem">
+                        <a ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')">Merge and Link Matches</a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li role="menuitem">
+                        <a ng-click="open_show_populated_columns_modal()" translate>Only Show Populated Columns</a>
+                    </li>
+                </ul>
+
+                <div ng-if="::inventory_type === 'properties'" style="margin: 50px 25px 0;">
+                    <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
                 </div>
             </div>
+        </div>
 
-            <div style="margin:10px 250px 10px 0; padding:0 10px;">
-                <span style="display:inline-block; margin-top:9px; padding-left:15px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
+        <div style="display: flex; justify-content: space-between; padding: 10px">
+            <div>
+                <span style="display:inline-block; margin-top:9px; vertical-align: top;"><strong>{$:: 'Labels' | translate $}:</strong></span>
                 <span ng-if="!labels.length" style="color:#999;display:inline-block;margin-top:7px;" translate>(no labels applied)</span>
                 <div ng-if="labels.length" style="display: inline-block; width: calc(100vw - 570px); vertical-align: top;">
                     <span ng-repeat="label in labels" class="label label-{$:: label.label $}" style="display: inline-block; margin-top: 7px; padding: 4.6px 7px;">{$:: label.name $}</span>
                 </div>
             </div>
 
-            <div class="alert alert-warning" ng-show="edit_form_showing" translate>INDIVIDUAL_MATCH_MERGE_ROUND_ALERT</div>
-
-            <div style="margin:10px 10px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
+            <div>
                 <span ng-show="profiles.length > 0">
                     <label>{$:: 'Detail Settings Profile' | translate $}:</label>
                     <div style="display: inline-block;">
@@ -96,28 +106,37 @@
                     </div>
                 </span>
             </div>
+        </div>
 
-            <div ng-if="::inventory_type === 'properties'" style="margin:10px 10px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
-                <div class="progress_bar_container" ng-show="uploader.in_progress">
-                    <div class="progress_bar_copy_top"
-                             translate="UPLOADING_PROGRESS"
-                             translate-values="{ dataset_filename: uploader.filename }"></div>
+        <div ng-if="::inventory_type === 'properties'">
+            <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+        </div>
 
-                        <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                        <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
-                    </div>
-                </div>
+        <div ng-if="::inventory_type === 'properties'" style="margin:10px 10px 10px 0; padding:0 10px; display: flex; justify-content: space-between;">
+            <div class="progress_bar_container" ng-show="uploader.in_progress">
+                <div class="progress_bar_copy_top"
+                         translate="UPLOADING_PROGRESS"
+                         translate-values="{ dataset_filename: uploader.filename }"></div>
+
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
             </div>
+        </div>
 
+        <div id="pin" class="section_content_container table-xscroll-unfrozen">
             <div class="table_list_container table_item_detail">
-                <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:0;">
+                <table id="inventory-detail-table" class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>
-                            <th sd-resizable id="building-fields">{$:: 'Field' | translate $}</th>
-                            <th sd-resizable class="ellipsis-resizable">{$:: 'Master' | translate $}</th>
+                            <th id="building-fields">{$:: 'Field' | translate $}</th>
+                            <th id="building-fields" ng-click="toggle_freeze()">
+                                <span class="pin">{$:: 'Master' | translate $}
+                                    <i class="glyphicon glyphicon-pushpin"></i>
+                                </span>
+                            </th>
                             <!-- Historical values -->
-                            <th sd-resizable ng-repeat="historical_item in ::historical_items" class="ellipsis-resizable">
-                                <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}">
+                            <th ng-repeat="historical_item in ::historical_items">
+                                <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}" popover-placement="bottom">
                                     {$:: historical_item.filename $}
                                 </div>
                             </th>
@@ -129,7 +148,7 @@
                             <td ng-attr-title="{$:: col.column_name $}">{$:: col.displayName | translate $}</td>
 
                             <!-- Show read-only current 'regular' field value -->
-                            <td ng-if="edit_form_showing===false && !col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="_.includes(changed_fields.regular_fields, col.column_name) ? 'highlight' : ''" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && !col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: item_state[col.column_name] $}">
                                     <span ng-if="::col.data_type !== 'datetime'">{$:: item_state[col.column_name] $}</span>
                                     <span ng-if="::col.data_type === 'datetime'">{$:: item_state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
@@ -137,7 +156,7 @@
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
-                            <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="changed_fields.extra_data_fields.indexOf(col.column_name)>=0 ? 'highlight' : ''" class="ellipsis">
+                            <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[col.column_name] $}">
                                     <span ng-if="::col.data_type !== 'datetime'">{$:: item_state.extra_data[col.column_name] $}</span>
                                     <span ng-if="::col.data_type === 'datetime'">{$:: item_state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
@@ -145,15 +164,15 @@
                             </td>
 
                             <!-- Show read-only current 'property / taxlot' fields -->
-                            <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state')" ng-class="_.includes(changed_fields.regular_fields, col.column_name) ? 'highlight' : ''" class="ellipsis">
-                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[col.column_name] $}">
+                            <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_parent[col.column_name] $}">
                                     <span ng-if="::col.data_type !== 'datetime'">{$:: item_parent[col.column_name] $}</span>
                                     <span ng-if="::col.data_type === 'datetime'">{$:: item_parent[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
 
                             <!-- Show input form to edit current field value -->
-                            <td ng-if="edit_form_showing" ng-class="(!col.is_extra_data && changed_fields.extra_data_fields.indexOf(col.column_name)>=0) || changed_fields.regular_fields.indexOf(col.column_name)>=0 ? 'highlight' : ''">
+                            <td ng-if="edit_form_showing" ng-class="{highlight: col.changed}">
                                 <div ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')">
                                     <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[col.column_name]" ng-disabled="::isDisabledField(col.column_name)">
                                 </div>
@@ -166,17 +185,16 @@
                             </td>
 
                             <!-- Show read-only historical field value -->
-                            <td ng-repeat="historical_item in historical_items" ng-class="(!col.is_extra_data && historical_item.changed_fields.extra_data_fields.indexOf(col.column_name)>=0) || historical_item.changed_fields.regular_fields.indexOf(col.column_name)>=0 ? 'highlight' : ''" class="ellipsis">
-                                <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
+                            <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
+                                <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
                                     <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state[col.column_name] $}</span>
                                     <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
-                                <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
+                                <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
                                     <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state.extra_data[col.column_name] $}</span>
                                     <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
                                 </span>
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -361,6 +379,7 @@
                                 <tr>
                                     <th sd-resizable>Scenario</th>
                                     <th sd-resizable class="ellipsis-resizable">Type</th>
+                                    <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
                                     <th sd-resizable class="ellipsis-resizable">Measures</th>
                                 </tr>
                             </thead>
@@ -368,6 +387,10 @@
                                 <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
                                     <td> {$ scenario.name $}</td>
                                     <td> {$ scenario.temporal_status $}</td>
+                                    <td>
+                                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
+                                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
+                                    </td>
                                     <td>
                                         <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
                                             <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>

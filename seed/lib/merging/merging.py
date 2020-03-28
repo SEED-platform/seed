@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -60,6 +60,10 @@ def get_state_to_state_tuple(inventory):
         if c['table_name'] == inventory:
             fields.append(c['column_name'])
 
+    # Include geocoding results columns that are left out when generating duplicate hashes
+    fields.append('long_lat')
+    fields.append('geocoding_confidence')
+
     return tuple([(k, k) for k in sorted(fields)])
 
 
@@ -84,7 +88,54 @@ def get_state_attrs(state_list):
         return get_taxlotstate_attrs(state_list)
 
 
-def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
+def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs, ignore_merge_protection=False):
+    """
+    Geocoding results need to be handled separately since they should generally
+    "stick together". In one sense, all 4 result columns should be treated as
+    one column. Specifically, the complete geocoding results of either the new
+    state or the existing state is used - not a combination of the geocoding
+    results from each.
+
+    Note, to avoid unnecessary complications, it's intended for these fields to
+    be left out of the logic involving recognize_empty.
+    """
+    geocoding_attr_cols = [
+        'geocoding_confidence',
+        'longitude',
+        'latitude',
+        'long_lat',  # note this col shouldn't have priority set
+    ]
+
+    existing_results_empty = True
+    new_results_empty = True
+    geocoding_favor_new = True
+
+    for geocoding_col in geocoding_attr_cols:
+        existing_results_empty = existing_results_empty and can_attrs[geocoding_col][state1] is None
+        new_results_empty = new_results_empty and can_attrs[geocoding_col][state2] is None
+
+        geocoding_favor_new = geocoding_favor_new and priorities.get(geocoding_col, 'Favor New') == 'Favor New'
+
+        # Since these are handled here, remove them from canonical attributes
+        del can_attrs[geocoding_col]
+
+    # Multiple elif's here is necessary since empty checks should be first, followed by merge protection settings
+    if new_results_empty:
+        geo_state = state1
+    elif existing_results_empty:
+        geo_state = state2
+    elif ignore_merge_protection:
+        geo_state = state2
+    elif geocoding_favor_new:
+        geo_state = state2
+    else:   # favor existing
+        geo_state = state1
+
+    for geo_attr in geocoding_attr_cols:
+        setattr(merged_state, geo_attr, getattr(geo_state, geo_attr, None))
+
+
+def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -96,9 +147,10 @@ def _merge_extra_data(ed1, ed2, priorities, ignore_merge_protection=False):
     all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
+        recognize_empty = key in recognize_empty_columns
         val1 = ed1.get(key, None)
         val2 = ed2.get(key, None)
-        if val1 and val2:
+        if (val1 and val2) or recognize_empty:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
             if ignore_merge_protection or col_prior == 'Favor New':
@@ -124,11 +176,25 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     # Calculate the difference between the two states and save into a dictionary
     can_attrs = get_state_attrs([state1, state2])
 
+    # Handle geocoding results first so that recognize_empty logic is not processed on them.
+    _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs, ignore_merge_protection)
+
+    recognize_empty_columns = state2.organization.column_set.filter(
+        table_name=state2.__class__.__name__,
+        recognize_empty=True,
+        is_extra_data=False
+    ).values_list('column_name', flat=True)
+
     default = state2
     for attr in can_attrs:
-        # Do we have any differences between these fields? - Check if not None instead of if value.
-        attr_values = [value for value in list(can_attrs[attr].values()) if value is not None]
-        attr_values = [v for v in attr_values if v is not None]
+        recognize_empty = attr in recognize_empty_columns
+
+        attr_values = [
+            value
+            for value
+            in list(can_attrs[attr].values())
+            if value is not None or recognize_empty
+        ]
 
         attr_value = None
         # Two, differing values are set.
@@ -154,10 +220,17 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         else:
             setattr(merged_state, attr, attr_value)
 
+    recognize_empty_ed_columns = state2.organization.column_set.filter(
+        table_name=state2.__class__.__name__,
+        recognize_empty=True,
+        is_extra_data=True
+    ).values_list('column_name', flat=True)
+
     merged_state.extra_data = _merge_extra_data(
         state1.extra_data,
         state2.extra_data,
         priorities['extra_data'],
+        recognize_empty_ed_columns,
         ignore_merge_protection
     )
 

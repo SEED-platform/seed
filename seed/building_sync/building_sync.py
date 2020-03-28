@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 
@@ -111,6 +111,14 @@ class BuildingSync(object):
                 "key_path_value": "Assessor parcel number",
                 "value_path_name": "auc:IdentifierValue",
                 "required": False,  # temporarily make this False until AT can handle it correctly.
+                "type": "string",
+            },
+            "ubid": {
+                "path": "auc:Sites.auc:Site.auc:Buildings.auc:Building.auc:PremisesIdentifiers.auc:PremisesIdentifier",
+                "key_path_name": "auc:IdentifierLabel",
+                "key_path_value": "UBID",
+                "value_path_name": "auc:IdentifierValue",
+                "required": False,
                 "type": "string",
             },
             "custom_id_1": {

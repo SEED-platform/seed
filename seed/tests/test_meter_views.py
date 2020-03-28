@@ -10,7 +10,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,
@@ -165,21 +165,29 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         expectation = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
@@ -229,31 +237,43 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
         proposed_imports = [
             {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Natural Gas',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-0",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "property_id": self.property_1.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766973",
                 "source_id": "5766973-1",
                 "type": 'Cost',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-0",
                 "type": 'Electric - Grid',
                 "incoming": 2,
             }, {
+                "property_id": self.property_2.id,
+                "cycles": self.cycle.name,
                 "pm_property_id": "5766975",
                 "source_id": "5766975-1",
                 "type": 'Natural Gas',
@@ -302,6 +322,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         proposed_imports = [
             {
                 "source_id": '409483',
+                "property_id": self.property_1.id,
                 "type": 'Electric - Grid',
                 "incoming": 2,
             },
@@ -363,7 +384,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         })
 
         result = self.client.post(url, post_params, content_type="application/json")
-        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+        result_dict = json.loads(result.content)
 
         electric_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.ELECTRICITY_GRID)
         gas_meter = Meter.objects.get(property_id=self.property_view_1.property_id, type=Meter.NATURAL_GAS, source=Meter.PORTFOLIO_MANAGER)
@@ -373,16 +394,22 @@ class TestMeterViewSet(DataMappingBaseTestCase):
                 'type': 'Electric - Grid',
                 'source': 'PM',
                 'source_id': '5766973-0',
+                'scenario_id': None,
+                'scenario_name': None
             }, {
                 'id': gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'PM',
                 'source_id': '5766973-1',
+                'scenario_id': None,
+                'scenario_name': None
             }, {
                 'id': gb_gas_meter.id,
                 'type': 'Natural Gas',
                 'source': 'GB',
                 'source_id': '123fakeID',
+                'scenario_id': None,
+                'scenario_name': None
             },
         ]
 

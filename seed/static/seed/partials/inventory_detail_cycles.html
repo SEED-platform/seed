@@ -1,0 +1,85 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+                <i class="fa fa-chevron-left"></i>
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+            </a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+        </div>
+    </div>
+</div>
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+</div>
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short has_no_padding">
+            <div class="section_action_container left" style="width: 50%;">
+                <span>
+                    <h2>
+                        <span ng-if="::inventory_type==='properties'"><i class="fa fa-building-o"></i><span translate>Property</span> : {$ base_state.address_line_1 ? base_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                        <span ng-if="::inventory_type==='taxlots'"><i class="fa fa-map-o"></i><span translate>Tax Lot</span> : {$ base_state.address_line_1 ? base_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                    </h2>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div style="display: flex; justify-content: flex-end; padding: 20px 10px 20px">
+                <span ng-show="profiles.length > 0">
+                    <label>{$:: 'Detail Settings Profile' | translate $}:</label>
+                    <div style="display: inline-block;">
+                        <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+                    </div>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="section_content_container table-xscroll-fixed-header-container">
+        <div class="table_list_container table_item_detail">
+            <table class="table table-striped table_highlight_first fixed-layout">
+                <thead>
+                    <tr>
+                        <th id="building-fields">{$:: 'Field' | translate $}</th>
+                        <!-- Cycle Names -->
+                        <th ng-repeat="state in ::states">
+                            <span popover-placement="bottom-left" uib-popover="{$:: cycles[state.cycle_id].start | date: 'yyyy-MM-dd' $} to {$:: cycles[state.cycle_id].end | date: 'yyyy-MM-dd' $}">
+                                {$:: cycles[state.cycle_id].name $}
+                            </span>
+                            <a ui-sref="inventory_detail(inventory_type === 'properties' ? {inventory_type: 'properties', view_id: state.view_id} : {inventory_type: 'taxlots', view_id: state.view_id})">
+                                <i class="ui-grid-icon-info-circled"></i>
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="table_list_container table_item_detail table-body-x-scroll">
+            <table class="table table-striped table_highlight_first fixed-layout">
+                <tbody>
+                    <tr ng-repeat="col in ::columns">
+                        <!-- Column name -->
+                        <td ng-attr-title="{$:: col.column_name $}">{$:: col.displayName | translate $}</td>
+
+                        <!-- Column values for each record -->
+                        <td ng-repeat="state in states" class="ellipsis" ng-class="{highlight: col.changed}">
+                            <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state[col.column_name] $}">
+                                <span ng-if="col.data_type !== 'datetime'">{$:: state[col.column_name] $}</span>
+                                <span ng-if="col.data_type === 'datetime'">{$:: state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                            </span>
+                            <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state.extra_data[col.column_name] $}">
+                                <span ng-if="col.data_type !== 'datetime'">{$:: state.extra_data[col.column_name] $}</span>
+                                <span ng-if="col.data_type === 'datetime'">{$:: state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

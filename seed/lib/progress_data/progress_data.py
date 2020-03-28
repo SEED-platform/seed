@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -41,6 +41,7 @@ class ProgressData(object):
             self.data['func_name'] = self.func_name
             self.data['message'] = None
             self.data['stacktrace'] = None
+            self.data['summary'] = None
             self.total = None
             self.increment_by = None
 
@@ -126,8 +127,8 @@ class ProgressData(object):
         if self.data['total']:
             self.total = self.data['total']
 
-    def step(self, status_message=''):
-        "Step the function by increment_value and save back to the cache"
+    def step(self, status_message=None, new_summary=None):
+        """Step the function by increment_value and save back to the cache"""
         # load the latest value out of the cache
         self.load()
 
@@ -139,7 +140,11 @@ class ProgressData(object):
 
         self.data['progress'] = value
         self.data['status'] = 'parsing'
-        self.data['status_message'] = status_message
+        if status_message is not None:
+            self.data['status_message'] = status_message
+
+        if new_summary is not None:
+            self.data['summary'] = new_summary
 
         self.save()
 
@@ -165,31 +170,15 @@ class ProgressData(object):
         else:
             return 0
 
+    def update_summary(self, summary):
+        self.data['summary'] = summary
+        self.save()
 
-# Not sure I want to use this class at the moment. We really aren't tracking the result of a task
-# by watching the AsyncResult object.
-# class ProgressResult(object):
-#     def __init__(self, task_id):
-#         self.task = task_id
-#         self.result = AsyncResult(self.task)
-#
-#     def get_info(self):
-#         if self.result.ready():
-#             return {
-#                 'complete': True,
-#                 'success': self.result.successful(),
-#                 'progress': 'blah'
-#             }
-#         elif self.result.state == PROGRESS_STATE:
-#             return {
-#                 'complete': False,
-#                 'success': None,
-#                 'progress': self.result.info,
-#             }
-#         elif self.result.state in ['PENDING', 'STARTED']:
-#             return {
-#                 'complete': False,
-#                 'success': None,
-#                 'progress': 'blah blah'
-#             }
-#         return self.result.info
+    def summary(self):
+        """
+        Return the summary data of the progress key
+        :return: dict
+        """
+        # read the latest from the cache
+        self.load()
+        return self.data['summary']

@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
 settings for travis (travis-ci.org)
@@ -8,6 +8,7 @@ from __future__ import absolute_import
 
 from config.settings.test import *  # noqa
 
+# Travis uses a passwordless database
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -15,31 +16,48 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '5433',
     }
 }
 
-# if 'test' in sys.argv:
-#     # Skip migrations to make testing faster
-#     MIGRATION_MODULES = {
-#         'auth': None,
-#         'contenttypes': None,
-#         'default': None,
-#         'sessions': None,
-#
-#         'core': None,
-#         'profiles': None,
-#         'snippets': None,
-#         'scaffold_templates': None,
-#     }
-
 TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY")
 
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "127.0.0.1:6379",
-        'OPTIONS': {'DB': 1},
-        'TIMEOUT': 300
-    }
+# Setup the logging specific to Travis
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler'
+        },
+        'console-debug': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'runserver.log',
+        },
+        'celery': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'celery.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+        },
+        'django.db.backends': {
+            'level': 'INFO',
+            'handlers': ['file']
+        },
+        'celery': {
+            'handlers': ['celery'],
+            'level': 'DEBUG',
+        }
+    },
 }

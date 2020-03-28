@@ -1,13 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 
 import json
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase
 from rest_framework import status
 
@@ -56,8 +56,7 @@ class NoteViewTests(TestCase):
         url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        result = json.loads(response.content)
-        results = result['results']
+        results = json.loads(response.content)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0]['note_type'], 'Log')
         self.assertEqual(results[0]['user_id'], self.user.pk)

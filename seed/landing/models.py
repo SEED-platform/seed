@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import re
@@ -63,10 +63,10 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         help_text=_('shows shared buildings within search results'))
     default_organization = models.ForeignKey(
         Organization,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name='default_users',
-        on_delete=models.SET_NULL
+        related_name='default_users'
     )
     api_key = models.CharField(
         _('api key'),

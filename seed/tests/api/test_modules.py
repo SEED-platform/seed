@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime as dt
@@ -9,10 +9,9 @@ import json
 import pprint
 import time
 import uuid
-
-import requests
 from builtins import str
 
+import requests
 from seed_readingtools import (
     check_status,
     check_progress,
@@ -431,7 +430,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     result = requests.post(main_url + '/api/v2/properties/filter/',
                            headers=header,
                            params=params)
-    inventory_ids = [prop['id'] for prop in result.json()['results']]
+    inventory_ids = [prop['property_view_id'] for prop in result.json()['results']]
 
     # Apply label to properties
     print('API Function: apply_label\n')

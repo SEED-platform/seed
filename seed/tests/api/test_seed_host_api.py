@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -45,8 +45,7 @@ import time
 from subprocess import Popen
 
 import requests
-
-from seed_readingtools import check_status, setup_logger
+from seed_readingtools import check_status, setup_logger, report_memory
 from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality, export_data
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -129,10 +128,12 @@ assert (os.path.isfile(pm_map_file)), 'Missing file ' + pm_map_file
 # -- Accounts
 print('\n|-------Accounts-------|\n')
 organization_id = account(header, main_url, username, log)
+report_memory()
 
 # -- Cycles
 print('\n\n|-------Cycles-------|')
 cycle_id = cycles(header, main_url, organization_id, log)
+report_memory()
 
 # Create a dataset
 print('\n\n|-------Create Dataset-------|')
@@ -147,12 +148,14 @@ check_status(result, partmsg, log)
 
 # Get the dataset id to be used
 dataset_id = result.json()['id']
+report_memory()
 
 # Upload and test the raw building file
 print('\n|---Covered Building File---|\n')
 upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_building_file,
                   'Assessed Raw',
                   raw_map_file, log)
+report_memory()
 
 # Upload and test the portfolio manager file
 # print ('\n|---Portfolio Manager File---|\n')
@@ -161,19 +164,24 @@ upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, raw_b
 
 # Data quality
 print('\n|---Data Quality---|\n')
+# Add in a temp exit code to trigger an error for testing
 data_quality(header, main_url, organization_id, log)
+report_memory()
 
 # -- Labels
 print('\n\n|-------Labels-------|')
 labels(header, main_url, organization_id, cycle_id, log)
+report_memory()
 
 # Export dataset
 print('\n|---Export Dataset---|\n')
 export_data(header, main_url, organization_id, cycle_id, log)
+report_memory()
 
 # Delete dataset
 print('\n|---Delete Dataset---|\n')
 delete_set(header, main_url, organization_id, dataset_id, log)
+report_memory()
 
 time2 = dt.datetime.now()
 diff = time2 - time1

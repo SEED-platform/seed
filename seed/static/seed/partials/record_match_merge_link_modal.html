@@ -1,0 +1,32 @@
+<div class="modal-header">
+    <h4 ng-if="::inventory_type === 'properties'" class="modal-title">{$:: headers.properties | translate $}</h4>
+    <h4 ng-if="::inventory_type === 'taxlots'" class="modal-title">{$:: headers.taxlots | translate $}</h4>
+</div>
+
+<div class="modal-body row">
+    <div class="col-sm-12">
+        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#help-text" ng-click=changeHelpBtnText(helpBtnText)>{$ helpBtnText $}</button>
+    </div>
+</div>
+
+<div class="collapse" id="help-text">
+    <div class="modal-body row">
+        <div class="col-sm-12" translate>MERGE_IN_CYCLE_MATCHES</div>
+        <div class="col-sm-12" translate>LINK_OUT_CYCLE_MATCHES</div>
+        <div class="col-sm-12" translate>MERGE_MULTIPLE_IN_CYCLE_MATCHES</div>
+    </div>
+    <div class="modal-body row">
+        <div class="col-sm-12" translate>LISTING_ORG_MATCHING_CRITERIA</div>
+        <ul>
+          <li ng-repeat="col_name in matching_criteria_columns">{$:: col_name $}</li>
+        </ul>
+    </div>
+</div>
+
+<div class="modal-body row" style="padding-top: 0px;">
+    <div class="col-sm-12" translate>CONTINUE_QUESTION</div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="close()" autofocus translate>Confirm</button>
+</div>

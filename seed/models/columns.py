@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -53,10 +53,8 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties
     # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
-        'created',
         'hash_object',
         'normalized_address',
-        'updated',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -167,6 +165,7 @@ class Column(models.Model):
         'BooleanField': 'boolean',
         'JSONField': 'string',
         'PolygonField': 'geometry',
+        'PointField': 'geometry',
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -332,28 +331,28 @@ class Column(models.Model):
             # 'type': 'boolean',
         }, {
             'column_name': 'updated',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'updated',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
@@ -564,7 +563,7 @@ class Column(models.Model):
             'data_type': 'string',
         }
     ]
-    organization = models.ForeignKey(SuperOrganization, blank=True, null=True)
+    organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
     # name of the table which the column name applies, if the column name
     # is a db field. Options now are only PropertyState and TaxLotState
@@ -577,11 +576,14 @@ class Column(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
-    unit = models.ForeignKey(Unit, blank=True, null=True)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
     is_matching_criteria = models.BooleanField(default=False)
-    import_file = models.ForeignKey('data_importer.ImportFile', blank=True, null=True)
+    import_file = models.ForeignKey('data_importer.ImportFile', on_delete=models.CASCADE, blank=True, null=True)
     units_pint = models.CharField(max_length=64, blank=True, null=True)
+
+    # 0 is deactivated. Order used to construct full address.
+    geocoding_order = models.IntegerField(default=0, blank=False)
 
     shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
@@ -589,6 +591,8 @@ class Column(models.Model):
     # data, however, the user can override this on a column-by-column basis.
     merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
                                            default=COLUMN_MERGE_FAVOR_NEW)
+
+    recognize_empty = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
@@ -1108,7 +1112,7 @@ class Column(models.Model):
                 _log.error("could not find data_type for %s" % c)
                 types[c['column_name']] = ''
 
-        return {"types": types}
+        return {'types': types}
 
     @staticmethod
     def retrieve_db_fields(org_id):

@@ -18,7 +18,7 @@
     <div class="section_content_container">
         <div class="section_content container-fluid">
             <div class="content_block row" style="padding:20px 20px 10px 20px">
-                <div class="col-md-12" style="margin-bottom:10px;">
+                <div class="col-md-12">
                     <div class="row">
                         <div class="col-md-2">
                             <h2 style="font-size:18px;"><i class="fa fa-bar-chart pull-left"></i> {$:: 'Property Reports' | translate $}</h2>
@@ -51,6 +51,10 @@
                                 </div>
                             </form>
                         </div>
+                    </div> <!-- ./row -->
+
+                    <div class="row" style="padding: 20px;text-align: right;">
+                      <button type="submit" class="btn btn-primary" ng-click="open_export_modal()" ng-disabled="!chartData.chartData.length" translate>Export Chart Data</button>
                     </div> <!-- ./row -->
                 </div> <!-- ./container -->
             </div>

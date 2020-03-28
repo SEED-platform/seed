@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -11,7 +11,7 @@ import logging
 from django.db import models
 
 from seed.models.property_measures import PropertyMeasure
-from seed.models.properties import PropertyState
+from seed.models.properties import PropertyState, PropertyView
 
 _log = logging.getLogger(__name__)
 
@@ -47,10 +47,10 @@ class Scenario(models.Model):
                                           default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
-    property_state = models.ForeignKey('PropertyState', related_name='scenarios')
+    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='scenarios')
 
     # a scenario can point to a reference case scenario
-    reference_case = models.ForeignKey('Scenario', null=True)
+    reference_case = models.ForeignKey('Scenario', on_delete=models.CASCADE, null=True)
 
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)
@@ -91,11 +91,18 @@ class Scenario(models.Model):
         from seed.models.meters import Meter
 
         source_scenario = Scenario.objects.get(pk=source_scenario_id)
+        try:
+            property_ = PropertyView.objects.get(state=self.property_state).property
+        except PropertyView.DoesNotExist:
+            # Since meters are linked to a specific property, we need to ensure the
+            # property already exists
+            raise Exception('Expected PropertyState to already be associated with a Property.')
 
         for source_meter in source_scenario.meter_set.all():
             # create new meter and copy over the readings from the source_meter
             meter = Meter.objects.get(pk=source_meter.id)
             meter.pk = None
             meter.scenario_id = self.id
-            meter.copy_readings(source_meter, overlaps_possible=False)
+            meter.property = property_
             meter.save()  # save to get new id / association
+            meter.copy_readings(source_meter, overlaps_possible=False)

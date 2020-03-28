@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: admin_controller', function () {
@@ -107,7 +107,8 @@ describe('controller: admin_controller', function () {
       users_payload: {
         users: [{
           user_id: 1,
-          email: 'demo@example.com'
+          email: 'demo@example.com',
+          number_of_orgs: 2
         }]
       }
     });
@@ -149,8 +150,8 @@ describe('controller: admin_controller', function () {
 
       // act
       admin_controller_scope.org_user.add();
-      admin_controller_scope.org_user.remove_user();
-      admin_controller_scope.get_organizations_users();
+      admin_controller_scope.org_user.remove_user(admin_controller_scope.org.users[0], 1);
+      admin_controller_scope.get_organizations_users(admin_controller_scope.org);
       admin_controller_scope.$digest();
 
       // assertions

@@ -1,38 +1,11 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
-import os
-import sys
-import logging
-
-from celery.utils import LOG_LEVELS
 
 from config.settings.common import *  # noqa
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler'
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'log/test.log'
-        },
-    },
-    'loggers': {
-        # the name of the logger, if empty, then this is the default logger
-        '': {
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
-            'handlers': ['console', 'file'],
-        }
-    },
-}
+from celery.utils import LOG_LEVELS
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -53,9 +26,11 @@ DATABASES = {
     },
 }
 
+# These celery variables can be overriden by the local_untracked values
 CELERY_BROKER_BACKEND = 'memory'
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+# this celery log level is currently not overridden.
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
 # Testing
@@ -83,6 +58,24 @@ if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
 
 ALLOWED_HOSTS = ['*']
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+    },
+    'loggers': {
+        # the name of the logger, if empty, then this is the default logger
+        '': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'ERROR'),
+            'handlers': ['console', 'file'],
+        }
+    },
+}
+
 # use imp module to find the local_untracked file rather than a hard-coded path
 try:
     import imp
@@ -94,11 +87,12 @@ try:
 except BaseException:
     pass
 
+
 if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
 
 # suppress some logging -- only show warnings or greater
-logging.getLogger('faker.factory').setLevel(logging.ERROR)
-logging.disable(logging.WARNING)
+# logging.getLogger('faker.factory').setLevel(logging.ERROR)
+# logging.disable(logging.WARNING)

@@ -76,4 +76,4 @@ Compare:
          translations['INCLUDE_SHARED_TAXLOTS'] :
          translations['INCLUDE_SHARED
 
-.. _lokalise: https://lokalise.co/project/3537487659ca9b1dce98a7.36378626/?view=multi
+.. _lokalise: https://lokalise.com/project/3537487659ca9b1dce98a7.36378626/?view=multi

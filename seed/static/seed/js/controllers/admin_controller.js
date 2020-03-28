@@ -1,11 +1,12 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.admin', [])
   .controller('admin_controller', [
     '$scope',
     '$log',
+    '$uibModal',
     'user_service',
     'organization_service',
     'column_mappings_service',
@@ -16,9 +17,11 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
+    'urls',
     function (
       $scope,
       $log,
+      $uibModal,
       user_service,
       organization_service,
       column_mappings_service,
@@ -28,7 +31,8 @@ angular.module('BE.seed.controller.admin', [])
       user_profile_payload,
       users_payload,
       Notification,
-      $window
+      $window,
+      urls
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
@@ -63,18 +67,17 @@ angular.module('BE.seed.controller.admin', [])
       };
       $scope.org_form.add = function (org) {
         organization_service.add(org).then(function () {
-          $scope.org_form.invalid = false;
-          get_organizations();
-          $scope.$emit('organization_list_updated');
+          get_organizations().then(function () {
+            $scope.$emit('organization_list_updated');
+          });
           update_alert(true, 'Organization ' + org.name + ' created');
 
-        }, function (data) {
-          update_alert(false, 'error creating organization: ' + data.message);
+        }).catch(function (response) {
+          update_alert(false, 'error creating organization: ' + response.data.message);
         });
       };
       $scope.user_form.add = function (user) {
         user_service.add(user).then(function (data) {
-          $scope.user_form.invalid = false;
 
           var alert_message = 'User ' + user.email + ' created and added';
           if (data.org_created) {
@@ -88,12 +91,23 @@ angular.module('BE.seed.controller.admin', [])
           get_organizations();
           $scope.user_form.reset();
 
-        }, function (response) {
+        }).catch(function (response) {
           update_alert(false, 'error creating user: ' + response.data.message);
         });
       };
       $scope.org_form.not_ready = function () {
-        return _.isUndefined($scope.org.email);
+        return _.isUndefined($scope.org.email) || organization_exists($scope.org.name);
+      };
+
+      var organization_exists = function (name) {
+        var orgs = _.map($scope.org_user.organizations, function (org) {
+          return org.name.toLowerCase();
+        });
+        return _.includes(orgs, name.toLowerCase());
+      };
+
+      $scope.user_form.not_ready = function () {
+        return !$scope.user.organization && !$scope.user.org_name;
       };
 
       $scope.user_form.reset = function () {
@@ -120,40 +134,70 @@ angular.module('BE.seed.controller.admin', [])
       };
 
       var get_organizations = function () {
-        organization_service.get_organizations().then(process_organizations, function (response) {
+        return organization_service.get_organizations().then(process_organizations, function (response) {
           $log.log({message: 'error from data call', status: response.status, data: response.data});
           update_alert(false, 'error getting organizations: ' + response.data.message);
         });
       };
 
       $scope.get_organizations_users = function (org) {
-        organization_service.get_organization_users(org).then(function (data) {
-          $scope.org_user.users = data.users;
-        }, function (response) {
-          $log.log({message: 'error from data call', status: response.status, data: response.data});
-          update_alert(false, 'error getting organizations: ' + response.data.message);
-        });
+        if (org) {
+          organization_service.get_organization_users(org).then(function (data) {
+            $scope.org_user.users = data.users;
+          }).catch(function (response) {
+            $log.log({message: 'error from data call', status: response.status, data: response.data});
+            update_alert(false, 'error getting organizations: ' + response.data.message);
+          });
+        } else {
+          $scope.org_user.users = [];
+        }
       };
 
       $scope.org_user.add = function () {
         organization_service.add_user_to_org($scope.org_user).then(function () {
+          get_organizations().then(function () {
+            $scope.$emit('organization_list_updated');
+          });
           $scope.get_organizations_users($scope.org_user.organization);
           update_alert(true, 'user ' + $scope.org_user.user.email + ' added to organization ' + $scope.org_user.organization.name);
-        }, function (response) {
+        }).catch(function (response) {
           $log.log({message: 'error from data call', status: response.status, data: response.data});
           update_alert(false, 'error adding user to organization: ' + response.data.message);
         });
       };
 
-      $scope.org_user.remove_user = function (user_id, org_id) {
-        organization_service.remove_user(user_id, org_id).then(function () {
+      $scope.org_user.remove_user = function (user, org_id) {
+        // Only do this if the user only belongs to one org
+        if (user.number_of_orgs === 1) {
+          var modalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/delete_user_modal.html',
+            controller: 'delete_user_modal_controller',
+            resolve: {
+              user: function () {
+                return user.email;
+              }
+            }
+          });
+          modalInstance.result.then(function () {
+            confirm_remove_user(user, org_id);
+          }).catch(function () {
+            // Do nothing
+          });
+        } else {
+          confirm_remove_user(user, org_id);
+        }
+      };
+
+      function confirm_remove_user(user, org_id) {
+        organization_service.remove_user(user.user_id, org_id).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
+          get_users();
           update_alert(true, 'user removed organization');
-        }, function (response) {
+        }).catch(function (response) {
           $log.log({message: 'error from data call', status: response.status, data: response.data});
           update_alert(false, 'error removing user from organization: ' + response.data.message);
         });
-      };
+      }
 
       $scope.confirm_column_mappings_delete = function (org) {
         var yes = confirm('Are you sure you want to delete the \'' + org.name + '\' column mappings?  This will invalidate preexisting mapping review data');
@@ -195,12 +239,12 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-              org.remove_message = 'success';
-              get_organizations();
-            }, function () {
-              // Do nothing
-            },
-            org);
+                org.remove_message = 'success';
+                get_organizations();
+              }, function () {
+                // Do nothing
+              },
+              org);
           });
       };
 
@@ -224,8 +268,9 @@ angular.module('BE.seed.controller.admin', [])
                 // Reload page if deleting current org.
                 $window.location.reload();
               } else {
-                get_organizations();
-                $scope.$emit('organization_list_updated');
+                get_organizations().then(function () {
+                  $scope.$emit('organization_list_updated');
+                });
               }
             }, function () {
               // Do nothing

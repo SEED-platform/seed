@@ -1,23 +1,29 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
+
+from celery import shared_task
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.decorators import permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+
+from random import randint
+
 from rest_framework import status
 from rest_framework import viewsets, serializers
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     ROLE_OWNER,
@@ -29,7 +35,12 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import Cycle, PropertyView, TaxLotView, Column
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
+from seed.utils.match import (
+    whole_org_match_merge_link,
+    matching_criteria_column_names,
+)
 from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.cache import get_cache_raw, set_cache_raw
 
 
 def _dict_org(request, organizations):
@@ -154,6 +165,19 @@ def _get_role_from_js(role):
     return roles[role]
 
 
+def _get_match_merge_link_key(identifier):
+    return "org_match_merge_link_result__%s" % identifier
+
+
+@shared_task(serializer='pickle', ignore_result=True)
+def cache_match_merge_link_result(summary, identifier, progress_key):
+    result_key = _get_match_merge_link_key(identifier)
+    set_cache_raw(result_key, summary)
+
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.finish_with_success()
+
+
 _log = logging.getLogger(__name__)
 
 
@@ -207,6 +231,21 @@ class OrganizationUsersSerializer(serializers.Serializer):
 
 class OrganizationViewSet(viewsets.ViewSet):
     raise_exception = True
+
+    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=[]):
+        identifier = randint(100, 100000)
+        result_key = _get_match_merge_link_key(identifier)
+        set_cache_raw(result_key, {})
+
+        progress_data = ProgressData(func_name='org_match_merge_link', unique_id=identifier)
+        progress_data.delete()
+
+        whole_org_match_merge_link.apply_async(
+            args=(org_id, state_class_name, proposed_columns),
+            link=cache_match_merge_link_result.s(identifier, progress_data.key)
+        )
+
+        return progress_data.key
 
     @api_endpoint_class
     @ajax_request_class
@@ -340,7 +379,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def users(self, request, pk=None):
         """
         Retrieve all users belonging to an org.
@@ -363,10 +402,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         users = []
         for u in org.organizationuser_set.all():
             user = u.user
+
+            user_orgs = OrganizationUser.objects.filter(user=user).count()
+
             users.append({
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.last_name,
+                'number_of_orgs': user_orgs,
                 'user_id': user.pk,
                 'role': _get_js_role(u.role_level)
             })
@@ -376,10 +419,10 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['DELETE'])
+    @action(detail=True, methods=['DELETE'])
     def remove_user(self, request, pk=None):
         """
-        Removes a user from an organization.
+        Removes a user from an organization and deletes orphaned users.
         ---
         parameter_strategy: replace
         parameters:
@@ -460,14 +503,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         ou.delete()
 
         # check the user and make sure they still have a valid organization to belong to
-        if request.user.default_organization == org:
-            # find the first org and set it to that. It is okay if first_org is none.
-            # it simply means the user has no allowed organizations and will need an admin to
-            # assign them to a new organization if they want to use the account again.
-            first_org_user = OrganizationUser.objects.filter(user=user).order_by('id').first()
-            if first_org_user:
-                request.user.default_organization = first_org_user.organization
-                request.user.save()
+        user_orgs = OrganizationUser.objects.filter(user=user)
+
+        if user_orgs.count() == 0:
+            # Deactivate orphaned user
+            user.is_active = False
+            user.save()
+        elif user.default_organization == org:
+            first_org = user_orgs.order_by('id').first()
+            user.default_organization = first_org.organization
+            user.save()
 
         return JsonResponse({'status': 'success'})
 
@@ -523,7 +568,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def add_user(self, request, pk=None):
         """
         Adds an existing user to an organization.
@@ -568,7 +613,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def save_settings(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields
@@ -678,7 +723,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def query_threshold(self, request, pk=None):
         """
         Returns the "query_threshold" for an org.  Searches from
@@ -713,7 +758,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     # TODO: Shared fields structure has a "class" attribute that won't serialize
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
         Retrieves all fields marked as shared for the organization. Will only return used fields.
@@ -749,7 +794,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def sub_org(self, request, pk=None):
         """
         Creates a child org of a parent org.
@@ -810,7 +855,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def matching_criteria_columns(self, request, pk=None):
         """
         Retrieve all matching criteria columns for an org.
@@ -840,3 +885,144 @@ class OrganizationViewSet(viewsets.ViewSet):
         )
 
         return JsonResponse(matching_criteria_column_names)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def match_merge_link(self, request, pk=None):
+        """
+        Run match_merge_link for an org.
+        ---
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        inventory_type = request.data.get('inventory_type', None)
+        if inventory_type not in ['properties', 'taxlots']:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+
+        progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name)
+
+        return JsonResponse({'progress_key': progress_key})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def match_merge_link_preview(self, request, pk=None):
+        """
+        Run match_merge_link preview for an org and record type.
+        ---
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        inventory_type = request.data.get('inventory_type', None)
+        if inventory_type not in ['properties', 'taxlots']:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+
+        current_columns = matching_criteria_column_names(org.id, state_class_name)
+
+        add = set(request.data.get('add', []))
+        remove = set(request.data.get('remove', []))
+
+        provided_columns = Column.objects.filter(
+            column_name__in=add.union(remove),
+            organization_id=org.id,
+            table_name=state_class_name
+        )
+        if provided_columns.count() != (len(add) + len(remove)):
+            return JsonResponse({'status': 'error',
+                                 'message': 'Invalid column names provided.'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        proposed_columns = current_columns.union(add).difference(remove)
+
+        progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name, list(proposed_columns))
+
+        return JsonResponse({'progress_key': progress_key})
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def match_merge_link_result(self, request, pk=None):
+        try:
+            Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        identifier = request.query_params['match_merge_link_id']
+        result_key = _get_match_merge_link_key(identifier)
+
+        return JsonResponse(get_cache_raw(result_key))
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def geocoding_columns(self, request, pk=None):
+        """
+        Retrieve all geocoding columns for an org.
+        ---
+        response_serializer: OrganizationUsersSerializer
+        parameter_strategy: replace
+        parameters:
+            - name: pk
+              type: integer
+              description: Organization ID (primary key)
+              required: true
+              paramType: path
+        """
+        try:
+            org = Organization.objects.get(pk=pk)
+        except ObjectDoesNotExist:
+            return JsonResponse({'status': 'error',
+                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        geocoding_columns_qs = org.column_set.\
+            filter(geocoding_order__gt=0).\
+            order_by('geocoding_order').\
+            values('table_name', 'column_name')
+
+        geocoding_columns = {
+            'PropertyState': [],
+            'TaxLotState': [],
+        }
+
+        for col in geocoding_columns_qs:
+            geocoding_columns[col['table_name']].append(col['column_name'])
+
+        return JsonResponse(geocoding_columns)

@@ -36,6 +36,10 @@
                   <auc:IdentifierValue>PN 123</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
                 <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>UBID</auc:IdentifierLabel>
+                  <auc:IdentifierValue>86HJM8JW+XMV-1-4-1-3</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+                <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
                   <auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
                   <auc:IdentifierValue>223</auc:IdentifierValue>

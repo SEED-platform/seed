@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -28,7 +28,8 @@ from seed.models import (
     Column,
     ColumnListSetting,
     ColumnListSettingColumn,
-)
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY)
 
 OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
 
@@ -83,10 +84,10 @@ def get_all_urls(urllist, prefix=''):
     for entry in urllist:
         if hasattr(entry, 'url_patterns'):
             for url in get_all_urls(entry.url_patterns,
-                                    prefix + entry.regex.pattern):
+                                    prefix + entry.pattern.regex.pattern):
                 yield url
         else:
-            yield (prefix + entry.regex.pattern, entry.callback)
+            yield (prefix + entry.pattern.regex.pattern, entry.callback)
 
 
 # pylint: disable=global-variable-not-assigned
@@ -261,8 +262,8 @@ class ProfileIdMixin(object):
         profile_exists = ColumnListSetting.objects.filter(
             organization_id=org_id,
             id=profile_id,
-            settings_location=ColumnListSetting.VIEW_LIST,
-            inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+            settings_location=VIEW_LIST,
+            inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
             show_columns['fields'] += list(Column.objects.filter(
@@ -277,8 +278,8 @@ class ProfileIdMixin(object):
             profile = ColumnListSetting.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
-                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                settings_location=VIEW_LIST,
+                inventory_type=VIEW_LIST_PROPERTY
             )
             for col in list(ColumnListSettingColumn.objects.filter(column_list_setting_id=profile.id).values(
                     'column__column_name', 'column__is_extra_data')):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import copy
@@ -389,3 +389,57 @@ class TestPromotingProperties(DataMappingBaseTestCase):
 
         # call the mapping function from the tasks file
         map_data(self.import_file.id)
+
+
+class TestPostalCode(DataMappingBaseTestCase):
+    def setUp(self):
+        filename = getattr(self, 'filename', 'example-data-properties-postal.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
+
+    def test_postal_code_property(self):
+
+        new_mappings = copy.deepcopy(self.fake_mappings['portfolio'])
+
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
+        tasks.map_data(self.import_file.pk)
+
+        # get mapped property postal_code
+        ps = PropertyState.objects.filter(address_line_1='11 Ninth Street')[0]
+        self.assertEqual(ps.postal_code, '00340')
+
+        ps = PropertyState.objects.filter(address_line_1='20 Tenth Street')[0]
+        self.assertEqual(ps.postal_code, '00000')
+
+        ps = PropertyState.objects.filter(address_line_1='93029 Wellington Blvd')[0]
+        self.assertEqual(ps.postal_code, '00001-0002')
+
+    def test_postal_code_taxlot(self):
+
+        new_mappings = copy.deepcopy(self.fake_mappings['taxlot'])
+
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(new_mappings, self.org, self.user, self.import_file.pk)
+        tasks.map_data(self.import_file.pk)
+
+        # get mapped taxlot postal_code
+        ts = TaxLotState.objects.filter(address_line_1='35 Tenth Street').first()
+
+        if ts is None:
+            raise TypeError("Invalid Taxlot Address!")
+        self.assertEqual(ts.postal_code, '00333')
+
+        ts = TaxLotState.objects.filter(address_line_1='93030 Wellington Blvd').first()
+
+        if ts is None:
+            raise TypeError("Invalid Taxlot Address!")
+        self.assertEqual(ts.postal_code, '00000-0000')

@@ -9,7 +9,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
@@ -135,6 +135,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=self.tz_obj),
             end_time=make_aware(datetime(2018, 2, 1, 0, 0, 0), timezone=self.tz_obj),
             reading=12345,
+            conversion_factor=1.0
         )
         unsaved_meter_reading.save()
         existing_meter_reading = MeterReading.objects.get(reading=12345)
@@ -204,7 +205,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.assertEqual(meter_reading.source_unit, 'kWh (thousand Watt-hours)')
         self.assertEqual(meter_reading.conversion_factor, 3.41)
 
-    def test_the_response_contains_expected_and_actual_reading_counts_for_pm_ids(self):
+    def test_the_response_contains_expected_and_actual_reading_counts(self):
         url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
         post_params = {
             'cycle_id': self.cycle.pk,
@@ -217,6 +218,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "409483",
+                "property_id": self.property_1.id,
                 "incoming": 2,
                 "type": "Electric - Grid",
                 "successfully_imported": 2,
@@ -249,6 +251,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         expectation = [
             {
                 "source_id": "409483",
+                "property_id": self.property_1.id,
                 "type": "Electric - Grid",
                 "incoming": 1002,
                 "successfully_imported": 1000,

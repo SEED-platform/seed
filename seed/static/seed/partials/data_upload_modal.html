@@ -8,7 +8,7 @@
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
     <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
     <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
-    <h4 class="modal-title" ng-switch-when="10">{$ step_10_title|translate|titleCase $}</h4>
+    <h4 class="modal-title" ng-switch-when="10">{$:: 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
@@ -58,11 +58,6 @@
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
                 <div class="btn btn-primary upload-btn" sd-uploader sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="PortfolioManager" sourcever="1.0" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">{$:: 'Upload Portfolio Manager Data' | translate $}</div>
             </div>
         </div>
         <div class="row">
@@ -159,14 +154,18 @@
             <div class="alert alert-success">
                 <ul>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+                    <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+                    <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+                    <li ng-if="property_merges_against_existing">{$:: 'Merged properties against existing records' | translate $}: {$ property_merges_against_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_against_existing">{$:: 'Merged tax lots against existing records' | translate $}: {$ tax_lot_merges_against_existing|number:0 $}</li>
+                    <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
+                    <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
 
                     <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
                       <br>
@@ -176,9 +175,7 @@
                       <li ng-if="properties_geocoded_low_confidence">{$:: 'Unsuccessful using external service' | translate $}: {$ properties_geocoded_low_confidence|number:0 $}</li>
                       <li ng-if="properties_geocode_not_possible">{$:: 'Unsuccessful due to missing address fields' | translate $}: {$ properties_geocode_not_possible|number:0 $}</li>
                     </div>
-                    <div class="">
-                      {$ tax_lots_geocoded_manually|number:0 $}
-                    </div>
+
                     <div ng-if="tax_lots_geocoded_high_confidence || tax_lots_geocoded_low_confidence || tax_lots_geocoded_manually || tax_lots_geocode_not_possible">
                       <br>
                       <div translate>Geocoding Results for Tax Lots</div>
@@ -203,14 +200,16 @@
             <div class="alert alert-success">
                 <ul>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
-                    <li ng-if="unmatched_properties">{$:: 'New properties' | translate $}: {$ unmatched_properties|number:0 $}</li>
-                    <li ng-if="unmatched_taxlots">{$:: 'New tax lots' | translate $}: {$ unmatched_taxlots|number:0 $}</li>
-                    <li ng-if="matched_properties">{$:: 'Merged properties' | translate $}: {$ matched_properties|number:0 $}</li>
-                    <li ng-if="matched_taxlots">{$:: 'Merged tax lots' | translate $}: {$ matched_taxlots|number:0 $}</li>
-                    <li ng-if="duplicate_property_states">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ duplicate_property_states|number:0 $}</li>
-                    <li ng-if="duplicate_tax_lot_states">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ duplicate_tax_lot_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_property_states">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ duplicates_of_existing_property_states|number:0 $}</li>
-                    <li ng-if="duplicates_of_existing_taxlot_states">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ duplicates_of_existing_taxlot_states|number:0 $}</li>
+                    <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
+                    <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
+                    <li ng-if="property_merges_within_file">{$:: 'Merged properties within import file' | translate $}: {$ property_merges_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_within_file">{$:: 'Merged tax lots within import file' | translate $}: {$ tax_lot_merges_within_file|number:0 $}</li>
+                    <li ng-if="property_merges_between_existing">{$:: 'Merged properties between existing records' | translate $}: {$ property_merges_between_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_merges_between_existing">{$:: 'Merged tax lots between existing records' | translate $}: {$ tax_lot_merges_between_existing|number:0 $}</li>
+                    <li ng-if="property_duplicates_within_file">{$:: 'Ignored property duplicates within the import file' | translate $}: {$ property_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_within_file">{$:: 'Ignored tax lot duplicates within the import file' | translate $}: {$ tax_lot_duplicates_within_file|number:0 $}</li>
+                    <li ng-if="property_duplicates_against_existing">{$:: 'Ignored duplicates of existing properties' | translate $}: {$ property_duplicates_against_existing|number:0 $}</li>
+                    <li ng-if="tax_lot_duplicates_against_existing">{$:: 'Ignored duplicates of existing tax lots' | translate $}: {$ tax_lot_duplicates_against_existing|number:0 $}</li>
 
                     <div ng-if="properties_geocoded_high_confidence || properties_geocoded_low_confidence || properties_geocoded_manually || properties_geocode_not_possible">
                       <br>

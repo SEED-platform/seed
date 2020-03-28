@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -207,7 +207,7 @@ register('seed_json', CeleryDatetimeSerializer.seed_dumps,
          CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
-CELERY_ACCEPT_CONTENT = ['seed_json']
+CELERY_ACCEPT_CONTENT = ['seed_json', 'pickle']
 CELERY_TASK_SERIALIZER = 'seed_json'
 CELERY_RESULT_SERIALIZER = 'seed_json'
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
@@ -219,6 +219,7 @@ LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SERVER_EMAIL = 'info@seed-platform.org'
 PASSWORD_RESET_EMAIL = SERVER_EMAIL
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # Added By Gavin on 1/27/2014
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -271,13 +272,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS':
         'seed.utils.pagination.ResultsListPagination',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
-
 }
 
 SWAGGER_SETTINGS = {

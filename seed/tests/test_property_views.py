@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import os
@@ -12,7 +12,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
@@ -25,7 +25,10 @@ from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
+from seed.data_importer.tasks import match_buildings
+
 from seed.models import (
+    DATA_STATE_MAPPING,
     Meter,
     MeterReading,
     Property,
@@ -34,6 +37,7 @@ from seed.models import (
     TaxLotView,
     TaxLotProperty,
     Column,
+    BuildingFile,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -47,7 +51,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
     FakeColumnListSettingsFactory,
 )
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 
 COLUMNS_TO_SEND = [
@@ -63,7 +67,7 @@ COLUMNS_TO_SEND = [
 
 
 # These tests mostly use V2.1 API except for when writing back to the API for updates
-class PropertyViewTests(DeleteModelsTestCase):
+class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -132,6 +136,98 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
 
+    def test_first_lat_long_edit(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "latitude": 39.765251,
+                "longitude": -104.986138,
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        response = self.client.put(url, json.dumps(new_data), content_type='application/json')
+        data = json.loads(response.content)
+        self.assertEqual(data['status'], 'success')
+
+        response = self.client.get(url, content_type='application/json')
+        data = json.loads(response.content)
+
+        self.assertEqual(data['status'], 'success')
+
+        self.assertIsNotNone(data['state']['long_lat'])
+        self.assertIsNotNone(data['state']['geocoding_confidence'])
+
+    def test_merged_indicators_provided_on_filter_endpoint(self):
+        _import_record, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
+
+        base_details = {
+            'address_line_1': '123 Match Street',
+            'import_file_id': import_file_1.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file_1 mapping done so that record is "created for users to view".
+        import_file_1.mapping_done = True
+        import_file_1.save()
+        match_buildings(import_file_1.id)
+
+        _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertFalse(data['results'][0]['merged_indicator'])
+
+        # make sure merged_indicator is True when merge occurs
+        base_details['city'] = 'Denver'
+        base_details['import_file_id'] = import_file_2.id
+        self.property_state_factory.get_property_state(**base_details)
+
+        # set import_file_2 mapping done so that match merging can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        match_buildings(import_file_2.id)
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        self.assertTrue(data['results'][0]['merged_indicator'])
+
+        # Create pairings and check if paired object has indicator as well
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        taxlot = taxlot_factory.get_taxlot()
+        taxlot_state = taxlot_state_factory.get_taxlot_state()
+        taxlot_view = TaxLotView.objects.create(taxlot=taxlot, cycle=self.cycle, state=taxlot_state)
+
+        # attach pairing to one and only property_view
+        TaxLotProperty(
+            primary=True,
+            cycle_id=self.cycle.id,
+            property_view_id=PropertyView.objects.get().id,
+            taxlot_view_id=taxlot_view.id
+        ).save()
+
+        url = reverse('api:v2:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
+        response = self.client.post(url)
+        data = json.loads(response.content)
+
+        related = data['results'][0]['related'][0]
+
+        self.assertTrue('merged_indicator' in related)
+        self.assertFalse(related['merged_indicator'])
+
     def test_list_properties_with_profile_id(self):
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
         prprty = self.property_factory.get_property()
@@ -156,6 +252,123 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(result['state']['address_line_1'], state.address_line_1)
         self.assertEqual(result['state']['extra_data']['field_1'], 'value_1')
         self.assertFalse(result['state'].get('city', None))
+
+    def test_properties_cycles_list(self):
+        # Create Property set in cycle 1
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
+        prprty_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=state_2
+        )
+
+        # save all the columns in the state to the database so we can setup column list settings
+        Column.save_column_names(state)
+        # get the columnlistsetting (default) for all columns
+        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+
+        post_params = json.dumps({
+            'organization_id': self.org.pk,
+            'profile_id': columnlistsetting.id,
+            'cycle_ids': [self.cycle.id, cycle_2.id]
+        })
+        url = reverse('api:v2:properties-cycles')
+        response = self.client.post(url, post_params, content_type='application/json')
+        data = response.json()
+
+        address_line_1_key = 'address_line_1_' + str(columnlistsetting.columns.get(column_name='address_line_1').id)
+        field_1_key = 'field_1_' + str(columnlistsetting.columns.get(column_name='field_1').id)
+
+        self.assertEqual(len(data), 2)
+
+        result_1 = data[str(self.cycle.id)]
+        self.assertEqual(result_1[0][address_line_1_key], state.address_line_1)
+        self.assertEqual(result_1[0][field_1_key], 'value_1')
+        self.assertEqual(result_1[0]['id'], prprty.id)
+
+        result_2 = data[str(cycle_2.id)]
+        self.assertEqual(result_2[0][address_line_1_key], state_2.address_line_1)
+        self.assertEqual(result_2[0][field_1_key], 'value_2')
+        self.assertEqual(result_2[0]['id'], prprty_2.id)
+
+    def test_property_match_merge_link(self):
+        base_details = {
+            'pm_property_id': '123MatchID',
+            'no_default_data': False,
+        }
+
+        ps_1 = self.property_state_factory.get_property_state(**base_details)
+        prprty = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=ps_1
+        )
+
+        cycle_2 = self.cycle_factory.get_cycle(
+            start=datetime(2018, 10, 10, tzinfo=get_current_timezone()))
+        ps_2 = self.property_state_factory.get_property_state(**base_details)
+        prprty_2 = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty_2, cycle=cycle_2, state=ps_2
+        )
+
+        url = reverse('api:v2:properties-match-merge-link', args=[view_1.id])
+        response = self.client.post(url, content_type='application/json')
+        summary = response.json()
+
+        expected_summary = {
+            'view_id': None,
+            'match_merged_count': 0,
+            'match_link_count': 1,
+        }
+        self.assertEqual(expected_summary, summary)
+
+        refreshed_view_1 = PropertyView.objects.get(state_id=ps_1.id)
+        view_2 = PropertyView.objects.get(state_id=ps_2.id)
+        self.assertEqual(refreshed_view_1.property_id, view_2.property_id)
+
+    def test_get_links_for_a_single_property(self):
+        # Create 2 linked property sets
+        state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
+        prprty = self.property_factory.get_property()
+        view_1 = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        later_cycle = self.cycle_factory.get_cycle(
+            start=datetime(2100, 10, 10, tzinfo=get_current_timezone()))
+        state_2 = self.property_state_factory.get_property_state(extra_data={"field_1": "value_2"})
+        view_2 = PropertyView.objects.create(
+            property=prprty, cycle=later_cycle, state=state_2
+        )
+
+        url = reverse('api:v2:properties-links', args=[view_1.id])
+        post_params = json.dumps({
+            'organization_id': self.org.pk
+        })
+        response = self.client.post(url, post_params, content_type='application/json')
+        data = response.json()['data']
+
+        self.assertEqual(len(data), 2)
+
+        # results should be ordered by descending cycle start date
+        result_1 = data[1]
+        self.assertEqual(result_1['address_line_1'], state.address_line_1)
+        self.assertEqual(result_1['extra_data']['field_1'], 'value_1')
+        self.assertEqual(result_1['cycle_id'], self.cycle.id)
+        self.assertEqual(result_1['view_id'], view_1.id)
+
+        result_2 = data[0]
+        self.assertEqual(result_2['address_line_1'], state_2.address_line_1)
+        self.assertEqual(result_2['extra_data']['field_1'], 'value_2')
+        self.assertEqual(result_2['cycle_id'], later_cycle.id)
+        self.assertEqual(result_2['view_id'], view_2.id)
 
     def test_search_identifier(self):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
@@ -280,7 +493,7 @@ class PropertyViewTests(DeleteModelsTestCase):
         self.assertEqual(b'false', false_result.content)
 
 
-class PropertyMergeViewTests(DeleteModelsTestCase):
+class PropertyMergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -645,8 +858,81 @@ class PropertyMergeViewTests(DeleteModelsTestCase):
 
         self.assertEqual(PropertyView.objects.filter(property_id=persisting_property_id).count(), 1)
 
+    def test_properties_merge_combining_bsync_and_pm_sources(self):
+        # -- SETUP
+        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # This file has multiple tabs
+        pm_filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
+        pm_import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=pm_filename,
+            file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
+            cycle=self.cycle,
+        )
+        pm_import_url = reverse("api:v2:import_files-save-raw-data", args=[pm_import_file.id])
+        pm_import_post_params = {
+            'cycle_id': self.cycle.pk,
+            'organization_id': self.org.pk,
+        }
+        self.client.post(pm_import_url, pm_import_post_params)
 
-class PropertyUnmergeViewTests(DeleteModelsTestCase):
+        # For second Property, add BuildingSync file containing 6 meters
+        bs_filename = "buildingsync_v2_0_bricr_workflow.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/../building_sync/tests/data/" + bs_filename
+        bs_file = open(filepath, 'rb')
+        uploaded_file = SimpleUploadedFile(bs_file.name, bs_file.read())
+        bs_buildingfile = BuildingFile.objects.create(
+            file=uploaded_file,
+            filename=bs_filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+        p_status, bs_property_state, _, _ = bs_buildingfile.process(self.org.pk, self.cycle)
+        self.assertTrue(p_status)
+
+        # verify we're starting with the assumed number of meters
+        self.assertEqual(2, PropertyView.objects.get(state=self.state_1).property.meters.count())
+        self.assertEqual(6, PropertyView.objects.get(state=bs_property_state).property.meters.count())
+
+        # -- ACT
+        # Merge PropertyStates
+        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        post_params = json.dumps({
+            'state_ids': [self.state_1.pk, bs_property_state.pk]  # priority given to bs_property_state
+        })
+        self.client.post(url, post_params, content_type='application/json')
+
+        # -- ASSERT
+        # There should only be _two_ PropertyViews
+        #  - the merged property view
+        #  - our setUp method creates an additional one that's we don't touch in this test)
+        self.assertEqual(PropertyView.objects.count(), 2)
+
+        # get the merged property view by excluding the state we didn't touch (only one other view should exist)
+        merged_property_view = PropertyView.objects.all().exclude(state__pk=self.state_2.pk)
+        self.assertEqual(merged_property_view.count(), 1)
+        merged_property_view = merged_property_view[0]
+
+        meters = merged_property_view.property.meters
+
+        self.assertEqual(meters.count(), 8)  # 2 from PM, 6 from BS
+        self.assertEqual(meters.filter(type=Meter.ELECTRICITY_GRID, source=Meter.BUILDINGSYNC).count(), 3)
+        self.assertEqual(meters.filter(type=Meter.NATURAL_GAS, source=Meter.BUILDINGSYNC).count(), 3)
+        self.assertEqual(meters.filter(type=Meter.ELECTRICITY_GRID, source=Meter.PORTFOLIO_MANAGER).count(), 1)
+        self.assertEqual(meters.filter(type=Meter.NATURAL_GAS, source=Meter.PORTFOLIO_MANAGER).count(), 1)
+
+        # The BuildingSync data should retain their scenario information
+        scenarios = merged_property_view.state.scenarios
+        self.assertEqual(scenarios.count(), 3)
+
+        # Old meters deleted, so only merged meters exist
+        self.assertEqual(Meter.objects.count(), 8)
+        # Combined total of 76 readings
+        self.assertEqual(MeterReading.objects.count(), 76)
+
+
+class PropertyUnmergeViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

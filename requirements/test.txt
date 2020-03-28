@@ -2,27 +2,28 @@
 -r base.txt
 
 # general
-autopep8==1.4
-coverage==4.5.2
-coveralls==1.6.0
-tox==2.9.1
+autopep8==1.4.4
+coverage==4.5.4
+coveralls==1.9.2
+tox==3.14.3
+psutil==5.6.7
 
 # python testing
 django-nose==1.4.6
-Faker==0.9.1
+Faker==0.9.3
 mock==2.0.0
 nose-exclude==0.5.0
 coveralls-merge==0.0.3
 vcrpy==2.0.1
 
 # static code analysis
-flake8==3.7.7
+flake8==3.7.9
 pycodestyle==2.5.0
 
 # documentation and spelling
-Sphinx==1.8.1
-sphinxcontrib-spelling==4.2.0
+Sphinx==2.3.1
+sphinxcontrib-spelling==4.3.0
 sphinx_rtd_theme==0.4.3
 
 # For running the server
-uWSGI==2.0.17.1
+uWSGI==2.0.18

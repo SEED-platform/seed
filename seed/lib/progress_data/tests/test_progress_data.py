@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -27,6 +27,7 @@ class TestProgressData(TestCase):
         data_eql = {
             'status': 'not-started',
             'status_message': '',
+            'summary': None,
             'stacktrace': None,
             'func_name': 'test_func',
             'progress_key': ':1:SEED:test_func:PROG:abc123',
@@ -74,3 +75,22 @@ class TestProgressData(TestCase):
 
         self.assertEqual(pd.result()['total'], 42)
         self.assertEqual(pd.result()['status_message'], 'Stepping')
+
+        # if we call step again, then the status message should not change
+        pd.step()
+        self.assertEqual(pd.result()['status_message'], 'Stepping')
+
+        # Now passing in empty string will reset
+        pd.step('')
+        self.assertEqual(pd.result()['status_message'], '')
+
+    def test_summary(self):
+        pd = ProgressData(func_name='test_func_6', unique_id='pokemon')
+        self.assertIsNone(pd.summary())
+
+        new_summary = {"Values": ["As", "A", "List"]}
+        pd.update_summary(new_summary)
+        self.assertEqual(pd.summary(), new_summary)
+
+        pd.step(new_summary=4815162342)
+        self.assertEqual(pd.summary(), 4815162342)
