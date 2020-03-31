@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.mapping', [])
     '$translate',
     'i18nService', // from ui-grid
     'simple_modal_service',
+    '$state',
     function (
       $scope,
       $log,
@@ -45,6 +46,7 @@ angular.module('BE.seed.controller.mapping', [])
       $translate,
       i18nService,
       simple_modal_service,
+      $state,
     ) {
       // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
       // ui-grid's i18nService
@@ -445,6 +447,10 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
           $scope.hasMappedProperties = $scope.mappedData.properties.length > 0;
+          if ($scope.hasMappedProperties === false) {
+            $scope.backToMapping()
+            return;
+          }
           var data = $scope.mappedData;
 
           var gridOptions = {

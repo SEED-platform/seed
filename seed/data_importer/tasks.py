@@ -710,10 +710,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     if key == "bounding_box":  # capture bounding_box GIS field on raw record
                         raw_property.bounding_box = v
                     elif isinstance(v, basestring):
-                        try:
-                            new_chunk[key] = unidecode(v)
-                        except Exception:
-                            new_chunk[key] = v.decode('ASCII')
+                        new_chunk[key] = unidecode(v)
                     elif isinstance(v, (dt.datetime, dt.date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
