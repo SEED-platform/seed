@@ -38,6 +38,7 @@ from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
+from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -63,7 +64,8 @@ from seed.models import (
     AUDIT_USER_EDIT,
     TaxLotProperty,
     SEED_DATA_SOURCES,
-    PORTFOLIO_RAW)
+    PORTFOLIO_RAW,
+    BUILDINGSYNC_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
 from seed.utils.geocode import MapQuestAPIKeyError
@@ -1267,6 +1269,8 @@ class ImportFileViewSet(viewsets.ViewSet):
         property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
         taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
+        data_source_map = dict(SEED_DATA_SOURCES)
+
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
         if import_file.from_portfolio_manager:
@@ -1280,6 +1284,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                 default_mappings=pm_mappings,
                 thresh=80
             )
+        elif data_source_map.get(import_file.source_type) == BUILDINGSYNC_RAW:
+            suggested_mappings = xml_mapper.build_column_mapping(import_file)
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
