@@ -547,6 +547,46 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'mapping_xml',
+        url: '/data/mapping_xml/{importfile_id:int}',
+        templateUrl: static_url + 'seed/partials/mapping_xml.html',
+        controller: 'mapping_controller',
+        resolve: {
+          import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return dataset_service.get_import_file(importfile_id);
+          }],
+          suggested_mappings_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_column_mapping_suggestions(importfile_id);
+          }],
+          raw_columns_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_raw_columns(importfile_id);
+          }],
+          first_five_rows_payload: ['mapping_service', '$stateParams', function (mapping_service, $stateParams) {
+            var importfile_id = $stateParams.importfile_id;
+            return mapping_service.get_first_five_rows(importfile_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
         name: 'pairing',
         url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/pairing.html',

@@ -3,6 +3,7 @@
 </div>
 <div class="modal-body">
     <p>{$ modalOptions.bodyText | translate $}</p>
+    <pre ng-if="modalOptions.bodyJson" class="text-wrap pre-scrollable">{$ modalOptions.bodyJson | json $}</pre>
 </div>
 <div class="modal-footer">
     <button type="button"
