@@ -1,5 +1,5 @@
 <!-- edited with XMLSpy v2016 rel. 2 sp1 (x64) (http://www.altova.com) by NREL (NREL) -->
-<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/1c73127d389b779c6b74029be72c6e9ff3187113/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v2.0-pr1/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <auc:Facilities>
     <auc:Facility>
       <auc:Sites>
