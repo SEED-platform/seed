@@ -28,7 +28,6 @@ from django_extensions.db.models import TimeStampedModel
 from config.utils import de_camel_case
 from seed.data_importer.managers import NotDeletedManager
 from seed.lib.mcm.reader import ROW_DELIMITER
-from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.utils.cache import (
     set_cache_raw, set_cache_state, get_cache, get_cache_raw,
@@ -785,9 +784,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
 
     @property
     def first_row_columns(self):
-        if self.from_buildingsync:
-            return list(xml_mapper.build_column_mapping(self).keys())
-
         if not hasattr(self, '_first_row_columns'):
             if self.cached_first_row:
                 self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)

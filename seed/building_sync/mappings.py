@@ -4,14 +4,49 @@ from datetime import datetime
 import pytz
 from lxml import etree
 
-from seed.models import Meter
-from seed.models.measures import _snake_case
 
 BUILDINGSYNC_URI = 'http://buildingsync.net/schemas/bedes-auc/2019'
 NAMESPACES = {
     'auc': BUILDINGSYNC_URI
 }
 etree.register_namespace('auc', BUILDINGSYNC_URI)
+
+
+#
+# -- GENERAL functions
+#
+def table_mapping_to_buildingsync_mapping(table_mapping):
+    """Converts a mapping returned from ColumnMapping.get_column_mappings_by_table_name
+    into the structure expected by the BuildingSync functions
+
+    :param table_mapping: dict, a table mapping
+    :return: dict, a buildingsync style mapping
+    """
+    # expected structure of table_mapping:
+    # {
+    #   'PropertyState': {
+    #     <full xpath>: ('PropertyState', <db column>),
+    #     ....
+    #   }
+    # }
+
+    # NOTE: currently only looks at property state mappings
+    property_state_mapping = table_mapping['PropertyState']
+    property_base_xpath = '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site'
+    bsync_property_mapping = {}
+    for full_xpath, mapping_info in property_state_mapping.items():
+        db_column = mapping_info[1]
+        sub_xpath = full_xpath.replace(property_base_xpath, '').lstrip('/')
+        bsync_property_mapping[db_column] = {
+            'xpath': sub_xpath
+        }
+
+    return {
+        'property': {
+            'xpath': property_base_xpath,
+            'properties': bsync_property_mapping
+        }
+    }
 
 
 #
@@ -110,12 +145,32 @@ def merge_mappings(base_mapping, custom_mapping):
     return merged_mappings
 
 
+def xpath_to_column_map(mapping):
+    """creates a reverse mapping with xpaths (full path) as the keys and column
+    names as the values
+
+    :param mapping: dict, a mapping
+    """
+    # NOTE: current implementation only returns information for property (no meters, scenarios, etc)
+    base_path = mapping['property']['xpath'].rstrip('/')
+    result = {}
+    for col_name, col_info in mapping['property']['properties'].items():
+        sub_path = col_info['xpath'].replace('./', '')
+        full_path = f'{base_path}/{sub_path}'
+        result[full_path] = col_name
+
+    return result
+
+
 def to_energy_type(energy_type):
     """converts an energy type from BuildingSync into one allowed by SEED
 
     :param energy_type: string, building sync energy type
     :return: string
     """
+    # avoid circular dependency
+    from seed.models import Meter
+
     energy_name = "Electric - Grid" if energy_type == 'Electricity' else energy_type
     energy_name = energy_name.lower()
     for energy_pair in Meter.ENERGY_TYPES:
@@ -152,6 +207,9 @@ def to_datetime(value):
 
 
 def snake_case(value):
+    # avoid circular dependency
+    from seed.models.measures import _snake_case
+
     return _snake_case(value)
 
 

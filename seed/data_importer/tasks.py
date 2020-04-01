@@ -455,7 +455,21 @@ def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
-    # TODO: get the custom mapping for the organization
+    # get all the table_mappings that exist for the organization
+    table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+
+    # Remove any of the mappings that are not in the current list of raw columns
+    list_of_raw_columns = import_file.first_row_columns
+    for table, mappings in table_mappings.copy().items():
+        for raw_column_name in mappings.copy():
+            if raw_column_name not in list_of_raw_columns:
+                del table_mappings[table][raw_column_name]
+
+    # check that the dictionaries are not empty, if empty, then delete.
+    for table in table_mappings.copy():
+        if not table_mappings[table]:
+            del table_mappings[table]
+
     try:
         with transaction.atomic():
             raw_property_states = PropertyState.objects.filter(id__in=ids).only('extra_data').iterator()
@@ -475,7 +489,10 @@ def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
                     file_type=file_type,
                 )
 
-                p_status, property_state, property_view, messages = building_file.process(org.id, import_file.cycle)
+                p_status, property_state, property_view, messages = building_file.process(
+                    org.id,
+                    import_file.cycle,
+                    table_mappings=table_mappings)
                 if not p_status or len(messages.get('errors', [])) > 0:
                     # failed to create the property, save the messages and skip this file
                     progress_data.add_file_info(os.path.basename(filename), messages)

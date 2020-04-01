@@ -82,7 +82,7 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def process(self, organization_id, cycle, property_view=None):
+    def process(self, organization_id, cycle, property_view=None, table_mappings=None):
         """
         Process the building file that was uploaded and create the correct models for the object
 
@@ -104,7 +104,12 @@ class BuildingFile(models.Model):
             parser.import_file(self.file.path)
         except Exception as e:
             return False, None, None, {'errors': [str(e)]}
-        data, messages = parser.process()
+
+        kwargs = {}
+        if self.file_type == 'BuildingSync':
+            kwargs = {'table_mappings': table_mappings}
+
+        data, messages = parser.process(**kwargs)
 
         if len(messages['errors']) > 0 or not data:
             return False, None, None, messages

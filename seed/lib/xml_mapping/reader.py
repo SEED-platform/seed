@@ -5,8 +5,12 @@
 :author
 """
 
+from io import StringIO
 import os
 import zipfile
+
+from seed.building_sync.building_sync import BuildingSync
+from seed.building_sync.mappings import xpath_to_column_map
 
 
 class BuildingSyncParser(object):
@@ -31,9 +35,16 @@ class BuildingSyncParser(object):
         else:
             raise Exception(f'Unsupported file type for BuildingSync {file_extension}')
 
-        self.first_five_rows = [d['_xml'] for d in self.data[1:6]]
+        self.first_five_rows = [d['_xml'] for d in self.data[:5]]
 
-        self.headers = []
+        # get the mapping for the first xml data
+        bs = BuildingSync()
+        # TODO: once bsync files on SEED are converted to valid files, remove
+        # require_version arg or set to True
+        bs.import_file(StringIO(self.first_five_rows[0]), require_version=False)
+        base_mapping = bs.get_base_mapping()
+        xpath_col_dict = xpath_to_column_map(base_mapping)
+        self.headers = list(xpath_col_dict.keys())
 
     def num_columns(self):
         return 0

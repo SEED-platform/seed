@@ -5,6 +5,7 @@
 :author nicholas.long@nrel.gov
 """
 
+import copy
 import logging
 import os
 import re
@@ -24,7 +25,8 @@ from seed.building_sync.mappings import (
     NAMESPACES,
     merge_mappings,
     apply_mapping,
-    update_tree
+    update_tree,
+    table_mapping_to_buildingsync_mapping,
 )
 
 _log = logging.getLogger(__name__)
@@ -44,24 +46,23 @@ class BuildingSync(object):
     }
 
     def __init__(self):
-        self.filename = None
         self.element_tree = None
         self.version = None
 
-    def import_file(self, filename, require_version=True):
+    def import_file(self, source, require_version=True):
         """imports BuildingSync file
 
-        :param filename: string, path to file
+        :param source: string | object, path to file or a file like object
         :param require_version: bool, if true it raises an exception if unable to find version info
         """
-        self.filename = filename
-
-        if not os.path.isfile(filename):
-            raise Exception("File not found: {}".format(filename))
-
         # save element tree
-        with open(filename) as f:
-            self.element_tree = etree.parse(f)
+        if isinstance(source, str):
+            if not os.path.isfile(source):
+                raise Exception("File not found: {}".format(source))
+            with open(source) as f:
+                self.element_tree = etree.parse(f)
+        else:
+            self.element_tree = etree.parse(source)
 
         # TODO: once xml translator has been implemented and used to convert
         # files from 2.0-pr1 to 2.0, make sure all calls to import_file either don't
@@ -273,10 +274,10 @@ class BuildingSync(object):
 
         return seed_result, messages
 
-    def process(self, custom_mapping=None):
+    def process(self, table_mappings=None):
         """Process the BuildingSync file based on the process structure.
 
-        :param process_struct: dict, user-defined structure on how to extract data from file and save into dict
+        :param table_mapping: dict, a table_mapping structure from ColumnMapping.get_column_mappings_by_table_name()
         :return: list, [dict, dict], [results, dict of errors and warnings]
         """
         # API call to BuildingSync Selection Tool on other server for appropriate use case
@@ -284,6 +285,11 @@ class BuildingSync(object):
         base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
         if base_mapping is None:
             raise Exception(f'Version of BuildingSync object is not supported: "{self.version}"')
+
+        # convert the table_mappings into a buildingsync mapping
+        custom_mapping = None
+        if table_mappings is not None:
+            custom_mapping = table_mapping_to_buildingsync_mapping(table_mappings)
 
         return self._process_struct(base_mapping, custom_mapping)
 
@@ -317,3 +323,6 @@ class BuildingSync(object):
             return default
 
         raise Exception('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')
+
+    def get_base_mapping(self):
+        return copy.deepcopy(self.VERSION_MAPPINGS_DICT[self.version])
