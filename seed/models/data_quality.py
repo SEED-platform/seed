@@ -135,7 +135,7 @@ class Rule(models.Model):
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_INCLUDE,
+            'condition': RULE_INCLUDE,
         }, {
             'table_name': 'PropertyState',
             'field': 'pm_property_id',
@@ -143,28 +143,28 @@ class Rule(models.Model):
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'custom_id_1',
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'TaxLotState',
             'field': 'jurisdiction_tax_lot_id',
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'TaxLotState',
             'field': 'address_line_1',
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'conditioned_floor_area',
@@ -174,7 +174,7 @@ class Rule(models.Model):
             'max': 7000000,
             'severity': SEVERITY_ERROR,
             'units': 'ft**2',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'conditioned_floor_area',
@@ -183,7 +183,7 @@ class Rule(models.Model):
             'min': 100,
             'severity': SEVERITY_WARNING,
             'units': 'ft**2',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'energy_score',
@@ -192,7 +192,7 @@ class Rule(models.Model):
             'min': 0,
             'max': 100,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'energy_score',
@@ -200,7 +200,7 @@ class Rule(models.Model):
             'rule_type': RULE_TYPE_DEFAULT,
             'min': 10,
             'severity': SEVERITY_WARNING,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'generation_date',
@@ -209,7 +209,7 @@ class Rule(models.Model):
             'min': 18890101,
             'max': 20201231,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'gross_floor_area',
@@ -219,7 +219,7 @@ class Rule(models.Model):
             'max': 7000000,
             'severity': SEVERITY_ERROR,
             'units': 'ft**2',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'occupied_floor_area',
@@ -229,7 +229,7 @@ class Rule(models.Model):
             'max': 7000000,
             'severity': SEVERITY_ERROR,
             'units': 'ft**2',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'recent_sale_date',
@@ -238,7 +238,7 @@ class Rule(models.Model):
             'min': 18890101,
             'max': 20201231,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'release_date',
@@ -247,7 +247,7 @@ class Rule(models.Model):
             'min': 18890101,
             'max': 20201231,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui',
@@ -266,7 +266,7 @@ class Rule(models.Model):
             'min': 10,
             'severity': SEVERITY_WARNING,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui_weather_normalized',
@@ -276,7 +276,7 @@ class Rule(models.Model):
             'max': 1000,
             'severity': SEVERITY_ERROR,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui',
@@ -286,7 +286,7 @@ class Rule(models.Model):
             'max': 1000,
             'severity': SEVERITY_ERROR,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui',
@@ -295,7 +295,7 @@ class Rule(models.Model):
             'min': 10,
             'severity': SEVERITY_WARNING,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'source_eui_weather_normalized',
@@ -305,7 +305,7 @@ class Rule(models.Model):
             'max': 1000,
             'severity': SEVERITY_ERROR,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'year_built',
@@ -314,7 +314,7 @@ class Rule(models.Model):
             'min': 1700,
             'max': 2019,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'year_ending',
@@ -323,7 +323,7 @@ class Rule(models.Model):
             'min': 18890101,
             'max': 20201231,
             'severity': SEVERITY_ERROR,
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }
     ]
     name = models.CharField(max_length=255, blank=True)
