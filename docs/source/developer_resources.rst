@@ -234,12 +234,44 @@ user:
 
 .. code-block:: console
 
+    createuser -U seed seeduser
+
     psql -c 'DROP DATABASE "seeddb"'
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER ROLE seeduser SUPERUSER;
-    psql -d seeddb -c "CREATE EXTENSION postgis;"
+    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
+    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+
     ./manage.py migrate
+    ./manage.py create_default_user \
+        --username=demo@seed-platform.org \
+        --password=password \
+        --organization=testorg
+
+Restoring a Database Dump
+-------------------------
+
+.. code-block:: console
+
+    psql -c 'DROP DATABASE "seeddb"'
+    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seed";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seed";'
+    psql -c 'ALTER USER "seed" CREATEDB CREATEROLE SUPERUSER;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
+
+    # restore a previous database dump
+    pg_restore -U seed -d seedprod seedv2_20191203_000002.dump
+
+    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+
+    ./manage.py migrate
+
+    # if needed add a user to the database
     ./manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
