@@ -1269,7 +1269,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
         taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
-        data_source_map = dict(SEED_DATA_SOURCES)
+        data_source_map = {name: id for id, name in SEED_DATA_SOURCES}
 
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
