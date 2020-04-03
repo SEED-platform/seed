@@ -4,6 +4,10 @@
 # users already exist in SEED or Postgres then they will not be recreated and their passwords
 # will not be updated.
 
+# Version 2020-04-03: Convert to using docker-compose. Docker stack/swarm was causing issues with DNS resolution
+#                     within the container. If you are currently user docker swarm, them remove your stack
+#                     `docker stack rm seed` and then redeploy with this script.
+
 : << 'arguments'
 There is only one optional argument and that is the name of the docker compose file to load.
 For example: ./deploy.sh docker-compose.local.oep.yml
@@ -130,13 +134,15 @@ docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
 docker push 127.0.0.1:5000/oep
 
+echo "Stopping and removing running containers (if existing)"
+docker-compose stop
+docker-compose rm -f  # remove the running containers
 
 echo "Deploying"
-# check if the stack is running, and if so then shut it down
-docker stack deploy seed --compose-file=${DOCKER_COMPOSE_FILE} &
+docker-compose -f ${DOCKER_COMPOSE_FILE} -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
-echo 'SEED stack redeployed'
+echo "SEED stack redeployed"
 
 echo "Waiting for webserver to respond"
 until curl -sf --output /dev/null "127.0.0.1"; do echo -n "."; sleep 1; done
