@@ -101,11 +101,10 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
 
 .. note:: Make sure to have the seed-backups in your path, otherwise the db-postgres container will not launch.
 
-* Launch the container user docker-compose first (before swarm)
+* Launch the project
 
 .. code-block:: console
 
-    docker swarm init
     cd <checkout dir>
     ./deploy.sh
 

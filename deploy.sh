@@ -139,7 +139,7 @@ docker-compose stop
 docker-compose rm -f  # remove the running containers
 
 echo "Deploying"
-docker-compose -f ${DOCKER_COMPOSE_FILE} -d
+docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
 echo "SEED stack redeployed"
