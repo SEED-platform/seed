@@ -96,18 +96,19 @@ else
     echo "Using passed docker-compose file of ${DOCKER_COMPOSE_FILE}"
 fi
 
+# Swarm is needed for the registry
+if docker node ls > /dev/null 2>&1; then
+  echo "Swarm already initialized"
+else
+  docker swarm init
+fi
+
 if docker exec $(docker ps -qf "name=registry") true > /dev/null 2>&1; then
     echo "Registry is already running"
 else
     echo "Creating registry"
     docker volume create --name=regdata
     docker service create --name registry --publish 5000:5000 --mount type=volume,source=regdata,destination=/var/lib/registry registry:2.6
-fi
-
-if docker node ls > /dev/null 2>&1; then
-  echo "Swarm already initialized"
-else
-  docker swarm init
 fi
 
 echo "Building latest version of SEED with OEP option"
