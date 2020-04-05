@@ -71,7 +71,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
 
 .. code-block:: console
 
-    export POSTGRES_USER=seeduser
+    export POSTGRES_USER=seed
     export POSTGRES_DB=seed
     export POSTGRES_PASSWORD=GDEus3fasd1askj89QkAldjfX
     export POSTGRES_PORT=5432

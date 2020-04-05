@@ -136,7 +136,7 @@ docker push 127.0.0.1:5000/redis
 docker push 127.0.0.1:5000/oep
 
 echo "Deploying (or updating)"
-docker-compose -f ${DOCKER_COMPOSE_FILE} up -d
+docker-compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
 echo "SEED stack redeployed"
