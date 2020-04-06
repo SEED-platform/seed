@@ -90,7 +90,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
     export SERVER_EMAIL=user@seed-platform.org
 
 
-* Before launching the first time, make the persistent volumes and that the backup directory exists.
+* Before launching the first time, make sure the persistent volumes and the backup directory exist.
 
 .. code-block:: console
 
