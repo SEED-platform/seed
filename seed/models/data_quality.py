@@ -257,7 +257,7 @@ class Rule(models.Model):
             'max': 1000,
             'severity': SEVERITY_ERROR,
             'units': 'kBtu/ft**2/year',
-            # 'condition': RULE_RANGE,
+            'condition': RULE_RANGE,
         }, {
             'table_name': 'PropertyState',
             'field': 'site_eui',
@@ -326,6 +326,7 @@ class Rule(models.Model):
             'condition': RULE_RANGE,
         }
     ]
+
     name = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=1000, blank=True)
     data_quality_check = models.ForeignKey('DataQualityCheck', on_delete=models.CASCADE,
@@ -738,17 +739,18 @@ class DataQualityCheck(models.Model):
                         self.add_result_missing_req(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
-                    if rule.condition == Rule.RULE_REQUIRED:
-                        self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        self.update_status_label(label, rule, linked_id, row.id)
-                        continue
-                    if rule.condition == Rule.RULE_NOT_NULL:
-                        self.add_result_is_null(row.id, rule, display_name, value)
-                        self.update_status_label(label, rule, linked_id, row.id)
-                        continue
-                    if rule.condition == Rule.RULE_RANGE:
-                        self.add_result_is_null(row.id, rule, display_name, value)
-                        continue
+                    if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                        if rule.condition == Rule.RULE_REQUIRED:
+                            self.add_result_missing_and_none(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
+                            continue
+                        if rule.condition == Rule.RULE_NOT_NULL:
+                            self.add_result_is_null(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
+                            continue
+                        if rule.condition == Rule.RULE_RANGE:
+                            self.add_result_is_null(row.id, rule, display_name, value)
+                            continue
                 elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
                     if not rule.valid_text(value):
                         self.add_result_string_error(row.id, rule, display_name, value)

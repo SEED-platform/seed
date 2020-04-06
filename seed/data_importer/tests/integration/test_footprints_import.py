@@ -152,7 +152,7 @@ class TestDemoV2(DataMappingBaseTestCase):
 
         self.assertEqual(len(ps), 3)
 
-        # Check taxlot_footprints
+        # Check property_footprints
         property_1 = PropertyState.objects.get(address_line_1='50 Willow Ave SE')
         self.assertTrue(isinstance(property_1.property_footprint, Polygon))
         self.assertEqual(property_1.extra_data.get('Property Coordinates (Invalid Footprint)'), None)
@@ -178,7 +178,11 @@ class TestDemoV2(DataMappingBaseTestCase):
 
         pdq = DataQualityCheck.retrieve(self.org.id)
         pdq.check_data('PropertyState', [property_1, property_2, property_3])
-        self.assertEqual(pdq.results.get(property_1.id, None), None)
+        pdq.check_data('PropertyState', [property_1])
+        # Because "required" and "not_null" columns are moved and replaced by condition check,
+        # add_result_is_null() is called upon 2 rule.conditions - Rule.NOT_NULL and Rule.RANGE:
+        # self.assertEqual(pdq.results.get(property_1.id, None), None)
+        self.assertEqual(pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'], "Conditioned Floor Area is null")
         self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
