@@ -178,7 +178,6 @@ class TestDemoV2(DataMappingBaseTestCase):
 
         pdq = DataQualityCheck.retrieve(self.org.id)
         pdq.check_data('PropertyState', [property_1, property_2, property_3])
-        pdq.check_data('PropertyState', [property_1])
         # Because "required" and "not_null" columns are moved and replaced by condition check,
         # add_result_is_null() is called upon 2 rule.conditions - Rule.NOT_NULL and Rule.RANGE:
         # self.assertEqual(pdq.results.get(property_1.id, None), None)
