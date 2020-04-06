@@ -121,7 +121,7 @@ The short version is to simply run the command below. Note that the passing of t
 ./deploy.sh docker-compose.local.yml
 ```
 
-If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
+If deploying using a custom docker-compose yml file, then simply replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
 
 
 .. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh
