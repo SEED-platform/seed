@@ -21,20 +21,20 @@ from seed.utils.organizations import create_organization
 
 
 class TestImport(TestCase):
-    def test_import_v2_pr1_ok(self):
+    def test_import_v2_0_ok(self):
         # -- Setup
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_pr1_bricr_workflow.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
         bs = BuildingSync()
 
         # -- Act
         bs.import_file(filename)
 
         # -- Assert
-        self.assertEqual(BuildingSync.BUILDINGSYNC_V2_PR1, bs.version)
+        self.assertEqual(BuildingSync.BUILDINGSYNC_V2_0, bs.version)
 
-    def test_import_v2_0_ok(self):
+    def test_import_ATT_ok(self):
         # -- Setup
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ATT_export.xml')
         bs = BuildingSync()
 
         # -- Act
@@ -88,39 +88,6 @@ class TestProcess(TestCase):
         result_subset = {k: v for k, v in result.items() if k in expected_property_values}
         self.assertDictEqual(expected_property_values, result_subset)
 
-    def test_parses_v2_pr1_property_info(self):
-        # -- Setup
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_pr1_bricr_workflow.xml')
-        bs = BuildingSync()
-        bs.import_file(filename)
-        self.assertEqual(BuildingSync.BUILDINGSYNC_V2_PR1, bs.version)
-
-        # -- Act
-        result, messages = bs.process()
-
-        # -- Assert
-        expected_property_values = {
-            'address_line_1': '123 MAIN BLVD',
-            'city': 'San Francisco',
-            'state': 'CA',
-            'postal_code': '94124',
-            'longitude': -122.38022804260254,
-            'latitude': 37.74391054330132,
-            'property_name': 'Building1',
-            'property_type': 'Retail',
-            'year_built': 2010,
-            'floors_above_grade': 1,
-            'floors_below_grade': 0,
-            'premise_identifier': 'SF000011',
-            'custom_id_1': '1',
-            'gross_floor_area': 77579.0,
-            'net_floor_area': 99887766.0,
-            'footprint_floor_area': 215643.97259999998,
-        }
-
-        result_subset = {k: v for k, v in result.items() if k in expected_property_values}
-        self.assertDictEqual(expected_property_values, result_subset)
-
 
 class TestExport(TestCase):
     @classmethod
@@ -145,7 +112,7 @@ class TestExport(TestCase):
     def test_export_without_property_state(self):
         """Exporting without a property state should just give us the original xml"""
         # -- Setup
-        filename = path.join(self.DATA_DIR, 'ex_1.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
         bs = BuildingSync()
         bs.import_file(filename)
 
@@ -160,9 +127,6 @@ class TestExport(TestCase):
         actual_xml = etree.tostring(actual_tree, pretty_print=True)
 
         self.assertEqual(expected_xml, actual_xml)
-        # assert the exported file is valid according to the schema
-        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_PR1)
-        schema.validate(actual_xml.decode())
 
     def test_export_with_property_state(self):
         """Exporting _with_ a property state that differs from the xml on exported fields should update the xml"""
@@ -176,7 +140,7 @@ class TestExport(TestCase):
 
         # -- Setup
         # Go through the building file process flow to create a property state from the xml
-        filename = path.join(self.DATA_DIR, 'ex_1.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
         file = open(filename, 'rb')
         simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
 
@@ -224,5 +188,5 @@ class TestExport(TestCase):
         self.assertEqual(net_floor_area, exported_property_state.extra_data['net_floor_area'])
 
         # assert the exported file is valid according to the schema
-        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_PR1)
+        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_0)
         schema.validate(exported_xml)

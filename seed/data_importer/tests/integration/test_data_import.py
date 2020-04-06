@@ -18,6 +18,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
 
+from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data, map_data
@@ -150,8 +151,8 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.maxDiff = None
 
         # setup the ImportFile for using the example zip file
-        filename = 'example-bsync-single.zip'
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        filename = 'ex_1_and_buildingsync_ex01_measures.zip'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         # Verify we have the expected number of BuildingSync files in the zip file
         with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
@@ -161,7 +162,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
                 if '.xml' in f.filename and '__MACOSX' not in f.filename:
                     xml_files_found += 1
 
-            self.assertEqual(xml_files_found, 1)
+            self.assertEqual(xml_files_found, 2)
 
         import_file_source_type = 'BuildingSync Raw'
         selfvars = self.set_up(import_file_source_type)
@@ -180,7 +181,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
             tasks.save_raw_data(self.import_file.pk)
 
         # -- Assert
-        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
         raw_saved = PropertyState.objects.filter(
             import_file=self.import_file,
         ).latest('id')
@@ -190,22 +191,22 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         # -- Setup
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks.save_raw_data(self.import_file.pk)
-        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
 
         # -- Act
         tasks.map_data(self.import_file.pk)
 
         # -- Assert
         ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
-        self.assertEqual(len(ps), 1)
+        self.assertEqual(len(ps), 2)
 
 
 class TestBuildingSyncImportXml(DataMappingBaseTestCase):
     def setUp(self):
         self.maxDiff = None
 
-        filename = 'example-bsync-v1.xml'
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        filename = 'ex_1.xml'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         import_file_source_type = 'BuildingSync Raw'
         selfvars = self.set_up(import_file_source_type)

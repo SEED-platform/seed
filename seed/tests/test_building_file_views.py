@@ -98,7 +98,7 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
         # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'valid_xml_ex1_ex2.zip')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip')
 
         url = '/api/v2/building_file/'
         fsysparams = {
@@ -119,7 +119,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_upload_with_measure_duplicates(self):
         # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures_bad_names.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {

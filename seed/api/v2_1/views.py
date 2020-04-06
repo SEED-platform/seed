@@ -184,9 +184,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         # Check if there is an existing BuildingSync XML file to merge
         bs_file = property_view.state.building_files.last()
         if bs_file is not None and os.path.exists(bs_file.file.path):
-            # TODO: once all 2.0-pr1 files are converted to 2.0, remove require_version
-            # arg or set to True to ensure all files exported are of a known version
-            bs.import_file(bs_file.file.path, require_version=False)
+            bs.import_file(bs_file.file.path)
             xml = bs.export(property_view.state)
             return HttpResponse(xml, content_type='application/xml')
         else:

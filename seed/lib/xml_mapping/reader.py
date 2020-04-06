@@ -5,7 +5,7 @@
 :author
 """
 
-from io import StringIO
+from io import BytesIO
 import os
 import zipfile
 
@@ -39,9 +39,7 @@ class BuildingSyncParser(object):
 
         # get the mapping for the first xml data
         bs = BuildingSync()
-        # TODO: once bsync files on SEED are converted to valid files, remove
-        # require_version arg or set to True
-        bs.import_file(StringIO(self.first_five_rows[0]), require_version=False)
+        bs.import_file(BytesIO(self.first_five_rows[0].encode()))
         base_mapping = bs.get_base_mapping()
         xpath_col_dict = xpath_to_column_map(base_mapping)
         self.headers = list(xpath_col_dict.keys())

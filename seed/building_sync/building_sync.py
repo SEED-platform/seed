@@ -9,7 +9,7 @@ import copy
 import logging
 import os
 import re
-from io import StringIO
+from io import StringIO, BytesIO
 
 from django.db.models import FieldDoesNotExist
 from quantityfield import ureg
@@ -19,7 +19,6 @@ import xmlschema
 from config.settings.common import BASE_DIR
 from seed.models.meters import Meter
 from seed.building_sync.mappings import (
-    BASE_MAPPING_V2_PR1,
     BASE_MAPPING_V2_0,
     BUILDINGSYNC_URI,
     NAMESPACES,
@@ -38,10 +37,8 @@ etree.register_namespace('auc', BUILDINGSYNC_URI)
 
 
 class BuildingSync(object):
-    BUILDINGSYNC_V2_PR1 = '2.0-pr1'
     BUILDINGSYNC_V2_0 = '2.0'
     VERSION_MAPPINGS_DICT = {
-        BUILDINGSYNC_V2_PR1: BASE_MAPPING_V2_PR1,
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2_0,
     }
 
@@ -49,12 +46,14 @@ class BuildingSync(object):
         self.element_tree = None
         self.version = None
 
-    def import_file(self, source, require_version=True):
+    def import_file(self, source):
         """imports BuildingSync file
 
         :param source: string | object, path to file or a file like object
         :param require_version: bool, if true it raises an exception if unable to find version info
         """
+        parser = etree.XMLParser(remove_blank_text=True)
+        etree.set_default_parser(parser)
         # save element tree
         if isinstance(source, str):
             if not os.path.isfile(source):
@@ -64,22 +63,13 @@ class BuildingSync(object):
         else:
             self.element_tree = etree.parse(source)
 
-        # TODO: once xml translator has been implemented and used to convert
-        # files from 2.0-pr1 to 2.0, make sure all calls to import_file either don't
-        # pass require_version (default is True) or they set it to True so that we
-        # will ALWAYS require a version
-        default_version = None if require_version else self.BUILDINGSYNC_V2_PR1
-        self.version = self._parse_version(default=default_version)
+        self.version = self._parse_version()
 
         # if the namespace map is missing the auc or xsi prefix, fix the tree to include it
         root_nsmap = self.element_tree.getroot().nsmap
         if root_nsmap.get('auc') is None or root_nsmap.get('xsi') is None:
             self.fix_namespaces()
 
-        # ensure schema location is properly set
-        # this is only necessary because we are temporarily allowing the import of
-        # files without this information.
-        # TODO: consider removing once all files have explicit versions
         root = self.element_tree.getroot()
         root.set('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{}/BuildingSync.xsd'.format(self.version))
 
@@ -172,14 +162,16 @@ class BuildingSync(object):
             update_tree(schema, self.element_tree, absolute_xpath,
                         mapping['value'], str(value), NAMESPACES)
 
-        return etree.tostring(self.element_tree, pretty_print=True).decode()
+        # Not sure why, but lxml was not pretty printing if the tree was updated
+        # a hack to fix this, we just export the tree, parse it, then export again
+        xml_bytes = etree.tostring(self.element_tree, pretty_print=True)
+        tree = etree.parse(BytesIO(xml_bytes))
+        return etree.tostring(tree, pretty_print=True).decode()
 
     @classmethod
     def get_schema(cls, version):
         schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
-        if version == cls.BUILDINGSYNC_V2_PR1:
-            schema_path = os.path.join(schema_dir, 'BuildingSync_v2_pr1.xsd')
-        elif version == cls.BUILDINGSYNC_V2_0:
+        if version == cls.BUILDINGSYNC_V2_0:
             schema_path = os.path.join(schema_dir, 'BuildingSync_v2_0.xsd')
         else:
             raise Exception(f'Unknown file version "{version}"')
@@ -293,19 +285,25 @@ class BuildingSync(object):
 
         return self._process_struct(base_mapping, custom_mapping)
 
-    def _parse_version(self, default=None):
+    def _parse_version(self):
         """Attempts to get the schema version from the imported data. Raises an exception if
-        none is found or if it's an invalid version
+        none is found or if it's an invalid version.
 
         :return: string, schema version (raises Exception when not found or invalid)
         """
         if self.element_tree is None:
             raise Exception('A file must first be imported with import method')
 
+        # first check if it's a file form Audit Template Tool and infer the version
+        # Currently ATT doesn't include a schemaLocation so this is necessary
+        if self._is_from_audit_template_tool():
+            return self.BUILDINGSYNC_V2_0
+
         bsync_element = self.element_tree.getroot()
         if not bsync_element.tag.endswith('BuildingSync'):
             raise Exception('Expected BuildingSync element as root element in xml')
 
+        # attempt to parse the version from the xsi:schemaLocation
         schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()
         schema_regex = r'^https\:\/\/raw\.githubusercontent\.com\/BuildingSync\/schema\/v((\d+\.\d+)(-pr\d+)?)\/BuildingSync\.xsd$'
 
@@ -318,11 +316,23 @@ class BuildingSync(object):
 
                 raise Exception(f'Unsupported BuildingSync schema version "{parsed_version}". Supported versions: {list(self.VERSION_MAPPINGS_DICT.keys())}')
 
-        if default is not None:
-            _log.warn(f'Unable to parse BuildingSync version. Using provided default of "{default}"')
-            return default
-
         raise Exception('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')
+
+    def _is_from_audit_template_tool(self):
+        """Determines if the source file is from audit template tool
+
+        :return bool:
+        """
+        report_type_xpath = '/' + '/'.join(['auc:BuildingSync',
+                                            'auc:Facilities',
+                                            'auc:Facility',
+                                            'auc:Reports',
+                                            'auc:Report',
+                                            'auc:UserDefinedFields',
+                                            'auc:UserDefinedField[auc:FieldName="Audit Template Report Type"]'])
+
+        report_type = self.element_tree.xpath(report_type_xpath, namespaces=NAMESPACES)
+        return len(report_type) != 0
 
     def get_base_mapping(self):
         return copy.deepcopy(self.VERSION_MAPPINGS_DICT[self.version])

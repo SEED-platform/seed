@@ -6,7 +6,7 @@
 """
 import csv
 import datetime
-from io import StringIO
+from io import BytesIO
 import logging
 import os
 
@@ -1291,9 +1291,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             raw_property_state = raw_property_state[0]
 
             bs = BuildingSync()
-            # TODO: once files on server are all in a valid format, remove require_version or
-            # set to True
-            bs.import_file(StringIO(raw_property_state.extra_data['_xml']), require_version=False)
+            # encode to bytes b/c lxml doesn't like Unicode string with encoding declarations
+            bs.import_file(BytesIO(raw_property_state.extra_data['_xml'].encode()))
             base_mapping = bs.get_base_mapping()
             # TODO: fetch custom mapping for org and pass it to the build function
             custom_mapping = None

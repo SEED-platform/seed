@@ -103,7 +103,7 @@ class BuildingFile(models.Model):
         try:
             parser.import_file(self.file.path)
         except Exception as e:
-            return False, None, None, {'errors': [str(e)]}
+            return False, None, None, {'errors': [str(e)], 'warnings': []}
 
         kwargs = {}
         if self.file_type == 'BuildingSync':
