@@ -26,6 +26,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -38,6 +39,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -75,6 +77,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -104,6 +107,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -115,6 +119,7 @@ services:
     #image: 127.0.0.1:5000/oep
     #environment:
     #  - OEP_DISABLED=true
+    #restart: unless-stopped
 volumes:
   seed_pgdata:
     external: true
