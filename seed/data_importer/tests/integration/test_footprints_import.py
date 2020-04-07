@@ -179,12 +179,10 @@ class TestDemoV2(DataMappingBaseTestCase):
         pdq = DataQualityCheck.retrieve(self.org.id)
         pdq.check_data('PropertyState', [property_1, property_2, property_3])
         self.assertEqual(pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'], "Conditioned Floor Area is null")
+        # self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
         self.assertEqual(pdq.results[property_2.id]['data_quality_results'][4]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
         # self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
-        i = 0
-        for r in pdq.results[property_3.id]['data_quality_results']:
-            print(i, r['detailed_message'])
-            i += 1
+        self.assertEqual(pdq.results[property_3.id]['data_quality_results'][7]['detailed_message'], "'123' is not a valid geometry")
 
         # Run new import, and check that duplicate rules are not created
         new_import_file_tax_lot = ImportFile.objects.create(
