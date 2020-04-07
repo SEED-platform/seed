@@ -177,13 +177,15 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
 
         pdq = DataQualityCheck.retrieve(self.org.id)
-        pdq.check_data('PropertyState', [property_1, property_2, property_3])
+        # pdq.check_data('PropertyState', [property_1, property_2, property_3])
         # Because "required" and "not_null" columns are moved and replaced by condition check,
         # add_result_is_null() is called upon 2 rule.conditions - Rule.NOT_NULL and Rule.RANGE:
         # self.assertEqual(pdq.results.get(property_1.id, None), None)
-        print('ps_2 result message: ', pdq.results[property_2.id]['data_quality_results'][0])
+        pdq.check_data('PropertyState', [property_1])
         self.assertEqual(pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'], "Conditioned Floor Area is null")
+        pdq.check_data('PropertyState', [property_2])
         self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
+        pdq.check_data('PropertyState', [property_3])
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
         # Run new import, and check that duplicate rules are not created
