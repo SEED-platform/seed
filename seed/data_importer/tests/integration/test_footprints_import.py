@@ -181,7 +181,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         # Because "required" and "not_null" columns are moved and replaced by condition check,
         # add_result_is_null() is called upon 2 rule.conditions - Rule.NOT_NULL and Rule.RANGE:
         # self.assertEqual(pdq.results.get(property_1.id, None), None)
-        print(pdq.results[property_2.id]['data_quality_results'][0])
+        print('ps_2 result message: ', pdq.results[property_2.id]['data_quality_results'][0])
         self.assertEqual(pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'], "Conditioned Floor Area is null")
         self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
