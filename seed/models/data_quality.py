@@ -646,11 +646,9 @@ class DataQualityCheck(models.Model):
                 for field in fields:
                     self.results[row.id][field] = getattr(row, field)
                 self.results[row.id]['data_quality_results'] = []
-                print("before result: ",self.results[row.id])
 
             # Run the checks
             self._check(rules, row)
-            print("aafter result: ",self.results[row.id])
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.copy().items():

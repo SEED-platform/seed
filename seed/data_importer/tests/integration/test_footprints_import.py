@@ -186,7 +186,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         print('ps_1 results: ', pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'])
         # pdq.check_data('PropertyState', [property_2])
         # self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
-        print('ps_2 results: ', pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'])
+        print('ps_2 results: ', pdq.results[property_2.id]['data_quality_results'][4]['detailed_message'])
         # pdq.check_data('PropertyState', [property_3])
         self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
