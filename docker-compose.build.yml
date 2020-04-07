@@ -1,0 +1,25 @@
+# This docker-compose version is the configuration when deploying SEED using the
+# ./deploy.sh script. This file only builds what is needed for deploying locally.
+version: '3'
+services:
+  db-postgres:
+    image: seedplatform/postgres-seed:11.2
+    build:
+      context: ./docker/postgres
+  db-redis:
+    image: redis:5.0.1
+  web:
+    image: seedplatform/seed:latest
+    build: .
+  web-celery:
+    image: seedplatform/seed:latest
+    build: .
+  oep-city-1:
+    image: seedplatform/oep:1.4
+    depends_on:
+      - web
+volumes:
+  seed_pgdata:
+    external: true
+  seed_media:
+    external: true
