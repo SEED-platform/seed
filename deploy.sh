@@ -4,6 +4,10 @@
 # users already exist in SEED or Postgres then they will not be recreated and their passwords
 # will not be updated.
 
+# Version 2020-04-03: Convert to using docker-compose. Docker stack/swarm was causing issues with DNS resolution
+#                     within the container. If you are currently using docker swarm, then remove your stack
+#                     `docker stack rm seed` and then redeploy with this script.
+
 : << 'arguments'
 There is only one optional argument and that is the name of the docker compose file to load.
 For example: ./deploy.sh docker-compose.local.oep.yml
@@ -17,7 +21,7 @@ SEED_ADMIN_USER (required), admin user for SEED
 SEED_ADMIN_PASSWORD (required), admin password for SEED
 SEED_ADMIN_ORG (required), default organization for admin user in SEED
 SECRET_KEY (required), unique key for SEED web application
-AWS_ACCESS_KEY (optional), Access key for AWS
+AWS_ACCESS_KEY_ID (optional), Access key for AWS
 AWS_SECRET_ACCESS_KEY, Secret key for AWS
 AWS_SES_REGION_NAME (optional), AWS Region for SES
 AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
@@ -26,7 +30,7 @@ SENTRY_JS_DSN (optional), Sentry JavaScript DSN
 SENTRY_RAVEN_DSN (optional), Sentry Django DSN (Raven-based)
 
 # example (do not use these values in production).
-export POSTGRES_USER=seed
+export POSTGRES_USER=seeduser
 export POSTGRES_PASSWORD=super-secret-password
 export SEED_ADMIN_USER=user@seed-platform.org
 export SEED_ADMIN_PASSWORD=super-secret-password
@@ -92,6 +96,13 @@ else
     echo "Using passed docker-compose file of ${DOCKER_COMPOSE_FILE}"
 fi
 
+# Swarm is needed for the registry
+if docker node ls > /dev/null 2>&1; then
+  echo "Swarm already initialized"
+else
+  docker swarm init
+fi
+
 if docker exec $(docker ps -qf "name=registry") true > /dev/null 2>&1; then
     echo "Registry is already running"
 else
@@ -100,23 +111,22 @@ else
     docker service create --name registry --publish 5000:5000 --mount type=volume,source=regdata,destination=/var/lib/registry registry:2.6
 fi
 
-if docker node ls > /dev/null 2>&1; then
-  echo "Swarm already initialized"
-else
-  docker swarm init
-fi
-
-echo "Building latest version of SEED"
-# explicitly pull images from docker-compose. Note that you will need to keep the
+echo "Building latest version of SEED with OEP option"
+# explicitly pull images from docker-compose's build yml file. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
-docker-compose pull
-docker-compose build --pull
+docker-compose -f docker-compose.build.yml pull
+docker-compose -f docker-compose.build.yml build --pull
+
+# Get the versions out of the docker-compose.build file
+DOCKER_PG_VERSION=$( sed -n 's/.*image\: seedplatform\/postgres-seed\:\(.*\)/\1/p' docker-compose.build.yml )
+DOCKER_OEP_VERSION=$( sed -n 's/.*image\: seedplatform\/oep\:\(.*\)/\1/p' docker-compose.build.yml )
+DOCKER_REDIS_VERSION=$( sed -n 's/.*image\: redis\:\(.*\)/\1/p' docker-compose.build.yml )
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag seedplatform/postgres-seed:11.2 127.0.0.1:5000/postgres-seed
+docker tag seedplatform/postgres-seed:$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
 docker tag redis:5.0.1 127.0.0.1:5000/redis
-docker tag seedplatform/oep:1.2 127.0.0.1:5000/oep
+docker tag seedplatform/oep:$DOCKER_OEP_VERSION 127.0.0.1:5000/oep
 
 sleep 3
 echo "Pushing tagged versions to local registry"
@@ -125,12 +135,11 @@ docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
 docker push 127.0.0.1:5000/oep
 
-echo "Deploying"
-# check if the stack is running, and if so then shut it down
-docker stack deploy seed --compose-file=${DOCKER_COMPOSE_FILE} &
+echo "Deploying (or updating)"
+docker-compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
-echo 'SEED stack redeployed'
+echo "SEED stack redeployed"
 
 echo "Waiting for webserver to respond"
 until curl -sf --output /dev/null "127.0.0.1"; do echo -n "."; sleep 1; done

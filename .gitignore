@@ -13,13 +13,13 @@ coverage.protractor.json
 *.swp
 *.swo
 *.swn
+package-lock.json
 web_root/css/compressed.*.css
 web_root/js/compressed.*.js
 web_root/collected_static
 pkgs/newrelic-1\.6\.0\.13
 pkgs/newrelic-1\.6\.0\.13\.tar\.gz
 chromedriver.log
-salad-test
 ipython_input_log_history
 .ipython_input_log_history
 *.ipynb
@@ -30,6 +30,7 @@ web_root/images/sites/*
 config/settings_local.py
 config/local_untracked.py
 config/settings/local_untracked.py
+config/settings/local_untracked.py.dist.*
 node_modules/*
 web_root/CACHE
 collected_static
@@ -52,8 +53,6 @@ dump.rdb
 log/*.log
 *.log
 .tox
-Vagrantfile
-.vagrant*
 
 # Ignore tmp test data
 seed_api_test_seedhost.txt
@@ -81,3 +80,8 @@ docker-compose.*.yml
 !docker-compose.yml
 !docker-compose.local.yml
 !docker-compose.deploy.yml
+!docker-compose.build.yml
+
+# generated files
+/auto*.csv
+
