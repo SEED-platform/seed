@@ -31,8 +31,9 @@ from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
     geocode_buildings_task as task_geocode_buildings,
+    map_additional_models as task_map_additional_models,
     match_buildings as task_match_buildings,
-    save_raw_data as task_save_raw
+    save_raw_data as task_save_raw,
 )
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
@@ -824,6 +825,19 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'MapQuest API key may be invalid or at its limit.'
             }, status=status.HTTP_403_FORBIDDEN)
             return result
+
+        try:
+            import_file = ImportFile.objects.get(pk=pk)
+        except ImportFile.DoesNotExist:
+            return {
+                'status': 'error',
+                'message': 'ImportFile {} does not exist'.format(pk)
+            }
+
+        # if the file is BuildingSync, don't do the merging, but instead finish
+        # creating it's associated models (scenarios, meters, etc)
+        if import_file.from_buildingsync:
+            return task_map_additional_models(pk)
 
         return task_match_buildings(pk)
 
