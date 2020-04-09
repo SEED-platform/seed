@@ -39,7 +39,6 @@ from seed.models import (
     Cycle,
     Meter,
     Scenario,
-    DATA_STATE_MAPPING,
     BuildingFile,
 )
 from seed.tests.util import DataMappingBaseTestCase
@@ -256,7 +255,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
                                           import_file=self.import_file)
         self.assertEqual(len(ps), 1)
-    
+
     def test_map_data_xml_is_idempotent(self):
         # -- Setup
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
@@ -313,8 +312,6 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         scenario = Scenario.objects.filter(property_state=ps)
         self.assertEqual(scenario.count(), 3)
-
-
 
 
 class TestBuildingSyncImportInvalid(DataMappingBaseTestCase):

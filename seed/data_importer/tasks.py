@@ -1212,7 +1212,7 @@ def finish_mapping_additional_models(result, import_file_id, progress_key):
                     merged_result[key] += value
                 else:
                     merged_result[key] = value
-        
+
         import_file.matching_results_data = merged_result
     else:
         raise Exception('Expected result to be a list of one or more items')
