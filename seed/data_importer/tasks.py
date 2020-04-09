@@ -464,31 +464,17 @@ def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
                 filename = raw_property_state.extra_data['_filename']
                 property_xml = raw_property_state.extra_data['_xml']
 
-                # get or create the buildingfile associated with this file
-                # this allows the task to be called multiple times while only creating
-                # a single building_file and property_state for the file
-                building_files = BuildingFile.objects.filter(
+                # create the buildingfile
+                the_file = SimpleUploadedFile(
+                    name=filename,
+                    content=property_xml.encode(),
+                    content_type="application/xml"
+                )
+                building_file = BuildingFile.objects.create(
+                    file=the_file,
                     filename=filename,
-                    property_state__data_state=DATA_STATE_MAPPING,
-                    property_state__import_file=import_file)
-                if building_files.count() == 0:
-                    # This buildingfile hasn't been created yet
-                    the_file = SimpleUploadedFile(
-                        name=filename,
-                        content=property_xml.encode(),
-                        content_type="application/xml"
-                    )
-                    building_file = BuildingFile.objects.create(
-                        file=the_file,
-                        filename=filename,
-                        file_type=file_type,
-                    )
-                elif building_files.count() == 1:
-                    # This buildingfile already exists
-                    building_file = building_files[0]
-                else:
-                    # Uh oh, apparently our requirements for "uniqueness" is insufficient
-                    raise Exception('Found more than one building file and expected 1 or 0')
+                    file_type=file_type,
+                )
 
                 # create or update the PropertyState linked to the building file
                 p_status, property_state, messages = building_file.process_property_state(org.id)

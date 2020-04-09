@@ -83,9 +83,8 @@ class BuildingFile(models.Model):
             return None
 
     def process_property_state(self, organization_id):
-        """Parses only the property state from the file. If the building file is
-        already associated with a property state, it updates it. Else it creates
-        a new one. This is intended to be used with the data_importer tasks to allow
+        """Parses and creates the property state from the file.
+        This is intended to be used with the data_importer tasks to allow
         only the creation of the PropertyState at the mapping stage
 
         :param: organization_id: integer, ID of organization
@@ -112,7 +111,7 @@ class BuildingFile(models.Model):
         return True, self._create_property_state(organization_id, data), messages
 
     def _create_property_state(self, organization_id, data):
-        """given data parsed from a file, it updates or creates the property state
+        """given data parsed from a file, it creates the property state
         for this BuildingFile and returns it.
 
         :param organization_id: integer, ID of organization
@@ -134,22 +133,17 @@ class BuildingFile(models.Model):
             else:
                 extra_data[k] = v
 
-        # get or create the property state
-        if self.property_state is None:
-            property_state = PropertyState.objects.create(**create_data, extra_data=extra_data)
+        # create the property state
+        property_state = PropertyState.objects.create(**create_data, extra_data=extra_data)
 
-            PropertyAuditLog.objects.create(
-                organization_id=organization_id,
-                state_id=property_state.id,
-                name='Import Creation',
-                description='Creation from Import file.',
-                import_filename=self.file.path,
-                record_type=AUDIT_IMPORT
-            )
-        else:
-            property_state = self.property_state
-            property_state.__dict__.update(create_data)
-            property_state.extra_data = extra_data
+        PropertyAuditLog.objects.create(
+            organization_id=organization_id,
+            state_id=property_state.id,
+            name='Import Creation',
+            description='Creation from Import file.',
+            import_filename=self.file.path,
+            record_type=AUDIT_IMPORT
+        )
 
         property_state.save()
 

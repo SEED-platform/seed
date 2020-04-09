@@ -265,8 +265,8 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         # -- Act
         # Call map data multiple times
         tasks.map_data(self.import_file.pk)
-        tasks.map_data(self.import_file.pk)
-        progress_info = tasks.map_data(self.import_file.pk)
+        tasks.map_data(self.import_file.pk, remap=True)
+        progress_info = tasks.map_data(self.import_file.pk, remap=True)
 
         # -- Assert
         self.assertEqual('success', progress_info['status'])
