@@ -140,12 +140,6 @@ class BuildingSync(object):
         base_path = merged_mappings['property']['xpath']
         field_mappings = merged_mappings['property']['properties']
         for field, mapping in field_mappings.items():
-            if mapping['xpath'].startswith('./'):
-                mapping_path = mapping['xpath'][2:]
-            else:
-                mapping_path = mapping['xpath']
-            absolute_xpath = os.path.join(base_path, mapping_path)
-
             value = None
             try:
                 property_state._meta.get_field(field)
@@ -158,6 +152,12 @@ class BuildingSync(object):
                 continue
             if isinstance(value, ureg.Quantity):
                 value = value.magnitude
+
+            if mapping['xpath'].startswith('./'):
+                mapping_path = mapping['xpath'][2:]
+            else:
+                mapping_path = mapping['xpath']
+            absolute_xpath = os.path.join(base_path, mapping_path)
 
             update_tree(schema, self.element_tree, absolute_xpath,
                         mapping['value'], str(value), NAMESPACES)
@@ -199,54 +199,75 @@ class BuildingSync(object):
             # process the scenario meters (aka resource uses)
             meters = {}
             for resource_use in scenario['resource_uses']:
-                meter = {}
-                meter['source'] = Meter.BUILDINGSYNC
-                meter['source_id'] = resource_use['source_id']
-                meter['type'] = resource_use['type']
-                meter['units'] = resource_use['units']
-                meter['is_virtual'] = scenario['is_virtual']
-                meter['readings'] = []
+                meter = {
+                    'source': Meter.BUILDINGSYNC,
+                    'source_id': resource_use['source_id'],
+                    'type': resource_use['type'],
+                    'units': resource_use['units'],
+                    'is_virtual': scenario['is_virtual'],
+                    'readings': [],
+                }
 
                 meters[meter['source_id']] = meter
 
             # process the scenario meter readings
             for series_data in scenario['time_series']:
-                reading = {}
-                reading['start_time'] = series_data['start_time']
-                reading['end_time'] = series_data['end_time']
-                reading['reading'] = series_data['reading']
-                reading['source_id'] = series_data['source_id']
+                reading = {
+                    'start_time': series_data['start_time'],
+                    'end_time': series_data['end_time'],
+                    'reading': series_data['reading'],
+                    'source_id': series_data['source_id'],
+                }
                 reading['source_unit'] = meters[reading['source_id']].get('units')
 
                 # add reading to the meter
                 meters[reading['source_id']]['readings'].append(reading)
 
             # create scenario
-            seed_scenario = {}
-            seed_scenario['id'] = scenario['id']
-            seed_scenario['name'] = scenario['name']
-            seed_scenario['reference_case'] = scenario['reference_case']
-            seed_scenario['annual_site_energy_savings'] = scenario['annual_site_energy_savings']
-            seed_scenario['annual_source_energy_savings'] = scenario['annual_source_energy_savings']
-            seed_scenario['annual_cost_savings'] = scenario['annual_cost_savings']
-            seed_scenario['annual_electricity_savings'] = scenario['annual_electricity_savings']
-            seed_scenario['annual_natural_gas_savings'] = scenario['annual_natural_gas_savings']
-            seed_scenario['annual_site_energy'] = scenario['annual_site_energy']
-            seed_scenario['annual_site_energy_use_intensity'] = scenario['annual_site_energy_use_intensity']
-            seed_scenario['annual_source_energy'] = scenario['annual_source_energy']
-            seed_scenario['annual_source_energy_use_intensity'] = scenario['annual_source_energy_use_intensity']
-            seed_scenario['annual_electricity_energy'] = scenario['annual_electricity_energy']
-            seed_scenario['annual_peak_demand'] = scenario['annual_peak_demand']
-            seed_scenario['annual_natural_gas_energy'] = scenario['annual_natural_gas_energy']
-            seed_scenario['measures'] = [id['id'] for id in scenario['measure_ids']]
+            seed_scenario = {
+                'id': scenario['id'],
+                'name': scenario['name'],
+                'reference_case': scenario['reference_case'],
+                'annual_site_energy_savings': scenario['annual_site_energy_savings'],
+                'annual_source_energy_savings': scenario['annual_source_energy_savings'],
+                'annual_cost_savings': scenario['annual_cost_savings'],
+                'annual_electricity_savings': scenario['annual_electricity_savings'],
+                'annual_natural_gas_savings': scenario['annual_natural_gas_savings'],
+                'annual_site_energy': scenario['annual_site_energy'],
+                'annual_site_energy_use_intensity': scenario['annual_site_energy_use_intensity'],
+                'annual_source_energy': scenario['annual_source_energy'],
+                'annual_source_energy_use_intensity': scenario['annual_source_energy_use_intensity'],
+                'annual_electricity_energy': scenario['annual_electricity_energy'],
+                'annual_peak_demand': scenario['annual_peak_demand'],
+                'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
+                'measures': [id['id'] for id in scenario['measure_ids']],
+            }
 
             seed_scenario['meters'] = list(meters.values())
             scenarios.append(seed_scenario)
 
-        res = {'measures': measures, 'scenarios': scenarios}
-        # property fields are at the root of the object
-        for k, v in result['property'].items():
-            res[k] = v
+        property_ = result['property']
+        res = {
+            'measures': measures,
+            'scenarios': scenarios,
+            # property fields are at the root of the object
+            'address_line_1': property_['address_line_1'],
+            'city': property_['city'],
+            'state': property_['state'],
+            'postal_code': property_['postal_code'],
+            'longitude': property_['longitude'],
+            'latitude': property_['latitude'],
+            'property_name': property_['property_name'],
+            'property_type': property_['property_type'],
+            'year_built': property_['year_built'],
+            'floors_above_grade': property_['floors_above_grade'],
+            'floors_below_grade': property_['floors_below_grade'],
+            'premise_identifier': property_['premise_identifier'],
+            'custom_id_1': property_['custom_id_1'],
+            'gross_floor_area': property_['gross_floor_area'],
+            'net_floor_area': property_['net_floor_area'],
+            'footprint_floor_area': property_['footprint_floor_area'],
+        }
 
         return res
 
@@ -335,4 +356,6 @@ class BuildingSync(object):
         return len(report_type) != 0
 
     def get_base_mapping(self):
+        if not self.version:
+            raise Exception('You must call import_file to determine the version first')
         return copy.deepcopy(self.VERSION_MAPPINGS_DICT[self.version])

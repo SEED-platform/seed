@@ -11,6 +11,35 @@ NAMESPACES = {
 }
 etree.register_namespace('auc', BUILDINGSYNC_URI)
 
+"""
+A BuildingSync mapping is expected to be structured like this
+    {
+        'xpath': <xpath>,
+        'type': 'value' | 'list' | 'object',
+        ('properties'): <dict of mapping objects>,
+        ('items'): <dict of mapping objects>,
+        ('value'): 'text' | '@<attribute name' | 'exist' | 'tag',
+        ('formatter'): <formatter function>
+    }
+xpath: the xpath to the target element (relative to the parent mapping if there is one)
+type: determines what's returned from the mapping.
+  - 'value' returns a simple value (string, int)
+  - 'list' indicates this is an element with multiple instances (e.g. auc:Scenario), and will return a mapping for each one. these list 'items' are indicated by the 'items' array
+  - 'object' returns a dict. the dict properties come from the 'properties' field
+properties: a dict of mapping objects used for the 'object' type. If the type is 'object', this field must be defined.
+  - the key will be used in the resulting dict to point to the mapped value
+  - value is the mapped result
+items: a dict of mapping objects used for the 'list' type. If the type is 'list', this field must be defined.
+  - the key will be used in each resulting dict to point to the mapped value
+  - the value is the mapped result for a single element
+value: a string indicating what value to grab from the element
+  - 'text' returns the text content
+  - '@<attribute>' returns the value of an attribute. e.g. if we wanted IDref, we'd use '@IDref'
+  - 'exist' returns a boolean as to whether or not the targeted element exists
+  - 'tag' returns the tag of the element
+formatter: a function which takes a string and returns another value. e.g. parsing a datetime string
+"""
+
 
 #
 # -- GENERAL functions
@@ -31,22 +60,34 @@ def table_mapping_to_buildingsync_mapping(table_mapping):
     # }
 
     # NOTE: currently only looks at property state mappings
-    property_state_mapping = table_mapping['PropertyState']
+    property_state_mapping = table_mapping.get('PropertyState')
+    if property_state_mapping is None:
+        return None
+
     property_base_xpath = '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site'
     bsync_property_mapping = {}
     for full_xpath, mapping_info in property_state_mapping.items():
+        # since get_column_mappings_by_table_name might return mappings not related
+        # to xml mapping, we need to skip any raw column names that aren't actually xml paths
+        if not full_xpath.startswith('/auc:BuildingSync'):
+            continue
+
         db_column = mapping_info[1]
         sub_xpath = full_xpath.replace(property_base_xpath, '').lstrip('/')
         bsync_property_mapping[db_column] = {
             'xpath': sub_xpath
         }
 
-    return {
-        'property': {
-            'xpath': property_base_xpath,
-            'properties': bsync_property_mapping
+    if bsync_property_mapping:
+        return {
+            'property': {
+                'xpath': property_base_xpath,
+                'properties': bsync_property_mapping
+            }
         }
-    }
+
+    # no mappings for xml found
+    return None
 
 
 #
@@ -86,43 +127,42 @@ def apply_mapping(element, mapping, messages, namespaces):
     :return: dict, the processed node
     """
     result = {}
-    for k, v in mapping.items():
+    for key, value_map in mapping.items():
         try:
-            selection = element.xpath(v['xpath'], namespaces=namespaces)
+            selection = element.xpath(value_map['xpath'], namespaces=namespaces)
         except Exception as e:
-            raise Exception(f'Error on {v["xpath"]}: {e}')
+            raise Exception(f'Error on {value_map["xpath"]}: {e}')
 
         if len(selection) == 0:
-            if v['type'] == 'value':
-                result[k] = None
-            elif v['type'] == 'list':
-                result[k] = []
+            if value_map['type'] == 'value':
+                result[key] = None
+            elif value_map['type'] == 'list':
+                result[key] = []
             else:
-                result[k] = {}
+                result[key] = {}
 
-            if v.get('required') is True:
-                messages['errors'].append(f'Failed to find property "{k}" at path {v["xpath"]} from element {element.tag}')
-            # messages['warnings'].append(f'Skip: Failed to find property "{k}" at path {v["xpath"]} from element {element.tag}')
+            if value_map.get('required') is True:
+                messages['errors'].append(f'Failed to find property "{key}" at path {value_map["xpath"]} from element {element.tag}')
             continue
 
-        if v['type'] == 'list':
-            result[k] = []
+        if value_map['type'] == 'list':
+            result[key] = []
             for selected_element in selection:
-                result[k].append(apply_mapping(selected_element, v['items'], messages, namespaces))
+                result[key].append(apply_mapping(selected_element, value_map['items'], messages, namespaces))
 
-        elif v['type'] == 'object':
+        elif value_map['type'] == 'object':
             selected_element = selection[0]
-            result[k] = apply_mapping(selected_element, v['properties'], messages, namespaces)
+            result[key] = apply_mapping(selected_element, value_map['properties'], messages, namespaces)
 
-        elif v['type'] == 'value':
+        elif value_map['type'] == 'value':
             selected_element = selection[0]
-            value = get_terminal_value(selected_element, v)
+            value = get_terminal_value(selected_element, value_map)
             # apply formatter if one was provided
-            value = v['formatter'](value) if v.get('formatter') else value
-            result[k] = value
+            value = value_map['formatter'](value) if value_map.get('formatter') else value
+            result[key] = value
 
         else:
-            raise Exception(f"Unknown node type {v['type']}")
+            raise Exception(f"Unknown node type {value_map['type']}")
 
     return result
 
@@ -139,8 +179,8 @@ def merge_mappings(base_mapping, custom_mapping):
         return copy.deepcopy(base_mapping)
 
     merged_mappings = copy.deepcopy(base_mapping)
-    for field, mapping in custom_mapping['property'].items():
-        merged_mappings['property'][field] = copy.deepcopy(mapping)
+    for field, mapping in custom_mapping['property']['properties'].items():
+        merged_mappings['property']['properties'][field]['xpath'] = mapping['xpath']
 
     return merged_mappings
 
@@ -235,7 +275,6 @@ def find_last_in_xpath(tree, xpath, namespaces):
     remainder = []
     xpath_list = xpath.split('/')
     match = tree.xpath('/' + '/'.join(xpath_list), namespaces=namespaces)
-    # import pdb; pdb.set_trace()
     while xpath_list and not match:
         remainder.insert(0, xpath_list.pop())
         match = tree.xpath('/' + '/'.join(xpath_list), namespaces=namespaces)
@@ -334,7 +373,7 @@ def children_sorter_factory(schema, tree, element):
     def _getkey(element):
         if isinstance(element, etree._Comment):
             # put comments at the end
-            return 100
+            return 1e10
         elif not isinstance(element, etree._Element):
             raise Exception(f'Unknown type while sorting: "{type(element)}"')
 

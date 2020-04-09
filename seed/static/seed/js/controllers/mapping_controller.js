@@ -219,6 +219,8 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
+          } else if ($scope.import_file.source_type === "BuildingSync Raw") {
+            col.suggestion = $filter('titleCase')(col.suggestion_column_name);
           } else {
             // No match, generate title-cased name
             col.suggestion = $filter('titleCase')(col.suggestion_column_name);

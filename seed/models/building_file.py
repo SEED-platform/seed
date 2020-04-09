@@ -106,7 +106,7 @@ class BuildingFile(models.Model):
             return False, None, None, {'errors': [str(e)], 'warnings': []}
 
         kwargs = {}
-        if self.file_type == 'BuildingSync':
+        if self.file_type == self.BUILDINGSYNC:
             kwargs = {'table_mappings': table_mappings}
 
         data, messages = parser.process(**kwargs)

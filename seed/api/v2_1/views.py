@@ -182,7 +182,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         bs = BuildingSync()
         # Check if there is an existing BuildingSync XML file to merge
-        bs_file = property_view.state.building_files.last()
+        bs_file = property_view.state.building_files.order_by('created').last()
         if bs_file is not None and os.path.exists(bs_file.file.path):
             bs.import_file(bs_file.file.path)
             xml = bs.export(property_view.state)
