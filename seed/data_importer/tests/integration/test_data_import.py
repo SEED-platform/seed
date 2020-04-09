@@ -18,6 +18,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
 
+from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data, map_data
@@ -36,6 +37,9 @@ from seed.models import (
     PropertyView,
     TaxLotState,
     Cycle,
+    Meter,
+    Scenario,
+    BuildingFile,
 )
 from seed.tests.util import DataMappingBaseTestCase
 
@@ -193,10 +197,14 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
 
         # -- Act
-        tasks.map_data(self.import_file.pk)
+        progress_info = tasks.map_data(self.import_file.pk)
 
         # -- Assert
-        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+        ps = PropertyState.objects.filter(address_line_1='123 Main St',
+                                          import_file=self.import_file)
         self.assertEqual(len(ps), 1)
 
 
@@ -204,8 +212,8 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
     def setUp(self):
         self.maxDiff = None
 
-        filename = 'example-bsync-v1.xml'
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        filename = 'buildingsync_v2_0_bricr_workflow.xml'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         import_file_source_type = 'BuildingSync Raw'
         selfvars = self.set_up(import_file_source_type)
@@ -237,11 +245,73 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
 
         # -- Act
-        tasks.map_data(self.import_file.pk)
+        progress_info = tasks.map_data(self.import_file.pk)
 
         # -- Assert
-        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
+                                          import_file=self.import_file)
         self.assertEqual(len(ps), 1)
+
+    def test_map_data_xml_is_idempotent(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # -- Act
+        # Call map data multiple times
+        tasks.map_data(self.import_file.pk)
+        tasks.map_data(self.import_file.pk, remap=True)
+        progress_info = tasks.map_data(self.import_file.pk, remap=True)
+
+        # -- Assert
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
+                                          import_file=self.import_file)
+        self.assertEqual(len(ps), 1)
+
+        building_file = BuildingFile.objects.filter(property_state=ps[0].id)
+        self.assertEqual(len(building_file), 1)
+
+    def test_map_all_models_xml(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        progress_info = tasks.map_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
+                                          import_file=self.import_file)
+        self.assertEqual(len(ps), 1)
+
+        # -- Act
+        tasks.map_additional_models(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD', import_file=self.import_file)
+
+        self.assertEqual(ps.count(), 1)
+
+        # verify the property view, scenario and meter data were created
+        pv = PropertyView.objects.filter(state=ps)
+        self.assertEqual(pv.count(), 1)
+
+        meters = Meter.objects.filter(property=pv[0].property)
+        self.assertEqual(meters.count(), 6)
+
+        scenario = Scenario.objects.filter(property_state=ps)
+        self.assertEqual(scenario.count(), 3)
 
 
 class TestBuildingSyncImportInvalid(DataMappingBaseTestCase):

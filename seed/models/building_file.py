@@ -82,6 +82,76 @@ class BuildingFile(models.Model):
         else:
             return None
 
+    def process_property_state(self, organization_id):
+        """Parses and creates the property state from the file.
+        This is intended to be used with the data_importer tasks to allow
+        only the creation of the PropertyState at the mapping stage
+
+        :param: organization_id: integer, ID of organization
+        :return: list, [status, (PropertyState|None), messages]
+        """
+        Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
+        if not Parser:
+            acceptable_file_types = ', '.join(
+                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
+            )
+            return False, None, "File format was not one of: {}".format(acceptable_file_types)
+
+        parser = Parser()
+        parser.import_file(self.file.path)
+        parser_args = []
+        parser_kwargs = {}
+        if self.file_type == self.BUILDINGSYNC:
+            parser_args.append(BuildingSync.BRICR_STRUCT)
+        data, messages = parser.process(*parser_args, **parser_kwargs)
+
+        if len(messages['errors']) > 0 or not data:
+            return False, None, messages
+
+        return True, self._create_property_state(organization_id, data), messages
+
+    def _create_property_state(self, organization_id, data):
+        """given data parsed from a file, it creates the property state
+        for this BuildingFile and returns it.
+
+        :param organization_id: integer, ID of organization
+        :param data: dict, a dictionary that was returned from a parser
+        :return: PropertyState
+        """
+        # sub-select the data that are needed to create the PropertyState object
+        db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
+        create_data = {"organization_id": organization_id}
+        extra_data = {}
+        for k, v in data.items():
+            # Skip the keys that are for measures and reports and process later
+            if k in ['measures', 'reports', 'scenarios']:
+                continue
+
+            # Check if the column exists, if not, then create one.
+            if ('PropertyState', k) in db_columns:
+                create_data[k] = v
+            else:
+                extra_data[k] = v
+
+        # create the property state
+        property_state = PropertyState.objects.create(**create_data, extra_data=extra_data)
+
+        PropertyAuditLog.objects.create(
+            organization_id=organization_id,
+            state_id=property_state.id,
+            name='Import Creation',
+            description='Creation from Import file.',
+            import_filename=self.file.path,
+            record_type=AUDIT_IMPORT
+        )
+        # set the property_state_id so that we can list the building files by properties
+        self.property_state_id = property_state.id
+        self.save()
+
+        Column.save_column_names(property_state)
+
+        return property_state
+
     def process(self, organization_id, cycle, property_view=None):
         """
         Process the building file that was uploaded and create the correct models for the object
@@ -110,42 +180,11 @@ class BuildingFile(models.Model):
         if len(messages['errors']) > 0 or not data:
             return False, None, None, messages
 
-        # sub-select the data that are needed to create the PropertyState object
-        db_columns = Column.retrieve_db_field_table_and_names_from_db_tables()
-        create_data = {"organization_id": organization_id}
-        extra_data = {}
-        for k, v in data.items():
-            # Skip the keys that are for measures and reports and process later
-            if k in ['measures', 'reports', 'scenarios']:
-                continue
-
-            # Check if the column exists, if not, then create one.
-
-            if ('PropertyState', k) in db_columns:
-                create_data[k] = v
-            else:
-                extra_data[k] = v
-
-        # always create the new object, then decide if we need to merge it.
-        # create a new property_state for the object and promote to a new property_view
-        property_state = PropertyState.objects.create(**create_data)
-        property_state.extra_data = extra_data
-        property_state.save()
-
-        Column.save_column_names(property_state)
-
-        PropertyAuditLog.objects.create(
-            organization_id=organization_id,
-            state_id=property_state.id,
-            name='Import Creation',
-            description='Creation from Import file.',
-            import_filename=self.file.path,
-            record_type=AUDIT_IMPORT
-        )
-
-        # set the property_state_id so that we can list the building files by properties
-        self.property_state_id = property_state.id
-        self.save()
+        # Create the property state if none already exists for this file
+        if self.property_state is None:
+            property_state = self._create_property_state(organization_id, data)
+        else:
+            property_state = self.property_state
 
         # merge or create the property state's view
         if property_view:
