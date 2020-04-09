@@ -136,8 +136,7 @@ class BuildingFile(models.Model):
 
         # get or create the property state
         if self.property_state is None:
-            property_state = PropertyState.objects.create(**create_data)
-            property_state.extra_data = extra_data
+            property_state = PropertyState.objects.create(**create_data, extra_data=extra_data)
 
             PropertyAuditLog.objects.create(
                 organization_id=organization_id,
