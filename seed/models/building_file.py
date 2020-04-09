@@ -144,9 +144,6 @@ class BuildingFile(models.Model):
             import_filename=self.file.path,
             record_type=AUDIT_IMPORT
         )
-
-        property_state.save()
-
         # set the property_state_id so that we can list the building files by properties
         self.property_state_id = property_state.id
         self.save()
