@@ -26,6 +26,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -38,6 +39,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -75,6 +77,7 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
@@ -104,17 +107,19 @@ services:
       options:
         max-size: 50m
         max-file: '5'
+    restart: unless-stopped
     deploy:
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 3
         window: 120s
-  oep-city-1:
+  #oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-    image: 127.0.0.1:5000/oep
-    environment:
-      - OEP_DISABLED=true
+    #image: 127.0.0.1:5000/oep
+    #environment:
+    #  - OEP_DISABLED=true
+    #restart: unless-stopped
 volumes:
   seed_pgdata:
     external: true
