@@ -3,7 +3,7 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
-from seed.views.data_quality.v3 import DataQualityViews
+from seed.views.v3.data_quality import DataQualityViews
 
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
