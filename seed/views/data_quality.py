@@ -24,7 +24,6 @@ from seed.models.data_quality import (
     DataQualityCheck,
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
@@ -93,51 +92,12 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
-class DataQualitySchema(AutoSchemaHelper):
-    def __init__(self):
-        super().__init__()
-
-        self.manual_fields = {
-            ('POST', 'create'): [
-                self.org_id_field(),
-                self.form_field(
-                    name='data_quality_ids',
-                    required=True,
-                    description="An object containing IDs of the records to perform data quality checks on. Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array of appropriate IDs."
-                ),
-            ],
-            ('GET', 'data_quality_rules'): [self.org_id_field()],
-            ('PUT', 'reset_all_data_quality_rules'): [self.org_id_field()],
-            ('PUT', 'reset_default_data_quality_rules'): [self.org_id_field()],
-            ('POST', 'save_data_quality_rules'): [
-                self.org_id_field(),
-                self.body_field(required=True, description='Rules information')
-            ],
-            ('GET', 'results'): [self.org_id_field()],
-            ('GET', 'testing_core_api'): self.test_field_options(),
-        }
-
-        self.path_fields = {
-            ('GET', 'csv'): [
-                self.path_id_field(description='Import file ID or cache key'),
-            ]
-        }
-
-
 class DataQualityViews(viewsets.ViewSet):
     """
     Handles Data Quality API operations within Inventory backend.
     (1) Post, wait, get…
     (2) Respond with what changed
     """
-    schema = DataQualitySchema()
-
-    @action(detail=False, methods=['GET'])
-    def testing_core_api(self, request):
-        """
-        Testing/documenting coreapi.Field options
-        """
-        pass
 
     def create(self, request):
         """
