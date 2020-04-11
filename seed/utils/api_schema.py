@@ -8,6 +8,19 @@ class AutoSchemaHelper(AutoSchema):
     def __init__(self):
         super().__init__()
 
+    def base_field(self, name, location, required, type, description):
+        """
+        Created to avoid needing to directly access coreapi within ViewSets.
+        Ideally, the cases below will be used instead of this one.
+        """
+        return coreapi.Field(
+            name,
+            location=location,
+            required=required,
+            type=type,
+            description=description
+        )
+
     def org_id_field(self, location='query', required=True, type='integer', description='Organization ID'):
         return coreapi.Field(
             'organization_id',
