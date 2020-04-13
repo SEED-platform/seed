@@ -256,16 +256,16 @@ Restoring a Database Dump
 
 .. code-block:: console
 
-    psql -c 'DROP DATABASE "seeddb"'
-    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seed";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seed";'
-    psql -c 'ALTER USER "seed" CREATEDB CREATEROLE SUPERUSER;'
+    psql -c 'DROP DATABASE "seeddb";'
+    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";'
+    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
     psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
     psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
     psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
 
-    # restore a previous database dump
-    pg_restore -U seed -d seeddb seedv2_20191203_000002.dump
+    # restore a previous database dump (must be pg_restore 12+)
+    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seeddb /backups/prod-backups/seedv2_20191203_000002.dump
 
     psql -d seeddb -c 'SELECT timescaledb_post_restore();'
 

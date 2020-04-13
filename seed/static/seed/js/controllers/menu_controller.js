@@ -67,17 +67,7 @@ angular.module('BE.seed.controller.menu', [])
       });
 
       $scope.is_active = function (menu_item) {
-        if ($state.current.url.split('/').length > 1) {
-          $location.search('', $state.current.url);
-        }
-        if($rootScope.stay_on_page && menu_item === '/' + $state.current.url.split('/')[1]) {
-          return true;
-        } else if (menu_item === $location.path()) {
-          if ($rootScope.stay_on_page) {
-            return false;
-          } else if (!$rootScope.stay_on_page && menu_item === ('/' + $state.current.url.split('/')[1])) {
-            return true;
-          }
+        if (menu_item === $location.path()) {
           return true;
         } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
           return true;
@@ -99,7 +89,7 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
-      function init_menu () {
+      function init_menu() {
         //Default to false but use cookie value if one has been set
         var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
         $scope.expanded_controller = isNavExpanded;
