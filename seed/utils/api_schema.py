@@ -79,10 +79,12 @@ class AutoSchemaHelper(AutoSchema):
             coreapi.Field('array query test', location='query', required=True, type='array'),
         ]
 
-    def get_path_fields(self, path, method):
-        default_fields = AutoSchema.get_path_fields(self, path, method)
-        return self.path_fields.get((method, self.view.action), default_fields)
+    def get_path_fields(self, path, http_method):
+        default_fields = AutoSchema.get_path_fields(self, path, http_method)
 
-    def get_manual_fields(self, path, method):
-        default_fields = AutoSchema.get_manual_fields(self, path, method)
-        return self.manual_fields.get((method, self.view.action), default_fields)
+        return self.path_fields.get((http_method, self.view.action), default_fields)
+
+    def get_manual_fields(self, path, http_method):
+        default_fields = AutoSchema.get_manual_fields(self, path, http_method)
+
+        return self.manual_fields.get((http_method, self.view.action), default_fields)
