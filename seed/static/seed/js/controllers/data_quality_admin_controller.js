@@ -387,9 +387,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.create_new_rule = function () {
         var field = null;
         if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
+          console.log("1. ", field);
+          console.log($scope.ruleGroups[$scope.inventory_type]);
           $scope.ruleGroups[$scope.inventory_type][field] = [];
         }
-
+        console.log("2. ", field);
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
           condition: 'range',
@@ -409,6 +411,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
+        console.log("3. ", field);
         $scope.change_rules();
       };
 
