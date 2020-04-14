@@ -154,8 +154,8 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.maxDiff = None
 
         # setup the ImportFile for using the example zip file
-        filename = 'example-bsync-single.zip'
-        filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
+        filename = 'ex_1_and_buildingsync_ex01_measures.zip'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
 
         # Verify we have the expected number of BuildingSync files in the zip file
         with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
@@ -165,7 +165,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
                 if '.xml' in f.filename and '__MACOSX' not in f.filename:
                     xml_files_found += 1
 
-            self.assertEqual(xml_files_found, 1)
+            self.assertEqual(xml_files_found, 2)
 
         import_file_source_type = 'BuildingSync Raw'
         selfvars = self.set_up(import_file_source_type)
@@ -184,7 +184,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
             tasks.save_raw_data(self.import_file.pk)
 
         # -- Assert
-        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
         raw_saved = PropertyState.objects.filter(
             import_file=self.import_file,
         ).latest('id')
@@ -194,7 +194,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         # -- Setup
         with patch.object(ImportFile, 'cache_first_rows', return_value=None):
             tasks.save_raw_data(self.import_file.pk)
-        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
 
         # -- Act
         progress_info = tasks.map_data(self.import_file.pk)
@@ -205,7 +205,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.assertEqual({}, progress_info.get('file_info', {}))
         ps = PropertyState.objects.filter(address_line_1='123 Main St',
                                           import_file=self.import_file)
-        self.assertEqual(len(ps), 1)
+        self.assertEqual(len(ps), 2)
 
 
 class TestBuildingSyncImportXml(DataMappingBaseTestCase):

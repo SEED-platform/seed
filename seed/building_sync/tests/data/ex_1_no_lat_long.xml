@@ -2,7 +2,7 @@
 	<auc:Facilities>
     <auc:Facility>
       <auc:Sites>
-        <auc:Site>  
+        <auc:Site>
           <auc:ClimateZoneType>
             <auc:ASHRAE>
               <auc:ClimateZone>3C</auc:ClimateZone>
@@ -13,8 +13,6 @@
           </auc:ClimateZoneType>
           <auc:WeatherDataStationID>724940</auc:WeatherDataStationID>
           <auc:WeatherStationName>USA_CA_San.Francisco.Intl.AP</auc:WeatherStationName>
-          <auc:Longitude>-122.39937597219404</auc:Longitude>
-          <auc:Latitude>37.79526286826323</auc:Latitude>
           <auc:Ownership>Unknown</auc:Ownership>
           <auc:Buildings>
             <auc:Building ID="Building223">
@@ -103,71 +101,6 @@
           </auc:Buildings>
         </auc:Site>
       </auc:Sites>
-      <auc:Measures>
-        <auc:Measure ID="Measure1">
-          <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
-          <auc:TechnologyCategories>
-            <auc:TechnologyCategory>
-              <auc:LightingImprovements>
-                <auc:MeasureName>Retrofit with light emitting diode technologies</auc:MeasureName>
-              </auc:LightingImprovements>
-            </auc:TechnologyCategory>
-          </auc:TechnologyCategories>
-          <auc:MeasureScaleOfApplication>Entire facility</auc:MeasureScaleOfApplication>
-          <auc:LongDescription>Retrofit with light emitting diode technologies</auc:LongDescription>
-          <auc:MVCost>0</auc:MVCost>
-          <auc:UsefulLife>10</auc:UsefulLife>
-          <auc:MeasureTotalFirstCost>16775</auc:MeasureTotalFirstCost>
-          <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
-          <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
-          <auc:Recommended>true</auc:Recommended>
-          <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
-          <auc:UserDefinedFields>
-            <auc:UserDefinedField>
-              <auc:FieldName>OpenStudioMeasureName</auc:FieldName>
-              <auc:FieldValue>TBD</auc:FieldValue>
-            </auc:UserDefinedField>
-          </auc:UserDefinedFields>
-        </auc:Measure>
-      </auc:Measures>
-      <auc:Reports>
-        <auc:Report>
-          <auc:Scenarios>
-            <auc:Scenario ID="Baseline">
-              <auc:ScenarioName>Baseline</auc:ScenarioName>
-              <auc:ScenarioType>
-                <auc:PackageOfMeasures>
-                  <auc:ReferenceCase IDref="Baseline"/>
-                  <auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
-                  <auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
-                </auc:PackageOfMeasures>
-              </auc:ScenarioType>
-              <auc:UserDefinedFields>
-                <auc:UserDefinedField>
-                  <auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
-                  <auc:FieldValue>Success</auc:FieldValue>
-                </auc:UserDefinedField>
-                <auc:UserDefinedField>
-                  <auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
-                  <auc:FieldValue>Success</auc:FieldValue>
-                </auc:UserDefinedField>
-                <auc:UserDefinedField>
-                  <auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
-                  <auc:FieldValue>568.4154052230995</auc:FieldValue>
-                </auc:UserDefinedField>
-                <auc:UserDefinedField>
-                  <auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
-                  <auc:FieldValue>417494.48515560996</auc:FieldValue>
-                </auc:UserDefinedField>
-                <auc:UserDefinedField>
-                  <auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
-                  <auc:FieldValue>150920.9200674895</auc:FieldValue>
-                </auc:UserDefinedField>
-              </auc:UserDefinedFields>
-            </auc:Scenario>
-          </auc:Scenarios>
-        </auc:Report>
-      </auc:Reports>
     </auc:Facility>
 	</auc:Facilities>
 </auc:BuildingSync>

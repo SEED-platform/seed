@@ -6,6 +6,7 @@
 """
 import csv
 import datetime
+from io import BytesIO
 import logging
 import os
 
@@ -22,6 +23,7 @@ from rest_framework.decorators import api_view, detail_route, list_route, parser
     permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
+from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -65,8 +67,7 @@ from seed.models import (
     AUDIT_USER_EDIT,
     TaxLotProperty,
     SEED_DATA_SOURCES,
-    PORTFOLIO_RAW,
-    BUILDINGSYNC_RAW)
+    PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint, api_endpoint_class
 from seed.utils.cache import get_cache
 from seed.utils.geocode import MapQuestAPIKeyError
@@ -1283,8 +1284,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
         taxlot_columns = Column.retrieve_mapping_columns(organization.pk, 'taxlot')
 
-        data_source_map = {name: id for id, name in SEED_DATA_SOURCES}
-
         # If this is a portfolio manager file, then load in the PM mappings and if the column_mappings
         # are not in the original mappings, default to PM
         if import_file.from_portfolio_manager:
@@ -1298,8 +1297,20 @@ class ImportFileViewSet(viewsets.ViewSet):
                 default_mappings=pm_mappings,
                 thresh=80
             )
-        elif data_source_map.get(import_file.source_type) == BUILDINGSYNC_RAW:
-            suggested_mappings = xml_mapper.build_column_mapping(import_file)
+        elif import_file.from_buildingsync:
+            raw_property_state = PropertyState.objects.filter(import_file=import_file)
+            # there should always be at least one property state associated with
+            # the import file at this point
+            assert raw_property_state.count() > 0
+            raw_property_state = raw_property_state[0]
+
+            bs = BuildingSync()
+            # encode to bytes b/c lxml doesn't like Unicode string with encoding declarations
+            bs.import_file(BytesIO(raw_property_state.extra_data['_xml'].encode()))
+            base_mapping = bs.get_base_mapping()
+            # TODO: fetch custom mapping for org and pass it to the build function
+            custom_mapping = None
+            suggested_mappings = xml_mapper.build_column_mapping(base_mapping, custom_mapping)
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(

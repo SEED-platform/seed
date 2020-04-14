@@ -511,7 +511,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }, function (data) {
             $log.error(data.message);
             if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
-            $scope.step_12_error_message = data.message;
+            $scope.step_12_error_message = data.data ? data.data.message : data.message;
             $scope.step.number = 12;
           }, $scope.uploader);
         });
