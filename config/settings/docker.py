@@ -14,7 +14,7 @@ ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD'
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD']
+                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND']
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -37,7 +37,7 @@ ALLOWED_HOSTS = ['*']
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
-EMAIL_BACKEND = 'django_ses.SESBackend'
+EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # PostgreSQL DB config
