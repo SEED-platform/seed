@@ -314,7 +314,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var newDataType = _.find(columns, {column_name: rule.field}).data_type;
 
         if (_.isNil(newDataType)) newDataType = null;
-
         // clear columns that are type specific.
         if (newDataType !== original) {
           rule.text_match = null;
@@ -393,7 +392,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
-          condition: '',
+          condition: 'range',
           field: field,
           displayName: field,
           data_type: 'number',
