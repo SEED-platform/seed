@@ -48,17 +48,17 @@ def table_mapping_to_buildingsync_mapping(table_mapping):
     """Converts a mapping returned from ColumnMapping.get_column_mappings_by_table_name
     into the structure expected by the BuildingSync functions
 
+    expected structure of table_mapping:
+    {
+      'PropertyState': {
+        <full xpath>: ('PropertyState', <db column>),
+        ....
+      }
+    }
+
     :param table_mapping: dict, a table mapping
     :return: dict, a buildingsync style mapping
     """
-    # expected structure of table_mapping:
-    # {
-    #   'PropertyState': {
-    #     <full xpath>: ('PropertyState', <db column>),
-    #     ....
-    #   }
-    # }
-
     # NOTE: currently only looks at property state mappings
     property_state_mapping = table_mapping.get('PropertyState')
     if property_state_mapping is None:
