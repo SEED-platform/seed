@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 
+
 def forwards(apps, schema_editor):
     Rule = apps.get_model('seed', 'Rule')
     rule = Rule.objects.exclude(id=None)
