@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import pagination
@@ -21,15 +21,6 @@ class FakePagination(pagination.PageNumberPagination):
             "count": len(data),
             "results": data,
         })
-
-    def paginate_queryset(self, queryset, request, view=None):
-        return queryset
-
-
-class NoPagination(pagination.PageNumberPagination):
-
-    def get_paginated_response(self, data):
-        return response.Response(data)
 
     def paginate_queryset(self, queryset, request, view=None):
         return queryset

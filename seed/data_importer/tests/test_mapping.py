@@ -1,12 +1,19 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from django.core.files.uploadedfile import SimpleUploadedFile
+
 import logging
 
+import os.path as osp
+
 from seed.data_importer import tasks
+from seed.data_importer.tests.util import (
+    FAKE_MAPPINGS,
+)
 from seed.lib.mcm import mapper
 from seed.models import (
     ASSESSED_RAW,
@@ -86,3 +93,25 @@ class TestMapping(DataMappingBaseTestCase):
         # from seed.utils.generic import pp
         # for p in props:
         #     pp(p)
+
+
+class TestDuplicateFileHeaders(DataMappingBaseTestCase):
+    def setUp(self):
+        filename = getattr(self, 'filename', 'example-data-properties-duplicate-headers.xlsx')
+        import_file_source_type = ASSESSED_RAW
+        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        filepath = osp.join(osp.dirname(__file__), 'data', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
+
+    def test_duplicate_headers_throws_400(self):
+        tasks.save_raw_data(self.import_file.pk)
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
+
+        with self.assertRaises(Exception):
+            tasks.map_data(self.import_file.pk)

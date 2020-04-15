@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -10,7 +10,7 @@ import logging
 import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
@@ -22,7 +22,6 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
-from seed.pagination import NoPagination
 from seed.renderers import SEEDJSONRenderer
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
@@ -53,7 +52,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
     model = Column
-    pagination_class = NoPagination
+    pagination_class = None
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnViewSetFilterBackend,)
 
@@ -154,7 +153,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def delete_all(self, request):
         """
         Delete all columns for an organization. This method is typically not recommended if there
@@ -199,7 +198,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
-    @list_route(renderer_classes=(SEEDJSONRenderer,))
+    @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
@@ -251,7 +250,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         org_id = self.get_organization(request)
         try:

@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -16,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='importfile',
             name='cycle',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='seed.Cycle'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=models.deletion.CASCADE, to='seed.Cycle'),
         ),
     ]

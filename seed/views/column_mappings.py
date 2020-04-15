@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
@@ -21,7 +21,6 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.column_mappings import ColumnMapping
-from seed.pagination import NoPagination
 from seed.serializers.column_mappings import ColumnMappingSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.api import api_endpoint_class
@@ -49,7 +48,7 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     serializer_class = ColumnMappingSerializer
     renderer_classes = (JSONRenderer,)
     model = ColumnMapping
-    pagination_class = NoPagination
+    pagination_class = None
     parser_classes = (JSONParser, FormParser)
     filter_backends = (ColumnMappingViewSetFilterBackend,)
     orgfilter = 'super_organization_id'
@@ -95,7 +94,7 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @require_organization_id_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def delete_all(self, request):
         """
         Delete all column mappings for an organization

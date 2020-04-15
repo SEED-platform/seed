@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // create dummy angularJS app to attach filter(s)
@@ -14,7 +14,7 @@ describe('The search_service service', function () {
 
   beforeEach(function () {
     module('searchTestApp');
-    inject(function (search_service, $httpBackend, $q, spinner_utility) {
+    inject(function (search_service, $httpBackend, spinner_utility) {
       saas = search_service;
       httpBackend = $httpBackend;
       httpBackend.when('POST', test_url).respond('ok');

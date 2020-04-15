@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -30,7 +30,8 @@ from seed.models import (
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
     ColumnListSettingColumn,
-)
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 
@@ -80,14 +81,20 @@ class BaseFake(object):
             self.fake.random_element(elements=STREET_SUFFIX)
         )
 
-    def owner(self, city=None, state=None):
-        """Return Owner named tuple"""
-        email = self.fake.company_email()
+    def company(self, email=None):
+        if not email:
+            email = self.fake.company_email()
         ergx = re.compile(r'.*@(.*)\..*')
         company = "{} {}".format(
             string.capwords(ergx.match(email).group(1), '-').replace('-', ' '),
             self.fake.company_suffix()
         )
+        return company
+
+    def owner(self, city=None, state=None):
+        """Return Owner named tuple"""
+        email = self.fake.company_email()
+        company = self.company(email)
         return Owner(
             company, email, self.fake.phone_number(), self.address_line_1(),
             "{}, {}".format(city if city else self.fake.city(),
@@ -102,7 +109,7 @@ class FakeColumnFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeColumnFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_column(self, name, organization=None, is_extra_data=False,
@@ -127,7 +134,7 @@ class FakeCycleFactory(BaseFake):
     """
 
     def __init__(self, organization=None, user=None):
-        super(FakeCycleFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
 
@@ -159,7 +166,7 @@ class FakePropertyFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakePropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_property(self, organization=None, **kw):
@@ -182,7 +189,7 @@ class FakePropertyAuditLogFactory(BaseFake):
         self.view_factory = FakePropertyViewFactory(
             organization=organization, user=user
         )
-        super(FakePropertyAuditLogFactory, self).__init__()
+        super().__init__()
 
     def get_property_audit_log(self, **kw):
         """Get property instance."""
@@ -207,7 +214,7 @@ class FakePropertyStateFactory(BaseFake):
 
     def __init__(self, num_owners=5, organization=None):
         # pylint:disable=unused-variable
-        super(FakePropertyStateFactory, self).__init__()
+        super().__init__()
         # pre-generate a list of owners so they occur more than once.
         self.owners = [self.owner() for i in range(num_owners)]
         self.organization = organization
@@ -298,7 +305,7 @@ class FakePropertyViewFactory(BaseFake):
     """
 
     def __init__(self, prprty=None, cycle=None, organization=None, user=None):
-        super(FakePropertyViewFactory, self).__init__()
+        super().__init__()
         self.prprty = prprty
         self.cycle = cycle
         self.organization = organization
@@ -337,7 +344,7 @@ class FakePropertyMeasureFactory(BaseFake):
                 organization=self.organization).get_property_state()
         else:
             self.property_state = property_state
-        super(FakePropertyMeasureFactory, self).__init__()
+        super().__init__()
 
     def assign_random_measures(self, number_of_measures=5, **kw):
         # remove any existing measures assigned to the property
@@ -377,7 +384,7 @@ class FakeGreenAssessmentFactory(BaseFake):
 
     def __init__(self, organization=None):
         self.organization = organization
-        super(FakeGreenAssessmentFactory, self).__init__()
+        super().__init__()
 
     def get_details(self):
         """Generate details."""
@@ -419,7 +426,7 @@ class FakeGreenAssessmentURLFactory(BaseFake):
     """
 
     def __init__(self):
-        super(FakeGreenAssessmentURLFactory, self).__init__()
+        super().__init__()
 
     def get_url(self, property_assessment, url=None):
         """Generate Instance"""
@@ -436,7 +443,7 @@ class FakeGreenAssessmentPropertyFactory(BaseFake):
     """
 
     def __init__(self, organization=None, user=None):
-        super(FakeGreenAssessmentPropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
         self.green_assessment_factory = FakeGreenAssessmentFactory()
@@ -521,7 +528,7 @@ class FakeStatusLabelFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeStatusLabelFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.colors = [color[0] for color in StatusLabel.COLOR_CHOICES]
         self.label_names = StatusLabel.DEFAULT_LABELS
@@ -551,7 +558,7 @@ class FakeNoteFactory(BaseFake):
     def __init__(self, organization=None, user=None):
         self.organization = organization
         self.user = user
-        super(FakeNoteFactory, self).__init__()
+        super().__init__()
 
     def get_note(self, organization=None, user=None, **kw):
         """Get Note instance."""
@@ -598,7 +605,7 @@ class FakeTaxLotFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeTaxLotFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.label_factory = FakeStatusLabelFactory(organization=organization)
 
@@ -618,7 +625,7 @@ class FakeTaxLotStateFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeTaxLotStateFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_details(self):
@@ -657,7 +664,7 @@ class FakeTaxLotPropertyFactory(BaseFake):
     """
 
     def __init__(self, prprty=None, cycle=None, organization=None, user=None):
-        super(FakeTaxLotPropertyFactory, self).__init__()
+        super().__init__()
         self.organization = organization
         self.user = user
         self.property_view_factory = FakePropertyViewFactory(
@@ -704,7 +711,7 @@ class FakeTaxLotViewFactory(BaseFake):
     """
 
     def __init__(self, taxlot=None, cycle=None, organization=None, user=None):
-        super(FakeTaxLotViewFactory, self).__init__()
+        super().__init__()
         self.taxlot = taxlot
         self.cycle = cycle
         self.organization = organization
@@ -742,12 +749,14 @@ class FakeColumnListSettingsFactory(BaseFake):
     """
 
     def __init__(self, organization=None):
-        super(FakeColumnListSettingsFactory, self).__init__()
+        super().__init__()
         self.organization = organization
 
     def get_columnlistsettings(self, organization=None,
-                               inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY,
-                               location=ColumnListSetting.VIEW_LIST, **kw):
+                               inventory_type=VIEW_LIST_PROPERTY,
+                               location=VIEW_LIST,
+                               table_name='PropertyState',
+                               **kw):
         """Get columnlistsettings instance."""
         if not organization:
             organization = self.organization
@@ -764,7 +773,7 @@ class FakeColumnListSettingsFactory(BaseFake):
         if 'columns' in kw:
             # add the columns to the list of items
             for c in kw.pop('columns'):
-                columns.append(Column.objects.get(organization=organization, column_name=c, table_name='PropertyState'))
+                columns.append(Column.objects.get(organization=organization, column_name=c, table_name=table_name))
         else:
             # use all the columns
             for c in Column.objects.filter(organization=organization):

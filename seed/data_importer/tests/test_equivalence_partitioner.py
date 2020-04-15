@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -25,15 +25,13 @@ class EZState(object):
 class PropertyState(EZState):
 
     def __init__(self, **kwds):
-        super(PropertyState, self).__init__("ubid", "pm_property_id", "custom_id_1",
-                                            "normalized_address", **kwds)
+        super().__init__("ubid", "pm_property_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TaxLotState(EZState):
 
     def __init__(self, **kwds):
-        super(TaxLotState, self).__init__("jurisdiction_tax_lot_id", "custom_id_1",
-                                          "normalized_address", **kwds)
+        super().__init__("jurisdiction_tax_lot_id", "custom_id_1", "normalized_address", **kwds)
 
 
 class TestEquivalenceClassGenerator(DataMappingBaseTestCase):

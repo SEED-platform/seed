@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -47,10 +47,10 @@ class Scenario(models.Model):
                                           default=TEMPORAL_STATUS_CURRENT)
     description = models.TextField(null=True)
 
-    property_state = models.ForeignKey('PropertyState', related_name='scenarios')
+    property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='scenarios')
 
     # a scenario can point to a reference case scenario
-    reference_case = models.ForeignKey('Scenario', null=True)
+    reference_case = models.ForeignKey('Scenario', on_delete=models.CASCADE, null=True)
 
     # package of measures fields
     annual_site_energy_savings = models.FloatField(null=True)

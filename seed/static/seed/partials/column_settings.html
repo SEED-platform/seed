@@ -26,9 +26,84 @@
         </div>
     </div>
     <div class="section_content_container">
+        <div class="section_content with_padding" style="padding: 15px;">
+            <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instruction" ng-click=changeText(btnText)>{$ btnText $}</button>
+        </div>
+        <div class="section_content with_padding collapse in" style="margin-bottom:15px;" id="instruction">
+            <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
+            <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
+            <table class="column-settings-instructions">
+             <tr>
+                    <td translate>Display Name</td>
+                    <td>
+                        <ul>
+                           <li translate>COL_CHANGE_DISPLAY</li>
+                        </ul>
+                   </td>
+                </tr>
+                <tr>
+                    <td translate>Column Name</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_CHANGE_NAME</li>
+                            <li translate>GEOCODING_NEEDS_THREE_COLS</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Geocoding Order</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_GEOCODING_TOGGLE</li>
+                            <li translate>COL_GEOCODING_TOGGLE_EXT</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Rename</td>
+                    <td>
+                        <ul>
+                            <li translate>RENAME_SYS_LEVEL_COL</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Data Type</td>
+                    <td>
+                        <ul>
+                            <li translate>EXTRA_DATA_COL_TYPE_CHANGE</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Merge Protection</td>
+                    <td>
+                        <ul>
+                            <li translate>MERGE_PROTECTION_EXPLANATION</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Recognize Empty</td>
+                    <td>
+                        <ul>
+                            <li translate>RECOGNIZE_EMPTY_EXPLANATION</li>
+                            <li style="font-weight: bold;" translate>RECOGNIZE_EMPTY_IMPORT_WARNING</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td translate>Match Criteria</td>
+                    <td>
+                        <ul>
+                            <li translate>COL_MATCHING_CRITERIA_TOGGLE</li>
+                            <li style="font-weight: bold;" translate>MATCHING_CRITERIA_PREVIEW_WARNING</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <div class="section_content with_padding" style="margin-bottom:15px;">
-            <h3 translate>Modifying Column Settings</h3>
-            <p translate>From the table below, you may modify the columns in the following ways: 1) change the display name of a column, 2) specify the data type of extra data columns, and 3) enable merge protection for specific columns. Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data.</p>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
@@ -43,11 +118,24 @@
                 <table id="column-table" class="table has_no_btm_margin">
                     <thead>
                         <tr>
-                            <th translate>Display Name</th>
-                            <th translate>Column Name</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Rename</th>
-                            <th style="min-width: 130px; width: 130px;" translate>Data Type</th>
-                            <th style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-left" ng-click="toggle_display_name_order_sort()">
+                                <span>Display Name<i class="glyphicon glyphicon-sort"></i></span>
+                            </th>
+                            <th class="text-left" ng-click="toggle_column_name_order_sort()">
+                                <span>Column Name<i class="glyphicon glyphicon-sort"></i></span>
+                            </th>
+                            <th class="text-center" style="min-width: 80px; width: 80px;" ng-click="toggle_geocoding_order_sort()">
+                                <span>Geocoding Order<i class="glyphicon glyphicon-sort"></i></span>
+                            </th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Rename</th>
+                            <th class="text-center" style="min-width: 130px; width: 130px;" translate>Data Type</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" translate>Merge Protection</th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_recognize_empty_sort()">
+                              <span>Recognize Empty</span> <i class="glyphicon glyphicon-sort"></i>
+                            </th>
+                            <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_matching_criteria_sort()">
+                                <span>Match Criteria</span> <i class="glyphicon glyphicon-sort"></i>
+                            </th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -67,6 +155,9 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head"></th>
+                            <th class="sub_head"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,14 +169,35 @@
                                 {$:: column.column_name $}
                                 <span ng-if="column.is_extra_data" class="badge" style="margin-left: 10px;">extra data</span>
                             </td>
+
                             <td>
+                                <span style="display: flex; align-items:center;">
+                                    <span ng-click="geocoding_toggle(column)" style="margin-right: 5px;">
+                                        <input type="checkbox" ng-checked="column.geocoding_order" class="no-click">
+                                    </span>
+                                    <select class="form-control input-sm" ng-model="column.geocoding_order" ng-options="n for n in geocoding_columns_position_options" ng-change="reinsert_geocoding_column(column)" ng-disabled="!column.geocoding_order"></select>
+                                </span>
+                            </td>
+
+
+                            <td class="text-center">
                                 <button type="button" class="btn btn-default" ng-click="open_rename_column_modal(column.id, column.column_name)">{$:: 'Rename' | translate $}</button>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <select class="form-control input-sm" ng-model="column.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="setModified()" ng-disabled="!column.is_extra_data"></select>
                             </td>
                             <td ng-click="change_merge_protection(column)" class="text-center">
                                 <input type="checkbox" ng-checked="column.merge_protection === 'Favor Existing'" class="no-click">
+                            </td>
+                            <td class="text-center" ng-click="change_recognize_empty(column)">
+                                <input type="checkbox" ng-checked="column.recognize_empty" class="no-click">
+                            </td>
+
+                            <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
+                                <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
+                            </td>
+                            <td class="text-center" ng-if="column.is_extra_data">
+                                <span ng-if="column.is_extra_data" translate>Ineligible</span>
                             </td>
                         </tr>
                     </tbody>

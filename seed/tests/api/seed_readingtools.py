@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -10,12 +10,28 @@ import os
 import pprint
 import time
 
+import psutil
 import requests
+import urllib3
+from http.client import RemoteDisconnected
+
+
+def report_memory():
+    mem = psutil.virtual_memory()
+    print(mem)
+    print(f'Free mem (MB): {mem.available / 1024}')
+    min_amount = 100 * 1024 * 1024  # 100MB
+    if mem.available <= min_amount:
+        print("WARNING: Memory is low on system")
+
+    # also report the processes (that we care about)
+    ps = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if 'python' in p.info['name']]
+    print(f'Python processes: {ps}')
+    ps = [p.info for p in psutil.process_iter(attrs=['pid', 'name']) if 'celery' in p.info['name']]
+    print(f'Celery processes: {ps}')
 
 
 # Three-step upload process
-
-
 def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upload_datatype):
     """
     Proceeds with the filesystem upload.
@@ -114,15 +130,22 @@ def check_status(result_out, part_msg, log, piid_flag=None):
 
 def check_progress(main_url, header, progress_key):
     """Delays the sequence until progress is at 100 percent."""
+    time.sleep(2)
     print("checking progress {}".format(progress_key))
-    time.sleep(1)
-    progress_result = requests.get(
-        main_url + '/api/v2/progress/{}'.format(progress_key),
-        headers=header
-    )
-    print("... {} ...".format(progress_result.json()['progress']))
+    try:
+        progress_result = requests.get(
+            main_url + '/api/v2/progress/{}/'.format(progress_key),
+            headers=header
+        )
+        print("... {} ...".format(progress_result.json()['progress']))
+    except [urllib3.exceptions.ProtocolError, RemoteDisconnected, requests.exceptions.ConnectionError]:
+        print("Server is not responding... trying again in a few seconds")
+        progress_result = None
+    except Exception:
+        print("Other unknown exception caught!")
+        progress_result = None
 
-    if progress_result.json()['progress'] == 100:
+    if progress_result and progress_result.json()['progress'] == 100:
         return progress_result
     else:
         progress_result = check_progress(main_url, header, progress_key)

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -13,7 +13,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone as tz
 from quantityfield import ureg
 
-from seed.data_importer import tasks
+from seed.data_importer import tasks, match
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
@@ -198,7 +198,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(hashes), 9)
         self.assertEqual(len(set(hashes)), 4)
 
-        unique_property_states, _ = tasks.filter_duplicated_states(ps)
+        unique_property_states, _ = match.filter_duplicate_states(ps)
         self.assertEqual(len(unique_property_states), 4)
 
         tasks.match_buildings(self.import_file.id)

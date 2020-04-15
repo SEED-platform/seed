@@ -1,12 +1,12 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: mapping_controller', function () {
   // globals set up and used in each test scenario
   var mock_inventory_service, controller;
   var mapping_controller_scope;
-  var timeout, mock_user_service;
+  var timeout, mock_geocode_service, mock_user_service, mock_organization_service;
 
 
   // make the seed app available for each test
@@ -17,15 +17,31 @@ describe('controller: mapping_controller', function () {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, user_service) {
+    inject(function ($controller, $rootScope, $uibModal, urls, $q, inventory_service, $timeout, geocode_service, organization_service, user_service) {
       controller = $controller;
       mapping_controller_scope = $rootScope.$new();
       timeout = $timeout;
       mock_user_service = user_service;
+      mock_geocode_service = geocode_service;
+      mock_organization_service = organization_service;
 
       spyOn(mock_user_service, 'set_default_columns')
         .andCallFake(function () {
           return undefined;
+        });
+
+      spyOn(mock_geocode_service, 'check_org_has_api_key')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+          });
+        });
+
+      spyOn(mock_organization_service, 'geocoding_columns')
+        .andCallFake(function () {
+          return $q.resolve({
+            status: 'success',
+          });
         });
     });
   });
@@ -58,45 +74,98 @@ describe('controller: mapping_controller', function () {
     };
 
     var fake_property_columns = [{
-      is_extra_data: false,
+      column_name: 'pm_property_id',
+      data_type: 'string',
       display_name: 'PM Property ID',
-      name: 'pm_property_id_1',
-      data_type: 'string',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState',
-      pinnedLeft: true,
       id: 1,
-      column_name: 'pm_property_id'
-    }, {
       is_extra_data: false,
+      name: 'pm_property_id_1',
+      pinnedLeft: true,
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'property_name',
+      data_type: 'string',
       display_name: 'Property Name',
-      name: 'property_name_2',
-      data_type: 'string',
-      sharedFieldType: 'None',
-      table_name: 'PropertyState',
       id: 2,
-      column_name: 'property_name'
-    }, {
       is_extra_data: false,
-      display_name: 'Property Notes',
-      name: 'property_notes_3',
-      data_type: 'string',
+      name: 'property_name_2',
       sharedFieldType: 'None',
-      table_name: 'PropertyState',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'property_notes',
+      data_type: 'string',
+      display_name: 'Property Notes',
       id: 3,
-      column_name: 'property_notes'
+      is_extra_data: false,
+      name: 'property_notes_3',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'address_line_1',
+      data_type: 'string',
+      display_name: 'Address Line 1',
+      id: 4,
+      is_extra_data: false,
+      name: 'address_line_1_4',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'custom_id_1',
+      data_type: 'string',
+      display_name: 'Custom ID 1',
+      id: 5,
+      is_extra_data: false,
+      name: 'custom_id_1_5',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
+    }, {
+      column_name: 'ubid',
+      data_type: 'string',
+      display_name: 'UBID',
+      id: 6,
+      is_extra_data: false,
+      name: 'ubid_6',
+      sharedFieldType: 'None',
+      table_name: 'PropertyState'
     }];
 
     var fake_taxlot_columns = [{
-      is_extra_data: false,
-      display_name: 'Jurisdiction Tax Lot ID',
-      name: 'jurisdiction_tax_lot_id_4',
+      column_name: 'address_line_1',
       data_type: 'string',
+      display_name: 'Address Line 1',
+      id: 7,
+      is_extra_data: false,
+      name: 'address_line_1_7',
       sharedFieldType: 'None',
-      table_name: 'TaxLotState',
-      pinnedLeft: true,
-      id: 4,
-      column_name: 'jurisdiction_tax_lot_id'
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'custom_id_1',
+      data_type: 'string',
+      display_name: 'Custom ID 1',
+      id: 8,
+      is_extra_data: false,
+      name: 'custom_id_1_8',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'jurisdiction_tax_lot_id',
+      data_type: 'string',
+      display_name: 'Jurisdiction Tax Lot ID',
+      id: 9,
+      is_extra_data: false,
+      name: 'jurisdiction_tax_lot_id_9',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
+    }, {
+      column_name: 'ulid',
+      data_type: 'string',
+      display_name: 'ULID',
+      id: 10,
+      is_extra_data: false,
+      name: 'ulid_10',
+      sharedFieldType: 'None',
+      table_name: 'TaxLotState'
     }];
 
     var mock_mapping_suggestions_payload = {
@@ -110,6 +179,11 @@ describe('controller: mapping_controller', function () {
       },
       property_columns: fake_property_columns,
       taxlot_columns: fake_taxlot_columns
+    };
+
+    var mock_matching_criteria_columns_payload = {
+      PropertyState: ['address_line_1', 'custom_id_1', 'pm_property_id', 'ubid'],
+      TaxLotState: ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id', 'ulid']
     };
 
     var mock_raw_column_names = [
@@ -162,6 +236,8 @@ describe('controller: mapping_controller', function () {
       suggested_mappings_payload: mock_mapping_suggestions_payload,
       raw_columns_payload: raw_columns_payload,
       first_five_rows_payload: first_five_rows_payload,
+      matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
+      column_mapping_presets_payload: [],
       cycles: mock_cycles,
       inventory_service: mock_inventory_service
     });
@@ -180,26 +256,15 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
-  });
-
-  it('should show suggested mappings', function () {
-    // arrange
-    create_mapping_controller();
-
-    // act
-    mapping_controller_scope.$digest();
-
-    // assertions
-    var mappings = mapping_controller_scope.mappings;
-    var first_column = mappings[0];
-
-    expect(first_column.suggestion).toBe('PM Property ID');
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should detect duplicates', function () {
     create_mapping_controller();
     mapping_controller_scope.$digest();
-    console.log('mappings', angular.copy(mapping_controller_scope.mappings));
+    mapping_controller_scope.mappings[0].suggestion = 'PM Property ID';
+    mapping_controller_scope.mappings[1].suggestion = 'Property Name';
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
@@ -217,6 +282,9 @@ describe('controller: mapping_controller', function () {
 
     expect(mapping_controller_scope.mappings[0].is_duplicate).toBe(false);
     expect(mapping_controller_scope.mappings[1].is_duplicate).toBe(false);
+
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   // Needs to be an e2e test.
@@ -247,6 +315,8 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(false);
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
   it('should disable the "show & review buildings" button if duplicates are present', function () {
@@ -263,45 +333,8 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(duplicates_found).toBe(true);
+    expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
+    expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
 
-  it('should get mappings in an API friendly way', function () {
-    create_mapping_controller();
-    mapping_controller_scope.$digest();
-    var mappings = mapping_controller_scope.get_mappings();
-    expect(mappings.length).toBe(5);
-    expect(mappings[0]).toEqual({
-      from_field: 'property id',
-      from_units: null,
-      to_field: 'pm_property_id',
-      to_field_display_name: 'PM Property ID',
-      to_table_name: 'PropertyState'
-    });
-    // everything in between is empty since we we're using only
-    // suggested mappings.
-    expect(mappings[3]).toEqual({
-      from_field: 'lot number',
-      from_units: null,
-      to_field: 'jurisdiction_tax_lot_id',
-      to_field_display_name: 'Jurisdiction Tax Lot ID',
-      to_table_name: 'TaxLotState'
-    });
-  });
-
-  // Needs to be e2e test now.
-  // it('should show the "STEP 2" tab when reviewing mappings', function() {
-  //     // arrange
-  //     create_mapping_controller();
-  //     mapping_controller_scope.$digest();
-
-  //     // act
-  //     var mappings = mapping_controller_scope.get_mapped_buildings();
-
-  //     // assert
-  //     expect(mapping_controller_scope.tabs).toEqual({
-  //         one_active: false,
-  //         two_active: true,
-  //         three_active: false
-  //     });
-  // });
 });

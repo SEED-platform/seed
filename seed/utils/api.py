@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -18,7 +18,9 @@ from django.core.exceptions import (
     PermissionDenied,
     ValidationError
 )
+from django.http import JsonResponse
 from past.builtins import basestring
+from rest_framework import status, exceptions
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
@@ -26,7 +28,8 @@ from seed.models import (
     Column,
     ColumnListSetting,
     ColumnListSettingColumn,
-)
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY)
 
 OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
 
@@ -81,10 +84,10 @@ def get_all_urls(urllist, prefix=''):
     for entry in urllist:
         if hasattr(entry, 'url_patterns'):
             for url in get_all_urls(entry.url_patterns,
-                                    prefix + entry.regex.pattern):
+                                    prefix + entry.pattern.regex.pattern):
                 yield url
         else:
-            yield (prefix + entry.regex.pattern, entry.callback)
+            yield (prefix + entry.pattern.regex.pattern, entry.callback)
 
 
 # pylint: disable=global-variable-not-assigned
@@ -178,8 +181,14 @@ class APIBypassCSRFMiddleware(object):
     def __call__(self, request):
         response = self.get_response(request)
 
-        if get_api_request_user(request):
-            request.csrf_processing_done = True
+        try:
+            if get_api_request_user(request):
+                request.csrf_processing_done = True
+        except exceptions.AuthenticationFailed as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e),
+            }, status=status.HTTP_401_UNAUTHORIZED)
         return response
 
 
@@ -253,8 +262,8 @@ class ProfileIdMixin(object):
         profile_exists = ColumnListSetting.objects.filter(
             organization_id=org_id,
             id=profile_id,
-            settings_location=ColumnListSetting.VIEW_LIST,
-            inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+            settings_location=VIEW_LIST,
+            inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
             show_columns['fields'] += list(Column.objects.filter(
@@ -269,8 +278,8 @@ class ProfileIdMixin(object):
             profile = ColumnListSetting.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=ColumnListSetting.VIEW_LIST,
-                inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                settings_location=VIEW_LIST,
+                inventory_type=VIEW_LIST_PROPERTY
             )
             for col in list(ColumnListSettingColumn.objects.filter(column_list_setting_id=profile.id).values(
                     'column__column_name', 'column__is_extra_data')):

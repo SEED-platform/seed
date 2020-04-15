@@ -1,5 +1,6 @@
         <a ng-if="inventory_type === 'taxlots'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Tax Lots List</a><!--
      --><a ng-if="inventory_type === 'properties'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Properties List</a><!--
      --><a id="list-settings" ui-sref="list_settings(::{inventory_type: inventory_type})" ui-sref-active="active" translate>List Settings</a><!--
-     --><a id="reports" ui-sref="reports(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Reports</a>
-        <!-- <a id="map" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a> -->
+     --><a id="reports" ui-sref="reports(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Reports</a><!--
+     --><a id="inventory-cycles" ui-sref="inventory_cycles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Cross-Cycles</a><!--
+     --><a ng-if="inventory_type === 'properties'" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a>

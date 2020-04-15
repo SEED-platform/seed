@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -10,7 +10,7 @@ import csv
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import action
 from unidecode import unidecode
 
 from seed.data_importer.tasks import do_checks
@@ -145,7 +145,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def csv(self, request, pk):
         """
         Download a csv of the data quality checks by the pk which is the cache_key
@@ -169,7 +169,7 @@ class DataQualityViews(viewsets.ViewSet):
 
         writer.writerow(
             ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Error Message', 'Severity'])
+             'Applied Label', 'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -180,6 +180,7 @@ class DataQualityViews(viewsets.ViewSet):
                     row['jurisdiction_tax_lot_id'] if 'jurisdiction_tax_lot_id' in row else None,
                     row['custom_id_1'],
                     result['formatted_field'],
+                    result.get('label', None),
                     # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
                     unidecode(result['detailed_message']),
                     result['severity']
@@ -190,7 +191,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def data_quality_rules(self, request):
         """
         Returns the data_quality rules for an org.
@@ -245,7 +246,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['PUT'])
+    @action(detail=False, methods=['PUT'])
     def reset_all_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
@@ -283,7 +284,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['PUT'])
+    @action(detail=False, methods=['PUT'])
     def reset_default_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
@@ -321,7 +322,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def save_data_quality_rules(self, request, pk=None):
         """
         Saves an organization's settings: name, query threshold, shared fields.
@@ -402,6 +403,12 @@ class DataQualityViews(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
+            if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Label must be assigned when using Valid Data Severity.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 dq.add_rule(rule)
             except TypeError as e:
@@ -415,7 +422,7 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def results(self, request):
         """
         Return the result of the data quality based on the ID that was given during the

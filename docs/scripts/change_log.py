@@ -80,11 +80,17 @@ for issue in repo.issues(state='closed'):
                 # print('No longer valid issue found, will ignore in change log')
                 continue
 
+            if 'Not Reproducible' in labels:
+                # these issues are not going to be reported
+                continue
+
             if 'Feature' in labels:
                 # print('New feature found')
                 add_issue(closed_issues, 'Feature', issue)
             elif 'Maintenance' in labels:
                 # print('New maintenance task')
+                add_issue(closed_issues, 'Maintenance', issue)
+            elif 'Enhancement' in labels:
                 add_issue(closed_issues, 'Improved', issue)
             else:
                 # print('Must be a bug')
@@ -100,7 +106,9 @@ for issue in repo.issues(state='open'):
                 # print('new issue created during this time')
                 add_issue(new_issues, 'New Feature', issue)
             elif 'Maintenance' in labels:
-                add_issue(new_issues, 'New Improvement', issue)
+                add_issue(new_issues, 'New Maintenance', issue)
+            elif 'Enhancement' in labels:
+                add_issue(closed_issues, 'New Improvement', issue)
             else:
                 add_issue(new_issues, 'New Issue', issue)
 

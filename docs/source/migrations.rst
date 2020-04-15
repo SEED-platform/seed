@@ -47,9 +47,27 @@ local_untracked.py file
         ),
     )
 
+Version 2.7.1
+-------------
+
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.7.0
+-------------
+
+- This migration will run a match/merge/pair/link method upon migration. Make sure to run the migration manually and not inside of the docker container using the ./deploy.sh script.
+- Make sure to backup the database before peforming the migration.
+- Run `./manage.py migrate`.
+
+
+Version 2.6.1
+-------------
+
+- The migrations should work without additional support. Simply run `./manage.py migrate`. There are no manual migrations needed for the 2.6.1 release.
+
 
 Version 2.6.0
-------------------
+-------------
 
 Version 2.6.0 includes support for meters and time series data storage. In order to use this release
 you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).

@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 :license: see LICENSE for more details.
 
@@ -15,6 +15,7 @@ seed local_untracked.py
     For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 import os
+from kombu import Exchange, Queue
 
 DEBUG = True
 
@@ -33,39 +34,36 @@ DATABASES = {
 # redis cache config
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
 # 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "localhost:6379",
-        'OPTIONS': {'DB': 1},
-        'TIMEOUT': 300
+
+EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
+if EAGER:
+    CELERY_BROKER_BACKEND = 'memory'
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+else:
+    print("Using redis database")
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.cache.RedisCache',
+            'LOCATION': "localhost:6379",
+            'OPTIONS': {'DB': 1},
+            'TIMEOUT': 300
+        }
     }
-}
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+    CELERY_BROKER_URL = 'redis://%s/%s' % (
+        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+    )
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+    CELERY_TASK_QUEUES = (
+        Queue(
+            CELERY_TASK_DEFAULT_QUEUE,
+            Exchange(CELERY_TASK_DEFAULT_QUEUE),
+            routing_key=CELERY_TASK_DEFAULT_QUEUE
+        ),
+    )
+    CELERY_TASK_ALWAYS_EAGER = False
+    CELERY_TASK_EAGER_PROPAGATES = False
+
 
 INTERNAL_IPS = ('127.0.0.1',)
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler'
-        },
-        'console-debug': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler'
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
-        'django.db.backends': {
-            'level': 'INFO',
-            'handlers': ['console-debug']
-        },
-    },
-}

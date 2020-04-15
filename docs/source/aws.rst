@@ -14,7 +14,9 @@ understanding of this project's layout.
 Prerequisites
 ^^^^^^^^^^^^^
 
-Ubuntu server 14.04 or newer.
+Ubuntu server 18.04 LTS
+
+.. note:: These instructions have not been updated for Ubuntu 18.04. It is recommended to use Docker-based deployments.
 
 .. code-block:: console
 
@@ -37,11 +39,12 @@ scalable solution, it is recommended to use AWS's hosted Redis (ElastiCache) and
     sudo apt-get install redis-server
     sudo apt-get install postgresql postgresql-contrib
 
+.. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html
 
 Amazon Web Services (AWS) Dependencies
 ++++++++++++++++++++++++++++++++++++++
 
-The following AWS services are used for **SEED**:
+The following AWS services can be used for **SEED** but are not required:
 
 * RDS (PostgreSQL >=9.4)
 * ElastiCache (redis)
@@ -59,12 +62,12 @@ Clone the **SEED** repository from **github**
 
 enter the repo and install the python dependencies from `requirements`_
 
-.. _requirements: https://github.com/SEED-platform/seed/blob/master/requirements/local.txt
+.. _requirements: https://github.com/SEED-platform/seed/blob/master/requirements/aws.txt
 
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements/local.txt
+    $ sudo pip install -r requirements/aws.txt
 
 
 JavaScript Dependencies
@@ -182,20 +185,3 @@ project directory, ``celery`` can be started:
 .. _Celery: http://www.celeryproject.org/
 
 
-Running a Production Web Server
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The preferred way to deploy with Docker is using docker swarm and docker stack.
-Look at the `deploy.sh script`_  for implementation details.
-
-The short version is to simply run the command below. Note that the passing of the docker-compose.yml filename is not required if using docker-compose.local.yml.
-
-```bash
-./deploy.sh docker-compose.local.yml
-```
-
-If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
-
-
-.. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh
-.. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html

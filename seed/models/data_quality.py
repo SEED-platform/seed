@@ -1,21 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 import logging
 import re
+from builtins import str
 from datetime import date, datetime
 from random import randint
 
 import pytz
-from builtins import str
 from django.apps import apps
 from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
+from pint.errors import DimensionalityError
 from quantityfield import ureg
 
 from seed.lib.superperms.orgs.models import Organization
@@ -40,6 +41,14 @@ class ComparisonError(Exception):
 
 
 class DataQualityTypeCastError(Exception):
+    pass
+
+
+class UnitMismatchError(Exception):
+    pass
+
+
+class MissingLabelError(Exception):
     pass
 
 
@@ -74,7 +83,7 @@ def format_pint_violation(rule, source_value):
         formatted_min = '{:.1f} {}'.format(rule.min, pretty_rule_units)
     if rule.max is not None:
         formatted_max = '{:.1f} {}'.format(rule.max, pretty_rule_units)
-    return (formatted_value, formatted_min, formatted_max)
+    return formatted_value, formatted_min, formatted_max
 
 
 class Rule(models.Model):
@@ -105,9 +114,11 @@ class Rule(models.Model):
 
     SEVERITY_ERROR = 0
     SEVERITY_WARNING = 1
+    SEVERITY_VALID = 2
     SEVERITY = [
         (SEVERITY_ERROR, 'error'),
-        (SEVERITY_WARNING, 'warning')
+        (SEVERITY_WARNING, 'warning'),
+        (SEVERITY_VALID, 'valid'),
     ]
 
     DEFAULT_RULES = [
@@ -289,9 +300,9 @@ class Rule(models.Model):
     ]
     name = models.CharField(max_length=255, blank=True)
     description = models.CharField(max_length=1000, blank=True)
-    data_quality_check = models.ForeignKey('DataQualityCheck', related_name='rules',
-                                           on_delete=models.CASCADE, null=True)
-    status_label = models.ForeignKey(StatusLabel, null=True, on_delete=models.DO_NOTHING)
+    data_quality_check = models.ForeignKey('DataQualityCheck', on_delete=models.CASCADE,
+                                           related_name='rules', null=True)
+    status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
@@ -347,7 +358,13 @@ class Rule(models.Model):
                 rule_min = int(rule_min)
             elif isinstance(value, ureg.Quantity):
                 rule_min = rule_min * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -357,6 +374,8 @@ class Rule(models.Model):
                 else:
                     # If rule_min is undefined/None or value is okay, then it is valid.
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -382,7 +401,13 @@ class Rule(models.Model):
                 rule_max = int(rule_max)
             elif isinstance(value, ureg.Quantity):
                 rule_max = rule_max * ureg(self.units)
-            elif not isinstance(value, basestring):
+            elif isinstance(value, basestring):
+                # try to convert to float
+                try:
+                    value = float(value)
+                except ValueError:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+            else:
                 # must be a float...
                 value = float(value)
 
@@ -391,6 +416,8 @@ class Rule(models.Model):
                     return False
                 else:
                     return True
+            except DimensionalityError:
+                raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)")
             except ValueError:
                 raise ComparisonError("Value could not be compared numerically")
 
@@ -484,7 +511,7 @@ class DataQualityCheck(models.Model):
         'TaxLotState': ['address_line_1', 'custom_id_1', 'jurisdiction_tax_lot_id'],
     }
 
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, default='Default Data Quality Check')
 
     @classmethod
@@ -528,7 +555,7 @@ class DataQualityCheck(models.Model):
         # set in check_data
         self.column_lookup = {}
 
-        super(DataQualityCheck, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def initialize_cache(identifier=None):
@@ -636,9 +663,13 @@ class DataQualityCheck(models.Model):
                 #                                             len(model_labels['label_ids'])))
 
         for rule in rules:
+            # create an extra data flag for the rule
+            is_extra_data = rule.field in row.extra_data
+
             # check if the field exists
-            if hasattr(row, rule.field) or rule.field in row.extra_data:
+            if hasattr(row, rule.field) or is_extra_data:
                 value = None
+
                 label_applied = False
                 display_name = rule.field
 
@@ -648,7 +679,7 @@ class DataQualityCheck(models.Model):
                     # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
                     if isinstance(value, ureg.Quantity) and rule.units == '':
                         value = value.magnitude
-                elif rule.field in row.extra_data:
+                elif is_extra_data:
                     value = row.extra_data[rule.field]
 
                     if ' (Invalid Footprint)' in rule.field:
@@ -661,6 +692,7 @@ class DataQualityCheck(models.Model):
                         self.add_result_type_error(row.id, rule, display_name, value)
                         continue
 
+                # get the display name of the rule
                 if (rule.table_name, rule.field) in self.column_lookup:
                     display_name = self.column_lookup[(rule.table_name, rule.field)]
 
@@ -672,37 +704,77 @@ class DataQualityCheck(models.Model):
                     # field that wasn't mapped
                     if rule.required:
                         self.add_result_missing_req(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
                     # Empty fields
                     if rule.required:
                         self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     elif rule.not_null:
                         self.add_result_is_null(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id)
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif not rule.valid_text(value):
                     self.add_result_string_error(row.id, rule, display_name, value)
-                    label_applied = self.update_status_label(label, rule, linked_id)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
+                    # check the min and max values
                     try:
                         if not rule.minimum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
                         continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
+                        continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
+                        continue
 
                     try:
                         if not rule.maximum_valid(value):
-                            s_min, s_max, s_value = rule.format_strings(value)
-                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                            label_applied = self.update_status_label(label, rule, linked_id)
+                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
                     except ComparisonError:
                         s_min, s_max, s_value = rule.format_strings(value)
                         self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
+                        continue
+                    except DataQualityTypeCastError:
+                        s_min, s_max, s_value = rule.format_strings(value)
+                        self.add_result_type_error(row.id, rule, display_name, s_value)
+                        continue
+                    except UnitMismatchError:
+                        self.add_result_dimension_error(row.id, rule, display_name, value)
+                        continue
+
+                    # Check for mandatory label for valid data:
+                    try:
+                        if rule.minimum_valid(value) and rule.maximum_valid(value):
+                            if rule.severity == Rule.SEVERITY_VALID:
+                                '''
+                                s_min, s_max, s_value = rule.format_strings(value)
+                                self.results[row.id]['data_quality_results'].append(
+                                    {
+                                        'field': rule.field,
+                                        'formatted_field': display_name,
+                                        'value': s_value,
+                                        'table_name': rule.table_name,
+                                        'message': display_name + ' is valid',
+                                        'detailed_message': display_name + ' [' + s_value + '] is valid data',
+                                        'severity': rule.get_severity_display(),
+                                    }
+                                )
+                                '''
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                    except MissingLabelError:
+                        self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
@@ -849,6 +921,19 @@ class DataQualityCheck(models.Model):
             }
         )
 
+    def add_result_dimension_error(self, row_id, rule, display_name, value):
+        self.results[row_id]['data_quality_results'].append(
+            {
+                'field': rule.field,
+                'formatted_field': display_name,
+                'value': value.magnitude,
+                'table_name': rule.table_name,
+                'message': display_name + ' units mismatch with rule units',
+                'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
+                'severity': rule.get_severity_display(),
+            }
+        )
+
     def add_result_type_error(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append(
             {
@@ -872,6 +957,18 @@ class DataQualityCheck(models.Model):
             'detailed_message': rule.field + ' is required and missing',
             'severity': rule.get_severity_display(),
         })
+
+    def add_result_missing_label(self, row_id, rule, display_name, value):
+        if rule.severity == Rule.SEVERITY_VALID:
+            self.results[row_id]['data_quality_results'].append({
+                'field': rule.field,
+                'formatted_field': rule.field,
+                'value': value,
+                'table_name': rule.table_name,
+                'message': rule.status_label + ' is missing',
+                'detailed_message': rule.status_label + ' is required and missing',
+                'severity': rule.get_severity_display(),
+            })
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append({
@@ -912,7 +1009,7 @@ class DataQualityCheck(models.Model):
             'severity': rule.get_severity_display(),
         })
 
-    def update_status_label(self, label_class, rule, linked_id):
+    def update_status_label(self, label_class, rule, linked_id, row_id):
         """
 
         :param label_class: statuslabel object, either propertyview label or taxlotview label
@@ -920,7 +1017,6 @@ class DataQualityCheck(models.Model):
         :param linked_id: id of propertystate or taxlotstate object
         :return: boolean, if labeled was applied
         """
-
         if rule.status_label_id is not None and linked_id is not None:
             label_org_id = rule.status_label.super_organization_id
 
@@ -950,6 +1046,9 @@ class DataQualityCheck(models.Model):
                             taxlot_parent_org_id
                         )
                     )
+
+            self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
+
             return True
 
     def remove_status_label(self, label_class, rule, linked_id):
@@ -963,10 +1062,10 @@ class DataQualityCheck(models.Model):
         """
 
         if rule.table_name == 'PropertyState':
-            label_class.objects.filter(property_id=linked_id,
+            label_class.objects.filter(propertyview_id=linked_id,
                                        statuslabel_id=rule.status_label_id).delete()
         else:
-            label_class.objects.filter(taxlot_id=linked_id,
+            label_class.objects.filter(taxlotview_id=linked_id,
                                        statuslabel_id=rule.status_label_id).delete()
 
     def retrieve_result_by_address(self, address):

@@ -1,14 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
 from datetime import datetime
 from os import path
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils import timezone
 
 from config.settings.common import BASE_DIR
@@ -69,8 +69,7 @@ class InventoryViewTests(DeleteModelsTestCase):
                       response.content.decode("utf-8"))
 
     def test_upload_and_get_building_sync(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -162,9 +161,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(len(result['data']['property_view']['state']['scenarios']), 31)
 
     def test_upload_and_get_building_sync_diff_ns(self):
-        # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data',
-                             'ex_1_different_namespace.xml')
+        filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
 
         url = reverse('api:v2:building_file-list')
 
@@ -187,20 +184,4 @@ class InventoryViewTests(DeleteModelsTestCase):
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
         response = self.client.get(url)
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
-                      response.content.decode('utf-8'))
-
-    def test_get_hpxml(self):
-        state = self.property_state_factory.get_property_state()
-        prprty = self.property_factory.get_property()
-        pv = PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
-        )
-
-        # go to buildingsync endpoint
-        params = {
-            'organization_id': self.org.pk
-        }
-        url = reverse('api:v2.1:properties-hpxml', args=[pv.id])
-        response = self.client.get(url, params)
-        self.assertIn('<GrossFloorArea>%s.0</GrossFloorArea>' % state.gross_floor_area,
                       response.content.decode('utf-8'))

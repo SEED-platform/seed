@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -9,7 +9,6 @@ All rights reserved.  # NOQA
 """
 from seed.filtersets import CycleFilterSet
 from seed.models import Cycle
-from seed.pagination import NoPagination
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
@@ -142,7 +141,7 @@ class CycleViewSet(SEEDOrgModelViewSet):
             :required: false
     """
     serializer_class = CycleSerializer
-    pagination_class = NoPagination
+    pagination_class = None
     model = Cycle
     data_name = 'cycles'
     filter_class = CycleFilterSet

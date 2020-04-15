@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pipermerriam@gmail.com>', Paul Munday<paul@paulmunday.net>
 
 Unit tests for seed/views/labels.py
@@ -88,6 +88,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                     self.PropertyViewLabels,
                     Rule.objects.get(pk=org_1_ps_rule.id),
                     org_1_propertyview.id,
+                    org_1_propertystate.id
                 )
 
         self.assertFalse(PropertyView.objects.get(pk=org_1_propertyview.id).labels.all().exists())
@@ -128,6 +129,7 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                     self.TaxlotViewLabels,
                     Rule.objects.get(pk=org_1_tls_rule.id),
                     org_1_taxlot.id,
+                    org_1_taxlotstate.id
                 )
 
         self.assertFalse(TaxLotView.objects.get(pk=org_1_taxlotview.id).labels.all().exists())

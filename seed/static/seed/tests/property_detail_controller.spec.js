@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: inventory_detail_controller', function () {
@@ -23,7 +23,6 @@ describe('controller: inventory_detail_controller', function () {
       ngLog = $log;
       ngUrls = urls;
       mock_uib_modal = $uibModal;
-      mock_label_service = label_service;
       mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
@@ -330,7 +329,7 @@ describe('controller: inventory_detail_controller', function () {
     inventory_detail_controller_scope.$digest();
     inventory_detail_controller_scope.on_edit();
     inventory_detail_controller_scope.item_state.address_line_1 = 'ABC Main St.';
-    inventory_detail_controller_scope.on_save();
+    inventory_detail_controller_scope.save_item();
 
     // assertions
     expect(mock_inventory_service.update_property)

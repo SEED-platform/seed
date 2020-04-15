@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 :license: see LICENSE for more details.
 
@@ -46,6 +46,7 @@ TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key
 #AWS_SES_REGION_NAME = 'us-west-2'
 #AWS_SES_REGION_ENDPOINT = 'email.us-west-2.amazonaws.com'
 #SERVER_EMAIL = 'info@seed-platform.org'
+#DEFAULT_FROM_EMAIL = 'info@seed-platform.org'
 
 # Sentry Configuration (Optional)
 # import raven
