@@ -28,7 +28,10 @@ angular.module('BE.seed.controller.mapping', [])
     'organization_service',
     '$translate',
     'i18nService', // from ui-grid
+<<<<<<< HEAD
     'simple_modal_service',
+=======
+>>>>>>> develop
     'Notification',
     function (
       $scope,
@@ -55,7 +58,10 @@ angular.module('BE.seed.controller.mapping', [])
       organization_service,
       $translate,
       i18nService,
+<<<<<<< HEAD
       simple_modal_service,
+=======
+>>>>>>> develop
       Notification
     ) {
       $scope.presets = [
@@ -336,9 +342,10 @@ angular.module('BE.seed.controller.mapping', [])
           const suggestion = $scope.suggested_mappings[name];
           return {
             name: name,
-            suggestion_column_name: suggestion[1],
-            suggestion_table_name: suggestion[0],
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
+            raw_data: _.map(first_five_rows_payload.first_five_rows, name),
+            suggestion: suggestion.to_field,
+            suggestion_column_name: suggestion.to_field,
+            suggestion_table_name: suggestion.to_table_name
           };
         }
 
@@ -377,8 +384,11 @@ angular.module('BE.seed.controller.mapping', [])
 
           if (match) {
             col.suggestion = match.display_name;
+<<<<<<< HEAD
           } else if ($scope.import_file.source_type === "BuildingSync Raw") {
             col.suggestion = $filter('titleCase')(col.suggestion_column_name);
+=======
+>>>>>>> develop
           }
 
           $scope.mappings.push(col);

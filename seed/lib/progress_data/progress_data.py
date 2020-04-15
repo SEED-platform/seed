@@ -188,6 +188,10 @@ class ProgressData(object):
         self.data['summary'] = summary
         self.save()
 
+    def update_summary(self, summary):
+        self.data['summary'] = summary
+        self.save()
+
     def summary(self):
         """
         Return the summary data of the progress key
