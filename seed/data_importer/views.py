@@ -55,6 +55,7 @@ from seed.models import (
     obj_to_dict,
     PropertyState,
     TaxLotState,
+    DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
@@ -1301,10 +1302,12 @@ class ImportFileViewSet(viewsets.ViewSet):
                 thresh=80
             )
         elif import_file.from_buildingsync:
-            raw_property_state = PropertyState.objects.filter(import_file=import_file)
+            raw_property_state = PropertyState.objects.filter(import_file=import_file,
+                                                              data_state__in=[DATA_STATE_IMPORT, DATA_STATE_MAPPING])
             # there should always be at least one property state associated with
             # the import file at this point
-            assert raw_property_state.count() > 0
+            if raw_property_state.count() == 0:
+                raise Exception('Expected to find 1 or more property states but found none')
             raw_property_state = raw_property_state[0]
 
             bs = BuildingSync()

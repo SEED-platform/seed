@@ -11,6 +11,7 @@ from os import path
 from django.urls import reverse
 from django.utils import timezone
 
+from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,

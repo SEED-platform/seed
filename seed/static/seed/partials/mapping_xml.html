@@ -117,11 +117,11 @@
                               <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="true" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}">
                           </td>
                           <td>
-                              <select ng-model="col.from_units" ng-if="is_area_column(col)">
+                              <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-disabled="true">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
                               </select>
-                              <select ng-model="col.from_units" ng-if="is_eui_column(col)">
+                              <select ng-model="col.from_units" ng-if="is_eui_column(col)" ng-disabled="true">
                                   <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>

@@ -578,6 +578,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping_xml.html',
         controller: 'mapping_controller',
         resolve: {
+          column_mapping_presets_payload: ['column_mappings_service', 'user_service', function (column_mappings_service, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+              return response.data;
+            });
+          }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
@@ -596,6 +602,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
+          }],
+          matching_criteria_columns_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.matching_criteria_columns(user_service.get_organization().id);
           }],
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;

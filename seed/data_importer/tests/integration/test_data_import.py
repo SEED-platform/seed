@@ -304,13 +304,13 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(ps.count(), 1)
 
         # verify the property view, scenario and meter data were created
-        pv = PropertyView.objects.filter(state=ps)
+        pv = PropertyView.objects.filter(state=ps[0])
         self.assertEqual(pv.count(), 1)
 
         meters = Meter.objects.filter(property=pv[0].property)
         self.assertEqual(meters.count(), 6)
 
-        scenario = Scenario.objects.filter(property_state=ps)
+        scenario = Scenario.objects.filter(property_state=ps[0])
         self.assertEqual(scenario.count(), 3)
 
 
