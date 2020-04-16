@@ -67,16 +67,11 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
-<<<<<<< HEAD
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
     DATA_STATE_UNKNOWN)
 from seed.models import BuildingFile
-=======
-    DATA_STATE_UNKNOWN
-)
->>>>>>> develop
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
@@ -441,7 +436,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
         _log.error(traceback.format_exc())
         progress_data.finish_with_error('Invalid data found', str(e))
         raise DataError("Invalid data found: %s" % str(e))
-<<<<<<< HEAD
     except TypeError as e:
         _log.error('Error mapping data with error: %s' % str(e))
         progress_data.finish_with_error('Invalid type found while mapping data', str(e))
@@ -527,8 +521,6 @@ def map_xml_chunk(ids, file_pk, file_type, prog_key, **kwargs):
         _log.error(traceback.format_exc())
         progress_data.finish_with_error('Invalid data found', str(e))
         raise DataError("Invalid data found: %s" % (e))
-=======
->>>>>>> develop
     except TypeError as e:
         _log.error('Error mapping data with error: %s' % str(e))
         progress_data.finish_with_error('Invalid type found while mapping data', str(e))
@@ -608,17 +600,12 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     progress_data.total = len(id_chunks)
     progress_data.save()
-<<<<<<< HEAD
     if source_type == BUILDINGSYNC_RAW:
         tasks = [map_xml_chunk.si(ids, import_file_id, BuildingFile.BUILDINGSYNC, progress_data.key)
                  for ids in id_chunks]
     else:
         tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
                  for ids in id_chunks]
-=======
-
-    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key) for ids in id_chunks]
->>>>>>> develop
 
     return tasks
 
@@ -1356,7 +1343,6 @@ def hash_state_object(obj, include_extra_data=True):
     return m.hexdigest()
 
 
-<<<<<<< HEAD
 @shared_task
 def _map_additional_models(ids, file_pk, progress_key):
     """
@@ -1410,8 +1396,6 @@ def _map_additional_models(ids, file_pk, progress_key):
     }
 
 
-=======
->>>>>>> develop
 def list_canonical_property_states(org_id):
     """
     Return a QuerySet of the property states that are part of the inventory
