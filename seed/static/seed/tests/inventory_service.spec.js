@@ -1,0 +1,153 @@
+/**
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
+describe('service: inventory_service', function () {
+  var mock_inventory_service;
+
+  beforeEach(function () {
+    module('BE.seed');
+    inject(function (inventory_service) {
+      mock_inventory_service = inventory_service;
+    });
+  });
+
+  it('should filter text and numeric columns', function () {
+    var combinedFilter = mock_inventory_service.combinedFilter().condition;
+    expect(combinedFilter('!""', 'a')).toBe(true);
+    expect(combinedFilter('!=""', 'a')).toBe(true);
+    expect(combinedFilter('!= ""', 'a')).toBe(true);
+    expect(combinedFilter('= 22', 22)).toBe(true);
+    expect(combinedFilter('= 22', '22')).toBe(true);
+    expect(combinedFilter('! 15', 15.5)).toBe(false);
+    expect(combinedFilter('!15', '15.5')).toBe(false);
+    expect(combinedFilter('""', '')).toBe(true);
+    expect(combinedFilter('""', ' ')).toBe(true);
+    expect(combinedFilter('""', null)).toBe(true);
+    expect(combinedFilter('""', undefined)).toBe(true);
+    expect(combinedFilter('"a"', 'a')).toBe(true);
+    expect(combinedFilter('"3"', '3')).toBe(true);
+    expect(combinedFilter('"3"', 3)).toBe(true);
+    expect(combinedFilter('"\\"test\\""', '"test"')).toBe(true);
+    expect(combinedFilter('4', '345')).toBe(true);
+    expect(combinedFilter('a', ' abc ')).toBe(true);
+    expect(combinedFilter('33', 1337)).toBe(true);
+    expect(combinedFilter('1337', 1337)).toBe(true);
+    expect(combinedFilter('1337', '1337')).toBe(true);
+    expect(combinedFilter('=""', '')).toBe(true);
+    expect(combinedFilter('"-5.75"', -5.75)).toBe(true);
+    expect(combinedFilter('> 5', 6)).toBe(true);
+    expect(combinedFilter('> 5', 5.1)).toBe(true);
+    expect(combinedFilter('>= 5', 5)).toBe(true);
+    expect(combinedFilter('<-10', -10.4)).toBe(true);
+    expect(combinedFilter('<= 3', -1)).toBe(true);
+    expect(combinedFilter('> 3, < 10', 7.5)).toBe(true);
+    expect(combinedFilter('!"", !="xyz", abc', 'abcd')).toBe(true);
+
+    expect(combinedFilter('! ""', '')).toBe(false);
+    expect(combinedFilter('!""', ' ')).toBe(false);
+    expect(combinedFilter('!=""', null)).toBe(false);
+    expect(combinedFilter('!= ""', undefined)).toBe(false);
+    expect(combinedFilter('!= -24.1', -24.1)).toBe(false);
+    expect(combinedFilter('! 15', '15')).toBe(false);
+    expect(combinedFilter('"a"', 'ab')).toBe(false);
+    expect(combinedFilter('"3"', '13')).toBe(false);
+    expect(combinedFilter('"3"', 13)).toBe(false);
+    expect(combinedFilter('x', ' abc ')).toBe(false);
+    expect(combinedFilter('4', '567')).toBe(false);
+    expect(combinedFilter('4', 567)).toBe(false);
+    expect(combinedFilter('"5.75"', '5.756')).toBe(false);
+    expect(combinedFilter('"5.75"', 5.756)).toBe(false);
+    expect(combinedFilter('> 5', 5)).toBe(false);
+    expect(combinedFilter('<5', 5)).toBe(false);
+    expect(combinedFilter('>=4.2', 4.15)).toBe(false);
+    expect(combinedFilter('<= 1', 2)).toBe(false);
+    expect(combinedFilter('> 3, < 10', 2)).toBe(false);
+    expect(combinedFilter('> 3, < 10', 11)).toBe(false);
+    expect(combinedFilter('!"", abc', 'xyz')).toBe(false);
+  });
+
+  it('should filter date and datetime columns', function () {
+    var dateFilter = mock_inventory_service.dateFilter().condition;
+    expect(dateFilter('""', '')).toBe(true);
+    expect(dateFilter('""', ' ')).toBe(true);
+    expect(dateFilter('""', null)).toBe(true);
+    expect(dateFilter('""', undefined)).toBe(true);
+    expect(dateFilter('= ""', '')).toBe(true);
+    expect(dateFilter('!= ""', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('2017', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('!2016', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('!2018', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('2017-06', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('!2017-05', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('!2017-07', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('2017-06-05', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('= 2017-06', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('> 2016', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('> 2017-05', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('> 2017-06-04', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('>= 2017', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('>= 2017-06', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('>= 2017-06-05', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('< 2018', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('< 2017-07', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('< 2017-07-06', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('<= 2017', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('<= 2017-06', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('<= 2017-06-05', '2017-06-05T17:45:00')).toBe(true);
+    expect(dateFilter('2015', '2015-12-31')).toBe(true);
+    expect(dateFilter('2015-12', '2015-12-31')).toBe(true);
+    expect(dateFilter('= 2015-12-31', '2015-12-31')).toBe(true);
+    expect(dateFilter('> 2014', '2015-12-31')).toBe(true);
+    expect(dateFilter('> 2015-11', '2015-12-31')).toBe(true);
+    expect(dateFilter('> 2015-12-30', '2015-12-31')).toBe(true);
+    expect(dateFilter('>= 2015', '2015-12-31')).toBe(true);
+    expect(dateFilter('>= 2015-12', '2015-12-31')).toBe(true);
+    expect(dateFilter('>= 2015-12-31', '2015-12-31')).toBe(true);
+    expect(dateFilter('< 2016', '2015-12-31')).toBe(true);
+    expect(dateFilter('< 2016-01', '2015-12-31')).toBe(true);
+    expect(dateFilter('< 2016-01-01', '2015-12-31')).toBe(true);
+    expect(dateFilter('<= 2015', '2015-12-31')).toBe(true);
+    expect(dateFilter('<= 2015-12', '2015-12-31')).toBe(true);
+    expect(dateFilter('<= 2015-12-31', '2015-12-31')).toBe(true);
+    expect(dateFilter('> 2016, < 2018', '2017-06-05T17:45:00')).toBe(true);
+
+    expect(dateFilter('""', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('""', '2015-12-31')).toBe(false);
+    expect(dateFilter('!= ""', null)).toBe(false);
+    expect(dateFilter('2018', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('!2017', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('!2017-06', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('!= 2017-06-05', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('= 2017-05', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('> 2017', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('> 2017-06', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('> 2017-06-05', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('>= 2018', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('>= 2017-07', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('>= 2017-06-06', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('< 2017', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('< 2017-06', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('< 2017-06-05', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('<= 2016', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('<= 2017-05', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('<= 2017-06-04', '2017-06-05T17:45:00')).toBe(false);
+    expect(dateFilter('2014', '2015-12-31')).toBe(false);
+    expect(dateFilter('2016', '2015-12-31')).toBe(false);
+    expect(dateFilter('2015-11', '2015-12-31')).toBe(false);
+    expect(dateFilter('= 2015-12-30', '2015-12-31')).toBe(false);
+    expect(dateFilter('> 2015', '2015-12-31')).toBe(false);
+    expect(dateFilter('> 2015-12', '2015-12-31')).toBe(false);
+    expect(dateFilter('> 2015-12-31', '2015-12-31')).toBe(false);
+    expect(dateFilter('>= 2016', '2015-12-31')).toBe(false);
+    expect(dateFilter('>= 2016-01', '2015-12-31')).toBe(false);
+    expect(dateFilter('>= 2016-01-01', '2015-12-31')).toBe(false);
+    expect(dateFilter('< 2015', '2015-12-31')).toBe(false);
+    expect(dateFilter('< 2015-12', '2015-12-31')).toBe(false);
+    expect(dateFilter('< 2015-12-31', '2015-12-31')).toBe(false);
+    expect(dateFilter('<= 2014', '2015-12-31')).toBe(false);
+    expect(dateFilter('<= 2015-11', '2015-12-31')).toBe(false);
+    expect(dateFilter('<= 2015-12-30', '2015-12-31')).toBe(false);
+    expect(dateFilter('!"", > 2017-06', '2017-06-05T17:45:00')).toBe(false);
+  });
+});

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 import logging
@@ -36,6 +36,7 @@ class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
     """
     serializer_class = NoteSerializer
     renderer_classes = (JSONRenderer,)
+    pagination_class = None
     model = Note
     parser_classes = (JSONParser, FormParser)
     orgfilter = 'organization_id'

@@ -1,14 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -335,14 +335,14 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     orgfilter = 'assessment__organization_id'
     filter_class = GAPropertyFilterSet
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def reso_format(self, request, pk=None):
         """Return an assessment property instance by pk in reso format"""
         assessment = self.get_object()
         status_code = status.HTTP_200_OK
         return Response(assessment.to_reso_dict(), status=status_code)
 
-    @detail_route(methods=['get'])
+    @action(detail=True, methods=['get'])
     def bedes_format(self, request, pk=None):
         """Return an assessment property instance by pk in bedes format"""
         assessment = self.get_object()

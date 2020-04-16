@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 #
-# :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+# :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 # :author
 
 from rest_framework.reverse import reverse
@@ -10,13 +10,13 @@ from rest_framework import viewsets
 import json
 
 from seed.decorators import ajax_request
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 
 class TestReverseViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def no_arg_reverse(self, request):
         """
         Test a reverse call easily
@@ -32,7 +32,7 @@ class TestReverseViewSet(viewsets.ViewSet):
         reversed_url = reverse(reverse_string)
         return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def try_coded_reverse(self, request):
         """
         Tries to reverse a string that is hardcoded in this view
@@ -57,7 +57,7 @@ class TestReverseViewSet(viewsets.ViewSet):
         # report it out prettified
         return HttpResponse(json.dumps(i, indent=4, sort_keys=True))
 
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def one_arg_reverse(self, request):
         """
         Test a one arg reverse call easily
@@ -79,7 +79,7 @@ class TestReverseViewSet(viewsets.ViewSet):
         reversed_url = reverse(reverse_string, args=[argument])
         return HttpResponse(json.dumps({reverse_string: reversed_url}))
 
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def show_file_type(self, request):
         """
         Show how to use a multipart file variable type

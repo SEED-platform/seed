@@ -126,7 +126,7 @@ SEED is developed in collaboration with NREL, LBNL, and private firms.
 
 **Documents**
  
-[SEED_Contribution_Proposal_v1.0_2017-04-10.doc][seed-proposal]
+[SEED_Contribution_Proposal_v1.0_2019-12-10.docx][seed-proposal]
 
 
-[seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.0_2017-04-10.doc
+[seed-proposal]: https://github.com/SEED-platform/seed/raw/develop/.github/SEED_Contribution_Proposal_v1.0_2019-12-10.docx

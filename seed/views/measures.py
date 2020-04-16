@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 # import json
@@ -9,14 +9,13 @@
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.models import (
     Measure,
 )
-from seed.pagination import NoPagination
 from seed.serializers.measures import MeasureSerializer
 
 
@@ -24,16 +23,16 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     """
     API View for measures. This only includes retrieve and list since the measures are immutable.
 
-    The reset POST method is for reseting the measures back to the default list provided
+    The reset POST method is for resetting the measures back to the default list provided
     by BuildingSync enumeration.json file.
     """
     serializer_class = MeasureSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Measure.objects.all()
-    pagination_class = NoPagination
+    pagination_class = None
 
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def reset(self, request):
         """
         Reset all the measures back to the defaults (as provided by BuildingSync)

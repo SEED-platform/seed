@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -98,6 +98,14 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
     # extra_data field of the database
     if raw_column_name in mapping:
         table_name, mapped_column_name, display_name, is_extra_data = mapping.get(raw_column_name)
+
+        # special postal case:
+        if mapped_column_name in ['postal_code', 'owner_postal_code']:
+            if '-' in str(column_value):
+                postal = str(column_value).split('-')[0].zfill(5)
+                ext = str(column_value).split('-')[1].zfill(4)
+                column_value = postal + '-' + ext
+            column_value = str(column_value).zfill(5)
 
         cleaned_value = None
         if cleaner:

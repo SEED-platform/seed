@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -77,7 +77,7 @@ class GreenAssessment(models.Model):
             self.get_recognition_type_display()
         )
 
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     # assessment name (General - use PropertyGreenVerification.rating for
     # particular certification awarded).
     name = models.CharField(max_length=255)
@@ -152,7 +152,7 @@ class GreenAssessmentProperty(models.Model):
             self.body, self.name, self.metric if self.metric else self.rating
         )
 
-    view = models.ForeignKey(PropertyView)
+    view = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
     # Describes certification
     assessment = models.ForeignKey(GreenAssessment, on_delete=models.PROTECT)
     # Source of this certification e.g. assessor
@@ -374,8 +374,8 @@ class GreenAssessmentURL(models.Model):
 
 class GreenAssessmentPropertyAuditLog(models.Model):
     """Log changes to GreenAssessmentProperty"""
-    organization = models.ForeignKey(Organization)
-    user = models.ForeignKey(SEEDUser, blank=True, null=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    user = models.ForeignKey(SEEDUser, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     changed_fields = models.TextField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -384,16 +384,17 @@ class GreenAssessmentPropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
     greenassessmentproperty = models.ForeignKey(
         GreenAssessmentProperty,
+        on_delete=models.CASCADE,
         related_name="gapauditlog_assessment"
     )
     property_view = models.ForeignKey(
-        PropertyView, related_name='gapauditlog_view', null=True
+        PropertyView, on_delete=models.CASCADE, related_name='gapauditlog_view', null=True
     )
     ancestor = models.ForeignKey(
-        'GreenAssessmentPropertyAuditLog', blank=True, null=True,
+        'GreenAssessmentPropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
         related_name='gapauditlog_ancestor'
     )
     parent = models.ForeignKey(
-        'GreenAssessmentPropertyAuditLog', blank=True, null=True,
+        'GreenAssessmentPropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
         related_name='gapauditlog_parent'
     )

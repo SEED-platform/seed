@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  *
  * Controller for the Update Labels modal window.
@@ -46,7 +46,7 @@ angular.module('BE.seed.controller.data_quality_labels_modal', [])
       $scope.submitNewLabelForm = function (form) {
         $scope.createdLabel = null;
         if (form.$invalid) return;
-        label_service.create_label($scope.new_label).then(function (data) {
+        label_service.create_label_for_org(org_id, $scope.new_label).then(function (data) {
           var createdLabel = data;
 
           $scope.newLabelForm.$setPristine();

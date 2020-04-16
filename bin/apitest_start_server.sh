@@ -10,8 +10,11 @@ echo "y" | ./manage.py make_superuser --user demo@example.com &> make_superuser.
 echo "Saving API data"
 ./manage.py create_test_user_json --username demo@example.com --file ./seed/tests/api/api_test_user.json &> tox_test_user.log
 echo "starting celery"
-celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 & &> celery_log.log
+free -tm
+celery -A seed worker -l INFO -c 2 -B --events --maxtasksperchild 1000 &> celery_console.log &
 echo "starting server"
-./manage.py runserver & &> main.log
+echo $(free -tm)
+./manage.py runserver &
+echo $(free -tm)
 sleep 15
 echo "exiting start script"

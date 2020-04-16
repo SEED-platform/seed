@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.service.note', []).factory('note_service', [
@@ -35,8 +35,8 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       });
     };
 
-    note_factory.delete_note = function (inventory_type, view_id) {
-      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, {}).then(function (response) {
+    note_factory.delete_note = function (inventory_type, view_id, note_id) {
+      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', {}).then(function (response) {
         return response.data;
       });
     };
@@ -56,6 +56,14 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       var payload = note_data;
       payload.organization_id = org_id;
       return $http.post('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, payload).then(function (response) {
+        return response.data;
+      });
+    };
+
+    note_factory.update_note = function (org_id, inventory_type, view_id, note_id, note_data) {
+      var payload = note_data;
+      payload.organization_id = org_id;
+      return $http.put('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', payload).then(function (response) {
         return response.data;
       });
     };

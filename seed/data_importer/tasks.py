@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -9,15 +9,16 @@ from __future__ import absolute_import
 
 import collections
 import copy
-import datetime as dt
 import hashlib
-import os
 import json
+import os
 import traceback
 from _csv import Error
 from builtins import str
 from collections import namedtuple
+from datetime import date, datetime
 from itertools import chain
+from math import ceil
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
@@ -28,11 +29,13 @@ from django.db import connection, transaction
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
-from math import ceil
 from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+from seed.data_importer.match import (
+    match_and_link_incoming_properties_and_taxlots,
+)
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import (
     ImportFile,
@@ -40,7 +43,6 @@ from seed.data_importer.models import (
     STATUS_READY_TO_MERGE,
 )
 from seed.data_importer.utils import usage_point_id
-from seed.decorators import lock_and_track
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
@@ -224,10 +226,14 @@ def _build_cleaner(org):
 
     query_set = Column.objects.filter(organization=org, units_pint__isnull=False)
     for column in query_set:
+        # DON'T OVERRIDE DEFAULT COLUMNS WITH DATA FROM RAW COLUMNS
+        # THIS CAN HAPPEN IF YOU UPLOAD A FILE WITH A HEADER IDENTICAL TO THE DEFAULT COLUMN_NAME THAT ALSO HAS UNITS
+        # LIKE 'site_eui' OR 'source_eui'
+        # if column.column_name not in ontology['types']:
         # add available pint types as a tuple type
         ontology['types'][column.column_name] = ('quantity', column.units_pint)
 
-    # find all the extra data columns and add them as well
+    # find all the extra data columns with units and add them as well
     for column in Column.objects.filter(organization=org,
                                         is_extra_data=True).select_related('unit'):
         if column.unit:
@@ -245,7 +251,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     :param file_pk: int, the PK for an ImportFile obj.
     :param source_type: int, represented by either ASSESSED_RAW or PORTFOLIO_RAW.
     :param prog_key: string, key of the progress key
-    :param increment: double, value by which to increment progress key
     """
     progress_data = ProgressData.from_key(prog_key)
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -401,7 +406,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                         # Also create a new rule for this new column
                         if footprint_details.get('obj_field'):
                             if getattr(map_model_obj, footprint_details['obj_field']) is None:
-                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file, original_row, map_model_obj)
+                                _store_raw_footprint_and_create_rule(footprint_details, table, org, import_file,
+                                                                     original_row, map_model_obj)
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
@@ -429,11 +435,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     except DataError as e:
         _log.error(traceback.format_exc())
         progress_data.finish_with_error('Invalid data found', str(e))
-        raise DataError("Invalid data found: %s" % (e))
+        raise DataError("Invalid data found: %s" % str(e))
     except TypeError as e:
         _log.error('Error mapping data with error: %s' % str(e))
-        progress_data.finish_with_error('Invalid type found while mapping data', (e))
-        raise DataError("Invalid type found while mapping data: %s" % (e))
+        progress_data.finish_with_error('Invalid type found while mapping data', str(e))
+        raise DataError("Invalid type found while mapping data: %s" % str(e))
 
     progress_data.step()
 
@@ -613,10 +619,10 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
 
     @lock_and_track returns a progress_key
 
-    :param organization: object, Organization object
+    :param org_id:
     :param property_state_ids: list, list of property state IDs to check
     :param taxlot_state_ids: list, list of tax lot state IDs to check
-    :param identifier: str, for retrieving progress status
+    :param dq_id: str, for retrieving progress status
     """
     # Initialize the data quality checks with the organization here. It is important to do it here
     # since the .retrieve method in the check_data_chunk method will result in a race condition if celery is
@@ -650,6 +656,15 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     DataQualityCheck.initialize_cache(import_file_id)
 
     import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # Check for duplicate column headers
+    column_headers = import_file.first_row_columns or []
+    duplicate_tracker = collections.defaultdict(lambda: 0)
+    for header in column_headers:
+        duplicate_tracker[header] += 1
+        if duplicate_tracker[header] > 1:
+            raise Exception("Duplicate column found in file: %s" % (header))
+
     if remap:
         # Check to ensure that import files has not already been matched/merged.
         if import_file.matching_done or import_file.matching_completion:
@@ -698,8 +713,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
     :param chunk: list, ids to process
     :param file_pk: ImportFile Primary Key
-    :param prog_key: string, Progress Key to append progress
-    :param increment: Float, Value by which to increment the progress
+    :param progress_key: string, Progress Key to append progress
     :return: Bool, Always true
     """
     import_file = ImportFile.objects.get(pk=file_pk)
@@ -723,7 +737,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                         raw_property.bounding_box = v
                     elif isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
-                    elif isinstance(v, (dt.datetime, dt.date)):
+                    elif isinstance(v, (datetime, date)):
                         raise TypeError(
                             "Datetime class not supported in Extra Data. Needs to be a string.")
                     else:
@@ -744,7 +758,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
 
 @shared_task(ignore_result=True)
-def finish_raw_save(results, file_pk, progress_key, summary=None):
+def finish_raw_save(results, file_pk, progress_key):
     """
     Finish importing the raw file.
 
@@ -754,6 +768,7 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
 
     :param results: List of results from the parent task
     :param file_pk: ID of the file that was being imported
+    :param progress_key: string, Progress Key to append progress
     :param summary: Summary to be saved on ProgressData as a message
     :return: results: results from the other tasks before the chord ran
     """
@@ -761,11 +776,11 @@ def finish_raw_save(results, file_pk, progress_key, summary=None):
     import_file = ImportFile.objects.get(pk=file_pk)
     import_file.raw_save_done = True
 
-    if import_file.source_type in ["PM Meter Usage", "GreenButton"] and summary is not None:
+    if import_file.source_type in ['PM Meter Usage', 'GreenButton'] and progress_data.summary() is not None:
         import_file.cycle_id = None
 
-        _append_meter_import_results_to_summary(results, summary)
-        finished_progress_data = progress_data.finish_with_success(summary)
+        new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
+        finished_progress_data = progress_data.finish_with_success(new_summary)
     else:
         finished_progress_data = progress_data.finish_with_success()
 
@@ -794,8 +809,7 @@ def cache_first_rows(import_file, parser):
     import_file.save()
 
 
-@shared_task(ignore_result=True)
-@lock_and_track
+@shared_task
 def _save_greenbutton_data_create_tasks(file_pk, progress_key):
     """
     Create GreenButton import tasks. Notably, 1 GreenButton import contains
@@ -821,10 +835,9 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
     meter_readings = meters_parser.meter_and_reading_objs[0]  # there should only be one meter (1 property, 1 type/unit)
-    proposed_imports = meters_parser.proposed_imports()
 
     readings = meter_readings['readings']
-    meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+    meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
     meter, _created = Meter.objects.get_or_create(**meter_only_details)
     meter_id = meter.id
 
@@ -832,16 +845,17 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 
     chunk_size = 1000
 
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.update_summary(meters_parser.proposed_imports)
     progress_data.total = ceil(len(readings) / chunk_size)
     progress_data.save()
 
-    tasks = [
-        _save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key)
-        for batch_readings
-        in batch(readings, chunk_size)
-    ]
+    tasks = []
+    # Add in the save raw data chunks to the background tasks
+    for batch_readings in batch(readings, chunk_size):
+        tasks.append(_save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key))
 
-    return tasks, proposed_imports
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 @shared_task
@@ -862,6 +876,12 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
     meter = Meter.objects.get(pk=meter_id)
 
     result = {}
+    result_summary_key = "{} - {} - {}".format(
+        meter.property_id,
+        meter_usage_point_id,
+        meter.get_type_display()
+    )
+
     try:
         with transaction.atomic():
             reading_strings = [
@@ -871,20 +891,21 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             ]
 
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
+                ' VALUES ' + ', '.join(reading_strings) +
+                ' ON CONFLICT (meter_id, start_time, end_time)' +
+                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
+                ' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
-                result[key] = {'count': len(cursor.fetchall())}
+                result[result_summary_key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
-        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
-            key = "{} - {}".format(meter_usage_point_id, meter.get_type_display())
-            result[key] = {"error": "Overlapping readings."}
+        if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
+            result[result_summary_key] = {'error': 'Overlapping readings.'}
+        else:
+            progress_data.finish_with_error('data failed to import')
+            raise e
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
@@ -917,7 +938,7 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
     try:
         with transaction.atomic():
             readings = meter_readings['readings']
-            meter_only_details = {k: v for k, v in meter_readings.items() if k != "readings"}
+            meter_only_details = {k: v for k, v in meter_readings.items() if k != 'readings'}
 
             meter, _created = Meter.objects.get_or_create(**meter_only_details)
 
@@ -928,31 +949,42 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             ]
 
             sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)" +
-                " VALUES " + ", ".join(reading_strings) +
-                " ON CONFLICT (meter_id, start_time, end_time)" +
-                " DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor" +
-                " RETURNING reading;"
+                'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)' +
+                ' VALUES ' + ', '.join(reading_strings) +
+                ' ON CONFLICT (meter_id, start_time, end_time)' +
+                ' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor' +
+                ' RETURNING reading;'
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
-                key = "{} - {}".format(meter.source_id, meter.get_type_display())
+                key = "{} - {} - {}".format(
+                    meter.property_id,
+                    meter.source_id,
+                    meter.get_type_display()
+                )
                 result[key] = {'count': len(cursor.fetchall())}
     except ProgrammingError as e:
-        if "ON CONFLICT DO UPDATE command cannot affect row a second time" in str(e):
+        if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
             type_lookup = dict(Meter.ENERGY_TYPES)
-            key = "{} - {}".format(meter_readings.get("source_id"), type_lookup[meter_readings['type']])
-            result[key] = {"error": "Overlapping readings."}
+            key = "{} - {} - {}".format(
+                meter_readings.get('property_id'),
+                meter_readings.get('source_id'),
+                type_lookup[meter_readings['type']]
+            )
+            result[key] = {'error': 'Overlapping readings.'}
+        else:
+            progress_data.finish_with_error('data failed to import')
+            raise e
     except Exception as e:
         progress_data.finish_with_error('data failed to import')
         raise e
 
-    # Indicate progress
     progress_data.step()
 
     return result
 
 
+@shared_task
 def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     """
     This takes a PM meters import file and restructures the data in order to
@@ -963,6 +995,7 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     create a before and after summary of the import.
 
     :param file_pk: int, ID of the file to import
+    :param progress_key: string, Progress Key to append progress
     """
     progress_data = ProgressData.from_key(progress_key)
 
@@ -974,18 +1007,17 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
 
     meters_parser = MetersParser(org_id, raw_meter_data)
     meters_and_readings = meters_parser.meter_and_reading_objs
-    proposed_imports = meters_parser.proposed_imports()
 
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.update_summary(meters_parser.proposed_imports)
     progress_data.total = len(meters_and_readings)
     progress_data.save()
 
-    tasks = [
-        _save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key)
-        for meter_readings
-        in meters_and_readings
-    ]
+    tasks = []
+    for meter_readings in meters_and_readings:
+        tasks.append(_save_pm_meter_usage_data_task.s(meter_readings, file_pk, progress_data.key))
 
-    return tasks, proposed_imports
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 def _append_meter_import_results_to_summary(import_results, incoming_summary):
@@ -1003,6 +1035,9 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     agg_results_summary = collections.defaultdict(lambda: 0)
     error_comments = collections.defaultdict(lambda: set())
 
+    if not isinstance(import_results, list):
+        import_results = [import_results]
+
     # First aggregate import_results by key
     for result in import_results:
         key = list(result.keys())[0]
@@ -1010,48 +1045,43 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
         success_count = result[key].get('count')
 
         if success_count is None:
-            error_comments[key].add(result[key].get("error"))
+            error_comments[key].add(result[key].get('error'))
         else:
             agg_results_summary[key] += success_count
 
     # Next update summary of incoming meters imports with aggregated results.
     for import_info in incoming_summary:
-        key = "{} - {}".format(import_info['source_id'], import_info['type'])
+        key = "{} - {} - {}".format(
+            import_info['property_id'],
+            import_info['source_id'],
+            import_info['type']
+        )
 
-        import_info["successfully_imported"] = agg_results_summary.get(key, 0)
+        # check if there has already been a successfully_imported count on this key
+        successfully_imported = import_info.get('successfully_imported', 0)
+        import_info['successfully_imported'] = agg_results_summary.get(key, successfully_imported)
 
         if error_comments:
-            import_info["errors"] = " ".join(list(error_comments.get(key, "")))
+            import_info['errors'] = ' '.join(list(error_comments.get(key, '')))
 
     return incoming_summary
 
 
+@shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
-    Worker method for saving raw data. Chunk up the CSV or XLSX file and save the raw data
-    into the PropertyState table.
-
-    In the case of receiving PM Meter Usage, build tasks to import these directly
-    into Meters and MeterReadings.
+    Worker method for saving raw data. Chunk up the CSV, XLSX, geojson/json file and create the tasks
+    to save the raw data into the PropertyState table.
 
     :param file_pk: int, ID of the file to import
     :return: Dict, result from progress data / cache
     """
     progress_data = ProgressData.from_key(progress_key)
 
-    # _log.debug('Attempting to access import_file')
     import_file = ImportFile.objects.get(pk=file_pk)
-    if import_file.raw_save_done:
-        return progress_data.finish_with_warning('Raw data already saved')
-
-    if import_file.source_type == "PM Meter Usage":
-        return _save_pm_meter_usage_data_create_tasks(file_pk, progress_data.key)
-    elif import_file.source_type == "GreenButton":
-        return _save_greenbutton_data_create_tasks(file_pk, progress_data.key)
-
     file_extension = os.path.splitext(import_file.file.name)[1]
 
-    if file_extension == ".json" or file_extension == '.geojson':
+    if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
     elif import_file.source_type == 'BuildingSync Raw':
         parser = xml_reader.BuildingSyncParser(import_file.file)
@@ -1071,8 +1101,12 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     progress_data.total = len(chunks)
     progress_data.save()
 
-    # return tasks and None as a placeholder for proposed data import summary
-    return [_save_raw_data_chunk.s(chunk, file_pk, progress_data.key) for chunk in chunks], None
+    # Add in the save raw data chunks to the background tasks
+    tasks = []
+    for chunk in chunks:
+        tasks.append(_save_raw_data_chunk.s(chunk, file_pk, progress_data.key))
+
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
 
 
 def save_raw_data(file_pk):
@@ -1087,37 +1121,33 @@ def save_raw_data(file_pk):
     :return: Dict, from cache, containing the progress key to track
     """
     progress_data = ProgressData(func_name='save_raw_data', unique_id=file_pk)
-    # save_raw_data_run.s(file_pk, progress_data.key)
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
-        tasks, summary = _save_raw_data_create_tasks(file_pk, progress_data.key)
-        chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key, summary=summary))
+        import_file = ImportFile.objects.get(pk=file_pk)
+        if import_file.raw_save_done:
+            return progress_data.finish_with_warning('Raw data already saved')
+
+        # queue up the tasks and immediately return. This is needed in the case of large files
+        # and slow transfers causing the website to timeout due to inactivity. Specifically, the chunking method of
+        # large files can take quite some time.
+        if import_file.source_type == 'PM Meter Usage':
+            _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
+        elif import_file.source_type == 'GreenButton':
+            _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
+        else:
+            _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
     except StopIteration:
         progress_data.finish_with_error('StopIteration Exception', traceback.format_exc())
     except Error as e:
-        progress_data.finish_with_error('File Content Error: ' + e, traceback.format_exc())
+        progress_data.finish_with_error('File Content Error: ' + str(e), traceback.format_exc())
     except KeyError as e:
-        progress_data.finish_with_error('Invalid Column Name: "' + e + '"',
-                                        traceback.format_exc())
+        progress_data.finish_with_error('Invalid Column Name: "' + str(e) + '"', traceback.format_exc())
     except TypeError:
         progress_data.finish_with_error('TypeError Exception', traceback.format_exc())
     except Exception as e:
-        progress_data.finish_with_error('Unhandled Error: ' + str(e),
-                                        traceback.format_exc())
-    _log.debug(progress_data.result())
+        progress_data.finish_with_error('Unhandled Error: ' + str(e), traceback.format_exc())
     return progress_data.result()
 
-
-# def save_raw_data_run(file_pk, progress_key):
-#     """
-#     Run the save_raw_data command. This adds more information to the progress_key that is given.
-#     Save the raw data from an imported file.
-#
-#     :param file_pk:
-#     :param progress_key:
-#     :return:
-#     """
-#     pass
 
 def geocode_buildings_task(file_pk):
     async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
@@ -1244,13 +1274,13 @@ def match_buildings(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("This should never happen in production")
+        _log.warn('This should never happen in production')
 
     # Start, match, pair
     progress_data.total = 3
     progress_data.save()
 
-    chord(_match_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
         finish_matching.s(file_pk, progress_data.key))
 
     return progress_data.result()
@@ -1266,7 +1296,7 @@ def finish_matching(result, import_file_id, progress_key):
     if isinstance(result, list) and len(result) == 1:
         import_file.matching_results_data = result[0]
     else:
-        raise Exception("there are more than one results for matching_results, need to merge")
+        raise Exception('there are more than one results for matching_results, need to merge')
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -1289,7 +1319,7 @@ def hash_state_object(obj, include_extra_data=True):
 
     def _get_field_from_obj(field_obj, field):
         if not hasattr(field_obj, field):
-            return "FOO"  # Return a random value so we can distinguish between this and None.
+            return 'FOO'  # Return a random value so we can distinguish between this and None.
         else:
             return getattr(field_obj, field)
 
@@ -1297,7 +1327,7 @@ def hash_state_object(obj, include_extra_data=True):
     for f in Column.retrieve_db_field_name_for_hash_comparison():
         obj_val = _get_field_from_obj(obj, f)
         m.update(f.encode('utf-8'))
-        if isinstance(obj_val, dt.datetime):
+        if isinstance(obj_val, datetime):
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
@@ -1730,72 +1760,6 @@ def list_canonical_property_states(org_id):
     return PropertyState.objects.filter(pk__in=ids)
 
 
-def save_state_match(state1, state2, priorities):
-    """
-    Merge the contents of state2 into state1
-
-    :param state1: PropertyState or TaxLotState
-    :param state2: PropertyState or TaxLotState
-    :param priorities: dict, column names and the priorities of the merging of data. This includes
-    all of the priorites for the columns, not just the priorities for the selected taxlotstate.
-    :return: state1, after merge
-    """
-    merged_state = type(state1).objects.create(organization=state1.organization)
-
-    merged_state = merging.merge_state(
-        merged_state, state1, state2, priorities[merged_state.__class__.__name__]
-    )
-
-    AuditLogClass = PropertyAuditLog if isinstance(merged_state, PropertyState) else TaxLotAuditLog
-
-    assert AuditLogClass.objects.filter(state=state1).count() >= 1
-    assert AuditLogClass.objects.filter(state=state2).count() >= 1
-
-    # NJACHECK - is this logic correct?
-    state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()
-    state_2_audit_log = AuditLogClass.objects.filter(state=state2).first()
-
-    AuditLogClass.objects.create(organization=state1.organization,
-                                 parent1=state_1_audit_log,
-                                 parent2=state_2_audit_log,
-                                 parent_state1=state1,
-                                 parent_state2=state2,
-                                 state=merged_state,
-                                 name='System Match',
-                                 description='Automatic Merge',
-                                 import_filename=None,
-                                 record_type=AUDIT_IMPORT)
-
-    # If the two states being merged were just imported from the same import file, carry the import_file_id into the new
-    # state. Also merge the lot_number fields so that pairing can work correctly on the resulting merged record
-    # Possible conditions:
-    # state1.data_state = 2, state1.merge_state = 0 and state2.data_state = 2, state2.merge_state = 0
-    # state1.data_state = 0, state1.merge_state = 2 and state2.data_state = 2, state2.merge_state = 0
-    if state1.import_file_id == state2.import_file_id:
-        if ((
-            state1.data_state == DATA_STATE_MAPPING and state1.merge_state == MERGE_STATE_UNKNOWN and
-            state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN) or
-            (
-                state1.data_state == DATA_STATE_UNKNOWN and state1.merge_state == MERGE_STATE_MERGED and
-                state2.data_state == DATA_STATE_MAPPING and state2.merge_state == MERGE_STATE_UNKNOWN)):
-            merged_state.import_file_id = state1.import_file_id
-
-            if isinstance(merged_state, PropertyState):
-                joined_lots = set()
-                if state1.lot_number:
-                    joined_lots = joined_lots.union(state1.lot_number.split(';'))
-                if state2.lot_number:
-                    joined_lots = joined_lots.union(state2.lot_number.split(';'))
-                if joined_lots:
-                    merged_state.lot_number = ';'.join(joined_lots)
-
-    # Set the merged_state to merged
-    merged_state.merge_state = MERGE_STATE_MERGED
-    merged_state.save()
-
-    return merged_state
-
-
 def pair_new_states(merged_property_views, merged_taxlot_views):
     """
     Pair new states from lists of property views and tax lot views
@@ -1848,9 +1812,9 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global taxlot_m2m_keygen
     global property_m2m_keygen
 
-    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ["jurisdiction_tax_lot_id"])
+    taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ['jurisdiction_tax_lot_id'])
     property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
-                                                 ["pm_property_id", "jurisdiction_property_id"])
+                                                 ['pm_property_id', 'jurisdiction_property_id'])
 
     property_views = PropertyView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *prop_comparison_field_names)
@@ -1858,8 +1822,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         *tax_comparison_field_names)
 
     # For each of the view objects, make an
-    prop_type = namedtuple("Prop", prop_comparison_fields)
-    taxlot_type = namedtuple("TL", tax_comparison_fields)
+    prop_type = namedtuple('Prop', prop_comparison_fields)
+    taxlot_type = namedtuple('TL', tax_comparison_fields)
 
     # Makes object with field_name->val attributes on them.
     property_objects = [prop_type(*attr) for attr in property_views]
@@ -1929,12 +1893,12 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         # PropertyView.objects.get(pk=pv_pk)
         # TaxLotView.objects.get(pk=tlv_pk)
 
-        connection = TaxLotProperty.objects.filter(
+        count = TaxLotProperty.objects.filter(
             property_view_id=pv_pk,
             taxlot_view_id=tlv_pk
         ).count()
 
-        if connection:
+        if count:
             continue
 
         is_primary = TaxLotProperty.objects.filter(property_view_id=pv_pk).count() == 0

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -14,7 +14,7 @@ from os import path
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.db.models.signals import post_save, m2m_changed
+from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
@@ -45,7 +45,7 @@ _log = logging.getLogger(__name__)
 class TaxLot(models.Model):
     # NOTE: we have been calling this the organization. We
     # should stay consistent although I prefer the name organization (!super_org)
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
@@ -61,10 +61,10 @@ class TaxLotState(models.Model):
     # communicating with the cities.
 
     # Support finding the property by the import_file
-    import_file = models.ForeignKey(ImportFile, null=True, blank=True)
+    import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 
     # Add organization to the tax lot states
-    organization = models.ForeignKey(Organization)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
 
@@ -98,6 +98,9 @@ class TaxLotState(models.Model):
     ulid = models.CharField(max_length=255, null=True, blank=True)
 
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     class Meta:
         index_together = [
@@ -193,7 +196,7 @@ class TaxLotState(models.Model):
         # save a hash of the object to the database for quick lookup
         from seed.data_importer.tasks import hash_state_object
         self.hash_object = hash_state_object(self)
-        return super(TaxLotState, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def history(self):
         """
@@ -376,8 +379,7 @@ class TaxLotState(models.Model):
 
 
 class TaxLotView(models.Model):
-    taxlot = models.ForeignKey(TaxLot, related_name='views', null=True,
-                               on_delete=models.CASCADE)
+    taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
     state = models.ForeignKey(TaxLotState, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
 
@@ -392,7 +394,7 @@ class TaxLotView(models.Model):
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop('import_filename', None)
-        super(TaxLotView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
         kwargs.update({
@@ -455,23 +457,23 @@ def post_save_taxlot_view(sender, **kwargs):
 
 
 class TaxLotAuditLog(models.Model):
-    organization = models.ForeignKey(Organization)
-    parent1 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    parent1 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='taxlotauditlog_parent1')
-    parent2 = models.ForeignKey('TaxLotAuditLog', blank=True, null=True,
+    parent2 = models.ForeignKey('TaxLotAuditLog', on_delete=models.CASCADE, blank=True, null=True,
                                 related_name='taxlotauditlog_parent2')
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
-    parent_state1 = models.ForeignKey(TaxLotState, blank=True, null=True,
+    parent_state1 = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='taxlotauditlog_parent_state1')
-    parent_state2 = models.ForeignKey(TaxLotState, blank=True, null=True,
+    parent_state2 = models.ForeignKey(TaxLotState, on_delete=models.CASCADE, blank=True, null=True,
                                       related_name='taxlotauditlog_parent_state2')
 
-    state = models.ForeignKey('TaxLotState',
+    state = models.ForeignKey('TaxLotState', on_delete=models.CASCADE,
                               related_name='taxlotauditlog_state')
-    view = models.ForeignKey('TaxLotView', related_name='taxlotauditlog_view',
+    view = models.ForeignKey('TaxLotView', on_delete=models.CASCADE, related_name='taxlotauditlog_view',
                              null=True)
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -483,6 +485,28 @@ class TaxLotAuditLog(models.Model):
 
     class Meta:
         index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+
+
+@receiver(pre_save, sender=TaxLotState)
+def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
+    try:
+        original_obj = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        pass  # Occurs on object creation
+    else:
+        # Sync Latitude, Longitude, and long_lat fields if applicable
+        latitude_change = original_obj.latitude != instance.latitude
+        longitude_change = original_obj.longitude != instance.longitude
+        long_lat_change = original_obj.long_lat != instance.long_lat
+        lat_and_long_both_populated = instance.latitude is not None and instance.longitude is not None
+
+        # The 'not long_lat_change' condition removes the case when long_lat is changed by an external API
+        if (latitude_change or longitude_change) and lat_and_long_both_populated and not long_lat_change:
+            instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
+            instance.geocoding_confidence = "Manually geocoded (N/A)"
+        elif (latitude_change or longitude_change) and not lat_and_long_both_populated:
+            instance.long_lat = None
+            instance.geocoding_confidence = None
 
 
 m2m_changed.connect(compare_orgs_between_label_and_target, sender=TaxLotView.labels.through)

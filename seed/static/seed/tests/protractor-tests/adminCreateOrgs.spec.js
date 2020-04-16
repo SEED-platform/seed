@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // create test orgs
@@ -120,7 +120,7 @@ describe('When I go to admin page', function () {
     $$('#orgs').first().$$('option').first().click();
     $$('#user_emails').first().$$('option').first().click();
     $('[ng-click="org_user.add()"]').click();
-    
+
     //check no column mappings
     $$('[ng-click="confirm_column_mappings_delete(org)"]').first().click();
     browser.wait(EC.alertIsPresent(), 2000, 'an alert');

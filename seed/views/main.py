@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -84,7 +84,7 @@ def version(request):
     """
     manifest_path = os.path.dirname(
         os.path.realpath(__file__)) + '/../../package.json'
-    with open(manifest_path) as package_json:
+    with open(manifest_path, encoding='utf-8') as package_json:
         manifest = json.load(package_json)
 
     sha = subprocess.check_output(
@@ -96,7 +96,7 @@ def version(request):
     })
 
 
-def error404(request):
+def error404(request, exception):
     # Okay, this is a bit of a hack. Needed to move on.
     if '/api/' in request.path:
         return JsonResponse({

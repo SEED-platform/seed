@@ -82,6 +82,9 @@ msgstr "Add a label"
 msgid "Add another file"
 msgstr "Add another file"
 
+msgid "Add Column"
+msgstr "Add Column"
+
 msgid "Add compliance information"
 msgstr "Add compliance information"
 
@@ -170,6 +173,9 @@ msgstr "api key"
 msgid "API Key"
 msgstr "API Key"
 
+msgid "Apply Preset"
+msgstr "Apply Preset"
+
 #: seed/models/projects.py:107 seed/models/projects.py:134
 #: seed/models/projects.py:159
 msgid "approved_date"
@@ -205,12 +211,6 @@ msgstr "Associated Tax Lot ID"
 msgid "Associated Tax Lot IDs"
 msgstr "Associated Tax Lot IDs"
 
-msgid "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
-msgstr "At least one of the following Property fields is required: Address Line 1, Custom ID 1, UBID, or PM Property ID."
-
-msgid "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
-msgstr "At least one of the following Tax Lot fields is required: Address Line 1, Custom ID 1, Jurisdiction Tax Lot ID, or ULID."
-
 #: seed/models/models.py:136
 msgid "Auditing"
 msgstr "Auditing"
@@ -237,6 +237,9 @@ msgstr "Back to List"
 
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
+
+msgid "BEFORE_GEOCODING"
+msgstr "Before geocoding"
 
 #: seed/models/models.py:135
 msgid "Benchmarking"
@@ -327,8 +330,62 @@ msgstr "Clear Labels"
 msgid "Close"
 msgstr "Close"
 
+msgid "Close Preview"
+msgstr "Close Preview"
+
+msgid "COL_CHANGE_DISPLAY"
+msgstr "Change the display name (that appears throughout the program) of a column. This is user-defined and can be any value (?)"
+
+msgid "COL_CHANGE_NAME"
+msgstr "Specifies the underlying field name represented by the Display Name. These field names are not user defined, but are generated from imported user files as well as program-defined fields."
+
+msgid "COL_CHANGE_NAME_EXT"
+msgstr "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section."
+
+msgid "COL_GEOCODING_TOGGLE"
+msgstr "Check the appropriate fields, as well as their order for the program to concatenate a full address, which SEED will use to generate latitude and longitude values for each record"
+
+msgid "COL_GEOCODING_TOGGLE_EXT"
+msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
+
+msgid "COL_MAP_PRESET_IMPORT_ADVICE"
+msgstr "Column Mapping Presets can be used to help you easily and consistently map your data. Note that file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used."
+
+msgid "COL_MAP_PRESET_INTRO"
+msgstr "Column mapping presets can help you standardize and simplify your file import mapping process."
+
+msgid "COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE"
+msgstr "You can create mapping rows for a preset by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right."
+
+msgid "COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE"
+msgstr "Also, you can copy Data File header values directly over to SEED headers via the button below."
+
+msgid "COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE"
+msgstr "When using a preset for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated."
+
+msgid "COL_MAP_PRESET_MAPPING_INTRO"
+msgstr "Create mappings to specific Data File header values - mapping SEED headers, Inventory Types, and if applicable, Measurement Units."
+
+msgid "COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE"
+msgstr "Alternatively, you can get SEED header suggestions based on existing column names using the other button below."
+
+msgid "COL_MAP_PRESET_MAPPING_TYPING"
+msgstr "SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes."
+
+msgid "COL_MATCHING_CRITERIA_TOGGLE"
+msgstr "Checking this box for a field will allow it to be used as a matching field."
+
+msgid "COL_MERGE_PROTECTION_TOGGLE"
+msgstr "Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data."
+
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
+
+msgid "Column Mapping Preset"
+msgstr "Column Mapping Preset"
+
+msgid "Column Mappings"
+msgstr "Column Mappings"
 
 msgid "Column Name"
 msgstr "Column Name"
@@ -384,6 +441,9 @@ msgstr "Confirm Save Mappings?"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
+msgid "CONFIRMING_DELETE_PRESET"
+msgstr "Are you sure you want to delete the preset"
+
 msgid "Contact"
 msgstr "Contact"
 
@@ -397,11 +457,17 @@ msgstr "Continue to data mapping"
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
 
+msgid "CONTINUE_QUESTION"
+msgstr "Are you sure you want to continue?"
+
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
 
-msgid "COULD_NOT_LOCATE_MATCHES"
-msgstr "<strong>SEED could not locate any existing matches</strong>. Would you like to add another file?"
+msgid "Copy Data File Headers directly to SEED Headers"
+msgstr "Copy Data File Headers directly to SEED Headers"
+
+msgid "Copy into Data File Headers"
+msgstr "Copy into Data File Headers"
 
 msgid "Count #"
 msgstr "Count #"
@@ -461,6 +527,9 @@ msgstr "Create new sub-organization"
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
+msgid "Create Preset"
+msgstr "Create Preset"
+
 msgid "Create Project"
 msgstr "Create Project"
 
@@ -480,11 +549,20 @@ msgstr "Created label {label_name}"
 msgid "CREATED_NEW_CYCLE"
 msgstr "Created new Cycle {cycle_name}"
 
+msgid "Cross-Cycles"
+msgstr "Cross-Cycles"
+
+msgid "Current Column Mapping Preset"
+msgstr "Current Column Mapping Preset"
+
 msgid "Current Name"
 msgstr "Current Name"
 
 msgid "Current password"
 msgstr "Current password"
+
+msgid "CURRENTLY_GEOCODING"
+msgstr "Currently geocoding"
 
 msgid "Custom ID 1"
 msgstr "Custom ID 1"
@@ -555,6 +633,9 @@ msgstr "Data Sets"
 msgid "Data Type"
 msgstr "Data Type"
 
+msgid "DATA_FILE_HEADER_DUP_WARNING"
+msgstr "Please review Date File Headers.  Duplicate or empty values are not allowed."
+
 msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
 
@@ -590,11 +671,17 @@ msgstr "Deadline:"
 msgid "Delete"
 msgstr "Delete"
 
+msgid "Delete All Columns"
+msgstr "Delete All Columns"
+
 msgid "Delete Organization"
 msgstr "Delete Organization"
 
 msgid "Delete Selected"
 msgstr "Delete Selected"
+
+msgid "Delete User?"
+msgstr "Delete User?"
 
 msgid "Delete your Data File"
 msgstr "Delete your Data File"
@@ -604,6 +691,9 @@ msgstr "Delete your Data Set"
 
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
+
+msgid "Delete your Preset"
+msgstr "Delete your Preset"
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
@@ -637,6 +727,9 @@ msgstr "Development Team"
 
 msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
 msgstr "Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties and tax lots you cannot undo or edit these mappings."
+
+msgid "DIRECTIONS_FOR_UPDATING_MQ_API_KEY"
+msgstr "If you'd like to geocode your data using the MapQuest service, please provide a valid API key within your organization's settings."
 
 msgid "Dismiss"
 msgstr "Dismiss"
@@ -803,6 +896,9 @@ msgstr "Export Spreadsheet"
 msgid "Export your Properties and Tax Lots"
 msgstr "Export your Properties and Tax Lots"
 
+msgid "EXTRA_DATA_COL_TYPE_CHANGE"
+msgstr "For “extra data” fields, this allows the user to set the type, such as Text, Number, Date, etc."
+
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
 
@@ -812,8 +908,14 @@ msgstr "Field"
 msgid "Field Name"
 msgstr "Field Name"
 
-msgid "FIELD_NAMES_FOR_MATCHING_ADVICE"
-msgstr "<span class=\"label label-info\">Field names for matching:</span> The following fields are used by SEED to match records: <strong>Jurisdiction Tax Lot ID</strong>, <strong>PM Property ID</strong>, <strong>Custom ID 1</strong>, <strong>Address Line 1</strong>, <strong>UBID</strong>, and <strong>ULID</strong>. If there are fields in a datafile mapped to these names, the program will attempt to match on those same names in existing records."
+msgid "FIELD_NAMES_FOR_GEOCODING_PROPERTIES"
+msgstr "Field names for geocoding properties"
+
+msgid "FIELD_NAMES_FOR_GEOCODING_TAXLOTS"
+msgstr "Field names for geocoding tax lots"
+
+msgid "FIELD_NAMES_FOR_MATCHING"
+msgstr "Field names for matching"
 
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
@@ -898,6 +1000,42 @@ msgstr "From the table below, select the rules that you want to: 1) enable/disab
 msgid "Funding from"
 msgstr "Funding from"
 
+msgid "Geocode"
+msgstr "Geocode"
+
+msgid "GEOCODE_ATTEMPTED_PREVIOUSLY"
+msgstr "Geocoding attempted previously"
+
+msgid "GEOCODE_INVENTORY_BASE_TITLE"
+msgstr "Geocode Inventory"
+
+msgid "GEOCODE_UNSUCCESSFUL_MISSING_FIELDS"
+msgstr "unsuccessful due to missing address fields"
+
+msgid "GEOCODED_MANUALLY"
+msgstr "geocoded manually"
+
+msgid "GEOCODED_WITH_HIGH_CONFIDENCE"
+msgstr "successful with high confidence in the result"
+
+msgid "GEOCODED_WITH_LOW_CONFIDENCE"
+msgstr "unsuccessful due to a low geocode confidence in the result"
+
+msgid "GEOCODING_COL_COUNT_REQUIREMENT"
+msgstr "At least 1 geocoding column is required for this building type in order to attempt geocoding."
+
+msgid "GEOCODING_FULL_ADDRESS_ADVICE"
+msgstr "Datafile fields mapped to these columns will have their corresponding values concatenated in the order listed to form a full address. This full address is made for each record and used for geocoding."
+
+msgid "GEOCODING_INVENTORY_COMPLETE"
+msgstr "Geocoding Complete"
+
+msgid "GEOCODING_NEEDS_THREE_COLS"
+msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
+
+msgid "GEOCODING_NOW"
+msgstr "Geocoding now..."
+
 msgid "Get a New API Key"
 msgstr "Get a New API Key"
 
@@ -971,6 +1109,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "IMPORT_ANOTHER_QUESTION"
+msgstr "Would you like to add another file?"
+
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 
@@ -983,6 +1124,12 @@ msgstr "Include in your Properties List all properties shared with you."
 
 msgid "INCLUDE_SHARED_TAXLOTS"
 msgstr "Include in your Tax Lot List all tax lots shared with you."
+
+msgid "INDIVIDUAL_MATCH_MERGE_ROUND_ALERT"
+msgstr "This action will kick off a match and merge round for the resulting record. This record's values will be given precedence in the event that any merges occur. Multiple matching records are merged beforehand with precedence given to more recently imported records."
+
+msgid "Ineligible"
+msgstr "Ineligible"
 
 msgid "INTERNAL"
 msgstr "INTERNAL"
@@ -1029,6 +1176,9 @@ msgstr "This operation is irreversible."
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 
+msgid "ITEMS_WILL_NOT_CHANGE"
+msgstr "these will not change"
+
 msgid "Jurisdiction Property ID"
 msgstr "Jurisdiction Property ID"
 
@@ -1046,6 +1196,9 @@ msgstr "kWh/m²/year"
 
 msgid "Label"
 msgstr "Label"
+
+msgid "Label must be assigned when using Valid Data Severity."
+msgstr "Label must be assigned when using Valid Data Severity."
 
 msgid "Label Name"
 msgstr "Label Name"
@@ -1079,6 +1232,9 @@ msgstr "Left Half"
 msgid "light blue"
 msgstr "light blue"
 
+msgid "LINK_OUT_CYCLE_MATCHES"
+msgstr "Matches outside of this cycle will be linked."
+
 msgid "List Settings"
 msgstr "List Settings"
 
@@ -1093,6 +1249,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lot L
 
 msgid "LIST_GUIDANCE_TAXLOTS_NO_PIN"
 msgstr "Select columns from the list below to make them appear in your Tax Lots Detail table. Drag the rows to change the order in which they appear."
+
+msgid "LISTING_ORG_MATCHING_CRITERIA"
+msgstr "For this organization, records match if the following fields match:"
 
 msgid "Loading data..."
 msgstr "Loading data..."
@@ -1196,6 +1355,9 @@ msgstr "Matched Tax Lots"
 msgid "Matched!"
 msgstr "Matched!"
 
+msgid "Matching Criteria Preview"
+msgstr "Matching Criteria Preview"
+
 msgid "Matching Detail"
 msgstr "Matching Detail"
 
@@ -1210,6 +1372,15 @@ msgstr "Matching List Settings"
 
 msgid "Matching Results for file"
 msgstr "Matching Results for file"
+
+msgid "MATCHING_ADVICE"
+msgstr "If there are fields in the datafile mapped to these names, the program will attempt to match on the corresponding values in existing records. All of these fields must have the same values between records for the records to match."
+
+msgid "MATCHING_COLUMN_SORT_PRIORITY"
+msgstr "Matching columns given higher sort priority*"
+
+msgid "MATCHING_CRITERIA_PREVIEW_WARNING"
+msgstr "Warning: If matching criteria changes are proposed, a preview will be loaded. The load times for this preview depend on how many records belong to this organization and how many of those records would be merged together given the new matching criteria."
 
 msgid "MATCHING_RESULTS_FOR_FILE"
 msgstr "Matching Results for file {dataset_filename}"
@@ -1247,11 +1418,41 @@ msgstr "member role"
 msgid "Members"
 msgstr "Members"
 
+msgid "MERGE_IN_CYCLE_MATCHES"
+msgstr "Matches within this cycle will be merged."
+
+msgid "MERGE_LINK_ADVICE"
+msgstr "Matches within the same cycle will be merged together, while matches in different cycles will be associated for cross-cycle analysis."
+
+msgid "MERGE_MULTIPLE_IN_CYCLE_MATCHES"
+msgstr "In the event that multiple matches are returned from a single cycle, those matches will be merged together."
+
+msgid "MERGE_PROTECTION_EXPLANATION"
+msgstr "Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and merging new data."
+
 msgid "Merged properties"
 msgstr "Merged properties"
 
+msgid "Merged properties against existing records"
+msgstr "Merged properties against existing records"
+
+msgid "Merged properties between existing records"
+msgstr "Merged properties between existing records"
+
+msgid "Merged properties within import file"
+msgstr "Merged properties within import file"
+
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
+
+msgid "Merged tax lots against existing records"
+msgstr "Merged tax lots against existing records"
+
+msgid "Merged tax lots between existing records"
+msgstr "Merged tax lots between existing records"
+
+msgid "Merged tax lots within import file"
+msgstr "Merged tax lots within import file"
 
 msgid "METER_DISPLAY_SETTINGS_TITLE"
 msgstr "Meter energy display units (change one at a time)"
@@ -1277,6 +1478,9 @@ msgstr "MJ/m²/year"
 msgid "Modifying Data Quality Rules"
 msgstr "Modifying Data Quality Rules"
 
+msgid "MODIFYING_COLUMN_SETTINGS"
+msgstr "Modifying Column Settings"
+
 msgid "More details"
 msgstr "More details"
 
@@ -1291,6 +1495,9 @@ msgstr "<strong>Note:</strong> only the first sheet of multi-sheet Excel files w
 
 msgid "multi-sheet Excel files are not currently supported"
 msgstr "multi-sheet Excel files are not currently supported"
+
+msgid "MULTIPLE_COL_MOD_OPTIONS"
+msgstr "From the table below, you may modify the columns in the following ways: "
 
 #: seed/models/models.py:186 seed/models/projects.py:30
 msgid "name"
@@ -1337,6 +1544,9 @@ msgstr "No labels available. Add a label above to get started."
 msgid "No warnings/errors"
 msgstr "No warnings/errors"
 
+msgid "NO_MAPQUEST_API_KEY_FOR_ORG"
+msgstr "There is no MapQuest API key associated to your organization."
+
 msgid "None"
 msgstr "None"
 
@@ -1348,6 +1558,9 @@ msgstr "not authorized"
 
 msgid "Not Null"
 msgstr "Not Null"
+
+msgid "NOT_GEOCODED_PREVIOUSLY"
+msgstr "Not geocoded previously"
 
 msgid "Note 1: Sub-organizations cannot be deleted."
 msgstr "Note 1: Sub-organizations cannot be deleted."
@@ -1411,6 +1624,9 @@ msgstr "Or Create New (With User as Head):"
 #: seed/models/models.py:182
 msgid "orange"
 msgstr "orange"
+
+msgid "ORG_MATCH_MERGE_LINK_WARNING"
+msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against.  Records in each cycle will be reevaluated to determine if matches exist, and if so they will be automatically merged.  Then the records across multiple cycles will be reevaluated to update property and taxlot links or associations.  If you continue you may first preview the pending changes before committing."
 
 msgid "Organization"
 msgstr "Organization"
@@ -1527,8 +1743,8 @@ msgstr "Please go to the following page and setup your account:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
-msgid "Please review SEED headers.  Duplicate values are not allowed."
-msgstr "Please review SEED headers.  Duplicate values are not allowed."
+msgid "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
+msgstr "Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case."
 
 msgid "Please review SEED headers.  Empty values are not allowed."
 msgstr "Please review SEED headers.  Empty values are not allowed."
@@ -1560,6 +1776,15 @@ msgstr "Unable to Import - No associations to previously imported properties"
 msgid "PM_METER_IMPORT_RESULTS"
 msgstr "Portfolio Manager Meter Import Results"
 
+msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
+msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
+
+msgid "Populate SEED Headers with best known matches"
+msgstr "Populate SEED Headers with best known matches"
+
+msgid "POST_GEOCODING_COUNTS"
+msgstr "Updated counts after geocoding"
+
 msgid "Postal Code (Property)"
 msgstr "Postal Code (Property)"
 
@@ -1571,6 +1796,15 @@ msgstr "Potential Matches from Source"
 
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
+
+msgid "Preset Name"
+msgstr "Preset Name"
+
+msgid "Preview"
+msgstr "Preview"
+
+msgid "Preview Loading"
+msgstr "Preview Loading"
 
 msgid "Previous"
 msgstr "Previous"
@@ -1681,6 +1915,9 @@ msgstr "Property Type"
 msgid "Property Visibility"
 msgstr "Property Visibility"
 
+msgid "PROPERTY_MATCHING_FIELDS_REQUIREMENT"
+msgstr "At least one of the following Property fields is required"
+
 msgid "PUBLIC"
 msgstr "PUBLIC"
 
@@ -1689,6 +1926,15 @@ msgstr "Read more here."
 
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
+
+msgid "Recognize Empty"
+msgstr "Recognize Empty"
+
+msgid "RECOGNIZE_EMPTY_EXPLANATION"
+msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
+
+msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
+msgstr "Warning: When this is checked for a field and that field is not mapped during import, the incoming records will be read as having an empty values for that field. Any resulting merges will have empty values for this field."
 
 msgid "Record from Source"
 msgstr "Record from Source"
@@ -1728,11 +1974,23 @@ msgstr "Remove User"
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
 
+msgid "Rename Preset"
+msgstr "Rename Preset"
+
+msgid "Rename your Preset"
+msgstr "Rename your Preset"
+
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
 
+msgid "RENAME_SYS_LEVEL_COL"
+msgstr "Rename allows users to change the name of the underlying field shown in Column Name / Field Name. Renaming a field means that field will be changed in all the data for the organization."
+
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
+
+msgid "Replacing Existing Columns"
+msgstr "Replacing Existing Columns"
 
 msgid "Reporting Deadline"
 msgstr "Reporting Deadline"
@@ -1761,6 +2019,9 @@ msgstr "Restore Default Rules"
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
 msgstr "Retro Commissioning"
+
+msgid "Review Changes"
+msgstr "Review Changes"
 
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"
@@ -2050,6 +2311,15 @@ msgstr "Success!"
 msgid "Successful upload!"
 msgstr "Successful upload!"
 
+msgid "SUGGEST_TO_VERIFY"
+msgstr "Please verify before continuing."
+
+msgid "SUGGEST_UPDATE_GEOCODE_COLS"
+msgstr "Update the geocoding column settings in your organization's column settings page."
+
+msgid "Switch Presets"
+msgstr "Switch Presets"
+
 msgid "Tax Lot"
 msgstr "Tax Lot"
 
@@ -2079,6 +2349,9 @@ msgstr "Tax Lots List"
 
 msgid "Tax Lots List Settings"
 msgstr "Tax Lots List Settings"
+
+msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
+msgstr "At least one of the following Tax Lot fields is required"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44
@@ -2153,6 +2426,9 @@ msgstr "There is also a link to the SEED-Platform Users forum, where you can con
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
+msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgstr "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
 
@@ -2217,6 +2493,9 @@ msgstr "Update Charts"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
+msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
@@ -2298,6 +2577,9 @@ msgstr "User First Name:"
 
 msgid "User Last Name:"
 msgstr "User Last Name:"
+
+msgid "USER_WILL_BE_DELETED"
+msgstr "The user <strong>{user}</strong> only belongs to this organization. Removing them will result in the user being deleted. Are you sure you want to continue?"
 
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
@@ -2426,6 +2708,9 @@ msgstr "Yes, Delete Data Set"
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
 
+msgid "Yes, Delete User"
+msgstr "Yes, Delete User"
+
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 
@@ -2437,12 +2722,18 @@ msgstr "You cannot login without agreeing to the terms of this site."
 msgid "You have successfully logged out. You may log in again below."
 msgstr "You have successfully logged out. You may log in again below."
 
+msgid "You have unsaved changes"
+msgstr "You have unsaved changes"
+
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "You should be receiving it shortly."
 msgstr "You should be receiving it shortly."
 
 msgid "You successfully created the project"
 msgstr "You successfully created the project"
+
+msgid "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
+msgstr "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.developer', [])
@@ -29,6 +29,10 @@ angular.module('BE.seed.controller.developer', [])
           $scope.user.api_key = data.api_key;
           $scope.new_key_generated = true;
         });
+      };
+
+      $scope.getHost = function () {
+        return location.protocol + '//' + location.host;
       };
 
     }]);

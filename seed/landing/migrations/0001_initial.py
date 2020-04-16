@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('default_custom_columns', django.contrib.postgres.fields.jsonb.JSONField(default={}, null=True, blank=True)),
                 ('show_shared_buildings', models.BooleanField(default=False, help_text='shows shared buildings within search results', verbose_name='active')),
                 ('api_key', models.CharField(default=b'', max_length=128, verbose_name='api key', db_index=True, blank=True)),
-                ('default_organization', models.ForeignKey(related_name='default_users', blank=True, to='orgs.Organization', null=True)),
+                ('default_organization', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='default_users', blank=True, to='orgs.Organization', null=True)),
                 ('groups', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Group', blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of his/her group.', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(related_query_name='user', related_name='user_set', to='auth.Permission', blank=True, help_text='Specific permissions for this user.', verbose_name='user permissions')),
             ],

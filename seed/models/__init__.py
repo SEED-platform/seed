@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -14,6 +14,7 @@ from .properties import *  # noqa
 from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .column_mappings import *  # noqa
+from .column_mapping_presets import *  # noqa
 from .column_list_settings import *  # noqa
 from .column_list_settings_columns import *  # noqa
 from .auditlog import *  # noqa

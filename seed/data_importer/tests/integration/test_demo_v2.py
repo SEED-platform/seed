@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -134,9 +134,9 @@ class TestDemoV2(DataMappingBaseTestCase):
         tasks.match_buildings(self.import_file_tax_lot.id)
 
         # Check a single case of the taxlotstate
-        self.assertEqual(TaxLotState.objects.filter(address_line_1='050 Willow Ave SE').count(), 1)
+        self.assertEqual(TaxLotState.objects.filter(address_line_1='2655 Welstone Ave NE').count(), 1)
         self.assertEqual(
-            TaxLotView.objects.filter(state__address_line_1='050 Willow Ave SE').count(), 1
+            TaxLotView.objects.filter(state__address_line_1='2655 Welstone Ave NE').count(), 1
         )
 
         self.assertEqual(TaxLotView.objects.count(), 9)

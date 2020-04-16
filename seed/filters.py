@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -9,6 +9,29 @@ import json
 from rest_framework import filters
 
 from seed import search
+from seed.models import VIEW_LOCATION_TYPES, VIEW_LIST_INVENTORY_TYPE
+
+
+class ColumnListSettingFilterBackend(filters.BaseFilterBackend):
+    @staticmethod
+    def filter_queryset(request, queryset, view):
+        if 'organization_id' in request.query_params:
+            queryset = queryset.filter(
+                organization_id=request.query_params['organization_id'],
+            )
+        if 'inventory_type' in request.query_params:
+            result = [k for k, v in VIEW_LIST_INVENTORY_TYPE if v == request.query_params['inventory_type']]
+            if len(result) == 1:
+                queryset = queryset.filter(
+                    inventory_type=result[0],
+                )
+        if 'settings_location' in request.query_params:
+            result = [k for k, v in VIEW_LOCATION_TYPES if v == request.query_params['settings_location']]
+            if len(result) == 1:
+                queryset = queryset.filter(
+                    settings_location=result[0],
+                )
+        return queryset
 
 
 class LabelFilterBackend(filters.BaseFilterBackend):

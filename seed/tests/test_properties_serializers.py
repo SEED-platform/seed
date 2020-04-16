@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-copyright (c) 2014 - 2019 The Regents of the University of California,
-through Lawrence Berkeley National Laboratory(subject to receipt of any
-required approvals from the US. Department of Energy) and contributors.
-All rights reserved
+copyright (c) 2014 - 2020, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of any
+required approvals from the U.S. Department of Energy) and contributors.
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 
 Tests for serializers used by GreenAssessments/Energy Certifications
@@ -358,11 +358,12 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         mock_serializer.return_value.is_valid.return_value = True
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
+        property = FakePropertyFactory(organization=self.org).get_property()
         data = {
             'org_id': 1,
             'cycle': 2,
             'state': {'test': 3},
-            'property': 4
+            'property': property.id
         }
 
         serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
@@ -380,11 +381,12 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         mock_serializer.return_value.save.return_value = self.property_state
         mock_request = mock.MagicMock()
         mock_request.method = 'PATCH'
+        property = FakePropertyFactory(organization=self.org).get_property()
         data = {
             'org_id': 1,
             'cycle': 2,
             'state': {'test': 3},
-            'property': 4
+            'property': property.id
         }
         serializer = PropertyViewAsStateSerializer(context={'request': mock_request})
         serializer.update(self.property_view, data)

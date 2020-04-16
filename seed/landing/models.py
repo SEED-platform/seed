@@ -1,9 +1,10 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import re
 import uuid
 import hmac
 import base64
@@ -62,10 +63,10 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         help_text=_('shows shared buildings within search results'))
     default_organization = models.ForeignKey(
         Organization,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        related_name='default_users',
-        on_delete=models.SET_NULL
+        related_name='default_users'
     )
     api_key = models.CharField(
         _('api key'),
@@ -103,17 +104,22 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if not auth_header.startswith('Bearer') or not getattr(request, 'user', None):
             try:
                 if not auth_header.startswith('Basic'):
-                    raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION is supported")
+                    raise exceptions.AuthenticationFailed('Only Basic HTTP_AUTHORIZATION is supported')
 
                 auth_header = auth_header.split()[1]
                 auth_header = base64.urlsafe_b64decode(auth_header).decode('utf-8')
                 username, api_key = auth_header.split(':')
+
+                valid_api_key = re.search('^[a-f0-9]{40}$', api_key)
+                if not valid_api_key:
+                    raise exceptions.AuthenticationFailed('Invalid API key')
+
                 user = SEEDUser.objects.get(api_key=api_key, username=username)
                 return user
             except ValueError:
-                raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+                raise exceptions.AuthenticationFailed('Invalid HTTP_AUTHORIZATION Header')
             except SEEDUser.DoesNotExist:
-                raise exceptions.AuthenticationFailed("Invalid API key")
+                raise exceptions.AuthenticationFailed('Invalid API key')
 
     def get_absolute_url(self):
         return "/users/%s/" % urlquote(self.username)
@@ -157,4 +163,4 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         # correct? Regardless, this code seems problematic
         if self.email.lower() != self.username:
             self.email = self.username
-        return super(SEEDUser, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)

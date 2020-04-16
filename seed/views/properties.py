@@ -1,31 +1,28 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :author
 """
 
-from django.apps import apps
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.data_importer.views import ImportFileViewSet
+from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
-from seed.lib.merging import merging
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization
 )
 from seed.models import (
-    AUDIT_IMPORT,
     AUDIT_USER_EDIT,
     Column,
     ColumnListSetting,
@@ -35,7 +32,6 @@ from seed.models import (
     MERGE_STATE_DELETE,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-    MERGE_STATE_UNKNOWN,
     Meter,
     Measure,
     Note,
@@ -45,8 +41,11 @@ from seed.models import (
     PropertyState,
     PropertyView,
     Simulation,
+    StatusLabel,
     TaxLotProperty,
     TaxLotView,
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY
 )
 from seed.models import Property as PropertyModel
 from seed.serializers.pint import PintJSONEncoder
@@ -68,7 +67,9 @@ from seed.utils.properties import (
     get_changed_fields,
     pair_unpair_property_taxlot,
     update_result_with_master,
+    properties_across_cycles,
 )
+from seed.utils.merge import merge_properties
 from seed.utils.viewsets import (
     SEEDOrgCreateUpdateModelViewSet,
     SEEDOrgModelViewSet
@@ -276,8 +277,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 profile = ColumnListSetting.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=ColumnListSetting.VIEW_LIST,
-                    inventory_type=ColumnListSetting.VIEW_LIST_PROPERTY
+                    settings_location=VIEW_LIST,
+                    inventory_type=VIEW_LIST_PROPERTY
                 )
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id
@@ -367,7 +368,41 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
+    def cycles(self, request):
+        """
+        List all the properties	with all columns
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: profile_id
+              description: Either an id of a list settings profile, or undefined
+              paramType: body
+            - name: cycle_ids
+              description: The IDs of the cycle to get properties
+              required: true
+              paramType: query
+        """
+        org_id = request.data.get('organization_id', None)
+        profile_id = request.data.get('profile_id', -1)
+        cycle_ids = request.data.get('cycle_ids', [])
+
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        response = properties_across_cycles(org_id, profile_id, cycle_ids)
+
+        return JsonResponse(response)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
         List all the properties
@@ -411,7 +446,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
@@ -429,10 +464,11 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def merge(self, request):
         """
-        Merge multiple property records into a single new record
+        Merge multiple property records into a single new record, and run this
+        new record through a match and merge round within it's current Cycle.
         ---
         parameters:
             - name: organization_id
@@ -455,137 +491,25 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
+        merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
-        audit_log = PropertyAuditLog
-        inventory = Property
-        label = apps.get_model('seed', 'PropertyView_labels')
-        state = PropertyState
-        view = PropertyView
+        merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
-        index = 1
-        merged_state = None
-        while index < len(state_ids):
-            # state 1 is the base, state 2 is merged on top of state 1
-            # Use index 0 the first time through, merged_state from then on
-            if index == 1:
-                state1 = state.objects.get(id=state_ids[index - 1])
-            else:
-                state1 = merged_state
-            state2 = state.objects.get(id=state_ids[index])
-
-            # Create new inventory record for the merged result
-            inventory_record = inventory(organization_id=organization_id)
-            inventory_record.save()
-
-            # grab existing views for the properties we're merging
-            views = view.objects.filter(state_id__in=[state1.id, state2.id])
-            view_ids = list(views.values_list('id', flat=True))
-
-            # Find unique notes for the views for later
-            notes = list(Note.objects.values(
-                'name', 'note_type', 'text', 'log_data', 'created', 'updated', 'organization_id', 'user_id'
-            ).filter(property_view_id__in=view_ids).distinct())
-
-            cycle_id = views.first().cycle_id
-
-            # create new property state for merging into
-            merged_state = state.objects.create(organization_id=organization_id)
-
-            # Create new view for the merged property
-            new_view = view(cycle_id=cycle_id, state_id=merged_state.id,
-                            property_id=inventory_record.id)
-            new_view.save()
-
-            # merge states
-            priorities = Column.retrieve_priorities(organization_id)
-            merged_state = merging.merge_state(
-                merged_state, state1, state2, priorities['PropertyState']
-            )
-
-            state_1_audit_log = audit_log.objects.filter(state=state1).first()
-            state_2_audit_log = audit_log.objects.filter(state=state2).first()
-
-            audit_log.objects.create(organization=state1.organization,
-                                     parent1=state_1_audit_log,
-                                     parent2=state_2_audit_log,
-                                     parent_state1=state1,
-                                     parent_state2=state2,
-                                     state=merged_state,
-                                     name='Manual Match',
-                                     description='Automatic Merge',
-                                     import_filename=None,
-                                     record_type=AUDIT_IMPORT)
-
-            # Set the merged_state to merged
-            merged_state.data_state = DATA_STATE_MATCHING
-            merged_state.merge_state = MERGE_STATE_MERGED
-            merged_state.save()
-            state1.merge_state = MERGE_STATE_UNKNOWN
-            state1.save()
-            state2.merge_state = MERGE_STATE_UNKNOWN
-            state2.save()
-
-            label_ids = []
-            # Get paired view ids
-            paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id__in=view_ids)
-                                   .order_by('taxlot_view_id').distinct('taxlot_view_id')
-                                   .values_list('taxlot_view_id', flat=True))
-
-            # Add meters in the following order without regard for the source persisting.
-            inventory_record.copy_meters(
-                view.objects.get(state_id=state1.id).property_id,
-                source_persists=False
-            )
-            inventory_record.copy_meters(
-                view.objects.get(state_id=state2.id).property_id,
-                source_persists=False
-            )
-
-            # grab labels from previous views and delete the old properties
-            for v in views:
-                label_ids.extend(list(v.labels.all().values_list('id', flat=True)))
-                v.property.delete()
-            label_ids = list(set(label_ids))
-
-            # add previous labels to the new property view
-            for label_id in label_ids:
-                label(propertyview_id=new_view.id, statuslabel_id=label_id).save()
-
-            # Assign notes to the new view
-            for note in notes:
-                note['property_view'] = new_view
-                n = Note(**note)
-                n.save()
-                # Correct the created and updated times to match the original note
-                Note.objects.filter(id=n.id).update(created=note['created'],
-                                                    updated=note['updated'])
-
-            # Delete existing pairs and re-pair all to new view
-            # Probably already deleted by cascade
-            TaxLotProperty.objects.filter(property_view_id__in=view_ids).delete()
-            for paired_view_id in paired_view_ids:
-                TaxLotProperty(primary=True,
-                               cycle_id=cycle_id,
-                               property_view_id=new_view.id,
-                               taxlot_view_id=paired_view_id).save()
-
-            index += 1
-
-        return {
+        result = {
             'status': 'success'
         }
+
+        result.update({
+            'match_merged_count': merge_count,
+            'match_link_count': link_count,
+        })
+
+        return result
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
@@ -609,6 +533,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'property view with id {} does not exist'.format(pk)
             }
 
+        # Duplicate pairing
+        paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
+                               .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
+
+        # Capture previous associated labels
+        label_ids = list(old_view.labels.all().values_list('id', flat=True))
+
         notes = old_view.notes.all()
         for note in notes:
             note.property_view = None
@@ -630,18 +561,26 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'property view with id {} must have two parent states'.format(pk)
             }
 
-        label = apps.get_model('seed', 'PropertyView_labels')
         state1 = log.parent_state1
         state2 = log.parent_state2
         cycle_id = old_view.cycle_id
 
-        # Clone the property record, then copy over meters
+        # Clone the property record twice, then copy over meters
         old_property = old_view.property
         new_property = old_property
         new_property.id = None
         new_property.save()
 
+        new_property_2 = Property.objects.get(pk=new_property.id)
+        new_property_2.id = None
+        new_property_2.save()
+
         Property.objects.get(pk=new_property.id).copy_meters(old_view.property_id)
+        Property.objects.get(pk=new_property_2.id).copy_meters(old_view.property_id)
+
+        # If canonical Property is NOT associated to a different -View, delete it
+        if not PropertyView.objects.filter(property_id=old_view.property_id).exclude(id=old_view.id).exists():
+            Property.objects.get(pk=old_view.property_id).delete()
 
         # Create the views
         new_view1 = PropertyView(
@@ -651,16 +590,9 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         )
         new_view2 = PropertyView(
             cycle_id=cycle_id,
-            property_id=old_view.property_id,
+            property_id=new_property_2.id,
             state=state2
         )
-
-        # Save old labels to both views
-        label_ids = list(old_view.labels.all().values_list('id', flat=True))
-
-        for label_id in label_ids:
-            label(propertyview_id=new_view1.id, statuslabel_id=label_id).save()
-            label(propertyview_id=new_view2.id, statuslabel_id=label_id).save()
 
         # Mark the merged state as deleted
         merged_state.merge_state = MERGE_STATE_DELETE
@@ -689,13 +621,14 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         # Delete the audit log entry for the merge
         log.delete()
 
-        # Duplicate pairing
-        paired_view_ids = list(TaxLotProperty.objects.filter(property_view_id=old_view.id)
-                               .order_by('taxlot_view_id').values_list('taxlot_view_id', flat=True))
-
         old_view.delete()
         new_view1.save()
         new_view2.save()
+
+        # Asssociate labels
+        label_objs = StatusLabel.objects.filter(pk__in=label_ids)
+        new_view1.labels.set(label_objs)
+        new_view2.labels.set(label_objs)
 
         # Duplicate notes to the new views
         for note in notes:
@@ -730,7 +663,84 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['POST'])
+    def links(self, request, pk=None):
+        """
+        Get property details for each linked property across org cycles
+        ---
+        parameters:
+            - name: pk
+              description: The primary key of the PropertyView
+              required: true
+              paramType: path
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+        """
+        organization_id = request.data.get('organization_id', None)
+        base_view = PropertyView.objects.select_related('cycle').filter(
+            pk=pk,
+            cycle__organization_id=organization_id
+        )
+
+        if base_view.exists():
+            result = {'data': []}
+
+            # Grab extra_data columns to be shown in the results
+            all_extra_data_columns = Column.objects.filter(
+                organization_id=organization_id,
+                is_extra_data=True,
+                table_name='PropertyState'
+            ).values_list('column_name', flat=True)
+
+            linked_views = PropertyView.objects.select_related('cycle').filter(
+                property_id=base_view.get().property_id,
+                cycle__organization_id=organization_id
+            ).order_by('-cycle__start')
+            for linked_view in linked_views:
+                state_data = PropertyStateSerializer(
+                    linked_view.state,
+                    all_extra_data_columns=all_extra_data_columns
+                ).data
+
+                state_data['cycle_id'] = linked_view.cycle.id
+                state_data['view_id'] = linked_view.id
+                result['data'].append(state_data)
+
+            return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
+        else:
+            result = {
+                'status': 'error',
+                'message': 'property view with id {} does not exist in given organization'.format(pk)
+            }
+            return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=True, methods=['POST'])
+    def match_merge_link(self, request, pk=None):
+        """
+        Runs match merge link for an individual property.
+
+        Note that this method can return a view_id of None if the given -View
+        was not involved in a merge.
+        """
+        merge_count, link_count, view_id = match_merge_link(pk, 'PropertyState')
+
+        result = {
+            'view_id': view_id,
+            'match_merged_count': merge_count,
+            'match_link_count': link_count,
+        }
+
+        return JsonResponse(result)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a taxlot to this property
@@ -759,7 +769,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a taxlot from this property
@@ -788,7 +798,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def columns(self, request):
         """
         List all property columns
@@ -814,7 +824,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def mappable_columns(self, request):
         """
         List only property columns that are mappable
@@ -832,7 +842,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'])
+    @action(detail=True, methods=['DELETE'])
     def delete(self, request, pk=None):
         """
         Delete a single property state from a property_viewID. Not sure why we
@@ -857,7 +867,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['DELETE'])
+    @action(detail=False, methods=['DELETE'])
     def batch_delete(self, request):
         """
         Batch delete several properties
@@ -913,7 +923,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def taxlots(self, pk):
         """
         Get related TaxLots for this property
@@ -976,13 +986,14 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             result = update_result_with_master(result, master)
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
-            return JsonResponse(result)
+            return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk=None):
         """
-        Update a property.
+        Update a property and run the updated record through a match and merge
+        round within it's current Cycle.
 
         - looks up the property view
         - casts it as a PropertyState
@@ -1034,14 +1045,13 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                     state=property_view.state
                 ).order_by('-id').first()
 
-                if 'extra_data' in new_property_state_data:
-                    property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
-                property_state_data.update(new_property_state_data)
-
+                # if checks above pass, create an exact copy of the current state for historical purposes
                 if log.name == 'Import Creation':
                     # Add new state by removing the existing ID.
                     property_state_data.pop('id')
+                    # Remove the import_file_id for the first edit of a new record
+                    # If the import file has been deleted and this value remains the serializer won't be valid
+                    property_state_data.pop('import_file')
                     new_property_state_serializer = PropertyStateSerializer(
                         data=property_state_data
                     )
@@ -1075,9 +1085,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
-
-                        return JsonResponse(result, encoder=PintJSONEncoder,
-                                            status=status.HTTP_200_OK)
                     else:
                         result.update({
                             'status': 'error',
@@ -1086,8 +1093,20 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                         )
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-                elif log.name in ['Manual Edit', 'Manual Match', 'System Match',
-                                  'Merge current state in migration']:
+
+                # redo assignment of this variable in case this was an initial edit
+                property_state_data = PropertyStateSerializer(property_view.state).data
+
+                if 'extra_data' in new_property_state_data:
+                    property_state_data['extra_data'].update(
+                        new_property_state_data.pop('extra_data'))
+                property_state_data.update(new_property_state_data)
+
+                log = PropertyAuditLog.objects.select_related().filter(
+                    state=property_view.state
+                ).order_by('-id').first()
+
+                if log.name in ['Manual Edit', 'Manual Match', 'System Match', 'Merge current state in migration']:
                     # Convert this to using the serializer to save the data. This will override the previous values
                     # in the state object.
 
@@ -1108,6 +1127,15 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
+
+                        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
+
+                        result.update({
+                            'view_id': view_id,
+                            'match_merged_count': merge_count,
+                            'match_link_count': link_count,
+                        })
+
                         return JsonResponse(result, encoder=PintJSONEncoder,
                                             status=status.HTTP_200_OK)
                     else:
@@ -1129,7 +1157,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'], url_path='update_measures')
+    @action(detail=True, methods=['PUT'], url_path='update_measures')
     def add_measures(self, request, pk=None):
         """
         Update the measures applied to the building. There are two options, one for adding
@@ -1244,7 +1272,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'], url_path='delete_measures')
+    @action(detail=True, methods=['DELETE'], url_path='delete_measures')
     def delete_measures(self, request, pk=None):
         """
         Delete measures. Allow the user to define which implementation type to delete
@@ -1306,7 +1334,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['GET'], url_path='measures')
+    @action(detail=True, methods=['GET'], url_path='measures')
     def get_measures(self, request, pk=None):
         """
         Get the list of measures for a property and the given cycle

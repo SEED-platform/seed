@@ -1,12 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from collections import defaultdict
 
 import dateutil
+from django.http import HttpResponse
+from io import BytesIO
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.parsers import JSONParser
@@ -29,6 +31,8 @@ from seed.serializers.pint import (
 )
 from seed.utils.api import drf_api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
+
+from xlsxwriter import Workbook
 
 
 class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
@@ -159,6 +163,105 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
             result = {'status': 'success', 'data': data}
             status_code = status.HTTP_200_OK
         return Response(result, status=status_code)
+
+    def export_reports_data(self, request):
+        params = {}
+        missing_params = []
+        error = ''
+        for param in ['x_var', 'x_label', 'y_var', 'y_label', 'organization_id', 'start', 'end']:
+            val = request.query_params.get(param, None)
+            if not val:
+                missing_params.append(param)
+            else:
+                params[param] = val
+        if missing_params:
+            error = "{} Missing params: {}".format(
+                error, ", ".join(missing_params)
+            )
+        if error:
+            status_code = status.HTTP_400_BAD_REQUEST
+            result = {'status': 'error', 'message': error}
+            return Response(result, status=status_code)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="report-data"'
+
+        # Create WB
+        output = BytesIO()
+        wb = Workbook(output, {'remove_timezone': True})
+
+        # Create sheets
+        count_sheet = wb.add_worksheet('Counts')
+        base_sheet = wb.add_worksheet('Raw')
+        agg_sheet = wb.add_worksheet('Agg')
+
+        # Enable bold format and establish starting cells
+        bold = wb.add_format({'bold': True})
+        data_row_start = 0
+        data_col_start = 0
+
+        # Write all headers across all sheets
+        count_sheet.write(data_row_start, data_col_start, 'Year Ending', bold)
+        count_sheet.write(data_row_start, data_col_start + 1, 'Properties with Data', bold)
+        count_sheet.write(data_row_start, data_col_start + 2, 'Total Properties', bold)
+
+        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
+        base_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('x_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + 2, request.query_params.get('y_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + 3, 'Year Ending', bold)
+
+        agg_sheet.write(data_row_start, data_col_start, request.query_params.get('x_label'), bold)
+        agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('y_label'), bold)
+        agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
+
+        # Gather base data
+        cycles = self.get_cycles(params['start'], params['end'])
+        data = self.get_raw_report_data(
+            params['organization_id'], cycles,
+            params['x_var'], params['y_var'], False
+        )
+
+        base_row = data_row_start + 1
+        agg_row = data_row_start + 1
+        count_row = data_row_start + 1
+
+        for cycle_results in data:
+            total_count = cycle_results['property_counts']['num_properties']
+            with_data_count = cycle_results['property_counts']['num_properties_w-data']
+            yr_e = cycle_results['property_counts']['yr_e']
+
+            # Write Counts
+            count_sheet.write(count_row, data_col_start, yr_e)
+            count_sheet.write(count_row, data_col_start + 1, with_data_count)
+            count_sheet.write(count_row, data_col_start + 2, total_count)
+
+            count_row += 1
+
+            # Write Base/Raw Data
+            data_rows = cycle_results['chart_data']
+            for datum in data_rows:
+                base_sheet.write(base_row, data_col_start, datum.get('id'))
+                base_sheet.write(base_row, data_col_start + 1, datum.get('x'))
+                base_sheet.write(base_row, data_col_start + 2, datum.get('y'))
+                base_sheet.write(base_row, data_col_start + 3, datum.get('yr_e'))
+
+                base_row += 1
+
+            # Gather and write Agg data
+            for agg_datum in self.aggregate_data(yr_e, params['y_var'], data_rows):
+                agg_sheet.write(agg_row, data_col_start, agg_datum.get('x'))
+                agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get('y'))
+                agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get('yr_e'))
+
+                agg_row += 1
+
+        wb.close()
+
+        xlsx_data = output.getvalue()
+
+        response.write(xlsx_data)
+
+        return response
 
     def get_aggregated_property_report_data(self, request):
         campus_only = request.query_params.get('campus_only', False)

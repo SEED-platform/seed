@@ -2,14 +2,15 @@ Mapping
 =======
 
 This document describes the set of calls that occur from the web client or API
-down to the back-end for the process of mapping.
+down to the back-end for the process of mapping data into SEED.
 
 An overview of the process is:
 
-1. Import - A file is uploaded and saved in the database
-2. Mapping - Mapping occurs on that file
-3. Matching / Merging
-4. Pairing
+1. Import - A file is uploaded to the server
+2. Save - The file is batched saved into the database as JSON data
+3. Mapping - Mapping occurs on that file
+4. Matching / Merging
+5. Pairing
 
 Import
 ------
@@ -23,15 +24,11 @@ point, the request object has additional attributes for Portfolio Manager files.
 Mapping
 -------
 
-After the data is saved, the UI invokes `DataFileViewSet.mapping_suggestions` to get the columns to
-display on the mapping screen. This loads back the model that was mentioned above as an `ImportFile` instance, and
-then the `from_portfolio_manager` property can be used to choose the branch of the code:
+Once files are uploaded, file header columns need to be mapped to SEED columns. Mappings can be specified/decided manually for any particular file import,
+or mapping presets can be created and subsequently applied to any file imports.
 
-If it is a Portfolio Manager file the `seed.common.mapper.get_pm_mapping` method provides a high-level interface to
-the Portfolio Manager mapping (see comments in the containing file, `mapper.py`), and the result is used to populate
-the return value for this method, which goes back to the UI to display the mapping screen.
-
-Otherwise the code does some auto-magical logic to try and infer the "correct" mapping.
+When a column mapping preset is applied to an import file, file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.)
+in order for the corresponding SEED column information to be used/mapped.
 
 Matching
 --------

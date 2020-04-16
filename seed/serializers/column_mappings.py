@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2019, The Regents of the University of California,
+:copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -24,7 +24,7 @@ class ColumnMappingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         """Return only the first items in the column_raw and column_mapped"""
-        result = super(ColumnMappingSerializer, self).to_representation(obj)
+        result = super().to_representation(obj)
 
         if obj.column_raw and obj.column_raw.first():
             result['column_raw'] = ColumnSerializer(obj.column_raw.first()).data
