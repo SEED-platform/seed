@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import (
@@ -22,7 +22,7 @@ from seed.utils.meters import PropertyMeterReadingsExporter
 class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def parsed_meters_confirmation(self, request):
         body = dict(request.data)
         file_id = body['file_id']
@@ -37,13 +37,13 @@ class MeterViewSet(viewsets.ViewSet):
         result = {}
 
         result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports()
+        result["proposed_imports"] = meters_parser.proposed_imports
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
 
         return result
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def greenbutton_parsed_meters_confirmation(self, request):
         body = dict(request.data)
         file_id = body['file_id']
@@ -60,7 +60,7 @@ class MeterViewSet(viewsets.ViewSet):
         result = {}
 
         result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports()
+        result["proposed_imports"] = meters_parser.proposed_imports
 
         import_file.matching_results_data['property_id'] = property_id
         import_file.save()
@@ -68,7 +68,7 @@ class MeterViewSet(viewsets.ViewSet):
         return result
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def property_meters(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
@@ -76,19 +76,31 @@ class MeterViewSet(viewsets.ViewSet):
         property_id = PropertyView.objects.get(pk=property_view_id).property.id
         energy_types = dict(Meter.ENERGY_TYPES)
 
-        return [
-            {
+        res = []
+        for meter in Meter.objects.filter(property_id=property_id):
+            if meter.source == meter.GREENBUTTON:
+                source = 'GB'
+                source_id = usage_point_id(meter.source_id)
+            elif meter.source == meter.BUILDINGSYNC:
+                source = 'BS'
+                source_id = meter.source_id
+            else:
+                source = 'PM'
+                source_id = meter.source_id
+
+            res.append({
                 'id': meter.id,
                 'type': energy_types[meter.type],
-                'source': "PM" if meter.source == Meter.PORTFOLIO_MANAGER else "GB",
-                'source_id': meter.source_id if meter.source == Meter.PORTFOLIO_MANAGER else usage_point_id(meter.source_id),
-            }
-            for meter
-            in Meter.objects.filter(property_id=property_id)
-        ]
+                'source': source,
+                'source_id': source_id,
+                'scenario_id': meter.scenario.id if meter.scenario is not None else None,
+                'scenario_name': meter.scenario.name if meter.scenario is not None else None
+            })
+
+        return res
 
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def property_meter_usage(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
@@ -104,7 +116,7 @@ class MeterViewSet(viewsets.ViewSet):
         return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def valid_types_units(self, request):
         return {
             type: list(units.keys())

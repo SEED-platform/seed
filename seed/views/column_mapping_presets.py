@@ -4,7 +4,7 @@
 from django.core.exceptions import FieldDoesNotExist
 from django.http import JsonResponse
 
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
@@ -148,7 +148,7 @@ class ColumnMappingPresetViewSet(ViewSet):
 
     @api_endpoint_class
     @has_perm_class('requires_member')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def suggestions(self, request):
         """
         Retrieves suggestions given raw column headers.

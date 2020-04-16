@@ -10,7 +10,7 @@ import logging
 import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
@@ -153,7 +153,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def delete_all(self, request):
         """
         Delete all columns for an organization. This method is typically not recommended if there
@@ -198,7 +198,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
-    @list_route(renderer_classes=(SEEDJSONRenderer,))
+    @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
@@ -250,7 +250,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         org_id = self.get_organization(request)
         try:

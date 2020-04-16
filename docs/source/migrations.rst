@@ -47,6 +47,18 @@ local_untracked.py file
         ),
     )
 
+Version 2.7.1
+-------------
+
+- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+
+Version 2.7.0
+-------------
+
+- This migration will run a match/merge/pair/link method upon migration. Make sure to run the migration manually and not inside of the docker container using the ./deploy.sh script.
+- Make sure to backup the database before peforming the migration.
+- Run `./manage.py migrate`.
+
 
 Version 2.6.1
 -------------

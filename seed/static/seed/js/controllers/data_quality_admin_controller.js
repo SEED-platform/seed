@@ -368,9 +368,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.delete_rule = function (rule, index) {
         if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
           delete $scope.ruleGroups[$scope.inventory_type][rule.field];
-          $scope.change_rules();
         }
         else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
+        $scope.change_rules();
       };
 
       var displayNames = {};

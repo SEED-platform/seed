@@ -219,6 +219,7 @@ LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SERVER_EMAIL = 'info@seed-platform.org'
 PASSWORD_RESET_EMAIL = SERVER_EMAIL
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # Added By Gavin on 1/27/2014
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -271,13 +272,13 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS':
         'seed.utils.pagination.ResultsListPagination',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DATETIME_INPUT_FORMATS': (
         '%Y:%m:%d', 'iso-8601', '%Y-%m-%d'
     ),
     'EXCEPTION_HANDLER': 'seed.exception_handler.custom_exception_handler',
-
 }
 
 SWAGGER_SETTINGS = {

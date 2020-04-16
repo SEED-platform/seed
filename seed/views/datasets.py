@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 
 from seed.data_importer.models import ImportRecord
 from seed.decorators import ajax_request_class, require_organization_id_class
@@ -308,7 +308,7 @@ class DatasetViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @require_organization_id_class
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def count(self, request):
         """
         Retrieves the number of datasets for an org.

@@ -68,6 +68,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards),
         migrations.RunPython(recalculate_hash_objects),
+        migrations.RunPython(forwards),
     ]
