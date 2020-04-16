@@ -72,7 +72,7 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress">{$:: 'Upload BuildingSync Data' | translate $}</div>
+                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload BuildingSync Data' | translate $}</div>
             </div>
         </div>
         <!--<div class="row">

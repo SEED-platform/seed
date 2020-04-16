@@ -709,6 +709,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     def from_portfolio_manager(self):
         return self._strcmp(self.source_program, 'PortfolioManager')
 
+    @property
+    def from_buildingsync(self):
+        source_type = self.source_type if self.source_type else ''
+        return 'buildingsync' in source_type.lower()
+
     def _strcmp(self, a, b, ignore_ws=True, ignore_case=True):
         """Easily controlled loose string-matching."""
         if ignore_ws:

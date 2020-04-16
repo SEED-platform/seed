@@ -1,18 +1,8 @@
-<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v2.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<auc:Facilities>
     <auc:Facility>
       <auc:Sites>
         <auc:Site>
-          <auc:Address>
-            <auc:StreetAddressDetail>
-              <auc:Simplified>
-                <auc:StreetAddress>123 Main St</auc:StreetAddress>
-              </auc:Simplified>
-            </auc:StreetAddressDetail>
-            <auc:City>San Francisco</auc:City>
-            <auc:State>CA</auc:State>
-            <auc:PostalCode>94111</auc:PostalCode>
-          </auc:Address>
           <auc:ClimateZoneType>
             <auc:ASHRAE>
               <auc:ClimateZone>3C</auc:ClimateZone>
@@ -23,8 +13,6 @@
           </auc:ClimateZoneType>
           <auc:WeatherDataStationID>724940</auc:WeatherDataStationID>
           <auc:WeatherStationName>USA_CA_San.Francisco.Intl.AP</auc:WeatherStationName>
-          <auc:Longitude>-122.39937597219404</auc:Longitude>
-          <auc:Latitude>37.79526286826323</auc:Latitude>
           <auc:Ownership>Unknown</auc:Ownership>
           <auc:Buildings>
             <auc:Building ID="Building223">
@@ -55,6 +43,18 @@
                   <auc:IdentifierValue>223</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
               </auc:PremisesIdentifiers>
+              <auc:Address>
+                <auc:StreetAddressDetail>
+                  <auc:Simplified>
+                    <auc:StreetAddress>123 Main St</auc:StreetAddress>
+                  </auc:Simplified>
+                </auc:StreetAddressDetail>
+                <auc:City>San Francisco</auc:City>
+                <auc:State>CA</auc:State>
+                <auc:PostalCode>94111</auc:PostalCode>
+              </auc:Address>
+              <auc:Longitude>-122.39937597219404</auc:Longitude>
+              <auc:Latitude>37.79526286826323</auc:Latitude>
               <auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
               <auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
               <auc:FloorAreas>

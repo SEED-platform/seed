@@ -11,8 +11,6 @@ import os
 import time
 from unittest import skip
 
-from datetime import date
-
 from django.urls import reverse_lazy, reverse
 from django.test import TestCase
 from django.utils import timezone
@@ -171,7 +169,7 @@ class TestApi(TestCase):
         self.assertEqual(r['organizations'][0]['owners'][0]['first_name'], 'Jaqen')
         self.assertEqual(r['organizations'][0]['cycles'], [
             {
-                'name': str(date.today().year - 1) + ' Calendar Year',
+                'name': str(datetime.date.today().year - 1) + ' Calendar Year',
                 'num_properties': 0,
                 'num_taxlots': 0,
                 'cycle_id': self.default_cycle.pk,

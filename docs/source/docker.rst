@@ -90,7 +90,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
     export SERVER_EMAIL=user@seed-platform.org
 
 
-* Before launching the first time, make the persistent volumes and that the backup directory exists.
+* Before launching the first time, make sure the persistent volumes and the backup directory exist.
 
 .. code-block:: console
 
@@ -121,7 +121,7 @@ The short version is to simply run the command below. Note that the passing of t
 ./deploy.sh docker-compose.local.yml
 ```
 
-If deploying using a custom docker-compose yml file, then simply replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
+If deploying using a custom docker-compose yml file, then simple replace the name in the command above. This would be required if using the Open Efficiency Platform work (connecting SEED to Salesforce).
 
 
 .. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh

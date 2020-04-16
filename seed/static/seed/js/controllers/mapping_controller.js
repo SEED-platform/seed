@@ -28,6 +28,7 @@ angular.module('BE.seed.controller.mapping', [])
     'organization_service',
     '$translate',
     'i18nService', // from ui-grid
+    'simple_modal_service',
     'Notification',
     function (
       $scope,
@@ -54,6 +55,7 @@ angular.module('BE.seed.controller.mapping', [])
       organization_service,
       $translate,
       i18nService,
+      simple_modal_service,
       Notification
     ) {
       $scope.presets = [
@@ -329,6 +331,30 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.duplicates_present = duplicates_present;
       };
 
+      const get_col_from_suggestion = (name) => {
+        if ($scope.import_file.source_type === "BuildingSync Raw") {
+          const suggestion = $scope.suggested_mappings[name];
+
+          return {
+            name: name,
+            suggestion_column_name: suggestion[1],
+            suggestion_table_name: suggestion[0],
+            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
+          };
+        }
+
+        const suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
+
+        return {
+          from_units: suggestion.from_units,
+          name: name,
+          raw_data: _.map(first_five_rows_payload.first_five_rows, name),
+          suggestion: suggestion.to_field,
+          suggestion_column_name: suggestion.to_field,
+          suggestion_table_name: suggestion.to_table_name
+        };
+      }
+
       /**
        * initialize_mappings: prototypical inheritance for all the raw columns
        * called by init()
@@ -336,16 +362,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.initialize_mappings = function () {
         $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
-          var suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
-
-          var col = {
-            from_units: suggestion.from_units,
-            name: name,
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name),
-            suggestion: suggestion.to_field,
-            suggestion_column_name: suggestion.to_field,
-            suggestion_table_name: suggestion.to_table_name
-          };
+          let col = get_col_from_suggestion(name);
 
           var match;
           if (col.suggestion_table_name === 'PropertyState') {
@@ -361,6 +378,8 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
+          } else if ($scope.import_file.source_type === "BuildingSync Raw") {
+            col.suggestion = $filter('titleCase')(col.suggestion_column_name);
           }
 
           $scope.mappings.push(col);
@@ -543,7 +562,19 @@ angular.module('BE.seed.controller.mapping', [])
           progress_key, // key
           0, //starting prog bar percentage
           1.0, // progress multiplier
-          function () {
+          function (progress_data) {
+            // if there was file_info in the result, display the messages in a modal
+            if (progress_data.file_info !== undefined) {
+              simple_modal_service.showModal({
+                type: 'default',
+                okButtonText: 'Ok',
+                cancelButtonText: null,
+                headerText: 'Mapping Errors and Warnings',
+                bodyText: 'One or more files had errors or warnings while mapping.',
+                bodyJson: progress_data.file_info,
+                okResult: 'Ok'
+              })
+            }
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
@@ -599,6 +630,11 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
+          $scope.hasMappedProperties = $scope.mappedData.properties.length > 0;
+          if ($scope.hasMappedProperties === false) {
+            $scope.backToMapping()
+            return;
+          }
           var data = $scope.mappedData;
 
           var gridOptions = {

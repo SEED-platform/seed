@@ -5,7 +5,7 @@
 # will not be updated.
 
 # Version 2020-04-03: Convert to using docker-compose. Docker stack/swarm was causing issues with DNS resolution
-#                     within the container. If you are currently user docker swarm, them remove your stack
+#                     within the container. If you are currently using docker swarm, then remove your stack
 #                     `docker stack rm seed` and then redeploy with this script.
 
 : << 'arguments'
