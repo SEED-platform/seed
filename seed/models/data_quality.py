@@ -336,7 +336,7 @@ class Rule(models.Model):
     field = models.CharField(max_length=200)
     enabled = models.BooleanField(default=True)
     condition = models.CharField(max_length=200, default='', blank=True)
-    placeholder = models.CharField(max_length=200, default='(field must contain this text)')
+    # placeholder = models.CharField(max_length=200, default='(field must contain this text)')
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
     rule_type = models.IntegerField(choices=RULE_TYPE, null=True)
     required = models.BooleanField(default=False)
