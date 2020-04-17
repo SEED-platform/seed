@@ -1,18 +1,8 @@
-<other_ns:BuildingSync xmlns:other_ns="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<other_ns:BuildingSync xmlns:other_ns="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v2.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<other_ns:Facilities>
     <other_ns:Facility>
       <other_ns:Sites>
         <other_ns:Site>
-          <other_ns:Address>
-            <other_ns:StreetAddressDetail>
-              <other_ns:Simplified>
-                <other_ns:StreetAddress>1215 - 18th St</other_ns:StreetAddress>
-              </other_ns:Simplified>
-                      </other_ns:StreetAddressDetail>
-            <other_ns:City>Denver</other_ns:City>
-            <other_ns:State>CO</other_ns:State>
-            <other_ns:PostalCode>80202</other_ns:PostalCode>
-          </other_ns:Address>
           <other_ns:ClimateZoneType>
             <other_ns:ASHRAE>
               <other_ns:ClimateZone>5B</other_ns:ClimateZone>
@@ -48,6 +38,16 @@
                   <other_ns:IdentifierValue>223</other_ns:IdentifierValue>
                 </other_ns:PremisesIdentifier>
               </other_ns:PremisesIdentifiers>
+              <other_ns:Address>
+                <other_ns:StreetAddressDetail>
+                  <other_ns:Simplified>
+                    <other_ns:StreetAddress>1215 - 18th St</other_ns:StreetAddress>
+                  </other_ns:Simplified>
+                          </other_ns:StreetAddressDetail>
+                <other_ns:City>Denver</other_ns:City>
+                <other_ns:State>CO</other_ns:State>
+                <other_ns:PostalCode>80202</other_ns:PostalCode>
+              </other_ns:Address>
               <other_ns:FloorsAboveGrade>1</other_ns:FloorsAboveGrade>
               <other_ns:FloorsBelowGrade>0</other_ns:FloorsBelowGrade>
               <other_ns:FloorAreas>
@@ -69,7 +69,7 @@
               <other_ns:YearOfLastMajorRemodel>2018</other_ns:YearOfLastMajorRemodel>
               <other_ns:Sections>
                 <other_ns:Section ID="Default_Subsection">
-                  <other_ns:OccupancyClassification>Restaurant</other_ns:OccupancyClassification>
+                  <other_ns:OccupancyClassification>Food service</other_ns:OccupancyClassification>
                   <other_ns:TypicalOccupantUsages>
                     <other_ns:TypicalOccupantUsage>
                       <other_ns:TypicalOccupantUsageValue>80.0</other_ns:TypicalOccupantUsageValue>
