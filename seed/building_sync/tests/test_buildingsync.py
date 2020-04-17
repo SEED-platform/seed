@@ -98,7 +98,7 @@ class TestBuildingFiles(TestCase):
         )
 
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
-        self.assertTrue(status)
+        self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
         self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
