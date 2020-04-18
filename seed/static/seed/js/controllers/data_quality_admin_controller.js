@@ -297,13 +297,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
       };
 
+      $scope.check_null = false;
       $scope.filter_null = function (rule) {
-        $scope.check_null = false; //to disable min and max values
-        if (rule.condition === 'required' || rule.condition === 'not null') {
-          rule.not_null = true;
-          $scope.check_null = true;
-        }
-        if (rule.condition === 'units') $scope.check_null = true;
+        $scope.check_null = rule.condition === 'required' || rule.condition === 'not null';
         return $scope.check_null;
       };
 
