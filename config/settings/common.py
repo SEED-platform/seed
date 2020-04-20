@@ -102,6 +102,7 @@ INSTALLED_APPS = (
     'django_filters',
     'rest_framework',
     'rest_framework_swagger',
+    'drf_yasg',
     'oauth2_provider',
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
@@ -282,8 +283,22 @@ REST_FRAMEWORK = {
 }
 
 SWAGGER_SETTINGS = {
-    'exclude_namespaces': ['app'],  # List URL namespaces to ignore
-    'APIS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DEFAULT_FIELD_INSPECTORS': [
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        'drf_yasg.inspectors.InlineSerializerInspector',  # this disables models and is the only non-default entry
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.ChoiceFieldInspector',
+        'drf_yasg.inspectors.FileFieldInspector',
+        'drf_yasg.inspectors.DictFieldInspector',
+        'drf_yasg.inspectors.JSONFieldInspector',
+        'drf_yasg.inspectors.HiddenFieldInspector',
+        'drf_yasg.inspectors.RecursiveFieldInspector',
+        'drf_yasg.inspectors.SerializerMethodFieldInspector',
+        'drf_yasg.inspectors.SimpleFieldInspector',
+        'drf_yasg.inspectors.StringDefaultFieldInspector',
+    ],
+    'DOC_EXPANSION': 'none',
     'LOGOUT_URL': '/accounts/logout',
 }
 
