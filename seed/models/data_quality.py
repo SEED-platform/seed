@@ -740,10 +740,10 @@ class DataQualityCheck(models.Model):
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
                     if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                        if rule.condition == Rule.RULE_REQUIRED:
-                            self.add_result_missing_and_none(row.id, rule, display_name, value)
-                            self.update_status_label(label, rule, linked_id, row.id)
-                            continue
+                        # if rule.condition == Rule.RULE_REQUIRED:
+                            # self.add_result_missing_and_none(row.id, rule, display_name, value)
+                            # self.update_status_label(label, rule, linked_id, row.id)
+                            # continue
                         if rule.condition == Rule.RULE_NOT_NULL:
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
