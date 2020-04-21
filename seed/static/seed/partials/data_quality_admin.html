@@ -77,11 +77,15 @@
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.field" ng-options="col.column_name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
-                            <td>
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                            <td ng-if="rule.condition === 'range'">
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types[1]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                            </td>
+                            <td ng-if="rule.condition !== 'range'" >
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['include', 'exclude'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[0]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['required', 'not null'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[2]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$  rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}" ng-disabled="filter_null(rule)">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$ rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}" ng-disabled="filter_null(rule)">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'None', 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)">

@@ -60,13 +60,27 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       ];
 
       $scope.data_types = [
-        {id: null, label: ''},
-        {id: 'number', label: $translate.instant('Number')},
-        {id: 'string', label: $translate.instant('Text')},
-        {id: 'date', label: $translate.instant('Date')},
-        {id: 'year', label: $translate.instant('Year')},
-        {id: 'area', label: $translate.instant('Area')},
-        {id: 'eui', label: $translate.instant('EUI')}
+        [
+          {id: null, label: ''},
+          {id: 'string', label: $translate.instant('Text')}
+        ],
+        [
+          {id: null, label: ''},
+          {id: 'number', label: $translate.instant('Number')},
+          {id: 'date', label: $translate.instant('Date')},
+          {id: 'year', label: $translate.instant('Year')},
+          {id: 'area', label: $translate.instant('Area')},
+          {id: 'eui', label: $translate.instant('EUI')}
+        ],
+        [
+          {id: null, label: ''},
+          {id: 'number', label: $translate.instant('Number')},
+          {id: 'string', label: $translate.instant('Text')},
+          {id: 'date', label: $translate.instant('Date')},
+          {id: 'year', label: $translate.instant('Year')},
+          {id: 'area', label: $translate.instant('Area')},
+          {id: 'eui', label: $translate.instant('EUI')}
+        ]
       ];
 
       $scope.units = [
@@ -186,7 +200,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
         });
       };
-
+      $scope.input_error = false;
       // Saves the configured rules
       $scope.save_settings = function () {
         $scope.rules_updated = false;
@@ -246,13 +260,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.label = match.id;
                 }
               }
-
               if(!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
                 if (r.max < r.min) {
                   var min = r.min;
                   r.min = r.max;
                   r.max = min;
                 }
+              }
+              if(r.condition === 'include' || r.condition === 'exclude') {
+                console.log('match: ', r.text_match);
+                $scope.input_error = (r.text_match === null || r.text_match === '' || r.text_match === undefined);
               }
               rules[inventory_type].push(r);
             });
@@ -277,9 +294,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
         if (_.isMatch(rule, {condition: 'required', data_type: 'string'}) || _.isMatch(rule, {condition: 'not null', data_type: 'string'})) rule.text_match = '';
-
-        // if (rule.condition === 'include') rule.placeholder = '(field must contain this text)';
-        // else if (rule.condition === 'exclude') rule.placeholder = '(field must not contain this text)';
 
         var condition = rule.condition;
         if (condition === 'required') {
