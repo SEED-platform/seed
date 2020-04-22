@@ -139,7 +139,7 @@ class Rule(models.Model):
         }, {
             'table_name': 'PropertyState',
             'field': 'pm_property_id',
-            'data_type': TYPE_STRING,
+            'data_type': TYPE_NUMBER,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
