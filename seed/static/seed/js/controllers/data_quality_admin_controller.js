@@ -200,7 +200,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
         });
       };
-      $scope.input_error = false;
       // Saves the configured rules
       $scope.save_settings = function () {
         $scope.rules_updated = false;
@@ -267,9 +266,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.max = min;
                 }
               }
-              if(r.condition === 'include' || r.condition === 'exclude') {
-                $scope.input_error = (r.text_match === null || r.text_match === '' || r.text_match === undefined);
-              }
               rules[inventory_type].push(r);
             });
           });
@@ -278,17 +274,20 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         spinner_utility.show();
         data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
           loadRules(rules);
-          $scope.rules_updated = true;
           modified_service.resetModified();
         }).then(function (data) {
           $scope.$emit('app_success', data);
         }).catch(function (data) {
           $scope.$emit('app_error', data);
         }).finally(function () {
+          $scope.rules_updated = true;
           spinner_utility.hide();
         });
       };
       $scope.change_condition = function (rule) {
+        $scope.rules_updated = false;
+        $scope.defaults_restored = false;
+        $scope.rules_reset = false;
         if (!rule.condition) rule.condition = null;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
@@ -396,11 +395,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.create_new_rule = function () {
         var field = null;
         if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
-          console.log("1. ", field);
-          console.log($scope.ruleGroups[$scope.inventory_type]);
           $scope.ruleGroups[$scope.inventory_type][field] = [];
         }
-        console.log("2. ", field);
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
           condition: 'range',

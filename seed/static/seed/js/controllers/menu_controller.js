@@ -53,11 +53,9 @@ angular.module('BE.seed.controller.menu', [])
       };
       $scope.$on('app_error', function (event, data) {
         // Keep the first error
-        if (!$rootScope.route_load_error) {
-          $rootScope.route_load_error = true;
-          $scope.menu.error_message = data.message;
-          $rootScope.load_error_message = data.data.message;
-        }
+        if (!$rootScope.route_load_error) $rootScope.route_load_error = true;
+        $scope.menu.error_message = data.message;
+        $rootScope.load_error_message = data.data.message;
       });
       $scope.$on('app_success', function () {
         $rootScope.route_load_error = false;

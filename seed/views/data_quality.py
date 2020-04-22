@@ -417,7 +417,7 @@ class DataQualityViews(viewsets.ViewSet):
                 if rule['text_match'] is None or rule['text_match'] == '':
                     return JsonResponse({
                         'statue': 'error',
-                        'message': 'Condition check for text data type must not be an empty string.'
+                        'message': 'Rule must not include or exclude empty string.'
                     }, status=status.HTTP_400_BAD_REQUEST)
             try:
                 dq.add_rule(rule)
