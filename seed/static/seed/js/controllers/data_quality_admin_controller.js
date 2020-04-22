@@ -268,7 +268,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 }
               }
               if(r.condition === 'include' || r.condition === 'exclude') {
-                console.log('match: ', r.text_match);
                 $scope.input_error = (r.text_match === null || r.text_match === '' || r.text_match === undefined);
               }
               rules[inventory_type].push(r);
@@ -421,7 +420,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
-        console.log("3. ", field);
         $scope.change_rules();
       };
 
