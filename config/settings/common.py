@@ -101,7 +101,6 @@ INSTALLED_APPS = (
     'raven.contrib.django.raven_compat',
     'django_filters',
     'rest_framework',
-    'rest_framework_swagger',
     'drf_yasg',
     'oauth2_provider',
     'oauth2_jwt_provider',
