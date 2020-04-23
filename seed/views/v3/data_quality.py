@@ -125,8 +125,8 @@ class DataQualitySchema(AutoSchemaHelper):
                 self.org_id_field(),
                 self.query_integer_field(
                     name='data_quality_id',
-                    description="Task ID created when DataQuality task is created.",
-                    required=True
+                    required=True,
+                    description="Task ID created when DataQuality task is created."
                 ),
             ],
             ('GET', 'csv'): [

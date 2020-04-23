@@ -36,11 +36,11 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def query_integer_field(self, name, description, required):
+    def query_integer_field(self, name, required, description):
         return openapi.Parameter(
             name,
             openapi.IN_QUERY,
-            description="Task ID created when DataQuality task is created.",
+            description=description,
             required=True,
             type=openapi.TYPE_INTEGER
         )
