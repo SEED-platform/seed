@@ -94,16 +94,20 @@ def _get_severity_from_js(severity):
 
 
 class DataQualitySchema(AutoSchemaHelper):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args):
+        super().__init__(*args)
 
         self.manual_fields = {
             ('POST', 'create'): [
                 self.org_id_field(),
-                self.form_field(
+                self.body_field(
                     name='data_quality_ids',
                     required=True,
-                    description="An object containing IDs of the records to perform data quality checks on. Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array of appropriate IDs."
+                    description="An object containing IDs of the records to perform data quality checks on. Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array of appropriate IDs.",
+                    params_to_formats={
+                        'property_state_ids': 'interger_list',
+                        'taxlot_state_ids': 'interger_list'
+                    }
                 ),
             ],
             ('GET', 'data_quality_rules'): [self.org_id_field()],
@@ -111,16 +115,24 @@ class DataQualitySchema(AutoSchemaHelper):
             ('PUT', 'reset_default_data_quality_rules'): [self.org_id_field()],
             ('POST', 'save_data_quality_rules'): [
                 self.org_id_field(),
-                self.body_field(required=True, description='Rules information')
+                self.body_field(
+                    name='data_quality_rules',
+                    required=True,
+                    description="Rules information"
+                )
             ],
-            ('GET', 'results'): [self.org_id_field()],
-            ('GET', 'testing_core_api'): self.test_field_options(),
-        }
-
-        self.path_fields = {
+            ('GET', 'results'): [
+                self.org_id_field(),
+                self.query_integer_field(
+                    name='data_quality_id',
+                    description="Task ID created when DataQuality task is created.",
+                    required=True
+                ),
+            ],
             ('GET', 'csv'): [
-                self.path_id_field(description='Import file ID or cache key'),
-            ]
+                # This will replace the auto-generated field - adds description.
+                self.path_id_field(description="Import file ID or cache key")
+            ],
         }
 
 
@@ -130,14 +142,7 @@ class DataQualityViews(viewsets.ViewSet):
     (1) Post, wait, get…
     (2) Respond with what changed
     """
-    schema = DataQualitySchema()
-
-    @action(detail=False, methods=['GET'])
-    def testing_core_api(self, request):
-        """
-        Testing/documenting coreapi.Field options
-        """
-        pass
+    swagger_schema = DataQualitySchema
 
     def create(self, request):
         """
