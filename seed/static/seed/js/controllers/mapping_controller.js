@@ -562,19 +562,7 @@ angular.module('BE.seed.controller.mapping', [])
           progress_key, // key
           0, //starting prog bar percentage
           1.0, // progress multiplier
-          function (progress_data) {
-            // if there was file_info in the result, display the messages in a modal
-            if (progress_data.file_info !== undefined) {
-              simple_modal_service.showModal({
-                type: 'default',
-                okButtonText: 'Ok',
-                cancelButtonText: null,
-                headerText: 'Mapping Errors and Warnings',
-                bodyText: 'One or more files had errors or warnings while mapping.',
-                bodyJson: progress_data.file_info,
-                okResult: 'Ok'
-              })
-            }
+          function () {
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing

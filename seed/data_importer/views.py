@@ -6,7 +6,6 @@
 """
 import csv
 import datetime
-from io import BytesIO
 import logging
 import os
 
@@ -23,7 +22,6 @@ from rest_framework.decorators import api_view, action, parser_classes, \
     permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 
-from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord
@@ -55,7 +53,6 @@ from seed.models import (
     obj_to_dict,
     PropertyState,
     TaxLotState,
-    DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_UNKNOWN,
@@ -1302,21 +1299,15 @@ class ImportFileViewSet(viewsets.ViewSet):
                 thresh=80
             )
         elif import_file.from_buildingsync:
-            raw_property_state = PropertyState.objects.filter(import_file=import_file,
-                                                              data_state__in=[DATA_STATE_IMPORT, DATA_STATE_MAPPING])
-            # there should always be at least one property state associated with
-            # the import file at this point
-            if raw_property_state.count() == 0:
-                raise Exception('Expected to find 1 or more property states but found none')
-            raw_property_state = raw_property_state[0]
-
-            bs = BuildingSync()
-            # encode to bytes b/c lxml doesn't like Unicode string with encoding declarations
-            bs.import_file(BytesIO(raw_property_state.extra_data['_xml'].encode()))
-            base_mapping = bs.get_base_mapping()
-            # TODO: fetch custom mapping for org and pass it to the build function
-            custom_mapping = None
-            suggested_mappings = xml_mapper.build_column_mapping(base_mapping, custom_mapping)
+            bsync_mappings = xml_mapper.build_column_mapping()
+            suggested_mappings = mapper.build_column_mapping(
+                import_file.first_row_columns,
+                Column.retrieve_all_by_tuple(organization_id),
+                previous_mapping=get_column_mapping,
+                map_args=[organization],
+                default_mappings=bsync_mappings,
+                thresh=80
+            )
         else:
             # All other input types
             suggested_mappings = mapper.build_column_mapping(
