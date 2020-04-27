@@ -50,14 +50,22 @@
                 <td style="white-space: nowrap;">{$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
                 <td style="white-space: nowrap;">{$:: note.note_type $}</td>
                 <td style="white-space: nowrap;">{$:: note.name $}</td>
-                <td>{$:: note.text $}</td>
+
+                <td ng-if="note.note_type == 'Note'">{$:: note.text $}</td>
+                <td ng-if="note.note_type == 'Log'">
+                    <div>Edit(s): </div>
+                    <ul>
+                      <li ng-repeat="log in note.log_data"><strong>{$:: log.field $}</strong> updated from "{$:: log.previous_value $}" to "{$:: log.new_value $}"</li>
+                    </ul>
+                </td>
+
                 <td>
-                    <button class="btn btn-primary" type="button" ng-click="open_edit_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Edit">
+                    <button class="btn btn-primary" type="button" ng-click="open_edit_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Edit" ng-disabled="note.note_type == 'Log'">
                         <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                     </button>
                 </td>
                 <td>
-                    <button class="btn btn-danger" type="button" ng-click="open_delete_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Delete">
+                    <button class="btn btn-danger" type="button" ng-click="open_delete_note_modal(note)" tooltip-placement="bottom" uib-tooltip="Delete" ng-disabled="note.note_type == 'Log'">
                         <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     </button>
                 </td>
