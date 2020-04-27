@@ -847,8 +847,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
 
                 if 'extra_data' in new_taxlot_state_data:
-                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
-                taxlot_state_data.update(new_taxlot_state_data)
+                    taxlot_state_data['extra_data'].update(
+                        new_taxlot_state_data['extra_data']
+                    )
+
+                taxlot_state_data.update(
+                    {k: v for k, v in new_taxlot_state_data.items() if k != 'extra_data'}
+                )
 
                 log = TaxLotAuditLog.objects.select_related().filter(
                     state=taxlot_view.state
@@ -875,6 +880,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
+
+                        Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 
