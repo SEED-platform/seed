@@ -1032,7 +1032,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_property_state_data[key] = None
 
-            changed_fields = get_changed_fields(property_state_data, new_property_state_data)
+            changed_fields, previous_data = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
