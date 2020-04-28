@@ -4,6 +4,7 @@ from django.db import migrations, models
 
 
 def forwards(apps, schema_editor):
+    print('sorting rules...\n')
     Rule = apps.get_model('seed', 'Rule')
 
     Rule.objects.filter(min=None, max=None, required=True).update(condition='required')
