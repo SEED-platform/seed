@@ -43,7 +43,8 @@ class DatasetSchema(AutoSchemaHelper):
                 ),
             ],
             ('GET', 'count'): [self.org_id_field()],
-            ('GET', 'retrieve'): [self.org_id_field()],
+            ('GET', 'retrieve'): [
+                self.org_id_field()],
             ('PUT', 'update'): [
                 self.org_id_field(),
                 self.body_field(
@@ -285,10 +286,10 @@ class DatasetViewSet(viewsets.ViewSet):
         if not d.exists():
             return JsonResponse({
                 'status': 'error',
-                'message': 'user does not have permission to delete dataset',
+                'message': 'user does not have permission to deactivate dataset',
             }, status=status.HTTP_403_FORBIDDEN)
         d = d[0]
-        d.delete()
+        d.deactivate()
         return JsonResponse({'status': 'success'})
 
     @require_organization_id_class
