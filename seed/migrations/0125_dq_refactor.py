@@ -14,8 +14,6 @@ def forwards(apps, schema_editor):
     # else (108): ?
     Rule.objects.filter(min=None, max=None, data_type=1, text_match=None).update(condition='')
     # elif data_type != 1 (32): required is true, not_null is true (17) -> not_null;
-    for i in Rule.objects.exclude(data_type=1).exclude(data_type=0).exclude(data_type=2).exclude(data_type=3).exclude(data_type=4).exclude(data_type=5).values():
-        print(i['data_type'])
     Rule.objects.filter(min=None, max=None).exclude(data_type=1).filter(required=True, not_null=True).update(condition='not_null')
     # required is true, not_null is false (2) -> required;
     Rule.objects.filter(min=None, max=None).exclude(data_type=1).filter(required=True, not_null=False).update(condition='required')
@@ -24,8 +22,6 @@ def forwards(apps, schema_editor):
     # required is false, not_null is false (0) -> ?;
     Rule.objects.filter(min=None, max=None).exclude(data_type=1).filter(required=False, not_null=False).update(condition='')
     # else (data_type is null) (169):
-    # for i in Rule.objects.filter(min=None, max=None, data_type=None).values():
-        # print(i['field'])
     # required is true, not_null is true (0) -> not_null;
     Rule.objects.filter(min=None, max=None, data_type=None, required=True, not_null=True).update(condition='not_null')
     # required is true, not_null is false (0) -> required;
@@ -53,7 +49,6 @@ class Migration(migrations.Migration):
             name='condition',
             field=models.CharField(blank=True, default='', max_length=200),
         ),
-
 
         migrations.RunPython(forwards),
     ]
