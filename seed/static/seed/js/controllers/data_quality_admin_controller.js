@@ -52,6 +52,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
+        {id: null, label: ''},
         {id: 'required', label: 'Required'},
         {id: 'not null', label: 'Not Null'},
         {id: 'range', label: 'Range'},
