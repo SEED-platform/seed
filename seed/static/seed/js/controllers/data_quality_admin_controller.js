@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.state = $state.current;
 
       $scope.conditions = [
-        {id: null, label: ''},
+        // {id: null, label: ''},
         {id: 'required', label: 'Required'},
         {id: 'not null', label: 'Not Null'},
         {id: 'range', label: 'Range'},
@@ -312,7 +312,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.check_null = false;
       $scope.filter_null = function (rule) {
-        $scope.check_null = rule.condition === 'required' || rule.condition === 'not null';
+        // $scope.check_null = rule.condition === 'required' || rule.condition === 'not null';
+        $scope.check_null = rule.condition === 'not null';
         return $scope.check_null;
       };
 
