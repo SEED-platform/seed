@@ -41,8 +41,11 @@ class BuildingSyncParser(object):
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
 
     def _add_property_to_data(self, bsync_file, file_name):
-        bs = BuildingSync()
-        bs.import_file(BytesIO(bsync_file))
+        try:
+            bs = BuildingSync()
+            bs.import_file(BytesIO(bsync_file))
+        except Exception as e:
+            raise Exception(f'Error importing BuildingSync file {file_name}: {str(e)}')
 
         if not self._xpath_col_dict:
             # get the mapping for the first xml data

@@ -414,7 +414,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             raw_ps_id = original_row.id
                             xml_filename = import_file.raw_property_state_to_filename.get(str(raw_ps_id))
                             if xml_filename is None:
-                                raise Exception('Expected import file to have the raw PropertyStates id.')
+                                raise Exception('Expected ImportFile to have the raw PropertyStates id in its raw_property_state_to_filename dict')
 
                             from_zipfile = import_file.uploaded_filename.endswith('.zip')
                             # if user uploaded a zipfile, find the xml file related to this property and use it
@@ -664,11 +664,11 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
+
+    # BuildingSync only: track property state ID to its source filename
+    raw_property_state_to_filename = {}
     try:
         with transaction.atomic():
-            # BuildingSync only: track property state ID to its source filename
-            raw_property_state_to_filename = {}
-
             for c in chunk:
                 raw_property = PropertyState(
                     organization=import_file.import_record.super_organization)
@@ -701,9 +701,6 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 if source_filename is not None:
                     raw_property_state_to_filename[str(raw_property.id)] = source_filename
 
-            import_file.raw_property_state_to_filename.update(raw_property_state_to_filename)
-            import_file.save()
-
     except IntegrityError as e:
         raise IntegrityError("Could not save_raw_data_chunk with error: %s" % (e))
 
@@ -711,7 +708,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
     progress_data.step()
 
-    return True
+    return raw_property_state_to_filename
 
 
 @shared_task(ignore_result=True)
@@ -740,6 +737,10 @@ def finish_raw_save(results, file_pk, progress_key):
         finished_progress_data = progress_data.finish_with_success(new_summary)
     else:
         finished_progress_data = progress_data.finish_with_success()
+
+    if import_file.source_type == 'BuildingSync Raw':
+        for result in results:
+            import_file.raw_property_state_to_filename.update(result)
 
     import_file.save()
 
