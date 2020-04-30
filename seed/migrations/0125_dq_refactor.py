@@ -29,11 +29,7 @@ def forwards(apps, schema_editor):
     Rule.objects.exclude(data_type=1).exclude(data_type=None).filter(min=None, max=None, not_null=True).update(condition='not_null')
     Rule.objects.exclude(data_type=1).exclude(data_type=None).filter(min=None, max=None, required=True, not_null=False).update(condition='required')
     Rule.objects.exclude(data_type=1).exclude(data_type=None).filter(min=None, max=None, required=False, not_null=False).update(condition='')
-    Rule.objects.filter(data_type=0).exclude(min=None, max=None).update(condition='range')
-    Rule.objects.filter(data_type=2).exclude(min=None, max=None).update(condition='range')
-    Rule.objects.filter(data_type=3).exclude(min=None, max=None).update(condition='range')
-    Rule.objects.filter(data_type=4).exclude(min=None, max=None).update(condition='range')
-    Rule.objects.filter(data_type=5).exclude(min=None, max=None).update(condition='range')
+    Rule.objects.filter(data_type__in=[0, 2, 3, 4, 5]).exclude(min=None, max=None).update(condition='range')
 
     Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, not_null=True).update(condition='not_null')
     Rule.objects.filter(data_type=None, min=None, max=None, text_match=None, required=True, not_null=False).update(condition='required')
