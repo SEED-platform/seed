@@ -289,7 +289,7 @@ class DatasetViewSet(viewsets.ViewSet):
                 'message': 'user does not have permission to deactivate dataset',
             }, status=status.HTTP_403_FORBIDDEN)
         d = d[0]
-        d.deactivate()
+        d.delete()
         return JsonResponse({'status': 'success'})
 
     @require_organization_id_class
