@@ -268,8 +268,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.max = min;
                 }
               }
-              if (r.condition === 'include' || r.condition === 'exclude'){
-                $scope.error_string = (r.text_match == null || r.text_matc == '');
+              if (r.condition === 'include' || r.condition === 'exclude') {
+                $scope.error_string = (r.text_match === null || r.text_match === '');
               }
               rules[inventory_type].push(r);
             });
@@ -405,7 +405,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
-          condition: 'range',
+          condition: '',
           field: field,
           displayName: field,
           data_type: 'number',
