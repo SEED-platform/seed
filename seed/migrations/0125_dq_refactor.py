@@ -18,15 +18,15 @@ def forwards(apps, schema_editor):
     #                         |                                    |--> text_match not null (0) ----> include                                #
     #                         |-------> min or max not null (1) ---> range                                                                   #
     # ====================================================================================================================================== #
-    Rule.objects.filter(data_type=1, text_match=None, not_null=True).update(condition='not_null') # TODO: ?
+    Rule.objects.filter(data_type=1, text_match=None, not_null=True).update(condition='not_null')  # TODO: ?
     Rule.objects.filter(data_type=1, text_match=None, required=True, not_null=False).update(condition='required')
     Rule.objects.filter(data_type=1, text_match=None, required=False, not_null=False).update(condition='')
-    Rule.objects.filter(data_type=1, text_match='').filter(not_null=True).update(condition='not_null') # TODO: ?
+    Rule.objects.filter(data_type=1, text_match='').filter(not_null=True).update(condition='not_null')  # TODO: ?
     Rule.objects.filter(data_type=1, text_match='').filter(required=True, not_null=False).update(condition='required')
     Rule.objects.filter(data_type=1, text_match='').filter(required=False, not_null=False).update(condition='')
     Rule.objects.filter(data_type=1).exclude(text_match=None).exclude(text_match='').update(condition='include')
 
-    Rule.objects.exclude(data_type=1).filter(min=None, max=None, not_null=True).update(condition='not_null') # TODO: ?
+    Rule.objects.exclude(data_type=1).filter(min=None, max=None, not_null=True).update(condition='not_null')  # TODO: ?
     Rule.objects.exclude(data_type=1).filter(min=None, max=None, required=True, not_null=False).update(condition='required')
     Rule.objects.exclude(data_type=1).filter(min=None, max=None, required=False, not_null=False).update(condition='')
     Rule.objects.exclude(data_type=1, min=None, max=None).update(condition='range')
