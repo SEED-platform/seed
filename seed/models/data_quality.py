@@ -122,7 +122,7 @@ class Rule(models.Model):
     ]
 
     RULE_REQUIRED = 'required'
-    RULE_NOT_NULL = 'not null'
+    RULE_NOT_NULL = 'not_null'
     RULE_RANGE = 'range'
     RULE_INCLUDE = 'include'
     RULE_EXCLUDE = 'exclude'
@@ -135,7 +135,8 @@ class Rule(models.Model):
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
-            'condition': RULE_INCLUDE,
+            'condition': RULE_NOT_NULL,
+            'text_match': '',
         }, {
             'table_name': 'PropertyState',
             'field': 'pm_property_id',

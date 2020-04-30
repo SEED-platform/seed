@@ -201,6 +201,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
       };
       // Saves the configured rules
+      $scope.error_string = false;
       $scope.save_settings = function () {
         $scope.rules_updated = false;
         $scope.defaults_restored = false;
@@ -266,6 +267,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.min = r.max;
                   r.max = min;
                 }
+              }
+              if (r.condition === 'include' || r.condition === 'exclude'){
+                $scope.error_string = (r.text_match == null || r.text_matc == '');
               }
               rules[inventory_type].push(r);
             });
