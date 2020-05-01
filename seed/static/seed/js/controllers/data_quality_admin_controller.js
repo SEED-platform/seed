@@ -112,6 +112,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             ruleGroups[index][rule.field].push(row);
           });
         });
+        console.log('org: ', $scope.org, $scope.org.org_id);
         data_quality_service.data_quality_rules($scope.org.org_id).then(function (data) {
           $scope.rule_count = data.rules;
         });
