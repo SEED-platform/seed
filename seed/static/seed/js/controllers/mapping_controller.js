@@ -618,13 +618,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
-          // This is a BuildingSync specific requirement as there may be no mapped
-          // models. This happens when there were issues parsing all BSync files
-          $scope.hasMappedModels = $scope.mappedData.properties.length > 0 || $scope.mappedData.tax_lots.length > 0;
-          if ($scope.hasMappedModels === false) {
-            $scope.backToMapping()
-            return;
-          }
+
           var data = $scope.mappedData;
 
           var gridOptions = {

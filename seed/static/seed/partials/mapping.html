@@ -83,7 +83,7 @@
     <div class="section_header_container has_no_border" ng-hide="review_mappings">
         <div class="section_header fixed_height">
             <div class="left section_action_container">
-                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings()" ng-click="reset_mappings()" translate>Copy Data File Headers directly to SEED Headers</button>
+                <button type="button" class="btn btn-primary" ng-hide="import_file.matching_done && isValidCycle" ng-disabled="check_reset_mappings() || import_file.source_type == 'BuildingSync Raw'" ng-click="reset_mappings()" translate>Copy Data File Headers directly to SEED Headers</button>
             </div>
             <div class="right section_action_container section_action_btn">
                 <button type="button" class="pull-right btn btn-primary mapping-button" ng-disabled="check_fields()" ng-click="remap_buildings()" ng-hide="import_file.matching_done" translate>Map Your Data</button>
@@ -93,7 +93,7 @@
     </div>
     <div class="section_content_container" style="padding: 0 16px;">
         <div class="section_content">
-            <div class="section_action_container right_wide settings_profile" style="padding-bottom: 10px;margin-left: 5px;" ng-hide="review_mappings || import_file.matching_done">
+            <div class="section_action_container right_wide settings_profile" style="padding-bottom: 10px;margin-left: 5px;" ng-hide="review_mappings || import_file.matching_done || import_file.source_type == 'BuildingSync Raw'">
               <span translate>Current Column Mapping Preset</span>: <label class="label label-default">{$ current_preset.name $}</label>
               <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="flag_preset_change()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
               <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset.id === current_preset.id" translate>
