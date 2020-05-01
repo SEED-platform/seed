@@ -149,6 +149,45 @@ class TestDataImport(DataMappingBaseTestCase):
         )
 
 
+class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        # setup the ImportFile for using the example zip file
+        filename = 'ex1_no_schemaLocation_and_ex_1.zip'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        # Verify we have the expected number of BuildingSync files in the zip file
+        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+            filelist = openzip.infolist()
+            xml_files_found = 0
+            for f in filelist:
+                if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    xml_files_found += 1
+
+            self.assertEqual(xml_files_found, 2)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/zip"
+        )
+        self.import_file.save()
+
+    def test_save_raw_data_zip(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual('error', progress_info['status'])
+        self.assertIn('Invalid or missing schema specification', progress_info['message'])
+
+
 class TestBuildingSyncImportZip(DataMappingBaseTestCase):
     def setUp(self):
         self.maxDiff = None

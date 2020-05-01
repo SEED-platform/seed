@@ -1080,7 +1080,10 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
     elif import_file.source_type == 'BuildingSync Raw':
-        parser = xml_reader.BuildingSyncParser(import_file.file)
+        try:
+            parser = xml_reader.BuildingSyncParser(import_file.file)
+        except Exception as e:
+            return progress_data.finish_with_error(str(e))
     else:
         parser = reader.MCMParser(import_file.local_file)
 

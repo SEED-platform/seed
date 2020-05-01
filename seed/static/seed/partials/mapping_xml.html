@@ -171,7 +171,7 @@
                   {$:: 'Data Quality Results' | translate $}
               </button>
               <a ui-sref="mapping_xml(::{importfile_id: import_file.id})">
-                  <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done || !hasMappedProperties" translate>Save Mappings</button>
+                  <button id="save-mapping" type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done || !hasMappedModels" translate>Save Mappings</button>
               </a>
           </div>
       </div>
@@ -187,8 +187,8 @@
   <div class="section_content_container" ng-if="show_mapped_buildings">
       <div class="section_content">
           <div>
-              <div ng-if="hasMappedProperties" ui-grid="propertiesGridOptions" ui-grid-resize-columns></div>
-              <div ng-if="!hasMappedProperties" class="text-center" translate>No Data</div>
+              <div ng-if="hasMappedModels" ui-grid="propertiesGridOptions" ui-grid-resize-columns></div>
+              <div ng-if="!hasMappedModels" class="text-center" translate>No Data</div>
           </div>
       </div>
   </div>
@@ -218,7 +218,7 @@
       </div>
       <div class="col-sm-6" ng-show="show_mapped_buildings">
           <a ui-sref="mapping_xml(::{importfile_id: import_file.id})">
-              <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done || !hasMappedProperties" translate>Save Mappings</button>
+              <button type="button" class="pull-right btn btn-primary" ng-click="open_data_upload_modal(import_file.dataset)" ng-hide="import_file.matching_done || !hasMappedModels" translate>Save Mappings</button>
           </a>
       </div>
   </div>
