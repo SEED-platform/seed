@@ -82,32 +82,6 @@ class BuildingFile(models.Model):
         else:
             return None
 
-    def process_property_state(self, organization_id):
-        """Parses and creates the property state from the file.
-        This is intended to be used with the data_importer tasks to allow
-        only the creation of the PropertyState at the mapping stage
-        :param: organization_id: integer, ID of organization
-        :return: list, [status, (PropertyState|None), messages]
-        """
-        Parser = self.BUILDING_FILE_PARSERS.get(self.file_type, None)
-        if not Parser:
-            acceptable_file_types = ', '.join(
-                map(dict(self.BUILDING_FILE_TYPES).get, list(self.BUILDING_FILE_PARSERS.keys()))
-            )
-            return False, None, "File format was not one of: {}".format(acceptable_file_types)
-
-        parser = Parser()
-        parser.import_file(self.file.path)
-        parser_args = []
-        parser_kwargs = {}
-        # TODO: use table_mappings for BuildingSync process method
-        data, messages = parser.process(*parser_args, **parser_kwargs)
-
-        if len(messages['errors']) > 0 or not data:
-            return False, None, messages
-
-        return True, self._create_property_state(organization_id, data), messages
-
     def _create_property_state(self, organization_id, data):
         """given data parsed from a file, it creates the property state
         for this BuildingFile and returns it.

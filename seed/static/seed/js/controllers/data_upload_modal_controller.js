@@ -155,11 +155,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.goto_data_mapping = function () {
         $uibModalInstance.close();
-        if ($scope.source_type.includes('BuildingSync')) {
-          $state.go('mapping_xml', {importfile_id: $scope.dataset.import_file_id});
-        } else {
-          $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
-        }
+        $state.go('mapping', {importfile_id: $scope.dataset.import_file_id});
       };
       $scope.view_my_properties = function () {
         $uibModalInstance.close();
@@ -544,7 +540,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
+            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
 
@@ -578,6 +574,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.uploader.in_progress = false;
                 $scope.uploader.progress = 0;
                 $scope.uploader.status_message = '';
+                if (progress_data.file_info !== undefined) {
+                  // this only occurs in buildingsync, where we are not actually merging properties
+                  // thus we will always end up at step 10
+                  $scope.step_10_style = 'danger';
+                  $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2)
+                }
 
                 // If merges against existing exist, provide slightly different feedback
                 if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {

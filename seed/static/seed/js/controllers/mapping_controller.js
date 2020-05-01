@@ -562,19 +562,7 @@ angular.module('BE.seed.controller.mapping', [])
           progress_key, // key
           0, //starting prog bar percentage
           1.0, // progress multiplier
-          function (progress_data) {
-            // if there was file_info in the result, display the messages in a modal
-            if (progress_data.file_info !== undefined) {
-              simple_modal_service.showModal({
-                type: 'default',
-                okButtonText: 'Ok',
-                cancelButtonText: null,
-                headerText: 'Mapping Errors and Warnings',
-                bodyText: 'One or more files had errors or warnings while mapping.',
-                bodyJson: progress_data.file_info,
-                okResult: 'Ok'
-              })
-            }
+          function () {
             $scope.get_mapped_buildings();
           }, function () {
             // Do nothing
@@ -630,13 +618,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
-          // This is a BuildingSync specific requirement as there may be no mapped
-          // models. This happens when there were issues parsing all BSync files
-          $scope.hasMappedModels = $scope.mappedData.properties.length > 0 || $scope.mappedData.tax_lots.length > 0;
-          if ($scope.hasMappedModels === false) {
-            $scope.backToMapping()
-            return;
-          }
+
           var data = $scope.mappedData;
 
           var gridOptions = {
