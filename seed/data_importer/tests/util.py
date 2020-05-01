@@ -7,6 +7,8 @@
 
 import logging
 
+from seed.building_sync.mappings import BASE_MAPPING_V2_0, xpath_to_column_map
+
 logger = logging.getLogger(__name__)
 
 TAXLOT_MAPPING = [
@@ -267,3 +269,18 @@ PROPERTY_FOOTPRINT_MAPPING = {
     "to_table_name": 'PropertyState',
     "to_field": 'property_footprint',
 }
+
+
+def mock_buildingsync_mapping():
+    # returns a column mapping for bsync files
+    xpath_to_col = xpath_to_column_map(BASE_MAPPING_V2_0)
+    result = []
+    for xpath, col in xpath_to_col.items():
+        result.append(
+            {
+                'from_field': xpath,
+                'to_field': col,
+                'to_table_name': 'PropertyState'
+            }
+        )
+    return result
