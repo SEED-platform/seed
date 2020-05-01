@@ -50,7 +50,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.ruleGroups = {};
 
       $scope.state = $state.current;
-      $scope.rule_count = 0;
+      $scope.rule_count_property = 0;
+      $scope.rule_count_taxlot = 0;
+
       $scope.data_types = [
         {id: null, label: ''},
         {id: 'number', label: $translate.instant('Number')},
@@ -112,11 +114,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             ruleGroups[index][rule.field].push(row);
           });
         });
-        console.log('org: ', $scope.org, $scope.org.org_id);
-        data_quality_service.data_quality_rules($scope.org.org_id).then(function (data) {
-          $scope.rule_count = data.rules;
-        });
+
         $scope.ruleGroups = ruleGroups;
+        $scope.rule_count_property = 0;
+        $scope.rule_count_taxlot = 0;
+        _.map($scope.ruleGroups['properties'], function (rule) {
+          $scope.rule_count_property += rule.length;
+        });
+        _.map($scope.ruleGroups['taxlots'], function (rule) {
+          $scope.rule_count_taxlot += rule.length;
+        });
       };
       loadRules(data_quality_rules_payload);
 
@@ -344,7 +351,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           autofocus: true
         });
         $scope.change_rules();
-        $scope.rule_count[$scope.inventory_type].length += 1;
+        if ($scope.inventory_type === 'properties') $scope.rule_count_property += 1;
+        else $scope.rule_count_taxlot += 1;
       };
 
       // create label and assign to that rule
@@ -375,7 +383,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
         else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
         $scope.change_rules();
-        $scope.rule_count[$scope.inventory_type].length -= 1;
+        if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
+        else $scope.rule_count_taxlot -= 1;
       };
 
       var displayNames = {};
