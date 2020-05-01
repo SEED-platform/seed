@@ -50,7 +50,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.ruleGroups = {};
 
       $scope.state = $state.current;
-
+      $scope.rule_count = 0;
       $scope.data_types = [
         {id: null, label: ''},
         {id: 'number', label: $translate.instant('Number')},
@@ -112,7 +112,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             ruleGroups[index][rule.field].push(row);
           });
         });
-
+        data_quality_service.data_quality_rules($scope.org.org_id).then(function (data) {
+          $scope.rule_count = data.rules;
+        });
         $scope.ruleGroups = ruleGroups;
       };
       loadRules(data_quality_rules_payload);
@@ -341,6 +343,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           autofocus: true
         });
         $scope.change_rules();
+        $scope.rule_count[$scope.inventory_type].length += 1;
       };
 
       // create label and assign to that rule
@@ -371,6 +374,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
         else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
         $scope.change_rules();
+        $scope.rule_count[$scope.inventory_type].length -= 1;
       };
 
       var displayNames = {};
