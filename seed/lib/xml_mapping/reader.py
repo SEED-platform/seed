@@ -29,6 +29,13 @@ class BuildingSyncParser(object):
                 filelist = openzip.infolist()
                 for f in filelist:
                     if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                        # try to import the file; it will raise an exception if it's bad
+                        bs = BuildingSync()
+                        try:
+                            bs.import_file(BytesIO(openzip.read(f)))
+                        except Exception as e:
+                            raise Exception(f'Failed to parse file {f.filename}: {str(e)}')
+
                         self.data.append({'_xml': openzip.read(f).decode(), '_filename': f.filename})
         elif file_extension == '.xml':
             self.data.append({'_xml': file_.read().decode(), '_filename': filename})
