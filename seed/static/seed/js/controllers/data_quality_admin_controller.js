@@ -113,7 +113,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             ruleGroups[index][rule.field].push(row);
           });
         });
-        data_quality_service.data_quality_rules($scope.org.org_id).then(function (data) {
+        data_quality_service.data_quality_rules($stateParams.organization_id).then(function (data) {
           $scope.rule_count = data.rules;
         });
         $scope.ruleGroups = ruleGroups;
