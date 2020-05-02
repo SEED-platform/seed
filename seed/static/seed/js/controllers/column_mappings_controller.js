@@ -16,6 +16,7 @@ angular.module('BE.seed.controller.column_mappings', [])
     'mappable_taxlot_columns_payload',
     'organization_payload',
     'urls',
+    'seedConstants',
     function (
       $scope,
       $state,
@@ -28,7 +29,8 @@ angular.module('BE.seed.controller.column_mappings', [])
       mappable_property_columns_payload,
       mappable_taxlot_columns_payload,
       organization_payload,
-      urls
+      urls,
+      seedConstants,
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -317,4 +319,29 @@ angular.module('BE.seed.controller.column_mappings', [])
           _.values(grouped_by_from_field), function (group) {return group.length > 1})
         );
       };
+
+      $scope.preset_action_ok = (action) => {
+        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_NORMAL) {
+          return true
+        }
+
+        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+          return false
+        }
+
+        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
+          const allowed_actions = [
+            'update',
+            'rename',
+            'delete',
+            'change_to_field',
+            'change_from_units',
+            'remove_column',
+          ]
+          return allowed_actions.includes(action)
+        }
+
+        console.warn(`Unknown preset type "${$scope.current_preset.preset_type}"`)
+        return false
+      }
     }]);

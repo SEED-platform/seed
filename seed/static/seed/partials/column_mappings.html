@@ -31,13 +31,13 @@
           <span>{$:: 'Column Mapping Preset' | translate $}: </span>
           <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-disabled="!presets.length" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
 
-          <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present()" tooltip-placement="bottom" uib-tooltip="Save">
+          <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present() || !preset_action_ok('update')" tooltip-placement="bottom" uib-tooltip="Save">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
           </button>
-          <button class="btn btn-primary" type="button" ng-click="rename_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Rename">
+          <button class="btn btn-primary" type="button" ng-click="rename_preset()" ng-disabled="!presets.length || !preset_action_ok('rename')" tooltip-placement="bottom" uib-tooltip="Rename">
               <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
           </button>
-          <button class="btn btn-danger" type="button" ng-click="remove_preset()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="Delete">
+          <button class="btn btn-danger" type="button" ng-click="remove_preset()" ng-disabled="!presets.length || !preset_action_ok('delete')" tooltip-placement="bottom" uib-tooltip="Delete">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
           </button>
           <button class="btn btn-info" type="button" ng-click="new_preset()" tooltip-placement="bottom" uib-tooltip="New">
@@ -61,7 +61,7 @@
                 <strong><p translate>COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE</p></strong>
             </div>
 
-            <div class="col-sm-5 key tab_content wide">
+            <div class="col-sm-5 key tab_content wide" ng-hide="!preset_action_ok('copy_csv_headers')">
                 <p translate>IF_MARKED_AS_DUPLICATE_ADVICE</p>
                 <br>
                 <textarea ng-model="csv_headers" rows="8" cols="45" style="resize: none;" placeholder="<File Column 1>,<File Column 2>,<File Column 3>,..."></textarea>
@@ -74,10 +74,10 @@
         </div>
     </div>
     <div class="section_content_container">
-        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
+        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;" ng-hide="!preset_action_ok('mirror_data_file_headers')">
             <button type="button" class="btn btn-primary" ng-click="mirror_data_file_headers()" translate>Copy Data File Headers directly to SEED Headers</button>
         </div>
-        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;">
+        <div class="section_content with_padding" style="margin-bottom:15px; padding-right: 200px;" ng-hide="!preset_action_ok('suggestions_from_existing_columns')">
             <button type="button" class="btn btn-primary" ng-click="suggestions_from_existing_columns()" translate>Populate SEED Headers with best known matches</button>
         </div>
 
@@ -95,8 +95,10 @@
                   <tbody>
                       <tr>
                           <td style="border-right: 0 none; max-width: 160px; width: 160px; text-align: right;">
+                            <span ng-hide="!preset_action_ok('set_all_inventory_types')">
                               <span style="padding-right:5px;">{$:: 'Set all fields to' | translate $}:</span>
                               <select ng-model="setAllFields" ng-change="setAllInventoryTypes()" ng-options="item as (item.name | translate) for item in ::setAllFieldsOptions track by item.value"></select>
+                            </span>
                           </td>
                           <td style="border-right: 0 none;"><h3 translate>Mapped Fields</h3></td>
                           <td style="max-width: 128px; width: 128px;"></td>
@@ -110,7 +112,7 @@
                           <th><translate>Measurement Units</translate></th>
                           <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
                           <th style='width: 120px;'>
-                              <button type="button" class="btn btn-danger btn-sm" ng-click="remove_all_columns()" ng-disabled="!current_preset.mappings.length" translate>Delete All Columns</button>
+                              <button type="button" class="btn btn-danger btn-sm" ng-click="remove_all_columns()" ng-disabled="!current_preset.mappings.length" ng-hide="!preset_action_ok('remove_all_columns')" translate>Delete All Columns</button>
                           </th>
                       </tr>
                   </thead>
@@ -130,14 +132,15 @@
                                   class="form-control input-sm tcm_field"
                                   ng-change="flag_change(col)"
                                   typeahead-on-select="seed_header_change(col)"
-                                  ng-attr-id="mapped-row-input-box-{$ $index $}">
+                                  ng-attr-id="mapped-row-input-box-{$ $index $}"
+                                  ng-disabled="!preset_action_ok('change_to_field')">
                           </td>
                           <td>
                               <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
                               </select>
-                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)">
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_eui_column(col)" ng-disabled="!preset_action_ok('change_from_units')">
                                   <option value="kBtu/ft**2/year" translate>kBtu/sq. ft./year</option>
                                   <option value="kWh/m**2/year" translate>kWh/m²/year</option>
                                   <option value="GJ/m**2/year" translate>GJ/m²/year</option>
@@ -146,13 +149,13 @@
                               </select>
                           </td>
                           <td ng-class="{'danger': is_file_header_duplicate(col)}">
-                              <input type="text" class="form-control input-sm tcm_field" ng-model="col.from_field" ng-change="flag_change()">
+                              <input type="text" class="form-control input-sm tcm_field" ng-model="col.from_field" ng-change="flag_change()" ng-disabled="!preset_action_ok('change_from_field')">
                           </td>
                           <td ng-repeat="cell_value in ::col.raw_data track by $index">
                               {$:: cell_value $}
                           </td>
                           <td style='text-align: center;'>
-                              <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
+                              <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete" ng-hide="!preset_action_ok('remove_column')">
                                   <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                               </button>
                           </td>
@@ -160,7 +163,7 @@
                   </tbody>
               </table>
             </div>
-            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New" translate>
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" ng-disabled="!presets.length" tooltip-placement="bottom" uib-tooltip="New" ng-hide="!preset_action_ok('add_new_column')" translate>
                 Add Column
             </button>
         </div>

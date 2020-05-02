@@ -36,6 +36,7 @@ angular.module('BE.seed.controller.column_mapping_preset_modal', [])
           column_mappings_service.new_column_mapping_preset_for_org($scope.org_id, {
             name: $scope.newName,
             mappings: $scope.data.mappings,
+            preset_type: $scope.data.preset_type,
           }).then(function (result) {
             $uibModalInstance.close(result.data);
           });

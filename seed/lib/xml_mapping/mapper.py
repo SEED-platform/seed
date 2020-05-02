@@ -9,7 +9,7 @@ from __future__ import absolute_import
 import logging
 
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import merge_mappings, xpath_to_column_map
+from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2_0
 
 _log = logging.getLogger(__name__)
 
@@ -23,3 +23,23 @@ def build_column_mapping(base_mapping=None, custom_mapping=None):
         xpath: ('PropertyState', db_column, 100)
         for xpath, db_column in column_mapping.items()
     }
+
+
+def default_buildingsync_preset_mappings():
+    """Returns the default ColumnMappingPreset mappings for BuildingSync
+    :return: list
+    """
+    mapping = BASE_MAPPING_V2_0.copy()
+    base_path = mapping['property']['xpath'].rstrip('/')
+    result = []
+    for col_name, col_info in mapping['property']['properties'].items():
+        sub_path = col_info['xpath'].replace('./', '')
+        absolute_xpath = f'{base_path}/{sub_path}'
+        result.append({
+            'from_field': absolute_xpath,
+            'from_field_value': col_info['value'],
+            'to_field': col_name,
+            'to_table_name': 'PropertyState'
+        })
+
+    return result

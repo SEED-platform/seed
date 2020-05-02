@@ -55,6 +55,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
+  'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
@@ -529,11 +530,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
-          column_mapping_presets_payload: ['column_mappings_service', 'user_service', function (column_mappings_service, user_service) {
+          column_mapping_presets_payload: ['column_mappings_service', 'user_service', 'seedConstants', 'import_file_payload', function (column_mappings_service, user_service, seedConstants, import_file_payload) {
+            let filter_preset_types
+            if (import_file_payload.import_file.source_type === "BuildingSync Raw") {
+              filter_preset_types = [
+                seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              ]
+            } else {
+              filter_preset_types = [seedConstants.PRESET_TYPE_NORMAL]
+            }
             var organization_id = user_service.get_organization().id;
-            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
-              return response.data;
-            });
+            return column_mappings_service.get_column_mapping_presets_for_org(
+              organization_id,
+              filter_preset_types
+            ).then(response => response.data)
           }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
@@ -1420,3 +1431,9 @@ SEED_app.constant('naturalSort', function (a, b) {
     else if (oFxNcL > oFyNcL) return 1;
   }
 });
+
+SEED_app.constant('seedConstants', {
+  PRESET_TYPE_NORMAL: 'Normal',
+  PRESET_TYPE_BUILDINGSYNC_DEFAULT: 'BuildingSync Default',
+  PRESET_TYPE_BUILDINGSYNC_CUSTOM: 'BuildingSync Custom',
+})
