@@ -50,7 +50,6 @@ STATUS_MERGING = 8
 STATUS_LIVE = 9
 STATUS_UNKNOWN = 10
 STATUS_MATCHING = 11
-STATUS_DEACTIVATED = 12
 
 
 class DuplicateDataError(RuntimeError):
@@ -88,7 +87,6 @@ class ImportRecord(NotDeletableModel):
         (STATUS_MERGING, 'Importing'),
         (STATUS_LIVE, 'Live'),
         (STATUS_UNKNOWN, 'Unknown'),
-        (STATUS_DEACTIVATED, 'deactivated'),
         (STATUS_MATCHING, 'Matching')
     ]
 
@@ -137,9 +135,6 @@ class ImportRecord(NotDeletableModel):
         super().delete(*args, **kwargs)
         for f in self.files:
             f.delete()
-
-    def deactivate(self):
-        self.status = STATUS_DEACTIVATED
 
     @property
     def files(self):
