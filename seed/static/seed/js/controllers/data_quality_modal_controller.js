@@ -30,25 +30,26 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.importFileId = importFileId;
       $scope.orgId = orgId;
 
+      var check_null = false;
+      var remove = [];
       _.forEach(originalDataQualityResults, function (results) {
         if (results.data_quality_results.length > 1) {
-          var check_null = false;
-          var oldField = '';
-          var index = 0;
-          var remove = [];
-          _.forEach(results.data_quality_results, function (result) {
-            if (_.isMatch(result, {value: null})) check_null = true;
-            if (result.formatted_field === oldField) {
-              if (result.value === null && check_null) {
-                remove.push(index);
+          _.forEach(_.groupBy(results.data_quality_results, 'field'), function (group) {
+            if (group.length > 1) {
+              _.forEach(group, function (rule) {
+                if (_.isMatch(rule, {value: null}) && _.isMatch(rule, {condition: 'not_null'})) check_null = true;
+              });
+              if (check_null) {
+                _.each(group, function (rule, index) {
+                  if (rule.value === null && rule.condition !== 'not_null') remove.push(index);
+                });
+                for (var i = remove.length - 1; i >= 0; i--) {
+                  group.splice(remove[i], 1);
+                }
               }
+              check_null = false;
             }
-            oldField = result.formatted_field;
-            index += 1;
           });
-          for (var i = remove.length - 1; i >= 0; i--) {
-            results.data_quality_results.splice(remove[i], 1);
-          }
         }
       });
       $scope.dataQualityResults = originalDataQualityResults;

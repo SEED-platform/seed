@@ -744,15 +744,12 @@ class DataQualityCheck(models.Model):
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
                             continue
-                        if rule.condition == Rule.RULE_RANGE:
-                            self.add_result_is_null(row.id, rule, display_name, value)
-                            continue
                 elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
                     if not rule.valid_text(value):
                         self.add_result_string_error(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 else:
-                    if rule.condition == '' or rule.condition == 'range':
+                    if rule.condition == '' or rule.condition == Rule.RULE_RANGE:
                         try:
                             if not rule.minimum_valid(value):
                                 if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
