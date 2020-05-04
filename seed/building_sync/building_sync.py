@@ -306,6 +306,43 @@ class BuildingSync(object):
 
         return self._process_struct(base_mapping, custom_mapping)
 
+    def process_property_xpaths(self, table_mappings=None):
+        """Process the BuildingSync file based on the mapping structure. Result is
+        a flat dict of PropertyState fields with the full xpaths as keys and
+        their parsed values as the value
+
+        :param table_mapping: dict, a table_mapping structure from ColumnMapping.get_column_mappings_by_table_name()
+        :return: dict, results
+        """
+        base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
+        if base_mapping is None:
+            raise Exception(f'Version of BuildingSync object is not supported: "{self.version}"')
+
+        # convert the table_mappings into a buildingsync mapping
+        custom_mapping = None
+        if table_mappings is not None:
+            custom_mapping = table_mapping_to_buildingsync_mapping(table_mappings)
+
+        merged_mapping = merge_mappings(base_mapping, custom_mapping)
+
+        # remove all root keys except for property since we only want to process property
+        for key, _ in merged_mapping.copy().items():
+            if key != 'property':
+                del merged_mapping[key]
+
+        messages = {'warnings': [], 'errors': []}
+        result = apply_mapping(self.element_tree, merged_mapping, messages,
+                               NAMESPACES, xpaths_as_keys=True)
+
+        # flatten the dictionary and make all keys absolute xpaths
+        base_xpath = list(result.keys())[0]  # only one key in result, the property xpath
+        flattened_result = {}
+        for relative_xpath, value in result[base_xpath].items():
+            abs_xpath = base_xpath.rstrip('/') + '/' + relative_xpath.lstrip('./')
+            flattened_result[abs_xpath] = value
+
+        return flattened_result
+
     def _parse_version(self):
         """Attempts to get the schema version from the imported data. Raises an exception if
         none is found or if it's an invalid version.

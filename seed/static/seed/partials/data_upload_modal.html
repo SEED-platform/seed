@@ -232,7 +232,8 @@
             </div>
             <div class="alert alert-{$ step_10_style $}">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-hide="step_10_error_message" translate="IMPORT_ANOTHER_QUESTION"></span>
+                <span ng-show="step_10_file_message"><pre>{$ step_10_file_message $}</pre></span>
+                <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>
