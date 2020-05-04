@@ -119,15 +119,18 @@ def get_terminal_value(element, mapping):
     raise Exception(f'Unrecognized value type \"{mapping["value"]}\"')
 
 
-def apply_mapping(element, mapping, messages, namespaces):
+def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
     """Recursively applies xpath rules to tree elements in order to parse values
 
     :param element: Element, the base node to apply xpaths to
     :param mapping: dict, a dictionary defining a mapping
+    :param xpaths_as_keys: bool, if True then the xpaths are used as keys in the result
     :return: dict, the processed node
     """
     result = {}
     for key, value_map in mapping.items():
+        if xpaths_as_keys:
+            key = value_map['xpath']
         try:
             selection = element.xpath(value_map['xpath'], namespaces=namespaces)
         except Exception as e:
@@ -141,18 +144,16 @@ def apply_mapping(element, mapping, messages, namespaces):
             else:
                 result[key] = {}
 
-            if value_map.get('required') is True:
-                messages['errors'].append(f'Failed to find property "{key}" at path {value_map["xpath"]} from element {element.tag}')
             continue
 
         if value_map['type'] == 'list':
             result[key] = []
             for selected_element in selection:
-                result[key].append(apply_mapping(selected_element, value_map['items'], messages, namespaces))
+                result[key].append(apply_mapping(selected_element, value_map['items'], messages, namespaces, xpaths_as_keys))
 
         elif value_map['type'] == 'object':
             selected_element = selection[0]
-            result[key] = apply_mapping(selected_element, value_map['properties'], messages, namespaces)
+            result[key] = apply_mapping(selected_element, value_map['properties'], messages, namespaces, xpaths_as_keys)
 
         elif value_map['type'] == 'value':
             selected_element = selection[0]
@@ -435,105 +436,89 @@ BASE_MAPPING_V2_0 = {
                 'xpath': './auc:Buildings/auc:Building/auc:Address/auc:StreetAddressDetail/auc:Simplified/auc:StreetAddress',
                 'type': 'value',
                 'value': 'text',
-                'required': True
             },
             'city': {
                 'xpath': './auc:Buildings/auc:Building/auc:Address/auc:City',
                 'type': 'value',
                 'value': 'text',
-                'required': True
             },
             'state': {
                 'xpath': './auc:Buildings/auc:Building/auc:Address/auc:State',
                 'type': 'value',
                 'value': 'text',
-                'required': True
             },
             'postal_code': {
                 'xpath': './auc:Buildings/auc:Building/auc:Address/auc:PostalCode',
                 'type': 'value',
                 'value': 'text',
-                'required': True
             },
             'longitude': {
                 'xpath': './auc:Buildings/auc:Building/auc:Longitude',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
-                'required': False
             },
             'latitude': {
                 'xpath': './auc:Buildings/auc:Building/auc:Latitude',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
-                'required': False
             },
             'property_name': {
                 'xpath': './auc:Buildings/auc:Building',
                 'type': 'value',
                 'value': '@ID',
-                'required': True
             },
             'property_type': {
                 'xpath': './auc:Buildings/auc:Building/auc:Sections/auc:Section/auc:OccupancyClassification',
                 'type': 'value',
                 'value': 'text',
-                'required': True
             },
             'year_built': {
                 'xpath': './auc:Buildings/auc:Building/auc:YearOfConstruction',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_int,
-                'required': True
             },
             'floors_above_grade': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorsAboveGrade',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_int,
-                'required': False
             },
             'floors_below_grade': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorsBelowGrade',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_int,
-                'required': False
             },
             'premise_identifier': {
                 'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierLabel="Assessor parcel number"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
-                'required': False
             },
             'custom_id_1': {
                 'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Custom ID 1"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
-                'required': False
             },
             'gross_floor_area': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorAreas/auc:FloorArea[auc:FloorAreaType="Gross"]/auc:FloorAreaValue',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
-                'required': True
             },
             'net_floor_area': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorAreas/auc:FloorArea[auc:FloorAreaType="Net"]/auc:FloorAreaValue',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
-                'required': False
             },
             'footprint_floor_area': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorAreas/auc:FloorArea[auc:FloorAreaType="Footprint"]/auc:FloorAreaValue',
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
-                'required': False
             }
         }
     },
