@@ -6,26 +6,26 @@ from django.db import migrations, models
 def forwards(apps, schema_editor):
     Rule = apps.get_model('seed', 'Rule')
     # data_type not null:
-        # data_type is 1:
-            #     text_match null: not_null -> not_null;
-            #                    : !not_null -> required: required;
-            #                                -> !required -> '';
-            # text_match not null: include -> not_null: (+)not_null;
-            #                              -> !not_null -> required: (+)required;
-        # data_type is not 1 (0,2,3,4,5):
-            # min and max null: not_null -> not_null;
-            #                 : !not_null -> required: required;
-            #                             -> !required: '';
-            #  min or max not null: range -> not_null: (+)not_null;
-            #                             -> !not_null -> (+)required: required;
+    #     data_type is 1:
+    #         text_match null: not_null -> not_null;
+    #                         !not_null -> required: required;
+    #                                   -> !required -> '';
+    #         text_match not null: include -> not_null: (+)not_null;
+    #                                      -> !not_null -> required: (+)required;
+    #     data_type is not 1 (0,2,3,4,5):
+    #         min and max null: not_null -> not_null;
+    #                         : !not_null -> required: required;
+    #                                     -> !required: '';
+    #         min or max not null: range -> not_null: (+)not_null;
+    #                                    -> !not_null -> (+)required: required;
     # data_type null:
-        # min and max null -> text_match null: not_null -> not_null;
-        #                                      !not_null -> required: required;
-        #                                                -> !required: '';
-        #                  -> text_match not null: include -> not_null: (+)not_null;
-        #                                                  -> !not_null -> required: (+)required;
-        # min or max not null: range -> not_null: (+)not_null;
-        #                            -> !not_null -> required: (+)required;
+    #     min and max null -> text_match null: not_null -> not_null;
+    #                                         !not_null -> required: required;
+    #                                                   -> !required: '';
+    #                      -> text_match not null: include -> not_null: (+)not_null;
+    #                                                      -> !not_null -> required: (+)required;
+    #     min or max not null: range -> not_null: (+)not_null;
+    #                                -> !not_null -> required: (+)required;
     def create_condition(rule, condition):
         Rule.objects.create(name=rule['name'], description=rule['description'], table_name=rule['table_name'], field=rule['field'],
                             enabled=rule['enabled'], data_type=rule['data_type'], rule_type=rule['rule_type'], min=rule['min'],
