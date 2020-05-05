@@ -463,7 +463,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (group) {
           ruleGroup[inventory].push(_.sortBy(group, 'condition'));
         });
-        $scope.ruleGroups = ruleGroup;
+        $scope.ruleGroups[$scope.inventory_type] = ruleGroup[inventory];
 
         var sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort(function (a, b) {
           return naturalSort(displayNames[a], displayNames[b]);
