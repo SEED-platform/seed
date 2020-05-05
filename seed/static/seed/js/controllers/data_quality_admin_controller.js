@@ -231,6 +231,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               if (rule.condition === 'not_null') {
                 r.min = null;
                 r.max = null;
+                r.text_match = null;
               }
               r.condition = rule.condition;
 
@@ -292,7 +293,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (!rule.condition) rule.condition = null;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'})) rule.text_match = '';
+        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'})) rule.text_match = null;
 
         var condition = rule.condition;
         if (condition === 'required') {
