@@ -26,6 +26,7 @@ def forwards(apps, schema_editor):
     #                                                      -> !not_null -> required: (+)required;
     #     min or max not null: range -> not_null: (+)not_null;
     #                                -> !not_null -> required: (+)required;
+
     def create_condition(rule, condition):
         Rule.objects.create(name=rule['name'], description=rule['description'], table_name=rule['table_name'], field=rule['field'],
                             enabled=rule['enabled'], data_type=rule['data_type'], rule_type=rule['rule_type'], min=rule['min'],
