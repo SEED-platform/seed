@@ -115,9 +115,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         _.forEach(rules_payload.rules, function (inventory_type, index) {
           _.forEach(inventory_type, function (rule) {
 
-            // if (rule.condition === '' || rule.condition === 'include') rule.placeholder = '(field must contain this text)';
-            // else if (rule.condition === 'exclude') rule.placeholder = '(field must not contain this text)';
-
             if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
             var row = rule;
             if (row.data_type === 'date') {
@@ -231,7 +228,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 units: rule.units,
                 label: null
               };
-              // if (rule.condition === 'not_null' || rule.condition === 'required') {
               if (rule.condition === 'not_null') {
                 r.min = null;
                 r.max = null;
@@ -296,7 +292,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (!rule.condition) rule.condition = null;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        // if (_.isMatch(rule, {condition: 'required', data_type: 'string'}) || _.isMatch(rule, {condition: 'not_null', data_type: 'string'})) rule.text_match = '';
         if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'})) rule.text_match = '';
 
         var condition = rule.condition;
@@ -317,7 +312,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.check_null = false;
       $scope.filter_null = function (rule) {
-        // $scope.check_null = rule.condition === 'required' || rule.condition === 'not_null';
         $scope.check_null = rule.condition === 'not_null';
         return $scope.check_null;
       };
