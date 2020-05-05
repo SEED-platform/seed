@@ -9,7 +9,7 @@ echo "Waiting for redis to start"
 /usr/local/wait-for-it.sh --strict db-redis:6379
 
 # collect static resources before starting and compress the assets
-./manage.py collectstatic --no-input
+./manage.py collectstatic --no-input -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
 ./manage.py compress --force
 
 # set the permissions in the /seed/collected_static folder
