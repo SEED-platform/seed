@@ -34,6 +34,7 @@ from seed.utils.api import (
     OrgQuerySetMixin,
     drf_api_endpoint
 )
+
 # Constants
 AUTHENTICATION_CLASSES = (
     OAuth2Authentication,
@@ -43,6 +44,7 @@ AUTHENTICATION_CLASSES = (
 PARSER_CLASSES = (FormParser, MultiPartParser, JSONParser)
 RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
+
 
 class UpdateWithoutPatchModelMixin(object):
     # Rebuilds the UpdateModelMixin without the patch action
@@ -95,5 +97,15 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
     having additional foreign key relationships, such as user. Any such models
     should instead extend SEEDOrgModelViewset and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
+    """
+    pass
+
+
+class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
+                                            CreateModelMixin,
+                                            DestroyModelMixin,
+                                            UpdateWithoutPatchModelMixin):
+    """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
+    create, and destroy actions.
     """
     pass

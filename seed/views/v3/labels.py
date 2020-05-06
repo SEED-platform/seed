@@ -34,7 +34,7 @@ from seed.serializers.labels import (
 )
 from seed.utils.api import drf_api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.viewsets import UpdateWithoutPatchModelMixin
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
@@ -42,11 +42,10 @@ ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 class LabelSchema(AutoSchemaHelper):
     def __init__(self, *args):
         super().__init__(*args)
-
         self.manual_fields = {}
 
 
-class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating labels.
     ---
     """
