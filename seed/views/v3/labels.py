@@ -108,6 +108,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         return response.Response(results, status=status_code)
 
     @action(detail=False, methods=['POST'])
+    #TODO: apply filters for respective views
     def filter(self, request):
         """
         Filters a list of all labels
