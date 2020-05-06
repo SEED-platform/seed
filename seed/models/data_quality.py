@@ -904,6 +904,7 @@ class DataQualityCheck(models.Model):
                 'detailed_message': display_name + ' [' + str(
                     value) + text + rule.text_match + '"',
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -917,6 +918,7 @@ class DataQualityCheck(models.Model):
                 'message': display_name + ' out of range',
                 'detailed_message': display_name + ' [' + value + '] < ' + rule_min,
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -930,6 +932,7 @@ class DataQualityCheck(models.Model):
                 'message': display_name + ' out of range',
                 'detailed_message': display_name + ' [' + value + '] > ' + rule_max,
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -943,6 +946,7 @@ class DataQualityCheck(models.Model):
                 'message': display_name + ' could not be compared numerically',
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -956,6 +960,7 @@ class DataQualityCheck(models.Model):
                 'message': display_name + ' units mismatch with rule units',
                 'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -969,6 +974,7 @@ class DataQualityCheck(models.Model):
                 'message': display_name + ' could not be converted to numerical value',
                 'detailed_message': 'Value [' + value + '] could not be converted to number',
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             }
         )
 
@@ -994,6 +1000,7 @@ class DataQualityCheck(models.Model):
                 'message': rule.status_label + ' is missing',
                 'detailed_message': rule.status_label + ' is required and missing',
                 'severity': rule.get_severity_display(),
+                'condition': rule.condition,
             })
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
@@ -1035,6 +1042,7 @@ class DataQualityCheck(models.Model):
             'message': display_name + ' should be in WKT format',
             'detailed_message': detailed_message,
             'severity': rule.get_severity_display(),
+            'condition': rule.condition,
         })
 
     def update_status_label(self, label_class, rule, linked_id, row_id):
