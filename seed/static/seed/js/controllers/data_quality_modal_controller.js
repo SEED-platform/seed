@@ -41,7 +41,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
               });
               if (check_null) {
                 _.each(group, function (rule, index) {
-                  if (rule.value === null && rule.condition !== 'not_null') remove.push(index);
+                  if (rule.value === null && (rule.condition !== 'not_null' || rule.condition !== 'required')) remove.push(index);
                 });
                 for (var i = remove.length - 1; i >= 0; i--) {
                   group.splice(remove[i], 1);

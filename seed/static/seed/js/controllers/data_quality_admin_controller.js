@@ -228,17 +228,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 units: rule.units,
                 label: null
               };
-              if (rule.condition === 'not_null') {
+              if (rule.condition === 'not_null' || rule.condition === 'required') {
                 r.min = null;
                 r.max = null;
                 r.text_match = null;
               }
               r.condition = rule.condition;
-
-              if (rule.condition === 'units') {
-                r.units = '';
-              }
-              r.units = rule.units;
 
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
@@ -293,17 +288,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (!rule.condition) rule.condition = null;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'})) rule.text_match = null;
-
-        var condition = rule.condition;
-        if (condition === 'required') {
-          rule.required = false;
-          $scope.change_required(rule);
-        } else if (condition === 'not_null') {
-          rule.required = false;
-          rule.not_null = rule.required;
-          $scope.change_not_null(rule);
-        }
+        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {condition: 'required', data_type: 'string'})) rule.text_match = null;
         if (rule.condition !== 'range') {
           rule.units = '';
           rule.min = null;
@@ -313,7 +298,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.check_null = false;
       $scope.filter_null = function (rule) {
-        $scope.check_null = rule.condition === 'not_null';
+        $scope.check_null = rule.condition === 'not_null' || rule.condition === 'required';
         return $scope.check_null;
       };
 
@@ -366,25 +351,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             currentRule.max = null;
           }
           currentRule.data_type = data_type;
-        });
-      };
-
-      // Keep "required field" consistent for identical fields
-      $scope.change_required = function (rule) {
-        var required = !rule.required;
-        _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
-          currentRule.required = required;
-          if (required) currentRule.not_null = required;
-        });
-      };
-
-      $scope.change_not_null = function (rule) {
-        if (rule.required) rule.required = false;
-        var not_null = !rule.not_null;
-        var required = rule.required;
-        _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
-          currentRule.not_null = not_null;
-          currentRule.required = required;
         });
       };
 

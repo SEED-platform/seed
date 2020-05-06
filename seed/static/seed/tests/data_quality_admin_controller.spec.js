@@ -87,7 +87,6 @@ describe('controller: data_quality_admin_controller', function () {
     // act
     data_quality_admin_controller_scope.change_field(ruleGroups.properties.address_line_1[0], 'address_line_1', 0);
     data_quality_admin_controller_scope.change_data_type(ruleGroups.properties.address_line_1[0], 'string');
-    data_quality_admin_controller_scope.change_required(ruleGroups.properties.address_line_1[0]);
     data_quality_admin_controller_scope.removeLabelFromRule(ruleGroups.properties.address_line_1[0]);
     data_quality_admin_controller_scope.selectAll();
 

@@ -739,11 +739,13 @@ class DataQualityCheck(models.Model):
                         self.add_result_missing_req(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
                 elif value is None or value == '':
-                    if rule.condition == Rule.RULE_NOT_NULL:
-                        if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                    if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                        if rule.condition == Rule.RULE_REQUIRED:
+                            self.add_result_missing_and_none(row.id, rule, display_name, value)
+                            self.update_status_label(label, rule, linked_id, row.id)
+                        elif rule.condition == Rule.RULE_NOT_NULL:
                             self.add_result_is_null(row.id, rule, display_name, value)
                             self.update_status_label(label, rule, linked_id, row.id)
-                            continue
                 elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
                     if not rule.valid_text(value):
                         self.add_result_string_error(row.id, rule, display_name, value)
@@ -979,6 +981,7 @@ class DataQualityCheck(models.Model):
             'message': rule.field + ' is missing',
             'detailed_message': rule.field + ' is required and missing',
             'severity': rule.get_severity_display(),
+            'condition': rule.condition,
         })
 
     def add_result_missing_label(self, row_id, rule, display_name, value):
@@ -1002,6 +1005,7 @@ class DataQualityCheck(models.Model):
             'message': display_name + ' is missing',
             'detailed_message': display_name + ' is required but is None',
             'severity': rule.get_severity_display(),
+            'condition': rule.condition,
         })
 
     def add_result_is_null(self, row_id, rule, display_name, value):
@@ -1013,7 +1017,7 @@ class DataQualityCheck(models.Model):
             'message': display_name + ' is null',
             'detailed_message': display_name + ' is null',
             'severity': rule.get_severity_display(),
-            'condition': rule.condition
+            'condition': rule.condition,
         })
 
     def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):
