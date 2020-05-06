@@ -692,6 +692,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
     # program version is in format 'x.y[.z]'
     source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
+    # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
+    raw_property_state_to_filename = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return '%s' % self.file.name
