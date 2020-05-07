@@ -177,7 +177,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
 
         pdq = DataQualityCheck.retrieve(self.org.id)
-        pdq.check_data('PropertyState', [property_1 , property_2, property_3])
+        pdq.check_data('PropertyState', [property_1, property_2, property_3])
         # For property_1, no error message of null 'Conditioned Floor Area' reported if no 'not_null' condition is set
         for rule in pdq.rules.filter(table_name='PropertyState', field='conditioned_floor_area'):
             self.assertNotEqual(rule.condition, 'not_null')
