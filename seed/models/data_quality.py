@@ -888,6 +888,7 @@ class DataQualityCheck(models.Model):
         if not rule_exists:
             self.add_rule(rule)
 
+    # TODO: missing status label for all dq reports
     def add_result_string_error(self, row_id, rule, display_name, value):
         text = ''
         if rule.condition == Rule.RULE_INCLUDE:
@@ -905,7 +906,6 @@ class DataQualityCheck(models.Model):
                     value) + text + rule.text_match + '"',
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -920,7 +920,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': display_name + ' [' + value + '] < ' + rule_min,
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -935,7 +934,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': display_name + ' [' + value + '] > ' + rule_max,
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -950,7 +948,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': display_name + ' [' + value + '] <> ' + rule_check,
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -965,7 +962,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': f'Units mismatched between ["{value.units}" vs "{rule.units}"]',
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -980,7 +976,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': 'Value [' + value + '] could not be converted to number',
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             }
         )
 
@@ -994,7 +989,6 @@ class DataQualityCheck(models.Model):
             'detailed_message': rule.field + ' is required and missing',
             'severity': rule.get_severity_display(),
             'condition': rule.condition,
-            'label': rule.status_label,
         })
 
     def add_result_missing_label(self, row_id, rule, display_name, value):
@@ -1008,7 +1002,6 @@ class DataQualityCheck(models.Model):
                 'detailed_message': rule.status_label + ' is required and missing',
                 'severity': rule.get_severity_display(),
                 'condition': rule.condition,
-                'label': rule.status_label,
             })
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
@@ -1021,7 +1014,6 @@ class DataQualityCheck(models.Model):
             'detailed_message': display_name + ' is required but is None',
             'severity': rule.get_severity_display(),
             'condition': rule.condition,
-            'label': rule.status_label,
         })
 
     def add_result_is_null(self, row_id, rule, display_name, value):
@@ -1034,7 +1026,6 @@ class DataQualityCheck(models.Model):
             'detailed_message': display_name + ' is null',
             'severity': rule.get_severity_display(),
             'condition': rule.condition,
-            'label': rule.status_label,
         })
 
     def add_invalid_geometry_entry_provided(self, row_id, rule, display_name, value):
@@ -1053,7 +1044,6 @@ class DataQualityCheck(models.Model):
             'detailed_message': detailed_message,
             'severity': rule.get_severity_display(),
             'condition': rule.condition,
-            'label': rule.status_label,
         })
 
     def update_status_label(self, label_class, rule, linked_id, row_id):
