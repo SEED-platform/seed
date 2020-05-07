@@ -12,7 +12,7 @@ angular.module('district', []).filter('district', function () {
     if (_.isNil(input)) {
       return input;
     }
-    if (angular.uppercase(input) === 'DISTRICT') {
+    if (input.toUpperCase() === 'DISTRICT') {
       return 'County/District/Ward/Borough';
     }
     return input;
