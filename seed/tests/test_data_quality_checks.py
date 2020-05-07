@@ -163,8 +163,7 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         dq.check_data(ps.__class__.__name__, [ps])
 
         dq_results = dq.results[ps.id]['data_quality_results']
-        # labels = [r['label'] for r in dq_results]
-        labels = [r.get('label') for r in dq_results if r.get('label') is not None]
+        labels = [r['label'] for r in dq_results]
         self.assertCountEqual(['Check Site EUI', 'Check Year Built'], labels)
 
     def test_text_match(self):
