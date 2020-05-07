@@ -31,11 +31,11 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.orgId = orgId;
 
       var check_null = false;
-      var remove = [];
       _.forEach(originalDataQualityResults, function (results) {
         if (results.data_quality_results.length > 1) {
           _.forEach(_.groupBy(results.data_quality_results, 'field'), function (group) {
             if (group.length > 1) {
+              var remove = [];
               _.forEach(group, function (rule) {
                 if (_.isMatch(rule, {value: null}) && _.isMatch(rule, {condition: 'not_null'})) check_null = true;
               });
@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
                   if (rule.value === null && (rule.condition !== 'not_null')) remove.push(index);
                 });
                 for (var i = remove.length - 1; i >= 0; i--) {
-                  group.splice(remove[i], 1);
+                  results.data_quality_results = _.reject(results.data_quality_results, group[remove[i]]);
                 }
               }
               check_null = false;
