@@ -91,6 +91,7 @@ class ExportReport(DataMappingBaseTestCase):
 
         raw_sheet = wb.sheet_by_index(1)
         self.assertEqual('Raw', raw_sheet.name)
+
         # check Site EUI values
         self.assertEqual('Site EUI', raw_sheet.cell(0, 1).value)
         self.assertEqual(1, raw_sheet.cell(1, 1).value)

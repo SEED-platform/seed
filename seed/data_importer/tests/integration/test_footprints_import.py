@@ -177,18 +177,13 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
 
         pdq = DataQualityCheck.retrieve(self.org.id)
-        pdq.check_data('PropertyState', [property_1, property_2, property_3])
-        match = False
-        # for result in pdq.results[property_1.id]['data_quality_results']:
-        #     if result['detailed_message'] == "Conditioned Floor Area is null":
-        #         match = True
-        for result in pdq.results[property_2.id]['data_quality_results']:
-            if result['detailed_message'] == "'{}' is not a valid geometry".format(invalid_property_footprint_string):
-                match = True
-        for result in pdq.results[property_3.id]['data_quality_results']:
-            if result['detailed_message'] == "'123' is not a valid geometry":
-                match &= True
-        self.assertTrue(match)
+        pdq.check_data('PropertyState', [property_1 , property_2, property_3])
+        # For property_1, no error message of null 'Conditioned Floor Area' reported if no 'not_null' condition is set
+        for rule in pdq.rules.filter(table_name='PropertyState', field='conditioned_floor_area'):
+            self.assertNotEqual(rule.condition, 'not_null')
+        self.assertNotIn(property_1.id, pdq.results)
+        self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
+        self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
         # Run new import, and check that duplicate rules are not created
         new_import_file_tax_lot = ImportFile.objects.create(
