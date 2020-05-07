@@ -13,6 +13,7 @@ coverage.protractor.json
 *.swp
 *.swo
 *.swn
+seed_issues.csv
 package-lock.json
 web_root/css/compressed.*.css
 web_root/js/compressed.*.js
