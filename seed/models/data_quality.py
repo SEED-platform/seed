@@ -136,7 +136,6 @@ class Rule(models.Model):
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,
             'condition': RULE_NOT_NULL,
-            'text_match': '',
         }, {
             'table_name': 'PropertyState',
             'field': 'pm_property_id',
