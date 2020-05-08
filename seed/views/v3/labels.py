@@ -6,18 +6,14 @@
 """
 from collections import namedtuple
 
-from django.apps import apps
-from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import (
     response,
     status,
-    viewsets
 )
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
-from rest_framework.views import APIView
 
 from seed.decorators import DecoratorMixin
 from seed.filters import (
@@ -112,13 +108,11 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     def filter(self, request):
         """
         Filters a list of all labels
-        ---
         """
         return self._get_labels(request)
 
     def list(self, request):
         """
         Returns a list of all labels
-        ---
         """
         return self._get_labels(request)
