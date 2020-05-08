@@ -224,7 +224,7 @@ Generate static files:
 
 .. code-block:: console
 
-    $ python3 manage.py collectstatic --settings=config.settings.prod
+    $ python3 manage.py collectstatic --settings=config.settings.prod -i package.json -i npm-shrinkwrap.json -i node_modules/openlayers-ext/index.html
 
 Update ``config/settings/local_untracked.py``:
 
