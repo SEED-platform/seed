@@ -262,6 +262,8 @@ class BuildingSync(object):
             'year_built': property_['year_built'],
             'floors_above_grade': property_['floors_above_grade'],
             'floors_below_grade': property_['floors_below_grade'],
+            'conditioned_floors_above_grade': property_['conditioned_floors_above_grade'],
+            'conditioned_floors_below_grade': property_['conditioned_floors_below_grade'],
             'premise_identifier': property_['premise_identifier'],
             'custom_id_1': property_['custom_id_1'],
             'gross_floor_area': property_['gross_floor_area'],
