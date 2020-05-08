@@ -145,7 +145,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
       var originalRules = angular.copy(data_quality_rules_payload.rules);
       $scope.original = originalRules;
-      $scope.change_rules = function() {
+      $scope.change_rules = function () {
         $scope.setModified();
       };
       $scope.setModified = function () {

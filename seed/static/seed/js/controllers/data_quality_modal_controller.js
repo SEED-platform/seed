@@ -27,32 +27,9 @@ angular.module('BE.seed.controller.data_quality_modal', [])
       $scope.name = name;
       $scope.uploaded = moment.utc(uploaded).local().format('MMMM Do YYYY, h:mm:ss A Z');
       var originalDataQualityResults = dataQualityResults || [];
+      $scope.dataQualityResults = originalDataQualityResults;
       $scope.importFileId = importFileId;
       $scope.orgId = orgId;
-
-      var check_null = false;
-      _.forEach(originalDataQualityResults, function (results) {
-        if (results.data_quality_results.length > 1) {
-          _.forEach(_.groupBy(results.data_quality_results, 'field'), function (group) {
-            if (group.length > 1) {
-              var remove = [];
-              _.forEach(group, function (rule) {
-                if (_.isMatch(rule, {value: null}) && _.isMatch(rule, {condition: 'not_null'})) check_null = true;
-              });
-              if (check_null) {
-                _.each(group, function (rule, index) {
-                  if (rule.value === null && (rule.condition !== 'not_null' && rule.condition !== 'required')) remove.push(index);
-                });
-                for (var i = remove.length - 1; i >= 0; i--) {
-                  results.data_quality_results = _.reject(results.data_quality_results, group[remove[i]]);
-                }
-              }
-              check_null = false;
-            }
-          });
-        }
-      });
-      $scope.dataQualityResults = originalDataQualityResults;
 
       $scope.close = function () {
         $uibModalInstance.close();
