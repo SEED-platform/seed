@@ -312,7 +312,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (newDataType !== original) {
           rule.text_match = null;
           rule.units = '';
-          rule.condition = '';
 
           if (!_.includes([null, 'number'], original) || !_.includes([null, 'number'], newDataType)) {
             // Reset min/max if the data type is something other than null <-> number
@@ -322,6 +321,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         rule.data_type = newDataType;
+        if (rule.data_type === 'None' || rule.data_type === null) rule.condition = '';
+        else if (rule.data_type === 'string') rule.condition = 'include';
+        else rule.condition = 'range';
 
         // move rule to appropriate spot in ruleGroups.
         if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
@@ -422,10 +424,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       });
 
       $scope.sortedRuleGroups = function () {
-        _.forEach($scope.ruleGroups[$scope.inventory_type], function (group) {
-          _.sortBy(group, 'condition');
-        });
-
         var sortedKeys = _.keys($scope.ruleGroups[$scope.inventory_type]).sort(function (a, b) {
           return naturalSort(displayNames[a], displayNames[b]);
         });
