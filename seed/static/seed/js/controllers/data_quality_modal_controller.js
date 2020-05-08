@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         }
       });
       $scope.dataQualityResults = originalDataQualityResults;
-      console.log($scope.dataQualityResults);
+
       $scope.close = function () {
         $uibModalInstance.close();
       };

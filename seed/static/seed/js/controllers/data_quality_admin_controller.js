@@ -285,7 +285,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.rules_updated = false;
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
-        if (!rule.condition) rule.condition = null;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
         if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {condition: 'required', data_type: 'string'})) rule.text_match = null;

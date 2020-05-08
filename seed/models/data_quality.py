@@ -748,7 +748,7 @@ class DataQualityCheck(models.Model):
                     if not rule.valid_text(value):
                         self.add_result_string_error(row.id, rule, display_name, value)
                         label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                else:
+                elif rule.condition == Rule.RULE_RANGE:
                     try:
                         if not rule.minimum_valid(value):
                             if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:

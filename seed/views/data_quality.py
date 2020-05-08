@@ -406,19 +406,22 @@ class DataQualityViews(viewsets.ViewSet):
             )
 
         dq = DataQualityCheck.retrieve(organization.id)
+        message = []
+        error = False
         dq.remove_all_rules()
         for rule in updated_rules:
             if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                error = True
+                message.append('Label must be assigned when using Valid Data Severity.')
             if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
                 if rule['text_match'] is None or rule['text_match'] == '':
-                    return JsonResponse({
-                        'statue': 'error',
-                        'message': 'Rule must not include or exclude an empty string.'
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    error = True
+                    message.append('Rule must not include or exclude an empty string.')
+            if error:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': message,
+                }, status=status.HTTP_400_BAD_REQUEST)
             try:
                 dq.add_rule(rule)
             except TypeError as e:
