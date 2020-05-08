@@ -225,6 +225,10 @@ class BuildingFile(models.Model):
             # invalid arguments, must pass both or neither
             return False, None, None, "Invalid arguments passed to BuildingFile.process()"
 
+        # save the property state
+        self.property_state_id = property_state.id
+        self.save()
+
         # add in the measures
         for m in data.get('measures', []):
             # Find the measure in the database
