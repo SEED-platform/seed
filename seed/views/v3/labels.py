@@ -122,4 +122,3 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         ---
         """
         return self._get_labels(request)
-
