@@ -152,16 +152,21 @@ class TestDemoV2(DataMappingBaseTestCase):
 
         self.assertEqual(len(ps), 3)
 
+        # Check taxlot_footprints
+        property_1 = PropertyState.objects.get(address_line_1='50 Willow Ave SE')
+        self.assertTrue(isinstance(property_1.property_footprint, Polygon))
+        self.assertEqual(property_1.extra_data.get('Property Coordinates (Invalid Footprint)'), None)
+
         # For invalid footprints,
         # check that extra_data field added with ' (Invalid Footprint)' appended to original column title
-        property_1 = PropertyState.objects.get(address_line_1='2700 Welstone Ave NE')
+        property_2 = PropertyState.objects.get(address_line_1='2700 Welstone Ave NE')
         invalid_property_footprint_string = '(( 1 0, 0 1 ))'
-        self.assertEqual(property_1.property_footprint, None)
-        self.assertEqual(property_1.extra_data['Property Coordinates (Invalid Footprint)'], invalid_property_footprint_string)
-
-        property_2 = PropertyState.objects.get(address_line_1='11 Ninth Street')
         self.assertEqual(property_2.property_footprint, None)
-        self.assertEqual(property_2.extra_data['Property Coordinates (Invalid Footprint)'], 123)
+        self.assertEqual(property_2.extra_data['Property Coordinates (Invalid Footprint)'], invalid_property_footprint_string)
+
+        property_3 = PropertyState.objects.get(address_line_1='11 Ninth Street')
+        self.assertEqual(property_3.property_footprint, None)
+        self.assertEqual(property_3.extra_data['Property Coordinates (Invalid Footprint)'], 123)
 
         # Make sure that new DQ rules have been added and apply to the states with (Invalid Footprints)
         tdq = DataQualityCheck.retrieve(self.org.id)
@@ -172,9 +177,10 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(tdq.results[tax_lot_3.id]['data_quality_results'][0]['detailed_message'], "'' is not a valid geometry")
 
         pdq = DataQualityCheck.retrieve(self.org.id)
-        pdq.check_data('PropertyState', [property_1, property_2])
-        self.assertEqual(pdq.results[property_1.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
-        self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
+        pdq.check_data('PropertyState', [property_1, property_2, property_3])
+        self.assertEqual(pdq.results.get(property_1.id, None), None)
+        self.assertEqual(pdq.results[property_2.id]['data_quality_results'][0]['detailed_message'], "'{}' is not a valid geometry".format(invalid_property_footprint_string))
+        self.assertEqual(pdq.results[property_3.id]['data_quality_results'][0]['detailed_message'], "'123' is not a valid geometry")
 
         # Run new import, and check that duplicate rules are not created
         new_import_file_tax_lot = ImportFile.objects.create(
