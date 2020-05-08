@@ -253,7 +253,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.label = match.id;
                 }
               }
-              if(!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
+              if (!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
                 if (r.max < r.min) {
                   var min = r.min;
                   r.min = r.max;
