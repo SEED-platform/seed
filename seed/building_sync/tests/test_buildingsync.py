@@ -18,7 +18,7 @@ from seed.models import (
     User
 )
 from seed.utils.organizations import create_organization
-
+# REMOVE ME
 
 class TestImport(TestCase):
     def test_import_v2_0_ok(self):
