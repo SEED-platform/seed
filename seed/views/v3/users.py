@@ -109,6 +109,7 @@ class EmailAndIDSerializer(serializers.Serializer):
 class ListUsersResponseSerializer(serializers.Serializer):
     users = EmailAndIDSerializer(many=True)
 
+
 class UserSchema(AutoSchemaHelper):
     def __init__(self, *args):
         super().__init__(*args)
@@ -144,7 +145,8 @@ class UserSchema(AutoSchemaHelper):
                         'email': 'string'
                     }
                 )],
-            ('PUT', 'default_organization'): [self.org_id_field(), self.path_id_field(description="Updated Users PK ID")],
+            ('PUT', 'default_organization'): [self.org_id_field(),
+                                              self.path_id_field(description="Updated Users PK ID")],
             ('POST', 'is_authorized'): [
                 self.org_id_field(),
                 self.path_id_field(description="Users PK ID"),
@@ -192,8 +194,6 @@ class UserSchema(AutoSchemaHelper):
                     })
 
             ]
-
-
 
         }
 
