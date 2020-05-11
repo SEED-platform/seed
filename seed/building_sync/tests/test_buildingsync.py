@@ -78,6 +78,8 @@ class TestProcess(TestCase):
             'year_built': 2010,
             'floors_above_grade': 1,
             'floors_below_grade': 0,
+            'conditioned_floors_above_grade': 1,
+            'conditioned_floors_below_grade': 0,
             'premise_identifier': 'SF000011',
             'custom_id_1': '1',
             'gross_floor_area': 77579.0,

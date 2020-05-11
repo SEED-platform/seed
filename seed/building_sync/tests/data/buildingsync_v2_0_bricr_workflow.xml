@@ -21,7 +21,8 @@
               <auc:PremisesNotes/>
               <auc:PremisesIdentifiers>
                 <auc:PremisesIdentifier>
-                  <auc:IdentifierLabel>Assessor parcel number</auc:IdentifierLabel>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>Custom ID 2</auc:IdentifierCustomName>
                   <auc:IdentifierValue>SF000011</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
                 <auc:PremisesIdentifier>
@@ -54,6 +55,8 @@
               <auc:Latitude>37.74391054330132</auc:Latitude>
               <auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
               <auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
+              <auc:ConditionedFloorsAboveGrade>1</auc:ConditionedFloorsAboveGrade>
+              <auc:ConditionedFloorsBelowGrade>0</auc:ConditionedFloorsBelowGrade>
               <auc:FloorAreas>
                 <auc:FloorArea>
                   <auc:FloorAreaType>Gross</auc:FloorAreaType>

@@ -502,8 +502,22 @@ BASE_MAPPING_V2_0 = {
                 'formatter': to_int,
                 'required': False
             },
+            'conditioned_floors_above_grade': {
+                'xpath': './auc:Buildings/auc:Building/auc:ConditionedFloorsAboveGrade',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_int,
+                'required': False
+            },
+            'conditioned_floors_below_grade': {
+                'xpath': './auc:Buildings/auc:Building/auc:ConditionedFloorsBelowGrade',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_int,
+                'required': False
+            },
             'premise_identifier': {
-                'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierLabel="Assessor parcel number"]/auc:IdentifierValue',
+                'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Custom ID 2"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
                 'required': False
