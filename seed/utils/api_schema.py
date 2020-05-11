@@ -12,7 +12,12 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(type=openapi.TYPE_INTEGER)
         ),
-        'string': openapi.Schema(type=openapi.TYPE_STRING)
+        'string': openapi.Schema(type=openapi.TYPE_STRING),
+
+        'string_array': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(type=openapi.TYPE_STRING)
+        )
     }
 
     def base_field(self, name, location_attr, description, required, type):
