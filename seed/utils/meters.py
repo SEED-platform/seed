@@ -41,6 +41,7 @@ class PropertyMeterReadingsExporter():
         self._cache_factors = None
         self._cache_org_country = None
 
+        scenario_ids = scenario_ids if scenario_ids is not None else []
         self.meters = Meter.objects.filter(
             Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)
         ).exclude(pk__in=excluded_meter_ids)
