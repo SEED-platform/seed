@@ -94,9 +94,9 @@ class Scenario(models.Model):
         try:
             property_ = PropertyView.objects.get(state=self.property_state).property
         except PropertyView.DoesNotExist:
-            # Since meters are linked to a specific property, we need to ensure the
-            # property already exists
-            raise Exception('Expected PropertyState to already be associated with a Property.')
+            # possible that the state does not yet have a canonical property
+            # e.g. when processing BuildingFiles, it's 'promoted' after this merging
+            property_ = None
 
         for source_meter in source_scenario.meter_set.all():
             # create new meter and copy over the readings from the source_meter

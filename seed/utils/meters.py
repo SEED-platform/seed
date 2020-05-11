@@ -15,6 +15,7 @@ from datetime import (
     timedelta,
 )
 
+from django.db.models import Q
 from django.utils.timezone import make_aware
 
 from pytz import timezone
@@ -25,7 +26,6 @@ from seed.data_importer.utils import (
     usage_point_id,
 )
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import Property
 
 
 class PropertyMeterReadingsExporter():
@@ -37,11 +37,14 @@ class PropertyMeterReadingsExporter():
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id, excluded_meter_ids):
+    def __init__(self, property_id, org_id, excluded_meter_ids, scenario_ids=None):
         self._cache_factors = None
         self._cache_org_country = None
 
-        self.meters = Property.objects.get(pk=property_id).meters.exclude(pk__in=excluded_meter_ids)
+        scenario_ids = scenario_ids if scenario_ids is not None else []
+        self.meters = Meter.objects.filter(
+            Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)
+        ).exclude(pk__in=excluded_meter_ids)
         self.org_id = org_id
         self.org_meter_display_settings = Organization.objects.get(pk=org_id).display_meter_units
         self.tz = timezone(TIME_ZONE)
