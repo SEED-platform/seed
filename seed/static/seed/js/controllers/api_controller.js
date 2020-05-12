@@ -3,7 +3,7 @@
  * :author
  */
 angular.module('BE.seed.controller.api', []).controller('api_controller', [function () {
-  $('#swagger-frame').on('load', function () {
+  $('#swagger-ui').on('load', function () {
     $(this).contents().find('body').css('margin', 0);
   });
 }]);

@@ -19,10 +19,12 @@ from collections import namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
+import zipfile
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, DataError
 from django.db import connection, transaction
 from django.db.utils import ProgrammingError
@@ -45,6 +47,7 @@ from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
+from seed.lib.xml_mapping import reader as xml_reader
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
@@ -52,6 +55,7 @@ from seed.models import (
     ASSESSED_RAW,
     PORTFOLIO_BS,
     PORTFOLIO_RAW,
+    BUILDINGSYNC_RAW,
     Column,
     ColumnMapping,
     Meter,
@@ -63,8 +67,8 @@ from seed.models import (
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     DATA_STATE_DELETE,
-    DATA_STATE_UNKNOWN
-)
+    DATA_STATE_UNKNOWN)
+from seed.models import BuildingFile
 from seed.models import PropertyAuditLog
 from seed.models import TaxLotAuditLog
 from seed.models import TaxLotProperty
@@ -150,7 +154,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
         # specify the chord as an immutable with .si
         chord(tasks, interval=15)(finish_checking.si(progress_data.key))
     else:
-        finish_checking.s(progress_data.key)
+        progress_data.finish_with_success()
 
     # always return something so that the code works with always eager
     return progress_data.result()
@@ -250,6 +254,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     save_type = PORTFOLIO_BS
     if source_type == ASSESSED_RAW:
         save_type = ASSESSED_BS
+    elif source_type == BUILDINGSYNC_RAW:
+        save_type = BUILDINGSYNC_RAW
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
@@ -306,7 +312,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 delimited_fields['jurisdiction_tax_lot_id']['from_field']] = (
                 'PropertyState', 'lot_number', 'Lot Number', False)
     # *** END BREAK OUT ***
-
     try:
         with transaction.atomic():
             # yes, there are three cascading for loops here. sorry :(
@@ -327,7 +332,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     if v[1] in ['taxlot_footprint', 'property_footprint']:
                         footprint_details['raw_field'] = k
                         footprint_details['obj_field'] = v[1]
-                # _log.debug("extra data fields: {}".format(extra_data_fields))
 
                 # All the data live in the PropertyState.extra_data field when the data are imported
                 data = PropertyState.objects.filter(id__in=ids).only('extra_data',
@@ -404,6 +408,42 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
                         # There was an error with a field being too long [> 255 chars].
                         map_model_obj.save()
+
+                        # if importing BuildingSync create a BuildingFile for the property
+                        if source_type == BUILDINGSYNC_RAW:
+                            raw_ps_id = original_row.id
+                            xml_filename = import_file.raw_property_state_to_filename.get(str(raw_ps_id))
+                            if xml_filename is None:
+                                raise Exception('Expected ImportFile to have the raw PropertyStates id in its raw_property_state_to_filename dict')
+
+                            from_zipfile = import_file.uploaded_filename.endswith('.zip')
+                            # if user uploaded a zipfile, find the xml file related to this property and use it
+                            # else, the user uploaded a sole xml file and we can just use that one.
+                            if from_zipfile:
+                                with zipfile.ZipFile(import_file.file, 'r', zipfile.ZIP_STORED) as openzip:
+                                    new_file = SimpleUploadedFile(
+                                        name=xml_filename,
+                                        content=openzip.read(xml_filename),
+                                        content_type='application/xml')
+                            else:
+                                xml_filename = import_file.uploaded_filename
+                                if xml_filename == '':
+                                    raise Exception('Expected ImportFiles uploaded_filename to be non-empty')
+                                new_file = SimpleUploadedFile(
+                                    name=xml_filename,
+                                    content=import_file.file.read(),
+                                    content_type='application/xml'
+                                )
+
+                            building_file = BuildingFile.objects.create(
+                                file=new_file,
+                                filename=xml_filename,
+                                file_type=BuildingFile.BUILDINGSYNC,
+                            )
+
+                            # link the property state to the building file
+                            building_file.property_state = map_model_obj
+                            building_file.save()
 
                         # Create an audit log record for the new map_model_obj that was created.
 
@@ -494,6 +534,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
         'Assessed Raw': ASSESSED_RAW,
+        'BuildingSync Raw': BUILDINGSYNC_RAW
     }
     source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
 
@@ -507,8 +548,8 @@ def _map_data_create_tasks(import_file_id, progress_key):
 
     progress_data.total = len(id_chunks)
     progress_data.save()
-
-    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key) for ids in id_chunks]
+    tasks = [map_row_chunk.si(ids, import_file_id, source_type, progress_data.key)
+             for ids in id_chunks]
 
     return tasks
 
@@ -623,6 +664,9 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
 
     # Save our "column headers" and sample rows for F/E.
     source_type = get_source_type(import_file)
+
+    # BuildingSync only: track property state ID to its source filename
+    raw_property_state_to_filename = {}
     try:
         with transaction.atomic():
             for c in chunk:
@@ -636,8 +680,11 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     # remove extra spaces surrounding keys.
                     key = k.strip()
 
+                    source_filename = None
                     if key == "bounding_box":  # capture bounding_box GIS field on raw record
                         raw_property.bounding_box = v
+                    elif key == "_source_filename":  # grab source filename (for BSync)
+                        source_filename = v
                     elif isinstance(v, basestring):
                         new_chunk[key] = unidecode(v)
                     elif isinstance(v, (datetime, date)):
@@ -650,6 +697,10 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                 raw_property.data_state = DATA_STATE_IMPORT
                 raw_property.organization = import_file.import_record.super_organization
                 raw_property.save()
+
+                if source_filename is not None:
+                    raw_property_state_to_filename[str(raw_property.id)] = source_filename
+
     except IntegrityError as e:
         raise IntegrityError("Could not save_raw_data_chunk with error: %s" % (e))
 
@@ -657,7 +708,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
     progress_data.step()
 
-    return True
+    return raw_property_state_to_filename
 
 
 @shared_task(ignore_result=True)
@@ -686,6 +737,10 @@ def finish_raw_save(results, file_pk, progress_key):
         finished_progress_data = progress_data.finish_with_success(new_summary)
     else:
         finished_progress_data = progress_data.finish_with_success()
+
+    if import_file.source_type == 'BuildingSync Raw':
+        for result in results:
+            import_file.raw_property_state_to_filename.update(result)
 
     import_file.save()
 
@@ -986,6 +1041,11 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
     if file_extension == '.json' or file_extension == '.geojson':
         parser = reader.GeoJSONParser(import_file.local_file)
+    elif import_file.source_type == 'BuildingSync Raw':
+        try:
+            parser = xml_reader.BuildingSyncParser(import_file.file)
+        except Exception as e:
+            return progress_data.finish_with_error(f'Failed to parse BuildingSync data: {str(e)}')
     else:
         parser = reader.MCMParser(import_file.local_file)
 
@@ -1070,6 +1130,86 @@ def _geocode_properties_or_tax_lots(file_pk):
             data_state=DATA_STATE_IMPORT)
         decode_unique_ids(qs)
         geocode_buildings(qs)
+
+
+def map_additional_models(file_pk):
+    """
+    kicks off mapping models other than PropertyState, returns progress key within the JSON response
+    E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
+
+    :param file_pk: ImportFile Primary Key
+    :return:
+    """
+    import_file = ImportFile.objects.get(pk=file_pk)
+
+    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
+    progress_data.delete()
+    progress_data.save()
+
+    if import_file.matching_done:
+        _log.debug('Matching is already done')
+        return progress_data.finish_with_warning('matching already complete')
+
+    if not import_file.mapping_done:
+        _log.debug('Mapping is not done yet')
+        return progress_data.finish_with_error(
+            'Import file is not complete. Retry after mapping is complete', )
+
+    if import_file.cycle is None:
+        _log.warn("This should never happen in production")
+
+    source_type_dict = {
+        'Portfolio Raw': PORTFOLIO_RAW,
+        'Assessed Raw': ASSESSED_RAW,
+        'BuildingSync Raw': BUILDINGSYNC_RAW
+    }
+    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+
+    # get the properties and chunk them into tasks
+    qs = PropertyState.objects.filter(
+        import_file=import_file,
+        source_type=source_type,
+        data_state=DATA_STATE_MAPPING,
+    ).only('id').iterator()
+
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+
+    progress_data.total = len(id_chunks)
+    progress_data.save()
+
+    tasks = [_map_additional_models.si(ids, import_file.id, progress_data.key)
+             for ids in id_chunks]
+
+    chord(tasks)(
+        finish_mapping_additional_models.s(file_pk, progress_data.key))
+
+    return progress_data.result()
+
+
+@shared_task(ignore_result=True)
+def finish_mapping_additional_models(result, import_file_id, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=import_file_id)
+    import_file.matching_done = True
+    import_file.mapping_completion = 100
+    if isinstance(result, list) and len(result) >= 0:
+        # merge the results from the tasks
+        # assumes that all values are numbers
+        merged_result = {}
+        for res in result:
+            for key, value in res.items():
+                if key in merged_result:
+                    merged_result[key] += value
+                else:
+                    merged_result[key] = value
+
+        import_file.matching_results_data = merged_result
+    else:
+        raise Exception('Expected result to be a list of one or more items')
+
+    import_file.save()
+    return progress_data.finish_with_success()
 
 
 # @cprofile()
@@ -1162,6 +1302,58 @@ def hash_state_object(obj, include_extra_data=True):
         add_dictionary_repr_to_hash(m, obj.extra_data)
 
     return m.hexdigest()
+
+
+@shared_task
+def _map_additional_models(ids, file_pk, progress_key):
+    """
+    Create any additional models, other than properties, that could come from the
+    imported file. E.g. Scenarios and Meters from a BuildingSync file.
+
+    :param ids: chunk of property state id to process
+    :param file_pk: ImportFile Primary Key
+    :param progress_key: progress key
+    :return:
+    """
+    import_file = ImportFile.objects.get(pk=file_pk)
+    progress_data = ProgressData.from_key(progress_key)
+
+    source_type_dict = {
+        'Portfolio Raw': PORTFOLIO_RAW,
+        'Assessed Raw': ASSESSED_RAW,
+        'BuildingSync Raw': BUILDINGSYNC_RAW
+    }
+    source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+
+    # Don't query the org table here, just get the organization from the import_record
+    org = import_file.import_record.super_organization
+
+    # grab all property states linked to the import file and finish processing the data
+    property_states = PropertyState.objects.filter(id__in=ids).prefetch_related('building_files')
+    for property_state in property_states:
+        if source_type == BUILDINGSYNC_RAW:
+            # parse the rest of the models (scenarios, meters, etc) from the building file
+            # and create the property and property view
+            building_file = property_state.building_files.get()
+            p_status, property_state, property_view, messages = building_file.process(
+                org.id, import_file.cycle)
+
+            if not p_status or len(messages.get('errors', [])) > 0:
+                # something went wrong, save the messages and skip this file
+                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
+                continue
+            elif len(messages.get('warnings', [])) > 0:
+                # non-fatal warnings, add the info and continue to save the file
+                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
+
+            property_state.data_state = DATA_STATE_MATCHING
+            property_state.save()
+
+    progress_data.step()
+
+    return {
+        'import_file_records': len(ids)
+    }
 
 
 def list_canonical_property_states(org_id):
