@@ -8,16 +8,44 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from rest_framework_swagger.views import get_swagger_view
 
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
+from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done
 from seed.views.main import angular_js_tests
 
-from rest_framework.schemas import get_schema_view
-schema_view = get_schema_view(title='SEED API Schema')
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="SEED API",
+      default_version='v3',
+      description="Test description",
+      # terms_of_service="https://www.google.com/policies/terms/",
+      # contact=openapi.Contact(email="contact@snippets.local"),
+      # license=openapi.License(name="BSD License"),
+   ),
+   public=False,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    url(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
+    url(
+        r'^accounts/password/reset/complete/$',
+        password_reset_complete,
+        name='password_reset_complete',
+    ),
+    url(
+        (
+            r'^accounts/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
+            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
+        ),
+        password_reset_confirm,
+        name='password_reset_confirm'
+    ),
     # Application
     url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
@@ -27,8 +55,7 @@ urlpatterns = [
     url(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
-    url(r'^api/schema/$', schema_view),
-    url(r'^api/swagger/', get_swagger_view(title='SEED API'), name='swagger'),
+    url(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^api/', include((api, "seed"), namespace='api')),
     url(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
 ]

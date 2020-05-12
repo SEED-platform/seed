@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
@@ -94,7 +94,7 @@ class ColumnMappingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @require_organization_id_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def delete_all(self, request):
         """
         Delete all column mappings for an organization

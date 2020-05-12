@@ -15,7 +15,7 @@ from collections import OrderedDict
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
 from quantityfield import ureg
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
@@ -57,7 +57,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def export(self, request):
         """
         Download a csv of the TaxLot and Properties

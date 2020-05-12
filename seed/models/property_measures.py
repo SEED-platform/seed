@@ -49,6 +49,9 @@ class PropertyMeasure(models.Model):
     SCALE_MULTIPLE_PREMISES = 4
     SCALE_ENTIRE_FACILITY = 5
     SCALE_ENTIRE_SITE = 6
+    SCALE_ENTIRE_BUILDING = 7
+    SCALE_COMMON_AREAS = 8
+    SCALE_TENANT_AREAS = 9
 
     APPLICATION_SCALE_TYPES = (
         (SCALE_INDIVIDUAL_SYSTEM, 'Individual system'),
@@ -57,6 +60,9 @@ class PropertyMeasure(models.Model):
         (SCALE_MULTIPLE_PREMISES, 'Multiple premises'),
         (SCALE_ENTIRE_FACILITY, 'Entire facility'),
         (SCALE_ENTIRE_SITE, 'Entire site'),
+        (SCALE_ENTIRE_BUILDING, 'Entire building'),
+        (SCALE_COMMON_AREAS, 'Common areas'),
+        (SCALE_TENANT_AREAS, 'Tenant areas'),
     )
 
     CATEGORY_AIR_DISTRIBUTION = 0

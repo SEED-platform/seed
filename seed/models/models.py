@@ -17,6 +17,7 @@ PORTFOLIO_RAW = 1
 ASSESSED_BS = 2
 PORTFOLIO_BS = 3
 COMPOSITE_BS = 4
+BUILDINGSYNC_RAW = 5
 
 SEED_DATA_SOURCES = (
     (ASSESSED_RAW, 'Assessed Raw'),
@@ -24,6 +25,7 @@ SEED_DATA_SOURCES = (
     (PORTFOLIO_RAW, 'Portfolio Raw'),
     (PORTFOLIO_BS, 'Portfolio'),
     (COMPOSITE_BS, 'BuildingSnapshot'),  # I don't think we need this, but I am leaving it for now.
+    (BUILDINGSYNC_RAW, 'BuildingSync Raw'),
 )
 
 # State of the data that was imported. This will be used to flag which

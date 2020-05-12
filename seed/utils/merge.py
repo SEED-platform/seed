@@ -55,7 +55,7 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
             state_1 = merged_state
         state_2 = PropertyState.objects.get(id=state_ids[index])
 
-        merged_state = _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection)
+        merged_state = PropertyState.objects.create(organization_id=org_id)
 
         views = PropertyView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -72,6 +72,8 @@ def merge_properties(state_ids, org_id, log_name, ignore_merge_protection=False)
             property_id=new_property.id
         )
         new_view.save()
+
+        _merge_log_states(merged_state, org_id, state_1, state_2, log_name, ignore_merge_protection)
 
         _copy_meters_in_order(state_1.id, state_2.id, new_property)
         _copy_propertyview_relationships(view_ids, new_view)
@@ -103,7 +105,7 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
             state_1 = merged_state
         state_2 = TaxLotState.objects.get(id=state_ids[index])
 
-        merged_state = _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection)
+        merged_state = TaxLotState.objects.create(organization_id=org_id)
 
         views = TaxLotView.objects.filter(state_id__in=[state_1.id, state_2.id])
         view_ids = list(views.values_list('id', flat=True))
@@ -120,6 +122,8 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
             taxlot_id=new_taxlot.id
         )
         new_view.save()
+
+        _merge_log_states(merged_state, org_id, state_1, state_2, log_name, ignore_merge_protection)
 
         _copy_taxlotview_relationships(view_ids, new_view)
 
@@ -138,7 +142,7 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
     return merged_state
 
 
-def _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protection):
+def _merge_log_states(merged_state, org_id, state_1, state_2, log_name, ignore_merge_protection):
     if isinstance(state_1, PropertyState):
         StateClass = PropertyState
         AuditLogClass = PropertyAuditLog
@@ -146,7 +150,7 @@ def _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protectio
         StateClass = TaxLotState
         AuditLogClass = TaxLotAuditLog
     priorities = Column.retrieve_priorities(org_id)
-    merged_state = StateClass.objects.create(organization_id=org_id)
+
     merged_state = merging.merge_state(
         merged_state, state_1, state_2, priorities[StateClass.__name__], ignore_merge_protection
     )
@@ -175,8 +179,6 @@ def _merge_log_states(org_id, state_1, state_2, log_name, ignore_merge_protectio
     state_1.save()
     state_2.merge_state = MERGE_STATE_UNKNOWN
     state_2.save()
-
-    return merged_state
 
 
 def _copy_meters_in_order(state_1_id, state_2_id, new_property):

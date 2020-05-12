@@ -1,19 +1,9 @@
 <!-- <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v1.0-patch/BuildingSync.xsd"> -->
-<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019"                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                   xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 BuildingSync.xsd">
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019"                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                   xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v2.0/BuildingSync.xsd">
   <auc:Facilities>
     <auc:Facility>
       <auc:Sites>
         <auc:Site>
-          <auc:Address>
-            <auc:StreetAddressDetail>
-              <auc:Simplified>
-                <auc:StreetAddress>123 MAIN BLVD</auc:StreetAddress>
-              </auc:Simplified>
-            </auc:StreetAddressDetail>
-            <auc:City>San Francisco</auc:City>
-            <auc:State>CA</auc:State>
-            <auc:PostalCode>94124</auc:PostalCode>
-          </auc:Address>
           <auc:ClimateZoneType>
             <auc:ASHRAE>
               <auc:ClimateZone>3C</auc:ClimateZone>
@@ -24,8 +14,6 @@
           </auc:ClimateZoneType>
           <auc:WeatherDataStationID>724940</auc:WeatherDataStationID>
           <auc:WeatherStationName>USA_CA_San.Francisco.Intl.AP</auc:WeatherStationName>
-          <auc:Longitude>-122.38022804260254</auc:Longitude>
-          <auc:Latitude>37.74391054330132</auc:Latitude>
           <auc:Ownership>Unknown</auc:Ownership>
           <auc:Buildings>
             <auc:Building ID="Building1">
@@ -56,6 +44,18 @@
                   <auc:IdentifierValue>1</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
               </auc:PremisesIdentifiers>
+              <auc:Address>
+                <auc:StreetAddressDetail>
+                  <auc:Simplified>
+                    <auc:StreetAddress>123 MAIN BLVD</auc:StreetAddress>
+                  </auc:Simplified>
+                </auc:StreetAddressDetail>
+                <auc:City>San Francisco</auc:City>
+                <auc:State>CA</auc:State>
+                <auc:PostalCode>94124</auc:PostalCode>
+              </auc:Address>
+              <auc:Longitude>-122.38022804260254</auc:Longitude>
+              <auc:Latitude>37.74391054330132</auc:Latitude>
               <auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
               <auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
               <auc:FloorAreas>
@@ -70,6 +70,10 @@
                 <auc:FloorArea>
                   <auc:FloorAreaType>Footprint</auc:FloorAreaType>
                   <auc:FloorAreaValue>215643.97259999998</auc:FloorAreaValue>
+                </auc:FloorArea>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Net</auc:FloorAreaType>
+                  <auc:FloorAreaValue>99887766</auc:FloorAreaValue>
                 </auc:FloorArea>
               </auc:FloorAreas>
               <auc:AspectRatio>3.0045476571084526</auc:AspectRatio>
@@ -1927,13 +1931,13 @@
                 </auc:PackageOfMeasures>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="Resource1">
+                <auc:ResourceUse ID="Baseline-Resource1">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>2235075.9859244428</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2235.076</auc:AnnualFuelUseConsistentUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="Resource2">
+                <auc:ResourceUse ID="Baseline-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>909022.9655788932</auc:AnnualFuelUseNativeUnits>
@@ -1944,218 +1948,218 @@
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186000</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Baseline-Resource2"/>
                 </auc:TimeSeries>
               </auc:TimeSeriesData>
               <auc:AllResourceTotals>
@@ -2195,13 +2199,13 @@
                 </auc:PackageOfMeasures>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="Resource1">
+                <auc:ResourceUse ID="LED_Only-Resource1">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>3206417.9271639367</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2064.179</auc:AnnualFuelUseConsistentUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="Resource2">
+                <auc:ResourceUse ID="LED_Only-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>909022.9655788932</auc:AnnualFuelUseNativeUnits>
@@ -2212,218 +2216,218 @@
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>186200</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>75700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="LED_Only-Resource2"/>
                 </auc:TimeSeries>
               </auc:TimeSeriesData>
               <auc:AllResourceTotals>
@@ -2439,7 +2443,7 @@
               </auc:LinkedPremises>
             </auc:Scenario>
             <auc:Scenario>
-              <auc:ScenarioName>Electric_Appliance_30%_Reduction Only</auc:ScenarioName>
+              <auc:ScenarioName>Electric_Appliance_30pct_Reduction Only</auc:ScenarioName>
               <auc:ScenarioType>
                 <auc:PackageOfMeasures>
                   <auc:ReferenceCase IDref="Baseline"/>
@@ -2468,13 +2472,13 @@
                 </auc:PackageOfMeasures>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="Resource1">
+                <auc:ResourceUse ID="Electric_Appliance_30pct_Reduction-Resource1">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>2913836.260294419</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2913.836</auc:AnnualFuelUseConsistentUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="Resource2">
+                <auc:ResourceUse ID="Electric_Appliance_30pct_Reduction-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>704692.5507817483</auc:AnnualFuelUseNativeUnits>
@@ -2485,218 +2489,218 @@
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>242820</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource1"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource1"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-01-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-02-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-01-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-02-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-02-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-03-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-02-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-03-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-03-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-04-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-03-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-04-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-04-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-05-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-04-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-05-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-05-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-06-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-05-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-06-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-06-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-07-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-06-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-07-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-07-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-08-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-07-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-08-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-08-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-09-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-08-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-09-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-09-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-10-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-09-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-10-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-10-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-11-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-10-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-11-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-11-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2010-12-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-11-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2010-12-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
                 <auc:TimeSeries>
                   <auc:ReadingType>Total</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
-                  <auc:StartTimeStamp>2010-12-02T00:00:00</auc:StartTimeStamp>
-                  <auc:EndTimeStamp>2011-01-01T00:00:00</auc:EndTimeStamp>
+                  <auc:StartTimestamp>2010-12-02T00:00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2011-01-01T00:00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Month</auc:IntervalFrequency>
                   <auc:IntervalReading>58700</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="Resource2"/>
+                  <auc:ResourceUseID IDref="Electric_Appliance_30pct_Reduction-Resource2"/>
                 </auc:TimeSeries>
               </auc:TimeSeriesData>
               <auc:AllResourceTotals>

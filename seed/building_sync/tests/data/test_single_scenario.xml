@@ -1,18 +1,8 @@
-<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://github.com/BuildingSync/schema/releases/download/v1.0.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v2.0/BuildingSync.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<auc:Facilities>
     <auc:Facility>
       <auc:Sites>
-        <auc:Site>
-          <auc:Address>
-            <auc:StreetAddressDetail>
-              <auc:Simplified>
-                <auc:StreetAddress>123 Main St</auc:StreetAddress>
-              </auc:Simplified>
-            </auc:StreetAddressDetail>
-            <auc:City>San Francisco</auc:City>
-            <auc:State>CA</auc:State>
-            <auc:PostalCode>94111</auc:PostalCode>
-          </auc:Address>
+        <auc:Site>  
           <auc:ClimateZoneType>
             <auc:ASHRAE>
               <auc:ClimateZone>3C</auc:ClimateZone>
@@ -51,6 +41,16 @@
                   <auc:IdentifierValue>223</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
               </auc:PremisesIdentifiers>
+              <auc:Address>
+                <auc:StreetAddressDetail>
+                  <auc:Simplified>
+                    <auc:StreetAddress>123 Main St</auc:StreetAddress>
+                  </auc:Simplified>
+                </auc:StreetAddressDetail>
+                <auc:City>San Francisco</auc:City>
+                <auc:State>CA</auc:State>
+                <auc:PostalCode>94111</auc:PostalCode>
+              </auc:Address>
               <auc:FloorsAboveGrade>1</auc:FloorsAboveGrade>
               <auc:FloorsBelowGrade>0</auc:FloorsBelowGrade>
               <auc:FloorAreas>
@@ -106,9 +106,6 @@
       <auc:Measures>
         <auc:Measure ID="Measure1">
           <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
-          <auc:PremisesAffected>
-            <auc:PremiseAffected IDref="Building223"/>
-          </auc:PremisesAffected>
           <auc:TechnologyCategories>
             <auc:TechnologyCategory>
               <auc:LightingImprovements>
@@ -133,42 +130,44 @@
           </auc:UserDefinedFields>
         </auc:Measure>
       </auc:Measures>
-      <auc:Report>
-        <auc:Scenarios>
-          <auc:Scenario ID="Baseline">
-            <auc:ScenarioName>Baseline</auc:ScenarioName>
-            <auc:ScenarioType>
-              <auc:PackageOfMeasures>
-                <auc:ReferenceCase IDref="Baseline"/>
-                <auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
-                <auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
-              </auc:PackageOfMeasures>
-            </auc:ScenarioType>
-            <auc:UserDefinedFields>
-              <auc:UserDefinedField>
-                <auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
-                <auc:FieldValue>Success</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
-                <auc:FieldValue>Success</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
-                <auc:FieldValue>568.4154052230995</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
-                <auc:FieldValue>417494.48515560996</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
-                <auc:FieldValue>150920.9200674895</auc:FieldValue>
-              </auc:UserDefinedField>
-            </auc:UserDefinedFields>
-          </auc:Scenario>
-        </auc:Scenarios>
-      </auc:Report>
+      <auc:Reports>
+        <auc:Report>
+          <auc:Scenarios>
+            <auc:Scenario ID="Baseline">
+              <auc:ScenarioName>Baseline</auc:ScenarioName>
+              <auc:ScenarioType>
+                <auc:PackageOfMeasures>
+                  <auc:ReferenceCase IDref="Baseline"/>
+                  <auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
+                </auc:PackageOfMeasures>
+              </auc:ScenarioType>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>OpenStudioCompletedStatus</auc:FieldName>
+                  <auc:FieldValue>Success</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>OpenStudioBaselineCompletedStatus</auc:FieldName>
+                  <auc:FieldValue>Success</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>OpenStudioAnnualSiteEnergy_MMBtu</auc:FieldName>
+                  <auc:FieldValue>568.4154052230995</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>OpenStudioAnnualElectricity_kBtu</auc:FieldName>
+                  <auc:FieldValue>417494.48515560996</auc:FieldValue>
+                </auc:UserDefinedField>
+                <auc:UserDefinedField>
+                  <auc:FieldName>OpenStudioAnnualNaturalGas_kBtu</auc:FieldName>
+                  <auc:FieldValue>150920.9200674895</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+          </auc:Scenarios>
+        </auc:Report>
+      </auc:Reports>
     </auc:Facility>
 	</auc:Facilities>
 </auc:BuildingSync>

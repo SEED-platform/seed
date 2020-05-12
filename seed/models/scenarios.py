@@ -11,7 +11,7 @@ import logging
 from django.db import models
 
 from seed.models.property_measures import PropertyMeasure
-from seed.models.properties import PropertyState
+from seed.models.properties import PropertyState, PropertyView
 
 _log = logging.getLogger(__name__)
 
@@ -91,11 +91,18 @@ class Scenario(models.Model):
         from seed.models.meters import Meter
 
         source_scenario = Scenario.objects.get(pk=source_scenario_id)
+        try:
+            property_ = PropertyView.objects.get(state=self.property_state).property
+        except PropertyView.DoesNotExist:
+            # possible that the state does not yet have a canonical property
+            # e.g. when processing BuildingFiles, it's 'promoted' after this merging
+            property_ = None
 
         for source_meter in source_scenario.meter_set.all():
             # create new meter and copy over the readings from the source_meter
             meter = Meter.objects.get(pk=source_meter.id)
             meter.pk = None
             meter.scenario_id = self.id
-            meter.copy_readings(source_meter, overlaps_possible=False)
+            meter.property = property_
             meter.save()  # save to get new id / association
+            meter.copy_readings(source_meter, overlaps_possible=False)

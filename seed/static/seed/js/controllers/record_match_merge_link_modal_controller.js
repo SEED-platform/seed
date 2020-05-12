@@ -31,6 +31,16 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', [])
         $scope.table_name = 'TaxLotState';
       }
 
+      $scope.helpBtnText = 'Expand Help';
+
+      $scope.changeHelpBtnText = function(helpBtnText) {
+        if(helpBtnText === 'Collapse Help'){
+          $scope.helpBtnText = 'Expand Help' ;
+        } else {
+          $scope.helpBtnText = 'Collapse Help';
+        }
+      };
+
       promises = [
         organization_service.matching_criteria_columns(organization_id),
       ];

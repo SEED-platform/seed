@@ -11,12 +11,11 @@ All rights reserved.  # NOQA
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
 from seed.utils.match import match_merge_link
-from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -369,7 +368,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def cycles(self, request):
         """
         List all the properties	with all columns
@@ -403,7 +402,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
         List all the properties
@@ -447,7 +446,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
@@ -465,7 +464,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
@@ -492,14 +491,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
@@ -518,7 +509,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
@@ -672,7 +663,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def links(self, request, pk=None):
         """
         Get property details for each linked property across org cycles
@@ -728,7 +719,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Runs match merge link for an individual property.
@@ -749,7 +740,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a taxlot to this property
@@ -778,7 +769,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a taxlot from this property
@@ -807,7 +798,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def columns(self, request):
         """
         List all property columns
@@ -833,7 +824,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def mappable_columns(self, request):
         """
         List only property columns that are mappable
@@ -851,7 +842,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'])
+    @action(detail=True, methods=['DELETE'])
     def delete(self, request, pk=None):
         """
         Delete a single property state from a property_viewID. Not sure why we
@@ -876,7 +867,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['DELETE'])
+    @action(detail=False, methods=['DELETE'])
     def batch_delete(self, request):
         """
         Batch delete several properties
@@ -932,7 +923,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def taxlots(self, pk):
         """
         Get related TaxLots for this property
@@ -1166,7 +1157,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'], url_path='update_measures')
+    @action(detail=True, methods=['PUT'], url_path='update_measures')
     def add_measures(self, request, pk=None):
         """
         Update the measures applied to the building. There are two options, one for adding
@@ -1281,7 +1272,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'], url_path='delete_measures')
+    @action(detail=True, methods=['DELETE'], url_path='delete_measures')
     def delete_measures(self, request, pk=None):
         """
         Delete measures. Allow the user to define which implementation type to delete
@@ -1343,7 +1334,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['GET'], url_path='measures')
+    @action(detail=True, methods=['GET'], url_path='measures')
     def get_measures(self, request, pk=None):
         """
         Get the list of measures for a property and the given cycle

@@ -454,7 +454,7 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
   } else {
-    uploader = makeFileSystemUploader(scope, element, ['csv', 'xls', 'xlsx']);
+    uploader = makeFileSystemUploader(scope, element, ['csv', 'xls', 'xlsx', 'zip', 'xml']);
   }
   return uploader;
 };

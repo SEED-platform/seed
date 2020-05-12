@@ -15,7 +15,7 @@ from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters.rest_framework import FilterSet
 from rest_framework import status
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import action
 from seed.building_sync.building_sync import BuildingSync
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -38,11 +38,11 @@ class PropertyViewFilterSet(FilterSet, OrgMixin):
     """
     Advanced filtering for PropertyView sets version 2.1.
     """
-    address_line_1 = CharFilter(name="state__address_line_1", lookup_expr='contains')
+    address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     analysis_state = CharFilter(method='analysis_state_filter')
     identifier = CharFilter(method='identifier_filter')
-    cycle_start = DateFilter(name='cycle__start', lookup_expr='lte')
-    cycle_end = DateFilter(name='cycle__end', lookup_expr='gte')
+    cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
 
     class Meta:
         model = PropertyView
@@ -153,7 +153,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             }
         return result
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def building_sync(self, request, pk):
         """
         Return BuildingSync representation of the property
@@ -182,17 +182,17 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         bs = BuildingSync()
         # Check if there is an existing BuildingSync XML file to merge
-        bs_file = property_view.state.building_files.last()
+        bs_file = property_view.state.building_files.order_by('created').last()
         if bs_file is not None and os.path.exists(bs_file.file.path):
             bs.import_file(bs_file.file.path)
-            xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
+            xml = bs.export(property_view.state)
             return HttpResponse(xml, content_type='application/xml')
         else:
             # create a new XML from the record, do not import existing XML
-            xml = bs.export(property_view.state, BuildingSync.BRICR_STRUCT)
+            xml = bs.export(property_view.state)
             return HttpResponse(xml, content_type='application/xml')
 
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):
         """
         Return HPXML representation of the property
@@ -259,7 +259,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
 
         return new_state
 
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     @has_perm_class('can_modify_data')
     def update_with_building_sync(self, request, pk):
         """

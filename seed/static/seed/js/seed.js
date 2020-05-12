@@ -236,6 +236,15 @@ SEED_app.run([
           $rootScope.load_error_message = '' || message || error;
         }
       }
+
+      // Revert the url when the transition was triggered by a sidebar link (options.source === 'url')
+      if (transition.options().source === 'url') {
+        var $state = transition.router.stateService;
+        var $urlRouter = transition.router.urlRouter;
+
+        $urlRouter.push($state.$current.navigable.url, $state.params, {replace: true});
+        $urlRouter.update(true);
+      }
     });
 
     $state.defaultErrorHandler(function (error) {
@@ -847,12 +856,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
-          mappable_property_columns_payload: ['inventory_service' , function (inventory_service) {
+          mappable_property_columns_payload: ['inventory_service', function (inventory_service) {
             return inventory_service.get_mappable_property_columns().then(function (result) {
               return result;
             });
           }],
-          mappable_taxlot_columns_payload: ['inventory_service' , function (inventory_service) {
+          mappable_taxlot_columns_payload: ['inventory_service', function (inventory_service) {
             return inventory_service.get_mappable_taxlot_columns().then(function (result) {
               return result;
             });

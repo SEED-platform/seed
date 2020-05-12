@@ -53,10 +53,8 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties
     # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
-        'created',
         'hash_object',
         'normalized_address',
-        'updated',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -333,28 +331,28 @@ class Column(models.Model):
             # 'type': 'boolean',
         }, {
             'column_name': 'updated',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'updated',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
@@ -593,6 +591,8 @@ class Column(models.Model):
     # data, however, the user can override this on a column-by-column basis.
     merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
                                            default=COLUMN_MERGE_FAVOR_NEW)
+
+    recognize_empty = models.BooleanField(default=False)
 
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
