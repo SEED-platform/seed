@@ -34,7 +34,7 @@ spec:
         - name: POSTGRES_USER
           value: seed
         - name: SECRET_KEY
-          value: ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+          value: <Your Secret Key> #To be implemented with crypto secrets
         - name: SEED_ADMIN_ORG
           value: default
         - name: SEED_ADMIN_PASSWORD

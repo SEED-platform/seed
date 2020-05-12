@@ -36,7 +36,7 @@ spec:
         - name: POSTGRES_USER
           value: seed
         - name: SECRET_KEY
-          value: ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+          value: <Your Secret Key> #to be implemented with crypto secrets
         image: seedplatform/seed:latest
         name: web-celery
         resources: {}
