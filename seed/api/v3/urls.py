@@ -6,9 +6,15 @@ from rest_framework import routers
 from seed.views.v3.data_quality import DataQualityViews
 from seed.views.v3.datasets import DatasetViewSet
 
+
+from seed.views.v3.cycles import CycleViewSet
+
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
+
+
+api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 
 
 urlpatterns = [
