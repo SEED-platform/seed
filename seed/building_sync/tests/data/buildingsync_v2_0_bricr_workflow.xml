@@ -22,11 +22,6 @@
               <auc:PremisesIdentifiers>
                 <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
-                  <auc:IdentifierCustomName>Custom ID 2</auc:IdentifierCustomName>
-                  <auc:IdentifierValue>SF000011</auc:IdentifierValue>
-                </auc:PremisesIdentifier>
-                <auc:PremisesIdentifier>
-                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
                   <auc:IdentifierCustomName>Custom ID</auc:IdentifierCustomName>
                   <auc:IdentifierValue>1</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
@@ -38,7 +33,7 @@
                 <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
                   <auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
-                  <auc:IdentifierValue>1</auc:IdentifierValue>
+                  <auc:IdentifierValue>SF000011</auc:IdentifierValue>
                 </auc:PremisesIdentifier>
               </auc:PremisesIdentifiers>
               <auc:Address>
