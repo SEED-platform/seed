@@ -19,6 +19,12 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from oauth2_provider.ext.rest_framework import OAuth2Authentication
 
+from rest_framework.mixins import (
+    CreateModelMixin,
+    DestroyModelMixin,
+    UpdateModelMixin,
+)
+
 # Local Imports
 from seed.authentication import SEEDAuthentication
 from seed.decorators import DecoratorMixin
@@ -39,6 +45,15 @@ AUTHENTICATION_CLASSES = (
 PARSER_CLASSES = (FormParser, MultiPartParser, JSONParser)
 RENDERER_CLASSES = (JSONRenderer,)
 PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
+
+
+class UpdateWithoutPatchModelMixin(object):
+    # Rebuilds the UpdateModelMixin without the patch action
+    def update(self, request, *args, **kwargs):
+        return UpdateModelMixin.update(self, request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        return UpdateModelMixin.perform_update(self, serializer)
 
 
 class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):
@@ -83,5 +98,15 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
     having additional foreign key relationships, such as user. Any such models
     should instead extend SEEDOrgModelViewset and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
+    """
+    pass
+
+
+class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
+                                            CreateModelMixin,
+                                            DestroyModelMixin,
+                                            UpdateWithoutPatchModelMixin):
+    """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
+    create, and destroy actions.
     """
     pass
