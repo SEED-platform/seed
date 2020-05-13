@@ -8,6 +8,7 @@
 import csv
 
 from celery.utils.log import get_task_logger
+from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import action
@@ -427,18 +428,27 @@ class DataQualityViews(viewsets.ViewSet):
                 }
             )
 
+        # This pattern of deleting and recreating Rules is slated to be deprecated
+        bad_rule_creation = False
+        error_messages = set()
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
-            try:
-                dq.add_rule(rule)
-            except TypeError as e:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': e,
-                }, status=status.HTTP_400_BAD_REQUEST)
+            with transaction.atomic():
+                try:
+                    dq.add_rule(rule)
+                except Exception as e:
+                    error_messages.add('Rule could not be recreated: ' + str(e))
+                    bad_rule_creation = True
+                    continue
 
-        return self.data_quality_rules(request)
+        if bad_rule_creation:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(error_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return self.data_quality_rules(request)
 
     @api_endpoint_class
     @ajax_request_class

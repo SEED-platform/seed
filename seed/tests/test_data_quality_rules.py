@@ -89,3 +89,51 @@ class RuleViewTests(DataMappingBaseTestCase):
         # Count 3 total rules. None of them were updated
         self.assertEqual(dq.rules.count(), 3)
         self.assertEqual(dq.rules.filter(severity=Rule.SEVERITY_VALID).count(), 0)
+
+    def test_failed_rule_creation_doesnt_prevent_other_rules_from_being_created(self):
+        # Start with 0 Rules
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+
+        # Post 3 rules - one of which will fail
+        base_rule_post_data = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': dict(Rule.DATA_TYPES).get(Rule.TYPE_STRING),
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'Test Rule 1',
+            'severity': dict(Rule.SEVERITY).get(Rule.SEVERITY_ERROR),
+            'units': "",
+            'label': None
+        }
+
+        rule_2_post_data = deepcopy(base_rule_post_data)
+        rule_2_post_data['text_match'] = 'Test Rule 2'
+        rule_2_post_data['rule_type'] = 'some invalid rule type'
+
+        rule_3_post_data = deepcopy(base_rule_post_data)
+        rule_3_post_data['text_match'] = 'Test Rule 3'
+        rule_3_post_data['rule_type'] = Rule.RULE_TYPE_DEFAULT
+
+        property_rules = [base_rule_post_data, rule_2_post_data, rule_3_post_data]
+
+        url = reverse('api:v2:data_quality_checks-save-data-quality-rules') + '?organization_id=' + str(self.org.pk)
+        post_data = {
+            "data_quality_rules": {
+                "properties": property_rules,
+                "taxlots": [],
+            },
+        }
+        res = self.client.post(url, content_type='application/json', data=json.dumps(post_data))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(json.loads(res.content)['message'], "Rule could not be recreated: invalid literal for int() with base 10: 'some invalid rule type'")
+
+        # Count 2 total rules - the first and second rules
+        self.assertEqual(dq.rules.count(), 2)
+        self.assertEqual(dq.rules.filter(text_match__in=['Test Rule 1', 'Test Rule 3']).count(), 2)
