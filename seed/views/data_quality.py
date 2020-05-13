@@ -362,6 +362,12 @@ class DataQualityViews(viewsets.ViewSet):
         posted_rules = body['data_quality_rules']
         updated_rules = []
         for rule in posted_rules['properties']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Label must be assigned when using Valid Data Severity.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             updated_rules.append(
                 {
                     'field': rule['field'],
@@ -381,6 +387,12 @@ class DataQualityViews(viewsets.ViewSet):
             )
 
         for rule in posted_rules['taxlots']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Label must be assigned when using Valid Data Severity.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             updated_rules.append(
                 {
                     'field': rule['field'],
@@ -402,12 +414,6 @@ class DataQualityViews(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
-            if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
             try:
                 dq.add_rule(rule)
             except TypeError as e:
