@@ -117,24 +117,25 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
       loadRules(data_quality_rules_payload);
 
-      $scope.isModified = function() {
+      $scope.isModified = function () {
         return modified_service.isModified();
       };
       var originalRules = angular.copy(data_quality_rules_payload.rules);
       $scope.original = originalRules;
-      $scope.change_rules = function() {
+      $scope.change_rules = function () {
+        $scope.defaults_restored = false;
+        $scope.rules_reset = false;
+        $scope.rules_updated = false;
         $scope.setModified();
       };
       $scope.setModified = function () {
-        $scope.rules_updated = false;
-        $scope.rules_reset = false;
-        $scope.defaults_restored = false;
         var cleanRules = angular.copy($scope.ruleGroups);
         _.each(originalRules, function (rules, index) {
           $scope.rules = rules;
           Object.keys(rules).forEach(function (key) {
             _.reduce(cleanRules[index][rules[key].field], function (result, value) {
-              return _.isEqual(value, rules[key]) ? modified_service.setModified() : modified_service.resetModified();
+              // return _.isEqual(value, rules[key]) ? modified_service.setModified() : modified_service.resetModified();
+              return !_.isEqual(value, rules[key]) && modified_service.setModified();
             }, []);
           });
         });
@@ -142,13 +143,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Restores the default rules
       $scope.restore_defaults = function () {
-        spinner_utility.show();
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
+        $scope.rules_updated = false;
+        spinner_utility.show();
         data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
           loadRules(rules);
           $scope.defaults_restored = true;
-          $scope.rules_updated = false;
           modified_service.resetModified();
         }, function (data) {
           $scope.$emit('app_error', data);
@@ -160,10 +161,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       // Reset all rules
       $scope.reset_all_rules = function () {
         return modified_service.showResetDialog().then(function () {
-          spinner_utility.show();
-          $scope.rules_reset = false;
           $scope.defaults_restored = false;
+          $scope.rules_reset = false;
           $scope.rules_updated = false;
+          spinner_utility.show();
           return data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
             loadRules(rules);
             $scope.rules_reset = true;
@@ -178,9 +179,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       // Saves the configured rules
       $scope.save_settings = function () {
-        $scope.rules_updated = false;
-        $scope.defaults_restored = false;
-        $scope.rules_reset = false;
         var rules = {
           properties: [],
           taxlots: []
@@ -231,9 +229,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         spinner_utility.show();
         data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
           loadRules(rules);
-          $scope.rules_updated = true;
           modified_service.resetModified();
         }).then(function (data) {
+          $scope.rules_updated = true;
           $scope.$emit('app_success', data);
         }).catch(function (data) {
           $scope.$emit('app_error', data);
@@ -310,8 +308,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           currentRule.not_null = not_null;
         });
       };
-
-      $scope.removeLabelFromRule = function (rule) {
+      $scope.remove_label = function (rule) {
         rule.label = null;
       };
 
@@ -392,6 +389,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       $scope.selectAll = function () {
+        $scope.rules_updated = false;
+        $scope.rules_reset = false;
+        $scope.defaults_restored = false;
+        modified_service.setModified();
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {
