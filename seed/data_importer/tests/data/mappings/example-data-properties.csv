@@ -1,0 +1,26 @@
+Raw Columns,units,SEED Table,SEED Columns
+jurisdiction property identifier,,PropertyState,JPID
+custom id 1,,PropertyState,custom_id_1
+pm property id,,PropertyState,pm_property_id
+pm parent propery id,,PropertyState,pm_parent_property_id
+UBID,,PropertyState,ubid
+property name,,PropertyState,property_name
+address line 1,,PropertyState,address_line_1
+city,,PropertyState,city
+jurisdiction tax lot id,,TaxLotState,jurisdiction_tax_lot_id
+use description,,PropertyState,use_description
+energy score,,PropertyState,energy_star_score
+site eui,kBtu/ft**2/year,PropertyState,site_eui
+year ending,,PropertyState,year_ending
+gross floor area,ft**2,PropertyState,gross_floor_area
+owner,,PropertyState,owner
+owner email,,PropertyState,owner_email
+owner telephone,,PropertyState,owner_telephone
+property notes,,PropertyState,property_notes
+latitude,,PropertyState,latitude
+longitude,,PropertyState,longitude
+recent sale date,,PropertyState,recent_sale_date
+generation date,,PropertyState,generation_date
+release date,,PropertyState,release_date
+extra data 1,,PropertyState,extra 1
+extra data 2,,PropertyState,extra 2
