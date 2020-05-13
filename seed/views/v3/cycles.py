@@ -118,27 +118,6 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             :Parameter: end
             :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
             :required: true
-
-    partial_update:
-        Update one or more fields on an existing cycle.
-
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: false
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: false
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: false
     """
     serializer_class = CycleSerializer
     pagination_class = None
