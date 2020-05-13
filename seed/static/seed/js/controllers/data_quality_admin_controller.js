@@ -391,7 +391,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.rules_updated = false;
         $scope.rules_reset = false;
         $scope.defaults_restored = false;
-        modified_service.setModified();
+        $scope.setModified();
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {
