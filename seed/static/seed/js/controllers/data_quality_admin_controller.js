@@ -134,7 +134,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           $scope.rules = rules;
           Object.keys(rules).forEach(function (key) {
             _.reduce(cleanRules[index][rules[key].field], function (result, value) {
-              // return _.isEqual(value, rules[key]) ? modified_service.setModified() : modified_service.resetModified();
               return !_.isEqual(value, rules[key]) && modified_service.setModified();
             }, []);
           });
