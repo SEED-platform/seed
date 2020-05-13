@@ -11,10 +11,10 @@ from seed.filtersets import CycleFilterSet
 from seed.models import Cycle
 
 from seed.serializers.cycles import CycleSerializer
-from seed.utils.viewsets import SEEDOrgModelViewSet
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-class CycleViewSet(SEEDOrgModelViewSet):
+class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
         Returns::
