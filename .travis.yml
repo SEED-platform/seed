@@ -9,7 +9,7 @@ cache:
 os: linux
 language: python
 python:
-  - "3.6"
+  - "3.7"
 addons:
   chrome: stable
   postgresql: "11.2"

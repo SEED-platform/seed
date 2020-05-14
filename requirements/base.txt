@@ -33,7 +33,7 @@ django-pint==0.4
 djangorestframework==3.10.3
 # simplejson dependency needs to be installed via github due to a pip segfault with Python 3.6.7
 -e git+https://github.com/simplejson/simplejson@v3.16.1#egg=simplejson
-django-rest-swagger==2.2.0
+drf-yasg==1.17.1
 django-filter==2.2.0
 drf-nested-routers==0.91
 docutils==0.16
@@ -56,6 +56,7 @@ xmltodict==0.12.0
 requests==2.22.0
 lxml==4.4.2
 probablepeople==0.5.4
+xmlschema==1.1.1
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==2.5.0
 

@@ -22,4 +22,4 @@ class ColumnListSettingColumn(models.Model):
     pinned = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.column_list_setting.name + " %s %s".format(self.order, self.pinned)
+        return f"{self.column_list_setting.name} {self.order} {self.pinned}"

@@ -1,6 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+from django.db.models import Q
+
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
@@ -72,12 +74,13 @@ class MeterViewSet(viewsets.ViewSet):
     def property_meters(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
-
-        property_id = PropertyView.objects.get(pk=property_view_id).property.id
+        property_view = PropertyView.objects.get(pk=property_view_id)
+        property_id = property_view.property.id
+        scenario_ids = [s.id for s in property_view.state.scenarios.all()]
         energy_types = dict(Meter.ENERGY_TYPES)
 
         res = []
-        for meter in Meter.objects.filter(property_id=property_id):
+        for meter in Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)):
             if meter.source == meter.GREENBUTTON:
                 source = 'GB'
                 source_id = usage_point_id(meter.source_id)
@@ -110,8 +113,9 @@ class MeterViewSet(viewsets.ViewSet):
         property_view = PropertyView.objects.get(pk=property_view_id)
         property_id = property_view.property.id
         org_id = property_view.cycle.organization_id
+        scenario_ids = [s.id for s in property_view.state.scenarios.all()]
 
-        exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids)
+        exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
 
         return exporter.readings_and_column_defs(interval)
 

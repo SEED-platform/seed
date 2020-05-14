@@ -64,8 +64,6 @@ describe('When I do miscellaneous things', function () {
     $$('[ng-model="rule.data_type"]').first().click();
     $('[label="Year"]').click();
 
-    $$('[ng-click="change_required(rule)"]').first().click();
-
     $$('[ng-model="rule.severity"]').first().click();
     $('[value="warning"]').click();
 

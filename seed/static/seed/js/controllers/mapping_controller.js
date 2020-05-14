@@ -28,6 +28,7 @@ angular.module('BE.seed.controller.mapping', [])
     'organization_service',
     '$translate',
     'i18nService', // from ui-grid
+    'simple_modal_service',
     'Notification',
     function (
       $scope,
@@ -54,6 +55,7 @@ angular.module('BE.seed.controller.mapping', [])
       organization_service,
       $translate,
       i18nService,
+      simple_modal_service,
       Notification
     ) {
       $scope.presets = [
@@ -329,6 +331,30 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.duplicates_present = duplicates_present;
       };
 
+      const get_col_from_suggestion = (name) => {
+        if ($scope.import_file.source_type === "BuildingSync Raw") {
+          const suggestion = $scope.suggested_mappings[name];
+
+          return {
+            name: name,
+            suggestion_column_name: suggestion[1],
+            suggestion_table_name: suggestion[0],
+            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
+          };
+        }
+
+        const suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
+
+        return {
+          from_units: suggestion.from_units,
+          name: name,
+          raw_data: _.map(first_five_rows_payload.first_five_rows, name),
+          suggestion: suggestion.to_field,
+          suggestion_column_name: suggestion.to_field,
+          suggestion_table_name: suggestion.to_table_name
+        };
+      }
+
       /**
        * initialize_mappings: prototypical inheritance for all the raw columns
        * called by init()
@@ -336,16 +362,7 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.initialize_mappings = function () {
         $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
-          var suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
-
-          var col = {
-            from_units: suggestion.from_units,
-            name: name,
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name),
-            suggestion: suggestion.to_field,
-            suggestion_column_name: suggestion.to_field,
-            suggestion_table_name: suggestion.to_table_name
-          };
+          let col = get_col_from_suggestion(name);
 
           var match;
           if (col.suggestion_table_name === 'PropertyState') {
@@ -361,6 +378,8 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
+          } else if ($scope.import_file.source_type === "BuildingSync Raw") {
+            col.suggestion = $filter('titleCase')(col.suggestion_column_name);
           }
 
           $scope.mappings.push(col);
@@ -599,6 +618,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
           $scope.mappedData = results[2];
+
           var data = $scope.mappedData;
 
           var gridOptions = {
@@ -719,7 +739,7 @@ angular.module('BE.seed.controller.mapping', [])
       var display_cached_column_mappings = function () {
         var cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
         _.forEach($scope.mappings, function (col) {
-          var cached_col = _.find(cached_mappings, {from_field: col.name})
+          var cached_col = _.find(cached_mappings, {from_field: col.name});
           col.suggestion_column_name = cached_col.to_field;
           col.suggestion_table_name = cached_col.to_table_name;
           col.from_units = cached_col.from_units;

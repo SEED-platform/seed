@@ -31,13 +31,15 @@ from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import (
     map_data,
     geocode_buildings_task as task_geocode_buildings,
+    map_additional_models as task_map_additional_models,
     match_buildings as task_match_buildings,
-    save_raw_data as task_save_raw
+    save_raw_data as task_save_raw,
 )
 from seed.decorators import ajax_request, ajax_request_class
 from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
+from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
     Organization,
@@ -823,6 +825,19 @@ class ImportFileViewSet(viewsets.ViewSet):
             }, status=status.HTTP_403_FORBIDDEN)
             return result
 
+        try:
+            import_file = ImportFile.objects.get(pk=pk)
+        except ImportFile.DoesNotExist:
+            return {
+                'status': 'error',
+                'message': 'ImportFile {} does not exist'.format(pk)
+            }
+
+        # if the file is BuildingSync, don't do the merging, but instead finish
+        # creating it's associated models (scenarios, meters, etc)
+        if import_file.from_buildingsync:
+            return task_map_additional_models(pk)
+
         return task_match_buildings(pk)
 
     @api_endpoint_class
@@ -1281,6 +1296,16 @@ class ImportFileViewSet(viewsets.ViewSet):
                 previous_mapping=get_column_mapping,
                 map_args=[organization],
                 default_mappings=pm_mappings,
+                thresh=80
+            )
+        elif import_file.from_buildingsync:
+            bsync_mappings = xml_mapper.build_column_mapping()
+            suggested_mappings = mapper.build_column_mapping(
+                import_file.first_row_columns,
+                Column.retrieve_all_by_tuple(organization_id),
+                previous_mapping=get_column_mapping,
+                map_args=[organization],
+                default_mappings=bsync_mappings,
                 thresh=80
             )
         else:

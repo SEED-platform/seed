@@ -1,90 +1,81 @@
 # !/usr/bin/env python
 # encoding: utf-8
-from rest_framework.schemas import AutoSchema
-import coreapi
+from drf_yasg.inspectors import SwaggerAutoSchema
+from drf_yasg import openapi
 
 
-class AutoSchemaHelper(AutoSchema):
-    def __init__(self):
-        super().__init__()
+class AutoSchemaHelper(SwaggerAutoSchema):
 
-    def base_field(self, name, location, required, type, description):
+    # Used to easily build out example values displayed on Swagger page.
+    body_parameter_formats = {
+        'interger_list': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(type=openapi.TYPE_INTEGER)
+        ),
+        'string': openapi.Schema(type=openapi.TYPE_STRING)
+    }
+
+    def base_field(self, name, location_attr, description, required, type):
         """
-        Created to avoid needing to directly access coreapi within ViewSets.
+        Created to avoid needing to directly access openapi within ViewSets.
         Ideally, the cases below will be used instead of this one.
         """
-        return coreapi.Field(
+        return openapi.Parameter(
             name,
-            location=location,
+            getattr(openapi, location_attr),
+            description=description,
             required=required,
-            type=type,
-            description=description
+            type=type
         )
 
-    def org_id_field(self, location='query', required=True, type='integer', description='Organization ID'):
-        return coreapi.Field(
+    def org_id_field(self):
+        return openapi.Parameter(
             'organization_id',
-            location=location,
-            required=required,
-            type=type,
-            description=description
+            openapi.IN_QUERY,
+            description='Organization ID',
+            required=True,
+            type=openapi.TYPE_INTEGER
+        )
+
+    def query_integer_field(self, name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=True,
+            type=openapi.TYPE_INTEGER
         )
 
     def path_id_field(self, description):
-        return coreapi.Field(
-            "id",  # matches reference name in uri path
-            location='path',
+        return openapi.Parameter(
+            'id',
+            openapi.IN_PATH,
+            description=description,
             required=True,
-            type='integer',
-            description=description
+            type=openapi.TYPE_INTEGER
         )
 
-    def body_field(self, required, description):
-        return coreapi.Field(
-            'body',
-            location='body',
-            required=required,
-            type='object',
-            description=description
-        )
-
-    def form_field(self, name, required, description):
-        return coreapi.Field(
+    def body_field(self, required, description, name='body', params_to_formats={}):
+        return openapi.Parameter(
             name,
-            location='form',
+            openapi.IN_BODY,
+            description=description,
             required=required,
-            type='object',
-            description=description
+            schema=self._build_body_schema(params_to_formats)
         )
 
-    def test_field_options(self):
-        return [
-            coreapi.Field('remove_label_ids', location='form', required=False, type='array'),
-            coreapi.Field('inventory_ids', location='form', required=False, type='array', description="This is what the description looks like for an 'array'."),
-            coreapi.Field('string test', location='form', required=False, type='string'),
-            coreapi.Field('integer test', location='form', required=False, type='integer'),
-            coreapi.Field('boolean test', location='form', required=False, type='boolean'),
-            coreapi.Field('json test', location='form', required=False, type='json'),
-            coreapi.Field('list test', location='form', required=False, type='list'),
-            coreapi.Field('dict test', location='form', required=False, type='dict'),
-            coreapi.Field('object test', location='form', required=False, type='object'),
-            coreapi.Field('integers test', location='form', required=False, type='integers'),
-            coreapi.Field('strings test', location='form', required=False, type='strings'),
-            coreapi.Field('objects test', location='form', required=False, type='objects'),
-            coreapi.Field('organization_id', location='query', required=True, type='integer'),
-            coreapi.Field('string query test', location='query', required=True, type='string', description="Here's a query description"),
-            coreapi.Field('boolean query test', location='query', required=True, type='boolean'),
-            coreapi.Field('json query test', location='query', required=True, type='json'),
-            coreapi.Field('object query test', location='query', required=True, type='object'),
-            coreapi.Field('array query test', location='query', required=True, type='array'),
-        ]
+    def _build_body_schema(self, params_to_formats):
+        return openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                k: self.body_parameter_formats.get(format_name, "")
+                for k, format_name
+                in params_to_formats.items()
+            }
+        )
 
-    def get_path_fields(self, path, http_method):
-        default_fields = AutoSchema.get_path_fields(self, path, http_method)
+    def add_manual_parameters(self, parameters):
+        manual_params = self.manual_fields.get((self.method, self.view.action), [])
 
-        return self.path_fields.get((http_method, self.view.action), default_fields)
-
-    def get_manual_fields(self, path, http_method):
-        default_fields = AutoSchema.get_manual_fields(self, path, http_method)
-
-        return self.manual_fields.get((http_method, self.view.action), default_fields)
+        # I think this should add to existing parameters, but haven't been able to confirm.
+        return parameters + manual_params
