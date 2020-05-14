@@ -164,7 +164,6 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         dq_results = dq.results[ps.id]['data_quality_results']
         labels = [r['label'] for r in dq_results]
-
         self.assertCountEqual(['Check Site EUI', 'Check Year Built'], labels)
 
     def test_text_match(self):
