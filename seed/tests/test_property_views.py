@@ -32,6 +32,7 @@ from seed.models import (
     DATA_STATE_MAPPING,
     Meter,
     MeterReading,
+    Note,
     Property,
     PropertyState,
     PropertyView,
@@ -137,6 +138,57 @@ class PropertyViewTests(DataMappingBaseTestCase):
         )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_edit_properties_creates_notes_after_initial_edit(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "address_line_1": "742 Evergreen Terrace",
+                "extra_data": {"Some Extra Data": "111"}
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 1)
+
+        # update the address again
+        new_data = {
+            "state": {
+                "address_line_1": "123 note street",
+                "extra_data": {"Some Extra Data": "222"}
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 2)
+        refreshed_view = PropertyView.objects.get(id=view.id)
+        note = refreshed_view.notes.order_by('created').last()
+
+        expected_log_data = [
+            {
+                "field": "address_line_1",
+                "previous_value": "742 Evergreen Terrace",
+                "new_value": "123 note street",
+                "state_id": refreshed_view.state_id
+            },
+            {
+                "field": "Some Extra Data",
+                "previous_value": "111",
+                "new_value": "222",
+                "state_id": refreshed_view.state_id
+            },
+        ]
+        self.assertEqual(note.note_type, Note.LOG)
+        self.assertEqual(note.name, "Automatically Created")
+        self.assertCountEqual(note.log_data, expected_log_data)
 
     def test_first_lat_long_edit(self):
         state = self.property_state_factory.get_property_state()
