@@ -51,14 +51,36 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.state = $state.current;
 
+      $scope.conditions = [
+        {id: 'required', label: 'Required'},
+        {id: 'not_null', label: 'Not Null'},
+        {id: 'range', label: 'Range'},
+        {id: 'include', label: 'Must Contain'},
+        {id: 'exclude', label: 'Must Not Contain'}
+      ];
+
       $scope.data_types = [
-        {id: null, label: ''},
-        {id: 'number', label: $translate.instant('Number')},
-        {id: 'string', label: $translate.instant('Text')},
-        {id: 'date', label: $translate.instant('Date')},
-        {id: 'year', label: $translate.instant('Year')},
-        {id: 'area', label: $translate.instant('Area')},
-        {id: 'eui', label: $translate.instant('EUI')}
+        [
+          {id: null, label: ''},
+          {id: 'string', label: $translate.instant('Text')}
+        ],
+        [
+          {id: null, label: ''},
+          {id: 'number', label: $translate.instant('Number')},
+          {id: 'date', label: $translate.instant('Date')},
+          {id: 'year', label: $translate.instant('Year')},
+          {id: 'area', label: $translate.instant('Area')},
+          {id: 'eui', label: $translate.instant('EUI')}
+        ],
+        [
+          {id: null, label: ''},
+          {id: 'number', label: $translate.instant('Number')},
+          {id: 'string', label: $translate.instant('Text')},
+          {id: 'date', label: $translate.instant('Date')},
+          {id: 'year', label: $translate.instant('Year')},
+          {id: 'area', label: $translate.instant('Area')},
+          {id: 'eui', label: $translate.instant('EUI')}
+        ]
       ];
 
       $scope.units = [
@@ -92,6 +114,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         };
         _.forEach(rules_payload.rules, function (inventory_type, index) {
           _.forEach(inventory_type, function (rule) {
+
             if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
             var row = rule;
             if (row.data_type === 'date') {
@@ -131,7 +154,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.setModified = function () {
         var cleanRules = angular.copy($scope.ruleGroups);
         _.each(originalRules, function (rules, index) {
-          $scope.rules = rules;
           Object.keys(rules).forEach(function (key) {
             _.reduce(cleanRules[index][rules[key].field], function (result, value) {
               return !_.isEqual(value, rules[key]) && modified_service.setModified();
@@ -175,8 +197,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
         });
       };
-
       // Saves the configured rules
+      $scope.error_string = false;
       $scope.save_settings = function () {
         var rules = {
           properties: [],
@@ -190,18 +212,26 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
               var r = {
                 enabled: rule.enabled,
+                condition: rule.condition,
                 field: rule.field,
                 data_type: rule.data_type,
                 rule_type: rule.rule_type,
                 required: rule.required,
                 not_null: rule.not_null,
-                min: rule.min || null,
-                max: rule.max || null,
+                min: rule.min,
+                max: rule.max,
                 text_match: rule.text_match,
                 severity: rule.severity,
                 units: rule.units,
                 label: null
               };
+              if (rule.condition === 'not_null' || rule.condition === 'required') {
+                r.min = null;
+                r.max = null;
+                r.text_match = null;
+              }
+              r.condition = rule.condition;
+
               if (rule.data_type === 'date') {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
                 if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
@@ -220,6 +250,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.label = match.id;
                 }
               }
+              if (!(r.min === '' || r.min === null) && !(r.max === '' || r.max === null)) {
+                if (r.max < r.min) {
+                  var min = r.min;
+                  r.min = r.max;
+                  r.max = min;
+                }
+              }
+              if (r.condition === 'include' || r.condition === 'exclude') {
+                $scope.error_string = (r.text_match === null || r.text_match === '');
+              }
               rules[inventory_type].push(r);
             });
           });
@@ -235,8 +275,28 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }).catch(function (data) {
           $scope.$emit('app_error', data);
         }).finally(function () {
+          $scope.rules_updated = true;
           spinner_utility.hide();
         });
+      };
+      $scope.change_condition = function (rule) {
+        $scope.rules_updated = false;
+        $scope.defaults_restored = false;
+        $scope.rules_reset = false;
+        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
+        if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
+        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {condition: 'required', data_type: 'string'})) rule.text_match = null;
+        if (rule.condition !== 'range') {
+          rule.units = '';
+          rule.min = null;
+          rule.max = null;
+        }
+      };
+
+      $scope.check_null = false;
+      $scope.filter_null = function (rule) {
+        $scope.check_null = rule.condition === 'not_null' || rule.condition === 'required';
+        return $scope.check_null;
       };
 
       // capture rule field dropdown change.
@@ -246,7 +306,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var newDataType = _.find(columns, {column_name: rule.field}).data_type;
 
         if (_.isNil(newDataType)) newDataType = null;
-
         // clear columns that are type specific.
         if (newDataType !== original) {
           rule.text_match = null;
@@ -260,6 +319,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         rule.data_type = newDataType;
+        if (rule.data_type === 'None' || rule.data_type === null) rule.condition = '';
+        else if (rule.data_type === 'string') rule.condition = 'include';
+        else rule.condition = 'range';
 
         // move rule to appropriate spot in ruleGroups.
         if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
@@ -276,7 +338,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
         rule.autofocus = true;
       };
-
       // Keep field types consistent for identical fields
       $scope.change_data_type = function (rule, oldValue) {
         var data_type = rule.data_type;
@@ -292,21 +353,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
       };
 
-      // Keep "required field" consistent for identical fields
-      $scope.change_required = function (rule) {
-        var required = !rule.required;
-        _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
-          currentRule.required = required;
-        });
-      };
-
-      // Keep "not null" consistent for identical fields
-      $scope.change_not_null = function (rule) {
-        var not_null = !rule.not_null;
-        _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
-          currentRule.not_null = not_null;
-        });
-      };
       $scope.remove_label = function (rule) {
         rule.label = null;
       };
@@ -317,9 +363,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if (!_.has($scope.ruleGroups[$scope.inventory_type], field)) {
           $scope.ruleGroups[$scope.inventory_type][field] = [];
         }
-
         $scope.ruleGroups[$scope.inventory_type][field].push({
           enabled: true,
+          condition: '',
           field: field,
           displayName: field,
           data_type: 'number',

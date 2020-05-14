@@ -87,7 +87,6 @@ describe('controller: data_quality_admin_controller', function () {
     // act
     data_quality_admin_controller_scope.change_field(ruleGroups.properties.address_line_1[0], 'address_line_1', 0);
     data_quality_admin_controller_scope.change_data_type(ruleGroups.properties.address_line_1[0], 'string');
-    data_quality_admin_controller_scope.change_required(ruleGroups.properties.address_line_1[0]);
     data_quality_admin_controller_scope.remove_label(ruleGroups.properties.address_line_1[0]);
     data_quality_admin_controller_scope.selectAll();
 
@@ -95,7 +94,6 @@ describe('controller: data_quality_admin_controller', function () {
 
     // assertions
     expect(data_quality_admin_controller_scope.ruleGroups.properties.address_line_1[0].label).toEqual(null);
-    expect(data_quality_admin_controller_scope.ruleGroups.properties.address_line_1[0].required).toEqual(true);
     expect(data_quality_admin_controller_scope.ruleGroups.properties.address_line_1[0].data_type).toEqual('number');
     expect(data_quality_admin_controller_scope.ruleGroups.properties.address_line_1[0].enabled).toEqual(false);
   });

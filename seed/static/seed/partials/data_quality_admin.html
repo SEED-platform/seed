@@ -26,7 +26,7 @@
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="rules_updated"></i>
+                    <i class="fa fa-check" ng-show="rules_updated && !error_string"></i>
                 </button>
             </div>
         </div>
@@ -36,7 +36,7 @@
             <h3 translate>Modifying Data Quality Rules</h3>
             <p ng-bind-html-unsafe>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
             Restore Default Rules: reset only default rules.<br>
-            Reset All Rules: delete all rules and reinitialize the default set of rules</p>
+            Reset All Rules: delete all rules and reinitialize the default set of rules.</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
@@ -55,10 +55,9 @@
                             <th class="condensed_head" style="min-width: 33px; width: 33px; padding-left: 0; padding-right: 0;" ng-click="selectAll()">
                                 <input type="checkbox" ng-checked="allEnabled()" class="no-click">
                             </th>
+                            <th style="min-width: 140px;" translate>Condition Check</th>
                             <th style="min-width: 140px;" translate>Field</th>
                             <th style="min-width: 100px; width: 100px;" translate>Data Type</th>
-                            <th style="min-width: 70px; width: 70px;" translate>Required</th>
-                            <th style="min-width: 70px; width: 70px;" translate>Not Null</th>
                             <th translate>Minimum</th>
                             <th translate>Maximum</th>
                             <th translate>Units</th>
@@ -73,30 +72,34 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
+                                <select class="form-control input-sm" ng-model="rule.condition" ng-options="condition.id as condition.label for condition in ::conditions" ng-change="rule.rule_type = 1; change_condition(rule)"></select>
+                            </td>
+                            <td>
                                 <select class="form-control input-sm" ng-model="rule.field" ng-options="col.column_name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
-                            <td>
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                            <td ng-if="rule.condition === 'range'">
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types[1]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
                             </td>
-                            <td ng-click="change_required(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.required" class="no-click" ng-change="rule.rule_type = 1">
-                            </td>
-                            <td ng-click="change_not_null(rule)" class="text-center">
-                                <input type="checkbox" ng-model="rule.not_null" class="no-click" ng-change="rule.rule_type = 1">
+                            <td ng-if="rule.condition !== 'range'" >
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['include', 'exclude'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[0]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[2]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
-                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-change="rule.rule_type = 1" placeholder="{$:: '(field must contain this text)' | translate $}">
+                                <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-if="_.includes(['include', 'exclude', 'required', 'not_null', '', null, 'None'], rule.condition)" ng-change="rule.rule_type = 1"
+                                       placeholder="{$ rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}"
+                                       ng-disabled="filter_null(rule)"
+                                       ng-style="{'border-color' : rules_updated && !rule.text_match && rule.condition != 'not_null' && rule.condition != 'required' && rule.condition != '' && '#ff4d4d'}">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$:: '(no minimum)' | translate $}">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="_.includes([null, 'None', 'number', 'year', 'area', 'eui'], rule.data_type)" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'" ng-disabled="filter_null(rule)">
                             </td>
                             <td ng-if="rule.data_type !== 'string'">
-                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="{$:: '(no maximum)' | translate $}">
-                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'">
+                                <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type !== 'date'" placeholder="{$:: '(no maximum)' | translate $}" ng-disabled="filter_null(rule)">
+                                <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type === 'date'" ng-disabled="filter_null(rule)">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                                <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rule.rule_type = 1" ng-disabled="filter_null(rule)"></select>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'valid-bg': rule.severity === 'valid', 'error-bg': rule.severity === 'error', 'warning-bg': rule.severity === 'warning'}">
@@ -142,7 +145,7 @@
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
                 <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
-                    <i class="fa fa-check" ng-show="rules_updated"></i>
+                    <i class="fa fa-check" ng-show="rules_updated && !error_string"></i>
                 </button>
             </div>
         </div>
