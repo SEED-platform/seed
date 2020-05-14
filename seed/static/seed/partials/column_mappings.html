@@ -136,7 +136,7 @@
                                   ng-disabled="!preset_action_ok('change_to_field')">
                           </td>
                           <td>
-                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)">
+                              <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)" ng-disabled="!preset_action_ok('change_from_units')">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>
                               </select>
