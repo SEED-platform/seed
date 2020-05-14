@@ -116,6 +116,7 @@
                 </div>
                 <div class="alert alert-danger" ng-show="duplicates_present" translate>Please review SEED column names or the column names of the file being imported. Duplicate values are not allowed in either case.</div>
                 <div class="alert alert-danger" ng-show="empty_fields_present()" translate>Please review SEED headers.  Empty values are not allowed.</div>
+                <div class="alert alert-danger" ng-show="is_buildingsync_and_preset_not_ok()" translate>Please apply a column mapping preset or save your current mapping as a preset.</div>
                 <table class="table table-striped" ng-hide="review_mappings">
                     <thead>
                         <tr>

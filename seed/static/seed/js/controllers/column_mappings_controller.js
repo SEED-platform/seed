@@ -16,7 +16,9 @@ angular.module('BE.seed.controller.column_mappings', [])
     'mappable_taxlot_columns_payload',
     'organization_payload',
     'urls',
-    'seedConstants',
+    'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
       $state,
@@ -30,7 +32,9 @@ angular.module('BE.seed.controller.column_mappings', [])
       mappable_taxlot_columns_payload,
       organization_payload,
       urls,
-      seedConstants,
+      COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -122,12 +126,18 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       // Preset-level CRUD modal-rending actions
       $scope.new_preset = function () {
+        const presetData = JSON.parse(JSON.stringify($scope.current_preset))
+        // change the preset type to custom if we've edited a default preset
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+          presetData.preset_type = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+        }
+
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
           controller: 'column_mapping_preset_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant($scope.current_preset),
+            data: _.constant(presetData),
             org_id: _.constant($scope.org.id),
           }
         });
@@ -321,22 +331,21 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.preset_action_ok = (action) => {
-        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_NORMAL) {
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_NORMAL) {
           return true
         }
 
-        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
           return false
         }
 
-        if ($scope.current_preset.preset_type === seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
           const allowed_actions = [
             'update',
             'rename',
             'delete',
             'change_to_field',
             'change_from_units',
-            'remove_column',
           ]
           return allowed_actions.includes(action)
         }

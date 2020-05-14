@@ -153,7 +153,8 @@ var SEED_app = angular.module('BE.seed', [
   'BE.seed.directives',
   'BE.seed.services',
   'BE.seed.controllers',
-  'BE.seed.utilities'
+  'BE.seed.utilities',
+  'BE.seed.constants',
 ], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
   $interpolateProvider.startSymbol('{$');
   $interpolateProvider.endSymbol('$}');
@@ -530,15 +531,28 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
-          column_mapping_presets_payload: ['column_mappings_service', 'user_service', 'seedConstants', 'import_file_payload', function (column_mappings_service, user_service, seedConstants, import_file_payload) {
+          column_mapping_presets_payload: [
+            'column_mappings_service',
+            'user_service',
+            'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+            'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+            'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+            'import_file_payload',
+            function (
+              column_mappings_service,
+              user_service,
+              COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+              COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+              COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              import_file_payload) {
             let filter_preset_types
             if (import_file_payload.import_file.source_type === "BuildingSync Raw") {
               filter_preset_types = [
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
               ]
             } else {
-              filter_preset_types = [seedConstants.PRESET_TYPE_NORMAL]
+              filter_preset_types = [COLUMN_MAPPING_PRESET_TYPE_NORMAL]
             }
             var organization_id = user_service.get_organization().id;
             return column_mappings_service.get_column_mapping_presets_for_org(
@@ -1431,9 +1445,3 @@ SEED_app.constant('naturalSort', function (a, b) {
     else if (oFxNcL > oFyNcL) return 1;
   }
 });
-
-SEED_app.constant('seedConstants', {
-  PRESET_TYPE_NORMAL: 'Normal',
-  PRESET_TYPE_BUILDINGSYNC_DEFAULT: 'BuildingSync Default',
-  PRESET_TYPE_BUILDINGSYNC_CUSTOM: 'BuildingSync Custom',
-})

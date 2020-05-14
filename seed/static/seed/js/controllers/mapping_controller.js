@@ -30,7 +30,9 @@ angular.module('BE.seed.controller.mapping', [])
     'i18nService', // from ui-grid
     'simple_modal_service',
     'Notification',
-    'seedConstants',
+    'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
       $log,
@@ -58,7 +60,9 @@ angular.module('BE.seed.controller.mapping', [])
       i18nService,
       simple_modal_service,
       Notification,
-      seedConstants,
+      COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
     ) {
       $scope.presets = [
         {id: 0, mappings: [], name: "<None selected>"}
@@ -133,8 +137,8 @@ angular.module('BE.seed.controller.mapping', [])
           };
           const isBuildingSyncPreset = $scope.current_preset.preset_type !== undefined
             && [
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
               ].includes($scope.current_preset.preset_type)
 
           if (isBuildingSyncPreset) {
@@ -150,21 +154,21 @@ angular.module('BE.seed.controller.mapping', [])
 
         let presetType;
         if (!$scope.mappingBuildingSync) {
-          presetType = seedConstants.PRESET_TYPE_NORMAL
+          presetType = COLUMN_MAPPING_PRESET_TYPE_NORMAL
         } else {
-          presetType = seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM
+          presetType = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
 
           // make sure the new preset mapping data has the required data
           const currentPresetForBuildingSync =
             $scope.current_preset.preset_type !== undefined
             && [
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
               ].includes($scope.current_preset.preset_type)
 
           if (!currentPresetForBuildingSync) {
             // we need to add mapping data, from_field_value, using the default mapping
-            const defaultPreset = $scope.presets.find(preset => preset.preset_type === seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT)
+            const defaultPreset = $scope.presets.find(preset => preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT)
             preset_mapping_data = preset_mapping_data.map(mapping => {
               // find the corresponding mapping in the default preset
               const defaultMapping = defaultPreset.mappings.find(defaultMapping => defaultMapping.from_field === mapping.from_field)

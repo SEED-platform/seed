@@ -505,10 +505,18 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'export_buildingsync_modal_controller',
           resolve: {
             property_view_id: function() { return $stateParams.view_id },
-            column_mapping_presets: ['column_mappings_service', 'seedConstants', function (column_mappings_service, seedConstants) {
+            column_mapping_presets: [
+              'column_mappings_service',
+              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+              function (
+                column_mappings_service,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              ) {
               const filter_preset_types = [
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                seedConstants.PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
               ]
               return column_mappings_service.get_column_mapping_presets_for_org(
                 $scope.organization.id,
