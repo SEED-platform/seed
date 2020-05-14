@@ -61,5 +61,56 @@ class Note(models.Model):
         ordering = ['-created']
         index_together = [['organization', 'note_type']]
 
+    @classmethod
+    def create_from_edit(self, user_id, view, new_values, previous_values):
+        """
+        Create a Log Note given before and after edit values for a -View's
+        -State at the time.
+
+        new_values and previous_values expected format:
+            {
+                "address_line_1": "742 Evergreen Terrace",
+                "extra_data": {"Some Extra Data": "111"}
+            }
+
+        Note, state_id and user_id are captured for historical purposes, even
+        though it's possible that the state_id might change for a -View or a
+        user might be disassociated with an organization.
+        """
+        log_data = []
+        # Build out 2 dimensional log data
+        for column_name, value in new_values.items():
+            if column_name == 'extra_data':
+                for ed_column_name, ed_value in value.items():
+                    log_data.append({
+                        "field": ed_column_name,
+                        "previous_value": previous_values.get('extra_data', {}).get(ed_column_name, None),
+                        "new_value": ed_value,
+                        "state_id": view.state_id
+                    })
+            else:
+                log_data.append({
+                    "field": column_name,
+                    "previous_value": previous_values.get(column_name, None),
+                    "new_value": value,
+                    "state_id": view.state_id
+                })
+
+        # Create note attributes to be then updated with appropriate -View "type".
+        note_attrs = {
+            "name": "Automatically Created",
+            "note_type": self.LOG,
+            "organization_id": view.cycle.organization_id,
+            "user_id": user_id,
+            "log_data": log_data
+        }
+
+        if view.__class__ == PropertyView:
+            note_attrs["property_view_id"] = view.id
+        elif view.__class__ == TaxLotView:
+            note_attrs["taxlot_view_id"] = view.id
+
+        return self.objects.create(**note_attrs)
+
     def to_dict(self):
         return obj_to_dict(self)

@@ -351,11 +351,12 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         pv = PropertyView.objects.filter(state=ps[0])
         self.assertEqual(pv.count(), 1)
 
-        meters = Meter.objects.filter(property=pv[0].property)
-        self.assertEqual(meters.count(), 6)
-
         scenario = Scenario.objects.filter(property_state=ps[0])
         self.assertEqual(scenario.count(), 3)
+
+        # for bsync, meters are linked to scenarios only (not properties)
+        meters = Meter.objects.filter(scenario__in=scenario)
+        self.assertEqual(meters.count(), 6)
 
 
 class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):

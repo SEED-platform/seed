@@ -743,7 +743,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         """Iterable of rows, made of iterable of column values of the raw data"""
         csv_reader = csv.reader(self.local_file)
         for row in csv_reader:
-            yield row
+            try:
+                yield row
+            except StopIteration:
+                return
 
     @property
     def cleaned_data_rows(self):
@@ -762,7 +765,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     _log.error('problem with val: {}'.format(val))
                     from traceback import print_exc
                     print_exc()
-            yield cleaned_row
+            try:
+                yield cleaned_row
+            except StopIteration:
+                return
 
     def cache_first_rows(self):
         self.file.seek(0)

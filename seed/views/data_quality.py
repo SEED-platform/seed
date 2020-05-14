@@ -37,6 +37,7 @@ class RulesSubSerializer(serializers.Serializer):
 class RulesSubSerializerB(serializers.Serializer):
     field = serializers.CharField(max_length=100)
     enabled = serializers.BooleanField()
+    condition = serializers.CharField(max_length=100)
     data_type = serializers.CharField(max_length=100)
     min = serializers.FloatField()
     max = serializers.FloatField()
@@ -169,7 +170,7 @@ class DataQualityViews(viewsets.ViewSet):
 
         writer.writerow(
             ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Applied Label', 'Error Message', 'Severity'])
+             'Applied Label', 'Condition', 'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -181,6 +182,7 @@ class DataQualityViews(viewsets.ViewSet):
                     row['custom_id_1'],
                     result['formatted_field'],
                     result.get('label', None),
+                    result['condition'],
                     # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
                     unidecode(result['detailed_message']),
                     result['severity']
@@ -229,6 +231,7 @@ class DataQualityViews(viewsets.ViewSet):
                 'properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
                     'field': rule.field,
                     'enabled': rule.enabled,
+                    'condition': rule.condition,
                     'data_type': _get_js_rule_type(rule.data_type),
                     'rule_type': rule.rule_type,
                     'required': rule.required,
@@ -368,6 +371,7 @@ class DataQualityViews(viewsets.ViewSet):
                     'field': rule['field'],
                     'table_name': 'PropertyState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],
@@ -387,6 +391,7 @@ class DataQualityViews(viewsets.ViewSet):
                     'field': rule['field'],
                     'table_name': 'TaxLotState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],
@@ -406,9 +411,14 @@ class DataQualityViews(viewsets.ViewSet):
             if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
                 return JsonResponse({
                     'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
+                    'message': 'Label must be assigned when using Valid Data Severity.',
                 }, status=status.HTTP_400_BAD_REQUEST)
-
+            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
+                if rule['text_match'] is None or rule['text_match'] == '':
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'Rule must not include or exclude an empty string.',
+                    }, status=status.HTTP_400_BAD_REQUEST)
             try:
                 dq.add_rule(rule)
             except TypeError as e:
