@@ -1,0 +1,13 @@
+Raw Columns,units,SEED Table,SEED Columns
+UBI,,TaxLotState,jurisdiction_tax_lot_id
+UBID,,PropertyState,ubid
+GBA,ft**2,PropertyState,gross_floor_area
+BLDGS,,PropertyState,building_count
+Address,,PropertyState,address_line_1
+Owner,,PropertyState,owner
+State,,PropertyState,state_province
+City,,PropertyState,city
+Zip,,PropertyState,postal_code
+Property Type,,PropertyState,use_description
+AYB_YearBuilt,,PropertyState,year_built
+Note,,PropertyState,property_notes

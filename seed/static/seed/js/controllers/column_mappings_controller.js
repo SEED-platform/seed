@@ -224,7 +224,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       // Handle units
       var eui_columns = _.filter($scope.mappable_property_columns, {data_type: 'eui'});
       $scope.is_eui_column = function (mapping) {
-          // All of these are on the PropertyState table
+        // All of these are on the PropertyState table
         return mapping.to_table_name === 'PropertyState' && Boolean(_.find(eui_columns, {displayName: mapping.to_field}));
       };
 
