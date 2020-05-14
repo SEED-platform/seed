@@ -65,7 +65,6 @@ angular.module('BE.seed.controller.menu', [])
       $scope.$on('organization_list_updated', function () {
         init();
       });
-
       $scope.is_active = function (menu_item) {
         if (menu_item === $location.path()) {
           return true;
