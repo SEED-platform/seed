@@ -485,6 +485,7 @@ def data_quality(header, main_url, organization_id, log):
     new_rule = {'field': 'city',
                 'enabled': True,
                 'data_type': 'string',
+                'condition': '',
                 'rule_type': 1,
                 'required': False,
                 'not_null': True,
