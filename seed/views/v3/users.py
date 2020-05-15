@@ -183,15 +183,16 @@ class UserSchema(AutoSchemaHelper):
 
                     })
             ],
-            ('DELETE', 'deactivate'): [
-                self.body_field(
-                    name='User to be deactivated',
-                    required=True,
-                    description="first and last name of user to be deactivated",
-                    params_to_formats={
-                        'first_name': 'string',
-                        'last_name': 'string'
-                    })
+            ('PUT', 'deactivate'): [
+                self.path_id_field(description="Users PK ID")
+                # self.body_field(
+                #     name='User to be deactivated',
+                #     required=True,
+                #     description="first and last name of user to be deactivated",
+                #     params_to_formats={
+                #         'first_name': 'string',
+                #         'last_name': 'string'
+                #     })
 
             ]
 
@@ -841,7 +842,7 @@ class UserViewSet(viewsets.ViewSet):
         return {'status': 'success'}
 
     @ajax_request_class
-    @action(detail=True, methods=['DELETE'])
+    @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):
         """
         Deactivates a user
@@ -867,16 +868,11 @@ class UserViewSet(viewsets.ViewSet):
                 description: error message, if any
                 required: false
         """
-        body = request.data
-        first_name = body['first_name']
-        last_name = body['last_name']
-
-        print(first_name, last_name)
+        user_id = pk
         # check if user exists
         user = SEEDUser.objects.filter(
-            first_name=first_name, last_name=last_name
+            id=user_id
         )
-        print(user)
         if not user.exists():
             return JsonResponse({
                 'status': 'error',
