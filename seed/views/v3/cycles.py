@@ -19,11 +19,11 @@ class CycleSchema(AutoSchemaHelper):
         super().__init__(*args)
 
         self.manual_fields = {
-            ('GET', 'list'): [],
+            ('GET', 'list'): [self.org_id_field()],
             ('POST', 'create'): [self.org_id_field()],
             ('GET', 'retrieve'): [self.org_id_field()],
-            ('PUT', 'update'): [],
-            ('DELETE', 'delete'): [self.org_id_field()],
+            ('PUT', 'update'): [self.org_id_field()],
+            ('DELETE', 'destroy'): [self.org_id_field()],
         }
 
 
