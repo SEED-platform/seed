@@ -70,9 +70,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
         defaults to Property)
 
         This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
-
         Example: /api/v2/columns/?inventory_type=(property|taxlot)/&organization_id={}
-
+        ___
         type:
            status:
                required: true
@@ -110,24 +109,24 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves a column (Column)
-
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: Either success or error
-                column:
-                    required: true
-                    type: dictionary
-                    description: Returns a dictionary of a full column structure with keys such as
-                                 keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
-                                 ''table_name'',...
-            parameters:
-                - name: organization_id
-                  description: The organization_id for this user's organization
-                  required: true
-                  paramType: query
+        This API endpoint retrieves a column (Column)
+        ---
+        parameters:
+            - name: organization_id
+              description: Organization ID
+              type: integer
+              required: true
+        type:
+            status:
+                type: string
+                description: success or error
+                required: true
+            column:
+                required: true
+                type: dictionary
+                description: Returns a dictionary of a full column structure with keys such as
+                             keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
+                             ''table_name'',..
         """
         organization_id = self.get_organization(self.request)
 
