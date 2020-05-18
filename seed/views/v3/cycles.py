@@ -7,11 +7,25 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :authors Paul Munday<paul@paulmunday.net> Fable Turas <fable@raintechpdx.com>
 """
-from seed.filtersets import CycleFilterSet
 from seed.models import Cycle
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.api_schema import AutoSchemaHelper
+
+
+class CycleSchema(AutoSchemaHelper):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self.manual_fields = {
+            ('GET', 'list'): [],
+            ('POST', 'create'): [self.org_id_field()],
+            ('GET', 'retrieve'): [self.org_id_field()],
+            ('PUT', 'update'): [],
+            ('DELETE', 'delete'): [self.org_id_field()],
+        }
+
 
 
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -37,93 +51,27 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
 
     retrieve:
-        Return a cycle instance by pk if it is within user`s specified org.
-
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
+          Return a cycle instance by pk if it is within user`s specified org.
 
     list:
-        Return all cycles available to user through user`s specified org.
 
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: name
-            :Description: optional name for filtering cycles
-            :required: false
-            :Parameter: start_lte
-            :Description: optional iso date for filtering by cycles
-                that start on or before the given date
-            :required: false
-            :Parameter: end_gte
-            :Description: optional iso date for filtering by cycles
-                that end on or after the given date
-            :required: false
+        Return all cycles available to user through user`s specified org.
 
     create:
         Create a new cycle within user`s specified org.
 
-        :POST: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: true
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-
     delete:
         Remove an existing cycle.
-
-        :DELETE: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
 
     update:
         Update a cycle record.
 
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: true
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
     """
     serializer_class = CycleSerializer
+    swagger_schema = CycleSchema
     pagination_class = None
     model = Cycle
     data_name = 'cycles'
-    filter_class = CycleFilterSet
 
     def get_queryset(self):
         org_id = self.get_organization(self.request)
