@@ -32,6 +32,7 @@ from seed.tasks import (
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.organizations import create_organization
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 _log = logging.getLogger(__name__)
 
@@ -868,16 +869,19 @@ class UserViewSet(viewsets.ViewSet):
                 description: error message, if any
                 required: false
         """
-        user_id = pk
-        # check if user exists
-        user = SEEDUser.objects.filter(
-            id=user_id
-        )
-        if not user.exists():
+        try:
+            user_id = pk
+            user = SEEDUser.objects.get(
+                id=user_id
+            )
+            user.deactivate_user()
+            return JsonResponse({
+                'status': 'successfully deactivated',
+                'data': user.email
+            })
+        except Exception as e:
             return JsonResponse({
                 'status': 'error',
-                'message': 'user does not exist',
-            }, status=status.HTTP_403_FORBIDDEN)
+                'data': str(e),
+            }, status=HTTP_400_BAD_REQUEST)
 
-        user[0].deactivate_user()
-        return JsonResponse({'status': 'success'})
