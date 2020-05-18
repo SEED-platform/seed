@@ -27,7 +27,6 @@ class CycleSchema(AutoSchemaHelper):
         }
 
 
-
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
