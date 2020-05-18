@@ -884,4 +884,3 @@ class UserViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
-
