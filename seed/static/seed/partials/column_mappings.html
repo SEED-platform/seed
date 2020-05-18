@@ -121,7 +121,7 @@
                           <td style="text-align: right;" ng-attr-id="mapped-row-type-{$:: $index $}">
                               <select ng-model="col.to_table_name" ng-change="updateSingleInventoryTypeDropdown()">
                                   <option value="PropertyState" translate>Property</option>
-                                  <option value="TaxLotState" translate>Tax Lot</option>
+                                  <option value="TaxLotState" translate ng-if="preset_action_ok('select_tax_lot_state')">Tax Lot</option>
                               </select>
                           </td>
                           <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
