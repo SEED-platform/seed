@@ -517,7 +517,7 @@ BASE_MAPPING_V2_0 = {
                 'required': False
             },
             'premise_identifier': {
-                'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="Custom ID 2"]/auc:IdentifierValue',
+                'xpath': './auc:Buildings/auc:Building/auc:PremisesIdentifiers/auc:PremisesIdentifier[auc:IdentifierCustomName="City Custom Building ID"]/auc:IdentifierValue',
                 'type': 'value',
                 'value': 'text',
                 'required': False
