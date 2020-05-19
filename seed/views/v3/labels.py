@@ -1,3 +1,5 @@
+
+
 # !/usr/bin/env python
 # encoding: utf-8
 """
@@ -12,7 +14,6 @@ from rest_framework import (
     response,
     status,
 )
-from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -24,6 +25,8 @@ from seed.filters import (
 )
 from seed.models import (
     StatusLabel as Label,
+    PropertyView,
+    TaxLotView,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -103,17 +106,11 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-
-
-
-
-
-
-
-
-
-
-
+    def list(self, request):
+        """
+        Returns a list of all labels
+        """
+        return self._get_labels(request)
 
 
 class UpdateInventoryLabelsAPIView(APIView):
