@@ -26,7 +26,6 @@ from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
-    mock_buildingsync_mapping
 )
 from seed.models import (
     ASSESSED_RAW,
@@ -43,6 +42,7 @@ from seed.models import (
     BuildingFile,
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
 
 _log = logging.getLogger(__name__)
 
@@ -240,7 +240,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
 
         # make the column mappings
-        self.fake_mappings = mock_buildingsync_mapping()
+        self.fake_mappings = default_buildingsync_preset_mappings()
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
         # -- Act
@@ -260,7 +260,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
 
         # make the column mappings
-        self.fake_mappings = mock_buildingsync_mapping()
+        self.fake_mappings = default_buildingsync_preset_mappings()
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
         # map the data
@@ -327,7 +327,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
 
         # make the column mappings
-        self.fake_mappings = mock_buildingsync_mapping()
+        self.fake_mappings = default_buildingsync_preset_mappings()
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
         # map the data
@@ -386,7 +386,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
 
         # make the column mappings
-        self.fake_mappings = mock_buildingsync_mapping()
+        self.fake_mappings = default_buildingsync_preset_mappings()
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
         # map the data
