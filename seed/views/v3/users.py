@@ -124,7 +124,7 @@ class UserSchema(AutoSchemaHelper):
                     required=True,
                     description="An object containing meta data for a new user: "
                                 "- Required - first_name, last_name, email "
-                                "- Optional - role viewer(default), member, owner",
+                                "- Optional - role ['viewer'(default), 'member', or 'owner']",
                     params_to_formats={
                         'first_name': 'string',
                         'last_name': 'string',
