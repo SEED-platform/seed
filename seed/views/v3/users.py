@@ -129,8 +129,8 @@ class UserSchema(AutoSchemaHelper):
                         'last_name': 'string',
                         'role': 'string',
                         'email': 'string'
-                    }
-                )],
+                    })
+            ],
             ('GET', 'current_user_id'): [],
             ('GET', 'retrieve'): [self.path_id_field(description="users PK ID")],
             ('PUT', 'update'): [
@@ -186,17 +186,7 @@ class UserSchema(AutoSchemaHelper):
             ],
             ('PUT', 'deactivate'): [
                 self.path_id_field(description="Users PK ID")
-                # self.body_field(
-                #     name='User to be deactivated',
-                #     required=True,
-                #     description="first and last name of user to be deactivated",
-                #     params_to_formats={
-                #         'first_name': 'string',
-                #         'last_name': 'string'
-                #     })
-
             ]
-
         }
 
 
@@ -432,7 +422,7 @@ class UserViewSet(viewsets.ViewSet):
 
         OrganizationUser.objects.filter(
             user_id=user_id,
-            organization_id=body['organization_id']
+            organization_id=organization_id
         ).update(role_level=role)
 
         return JsonResponse({'status': 'success'})
