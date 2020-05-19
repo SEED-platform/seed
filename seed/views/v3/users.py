@@ -122,8 +122,8 @@ class UserSchema(AutoSchemaHelper):
                 self.body_field(
                     name='New User Fields',
                     required=True,
-                    description="An object containing meta data for a new user: \n"
-                                "- Required - first_name, last_name, email \n"
+                    description="An object containing meta data for a new user: "
+                                "- Required - first_name, last_name, email "
                                 "- Optional - role viewer(default), member, owner",
                     params_to_formats={
                         'first_name': 'string',
@@ -139,7 +139,7 @@ class UserSchema(AutoSchemaHelper):
                 self.body_field(
                     name='Updated User Fields',
                     required=True,
-                    description="An object containing meta data for a updated user: \n"
+                    description="An object containing meta data for a updated user: "
                                 "- Required - first_name, last_name, email",
                     params_to_formats={
                         'first_name': 'string',
