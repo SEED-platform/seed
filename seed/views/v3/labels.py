@@ -24,8 +24,6 @@ from seed.filters import (
 )
 from seed.models import (
     StatusLabel as Label,
-    PropertyView,
-    TaxLotView,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -105,11 +103,17 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-    def list(self, request):
-        """
-        Returns a list of all labels
-        """
-        return self._get_labels(request)
+
+
+
+
+
+
+
+
+
+
+
 
 
 class UpdateInventoryLabelsAPIView(APIView):
