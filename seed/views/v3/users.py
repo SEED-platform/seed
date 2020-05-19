@@ -299,10 +299,12 @@ class UserViewSet(viewsets.ViewSet):
         if body.get('role'):
             # check if this is a dict, if so, grab the value out of 'value'
             role = body['role']
-            if isinstance(role, dict):
-                role = role['value']
-            elif role == 'string':
-                role = 'viewer'
+            try:
+                _get_role_from_js(role)
+            except Exception:
+                return JsonResponse({'status': 'error', 'message': 'valid arguments for role are [viewer, member, '
+                                                                   'owner]'},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
