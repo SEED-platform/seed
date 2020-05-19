@@ -28,7 +28,7 @@ spec:
         - name: POSTGRES_PASSWORD
           value: super-secret-password
         - name: POSTGRES_USER
-          value: seed
+          value: seeduser
         image: seedplatform/postgres-seed:11.2
         name: db-postrgres
 #        command: ["tail"]
