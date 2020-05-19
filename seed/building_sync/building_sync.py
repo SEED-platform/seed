@@ -117,12 +117,21 @@ class BuildingSync(object):
         self.element_tree = etree.parse(StringIO(xml_string))
         self.version = version
 
-    def export(self, property_state, custom_mapping=None):
+    def export_using_preset(self, property_state, column_mapping_preset=None):
         """Export BuildingSync file from an existing BuildingSync file (from import), property_state and
         a custom mapping.
 
+        expected column_mapping_preset structure
+        [
+            {from_field: <absolute xpath>, from_field_value: 'text' | @<attr> | ..., to_field: <db_column>},
+            {from_field: <absolute xpath>, from_field_value: 'text' | @<attr> | ..., to_field: <db_column>},
+            .
+            .
+            .
+        ]
+
         :param property_state: object, PropertyState to merge into BuildingSync
-        :param custom_mapping: dict, user-defined mapping (used with higher priority over the default mapping)
+        :param column_mapping_preset: list, mappings from ColumnMappingPreset
         :return: string, as XML
         """
         if not property_state:
@@ -131,39 +140,33 @@ class BuildingSync(object):
         if not self.element_tree:
             self.init_tree(version=BuildingSync.BUILDINGSYNC_V2_0)
 
-        merged_mappings = merge_mappings(self.VERSION_MAPPINGS_DICT[self.version], custom_mapping)
         schema = self.get_schema(self.version)
 
-        # iterate through the 'property' field mappings doing the following
+        # iterate through the mappings doing the following
         # - if the property_state has the field, update the xml with that value
         # - else, ignore it
-        base_path = merged_mappings['property']['xpath']
-        field_mappings = merged_mappings['property']['properties']
-        for field, mapping in field_mappings.items():
-            value = None
+        for mapping in column_mapping_preset:
+            field = mapping['to_field']
+            xml_element_xpath = mapping['from_field']
+            xml_element_value = mapping['from_field_value']
+            seed_value = None
             try:
                 property_state._meta.get_field(field)
-                value = getattr(property_state, field)
+                seed_value = getattr(property_state, field)
             except FieldDoesNotExist:
                 _log.debug("Field {} is not a db field, trying read from extra data".format(field))
-                value = property_state.extra_data.get(field, None)
+                seed_value = property_state.extra_data.get(field, None)
 
-            if value is None:
+            if seed_value is None:
                 continue
-            if isinstance(value, ureg.Quantity):
-                value = value.magnitude
+            if isinstance(seed_value, ureg.Quantity):
+                seed_value = seed_value.magnitude
 
-            if mapping['xpath'].startswith('./'):
-                mapping_path = mapping['xpath'][2:]
-            else:
-                mapping_path = mapping['xpath']
-            absolute_xpath = os.path.join(base_path, mapping_path)
-
-            update_tree(schema, self.element_tree, absolute_xpath,
-                        mapping['value'], str(value), NAMESPACES)
+            update_tree(schema, self.element_tree, xml_element_xpath,
+                        xml_element_value, str(seed_value), NAMESPACES)
 
         # Not sure why, but lxml was not pretty printing if the tree was updated
-        # a hack to fix this, we just export the tree, parse it, then export again
+        # As a hack to fix this, we just export the tree, parse it, then export again
         xml_bytes = etree.tostring(self.element_tree, pretty_print=True)
         tree = etree.parse(BytesIO(xml_bytes))
         return etree.tostring(tree, pretty_print=True).decode()

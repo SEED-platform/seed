@@ -24,6 +24,7 @@ from seed.models import (
     PropertyState,
     BuildingFile,
     Cycle,
+    ColumnMappingPreset,
 )
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
@@ -169,6 +170,23 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
               required: true
               paramType: query
         """
+        preset_pk = request.GET.get('preset_id')
+        try:
+            preset_pk = int(preset_pk)
+            column_mapping_preset = ColumnMappingPreset.objects.get(
+                pk=preset_pk,
+                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+        except TypeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Query param `preset_id` is either missing or invalid'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except ColumnMappingPreset.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             # TODO: not checking organization? Is that right?
             # TODO: this needs to call _get_property_view and use the property pk, not the property_view pk.
@@ -178,19 +196,22 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
             return JsonResponse({
                 'success': False,
                 'message': 'Cannot match a PropertyView with pk=%s' % pk
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         bs = BuildingSync()
         # Check if there is an existing BuildingSync XML file to merge
         bs_file = property_view.state.building_files.order_by('created').last()
         if bs_file is not None and os.path.exists(bs_file.file.path):
             bs.import_file(bs_file.file.path)
-            xml = bs.export(property_view.state)
+
+        try:
+            xml = bs.export_using_preset(property_view.state, column_mapping_preset.mappings)
             return HttpResponse(xml, content_type='application/xml')
-        else:
-            # create a new XML from the record, do not import existing XML
-            xml = bs.export(property_view.state)
-            return HttpResponse(xml, content_type='application/xml')
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):

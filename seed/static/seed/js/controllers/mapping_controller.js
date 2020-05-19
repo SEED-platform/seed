@@ -30,6 +30,9 @@ angular.module('BE.seed.controller.mapping', [])
     'i18nService', // from ui-grid
     'simple_modal_service',
     'Notification',
+    'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
       $log,
@@ -56,7 +59,10 @@ angular.module('BE.seed.controller.mapping', [])
       $translate,
       i18nService,
       simple_modal_service,
-      Notification
+      Notification,
+      COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
     ) {
       $scope.presets = [
         {id: 0, mappings: [], name: "<None selected>"}
@@ -75,6 +81,16 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.flag_mappings_change = function () {
         $scope.mappings_change_possible = true;
       };
+
+      $scope.is_buildingsync_and_preset_not_ok = function() {
+        if (!$scope.mappingBuildingSync) {
+          return false
+        }
+        // BuildingSync requires a saved preset to be applied
+        return $scope.current_preset.id === 0
+               || $scope.preset_change_possible
+               || $scope.mappings_change_possible
+      }
 
       var analyze_chosen_inventory_types = function () {
         var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
@@ -113,26 +129,63 @@ angular.module('BE.seed.controller.mapping', [])
       var preset_mappings_from_working_mappings = function () {
         // for to_field, try DB col name, if not use col display name
         return _.reduce($scope.mappings, function (preset_mapping_data, mapping) {
-          preset_mapping_data.push({
+          const this_mapping = {
             from_field: mapping.name,
             from_units: mapping.from_units,
             to_field: mapping.suggestion_column_name || mapping.suggestion || '',
             to_table_name: mapping.suggestion_table_name
-          });
+          };
+          const isBuildingSyncPreset = $scope.current_preset.preset_type !== undefined
+            && [
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+              ].includes($scope.current_preset.preset_type)
 
+          if (isBuildingSyncPreset) {
+            this_mapping.from_field_value = mapping.from_field_value
+          }
+          preset_mapping_data.push(this_mapping)
           return preset_mapping_data;
         }, []);
       };
 
       $scope.new_preset = function () {
-        var preset_mapping_data = preset_mappings_from_working_mappings();
+        let preset_mapping_data = preset_mappings_from_working_mappings();
+
+        let presetType;
+        if (!$scope.mappingBuildingSync) {
+          presetType = COLUMN_MAPPING_PRESET_TYPE_NORMAL
+        } else {
+          presetType = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+
+          // make sure the new preset mapping data has the required data
+          const currentPresetForBuildingSync =
+            $scope.current_preset.preset_type !== undefined
+            && [
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+              ].includes($scope.current_preset.preset_type)
+
+          if (!currentPresetForBuildingSync) {
+            // we need to add mapping data, from_field_value, using the default mapping
+            const defaultPreset = $scope.presets.find(preset => preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT)
+            preset_mapping_data = preset_mapping_data.map(mapping => {
+              // find the corresponding mapping in the default preset
+              const defaultMapping = defaultPreset.mappings.find(defaultMapping => defaultMapping.from_field === mapping.from_field)
+              return {
+                ...mapping,
+                from_field_value: defaultMapping.from_field_value
+              }
+            })
+          }
+        }
 
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
           controller: 'column_mapping_preset_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant({mappings: preset_mapping_data}),
+            data: _.constant({mappings: preset_mapping_data, preset_type: presetType}),
             org_id: _.constant(user_service.get_organization().id)
           }
         });
@@ -197,6 +250,8 @@ angular.module('BE.seed.controller.mapping', [])
 
       $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
 
+      $scope.mappingBuildingSync = $scope.import_file.source_type === 'BuildingSync Raw'
+
       matching_criteria_columns_payload.PropertyState = _.map(matching_criteria_columns_payload.PropertyState, function (column_name) {
         var display_name = _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
         return {
@@ -219,10 +274,13 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.setAllFieldsOptions = [{
         name: 'Property',
         value: 'PropertyState'
-      }, {
-        name: 'Tax Lot',
-        value: 'TaxLotState'
       }];
+      if (!$scope.mappingBuildingSync) {
+        $scope.setAllFieldsOptions.push({
+          name: 'Tax Lot',
+          value: 'TaxLotState'
+        })
+      }
 
       var eui_columns = _.filter($scope.mappable_property_columns, {data_type: 'eui'});
       $scope.is_eui_column = function (col) {
@@ -332,22 +390,13 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       const get_col_from_suggestion = (name) => {
-        if ($scope.import_file.source_type === "BuildingSync Raw") {
-          const suggestion = $scope.suggested_mappings[name];
-
-          return {
-            name: name,
-            suggestion_column_name: suggestion[1],
-            suggestion_table_name: suggestion[0],
-            raw_data: _.map(first_five_rows_payload.first_five_rows, name)
-          };
-        }
 
         const suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
 
         return {
           from_units: suggestion.from_units,
           name: name,
+          from_field_value: suggestion.from_field_value,
           raw_data: _.map(first_five_rows_payload.first_five_rows, name),
           suggestion: suggestion.to_field,
           suggestion_column_name: suggestion.to_field,
@@ -378,7 +427,7 @@ angular.module('BE.seed.controller.mapping', [])
           }
           if (match) {
             col.suggestion = match.display_name;
-          } else if ($scope.import_file.source_type === "BuildingSync Raw") {
+          } else if ($scope.mappingBuildingSync) {
             col.suggestion = $filter('titleCase')(col.suggestion_column_name);
           }
 

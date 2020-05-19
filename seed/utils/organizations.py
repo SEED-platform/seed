@@ -13,7 +13,8 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     ROLE_MEMBER
 )
-from seed.models import Column
+from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.models import Column, ColumnMappingPreset
 from seed.models.data_quality import DataQualityCheck
 
 
@@ -137,10 +138,17 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     # the default columns
     _create_default_columns(organization.id)
 
-    # ... and the default column mapping preset
+    # ... and the default column mapping preset for Portfolio Manager
     organization.columnmappingpreset_set.create(
         name='Portfolio Manager Defaults',
         mappings=default_pm_mappings()
+    )
+
+    # ... and the default column mapping preset for BuildingSync
+    organization.columnmappingpreset_set.create(
+        name='BuildingSync v2.0 Defaults',
+        mappings=default_buildingsync_preset_mappings(),
+        preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT
     )
 
     # create the default rules for this organization
