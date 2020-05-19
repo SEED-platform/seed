@@ -122,8 +122,9 @@ class UserSchema(AutoSchemaHelper):
                 self.body_field(
                     name='New User Fields',
                     required=True,
-                    description="An object containing meta data for a new user: "
-                                "required - [last_name, role(viewer/owner/member), email]",
+                    description="An object containing meta data for a new user: \n"
+                                "- Required - first_name, last_name, email \n"
+                                "- Optional - role viewer(default), member, owner",
                     params_to_formats={
                         'first_name': 'string',
                         'last_name': 'string',
@@ -138,8 +139,8 @@ class UserSchema(AutoSchemaHelper):
                 self.body_field(
                     name='Updated User Fields',
                     required=True,
-                    description="An object containing meta data for a updated user: "
-                                "required - [first_name, last_name, email]",
+                    description="An object containing meta data for a updated user: \n"
+                                "- Required - first_name, last_name, email",
                     params_to_formats={
                         'first_name': 'string',
                         'last_name': 'string',
@@ -300,6 +301,8 @@ class UserViewSet(viewsets.ViewSet):
             role = body['role']
             if isinstance(role, dict):
                 role = role['value']
+            elif role == 'string':
+                role = 'viewer'
 
             OrganizationUser.objects.filter(
                 organization_id=org.pk,
