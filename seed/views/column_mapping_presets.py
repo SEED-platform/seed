@@ -93,7 +93,7 @@ class ColumnMappingPresetViewSet(ViewSet):
         if updated_mappings is not None:
             if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
-                # - changing the to_field
+                # - changing the to_field or from_units
                 # - removing mappings
                 original_mappings_dict = {m['from_field']: m.copy() for m in preset.mappings}
                 final_mappings = []
@@ -102,6 +102,7 @@ class ColumnMappingPresetViewSet(ViewSet):
                     original_mapping = original_mappings_dict.get(from_field)
                     if original_mapping is not None:
                         original_mapping['to_field'] = updated_mapping['to_field']
+                        original_mapping['from_units'] = updated_mapping['from_units']
                         final_mappings.append(original_mapping)
                         del original_mappings_dict[from_field]
 
