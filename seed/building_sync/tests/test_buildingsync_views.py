@@ -16,6 +16,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
     StatusLabel,
+    ColumnMappingPreset,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory, FakeColumnFactory,
@@ -50,6 +51,8 @@ class InventoryViewTests(DeleteModelsTestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
 
+        self.default_bsync_preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+
         self.client.login(**user_details)
 
     def test_get_building_sync(self):
@@ -61,7 +64,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # go to buildingsync endpoint
         params = {
-            'organization_id': self.org.pk
+            'organization_id': self.org.pk,
+            'preset_id': self.default_bsync_preset.id
         }
         url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
@@ -90,7 +94,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url)
+        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>',
                       response.content.decode("utf-8"))
 
@@ -182,6 +186,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url)
+        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
                       response.content.decode('utf-8'))

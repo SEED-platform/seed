@@ -51,7 +51,8 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2/notes',
                  '/api/v2.1/properties',
                  '/api/v2.1/scenarios',
-                 '/api/v3/labels',)):
+                 '/api/v3/labels',
+                 '/api/v3/cycles')):
                 self.assertTrue(
                     url.endswith('/'),
                     "Endpoint %s does not end with / as expected" % url

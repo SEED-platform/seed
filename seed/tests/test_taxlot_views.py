@@ -16,6 +16,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
     DATA_STATE_MAPPING,
+    Note,
     PropertyView,
     TaxLot,
     TaxLotProperty,
@@ -96,6 +97,66 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         self.assertEqual(result_2['extra_data']['field_1'], 'value_2')
         self.assertEqual(result_2['cycle_id'], later_cycle.id)
         self.assertEqual(result_2['view_id'], view_2.id)
+
+    def test_edit_properties_creates_notes_after_initial_edit(self):
+        state = self.taxlot_state_factory.get_taxlot_state()
+        taxlot = self.taxlot_factory.get_taxlot()
+        view = TaxLotView.objects.create(
+            taxlot=taxlot, cycle=self.cycle, state=state
+        )
+
+        # create the Some Extra Data column so serializers enables edit changes to be tracked by log Notes.
+        Column.objects.create(
+            column_name="Some Extra Data",
+            organization=self.org,
+            is_extra_data=True,
+            table_name='TaxLotState'
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "address_line_1": "742 Evergreen Terrace",
+                "extra_data": {"Some Extra Data": "111"}
+            }
+        }
+        url = reverse('api:v2:taxlots-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 1)
+
+        # update the address again
+        new_data = {
+            "state": {
+                "address_line_1": "123 note street",
+                "extra_data": {"Some Extra Data": "222"}
+            }
+        }
+        url = reverse('api:v2:taxlots-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 2)
+        refreshed_view = TaxLotView.objects.get(id=view.id)
+        note = refreshed_view.notes.order_by('created').last()
+
+        expected_log_data = [
+            {
+                "field": "address_line_1",
+                "previous_value": "742 Evergreen Terrace",
+                "new_value": "123 note street",
+                "state_id": refreshed_view.state_id
+            },
+            {
+                "field": "Some Extra Data",
+                "previous_value": "111",
+                "new_value": "222",
+                "state_id": refreshed_view.state_id
+            },
+        ]
+        self.assertEqual(note.note_type, Note.LOG)
+        self.assertEqual(note.name, "Automatically Created")
+        # import pdb; pdb.set_trace()
+        self.assertCountEqual(note.log_data, expected_log_data)
 
     def test_first_lat_long_edit(self):
         state = self.taxlot_state_factory.get_taxlot_state()

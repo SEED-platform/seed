@@ -199,7 +199,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
-    queryset = PropertyView.objects.all().select_related('state')
+    queryset = PropertyView.objects.all()
 
 
 class PropertyViewSet(GenericViewSet, ProfileIdMixin):
@@ -1032,7 +1032,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_property_state_data[key] = None
 
-            changed_fields = get_changed_fields(property_state_data, new_property_state_data)
+            changed_fields, previous_data = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
@@ -1099,8 +1099,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                 if 'extra_data' in new_property_state_data:
                     property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
-                property_state_data.update(new_property_state_data)
+                        new_property_state_data['extra_data']
+                    )
+
+                property_state_data.update(
+                    {k: v for k, v in new_property_state_data.items() if k != 'extra_data'}
+                )
 
                 log = PropertyAuditLog.objects.select_related().filter(
                     state=property_view.state
@@ -1127,6 +1131,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
+
+                        Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
