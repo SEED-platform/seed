@@ -7,12 +7,10 @@
 
 import logging
 
-import coreapi
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
-from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -26,35 +24,67 @@ from seed.renderers import SEEDJSONRenderer
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
 
 
-class ColumnViewSetFilterBackend(BaseFilterBackend):
-    """
-    Specify the schema for the column view set. This allows the user to see the other
-    required columns in Swagger.
-    """
+class ColumnSchema(AutoSchemaHelper):
+    def __init__(self, *args):
+        super().__init__(*args)
 
-    def get_schema_fields(self, view):
-        return [
-            coreapi.Field('organization_id', location='query', required=True, type='integer'),
-            coreapi.Field('inventory_type', location='query', required=False, type='string'),
-            coreapi.Field('only_used', location='query', required=False, type='boolean'),
-        ]
+        self.manual_fields = {
+            ('GET', 'list'): [
+                self.org_id_field(),
+                self.body_field(
+                    name='Column params',
+                    required=True,
+                    description="An object containing meta data for the GET request: \n"
+                                "- Required - Inventory type [property, taxlot] \n"
+                                "- Optional - Determine whether or not to show only the used fields "
+                                "(i.e. only columns that have been mapped)",
+                    params_to_formats={
+                        'inventory_type': 'string',
+                        'only_used': 'boolean'
+                    }
+                )
+            ],
+            ('POST', 'create'): [self.org_id_field()],
+            ('GET', 'retrieve'): [self.org_id_field()],
+            ('DELETE', 'delete_all'): [self.org_id_field()],
+            ('GET', 'retrieve'): [self.org_id_field()],
+            ('PUT', 'update'): [
+                self.org_id_field(),
+                self.body_field(
+                    name='dataset',
+                    required=True,
+                    description="The new name for this dataset",
+                    params_to_formats={
+                        'dataset': 'string'
+                    }
+                )
+            ],
+            ('DELETE', 'destroy'): [self.org_id_field()]
 
-    def filter_queryset(self, request, queryset, view):
-        return queryset
+        }
 
 
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    """
+    create:
+        Create a new Column within user`s specified org.
+
+    update:
+        Update a column and modify which dataset it belongs to.
+    """
+
+    swagger_schema = ColumnSchema
     raise_exception = True
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
     model = Column
     pagination_class = None
     parser_classes = (JSONParser, FormParser)
-    filter_backends = (ColumnViewSetFilterBackend,)
 
     def get_queryset(self):
         # check if the request is properties or taxlots
@@ -68,19 +98,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return all the columns across both the Property and Tax Lot tables. The related field will
         be true if the column came from the other table that is not the 'inventory_type' (which
         defaults to Property)
-
-        This is the same results as calling /api/v2/<inventory_type>/columns/?organization_id={}
-        Example: /api/v2/columns/?inventory_type=(property|taxlot)/&organization_id={}
         ___
-        type:
-           status:
-               required: true
-               type: string
-               description: Either success or error
-           columns:
-               required: true
-               type: array[column]
-               description: Returns an array where each item is a full column structure.
         parameters:
            - name: organization_id
              description: The organization_id for this user's organization
@@ -96,6 +114,15 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
              type: boolean
              required: false
              paramType: query
+        type:
+           status:
+               required: true
+               type: string
+               description: Either success or error
+           columns:
+               required: true
+               type: array[column]
+               description: Returns an array where each item is a full column structure.
         """
         organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
@@ -109,7 +136,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        This API endpoint retrieves a column (Column)
+        This API endpoint retrieves a Column
         ---
         parameters:
             - name: organization_id
@@ -152,7 +179,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['DELETE'])
     def delete_all(self, request):
         """
         Delete all columns for an organization. This method is typically not recommended if there
