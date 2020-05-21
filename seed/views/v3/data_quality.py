@@ -105,8 +105,8 @@ class DataQualitySchema(AutoSchemaHelper):
                     required=True,
                     description="An object containing IDs of the records to perform data quality checks on. Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array of appropriate IDs.",
                     params_to_formats={
-                        'property_state_ids': 'interger_list',
-                        'taxlot_state_ids': 'interger_list'
+                        'property_state_ids': 'interger_array',
+                        'taxlot_state_ids': 'interger_array'
                     }
                 ),
             ],
