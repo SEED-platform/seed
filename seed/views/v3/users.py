@@ -137,7 +137,7 @@ class UserSchema(AutoSchemaHelper):
             ('PUT', 'update'): [
                 self.path_id_field(description="Updated Users PK ID"),
                 self.body_field(
-                    name='Updated User Fields',
+                    name='Updated user fields',
                     required=True,
                     description="An object containing meta data for a updated user: \n"
                                 "- Required - first_name, last_name, email",
@@ -153,7 +153,7 @@ class UserSchema(AutoSchemaHelper):
                 self.org_id_field(),
                 self.path_id_field(description="Users PK ID"),
                 self.body_field(
-                    name='actions',
+                    name='Actions',
                     required=True,
                     description="A list of actions to check: examples include (requires_parent_org_owner, "
                                 "requires_owner, requires_member, requires_viewer, "
