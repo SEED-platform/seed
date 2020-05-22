@@ -27,11 +27,13 @@ from seed.data_importer.models import (
     ImportRecord,
 )
 from seed.data_importer.tasks import match_buildings
+from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
 
 from seed.models import (
     DATA_STATE_MAPPING,
     Meter,
     MeterReading,
+    Note,
     Property,
     PropertyState,
     PropertyView,
@@ -39,7 +41,8 @@ from seed.models import (
     TaxLotProperty,
     Column,
     BuildingFile,
-    Scenario
+    Scenario,
+    ColumnMappingPreset,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -137,6 +140,57 @@ class PropertyViewTests(DataMappingBaseTestCase):
         )
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
+
+    def test_edit_properties_creates_notes_after_initial_edit(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # update the address
+        new_data = {
+            "state": {
+                "address_line_1": "742 Evergreen Terrace",
+                "extra_data": {"Some Extra Data": "111"}
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 1)
+
+        # update the address again
+        new_data = {
+            "state": {
+                "address_line_1": "123 note street",
+                "extra_data": {"Some Extra Data": "222"}
+            }
+        }
+        url = reverse('api:v2:properties-detail', args=[view.id]) + '?organization_id={}'.format(self.org.pk)
+        self.client.put(url, json.dumps(new_data), content_type='application/json')
+
+        self.assertEqual(view.notes.count(), 2)
+        refreshed_view = PropertyView.objects.get(id=view.id)
+        note = refreshed_view.notes.order_by('created').last()
+
+        expected_log_data = [
+            {
+                "field": "address_line_1",
+                "previous_value": "742 Evergreen Terrace",
+                "new_value": "123 note street",
+                "state_id": refreshed_view.state_id
+            },
+            {
+                "field": "Some Extra Data",
+                "previous_value": "111",
+                "new_value": "222",
+                "state_id": refreshed_view.state_id
+            },
+        ]
+        self.assertEqual(note.note_type, Note.LOG)
+        self.assertEqual(note.name, "Automatically Created")
+        self.assertCountEqual(note.log_data, expected_log_data)
 
     def test_first_lat_long_edit(self):
         state = self.property_state_factory.get_property_state()
@@ -1089,3 +1143,90 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
         self.assertTrue(Property.objects.filter(pk=view.property_id).exists())
         self.assertEqual(Property.objects.count(), 3)
+
+
+class PropertyViewExportTests(DataMappingBaseTestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com'
+        }
+        self.user = User.objects.create_superuser(**user_details)
+        self.org, self.org_user, _ = create_organization(self.user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.cycle = self.cycle_factory.get_cycle(
+            start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.client.login(**user_details)
+
+    def test_export_bsync_works_with_default_preset(self):
+        # -- Setup
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+
+        # -- Act
+        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        response = self.client.get(url, {'preset_id': preset.id})
+
+        # -- Assert
+        self.assertEqual(200, response.status_code, response.content)
+
+    def test_export_bsync_works_with_custom_preset(self):
+        """Tests that using a different column mapping preset from the default
+        results in a different xml output
+        """
+        # -- Setup
+        # manually set the lat and long
+        state = self.property_state_factory.get_property_state()
+        orig_lat = 5555
+        orig_long = 4444
+        state.latitude = orig_lat
+        state.longitude = orig_long
+        state.save()
+
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        # create a preset mapping where longitude and latitude are swapped
+        preset_mappings = default_buildingsync_preset_mappings()
+        for mapping in preset_mappings:
+            if mapping['to_field'] == 'longitude':
+                mapping['to_field'] = 'latitude'
+            elif mapping['to_field'] == 'latitude':
+                mapping['to_field'] = 'longitude'
+
+        custom_preset_name = 'BSync Custom Preset'
+        self.org.columnmappingpreset_set.create(name=custom_preset_name, mappings=preset_mappings, preset_type=ColumnMappingPreset.BUILDINGSYNC_CUSTOM)
+        custom_preset = self.org.columnmappingpreset_set.get(name=custom_preset_name)
+
+        # grab the default preset to export with for comparison
+        default_preset = self.org.columnmappingpreset_set.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+
+        # -- Act
+        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        default_export_response = self.client.get(url, {'preset_id': default_preset.id})
+        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        custom_export_response = self.client.get(url, {'preset_id': custom_preset.id})
+
+        # -- Assert
+        self.assertEqual(200, default_export_response.status_code, default_export_response.content)
+        self.assertEqual(200, custom_export_response.status_code, custom_export_response.content)
+
+        # check that longitude and latitude were swapped by finding different lines in the results
+        default_lines = default_export_response.content.decode().split('\n')
+        custom_lines = custom_export_response.content.decode().split('\n')
+        diffs = [line.strip() for line in set(default_lines).symmetric_difference(custom_lines)]
+        expected_diffs = ['<auc:Latitude>5555.0</auc:Latitude>', '<auc:Longitude>4444.0</auc:Longitude>',
+                          '<auc:Latitude>4444.0</auc:Latitude>', '<auc:Longitude>5555.0</auc:Longitude>']
+        self.assertCountEqual(expected_diffs, diffs)

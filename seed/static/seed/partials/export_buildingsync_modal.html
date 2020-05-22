@@ -1,0 +1,27 @@
+<div class="modal-header">
+    <h4 class="modal-title">Select Preset for Export</h4>
+</div>
+
+<div class="modal-body">
+    <div class="alert alert-warning">Please select the preset used when importing the data, else the exported data may be incorrect.</div>
+    <div class="alert alert-danger" ng-if="download_error_message">
+        Unexpected error downloading file
+        <pre>{$ download_error_message | json $}</pre>
+    </div>
+    <div class="row" style="padding-bottom:10px">
+        <label class="control-label col-lg-4 col-sm-4" for="columnMappingPresetSelector">Column Mapping Preset</label>
+        <div class="col-lg-8 col-sm-8">
+            <select
+                id="columnMappingPresetSelector"
+                class="form-control input-sm"
+                ng-model="current_column_mapping_preset"
+                ng-options="preset as preset.name for preset in column_mapping_presets track by preset.id">
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-primary" ng-click="download_file()" autofocus translate>Download</button>
+</div>

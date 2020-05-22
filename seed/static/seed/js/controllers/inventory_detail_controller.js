@@ -500,16 +500,32 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.export_building_sync = function () {
-        var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
-        $http.get(the_url, {})
-          .then(function (response) {
-            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;'});
-            var downloadLink = angular.element('<a></a>');
-            var filename = 'buildingsync_property_' + $stateParams.view_id + '.xml';
-            downloadLink.attr('href', $window.URL.createObjectURL(blob));
-            downloadLink.attr('download', filename);
-            downloadLink[0].click();
-          });
+        const modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_buildingsync_modal.html',
+          controller: 'export_buildingsync_modal_controller',
+          resolve: {
+            property_view_id: function() { return $stateParams.view_id },
+            column_mapping_presets: [
+              'column_mappings_service',
+              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+              function (
+                column_mappings_service,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              ) {
+              const filter_preset_types = [
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              ]
+              return column_mappings_service.get_column_mapping_presets_for_org(
+                $scope.organization.id,
+                filter_preset_types,
+              ).then(response => response.data);
+            }]
+          }
+        })
+        modalInstance.result.then(() => { return; })
       };
 
       $scope.export_building_sync_xlsx = function () {

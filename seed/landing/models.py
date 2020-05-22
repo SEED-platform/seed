@@ -124,6 +124,10 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
     def get_absolute_url(self):
         return "/users/%s/" % urlquote(self.username)
 
+    def deactivate_user(self):
+        self.is_active = False
+        self.save()
+
     def get_full_name(self):
         """
         Returns the first_name plus the last_name, with a space in between.
