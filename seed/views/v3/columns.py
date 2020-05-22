@@ -76,6 +76,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     update:
         Update a column and modify which dataset it belongs to.
+
+    destroy:
+        Deletes a single column.
     """
 
     swagger_schema = ColumnSchema
@@ -177,85 +180,5 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
             'column': ColumnSerializer(c).data
         })
 
-    @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
-    def add_column_names(self, request):
-        """
-        Allow columns to be added based on an existing record.
-        This may be necessary to make column selections available when
-        records are upload through API endpoint rather than the frontend.
-        """
-        model_obj = None
-        org = self.get_organization(request, return_obj=True)
-        inventory_pk = request.query_params.get('inventory_pk')
-        inventory_type = request.query_params.get('inventory_type', 'property')
-        if inventory_type in ['property', 'propertystate']:
-            if not inventory_pk:
-                model_obj = PropertyState.objects.filter(
-                    organization=org
-                ).order_by('-id').first()
-            try:
-                model_obj = PropertyState.objects.get(id=inventory_pk)
-            except PropertyState.DoesNotExist:
-                pass
-        elif inventory_type in ['taxlot', 'taxlotstate']:
-            if not inventory_pk:
-                model_obj = TaxLotState.objects.filter(
-                    organization=org
-                ).order_by('-id').first()
-            else:
-                try:
-                    model_obj = TaxLotState.objects.get(id=inventory_pk)
-                    inventory_type = 'taxlotstate'
-                except TaxLotState.DoesNotExist:
-                    pass
-        else:
-            msg = "{} is not a valid inventory type".format(inventory_type)
-            raise ParseError(msg)
-        if not model_obj:
-            msg = "No {} was found matching {}".format(
-                inventory_type, inventory_pk
-            )
-            raise NotFound(msg)
-        Column.save_column_names(model_obj)
 
-        columns = Column.objects.filter(
-            organization=model_obj.organization,
-            table_name=model_obj.__class__.__name__,
-            is_extra_data=True,
 
-        )
-        columns = ColumnSerializer(columns, many=True)
-        return Response(columns.data, status=status.HTTP_200_OK)
-
-    @ajax_request_class
-    @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
-    def rename(self, request, pk=None):
-        org_id = self.get_organization(request)
-        try:
-            column = Column.objects.get(id=pk, organization_id=org_id)
-        except Column.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Cannot find column in org=%s with pk=%s' % (org_id, pk)
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        new_column_name = request.data.get('new_column_name', None)
-        overwrite = request.data.get('overwrite', False)
-        if not new_column_name:
-            return JsonResponse({
-                'success': False,
-                'message': 'You must specify the name of the new column as "new_column_name"'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        result = column.rename_column(new_column_name, overwrite)
-        if not result[0]:
-            return JsonResponse({
-                'success': False,
-                'message': 'Unable to rename column with message: "%s"' % result[1]
-            }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return JsonResponse({
-                'success': True,
-                'message': result[1]
-            })
