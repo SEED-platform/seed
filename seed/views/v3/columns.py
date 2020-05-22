@@ -9,18 +9,11 @@ import logging
 
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
-from rest_framework.response import Response
 
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
-from seed.renderers import SEEDJSONRenderer
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
@@ -64,7 +57,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     update:
         Update a column and modify which dataset it belongs to.
 
-    destroy:
+    delete:
         Deletes a single column.
     """
 
