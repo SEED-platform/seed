@@ -51,20 +51,7 @@ class ColumnSchema(AutoSchemaHelper):
             ],
             ('POST', 'create'): [self.org_id_field()],
             ('GET', 'retrieve'): [self.org_id_field()],
-            ('DELETE', 'delete_all'): [self.org_id_field()],
-            ('GET', 'retrieve'): [self.org_id_field()],
-            ('PUT', 'update'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='dataset',
-                    required=True,
-                    description="The new name for this dataset",
-                    params_to_formats={
-                        'dataset': 'string'
-                    }
-                )
-            ],
-            ('DELETE', 'destroy'): [self.org_id_field()]
+            ('DELETE', 'delete'): [self.org_id_field()]
 
         }
 
