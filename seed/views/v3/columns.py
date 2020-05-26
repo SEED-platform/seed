@@ -42,7 +42,6 @@ class ColumnSchema(AutoSchemaHelper):
             ('POST', 'create'): [self.org_id_field()],
             ('GET', 'retrieve'): [self.org_id_field()],
             ('DELETE', 'delete'): [self.org_id_field()]
-
         }
 
 

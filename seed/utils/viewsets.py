@@ -48,9 +48,7 @@ PERMISSIONS_CLASSES = (SEEDOrgPermissions,)
 
 
 class UpdateWithoutPatchModelMixin(object):
-  
     # Taken from: https://github.com/encode/django-rest-framework/pull/3081#issuecomment-518396378
-    
     # Rebuilds the UpdateModelMixin without the patch action
     def update(self, request, *args, **kwargs):
         return UpdateModelMixin.update(self, request, *args, **kwargs)
