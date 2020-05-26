@@ -57,7 +57,6 @@ class DatasetSchema(AutoSchemaHelper):
                 )
             ],
             ('DELETE', 'destroy'): [self.org_id_field()]
-
         }
 
 
