@@ -4,14 +4,11 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
 import logging
-
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
-
 from seed.decorators import ajax_request_class
 from seed.models.columns import Column
 from seed.serializers.columns import ColumnSerializer
@@ -53,14 +50,11 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     create:
         Create a new Column within user`s specified org.
-
     update:
         Update a column and modify which dataset it belongs to.
-
     delete:
         Deletes a single column.
     """
-
     swagger_schema = ColumnSchema
     raise_exception = True
     serializer_class = ColumnSerializer
