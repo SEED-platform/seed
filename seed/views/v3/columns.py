@@ -159,6 +159,3 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
             'status': 'success',
             'column': ColumnSerializer(c).data
         })
-
-
-
