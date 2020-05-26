@@ -19,7 +19,6 @@ from rest_framework.response import Response
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
 from seed.renderers import SEEDJSONRenderer
