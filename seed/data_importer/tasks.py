@@ -32,6 +32,7 @@ from math import ceil
 from past.builtins import basestring
 from unidecode import unidecode
 
+from seed.building_sync import validation_client
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import (
@@ -1947,3 +1948,44 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         m2m_join.save()
 
     return
+
+
+@shared_task
+def _validate_use_cases(file_pk, progress_key):
+    import_file = ImportFile.objects.get(pk=file_pk)
+    progress_data = ProgressData.from_key(progress_key)
+
+    try:
+        all_files_valid, file_summaries = validation_client.validate_use_case(import_file.file)
+        if all_files_valid is False:
+            import_file.delete()
+        progress_data.finish_with_success(
+            message=json.dumps({
+                'valid': all_files_valid,
+                'issues': file_summaries,
+            }),
+        )
+    except validation_client.ValidationClientException as e:
+        _log.debug(f'ValidationClientException while validating import_file `{file_pk}`: {e}')
+        progress_data.finish_with_error(message=str(e))
+        progress_data.save()
+        import_file.delete()
+    except Exception as e:
+        _log.debug(f'Unexpected Exception while validating import_file `{file_pk}`: {e}')
+        progress_data.finish_with_error(message=str(e))
+        progress_data.save()
+        import_file.delete()
+
+
+def validate_use_cases(file_pk):
+    """
+    Kicks off task for validating BuildingSync files for use cases
+
+    :param file_pk: ImportFile Primary Key
+    :return:
+    """
+    progress_data = ProgressData(func_name='validate_use_cases', unique_id=file_pk)
+
+    _validate_use_cases.s(file_pk, progress_data.key).apply_async()
+    _log.debug(progress_data.result())
+    return progress_data.result()

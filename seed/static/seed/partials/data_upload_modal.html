@@ -12,7 +12,6 @@
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
-    <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
 
@@ -246,10 +245,26 @@
             <div class="col-sm-12">
                 <div>
 
-                    <p ng-if="!building_sync_files" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <p ng-if="building_sync_files && bulk_upload" translate>Error(s) occurred while processing the BuildingSync data bulk upload, potentially resulting in a partial import.  Fix the errors and re-upload the corrected files.</p>
-                    <p ng-if="building_sync_files && !bulk_upload" translate>An error occurred while processing the BuildingSync xml file. Please ensure that your file meets the required specifications.</p>
-                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | json $}</pre>
+                    <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
+                    <span ng-if="step_12_buildingsync_validation_error">
+                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p> 
+                        <div ng-repeat="file_issues in buildingsync_issues">
+                            <em>{$ file_issues.file $}</em>
+                            <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0">
+                                <h5>Schema Errors</h5>
+                                <div ng-repeat="err in file_issues.schema_errors">{$ err.path $}: {$ err.message $}</div>
+                            </div>
+                            <div class="alert alert-danger" ng-if="file_issues.use_case_errors.length > 0">
+                                <h5>Use Case Errors</h5>
+                                <div ng-repeat="err in file_issues.use_case_errors">{$ err $}</div>
+                            </div>
+                            <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0">
+                                <h5>Use Case Warnings</h5>
+                                <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
+                            </div>
+                        </div>
+                    </span>
                 </div>
             </div>
         </div>
@@ -286,21 +301,6 @@
             <div class="col-lg-8 col-sm-8">
                 <div class="btn btn-primary" style="display: block; font-weight: bold;" ng-disabled="!pm_buttons_enabled || !pm_template" ng-click="get_pm_report(pm_username, pm_password, pm_template);">Submit</div>
             </div>
-        </div>
-    </div>
-    <!-- Step 14: Successful BuildingSync upload -->
-    <div class="data_upload_steps" ng-switch-when="14">
-        <div class="row">
-            <div class="alert alert-success"
-            translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name, dataset_filename: dataset.filename }"></div>
-             <div class="col-sm-12">
-                <div ng-if="step_14_message.length > 0">
-                    <p translate>Warnings:</p>
-                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_14_message.length >= 300}" ng-show="step_14_message">{$ step_14_message | json $}</pre>
-                </div>
-            </div>
-
         </div>
     </div>
     <!-- Step 15:  Upload PM Meter Readings -->
@@ -396,14 +396,6 @@
     <div ng-switch-when="11">
         <div class="row text-center">
             <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()" translate>CONFIRM_AND_START_MATCHING</button>
-        </div>
-    </div>
-    <div ng-switch-when="14">
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
-        </div>
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
     </div>
     <div ng-switch-when="15">
