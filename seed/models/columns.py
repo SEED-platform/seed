@@ -982,7 +982,6 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
-                    units_pint=field.get('from_units'),  # might be None
                     is_extra_data=False  # data from header rows in the files are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
@@ -994,8 +993,6 @@ class Column(models.Model):
                 from_org_col = Column.objects.filter(organization=organization,
                                                      table_name__in=[None, ''],
                                                      column_name=field['from_field'],
-                                                     units_pint=field.get('from_units'),
-                                                     # might be None
                                                      is_extra_data=is_extra_data).first()
                 _log.debug("Grabbing the first from_column")
 
