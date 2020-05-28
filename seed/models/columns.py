@@ -989,12 +989,23 @@ class Column(models.Model):
                     "More than one from_column found for {}.{}".format(field['to_table_name'],
                                                                        field['to_field']))
 
-                # TODO: write something to remove the duplicate columns
-                from_org_col = Column.objects.filter(organization=organization,
-                                                     table_name__in=[None, ''],
-                                                     column_name=field['from_field'],
-                                                     is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first from_column")
+                all_from_cols = Column.objects.filter(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False
+                )
+
+                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
+                all_from_cols.delete()
+
+                from_org_col, _ = Column.objects.get_or_create(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                )
+                _log.debug("Creating a new from_column")
 
             new_field['to_column_object'] = select_col_obj(field['to_field'],
                                                            field['to_table_name'], to_org_col)
