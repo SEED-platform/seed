@@ -8,7 +8,7 @@ import json
 
 from copy import deepcopy
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from seed.models.data_quality import (
     DataQualityCheck,
@@ -41,6 +41,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'enabled': True,
             'data_type': Rule.TYPE_STRING,
             'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
             'required': False,
             'not_null': False,
             'min': None,
@@ -90,6 +91,69 @@ class RuleViewTests(DataMappingBaseTestCase):
         self.assertEqual(dq.rules.count(), 3)
         self.assertEqual(dq.rules.filter(severity=Rule.SEVERITY_VALID).count(), 0)
 
+    def test_include_exclude_without_text_mamtch_does_not_actually_update_or_delete_any_rules(self):
+        # Start with 3 Rules
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        base_rule_info = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'Test Rule 1',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+            'status_label_id': None
+        }
+        dq.add_rule(base_rule_info)
+
+        rule_2_info = deepcopy(base_rule_info)
+        rule_2_info['text_match'] = 'Test Rule 2'
+        dq.add_rule(rule_2_info)
+
+        rule_3_info = deepcopy(base_rule_info)
+        rule_3_info['text_match'] = 'Test Rule 3'
+        dq.add_rule(rule_3_info)
+
+        self.assertEqual(dq.rules.count(), 3)
+
+        property_rules = [base_rule_info, rule_2_info, rule_3_info]
+
+        # Make some adjustments to mimic how data is expected in API endpoint
+        rule_3_info['severity'] = dict(Rule.SEVERITY).get(Rule.SEVERITY_ERROR)
+        for rule in property_rules:
+            rule['data_type'] = dict(Rule.DATA_TYPES).get(rule['data_type'])
+            rule['label'] = None
+
+        # Make 2 rules trigger the include or exclude without text_match failure
+        base_rule_info['text_match'] = ''
+
+        rule_2_info['condition'] = Rule.RULE_EXCLUDE
+        rule_2_info['text_match'] = ''
+
+        url = reverse('api:v2:data_quality_checks-save-data-quality-rules') + '?organization_id=' + str(self.org.pk)
+        post_data = {
+            "data_quality_rules": {
+                "properties": property_rules,
+                "taxlots": [],
+            },
+        }
+        res = self.client.post(url, content_type='application/json', data=json.dumps(post_data))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(json.loads(res.content)['message'], 'Rule must not include or exclude an empty string.')
+
+        # Count 3 total rules. None of them were updated
+        self.assertEqual(dq.rules.count(), 3)
+        self.assertEqual(dq.rules.filter(condition=Rule.RULE_EXCLUDE).count(), 0)
+        self.assertEqual(dq.rules.filter(text_match='').count(), 0)
+
     def test_failed_rule_creation_doesnt_prevent_other_rules_from_being_created(self):
         # Start with 0 Rules
         dq = DataQualityCheck.retrieve(self.org.id)
@@ -102,6 +166,7 @@ class RuleViewTests(DataMappingBaseTestCase):
             'enabled': True,
             'data_type': dict(Rule.DATA_TYPES).get(Rule.TYPE_STRING),
             'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
             'required': False,
             'not_null': False,
             'min': None,
