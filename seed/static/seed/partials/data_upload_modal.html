@@ -99,6 +99,18 @@
             translate="DATASET_FILENAME_UPLOADED_TO"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
         </div>
+        <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
+            <div>
+                <p>There were one or more warnings for the file(s) uploaded.</p>
+                <div ng-repeat="file_issues in buildingsync_issues">
+                    <em>{$ file_issues.file $}</em>
+                    <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0">
+                        <h5>Use Case Warnings</h5>
+                        <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Step 4: load Portfolio Manager report data -->
     <div class="data_upload_steps" ng-switch-when="4">
