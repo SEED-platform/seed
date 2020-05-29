@@ -1535,8 +1535,12 @@ def _validate_use_cases(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
 
+    progress_data.step('validating data with Selection Tool')
     try:
-        all_files_valid, file_summaries = validation_client.validate_use_case(import_file.file)
+        all_files_valid, file_summaries = validation_client.validate_use_case(
+            import_file.file,
+            filename=import_file.uploaded_filename
+        )
         if all_files_valid is False:
             import_file.delete()
         progress_data.finish_with_success(
@@ -1565,6 +1569,11 @@ def validate_use_cases(file_pk):
     :return:
     """
     progress_data = ProgressData(func_name='validate_use_cases', unique_id=file_pk)
+    # break progress into two steps:
+    # 1. started job
+    # 2. finished request
+    progress_data.total = 2
+    progress_data.save()
 
     _validate_use_cases.s(file_pk, progress_data.key).apply_async()
     _log.debug(progress_data.result())

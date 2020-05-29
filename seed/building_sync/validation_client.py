@@ -5,7 +5,7 @@ import requests
 
 VALIDATION_API_URL = "https://selectiontool.buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = '2.0.0'
-DEFAULT_USE_CASE = 'L000 OpenStudio Simulation'
+DEFAULT_USE_CASE = 'BRICR_SEED'
 
 
 class ValidationClientException(Exception):
@@ -27,10 +27,11 @@ def _validation_api_post(file_, schema_version, use_case_name):
     )
 
 
-def validate_use_case(file_, schema_version=DEFAULT_SCHEMA_VERSION, use_case_name=DEFAULT_USE_CASE):
+def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSION, use_case_name=DEFAULT_USE_CASE):
     """calls Selection Tool's validation API
 
     :param file_: File, the file to validate; can be single xml or zip
+    :param filename: string, (optional) name of the file, useful if file_.name is not user friendly (e.g. a Django SimpleUploadedFile). Not used if file_ is a zip
     :param schema_version: string
     :param use_case_name: string
     :return: tuple, (bool, list), bool indicates if the file passes validation,
@@ -41,7 +42,7 @@ def validate_use_case(file_, schema_version=DEFAULT_SCHEMA_VERSION, use_case_nam
         response = _validation_api_post(file_, schema_version, use_case_name)
     except requests.exceptions.Timeout:
         raise ValidationClientException(
-            f"Request to Selection Tool timed out. SEED may need to increase the timeout",
+            "Request to Selection Tool timed out. SEED may need to increase the timeout",
         )
     except Exception as e:
         raise ValidationClientException(
@@ -85,8 +86,10 @@ def validate_use_case(file_, schema_version=DEFAULT_SCHEMA_VERSION, use_case_nam
                 f"Expected response validation_results to be dict for single xml file: {response.text}",
             )
         # turn the single file result into the same structure as zip file result
+        if filename is None:
+            filename = os.path.basename(file_.name)
         validation_results = [{
-            'file': os.path.basename(file_.name),
+            'file': filename,
             'results': validation_results,
         }]
 

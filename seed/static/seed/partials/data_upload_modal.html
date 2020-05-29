@@ -100,11 +100,11 @@
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
-            <div>
+            <div class="col-sm-12">
                 <p>There were one or more warnings for the file(s) uploaded.</p>
                 <div ng-repeat="file_issues in buildingsync_issues">
                     <em>{$ file_issues.file $}</em>
-                    <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0">
+                    <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
                         <h5>Use Case Warnings</h5>
                         <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
                     </div>
@@ -267,15 +267,15 @@
                         <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p> 
                         <div ng-repeat="file_issues in buildingsync_issues">
                             <em>{$ file_issues.file $}</em>
-                            <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0">
+                            <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0" style="word-wrap: break-word;">
                                 <h5>Schema Errors</h5>
                                 <div ng-repeat="err in file_issues.schema_errors">{$ err.path $}: {$ err.message $}</div>
                             </div>
-                            <div class="alert alert-danger" ng-if="file_issues.use_case_errors.length > 0">
+                            <div class="alert alert-danger" ng-if="file_issues.use_case_errors.length > 0" style="word-wrap: break-word;">
                                 <h5>Use Case Errors</h5>
                                 <div ng-repeat="err in file_issues.use_case_errors">{$ err $}</div>
                             </div>
-                            <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0">
+                            <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
                                 <h5>Use Case Warnings</h5>
                                 <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
                             </div>
