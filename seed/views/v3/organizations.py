@@ -16,23 +16,11 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 
-from seed.utils.api_schema import AutoSchemaHelper
-
 _log = logging.getLogger(__name__)
-
-
-class OrganizationSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('DELETE', 'columns'): [self.org_id_field()]
-        }
 
 
 class OrganizationViewSet(viewsets.ViewSet):
 
-    swagger_schema = OrganizationSchema
     model = Column
 
     @ajax_request_class
@@ -64,8 +52,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        organization_id = request.query_params.get('organization_id', None)
-
+        organization_id = pk
         try:
             org = Organization.objects.get(pk=organization_id)
             c_count, cm_count = Column.delete_all(org)

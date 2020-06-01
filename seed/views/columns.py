@@ -149,6 +149,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             'column': ColumnSerializer(c).data
         })
 
+    @ajax_request_class
     @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """

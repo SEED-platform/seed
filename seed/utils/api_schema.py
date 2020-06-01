@@ -20,7 +20,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
     }
 
-    def base_field(name, location_attr, description, required, type):
+    def base_field(self, name, location_attr, description, required, type):
         """
         Created to avoid needing to directly access openapi within ViewSets.
         Ideally, the cases below will be used instead of this one.

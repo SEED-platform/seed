@@ -4,12 +4,16 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import coreapi
 import logging
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
+from rest_framework.filters import BaseFilterBackend
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from rest_framework.decorators import action
 from seed.models.columns import Column
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin
@@ -24,25 +28,27 @@ class ColumnSchema(AutoSchemaHelper):
         super().__init__(*args)
 
         self.manual_fields = {
-            ('GET', 'list'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='Column params',
-                    required=True,
-                    description="An object containing meta data for the GET request: \n"
-                                "- Required - Inventory type [property, taxlot] \n"
-                                "- Optional - Determine whether or not to show only the used fields "
-                                "(i.e. only columns that have been mapped)",
-                    params_to_formats={
-                        'inventory_type': 'string',
-                        'only_used': 'boolean'
-                    }
-                )
-            ],
-            ('POST', 'create'): [self.org_id_field()],
+            ('GET', 'list'): [self.org_id_field()],
             ('GET', 'retrieve'): [self.org_id_field()],
             ('DELETE', 'delete'): [self.org_id_field()]
         }
+
+
+class ColumnViewSetFilterBackend(BaseFilterBackend):
+    """
+    Specify the schema for the column view set. This allows the user to see the other
+    required columns in Swagger.
+    """
+
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field('organization_id', location='query', required=True, type='integer'),
+            coreapi.Field('inventory_type', location='query', required=False, type='string'),
+            coreapi.Field('only_used', location='query', required=False, type='boolean'),
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset
 
 
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -53,6 +59,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
         Update a column and modify which dataset it belongs to.
     delete:
         Deletes a single column.
+    rename:
+        Renames a column
     """
     swagger_schema = ColumnSchema
     raise_exception = True
@@ -61,6 +69,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = Column
     pagination_class = None
     parser_classes = (JSONParser, FormParser)
+    filter_backends = (ColumnViewSetFilterBackend,)
 
     def get_queryset(self):
         # check if the request is properties or taxlots
@@ -152,3 +161,36 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
             'status': 'success',
             'column': ColumnSerializer(c).data
         })
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=True, methods=['POST'])
+    def rename(self, request, pk=None):
+        org_id = self.get_organization(request)
+        try:
+            column = Column.objects.get(id=pk, organization_id=org_id)
+        except Column.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot find column in org=%s with pk=%s' % (org_id, pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        new_column_name = request.data.get('new_column_name', None)
+        overwrite = request.data.get('overwrite', False)
+        if not new_column_name:
+            return JsonResponse({
+                'success': False,
+                'message': 'You must specify the name of the new column as "new_column_name"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        result = column.rename_column(new_column_name, overwrite)
+        if not result[0]:
+            return JsonResponse({
+                'success': False,
+                'message': 'Unable to rename column with message: "%s"' % result[1]
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': result[1]
+            })
