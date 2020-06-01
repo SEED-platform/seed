@@ -52,9 +52,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        organization_id = pk
         try:
-            org = Organization.objects.get(pk=organization_id)
+            org = Organization.objects.get(pk=pk)
             c_count, cm_count = Column.delete_all(org)
             return JsonResponse(
                 {
