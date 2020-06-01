@@ -65,5 +65,5 @@ class OrganizationViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(organization_id)
+                'message': 'organization with with id {} does not exist'.format(pk)
             }, status=status.HTTP_404_NOT_FOUND)
