@@ -34,10 +34,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         ---
         parameters:
-            - name: organization_id
+            - name: pk
               description: The organization_id
               required: true
-              paramType: query
+              paramType: path
         type:
             status:
                 description: success or error
@@ -52,9 +52,8 @@ class OrganizationViewSet(viewsets.ViewSet):
                 type: integer
                 required: true
         """
-        organization_id = pk
         try:
-            org = Organization.objects.get(pk=organization_id)
+            org = Organization.objects.get(pk=pk)
             c_count, cm_count = Column.delete_all(org)
             return JsonResponse(
                 {
@@ -66,5 +65,5 @@ class OrganizationViewSet(viewsets.ViewSet):
         except Organization.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization with with id {} does not exist'.format(organization_id)
+                'message': 'organization with with id {} does not exist'.format(pk)
             }, status=status.HTTP_404_NOT_FOUND)
