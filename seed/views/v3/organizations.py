@@ -34,10 +34,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         ---
         parameters:
-            - name: organization_id
+            - name: pk
               description: The organization_id
               required: true
-              paramType: query
+              paramType: path
         type:
             status:
                 description: success or error
