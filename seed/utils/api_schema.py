@@ -51,6 +51,24 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
+    def query_string_field(self, name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
+    def query_boolean_field(self, name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
     def path_id_field(self, description):
         return openapi.Parameter(
             'id',

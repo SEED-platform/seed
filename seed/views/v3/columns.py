@@ -28,27 +28,23 @@ class ColumnSchema(AutoSchemaHelper):
         super().__init__(*args)
 
         self.manual_fields = {
-            ('GET', 'list'): [self.org_id_field()],
+            ('GET', 'list'): [
+                self.org_id_field(),
+                self.query_string_field(
+                    name='inventory_type',
+                    required=True,
+                    description='Which inventory type is being matched (for related fields and naming).'
+                ),
+                self.query_boolean_field(
+                    name='used_only',
+                    required=False,
+                    description='Determine whether or not to show only the used fields '
+                                '(i.e. only columns that have been mapped)'
+                ),
+            ],
             ('GET', 'retrieve'): [self.org_id_field()],
             ('DELETE', 'delete'): [self.org_id_field()]
         }
-
-
-class ColumnViewSetFilterBackend(BaseFilterBackend):
-    """
-    Specify the schema for the column view set. This allows the user to see the other
-    required columns in Swagger.
-    """
-
-    def get_schema_fields(self, view):
-        return [
-            coreapi.Field('organization_id', location='query', required=True, type='integer'),
-            coreapi.Field('inventory_type', location='query', required=False, type='string'),
-            coreapi.Field('only_used', location='query', required=False, type='boolean'),
-        ]
-
-    def filter_queryset(self, request, queryset, view):
-        return queryset
 
 
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -69,7 +65,6 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = Column
     pagination_class = None
     parser_classes = (JSONParser, FormParser)
-    filter_backends = (ColumnViewSetFilterBackend,)
 
     def get_queryset(self):
         # check if the request is properties or taxlots
