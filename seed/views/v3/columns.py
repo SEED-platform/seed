@@ -10,7 +10,6 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
-from rest_framework.filters import BaseFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
 from seed.models.columns import Column
