@@ -40,6 +40,26 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     };
 
     /**
+     * validate_use_cases
+     * This service call will simply call a view on the backend to validate
+     * BuildingSync files with use cases
+     * @param file_id: the pk of a ImportFile object we're going to save raw.
+     */
+    uploader_factory.validate_use_cases = function (file_id) {
+      return $http.post('/api/v2/import_files/' + file_id + '/validate_use_cases/')
+        .then(response => {
+          return response.data
+        })
+        .catch(err => {
+          if (err.data.status === 'error') {
+            return err.data
+          }
+          // something unexpected happened... throw it
+          throw err
+        })
+    };
+
+    /**
      * save_raw_data
      * This service call will simply call a view on the backend to save raw
      * data into BuildingSnapshot instances.
