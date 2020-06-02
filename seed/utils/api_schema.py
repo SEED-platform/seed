@@ -5,6 +5,8 @@ from drf_yasg import openapi
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
+    # overrides the serialization of existing endpoints
+    overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
     body_parameter_formats = {
@@ -100,5 +102,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def add_manual_parameters(self, parameters):
         manual_params = self.manual_fields.get((self.method, self.view.action), [])
 
+        if (self.method, self.view.action) in self.overwrite_params:
+            return manual_params
         # I think this should add to existing parameters, but haven't been able to confirm.
         return parameters + manual_params

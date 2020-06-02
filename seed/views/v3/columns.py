@@ -55,6 +55,8 @@ class ColumnSchema(AutoSchemaHelper):
             ]
         }
 
+        self.overwrite_params.extend([('POST', 'rename')])
+
 
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
@@ -64,8 +66,6 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
         Update a column and modify which dataset it belongs to.
     delete:
         Deletes a single column.
-    rename:
-        Renames a column
     """
     raise_exception = True
     serializer_class = ColumnSerializer
@@ -169,6 +169,10 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
+        """
+        This API endpoint renames a Column
+        ---
+        """
         org_id = self.get_organization(request)
         try:
             column = Column.objects.get(id=pk, organization_id=org_id)
