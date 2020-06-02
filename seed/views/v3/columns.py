@@ -41,7 +41,18 @@ class ColumnSchema(AutoSchemaHelper):
                 ),
             ],
             ('GET', 'retrieve'): [self.org_id_field()],
-            ('DELETE', 'delete'): [self.org_id_field()]
+            ('DELETE', 'delete'): [self.org_id_field()],
+            ('POST', 'rename'): [
+                self.body_field(
+                    name='data',
+                    required=True,
+                    description="rename columns",
+                    params_to_formats={
+                        'new_column_name': 'string',
+                        'overwrite': 'boolean'
+                    }
+                )
+            ]
         }
 
 
@@ -134,7 +145,6 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
                              ''table_name'',..
         """
         organization_id = self.get_organization(self.request)
-
         # check if column exists for the organization
         try:
             c = Column.objects.get(pk=pk)

@@ -15,9 +15,9 @@ from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from seed.lib.superperms.orgs.models import Organization
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyState, TaxLotState
 from seed.models.columns import Column
 from seed.renderers import SEEDJSONRenderer
@@ -149,6 +149,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             'column': ColumnSerializer(c).data
         })
 
+    @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def delete_all(self, request):
@@ -156,6 +157,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         Delete all columns for an organization. This method is typically not recommended if there
         are data in the inventory as it will invalidate all extra_data fields. This also removes
         all the column mappings that existed.
+
         ---
         parameters:
             - name: organization_id
@@ -194,7 +196,6 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
-    @ajax_request_class
     @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """
