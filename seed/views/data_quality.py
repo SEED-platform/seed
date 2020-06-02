@@ -366,18 +366,16 @@ class DataQualityViews(viewsets.ViewSet):
 
         posted_rules = body['data_quality_rules']
         updated_rules = []
+        valid_rules = True
+        validation_messages = set()
         for rule in posted_rules['properties']:
             if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
             if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
                 if rule['text_match'] is None or rule['text_match'] == '':
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': 'Rule must not include or exclude an empty string.',
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
             updated_rules.append(
                 {
                     'field': rule['field'],
@@ -399,16 +397,12 @@ class DataQualityViews(viewsets.ViewSet):
 
         for rule in posted_rules['taxlots']:
             if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
             if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
                 if rule['text_match'] is None or rule['text_match'] == '':
-                    return JsonResponse({
-                        'status': 'error',
-                        'message': 'Rule must not include or exclude an empty string.',
-                    }, status=status.HTTP_400_BAD_REQUEST)
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
             updated_rules.append(
                 {
                     'field': rule['field'],
@@ -427,6 +421,12 @@ class DataQualityViews(viewsets.ViewSet):
                     'status_label_id': rule['label']
                 }
             )
+
+        if valid_rules is False:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(validation_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         # This pattern of deleting and recreating Rules is slated to be deprecated
         bad_rule_creation = False
