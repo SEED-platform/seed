@@ -35,12 +35,12 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=type
         )
 
-    def org_id_field(self):
+    def org_id_field(self, required=True):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,
             description='Organization ID',
-            required=True,
+            required=required,
             type=openapi.TYPE_INTEGER
         )
 

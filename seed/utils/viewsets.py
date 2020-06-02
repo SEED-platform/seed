@@ -104,7 +104,6 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
 
 
 class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
-                                            OrgCreateUpdateMixin,
                                             CreateModelMixin,
                                             DestroyModelMixin,
                                             UpdateWithoutPatchModelMixin):

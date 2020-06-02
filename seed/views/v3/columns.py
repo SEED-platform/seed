@@ -14,7 +14,7 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
 from seed.models.columns import Column
 from seed.serializers.columns import ColumnSerializer
-from seed.utils.api import OrgValidateMixin
+from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -40,6 +40,7 @@ class ColumnSchema(AutoSchemaHelper):
                                 '(i.e. only columns that have been mapped)'
                 ),
             ],
+            ('POST', 'create'): [self.org_id_field(required=False)],
             ('GET', 'retrieve'): [self.org_id_field()],
             ('DELETE', 'delete'): [self.org_id_field()],
             ('POST', 'rename'): [
@@ -58,10 +59,10 @@ class ColumnSchema(AutoSchemaHelper):
         self.overwrite_params.extend([('POST', 'rename')])
 
 
-class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, OrgCreateUpdateMixin):
     """
     create:
-        Create a new Column within user`s specified org.
+        Create a new Column within a specified org or user's currently activated org.
     update:
         Update a column and modify which dataset it belongs to.
     delete:
