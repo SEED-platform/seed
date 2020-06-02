@@ -67,13 +67,13 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     rename:
         Renames a column
     """
-    swagger_schema = ColumnSchema
     raise_exception = True
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
     model = Column
     pagination_class = None
     parser_classes = (JSONParser, FormParser)
+    swagger_schema = ColumnSchema
 
     def get_queryset(self):
         # check if the request is properties or taxlots
