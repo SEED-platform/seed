@@ -906,7 +906,6 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'])
-    @detail_route(methods=['POST'])
     def validate_use_cases(self, request, pk=None):
         """
         Starts a background task to call BuildingSync's use case validation
@@ -943,7 +942,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def save_raw_data(self, request, pk=None):
         """
         Starts a background task to import raw data from an ImportFile
