@@ -30,14 +30,16 @@ class ColumnSchema(AutoSchemaHelper):
                 self.org_id_field(),
                 self.query_string_field(
                     name='inventory_type',
-                    required=True,
-                    description='Which inventory type is being matched (for related fields and naming).'
+                    required=False,
+                    description='Which inventory type is being matched (for related fields and naming)'
+                                '\nDefault: "property"'
                 ),
                 self.query_boolean_field(
                     name='used_only',
                     required=False,
                     description='Determine whether or not to show only the used fields '
                                 '(i.e. only columns that have been mapped)'
+                                '\nDefault: "false"'
                 ),
             ],
             ('POST', 'create'): [self.org_id_field(required=False)],
@@ -97,7 +99,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
            - name: inventory_type
              description: Which inventory type is being matched (for related fields and naming).
                property or taxlot
-             required: true
+             required: false
              paramType: query
            - name: used_only
              description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
