@@ -66,7 +66,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             openapi.IN_QUERY,
             description=description,
             required=required,
-            type=openapi.TYPE_STRING
+            type=openapi.TYPE_BOOLEAN
         )
 
     def path_id_field(self, description):
