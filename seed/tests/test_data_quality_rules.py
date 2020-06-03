@@ -8,7 +8,7 @@ import json
 
 from copy import deepcopy
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from seed.models.data_quality import (
     DataQualityCheck,
