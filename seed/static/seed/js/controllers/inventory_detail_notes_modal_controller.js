@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
         var data = {
           name: 'Manually Created',
           note_type: 'Note',
-          text: note.text,
+          text: note.text
         };
         note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(function () {
           $uibModalInstance.close();
@@ -47,7 +47,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
         var data = {
           name: note.name,
           note_type: note.note_type,
-          text: note.text,
+          text: note.text
         };
         note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, note.id, data).then(function () {
           $uibModalInstance.close();

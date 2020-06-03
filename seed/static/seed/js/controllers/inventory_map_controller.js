@@ -541,7 +541,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           });
         };
 
-        function updateApplicableLabels() {
+        function updateApplicableLabels () {
           var inventoryIds;
           if ($scope.inventory_type === 'properties') {
             inventoryIds = _.map($scope.data, 'property_view_id').sort();

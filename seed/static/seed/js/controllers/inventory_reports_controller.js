@@ -318,7 +318,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
                 xVar: $scope.chartData.xAxisVarName,
                 xLabel: $scope.chartData.xAxisTitle,
                 yVar: $scope.chartData.yAxisVarName,
-                yLabel: $scope.chartData.yAxisTitle,
+                yLabel: $scope.chartData.yAxisTitle
               };
             },
             cycle_start: function () {
@@ -326,7 +326,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
             },
             cycle_end: function () {
               return $scope.toCycle.selected_cycle.end;
-            },
+            }
           }
         });
       };
@@ -405,7 +405,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
           $scope.toCycle.selected_cycle.end
         ).then(function (data) {
           data = data.aggregated_data;
-          console.log(data);
+          $log.log(data);
           $scope.aggPropertyCounts = data.property_counts;
           var propertyCounts = data.property_counts;
           var colorsArr = mapColors(propertyCounts);
@@ -440,7 +440,7 @@ angular.module('BE.seed.controller.inventory_reports', [])
 
         localStorage.setItem(localStorageFromCycleKey, JSON.stringify($scope.fromCycle.selected_cycle));
         localStorage.setItem(localStorageToCycleKey, JSON.stringify($scope.toCycle.selected_cycle));
-      };
+      }
 
       /*  Generate an array of color objects to be used as part of chart configuration
        Each color object should have the following properties:

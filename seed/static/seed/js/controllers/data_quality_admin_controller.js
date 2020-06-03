@@ -141,16 +141,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.ruleGroups = ruleGroups;
         $scope.rule_count_property = 0;
         $scope.rule_count_taxlot = 0;
-        _.map($scope.ruleGroups['properties'], function (rule) {
+        _.map($scope.ruleGroups.properties, function (rule) {
           $scope.rule_count_property += rule.length;
         });
-        _.map($scope.ruleGroups['taxlots'], function (rule) {
+        _.map($scope.ruleGroups.taxlots, function (rule) {
           $scope.rule_count_taxlot += rule.length;
         });
       };
       loadRules(data_quality_rules_payload);
 
-      $scope.isModified = function() {
+      $scope.isModified = function () {
         return modified_service.isModified();
       };
       var originalRules = angular.copy(data_quality_rules_payload.rules);
@@ -424,8 +424,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.delete_rule = function (rule, index) {
         if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
           delete $scope.ruleGroups[$scope.inventory_type][rule.field];
-        }
-        else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
+        } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
         $scope.change_rules();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
         else $scope.rule_count_taxlot -= 1;

@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.data = [];
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle:  _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
+        selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
         cycles: cycles.cycles
       };
 
@@ -155,7 +155,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
       };
 
-      function populated_columns_modal() {
+      function populated_columns_modal () {
         $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
@@ -173,9 +173,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             inventory_type: function () {
               return $stateParams.inventory_type;
             },
-            provided_inventory: function () {
-              return null;
-            }
+            provided_inventory: _.constant(null)
           }
         });
       }
@@ -192,7 +190,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function updateApplicableLabels(current_labels) {
+      function updateApplicableLabels (current_labels) {
         var inventoryIds;
         if ($scope.inventory_type === 'properties') {
           inventoryIds = _.map($scope.data, 'property_view_id').sort();
@@ -829,7 +827,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      function currentColumns() {
+      function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
           return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible;

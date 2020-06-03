@@ -154,7 +154,7 @@ var SEED_app = angular.module('BE.seed', [
   'BE.seed.services',
   'BE.seed.controllers',
   'BE.seed.utilities',
-  'BE.seed.constants',
+  'BE.seed.constants'
 ], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
   $interpolateProvider.startSymbol('{$');
   $interpolateProvider.endSymbol('$}');
@@ -241,7 +241,6 @@ SEED_app.run([
 
       // Revert the url when the transition was triggered by a sidebar link (options.source === 'url')
       if (transition.options().source === 'url') {
-        var $state = transition.router.stateService;
         var $urlRouter = transition.router.urlRouter;
 
         $urlRouter.push($state.$current.navigable.url, $state.params, {replace: true});
@@ -545,21 +544,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
               import_file_payload) {
-            let filter_preset_types
-            if (import_file_payload.import_file.source_type === "BuildingSync Raw") {
-              filter_preset_types = [
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
-              ]
-            } else {
-              filter_preset_types = [COLUMN_MAPPING_PRESET_TYPE_NORMAL]
-            }
-            var organization_id = user_service.get_organization().id;
-            return column_mappings_service.get_column_mapping_presets_for_org(
-              organization_id,
-              filter_preset_types
-            ).then(response => response.data)
-          }],
+              var filter_preset_types;
+              if (import_file_payload.import_file.source_type === 'BuildingSync Raw') {
+                filter_preset_types = [
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                ];
+              } else {
+                filter_preset_types = [COLUMN_MAPPING_PRESET_TYPE_NORMAL];
+              }
+              var organization_id = user_service.get_organization().id;
+              return column_mappings_service.get_column_mapping_presets_for_org(
+                organization_id,
+                filter_preset_types
+              ).then(function (response) {
+                return response.data;
+              });
+            }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
