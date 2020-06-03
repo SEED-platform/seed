@@ -69,13 +69,17 @@ angular.module('BE.seed.service.label', [])
         if (inventory_type === 'properties') {
           params.inventory_type = 'property_view';
           body = {selected: filter_ids};
+          return $http.post('/api/v3/properties/labels/', body, {
+            params: params
+          }).then(map_labels);
         } else if (inventory_type === 'taxlots') {
           params.inventory_type = 'taxlot_view';
           body = {selected: filter_ids};
+          return $http.post('/api/v3/taxlots/labels/', body, {
+            params: params
+          }).then(map_labels);
         }
-        return $http.post('/api/v2/labels/filter/', body, {
-          params: params
-        }).then(map_labels);
+
       }
 
 
