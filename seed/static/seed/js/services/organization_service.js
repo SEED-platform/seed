@@ -165,7 +165,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
 
     organization_factory.match_merge_link = function (org_id, inventory_type) {
       return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link/', {
-        inventory_type: inventory_type,
+        inventory_type: inventory_type
       }).then(function (response) {
         return response.data;
       });
@@ -181,7 +181,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       return $http.post('/api/v2/organizations/' + org_id + '/match_merge_link_preview/', {
         inventory_type: inventory_type,
         add: criteria_change_columns.add,
-        remove: criteria_change_columns.remove,
+        remove: criteria_change_columns.remove
       }).then(function (response) {
         return response.data;
       });

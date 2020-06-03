@@ -578,7 +578,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                   // this only occurs in buildingsync, where we are not actually merging properties
                   // thus we will always end up at step 10
                   $scope.step_10_style = 'danger';
-                  $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2)
+                  $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2);
                 }
 
                 // If merges against existing exist, provide slightly different feedback

@@ -44,7 +44,7 @@ angular.module('BE.seed.service.inventory_reports',
     function get_report_data (xVar, yVar, start, end) {
 
       // Error checks
-      if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+      if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -97,7 +97,7 @@ angular.module('BE.seed.service.inventory_reports',
     function get_aggregated_report_data (xVar, yVar, start, end) {
 
       // Error checks
-      if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+      if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -123,8 +123,8 @@ angular.module('BE.seed.service.inventory_reports',
       var xLabel = axes_data.xLabel;
       var yVar = axes_data.yVar;
       var yLabel = axes_data.yLabel;
-            // Error checks
-      if (_.isNil(xVar) || _.isNil(xLabel) || _.isNil(yVar) || _.isNil(yLabel) || _.isNil(start) || _.isNil(end)) {
+      // Error checks
+      if (_.some([xVar, xLabel, yVar, yLabel, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -137,11 +137,11 @@ angular.module('BE.seed.service.inventory_reports',
           y_var: yVar,
           y_label: yLabel,
           start: start,
-          end: end,
+          end: end
         },
         responseType: 'arraybuffer'
       }).then(function (response) {
-        return response
+        return response;
       });
     }
 
@@ -158,7 +158,7 @@ angular.module('BE.seed.service.inventory_reports',
       //get_summary_data : get_summary_data,
       get_report_data: get_report_data,
       get_aggregated_report_data: get_aggregated_report_data,
-      export_reports_data: export_reports_data,
+      export_reports_data: export_reports_data
 
     };
 
