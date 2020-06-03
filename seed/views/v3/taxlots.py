@@ -11,12 +11,22 @@ from rest_framework.renderers import JSONRenderer
 from seed.filters import InventoryFilterBackend
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
+from seed.utils.api_schema import AutoSchemaHelper
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class TaxlotLabelsViewSet(viewsets.ViewSet):
+class TaxlotsSchema(AutoSchemaHelper):
+    def __init__(self, *args):
+        super().__init__(*args)
 
+        self.manual_fields = {
+            ('POST', 'labels'): [self.org_id_field()]
+        }
+
+
+class TaxlotLabelsViewSet(viewsets.ViewSet):
+    swagger_schema = TaxlotsSchema
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     _organization = None
@@ -86,4 +96,7 @@ class TaxlotLabelsViewSet(viewsets.ViewSet):
         Api endpoint to list only labels applied to taxlot inventory type
         ___
         """
+        request.query_params._mutable = True
+        request.query_params['inventory_type'] = 'taxlot_view'
+        request.query_params._mutable = False
         return self._get_labels(request)

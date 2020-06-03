@@ -81,7 +81,7 @@ angular.module('BE.seed.service.label', [])
         }
 
       }
-
+      
 
       /*  Add a label to an organization's list of labels
 

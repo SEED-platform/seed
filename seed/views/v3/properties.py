@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from seed.utils.api_schema import AutoSchemaHelper
 from collections import namedtuple
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import (
@@ -15,8 +16,16 @@ from seed.serializers.labels import LabelSerializer
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class PropertyLabelsViewSet(viewsets.ViewSet):
+class PropertiesSchema(AutoSchemaHelper):
+    def __init__(self, *args):
+        super().__init__(*args)
 
+        self.manual_fields = {
+            ('POST', 'labels'): [self.org_id_field()]
+        }
+
+class PropertyLabelsViewSet(viewsets.ViewSet):
+    swagger_schema = PropertiesSchema
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     _organization = None
@@ -75,4 +84,7 @@ class PropertyLabelsViewSet(viewsets.ViewSet):
         Api endpoint to list only labels applied to property inventory type
         ___
         """
+        request.query_params._mutable = True
+        request.query_params['inventory_type'] = 'property_view'
+        request.query_params._mutable = False
         return self._get_labels(request)
