@@ -24,12 +24,6 @@ from rest_framework.mixins import (
     UpdateModelMixin,
 )
 
-from rest_framework.mixins import (
-    CreateModelMixin,
-    DestroyModelMixin,
-    UpdateModelMixin,
-)
-
 # Local Imports
 from seed.authentication import SEEDAuthentication
 from seed.decorators import DecoratorMixin
