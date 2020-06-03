@@ -52,6 +52,7 @@ class SchemaGenerationTests(TestCase):
                  '/api/v2.1/properties',
                  '/api/v2.1/scenarios',
                  '/api/v3/labels',
+                 '/api/v3/columns',
                  '/api/v3/cycles')):
                 self.assertTrue(
                     url.endswith('/'),

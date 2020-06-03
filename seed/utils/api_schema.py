@@ -5,15 +5,22 @@ from drf_yasg import openapi
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
+    # overrides the serialization of existing endpoints
+    overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
     body_parameter_formats = {
-        'interger_list': openapi.Schema(
+        'interger_array': openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(type=openapi.TYPE_INTEGER)
         ),
         'integer': openapi.Schema(type=openapi.TYPE_INTEGER),
-        'string': openapi.Schema(type=openapi.TYPE_STRING)
+        'string': openapi.Schema(type=openapi.TYPE_STRING),
+        'boolean': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+        'string_array': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(type=openapi.TYPE_STRING)
+        )
     }
 
     def base_field(self, name, location_attr, description, required, type):
@@ -29,12 +36,12 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=type
         )
 
-    def org_id_field(self):
+    def org_id_field(self, required=True):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,
             description='Organization ID',
-            required=True,
+            required=required,
             type=openapi.TYPE_INTEGER
         )
 
@@ -45,6 +52,24 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             description=description,
             required=True,
             type=openapi.TYPE_INTEGER
+        )
+
+    def query_string_field(self, name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
+    def query_boolean_field(self, name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_BOOLEAN
         )
 
     def path_id_field(self, description):
@@ -78,5 +103,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     def add_manual_parameters(self, parameters):
         manual_params = self.manual_fields.get((self.method, self.view.action), [])
 
+        if (self.method, self.view.action) in self.overwrite_params:
+            return manual_params
         # I think this should add to existing parameters, but haven't been able to confirm.
         return parameters + manual_params
