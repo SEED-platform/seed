@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       $scope.currentProfile = current_profile;
 
       // Scope columns/data to only those of the given inventory_type
-      var state_type = $scope.inventory_type == "properties" ? "PropertyState" : "TaxLotState";
+      var state_type = $scope.inventory_type == 'properties' ? 'PropertyState' : 'TaxLotState';
       $scope.all_columns = _.filter(all_columns, {table_name: state_type});
 
       // set up i18n
@@ -61,13 +61,13 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       $scope.included_cycle_ids = _.map(_.keys(inventory), function (cycle_id) {
         return parseInt(cycle_id);
       });
-      $scope.cycle_options = _.map(cycles.cycles, function(cycle) {
+      $scope.cycle_options = _.map(cycles.cycles, function (cycle) {
         var selected = $scope.included_cycle_ids.includes(cycle.id);
         return {
           selected: selected,
           label: cycle.name,
           value: cycle.id,
-          start: cycle.start,
+          start: cycle.start
         };
       });
 
@@ -84,15 +84,15 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       };
 
       // Takes raw cycle-partitioned records and returns array of cycle-aware records
-      $scope.format_records = function(raw_inventory) {
-        return _.reduce(raw_inventory, function(all_records, records, cycle_id) {
+      $scope.format_records = function (raw_inventory) {
+        return _.reduce(raw_inventory, function (all_records, records, cycle_id) {
           var cycle = _.find($scope.cycle_options, { value: parseInt(cycle_id) });
-          _.forEach(records, function(record) {
+          _.forEach(records, function (record) {
             record.cycle_name = cycle.label;
             record.cycle_start = cycle.start;
-            all_records.push(record)
-          })
-          return all_records
+            all_records.push(record);
+          });
+          return all_records;
         }, []);
       };
 
@@ -100,16 +100,16 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       $scope.data = $scope.format_records(inventory);
 
       // Refreshes inventory by making API call
-      $scope.refresh_objects = function() {
+      $scope.refresh_objects = function () {
         spinner_utility.show();
         var profile_id = _.has($scope.currentProfile, 'id') ? $scope.currentProfile.id : undefined;
-        if ($scope.inventory_type == "properties") {
-          inventory_service.properties_cycle(profile_id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
+        if ($scope.inventory_type == 'properties') {
+          inventory_service.properties_cycle(profile_id, $scope.included_cycle_ids).then(function (refreshed_inventory) {
             $scope.data = $scope.format_records(refreshed_inventory);
             spinner_utility.hide();
           });
         } else {
-          inventory_service.taxlots_cycle(profile_id, $scope.included_cycle_ids).then(function(refreshed_inventory) {
+          inventory_service.taxlots_cycle(profile_id, $scope.included_cycle_ids).then(function (refreshed_inventory) {
             $scope.data = $scope.format_records(refreshed_inventory);
             spinner_utility.hide();
           });
@@ -117,34 +117,34 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       };
 
       // On profile change, refreshes objects and rebuild columns
-      $scope.profile_change = function() {
+      $scope.profile_change = function () {
         inventory_service.save_last_profile($scope.currentProfile.id, $scope.inventory_type);
         $scope.refresh_objects();
 
         // uiGrid doesn't recognize complete columnDefs swap unless it's removed and refreshed and notified for each
         $scope.gridOptions.columnDefs = [];
-        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN)
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
 
         $scope.build_columns();
 
         $scope.gridOptions.columnDefs = $scope.columns;
-        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN)
+        $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
       };
 
       // Agg function returning last value of matching criteria field (all should be the same if they match)
-      $scope.matching_field_value = function(aggregation, fieldValue) {
+      $scope.matching_field_value = function (aggregation, fieldValue) {
         aggregation.value = fieldValue;
       };
 
       // matching_criteria_columns identified here to pin left on table
-      if ($scope.inventory_type == "properties") {
+      if ($scope.inventory_type == 'properties') {
         $scope.matching_criteria_columns = matching_criteria_columns.PropertyState;
       } else {
         $scope.matching_criteria_columns = matching_criteria_columns.TaxLotState;
       }
 
       // Builds columns with profile, default, and grouping settings
-      $scope.build_columns = function() {
+      $scope.build_columns = function () {
         $scope.columns = [];
 
         // Profile Settings
@@ -167,7 +167,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         var column_def_defaults = {
           headerCellFilter: 'translate',
           minWidth: default_min_width,
-          width: 150,
+          width: 150
         };
 
         _.map($scope.columns, function (col) {
@@ -185,7 +185,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
 
             // Help indicate matching columns are given preferred sort priority
             col.displayName = col.displayName + '*';
-            options.headerCellClass = "matching-column-header";
+            options.headerCellClass = 'matching-column-header';
 
             options.customTreeAggregationFn = $scope.matching_field_value;
             options.width = autopin_width;
@@ -204,7 +204,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             visible: false,
             suppressRemoveSort: true, // since grouping relies on sorting
             minWidth: default_min_width,
-            width: autopin_width,
+            width: autopin_width
           },
           {
             name: 'inventory detail link icon',
@@ -222,31 +222,31 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             enableSorting: false,
             pinnedLeft: true,
             visible: true,
-            width: 30,
+            width: 30
           },
           {
-            name: "cycle_name",
-            displayName: "Cycle",
+            name: 'cycle_name',
+            displayName: 'Cycle',
             pinnedLeft: true,
             treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
             customTreeAggregationFinalizerFn: function (aggregation) {
-              aggregation.rendered = "total cycles: " + aggregation.value;
+              aggregation.rendered = 'total cycles: ' + aggregation.value;
             },
             minWidth: default_min_width,
-            width: autopin_width,
+            width: autopin_width
           },
           {
-            name: "cycle_start",
-            displayName: "Cycle Start",
+            name: 'cycle_start',
+            displayName: 'Cycle Start',
             cellFilter: 'date:\'yyyy-MM-dd\'',
             filter: inventory_service.dateFilter(),
             type: 'date',
             sort: { priority: 1, direction: 'asc' },
             pinnedLeft: true,
             minWidth: default_min_width,
-            width: autopin_width,
-          },
-        )
+            width: autopin_width
+          }
+        );
       };
 
       $scope.build_columns();
@@ -257,7 +257,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
         // Lastly, non-matching columns are given next priority so that users can sort within a grouped set.
         if (sortColumns.length > 1) {
           var matching_cols = _.filter(sortColumns, function (col) {
-              return col.colDef.is_matching_criteria;
+            return col.colDef.is_matching_criteria;
           });
           var linking_id_col = _.find(sortColumns, ['name', 'id']);
           var remaining_cols = _.filter(sortColumns, function (col) {
@@ -266,7 +266,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           sortColumns = matching_cols.concat(linking_id_col).concat(remaining_cols);
           _.forEach(sortColumns, function (col, index) {
             col.sort.priority = index;
-          })
+          });
         }
       };
 
@@ -283,8 +283,8 @@ angular.module('BE.seed.controller.inventory_cycles', [])
 
           $scope.gridApi.core.on.filterChanged($scope, function () {
           // This is a workaround for losing the state of expanded rows during filtering.
-              _.delay($scope.gridApi.treeBase.expandAllRows, 500);
-          })
+            _.delay($scope.gridApi.treeBase.expandAllRows, 500);
+          });
 
           // Prioritized to maintain grouping.
           $scope.gridApi.core.on.sortChanged($scope, prioritize_sort);
@@ -296,7 +296,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           $scope.$on('$destroy', function () {
             angular.element($window).off('resize', debouncedHeightUpdate);
           });
-        },
+        }
       };
 
       $scope.updateHeight = function () {

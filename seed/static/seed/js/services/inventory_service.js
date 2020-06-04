@@ -54,7 +54,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v2/properties/cycles/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -163,7 +163,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http.post('/api/v2/properties/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+        organization_id: user_service.get_organization().id
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -288,7 +288,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v2/taxlots/cycles/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -392,7 +392,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+        organization_id: user_service.get_organization().id
       }).then(function (response) {
         return response.data;
       }).finally(function () {
