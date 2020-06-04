@@ -93,15 +93,20 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             openapi.IN_BODY,
             description=description,
             required=required,
-            schema=cls._build_body_schema(params_to_formats)
+            schema=cls.schema_factory(params_to_formats)
         )
 
     @classmethod
-    def _build_body_schema(cls, params_to_formats):
+    def schema_factory(cls, params_to_formats):
+        """Translates simple dictionary into an openapi Schema instance
+
+        :param params_to_formats: dict[str, str]
+        :return: drf_yasg.openapi.Schema
+        """
         return openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                k: cls.body_parameter_formats.get(format_name, "")
+                k: cls.body_parameter_formats[format_name]
                 for k, format_name
                 in params_to_formats.items()
             }
