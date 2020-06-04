@@ -402,7 +402,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'])
-    def perform_mapping(self, request, pk=None):
+    def map(self, request, pk=None):
         """
         Starts a background task to convert imported raw data into
         PropertyState and TaxLotState, using user's column mappings.
@@ -480,7 +480,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'])
-    def save_raw_data(self, request, pk=None):
+    def start_save_data(self, request, pk=None):
         """
         Starts a background task to import raw data from an ImportFile
         into PropertyState objects as extra_data. If the cycle_id is set to
@@ -526,7 +526,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['PUT'])
+    @action(detail=True, methods=['POST'])
     def mapping_done(self, request, pk=None):
         """
         Tell the backend that the mapping is complete.
