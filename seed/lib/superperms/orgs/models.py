@@ -193,6 +193,8 @@ class Organization(models.Model):
 
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
+    comstock_enabled = models.BooleanField(default=False)
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.

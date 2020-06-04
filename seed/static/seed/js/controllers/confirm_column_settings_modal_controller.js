@@ -86,22 +86,27 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           field: 'merge_protection',
           displayName: 'Merge Protection Change',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-show="{$ row.entity.merge_protection != undefined $}" ng-checked="{$ row.entity.merge_protection === \'Favor Existing\' $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-show="{$ row.entity.merge_protection != undefined $}" ng-checked="{$ row.entity.merge_protection === \'Favor Existing\' $}" style="margin: 0;">' +
             '</div>'
         },
         {
           field: 'recognize_empty',
           displayName: 'Recognize Empty',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.recognize_empty === undefined $}" ng-checked="{$ row.entity.recognize_empty === true $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.recognize_empty === undefined $}" ng-checked="{$ row.entity.recognize_empty === true $}" style="margin: 0;">' +
             '</div>'
         },
         {
           field: 'is_matching_criteria',
           displayName: 'Matching Criteria Change',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_matching_criteria === undefined $}" ng-checked="{$ row.entity.is_matching_criteria === true $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_matching_criteria === undefined $}" ng-checked="{$ row.entity.is_matching_criteria === true $}" style="margin: 0;">' +
             '</div>'
+        },
+        {
+          field: 'comstock_mapping',
+          displayName: 'ComStock Mapping Change',
+          cellTemplate: '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === "" ? "" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
         }
       ];
 

@@ -67,9 +67,30 @@ angular.module('BE.seed.controller.column_settings', [])
         {id: 'geometry', label: $translate.instant('Geometry')}
       ];
 
-      $scope.changeText = function(btnText) {
-        if(btnText === 'Collapse Help'){
-          $scope.btnText = 'Expand Help' ;
+      $scope.comstock_types = [
+        {id: '', label: ''},
+        {id: 'division', label: $translate.instant('comstock.division')},
+        {id: 'hvac_system_type', label: $translate.instant('comstock.hvac_system_type')},
+        {id: 'rentable_area', label: $translate.instant('comstock.rentable_area')},
+        {id: 'number_of_stories', label: $translate.instant('comstock.number_of_stories')},
+        {id: 'year_built', label: $translate.instant('comstock.year_built')},
+        {id: 'weekend_start_time', label: $translate.instant('comstock.weekend_start_time')},
+        {id: 'weekend_duration', label: $translate.instant('comstock.weekend_duration')},
+        {id: 'weekday_start_time', label: $translate.instant('comstock.weekday_start_time')},
+        {id: 'weekday_duration', label: $translate.instant('comstock.weekday_duration')},
+        {id: 'building_shape', label: $translate.instant('comstock.building_shape')},
+        {id: 'built_code', label: $translate.instant('comstock.built_code')},
+        {id: 'rotation', label: $translate.instant('comstock.rotation')},
+        {id: 'aspect_ratio', label: $translate.instant('comstock.aspect_ratio')},
+        {id: 'building_type', label: $translate.instant('comstock.building_type')},
+        {id: 'state', label: $translate.instant('comstock.state')},
+        {id: 'county', label: $translate.instant('comstock.county')},
+        {id: 'climate_zone', label: $translate.instant('comstock.climate_zone')}
+      ];
+
+      $scope.changeText = function (btnText) {
+        if (btnText === 'Collapse Help') {
+          $scope.btnText = 'Expand Help';
         } else {
           $scope.btnText = 'Collapse Help';
         }
@@ -79,10 +100,10 @@ angular.module('BE.seed.controller.column_settings', [])
         var change_to = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
 
         var geocoding_results_columns = ['geocoding_confidence', 'longitude', 'latitude'];
-        if (_.includes(geocoding_results_columns, column.column_name) ) {
+        if (_.includes(geocoding_results_columns, column.column_name)) {
           geocoding_results_columns.forEach(function (geo_col) {
-            _.find($scope.columns, { 'column_name': geo_col }).merge_protection = change_to;
-          })
+            _.find($scope.columns, {column_name: geo_col}).merge_protection = change_to;
+          });
         } else {
           column.merge_protection = change_to;
         }
@@ -153,6 +174,18 @@ angular.module('BE.seed.controller.column_settings', [])
         $scope.geocoding_columns.splice((column.geocoding_order - 1), 0, column);
         update_geocoding_order_values();
         set_modified_and_check_sort();
+      };
+
+      $scope.comstockModified = function (column) {
+        // Remove any potential duplicates
+        if (column.comstock_mapping !== '') {
+          _.forEach($scope.columns, function (col) {
+            if (col.id !== column.id && col.comstock_mapping === column.comstock_mapping) {
+              col.comstock_mapping = '';
+            }
+          });
+        }
+        $scope.setModified();
       };
 
       $scope.setModified = function () {
@@ -241,7 +274,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.toggle_recognize_empty_sort = function () {
         if ($scope.column_sort !== 'recognize_empty') {
           $scope.columns = _.orderBy($scope.columns, 'recognize_empty', 'desc');
-          
+
           $scope.column_sort = 'recognize_empty';
         } else {
           default_sort_toggle();
@@ -272,10 +305,11 @@ angular.module('BE.seed.controller.column_settings', [])
 
         if (match_link_summary) {
           _.forOwn(match_link_summary, function (state_summary, state) {
+            var type;
             if (state === 'PropertyState') {
-              var type = 'Property';
+              type = 'Property';
             } else {
-              var type = 'TaxLot';
+              type = 'TaxLot';
             }
 
             var merged_count = state_summary.merged_count;
@@ -321,7 +355,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.save_settings = function () {
         $scope.columns_updated = false;
 
-        if (_.filter($scope.columns, 'is_matching_criteria').length == 0) {
+        if (_.filter($scope.columns, 'is_matching_criteria').length === 0) {
           Notification.error('Error: There must be at least one matching criteria column.');
           return;
         }
@@ -344,7 +378,6 @@ angular.module('BE.seed.controller.column_settings', [])
             $scope.$emit('app_error', data);
           });
         }).catch(function () { // User cancelled
-          return;
         });
       };
 

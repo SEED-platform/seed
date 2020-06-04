@@ -594,6 +594,8 @@ class Column(models.Model):
 
     recognize_empty = models.BooleanField(default=False)
 
+    comstock_mapping = models.CharField(max_length=64, blank=True, default='')
+
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
