@@ -30,19 +30,19 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
-        view_id: $stateParams.view_id,
+        view_id: $stateParams.view_id
       };
 
       $scope.states = inventory_payload.data;
       $scope.base_state = _.find(inventory_payload.data, {view_id: $stateParams.view_id});
 
-      $scope.cycles = _.reduce(cycles.cycles, function(cycles_by_id, cycle) {
+      $scope.cycles = _.reduce(cycles.cycles, function (cycles_by_id, cycle) {
         cycles_by_id[cycle.id] = cycle;
         return cycles_by_id;
       }, {});
 
       // Flag columns whose values have changed between cycles.
-      var changes_check = function(column) {
+      var changes_check = function (column) {
         var uniq_column_values;
 
         if (column.is_extra_data) {
@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
           uniq_column_values = _.uniqBy($scope.states, column.column_name);
         }
 
-        column['changed'] = uniq_column_values.length > 1;
+        column.changed = uniq_column_values.length > 1;
         return column;
       };
 
@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         });
       } else {
         // No profiles exist
-        $scope.columns = _.map(_.reject(columns, 'is_extra_data'), function(col) {
+        $scope.columns = _.map(_.reject(columns, 'is_extra_data'), function (col) {
           return changes_check(col);
         });
       }
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
       // Horizontal scroll for "2 tables" that scroll together for fixed header effect.
       var table_container = $('.table-xscroll-fixed-header-container');
 
-      table_container.scroll(function() {
+      table_container.scroll(function () {
         $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(
           table_container.width() + table_container.scrollLeft()
         );

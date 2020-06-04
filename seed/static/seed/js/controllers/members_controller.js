@@ -63,7 +63,7 @@ angular.module('BE.seed.controller.members', [])
         }
       };
 
-      function confirm_remove_user(user) {
+      function confirm_remove_user (user) {
         organization_service.remove_user(user.user_id, $scope.org.id).then(function () {
           organization_service.get_organization_users({org_id: $scope.org.id}).then(function (data) {
             $scope.users = data.users;

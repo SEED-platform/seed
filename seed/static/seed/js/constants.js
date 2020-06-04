@@ -5,4 +5,4 @@
 angular.module('BE.seed.constants', [])
   .constant('COLUMN_MAPPING_PRESET_TYPE_NORMAL', 'Normal')
   .constant('COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT', 'BuildingSync Default')
-  .constant('COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM', 'BuildingSync Custom')
+  .constant('COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM', 'BuildingSync Custom');
