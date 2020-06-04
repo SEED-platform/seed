@@ -82,39 +82,6 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     tax_lots = MappingResultsTaxLotSerializer(many=True)
 
 
-class MappingSerializer(serializers.Serializer):
-    from_field = serializers.CharField()
-    from_units = serializers.CharField()
-    to_field = serializers.CharField()
-    to_field_display_name = serializers.CharField()
-    to_table_name = serializers.CharField()
-
-
-class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
-    """
-    Example:
-    {
-        "mappings": [
-            {
-                'from_field': 'eui',  # raw field in import file
-                'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
-                'to_field': 'energy_use_intensity',
-                'to_field_display_name': 'Energy Use Intensity',
-                'to_table_name': 'PropertyState',
-            },
-            {
-                'from_field': 'gfa',
-                'from_units': 'ft**2', # pint-parsable units, optional
-                'to_field': 'gross_floor_area',
-                'to_field_display_name': 'Gross Floor Area',
-                'to_table_name': 'PropertyState',
-            }
-        ]
-    }
-    """
-    mappings = serializers.ListField(child=MappingSerializer())
-
-
 def convert_first_five_rows_to_list(header, first_five_rows):
     """
     Return the first five rows. This is a complicated method because it handles converting the
@@ -555,35 +522,6 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': ''
             }
         )
-
-    @swagger_auto_schema(
-        request_body=SaveColumnMappingsRequestPayloadSerializer,
-        responses={
-            200: 'success response'
-        }
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=True, methods=['POST'])
-    def save_column_mappings(self, request, pk=None):
-        """
-        Saves the mappings between the raw headers of an ImportFile and the
-        destination fields in the `to_table_name` model which should be either
-        PropertyState or TaxLotState
-
-        Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-        """
-        body = request.data
-        import_file = ImportFile.objects.get(pk=pk)
-        organization = import_file.import_record.super_organization
-        mappings = body.get('mappings', [])
-        result = Column.create_mappings(mappings, organization, request.user, import_file.id)
-
-        if result:
-            return JsonResponse({'status': 'success'})
-        else:
-            return JsonResponse({'status': 'error'})
 
     @api_endpoint_class
     @ajax_request_class
