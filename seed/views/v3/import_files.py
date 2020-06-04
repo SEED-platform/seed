@@ -6,9 +6,9 @@
 """
 import logging
 
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import (
     action,
@@ -29,7 +29,6 @@ from seed.data_importer.tasks import (
     save_raw_data as task_save_raw,
 )
 from seed.decorators import ajax_request_class
-from seed.decorators import get_prog_key
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper
 from seed.lib.xml_mapping import mapper as xml_mapper
@@ -59,18 +58,10 @@ from seed.models import (
     TaxLotProperty,
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.cache import get_cache
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
-
-
-class MappingResultsPayloadSerializer(serializers.Serializer):
-    q = serializers.CharField(max_length=100)
-    order_by = serializers.CharField(max_length=100)
-    filter_params = JSONField()
-    page = serializers.IntegerField()
-    number_per_page = serializers.IntegerField()
 
 
 class MappingResultsPropertySerializer(serializers.Serializer):
@@ -89,6 +80,39 @@ class MappingResultsResponseSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=100)
     properties = MappingResultsPropertySerializer(many=True)
     tax_lots = MappingResultsTaxLotSerializer(many=True)
+
+
+class MappingSerializer(serializers.Serializer):
+    from_field = serializers.CharField()
+    from_units = serializers.CharField()
+    to_field = serializers.CharField()
+    to_field_display_name = serializers.CharField()
+    to_table_name = serializers.CharField()
+
+
+class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
+    """
+    Example:
+    {
+        "mappings": [
+            {
+                'from_field': 'eui',  # raw field in import file
+                'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
+                'to_field': 'energy_use_intensity',
+                'to_field_display_name': 'Energy Use Intensity',
+                'to_table_name': 'PropertyState',
+            },
+            {
+                'from_field': 'gfa',
+                'from_units': 'ft**2', # pint-parsable units, optional
+                'to_field': 'gross_floor_area',
+                'to_field_display_name': 'Gross Floor Area',
+                'to_table_name': 'PropertyState',
+            }
+        ]
+    }
+    """
+    mappings = serializers.ListField(child=MappingSerializer())
 
 
 def convert_first_five_rows_to_list(header, first_five_rows):
@@ -155,23 +179,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         """
         Retrieves details about an ImportFile.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            import_file:
-                type: ImportFile structure
-                description: full detail of import file
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: "Primary Key"
-              required: true
-              paramType: path
         """
-
         import_file_id = pk
         orgs = request.user.orgs.all()
         try:
@@ -211,21 +219,6 @@ class ImportFileViewSet(viewsets.ViewSet):
     def first_five_rows(self, request, pk=None):
         """
         Retrieves the first five rows of an ImportFile.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            first_five_rows:
-                type: array of strings
-                description: list of strings for each of the first five rows for this import file
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: "Primary Key"
-              required: true
-              paramType: path
         """
         import_file = ImportFile.objects.get(pk=pk)
         if import_file is None:
@@ -256,21 +249,6 @@ class ImportFileViewSet(viewsets.ViewSet):
     def raw_column_names(self, request, pk=None):
         """
         Retrieves a list of all column names from an ImportFile.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            raw_columns:
-                type: array of strings
-                description: list of strings of the header row of the ImportFile
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: "Primary Key"
-              required: true
-              paramType: path
         """
         import_file = ImportFile.objects.get(pk=pk)
         return JsonResponse({
@@ -278,21 +256,20 @@ class ImportFileViewSet(viewsets.ViewSet):
             'raw_columns': import_file.first_row_columns
         })
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.org_id_field(),
+        ],
+        responses={
+            200: MappingResultsResponseSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['POST'], url_path='filtered_mapping_results')
     def filtered_mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import File ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-        response_serializer: MappingResultsResponseSerializer
         """
         import_file_id = pk
         org_id = request.query_params.get('organization_id', False)
@@ -429,21 +406,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Starts a background task to convert imported raw data into
         PropertyState and TaxLotState, using user's column mappings.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
         """
 
         body = request.data
@@ -467,21 +429,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
         """
         try:
             task_geocode_buildings(pk)
@@ -507,6 +454,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return task_match_buildings(pk)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -515,21 +463,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
@@ -540,34 +473,9 @@ class ImportFileViewSet(viewsets.ViewSet):
             'progress': return_value,
         })
 
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=True, methods=['GET'])
-    def data_quality_progress(self, request, pk=None):
-        """
-        Return the progress of the data quality check.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            progress:
-                type: integer
-                description: status of background data quality task
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
-        """
-
-        import_file_id = pk
-        prog_key = get_prog_key('get_progress', import_file_id)
-        cache = get_cache(prog_key)
-        return HttpResponse(cache['progress'])
-
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({'cycle_id': 'string'})
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -578,29 +486,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         into PropertyState objects as extra_data. If the cycle_id is set to
         year_ending then the cycle ID will be set to the year_ending column for each
         record in the uploaded file. Note that the year_ending flag is not yet enabled.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            message:
-                required: false
-                type: string
-                description: error message, if any
-            progress_key:
-                type: integer
-                description: ID of background job, for retrieving job progress
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
-            - name: cycle_id
-              description: The ID of the cycle or the string "year_ending"
-              paramType: string
-              required: true
         """
         body = request.data
         import_file_id = pk
@@ -645,22 +530,6 @@ class ImportFileViewSet(viewsets.ViewSet):
     def mapping_done(self, request, pk=None):
         """
         Tell the backend that the mapping is complete.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            message:
-                required: false
-                type: string
-                description: error message, if any
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID
-              required: true
-              paramType: path
         """
         import_file_id = pk
         if not import_file_id:
@@ -669,7 +538,14 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass import_file_id'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        import_file = ImportFile.objects.get(pk=import_file_id)
+        try:
+            import_file = ImportFile.objects.get(pk=import_file_id)
+        except ImportFile.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'no import file with given id'
+            }, status=status.HTTP_404_NOT_FOUND)
+
         import_file.mapping_done = True
         import_file.save()
 
@@ -680,6 +556,12 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
         )
 
+    @swagger_auto_schema(
+        request_body=SaveColumnMappingsRequestPayloadSerializer,
+        responses={
+            200: 'success response'
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -691,32 +573,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         PropertyState or TaxLotState
 
         Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
-
-        Payload::
-
-            {
-                "import_file_id": ID of the ImportFile record,
-                "mappings": [
-                    {
-                        'from_field': 'eui',  # raw field in import file
-                        'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
-                        'to_field': 'energy_use_intensity',
-                        'to_field_display_name': 'Energy Use Intensity',
-                        'to_table_name': 'PropertyState',
-                    },
-                    {
-                        'from_field': 'gfa',
-                        'from_units': 'ft**2', # pint-parsable units, optional
-                        'to_field': 'gross_floor_area',
-                        'to_field_display_name': 'Gross Floor Area',
-                        'to_table_name': 'PropertyState',
-                    }
-                ]
-            }
-
-        Returns::
-
-            {'status': 'success'}
         """
         body = request.data
         import_file = ImportFile.objects.get(pk=pk)
@@ -737,23 +593,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
-
-        :GET: Expects import_file_id corresponding to the ImportFile in question.
-
-        Returns::
-
-            {
-                'status': 'success',
-                'properties': {
-                    'matched': Number of PropertyStates that have been matched,
-                    'unmatched': Number of PropertyStates that are unmatched new imports
-                },
-                'tax_lots': {
-                    'matched': Number of TaxLotStates that have been matched,
-                    'unmatched': Number of TaxLotStates that are unmatched new imports
-                }
-            }
-
         """
         import_file = ImportFile.objects.get(pk=pk)
 
@@ -890,6 +729,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
         }
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -899,36 +739,6 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Returns suggested mappings from an uploaded file's headers to known
         data fields.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            suggested_column_mappings:
-                required: true
-                type: dictionary
-                description: Dictionary where (key, value) = (the column header from the file,
-                      array of tuples (destination column, score))
-            building_columns:
-                required: true
-                type: array
-                description: A list of all possible columns
-            building_column_types:
-                required: true
-                type: array
-                description: A list of column types corresponding to the building_columns array
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: import_file_id
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-
         """
         organization_id = request.query_params.get('organization_id', None)
 
@@ -1006,31 +816,14 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return JsonResponse(result)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @permission_classes((SEEDOrgPermissions,))
     @has_perm_class('requires_member')
     def destroy(self, request, pk):
         """
-        Returns suggested mappings from an uploaded file's headers to known
-        data fields.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: import_file_id
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-
+        Deletes an import file
         """
         organization_id = int(request.query_params.get('organization_id', None))
         import_file = ImportFile.objects.get(pk=pk)
