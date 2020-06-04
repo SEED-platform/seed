@@ -29,14 +29,14 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     };
 
     column_mappings_factory.get_column_mapping_presets_for_org = function (org_id, filter_preset_types) {
-      const params = {
-        organization_id: org_id,
-      }
+      var params = {
+        organization_id: org_id
+      };
       if (filter_preset_types != null) {
-        params.preset_type = filter_preset_types
+        params.preset_type = filter_preset_types;
       }
       return $http.get('/api/v2/column_mapping_presets/', {
-        params
+        params: params
       }).then(function (response) {
         return response.data;
       });
@@ -58,10 +58,10 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
 
     column_mappings_factory.get_header_suggestions_for_org = function (org_id, headers) {
       return $http.post('/api/v2/column_mapping_presets/suggestions/', {
-        headers: headers,
+        headers: headers
       }, {
         params: {
-          organization_id: org_id,
+          organization_id: org_id
         }
       }).then(function (response) {
         return response.data;
