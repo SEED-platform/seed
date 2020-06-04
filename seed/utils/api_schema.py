@@ -10,7 +10,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
     # Used to easily build out example values displayed on Swagger page.
     body_parameter_formats = {
-        'interger_array': openapi.Schema(
+        'integer_array': openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(type=openapi.TYPE_INTEGER)
         ),
