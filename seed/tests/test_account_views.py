@@ -84,6 +84,7 @@ class AccountsViewTests(TestCase):
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'comstock_enabled': False,
         }
 
         org_payload = _dict_org(self.fake_request, [self.org])
@@ -149,6 +150,7 @@ class AccountsViewTests(TestCase):
                     'cycle_id': new_cycle.pk
                 }],
                 'created': self.org.created.strftime('%Y-%m-%d'),
+                'comstock_enabled': False,
             }],
             'owners': [{
                 'first_name': 'Johnny',
@@ -176,6 +178,7 @@ class AccountsViewTests(TestCase):
                 'cycle_id': self.cycle.pk
             }],
             'created': self.org.created.strftime('%Y-%m-%d'),
+            'comstock_enabled': False,
         }
 
         org_payload = _dict_org(self.fake_request, Organization.objects.all())

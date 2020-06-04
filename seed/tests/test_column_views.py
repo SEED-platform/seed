@@ -146,6 +146,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'unit_type': None,
             'is_matching_criteria': True,
             'recognize_empty': False,
+            'comstock_mapping': '',
         }
 
         # randomly check a column
