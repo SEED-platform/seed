@@ -982,9 +982,11 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
-                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
+                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
+                # To do that, delete all multiples along with any associated ColumnMapping objects.
                 _log.debug(
                     "More than one from_column found for {}.{}".format(field['to_table_name'],
                                                                        field['to_field']))
@@ -999,11 +1001,11 @@ class Column(models.Model):
                 ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
                 all_from_cols.delete()
 
-                from_org_col, _ = Column.objects.get_or_create(
+                from_org_col = Column.objects.create(
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
-                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
                 _log.debug("Creating a new from_column")
 
