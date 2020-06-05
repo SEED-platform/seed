@@ -1915,6 +1915,7 @@
                     </auc:Modeled>
                   </auc:CalculationMethod>
                   <auc:AnnualSavingsSiteEnergy>0.0</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsSourceEnergy>0.0</auc:AnnualSavingsSourceEnergy>
                   <auc:AnnualSavingsCost>0</auc:AnnualSavingsCost>
                   <auc:AnnualSavingsByFuels>
                     <auc:AnnualSavingsByFuel>
@@ -1936,6 +1937,7 @@
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>2235075.9859244428</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2235.076</auc:AnnualFuelUseConsistentUnits>
+                  <auc:AnnualPeakConsistentUnits>110.75706</auc:AnnualPeakConsistentUnits>
                 </auc:ResourceUse>
                 <auc:ResourceUse ID="Baseline-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
@@ -2166,6 +2168,9 @@
                 <auc:AllResourceTotal>
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:SiteEnergyUse>3902.655949232491</auc:SiteEnergyUse>
+                  <auc:SiteEnergyUseIntensity>52.8533358512101</auc:SiteEnergyUseIntensity>
+                  <auc:SourceEnergyUse>2051986.1527934822</auc:SourceEnergyUse>
+                  <auc:SourceEnergyUseIntensity>132.24988549512202</auc:SourceEnergyUseIntensity>
                 </auc:AllResourceTotal>
               </auc:AllResourceTotals>
             </auc:Scenario>
@@ -2183,6 +2188,7 @@
                     </auc:Modeled>
                   </auc:CalculationMethod>
                   <auc:AnnualSavingsSiteEnergy>758.5569977291548</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsSourceEnergy>1772.1336698497769</auc:AnnualSavingsSourceEnergy>
                   <auc:AnnualSavingsCost>15183</auc:AnnualSavingsCost>
                   <auc:AnnualSavingsByFuels>
                     <auc:AnnualSavingsByFuel>
@@ -2204,6 +2210,7 @@
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>3206417.9271639367</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2064.179</auc:AnnualFuelUseConsistentUnits>
+                  <auc:AnnualPeakConsistentUnits>110.75706</auc:AnnualPeakConsistentUnits>
                 </auc:ResourceUse>
                 <auc:ResourceUse ID="LED_Only-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
@@ -2434,6 +2441,9 @@
                 <auc:AllResourceTotal>
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:SiteEnergyUse>3144.098951503336</auc:SiteEnergyUse>
+                  <auc:SiteEnergyUseIntensity>52.8533358512101</auc:SiteEnergyUseIntensity>
+                  <auc:SourceEnergyUse>2051986.1527934822</auc:SourceEnergyUse>
+                  <auc:SourceEnergyUseIntensity>132.24988549512202</auc:SourceEnergyUseIntensity>
                 </auc:AllResourceTotal>
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
@@ -2456,6 +2466,7 @@
                     </auc:Modeled>
                   </auc:CalculationMethod>
                   <auc:AnnualSavingsSiteEnergy>284.11765998512055</auc:AnnualSavingsSiteEnergy>
+                  <auc:AnnualSavingsSourceEnergy>1772.1336698497769</auc:AnnualSavingsSourceEnergy>
                   <auc:AnnualSavingsCost>5194</auc:AnnualSavingsCost>
                   <auc:AnnualSavingsByFuels>
                     <auc:AnnualSavingsByFuel>
@@ -2477,6 +2488,7 @@
                   <auc:ResourceUnits>kBtu</auc:ResourceUnits>
                   <auc:AnnualFuelUseNativeUnits>2913836.260294419</auc:AnnualFuelUseNativeUnits>
                   <auc:AnnualFuelUseConsistentUnits>2913.836</auc:AnnualFuelUseConsistentUnits>
+                  <auc:AnnualPeakConsistentUnits>110.75706</auc:AnnualPeakConsistentUnits>
                 </auc:ResourceUse>
                 <auc:ResourceUse ID="Electric_Appliance_30pct_Reduction-Resource2">
                   <auc:EnergyResource>Natural gas</auc:EnergyResource>
@@ -2707,6 +2719,9 @@
                 <auc:AllResourceTotal>
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:SiteEnergyUse>3618.5382892473704</auc:SiteEnergyUse>
+                  <auc:SiteEnergyUseIntensity>52.8533358512101</auc:SiteEnergyUseIntensity>
+                  <auc:SourceEnergyUse>2051986.1527934822</auc:SourceEnergyUse>
+                  <auc:SourceEnergyUseIntensity>132.24988549512202</auc:SourceEnergyUseIntensity>
                 </auc:AllResourceTotal>
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
