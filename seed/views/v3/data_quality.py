@@ -9,6 +9,7 @@ import csv
 
 from celery.utils.log import get_task_logger
 from django.http import JsonResponse, HttpResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import action
 from unidecode import unidecode
@@ -30,6 +31,7 @@ from seed.utils.cache import get_cache_raw
 logger = get_task_logger(__name__)
 
 
+# TODO: Consider moving these serializers into seed/serializers (and maybe actually use them...)
 class RulesSubSerializer(serializers.Serializer):
     field = serializers.CharField(max_length=100)
     severity = serializers.CharField(max_length=100)
@@ -53,6 +55,29 @@ class RulesIntermediateSerializer(serializers.Serializer):
 
 class RulesSerializer(serializers.Serializer):
     data_quality_rules = RulesIntermediateSerializer()
+
+
+class RulePayloadSerializer(serializers.ModelSerializer):
+    # currently our requests put this in a different field
+    label = serializers.IntegerField(source='status_label')
+
+    class Meta:
+        model = Rule
+        exclude = ['id', 'status_label']
+
+
+class DataQualityRulesSerializer(serializers.Serializer):
+    properties = serializers.ListField(child=RulePayloadSerializer())
+    taxlots = serializers.ListField(child=RulePayloadSerializer())
+
+
+class SaveDataQualityRulesPayloadSerializer(serializers.Serializer):
+    data_quality_rules = DataQualityRulesSerializer()
+
+
+class DataQualityRulesResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    rules = DataQualityRulesSerializer()
 
 
 def _get_js_rule_type(data_type):
@@ -93,79 +118,40 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
-class DataQualitySchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('POST', 'create'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='data_quality_ids',
-                    required=True,
-                    description="An object containing IDs of the records to perform data quality checks on. Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array of appropriate IDs.",
-                    params_to_formats={
-                        'property_state_ids': 'integer_array',
-                        'taxlot_state_ids': 'integer_array'
-                    }
-                ),
-            ],
-            ('GET', 'data_quality_rules'): [self.org_id_field()],
-            ('PUT', 'reset_all_data_quality_rules'): [self.org_id_field()],
-            ('PUT', 'reset_default_data_quality_rules'): [self.org_id_field()],
-            ('POST', 'save_data_quality_rules'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='data_quality_rules',
-                    required=True,
-                    description="Rules information"
-                )
-            ],
-            ('GET', 'results'): [
-                self.org_id_field(),
-                self.query_integer_field(
-                    name='data_quality_id',
-                    required=True,
-                    description="Task ID created when DataQuality task is created."
-                ),
-            ],
-            ('GET', 'csv'): [
-                # This will replace the auto-generated field - adds description.
-                self.path_id_field(description="Import file ID or cache key")
-            ],
-        }
-
-
 class DataQualityViews(viewsets.ViewSet):
     """
     Handles Data Quality API operations within Inventory backend.
     (1) Post, wait, get…
     (2) Respond with what changed
     """
-    swagger_schema = DataQualitySchema
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'property_state_ids': 'integer_array',
+                'taxlot_state_ids': 'integer_array',
+            },
+            description='An object containing IDs of the records to perform'
+                        ' data quality checks on. Should contain two keys- '
+                        'property_state_ids and taxlot_state_ids, each of '
+                        'which is an array of appropriate IDs.',
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'num_properties': 'integer',
+                'num_taxlots': 'integer',
+                'progress_key': 'string',
+                'progress': {},
+            })
+        }
+    )
     def create(self, request):
         """
         This API endpoint will create a new cleansing operation process in the background,
         on potentially a subset of properties/taxlots, and return back a query key
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-            - name: data_quality_ids
-              description: An object containing IDs of the records to perform data quality checks on.
-                           Should contain two keys- property_state_ids and taxlot_state_ids, each of which is an array
-                           of appropriate IDs.
-              required: true
-              paramType: body
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
         """
         # step 0: retrieving the data
         body = request.data
@@ -187,6 +173,11 @@ class DataQualityViews(viewsets.ViewSet):
             'progress': return_value,
         })
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(description="Import file ID or cache key")
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -194,13 +185,6 @@ class DataQualityViews(viewsets.ViewSet):
     def csv(self, request, pk):
         """
         Download a csv of the data quality checks by the pk which is the cache_key
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Import file ID or cache key
-              required: true
-              paramType: path
         """
         data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk))
         response = HttpResponse(content_type='text/csv')
@@ -233,6 +217,12 @@ class DataQualityViews(viewsets.ViewSet):
 
         return response
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
@@ -240,22 +230,6 @@ class DataQualityViews(viewsets.ViewSet):
     def data_quality_rules(self, request):
         """
         Returns the data_quality rules for an org.
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-        type:
-            status:
-                type: string
-                required: true
-                description: success or error
-            rules:
-                type: object
-                required: true
-                description: An object containing 'properties' and 'taxlots' arrays of rules
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
@@ -288,6 +262,12 @@ class DataQualityViews(viewsets.ViewSet):
 
         return JsonResponse(result)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
@@ -295,30 +275,6 @@ class DataQualityViews(viewsets.ViewSet):
     def reset_all_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            in_range_checking:
-                type: array[string]
-                required: true
-                description: An array of in-range error rules
-            missing_matching_field:
-                type: array[string]
-                required: true
-                description: An array of fields to verify existence
-            missing_values:
-                type: array[string]
-                required: true
-                description: An array of fields to ignore missing values
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
@@ -326,6 +282,12 @@ class DataQualityViews(viewsets.ViewSet):
         dq.reset_all_rules()
         return self.data_quality_rules(request)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
@@ -333,30 +295,6 @@ class DataQualityViews(viewsets.ViewSet):
     def reset_default_data_quality_rules(self, request):
         """
         Resets an organization's data data_quality rules
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            in_range_checking:
-                type: array[string]
-                required: true
-                description: An array of in-range error rules
-            missing_matching_field:
-                type: array[string]
-                required: true
-                description: An array of fields to verify existence
-            missing_values:
-                type: array[string]
-                required: true
-                description: An array of fields to ignore missing values
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
@@ -364,6 +302,13 @@ class DataQualityViews(viewsets.ViewSet):
         dq.reset_default_rules()
         return self.data_quality_rules(request)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        request_body=SaveDataQualityRulesPayloadSerializer,
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
@@ -373,28 +318,6 @@ class DataQualityViews(viewsets.ViewSet):
         Saves an organization's settings: name, query threshold, shared fields.
         The method passes in all the fields again, so it is okay to remove
         all the rules in the db, and just recreate them (albeit inefficient)
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-              paramType: query
-            - name: body
-              description: JSON body containing organization rules information
-              paramType: body
-              pytype: RulesSerializer
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: true
         """
         organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
@@ -464,6 +387,16 @@ class DataQualityViews(viewsets.ViewSet):
 
         return self.data_quality_rules(request)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                name='data_quality_id',
+                required=True,
+                description="Task ID created when DataQuality task is created."
+            ),
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
