@@ -106,7 +106,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         {
           field: 'comstock_mapping',
           displayName: 'ComStock Mapping Change',
-          cellTemplate: '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === "" ? "" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
+          cellTemplate: '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === null ? "" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
         }
       ];
 

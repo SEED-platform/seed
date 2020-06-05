@@ -202,7 +202,7 @@ class MappingColumns(object):
         confidence will 'win' the duplicate battle.
 
         :param dup_map_field: String, name of the field that is a duplicate
-        :param columns: list, raw columns that mapped to the same result
+        :param raw_columns: list, raw columns that mapped to the same result
         :return: None
 
         """

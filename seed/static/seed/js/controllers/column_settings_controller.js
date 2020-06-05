@@ -68,7 +68,7 @@ angular.module('BE.seed.controller.column_settings', [])
       ];
 
       $scope.comstock_types = [
-        {id: '', label: ''},
+        {id: null, label: ''},
         {id: 'division', label: $translate.instant('comstock.division')},
         {id: 'hvac_system_type', label: $translate.instant('comstock.hvac_system_type')},
         {id: 'rentable_area', label: $translate.instant('comstock.rentable_area')},
@@ -178,10 +178,10 @@ angular.module('BE.seed.controller.column_settings', [])
 
       $scope.comstockModified = function (column) {
         // Remove any potential duplicates
-        if (column.comstock_mapping !== '') {
+        if (column.comstock_mapping !== null) {
           _.forEach($scope.columns, function (col) {
             if (col.id !== column.id && col.comstock_mapping === column.comstock_mapping) {
-              col.comstock_mapping = '';
+              col.comstock_mapping = null;
             }
           });
         }
@@ -370,7 +370,9 @@ angular.module('BE.seed.controller.column_settings', [])
         modal_instance.result.then(function () { // User confirmed
           var promises = [];
           _.forOwn(diff, function (delta, column_id) {
-            promises.push(columns_service.patch_column_for_org($scope.org.id, column_id, delta));
+            column_id = Number(column_id);
+            var col = angular.copy(_.find($scope.columns, {id: column_id}));
+            promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
           });
 
           spinner_utility.show();
