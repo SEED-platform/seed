@@ -19,7 +19,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         'string_array': openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(type=openapi.TYPE_STRING)
-        )
+        ),
+        'integer': openapi.Schema(type=openapi.TYPE_INTEGER),
     }
 
     @staticmethod
@@ -97,21 +98,37 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @classmethod
-    def schema_factory(cls, params_to_formats, **kwargs):
-        """Translates simple dictionary into an openapi Schema instance
+    def schema_factory(cls, obj, **kwargs):
+        """Translates an object into an openapi Schema
 
-        :param params_to_formats: dict[str, str]
+        :param obj: str, list, dict[str, obj]
         :return: drf_yasg.openapi.Schema
         """
-        return openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                k: cls.body_parameter_formats[format_name]
-                for k, format_name
-                in params_to_formats.items()
-            },
-            **kwargs
-        )
+        if type(obj) is str:
+            if obj not in cls.body_parameter_formats:
+                raise Exception(f'Invalid type "{obj}"; expected one of {cls.body_parameter_formats.keys()}')
+            return cls.body_parameter_formats[obj]
+
+        if type(obj) is list:
+            if len(obj) != 1:
+                raise Exception(f'List types must have exactly one element to specify the schema of `items`')
+            return openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=cls.schema_factory(obj[0])
+            )
+
+        if type(obj) is dict:
+            return openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    k: cls.schema_factory(sub_obj)
+                    for k, sub_obj
+                    in obj.items()
+                },
+                **kwargs
+            )
+        
+        raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
 
     def add_manual_parameters(self, parameters):
         manual_params = self.manual_fields.get((self.method, self.view.action), [])
