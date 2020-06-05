@@ -8,6 +8,7 @@ import logging
 
 from django.http import JsonResponse
 from django.utils import timezone
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -25,69 +26,16 @@ from seed.utils.api_schema import AutoSchemaHelper
 _log = logging.getLogger(__name__)
 
 
-class DatasetSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('GET', 'list'): [self.org_id_field()],
-            ('POST', 'create'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='name',
-                    required=True,
-                    description="The name of the dataset to be created",
-                    params_to_formats={
-                        'name': 'string'
-                    }
-                ),
-            ],
-            ('GET', 'count'): [self.org_id_field()],
-            ('GET', 'retrieve'): [
-                self.org_id_field()],
-            ('PUT', 'update'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='dataset',
-                    required=True,
-                    description="The new name for this dataset",
-                    params_to_formats={
-                        'dataset': 'string'
-                    }
-                )
-            ],
-            ('DELETE', 'destroy'): [self.org_id_field()]
-        }
-
-
 class DatasetViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    swagger_schema = DatasetSchema
-
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()],)
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def list(self, request):
         """
         Retrieves all datasets for the user's organization.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            datasets:
-                required: true
-                type: array[dataset]
-                description: Returns an array where each item is a full dataset structure, including
-                             keys ''name'', ''number_of_buildings'', ''id'', ''updated_at'',
-                             ''last_modified_by'', ''importfiles'', ...
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
 
         org_id = request.query_params.get('organization_id', None)
@@ -107,35 +55,19 @@ class DatasetViewSet(viewsets.ViewSet):
             'datasets': datasets,
         })
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {'dataset': 'string'},
+            description='The new name for this dataset'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
         """
             Updates the name of a dataset (ImportRecord).
-            ---
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: either success or error
-                message:
-                    type: string
-                    description: error message, if any
-            parameter_strategy: replace
-            parameters:
-                - name: organization_id
-                  description: "The organization_id"
-                  required: true
-                  paramType: query
-                - name: dataset
-                  description: "The new name for this dataset"
-                  required: true
-                  paramType: string
-                - name: pk
-                  description: "Primary Key"
-                  required: true
-                  paramType: path
         """
 
         organization_id = request.query_params.get('organization_id', None)
@@ -166,33 +98,12 @@ class DatasetViewSet(viewsets.ViewSet):
             'status': 'success',
         })
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
             Retrieves a dataset (ImportRecord).
-            ---
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: Either success or error
-                dataset:
-                    required: true
-                    type: dictionary
-                    description: A dictionary of a full dataset structure, including
-                                 keys ''name'', ''id'', ''updated_at'',
-                                 ''last_modified_by'', ''importfiles'', ...
-            parameter_strategy: replace
-            parameters:
-                - name: pk
-                  description: The ID of the dataset to retrieve
-                  required: true
-                  paramType: path
-                - name: organization_id
-                  description: The organization_id for this user's organization
-                  required: true
-                  paramType: query
         """
 
         organization_id = request.query_params.get('organization_id', None)
@@ -250,31 +161,13 @@ class DatasetViewSet(viewsets.ViewSet):
             'dataset': dataset,
         })
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     def destroy(self, request, pk=None):
         """
             Deletes a dataset (ImportRecord).
-            ---
-            type:
-                status:
-                    required: true
-                    type: string
-                    description: either success or error
-                message:
-                    type: string
-                    description: error message, if any
-            parameter_strategy: replace
-            parameters:
-                - name: organization_id
-                  description: The organization_id
-                  required: true
-                  paramType: query
-                - name: pk
-                  description: "Primary Key"
-                  required: true
-                  paramType: path
         """
         organization_id = int(request.query_params.get('organization_id', None))
         dataset_id = pk
@@ -291,6 +184,19 @@ class DatasetViewSet(viewsets.ViewSet):
         d.delete()
         return JsonResponse({'status': 'success'})
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {'name': 'string'},
+            description='Name of the dataset to be created'
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'id': 'integer',
+                'name': 'string',
+            })
+        }
+    )
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
@@ -298,29 +204,6 @@ class DatasetViewSet(viewsets.ViewSet):
     def create(self, request):
         """
         Creates a new empty dataset (ImportRecord).
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: either success or error
-            id:
-                required: true
-                type: integer
-                description: primary key for the newly created dataset
-            name:
-                required: true
-                type: string
-                description: name of the newly created dataset
-        parameters:
-            - name: name
-              description: The name of this dataset
-              required: true
-              paramType: string
-            - name: organization_id
-              description: The organization_id
-              required: true
-              paramType: query
         """
 
         body = request.data
@@ -343,6 +226,14 @@ class DatasetViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'datasets_count': 'integer',
+            })
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -351,21 +242,6 @@ class DatasetViewSet(viewsets.ViewSet):
     def count(self, request):
         """
         Retrieves the number of datasets for an org.
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id
-              required: true
-              paramType: query
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            datasets_count:
-                description: Number of datasets belonging to this org
-                type: integer
-                required: true
         """
         org_id = int(request.query_params.get('organization_id', None))
 
