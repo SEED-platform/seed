@@ -869,7 +869,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -888,7 +888,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -907,7 +907,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -927,7 +927,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': True,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -946,7 +946,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -964,7 +964,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
@@ -993,7 +993,7 @@ class TestColumnsByInventory(TestCase):
             'unit_type': None,
             'is_matching_criteria': False,
             'recognize_empty': False,
-            'comstock_mapping': '',
+            'comstock_mapping': None,
         }
         self.assertIn(c, columns)
 
