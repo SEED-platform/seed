@@ -97,7 +97,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @classmethod
-    def schema_factory(cls, params_to_formats):
+    def schema_factory(cls, params_to_formats, **kwargs):
         """Translates simple dictionary into an openapi Schema instance
 
         :param params_to_formats: dict[str, str]
@@ -109,7 +109,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
                 k: cls.body_parameter_formats[format_name]
                 for k, format_name
                 in params_to_formats.items()
-            }
+            },
+            **kwargs
         )
 
     def add_manual_parameters(self, parameters):
