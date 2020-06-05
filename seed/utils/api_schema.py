@@ -111,7 +111,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if type(obj) is list:
             if len(obj) != 1:
-                raise Exception(f'List types must have exactly one element to specify the schema of `items`')
+                raise Exception('List types must have exactly one element to specify the schema of `items`')
             return openapi.Schema(
                 type=openapi.TYPE_ARRAY,
                 items=cls.schema_factory(obj[0])
@@ -127,7 +127,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
                 },
                 **kwargs
             )
-        
+
         raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
 
     def add_manual_parameters(self, parameters):
