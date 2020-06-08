@@ -233,8 +233,8 @@ class ImportFileViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @action(detail=True, methods=['POST'], url_path='filtered_mapping_results')
-    def filtered_mapping_results(self, request, pk=None):
+    @action(detail=True, methods=['POST'], url_path='mapping_results')
+    def mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         """
