@@ -1,5 +1,4 @@
 
-
 # !/usr/bin/env python
 # encoding: utf-8
 """
@@ -7,11 +6,6 @@
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import (
-    response,
-    status,
-)
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
@@ -27,9 +21,20 @@ from seed.serializers.labels import (
     LabelSerializer,
 )
 from seed.utils.api import drf_api_endpoint
+from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.labels import _get_labels
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+
+
+class LabelsSchema(AutoSchemaHelper):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        self.manual_fields = {
+            ('POST', 'create'): [self.org_id_field()]
+        }
 
 
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -49,6 +54,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     update:
         Update a label record.
     """
+    swagger_schema = LabelsSchema
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser, FormParser)
@@ -57,56 +63,25 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     pagination_class = None
     _organization = None
 
-    def get_parent_organization(self):
-        org = self.get_organization()
-        if org.is_parent:
-            return org
-        else:
-            return org.parent_org
-
-    def get_organization(self):
-        if self._organization is None:
-            try:
-                self._organization = self.request.user.orgs.get(
-                    pk=self.request.query_params["organization_id"],
-                )
-            except (KeyError, ObjectDoesNotExist):
-                self._organization = self.request.user.orgs.all()[0]
-        return self._organization
-
     def get_queryset(self):
-
         labels = Label.objects.filter(
-            super_organization=self.get_parent_organization()
+            super_organization=self.get_parent_org(self.request)
         ).order_by("name").distinct()
         return labels
 
     def get_serializer(self, *args, **kwargs):
-        kwargs['super_organization'] = self.get_organization()
+        kwargs['super_organization'] = self.get_organization(self.request)
         inventory = InventoryFilterBackend().filter_queryset(
-            request=self.request,
+            request=self.request, inv_type=None
         )
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)
-
-    def _get_labels(self, request):
-        qs = self.get_queryset()
-        super_organization = self.get_organization()
-        inventory = InventoryFilterBackend().filter_queryset(
-            request=self.request,
-        )
-        results = [
-            LabelSerializer(
-                q,
-                super_organization=super_organization,
-                inventory=inventory
-            ).data for q in qs
-        ]
-        status_code = status.HTTP_200_OK
-        return response.Response(results, status=status_code)
 
     def list(self, request):
         """
         Returns a list of all labels
         """
-        return self._get_labels(request)
+        inv_type = None
+        qs = self.get_queryset()
+        super_organization = self.get_organization(request)
+        return _get_labels(request, qs, super_organization, inv_type)
