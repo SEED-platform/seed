@@ -365,6 +365,12 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return audit_entry[0]
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({
+            'remap': 'boolean',
+            'mark_as_done': 'boolean',
+        })
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
