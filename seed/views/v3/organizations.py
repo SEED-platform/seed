@@ -9,7 +9,6 @@ import logging
 from django.http import JsonResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -19,43 +18,11 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models import ImportFile
+from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
-
-
-class MappingSerializer(serializers.Serializer):
-    from_field = serializers.CharField()
-    from_units = serializers.CharField()
-    to_field = serializers.CharField()
-    to_field_display_name = serializers.CharField()
-    to_table_name = serializers.CharField()
-
-
-class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
-    """
-    Example:
-    {
-        "mappings": [
-            {
-                'from_field': 'eui',  # raw field in import file
-                'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
-                'to_field': 'energy_use_intensity',
-                'to_field_display_name': 'Energy Use Intensity',
-                'to_table_name': 'PropertyState',
-            },
-            {
-                'from_field': 'gfa',
-                'from_units': 'ft**2', # pint-parsable units, optional
-                'to_field': 'gross_floor_area',
-                'to_field_display_name': 'Gross Floor Area',
-                'to_table_name': 'PropertyState',
-            }
-        ]
-    }
-    """
-    mappings = serializers.ListField(child=MappingSerializer())
 
 
 class OrganizationViewSet(viewsets.ViewSet):

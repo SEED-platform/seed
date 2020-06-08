@@ -27,6 +27,7 @@ from seed.data_importer.tasks import (
     map_additional_models as task_map_additional_models,
     match_buildings as task_match_buildings,
     save_raw_data as task_save_raw,
+    validate_use_cases as task_validate_use_cases,
 )
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
@@ -233,8 +234,8 @@ class ImportFileViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @action(detail=True, methods=['POST'], url_path='filtered_mapping_results')
-    def filtered_mapping_results(self, request, pk=None):
+    @action(detail=True, methods=['POST'], url_path='mapping_results')
+    def mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         """
@@ -365,6 +366,12 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return audit_entry[0]
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({
+            'remap': 'boolean',
+            'mark_as_done': 'boolean',
+        })
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -439,6 +446,24 @@ class ImportFileViewSet(viewsets.ViewSet):
             'progress_key': return_value['progress_key'],
             'progress': return_value,
         })
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=True, methods=['POST'])
+    def validate_use_cases(self, request, pk=None):
+        """
+        Starts a background task to call BuildingSync's use case validation
+        tool.
+        """
+        import_file_id = pk
+        if not import_file_id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must include pk of import_file to validate'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return task_validate_use_cases(import_file_id)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({'cycle_id': 'string'})
