@@ -25,7 +25,7 @@ from seed.utils.api_schema import AutoSchemaHelper
 _log = logging.getLogger(__name__)
 
 
-class MappingSerializer(serializers.Serializer):
+class ImportMappingSerializer(serializers.Serializer):
     from_field = serializers.CharField()
     from_units = serializers.CharField()
     to_field = serializers.CharField()
@@ -55,7 +55,7 @@ class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
         ]
     }
     """
-    mappings = serializers.ListField(child=MappingSerializer())
+    mappings = serializers.ListField(child=ImportMappingSerializer())
 
 
 class OrganizationViewSet(viewsets.ViewSet):
