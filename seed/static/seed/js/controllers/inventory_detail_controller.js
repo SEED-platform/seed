@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }
       };
 
-      function populated_columns_modal () {
+      function populated_columns_modal() {
         $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
@@ -127,9 +127,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             currentProfile: function () {
               return $scope.currentProfile;
             },
-            cycle: function () {
-              return null;
-            },
+            cycle: _.constant(null),
             inventory_type: function () {
               return $stateParams.inventory_type;
             },
@@ -144,7 +142,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
               });
 
               // add "master" copy
-              item_copy = angular.copy($scope.item_state);
+              var item_copy = angular.copy($scope.item_state);
               _.defaults(item_copy, $scope.item_state.extra_data);
 
               return provided_inventory;
@@ -500,11 +498,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.export_building_sync = function () {
-        const modalInstance = $uibModal.open({
+        var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_buildingsync_modal.html',
           controller: 'export_buildingsync_modal_controller',
           resolve: {
-            property_view_id: function() { return $stateParams.view_id },
+            property_view_id: function () {
+              return $stateParams.view_id;
+            },
             column_mapping_presets: [
               'column_mappings_service',
               'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
@@ -512,20 +512,23 @@ angular.module('BE.seed.controller.inventory_detail', [])
               function (
                 column_mappings_service,
                 COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
               ) {
-              const filter_preset_types = [
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
-              ]
-              return column_mappings_service.get_column_mapping_presets_for_org(
-                $scope.organization.id,
-                filter_preset_types,
-              ).then(response => response.data);
-            }]
+                var filter_preset_types = [
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                ];
+                return column_mappings_service.get_column_mapping_presets_for_org(
+                  $scope.organization.id,
+                  filter_preset_types
+                ).then(function (response) {
+                  return response.data;
+                });
+              }]
           }
-        })
-        modalInstance.result.then(() => { return; })
+        });
+        modalInstance.result.then(function () {
+        });
       };
 
       $scope.export_building_sync_xlsx = function () {

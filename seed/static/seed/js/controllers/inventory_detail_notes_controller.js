@@ -70,7 +70,7 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
               return $scope.org_id;
             },
             note: _.constant({text: ''}),
-            action: _.constant('new'),
+            action: _.constant('new')
           }
         });
 
@@ -97,7 +97,7 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
             note: function () {
               return note;
             },
-            action: _.constant('update'),
+            action: _.constant('update')
           }
         });
 
@@ -124,7 +124,7 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
             note: function () {
               return note;
             },
-            action: _.constant('delete'),
+            action: _.constant('delete')
           }
         });
 

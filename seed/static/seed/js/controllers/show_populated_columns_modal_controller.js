@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         var relatedCols = _.filter($scope.columns, 'related');
         // console.log('relatedCols', relatedCols);
 
-        var col_key = provided_inventory ? "column_name" : "name";
+        var col_key = provided_inventory ? 'column_name' : 'name';
 
         _.forEach(inventory, function (record, index) {
           // console.log(cols.length + ' remaining cols to check');
