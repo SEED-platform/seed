@@ -6,7 +6,7 @@ All rights reserved.  # NOQA
 :author
 """
 from seed.filters import (
-    InventoryFilterBackend,
+    InventoryFilterBackendWithInvType,
 )
 from seed.serializers.labels import (
     LabelSerializer,
@@ -18,7 +18,7 @@ from rest_framework import (
 
 
 def _get_labels(request, qs, super_organization, inv_type):
-    inventory = InventoryFilterBackend().filter_queryset(
+    inventory = InventoryFilterBackendWithInvType().filter_queryset(
         request=request, inv_type=inv_type
     )
     results = [

@@ -12,7 +12,7 @@ from rest_framework.renderers import JSONRenderer
 from seed.decorators import DecoratorMixin
 from seed.filters import (
     LabelFilterBackend,
-    InventoryFilterBackend,
+    InventoryFilterBackendWithInvType,
 )
 from seed.models import (
     StatusLabel as Label,
@@ -33,7 +33,7 @@ class LabelsSchema(AutoSchemaHelper):
         super().__init__(*args)
 
         self.manual_fields = {
-            ('POST', 'create'): [self.org_id_field()]
+            ('GET', 'list'): [self.org_id_field()]
         }
 
 
@@ -71,7 +71,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
 
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization(self.request)
-        inventory = InventoryFilterBackend().filter_queryset(
+        inventory = InventoryFilterBackendWithInvType().filter_queryset(
             request=self.request, inv_type=None
         )
         kwargs['inventory'] = inventory
