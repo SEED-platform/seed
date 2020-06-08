@@ -188,7 +188,7 @@ angular.module('BE.seed.controller.admin', [])
         }
       };
 
-      function confirm_remove_user(user, org_id) {
+      function confirm_remove_user (user, org_id) {
         organization_service.remove_user(user.user_id, org_id).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
           get_users();
@@ -239,12 +239,12 @@ angular.module('BE.seed.controller.admin', [])
           .then(function (data) {
             // resolve promise
             uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
-                org.remove_message = 'success';
-                get_organizations();
-              }, function () {
-                // Do nothing
-              },
-              org);
+              org.remove_message = 'success';
+              get_organizations();
+            }, function () {
+              // Do nothing
+            },
+            org);
           });
       };
 
