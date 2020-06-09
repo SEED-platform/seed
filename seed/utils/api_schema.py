@@ -10,7 +10,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
     # Used to easily build out example values displayed on Swagger page.
     body_parameter_formats = {
-        'interger_array': openapi.Schema(
+        'integer_array': openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(type=openapi.TYPE_INTEGER)
         ),
@@ -22,7 +22,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
     }
 
-    def base_field(self, name, location_attr, description, required, type):
+    @staticmethod
+    def base_field(name, location_attr, description, required, type):
         """
         Created to avoid needing to directly access openapi within ViewSets.
         Ideally, the cases below will be used instead of this one.
@@ -35,7 +36,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=type
         )
 
-    def org_id_field(self, required=True):
+    @staticmethod
+    def org_id_field(required=True):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,
@@ -44,7 +46,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def query_integer_field(self, name, required, description):
+    @staticmethod
+    def query_integer_field(name, required, description):
         return openapi.Parameter(
             name,
             openapi.IN_QUERY,
@@ -53,7 +56,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def query_string_field(self, name, required, description):
+    @staticmethod
+    def query_string_field(name, required, description):
         return openapi.Parameter(
             name,
             openapi.IN_QUERY,
@@ -62,7 +66,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_STRING
         )
 
-    def query_boolean_field(self, name, required, description):
+    @staticmethod
+    def query_boolean_field(name, required, description):
         return openapi.Parameter(
             name,
             openapi.IN_QUERY,
@@ -71,7 +76,8 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_BOOLEAN
         )
 
-    def path_id_field(self, description):
+    @staticmethod
+    def path_id_field(description):
         return openapi.Parameter(
             'id',
             openapi.IN_PATH,
@@ -80,20 +86,27 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def body_field(self, required, description, name='body', params_to_formats={}):
+    @classmethod
+    def body_field(cls, required, description, name='body', params_to_formats={}):
         return openapi.Parameter(
             name,
             openapi.IN_BODY,
             description=description,
             required=required,
-            schema=self._build_body_schema(params_to_formats)
+            schema=cls.schema_factory(params_to_formats)
         )
 
-    def _build_body_schema(self, params_to_formats):
+    @classmethod
+    def schema_factory(cls, params_to_formats):
+        """Translates simple dictionary into an openapi Schema instance
+
+        :param params_to_formats: dict[str, str]
+        :return: drf_yasg.openapi.Schema
+        """
         return openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                k: self.body_parameter_formats.get(format_name, "")
+                k: cls.body_parameter_formats[format_name]
                 for k, format_name
                 in params_to_formats.items()
             }
