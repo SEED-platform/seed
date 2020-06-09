@@ -434,11 +434,13 @@ class UserViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory({
-            'current_password': 'string',
-            'password_1': 'string',
-            'password_2': 'string',
-        }),
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'current_password': 'string',
+                'password_1': 'string',
+                'password_2': 'string',
+            },
+        description='Fill in the current and new matching passwords'),
     )
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
