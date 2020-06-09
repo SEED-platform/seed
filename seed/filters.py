@@ -51,7 +51,7 @@ class InventoryFilterBackend(filters.BaseFilterBackend):
     PropertyViewSet
     """
 
-    def filter_queryset(self, request, inv_type):
+    def filter_queryset(self, request):
         params = request.query_params.dict()
         # Since this is being passed in as a query string, the object ends up
         # coming through as a string.
