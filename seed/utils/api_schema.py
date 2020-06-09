@@ -10,7 +10,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
-    openapi_primitives = {
+    openapi_types = {
         'string': openapi.TYPE_STRING,
         'boolean': openapi.TYPE_BOOLEAN,
         'integer': openapi.TYPE_INTEGER,
@@ -109,10 +109,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         :return: drf_yasg.openapi.Schema
         """
         if type(obj) is str:
-            if obj not in cls.openapi_primitives:
-                raise Exception(f'Invalid type "{obj}"; expected one of {cls.openapi_primitives.keys()}')
+            if obj not in cls.openapi_types:
+                raise Exception(f'Invalid type "{obj}"; expected one of {cls.openapi_types.keys()}')
             return openapi.Schema(
-                type=cls.openapi_primitives[obj],
+                type=cls.openapi_types[obj],
                 **kwargs
             )
 
