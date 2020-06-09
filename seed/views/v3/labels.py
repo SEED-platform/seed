@@ -71,7 +71,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
 
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization(self.request)
-        inventory = InventoryFilterBackendWithInvType().filter_queryset(
+        inventory = InventoryFilterBackendWithInvType().filter_queryset_with_inv(
             request=self.request, inv_type=None
         )
         kwargs['inventory'] = inventory

@@ -81,7 +81,7 @@ class InventoryFilterBackendWithInvType(filters.BaseFilterBackend):
     A permutation of the InventoryFilterBackend class that uses inventory type as a method parameter
     """
 
-    def filter_queryset(self, request, inv_type):
+    def filter_queryset_with_inv(self, request, inv_type):
         params = request.query_params.dict()
         # Since this is being passed in as a query string, the object ends up
         # coming through as a string.

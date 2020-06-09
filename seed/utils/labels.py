@@ -18,7 +18,7 @@ from rest_framework import (
 
 
 def _get_labels(request, qs, super_organization, inv_type):
-    inventory = InventoryFilterBackendWithInvType().filter_queryset(
+    inventory = InventoryFilterBackendWithInvType().filter_queryset_with_inv(
         request=request, inv_type=inv_type
     )
     results = [
