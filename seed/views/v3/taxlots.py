@@ -40,7 +40,8 @@ class TaxlotLabelsViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
-        Returns a list of all labels
+        Returns a list of all labels where the is_applied field
+        in the response pertains to the labels applied to taxlot_view
         """
         inv_type = 'taxlot_view'
         qs = self.get_queryset()
