@@ -79,7 +79,7 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
 
     # The admin user is only valid only until the database is restored
     export SEED_ADMIN_USER=user@seed-platform.org
-    export SEED_ADMIN_PASSWORD=7FeBWal38*&k3jlfa92lakj8ih4
+    export SEED_ADMIN_PASSWORD="7FeBWal38*&k3jlfa92lakj8ih4"
     export SEED_ADMIN_ORG=default
 
     # For SES
