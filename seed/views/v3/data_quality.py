@@ -131,8 +131,8 @@ class DataQualityViews(viewsets.ViewSet):
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'property_state_ids': 'integer_array',
-                'taxlot_state_ids': 'integer_array',
+                'property_state_ids': ['integer'],
+                'taxlot_state_ids': ['integer'],
             },
             description='An object containing IDs of the records to perform'
                         ' data quality checks on. Should contain two keys- '

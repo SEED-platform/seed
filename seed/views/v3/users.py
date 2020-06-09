@@ -453,7 +453,7 @@ class UserViewSet(viewsets.ViewSet):
         manual_parameters=[AutoSchemaHelper.org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'actions': 'string_array',
+                'actions': ['string'],
             },
             description='A list of actions to check: examples include (requires_parent_org_owner, '
                         'requires_owner, requires_member, requires_viewer, '
