@@ -25,17 +25,17 @@
                     <form role="form">
                         <div class="form-group" ng-class="{ 'has-error': error_message === 'current password is not valid' }">
                             <label for="editCurrentPassword" translate>Current password</label>
-                            <input type="password" class="form-control" id="editCurrentPassword" ng-model="current_password">
+                            <input type="password" class="form-control" id="editCurrentPassword" ng-model="current_password" autocomplete="off">
                             <p ng-show="error_message === 'current password is not valid'" class="help-block">{$ error_message | translate $}</p>
                         </div>
                         <div class="form-group" ng-class="{ 'has-error': error_message === 'entered password do not match' }">
                             <label for="editNewPassword" translate>New password</label>
-                            <input type="password" class="form-control" id="editNewPassword" ng-model="password_1">
+                            <input type="password" class="form-control" id="editNewPassword" ng-model="password_1" autocomplete="off">
                             <p ng-show="error_message === 'entered password do not match'" class="help-block">{$ error_message | translate $}</p>
                         </div>
                         <div class="form-group" ng-class="{ 'has-error': error_message !== 'current password is not valid' && error_message.length > 0}">
                             <label for="editConfirmNewPassword" translate>Confirm new password</label>
-                            <input type="password" class="form-control" id="editConfirmNewPassword" ng-model="password_2">
+                            <input type="password" class="form-control" id="editConfirmNewPassword" ng-model="password_2" autocomplete="off">
                             <p ng-show="error_message !== 'current password is not valid'" class="help-block">{$ error_message | translate $}</p>
                         </div>
                         <button type="submit" class="btn btn-primary" ng-disabled="!current_password.length || !password_1.length || !password_1.length || password_1 !== password_2" ng-click="change_password()">{$:: 'Change Password' | translate $} <i class="fa fa-check" ng-show="password_updated"></i></button>
