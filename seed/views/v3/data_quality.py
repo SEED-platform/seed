@@ -127,7 +127,7 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.org_id_field(),
+            AutoSchemaHelper.query_org_id_field(),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
@@ -218,7 +218,7 @@ class DataQualityViews(viewsets.ViewSet):
         return response
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         responses={
             200: DataQualityRulesResponseSerializer
         }
@@ -263,7 +263,7 @@ class DataQualityViews(viewsets.ViewSet):
         return JsonResponse(result)
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         responses={
             200: DataQualityRulesResponseSerializer
         }
@@ -283,7 +283,7 @@ class DataQualityViews(viewsets.ViewSet):
         return self.data_quality_rules(request)
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         responses={
             200: DataQualityRulesResponseSerializer
         }
@@ -303,7 +303,7 @@ class DataQualityViews(viewsets.ViewSet):
         return self.data_quality_rules(request)
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=SaveDataQualityRulesPayloadSerializer,
         responses={
             200: DataQualityRulesResponseSerializer
@@ -389,7 +389,7 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.org_id_field(),
+            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 name='data_quality_id',
                 required=True,

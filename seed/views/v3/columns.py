@@ -24,7 +24,7 @@ _log = logging.getLogger(__name__)
 
 
 org_param_swagger_decorator = swagger_auto_schema(
-    manual_parameters=[AutoSchemaHelper.org_id_field()]
+    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
 )
 
 
@@ -63,7 +63,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.org_id_field(required=False),
+            AutoSchemaHelper.query_org_id_field(required=False),
             AutoSchemaHelper.query_string_field(
                 name='inventory_type',
                 required=False,
@@ -96,7 +96,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'columns': columns,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """

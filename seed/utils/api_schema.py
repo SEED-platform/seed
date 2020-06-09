@@ -30,7 +30,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @staticmethod
-    def org_id_field(required=True):
+    def query_org_id_field(required=True):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,

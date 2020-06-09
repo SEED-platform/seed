@@ -138,7 +138,7 @@ class UserViewSet(viewsets.ViewSet):
         return True, user
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({
             'first_name': 'string',
             'last_name': 'string',
@@ -255,7 +255,7 @@ class UserViewSet(viewsets.ViewSet):
         return JsonResponse({'pk': request.user.id})
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'role': 'string',
@@ -450,7 +450,7 @@ class UserViewSet(viewsets.ViewSet):
         }
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'actions': ['string'],
@@ -578,7 +578,7 @@ class UserViewSet(viewsets.ViewSet):
             'show_shared_buildings': user.show_shared_buildings,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def default_organization(self, request, pk=None):

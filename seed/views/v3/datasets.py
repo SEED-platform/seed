@@ -29,7 +29,7 @@ _log = logging.getLogger(__name__)
 class DatasetViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()],)
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()],)
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
@@ -56,7 +56,7 @@ class DatasetViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {'dataset': 'string'},
             description='The new name for this dataset'
@@ -98,7 +98,7 @@ class DatasetViewSet(viewsets.ViewSet):
             'status': 'success',
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -161,7 +161,7 @@ class DatasetViewSet(viewsets.ViewSet):
             'dataset': dataset,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -185,7 +185,7 @@ class DatasetViewSet(viewsets.ViewSet):
         return JsonResponse({'status': 'success'})
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {'name': 'string'},
             description='Name of the dataset to be created'
@@ -227,7 +227,7 @@ class DatasetViewSet(viewsets.ViewSet):
         return JsonResponse({'status': 'success', 'id': record.pk, 'name': record.name})
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.org_id_field()],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         responses={
             200: AutoSchemaHelper.schema_factory({
                 'datasets_count': 'integer',

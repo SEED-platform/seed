@@ -19,7 +19,7 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 # adds organization_id query param to a view
 org_param_swagger_decorator = swagger_auto_schema(
-    manual_parameters=[AutoSchemaHelper.org_id_field()]
+    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
 )
 
 

@@ -226,7 +226,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.org_id_field(),
+            AutoSchemaHelper.query_org_id_field(),
         ],
         responses={
             200: MappingResultsResponseSerializer
@@ -428,7 +428,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return task_match_buildings(pk)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -692,7 +692,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
         }
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -779,7 +779,7 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         return JsonResponse(result)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.org_id_field()])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
     @api_endpoint_class
     @ajax_request_class
     @permission_classes((SEEDOrgPermissions,))
