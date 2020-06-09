@@ -8,13 +8,12 @@ All rights reserved.  # NOQA
 :authors Paul Munday<paul@paulmunday.net> Fable Turas <fable@raintechpdx.com>
 """
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
 
 from seed.models import Cycle
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
 
 @method_decorator(

@@ -440,7 +440,7 @@ class UserViewSet(viewsets.ViewSet):
                 'password_1': 'string',
                 'password_2': 'string',
             },
-        description='Fill in the current and new matching passwords'),
+            description='Fill in the current and new matching passwords'),
     )
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
