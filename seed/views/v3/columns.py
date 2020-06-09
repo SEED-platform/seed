@@ -18,27 +18,22 @@ from seed.models.columns import Column
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 _log = logging.getLogger(__name__)
 
 
-org_param_swagger_decorator = swagger_auto_schema(
-    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-)
-
-
 @method_decorator(
     name='create',
-    decorator=org_param_swagger_decorator
+    decorator=swagger_auto_schema_org_query_param
 )
 @method_decorator(
     name='update',
-    decorator=org_param_swagger_decorator
+    decorator=swagger_auto_schema_org_query_param
 )
 @method_decorator(
     name='destroy',
-    decorator=org_param_swagger_decorator
+    decorator=swagger_auto_schema_org_query_param
 )
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, OrgCreateUpdateMixin):
     """
@@ -96,7 +91,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'columns': columns,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema_org_query_param
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """

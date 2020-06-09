@@ -21,7 +21,7 @@ from seed.models import obj_to_dict
 from seed.utils.api import api_endpoint_class
 from seed.utils.time import convert_to_js_timestamp
 
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 _log = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ class DatasetViewSet(viewsets.ViewSet):
             'status': 'success',
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
@@ -161,7 +161,7 @@ class DatasetViewSet(viewsets.ViewSet):
             'dataset': dataset,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')

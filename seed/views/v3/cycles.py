@@ -14,30 +14,24 @@ from seed.models import Cycle
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper
-
-
-# adds organization_id query param to a view
-org_param_swagger_decorator = swagger_auto_schema(
-    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-)
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
 @method_decorator(
     name='list',
-    decorator=org_param_swagger_decorator)
+    decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='create',
-    decorator=org_param_swagger_decorator)
+    decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='retrieve',
-    decorator=org_param_swagger_decorator)
+    decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='update',
-    decorator=org_param_swagger_decorator)
+    decorator=swagger_auto_schema_org_query_param)
 @method_decorator(
     name='destroy',
-    decorator=org_param_swagger_decorator)
+    decorator=swagger_auto_schema_org_query_param)
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 

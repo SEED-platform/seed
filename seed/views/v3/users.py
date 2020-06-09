@@ -32,7 +32,7 @@ from seed.tasks import (
     invite_to_seed,
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
@@ -608,7 +608,7 @@ class UserViewSet(viewsets.ViewSet):
             'show_shared_buildings': user.show_shared_buildings,
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @swagger_auto_schema_org_query_param
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def default_organization(self, request, pk=None):

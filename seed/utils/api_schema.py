@@ -2,6 +2,7 @@
 # encoding: utf-8
 from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
@@ -144,3 +145,9 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             return manual_params
         # I think this should add to existing parameters, but haven't been able to confirm.
         return parameters + manual_params
+
+
+# this is a commonly used swagger decorator so moved here for DRYness
+swagger_auto_schema_org_query_param = swagger_auto_schema(
+    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+)
