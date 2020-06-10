@@ -28,15 +28,6 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-# class LabelsSchema(AutoSchemaHelper):
-#     def __init__(self, *args):
-#         super().__init__(*args)
-#
-#         self.manual_fields = {
-#             ('GET', 'list'): [self.org_id_field()]
-#         }
-
-
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     retrieve:

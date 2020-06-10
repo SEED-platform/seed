@@ -17,6 +17,7 @@ from seed.utils.labels import _get_labels
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
+
 class PropertyLabelsViewSet(viewsets.ViewSet, OrgMixin):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
