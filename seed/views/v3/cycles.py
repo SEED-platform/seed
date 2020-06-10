@@ -7,26 +7,30 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 :authors Paul Munday<paul@paulmunday.net> Fable Turas <fable@raintechpdx.com>
 """
+from django.utils.decorators import method_decorator
+
 from seed.models import Cycle
 
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
 
-class CycleSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('GET', 'list'): [self.org_id_field()],
-            ('POST', 'create'): [self.org_id_field()],
-            ('GET', 'retrieve'): [self.org_id_field()],
-            ('PUT', 'update'): [self.org_id_field()],
-            ('DELETE', 'destroy'): [self.org_id_field()],
-        }
-
-
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema_org_query_param)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema_org_query_param)
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
@@ -67,7 +71,6 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
     """
     serializer_class = CycleSerializer
-    swagger_schema = CycleSchema
     pagination_class = None
     model = Cycle
     data_name = 'cycles'
