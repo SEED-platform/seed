@@ -21,20 +21,20 @@ from seed.serializers.labels import (
     LabelSerializer,
 )
 from seed.utils.api import drf_api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.labels import _get_labels
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class LabelsSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('GET', 'list'): [self.org_id_field()]
-        }
+# class LabelsSchema(AutoSchemaHelper):
+#     def __init__(self, *args):
+#         super().__init__(*args)
+#
+#         self.manual_fields = {
+#             ('GET', 'list'): [self.org_id_field()]
+#         }
 
 
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):
@@ -54,7 +54,6 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     update:
         Update a label record.
     """
-    swagger_schema = LabelsSchema
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser, FormParser)
@@ -77,6 +76,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)
 
+    @swagger_auto_schema_org_query_param
     def list(self, request):
         """
         Returns a list of all labels

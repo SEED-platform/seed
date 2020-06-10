@@ -12,23 +12,12 @@ from seed.models import (
     StatusLabel as Label,
 )
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.labels import _get_labels
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
-
-class PropertiesSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('POST', 'labels'): [self.org_id_field()]
-        }
-
-
 class PropertyLabelsViewSet(viewsets.ViewSet, OrgMixin):
-    swagger_schema = PropertiesSchema
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     _organization = None
@@ -39,6 +28,7 @@ class PropertyLabelsViewSet(viewsets.ViewSet, OrgMixin):
         ).order_by("name").distinct()
         return labels
 
+    @swagger_auto_schema_org_query_param
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
