@@ -306,30 +306,33 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         return self._get_filtered_results(request, profile_id=-1)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'profile_id',
+                required=False,
+                description='Either an id of a list settings profile, or '
+                            'undefined'),
+            AutoSchemaHelper.query_array(
+                'cycle_ids',
+                item_type='integer',
+                required=True,
+                description='The IDs of the cycle to get properties',
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['GET'])
     def cycles(self, request):
         """
         List all the properties	with all columns
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: profile_id
-              description: Either an id of a list settings profile, or undefined
-              paramType: body
-            - name: cycle_ids
-              description: The IDs of the cycle to get properties
-              required: true
-              paramType: query
         """
-        org_id = request.data.get('organization_id', None)
-        profile_id = request.data.get('profile_id', -1)
-        cycle_ids = request.data.get('cycle_ids', [])
+        org_id = request.query_params.get('organization_id', None)
+        profile_id = request.query_params.get('profile_id', -1)
+        cycle_ids = request.query_params.get('cycle_ids', [])
 
         if not org_id:
             return JsonResponse(
