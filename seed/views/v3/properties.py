@@ -7,7 +7,7 @@ from collections import namedtuple
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.http import JsonResponse
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
@@ -32,66 +32,10 @@ from seed.serializers.properties import (PropertySerializer,
                                          PropertyViewSerializer)
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import (AutoSchemaHelper,
+                                   swagger_auto_schema_org_query_param)
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
-<<<<<<< HEAD
-=======
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    Organization
-)
-from seed.models import (
-    AUDIT_USER_EDIT,
-    Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
-    Cycle,
-    DATA_STATE_MATCHING,
-    MERGE_STATE_DELETE,
-    MERGE_STATE_MERGED,
-    MERGE_STATE_NEW,
-    Meter,
-    Measure,
-    Note,
-    Property,
-    PropertyAuditLog,
-    PropertyMeasure,
-    PropertyState,
-    PropertyView,
-    Simulation,
-    StatusLabel as Label,
-    TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST,
-    VIEW_LIST_PROPERTY
-)
-from seed.serializers.pint import PintJSONEncoder
-from seed.serializers.pint import (
-    apply_display_unit_preferences,
-    add_pint_unit_suffix
-)
-from seed.serializers.properties import (
-    PropertySerializer,
-    PropertyStateSerializer,
-    PropertyViewSerializer,
-)
-from seed.serializers.taxlots import (
-    TaxLotViewSerializer,
-)
-from seed.utils.api import ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import (
-    AutoSchemaHelper,
-    swagger_auto_schema_org_query_param
-)
-from seed.utils.properties import (
-    get_changed_fields,
-    pair_unpair_property_taxlot,
-    update_result_with_master,
-    properties_across_cycles,
-)
->>>>>>> refactor(v3/properties)!: make lists view GET method
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import (get_changed_fields,
@@ -503,19 +447,17 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return result
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=no_body,
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['PUT'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         try:
             old_view = PropertyView.objects.select_related(
