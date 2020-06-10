@@ -23,7 +23,7 @@ api_v3_router.register(r'data_quality_checks', DataQualityViews, base_name='data
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'properties', PropertyLabelsViewSet, base_name='properties')
-api_v3_router.register(r'taxlots', TaxlotLabelsViewSet, base_name='labels')
+api_v3_router.register(r'taxlots', TaxlotLabelsViewSet, base_name='taxlots')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
 urlpatterns = [
