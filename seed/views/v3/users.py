@@ -11,7 +11,6 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
@@ -140,39 +139,37 @@ class UserViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'org_name': AutoSchemaHelper.schema_factory(
-                    'string', description='New organization name if creating a new organization for this user'),
-                'first_name': AutoSchemaHelper.schema_factory(
-                    'string', description='First name of new user'),
-                'last_name': AutoSchemaHelper.schema_factory(
-                    'string', description='Last name of new user'),
-                'role': AutoSchemaHelper.schema_factory(
-                    'string', description='one of owner, member, or viewer'),
-                'email': AutoSchemaHelper.schema_factory(
-                    'string', description='Email address of the new user'),
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'org_name': 'string',
+                'first_name': 'string',
+                'last_name': 'string',
+                'role': 'string',
+                'email': 'string',
             },
             required=['first_name', 'last_name', 'role', 'email'],
+            description='An object containing meta data for a new user:\n'
+                        '-org_name: New organization name if creating a new organization for this user\n'
+                        '-first_name: First name of new user\n'
+                        '-last_name: Last name of new user\n'
+                        '-role: one of owner, member, or viewer\n'
+                        '-email: Email address of the new user'
         ),
         responses={
-            200: openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'status': AutoSchemaHelper.schema_factory(
-                        'string', description='success or error'),
-                    'message': AutoSchemaHelper.schema_factory(
-                        'string', description='email address of new user'),
-                    'org': AutoSchemaHelper.schema_factory(
-                        'string', description='name of new org (or existing org)'),
-                    'org_created': AutoSchemaHelper.schema_factory(
-                        'boolean', description='true if new org created'),
-                    'username': AutoSchemaHelper.schema_factory(
-                        'string', description='username of new user'),
-                    'user_id': AutoSchemaHelper.schema_factory(
-                        'string', description='user id (pk) of new user'),
-                }
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    'status': 'string',
+                    'message': 'string',
+                    'org': 'string',
+                    'org_created': 'boolean',
+                    'username': 'string',
+                    'user_id': 'string',
+                },
+                description='Properties:\n'
+                            '-org: name of new org (or existing org)\n'
+                            '-org_created: true if new org created\n'
+                            '-username: username of new user\n'
+                            '-user_id: user id (pk) of new user'
             )
         }
     )
