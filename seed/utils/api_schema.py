@@ -2,6 +2,7 @@
 # encoding: utf-8
 from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
@@ -9,18 +10,10 @@ class AutoSchemaHelper(SwaggerAutoSchema):
     overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
-    body_parameter_formats = {
-        'integer_array': openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Schema(type=openapi.TYPE_INTEGER)
-        ),
-        'integer': openapi.Schema(type=openapi.TYPE_INTEGER),
-        'string': openapi.Schema(type=openapi.TYPE_STRING),
-        'boolean': openapi.Schema(type=openapi.TYPE_BOOLEAN),
-        'string_array': openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Schema(type=openapi.TYPE_STRING)
-        )
+    openapi_types = {
+        'string': openapi.TYPE_STRING,
+        'boolean': openapi.TYPE_BOOLEAN,
+        'integer': openapi.TYPE_INTEGER,
     }
 
     @staticmethod
@@ -38,7 +31,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @staticmethod
-    def org_id_field(required=True):
+    def query_org_id_field(required=True):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,
@@ -98,20 +91,52 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @classmethod
-    def schema_factory(cls, params_to_formats):
-        """Translates simple dictionary into an openapi Schema instance
+    def schema_factory(cls, obj, **kwargs):
+        """Translates an object into an openapi Schema
 
-        :param params_to_formats: dict[str, str]
+        This can handle nested objects (lists, dicts), and "types" defined as strings
+        For example:
+        {
+            'hello': ['string'],
+            'world': 'integer',
+            'fruits': {
+                'orange': 'boolean',
+                'apple': 'boolean'
+            }
+        }
+
+        :param obj: str, list, dict[str, obj]
         :return: drf_yasg.openapi.Schema
         """
-        return openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                k: cls.body_parameter_formats[format_name]
-                for k, format_name
-                in params_to_formats.items()
-            }
-        )
+        if type(obj) is str:
+            if obj not in cls.openapi_types:
+                raise Exception(f'Invalid type "{obj}"; expected one of {cls.openapi_types.keys()}')
+            return openapi.Schema(
+                type=cls.openapi_types[obj],
+                **kwargs
+            )
+
+        if type(obj) is list:
+            if len(obj) != 1:
+                raise Exception('List types must have exactly one element to specify the schema of `items`')
+            return openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=cls.schema_factory(obj[0]),
+                **kwargs
+            )
+
+        if type(obj) is dict:
+            return openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    k: cls.schema_factory(sub_obj)
+                    for k, sub_obj
+                    in obj.items()
+                },
+                **kwargs
+            )
+
+        raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
 
     def add_manual_parameters(self, parameters):
         manual_params = self.manual_fields.get((self.method, self.view.action), [])
@@ -120,3 +145,9 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             return manual_params
         # I think this should add to existing parameters, but haven't been able to confirm.
         return parameters + manual_params
+
+
+# this is a commonly used swagger decorator so moved here for DRYness
+swagger_auto_schema_org_query_param = swagger_auto_schema(
+    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+)
