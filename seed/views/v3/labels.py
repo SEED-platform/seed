@@ -67,7 +67,9 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)
 
-    @swagger_auto_schema_org_query_param
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+    )
     def list(self, request):
         """
         Returns a list of all labels
