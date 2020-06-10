@@ -35,6 +35,63 @@ from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
+<<<<<<< HEAD
+=======
+from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.models import (
+    Organization
+)
+from seed.models import (
+    AUDIT_USER_EDIT,
+    Column,
+    ColumnListSetting,
+    ColumnListSettingColumn,
+    Cycle,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    Meter,
+    Measure,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    Simulation,
+    StatusLabel as Label,
+    TaxLotProperty,
+    TaxLotView,
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY
+)
+from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.pint import (
+    apply_display_unit_preferences,
+    add_pint_unit_suffix
+)
+from seed.serializers.properties import (
+    PropertySerializer,
+    PropertyStateSerializer,
+    PropertyViewSerializer,
+)
+from seed.serializers.taxlots import (
+    TaxLotViewSerializer,
+)
+from seed.utils.api import ProfileIdMixin, api_endpoint_class
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
+from seed.utils.properties import (
+    get_changed_fields,
+    pair_unpair_property_taxlot,
+    update_result_with_master,
+    properties_across_cycles,
+)
+>>>>>>> refactor(v3/properties)!: make lists view GET method
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import (get_changed_fields,
@@ -600,23 +657,14 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             'view_id': new_view1.id
         }
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """
         Get property details for each linked property across org cycles
-        ---
-        parameters:
-            - name: pk
-              description: The primary key of the PropertyView
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         organization_id = request.data.get('organization_id', None)
         base_view = PropertyView.objects.select_related('cycle').filter(
