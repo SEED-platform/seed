@@ -29,7 +29,7 @@ _log = logging.getLogger(__name__)
 class DatasetViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()],)
+    @swagger_auto_schema_org_query_param
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
