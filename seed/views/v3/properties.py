@@ -716,6 +716,16 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_boolean_field(
+                'used_only',
+                required=False,
+                description='Determine whether or not to show only the used fields. Ones that have been mapped'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -723,16 +733,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def columns(self, request):
         """
         List all property columns
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: used_only
-              description: Determine whether or not to show only the used fields. Ones that have been mapped
-              type: boolean
-              required: false
-              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
         only_used = request.query_params.get('only_used', False)
