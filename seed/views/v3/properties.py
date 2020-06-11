@@ -318,7 +318,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=False, methods=['GET'])
-    def cycles(self, request):
+    def filter_by_cycle(self, request):
         """
         List all the properties	with all columns
         """
