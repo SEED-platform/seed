@@ -29,7 +29,8 @@ from seed.serializers.pint import (PintJSONEncoder, add_pint_unit_suffix,
                                    apply_display_unit_preferences)
 from seed.serializers.properties import (PropertySerializer,
                                          PropertyStateSerializer,
-                                         PropertyViewSerializer)
+                                         PropertyViewSerializer,
+                                         UpdatePropertyPayloadSerializer)
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import (AutoSchemaHelper,
@@ -334,6 +335,25 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(response)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle',
+                required=False,
+                description='The ID of the cycle to get properties'),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'profile_id': 'integer',
+                'inventory_ids': ['integer'],
+            },
+            required=['profile_id'],
+            description='Properties:\n'
+                        '- profile_id: Either an id of a list settings profile, or undefined\n'
+                        '- inventory_ids: List of inventory ids'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -341,27 +361,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def filter(self, request):
         """
         List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get properties
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of properties to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-            - name: profile_id
-              description: Either an id of a list settings profile, or undefined
-              paramType: body
         """
         if 'profile_id' not in request.data:
             profile_id = None
@@ -893,6 +892,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=UpdatePropertyPayloadSerializer,
+    )
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk=None):
