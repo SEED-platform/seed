@@ -605,7 +605,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Get property details for each linked property across org cycles
         """
-        organization_id = request.data.get('organization_id', None)
+        organization_id = request.GET.get('organization_id', None)
         base_view = PropertyView.objects.select_related('cycle').filter(
             pk=pk,
             cycle__organization_id=organization_id
@@ -749,11 +749,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def mappable_columns(self, request):
         """
         List only property columns that are mappable
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
         columns = Column.retrieve_mapping_columns(organization_id, 'property')
@@ -775,12 +770,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def batch_delete(self, request):
         """
         Batch delete several properties
-        ---
-        parameters:
-            - name: selected
-              description: A list of property ids to delete
-              many: true
-              required: true
         """
         property_states = request.data.get('selected', [])
         resp = PropertyState.objects.filter(pk__in=property_states).delete()
@@ -852,21 +841,12 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return history, master
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
         Get property details
-        ---
-        parameters:
-            - name: pk
-              description: The primary key of the PropertyView
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         result = self._get_property_view(pk)
         if result.get('status', None) != 'error':
@@ -917,13 +897,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         - assign it to the original property view and save the property view
         - create a new property audit log for this change
         - return a 200 if created
-
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         data = request.data
 
