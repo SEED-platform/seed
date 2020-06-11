@@ -279,30 +279,21 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return res
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle',
+                required=False,
+                description='The ID of the cycle to get properties'),
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
         List all the properties	with all columns
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get properties
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of properties to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
         """
         return self._get_filtered_results(request, profile_id=-1)
 
