@@ -1,11 +1,10 @@
-
 # !/usr/bin/env python
 # encoding: utf-8
 """
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
-from collections import namedtuple
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
@@ -21,13 +20,51 @@ from seed.serializers.labels import (
     LabelSerializer,
 )
 from seed.utils.api import drf_api_endpoint
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.labels import _get_labels
+from django.utils.decorators import method_decorator
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
-ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
-
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+    ),
+)
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+    ),
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': 'string',
+                'color': 'string',
+            },
+            required=['name'],
+            description='An object containing meta data for a new label'
+        )
+    ),
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': 'string',
+                'color': 'string',
+            },
+            required=['name'],
+            description='An object containing meta data for a new label'
+        )
+    ),
+)
 class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     retrieve:
@@ -66,15 +103,3 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
         )
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
-    )
-    def list(self, request):
-        """
-        Returns a list of all labels
-        """
-        inv_type = None
-        qs = self.get_queryset()
-        super_organization = self.get_organization(request)
-        return _get_labels(request, qs, super_organization, inv_type)
