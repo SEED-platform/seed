@@ -400,6 +400,15 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return Meter.objects.filter(property_id__in=property_ids).exists()
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'state_ids': ['integer']
+            },
+            required=['state_ids'],
+            description='Array containing property state ids to merge'),
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -408,15 +417,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Merge multiple property records into a single new record, and run this
         new record through a match and merge round within it's current Cycle.
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: state_ids
-              description: Array containing property state ids to merge
-              paramType: body
         """
         body = request.data
 
