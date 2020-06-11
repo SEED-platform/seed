@@ -52,6 +52,12 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     ),
 )
 @method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+    ),
+)
+@method_decorator(
     name='update',
     decorator=swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
