@@ -644,6 +644,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }
             return JsonResponse(result)
 
+    @swagger_auto_schema(
+        request_body=no_body
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
