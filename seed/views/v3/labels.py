@@ -61,7 +61,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 'color': 'string',
             },
             required=['name'],
-            description='An object containing meta data for a new label'
+            description='An object containing meta data for updating a label'
         )
     ),
 )
