@@ -198,7 +198,7 @@ class DataQualityViews(viewsets.ViewSet):
 
         writer.writerow(
             ['Table', 'Address Line 1', 'PM Property ID', 'Tax Lot ID', 'Custom ID', 'Field',
-             'Applied Label', 'Error Message', 'Severity'])
+             'Applied Label', 'Condition', 'Error Message', 'Severity'])
 
         for row in data_quality_results:
             for result in row['data_quality_results']:
@@ -210,6 +210,7 @@ class DataQualityViews(viewsets.ViewSet):
                     row['custom_id_1'],
                     result['formatted_field'],
                     result.get('label', None),
+                    result['condition'],
                     # the detailed_message field can have units which has superscripts/subscripts, so unidecode it!
                     unidecode(result['detailed_message']),
                     result['severity']
@@ -248,6 +249,7 @@ class DataQualityViews(viewsets.ViewSet):
                 'properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
                     'field': rule.field,
                     'enabled': rule.enabled,
+                    'condition': rule.condition,
                     'data_type': _get_js_rule_type(rule.data_type),
                     'rule_type': rule.rule_type,
                     'required': rule.required,
@@ -330,12 +332,22 @@ class DataQualityViews(viewsets.ViewSet):
 
         posted_rules = body['data_quality_rules']
         updated_rules = []
+        valid_rules = True
+        validation_messages = set()
         for rule in posted_rules['properties']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
+            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
+                if rule['text_match'] is None or rule['text_match'] == '':
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
             updated_rules.append(
                 {
                     'field': rule['field'],
                     'table_name': 'PropertyState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],
@@ -350,11 +362,19 @@ class DataQualityViews(viewsets.ViewSet):
             )
 
         for rule in posted_rules['taxlots']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
+            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
+                if rule['text_match'] is None or rule['text_match'] == '':
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
             updated_rules.append(
                 {
                     'field': rule['field'],
                     'table_name': 'TaxLotState',
                     'enabled': rule['enabled'],
+                    'condition': rule['condition'],
                     'data_type': _get_rule_type_from_js(rule['data_type']),
                     'rule_type': rule['rule_type'],
                     'required': rule['required'],
@@ -368,24 +388,33 @@ class DataQualityViews(viewsets.ViewSet):
                 }
             )
 
+        if valid_rules is False:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(validation_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # This pattern of deleting and recreating Rules is slated to be deprecated
+        bad_rule_creation = False
+        error_messages = set()
         dq = DataQualityCheck.retrieve(organization.id)
         dq.remove_all_rules()
         for rule in updated_rules:
-            if rule['severity'] == Rule.SEVERITY_VALID and rule['status_label_id'] is None:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Label must be assigned when using Valid Data Severity.'
-                }, status=status.HTTP_400_BAD_REQUEST)
+            with transaction.atomic():
+                try:
+                    dq.add_rule(rule)
+                except Exception as e:
+                    error_messages.add('Rule could not be recreated: ' + str(e))
+                    bad_rule_creation = True
+                    continue
 
-            try:
-                dq.add_rule(rule)
-            except TypeError as e:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': e,
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        return self.data_quality_rules(request)
+        if bad_rule_creation:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(error_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return self.data_quality_rules(request)
 
     @swagger_auto_schema(
         manual_parameters=[
