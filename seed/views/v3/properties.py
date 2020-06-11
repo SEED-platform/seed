@@ -742,6 +742,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -760,6 +761,14 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse({'status': 'success', 'columns': columns})
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'selected': ['integer']
+            },
+            required=['selected'],
+            description='A list of property ids to delete')
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
