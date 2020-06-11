@@ -668,6 +668,17 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(result)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'taxlot_id',
+                required=True,
+                description='The taxlot id to pair up with this property',
+            ),
+        ],
+        request_body=no_body,
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -675,23 +686,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def pair(self, request, pk=None):
         """
         Pair a taxlot to this property
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: taxlot_id
-              description: The taxlot id to pair up with this property
-              required: true
-              paramType: query
-            - name: pk
-              description: pk (property ID)
-              required: true
-              paramType: path
         """
-        # TODO: Call with PUT /api/v2/properties/1/pair/?taxlot_id=1&organization_id=1
         organization_id = int(request.query_params.get('organization_id'))
         property_id = int(pk)
         taxlot_id = int(request.query_params.get('taxlot_id'))
