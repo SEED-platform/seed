@@ -11,6 +11,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status, serializers
 from rest_framework.decorators import action
 
@@ -30,7 +31,7 @@ from seed.tasks import (
     invite_to_seed,
 )
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
@@ -111,90 +112,17 @@ class ListUsersResponseSerializer(serializers.Serializer):
     users = EmailAndIDSerializer(many=True)
 
 
-class UserSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('GET', 'list'): [],
-            ('POST', 'create'): [
-                self.org_id_field(),
-                self.body_field(
-                    name='New User Fields',
-                    required=True,
-                    description="An object containing meta data for a new user: \n"
-                                "- Required - first_name, last_name, email \n"
-                                "- Optional - role ['viewer'(default), 'member', or 'owner']",
-                    params_to_formats={
-                        'first_name': 'string',
-                        'last_name': 'string',
-                        'role': 'string',
-                        'email': 'string'
-                    })
-            ],
-            ('GET', 'current_user_id'): [],
-            ('GET', 'retrieve'): [self.path_id_field(description="users PK ID")],
-            ('PUT', 'update'): [
-                self.path_id_field(description="Updated Users PK ID"),
-                self.body_field(
-                    name='Updated user fields',
-                    required=True,
-                    description="An object containing meta data for a updated user: \n"
-                                "- Required - first_name, last_name, email",
-                    params_to_formats={
-                        'first_name': 'string',
-                        'last_name': 'string',
-                        'email': 'string'
-                    }
-                )],
-            ('PUT', 'default_organization'): [self.org_id_field(),
-                                              self.path_id_field(description="Updated Users PK ID")],
-            ('POST', 'is_authorized'): [
-                self.org_id_field(),
-                self.path_id_field(description="Users PK ID"),
-                self.body_field(
-                    name='Actions',
-                    required=True,
-                    description="A list of actions to check: examples include (requires_parent_org_owner, "
-                                "requires_owner, requires_member, requires_viewer, "
-                                "requires_superuser, can_create_sub_org, can_remove_org)",
-                    params_to_formats={
-                        'actions': 'string_array',
-                    })
-            ],
-            ('PUT', 'set_password'): [
-                self.body_field(
-                    name='Change Password',
-                    required=True,
-                    description="fill in the current and new matching passwords ",
-                    params_to_formats={
-                        'current_password': 'string',
-                        'password_1': 'string',
-                        'password_2': 'string'
-                    })
-            ],
-            ('PUT', 'role'): [
-                self.org_id_field(),
-                self.path_id_field(description="Users PK ID"),
-                self.body_field(
-                    name='role',
-                    required=True,
-                    description="fill in the role to be updated",
-                    params_to_formats={
-                        'role': 'string',
-
-                    })
-            ],
-            ('PUT', 'deactivate'): [
-                self.path_id_field(description="Users PK ID")
-            ]
-        }
+# this is used for swagger docs for some views below
+user_response_schema = AutoSchemaHelper.schema_factory({
+    'first_name': 'string',
+    'last_name': 'string',
+    'email': 'string',
+    'api_key': 'string',
+})
 
 
 class UserViewSet(viewsets.ViewSet):
     raise_exception = True
-
-    swagger_schema = UserSchema
 
     def validate_request_user(self, pk, request):
         try:
@@ -209,6 +137,42 @@ class UserViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN)
         return True, user
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'org_name': 'string',
+                'first_name': 'string',
+                'last_name': 'string',
+                'role': 'string',
+                'email': 'string',
+            },
+            required=['first_name', 'last_name', 'role', 'email'],
+            description='An object containing meta data for a new user:\n'
+                        '-org_name: New organization name if creating a new organization for this user\n'
+                        '-first_name: First name of new user\n'
+                        '-last_name: Last name of new user\n'
+                        '-role: one of owner, member, or viewer\n'
+                        '-email: Email address of the new user'
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    'status': 'string',
+                    'message': 'string',
+                    'org': 'string',
+                    'org_created': 'boolean',
+                    'username': 'string',
+                    'user_id': 'string',
+                },
+                description='Properties:\n'
+                            '-org: name of new org (or existing org)\n'
+                            '-org_created: true if new org created\n'
+                            '-username: username of new user\n'
+                            '-user_id: user id (pk) of new user'
+            )
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
@@ -216,57 +180,6 @@ class UserViewSet(viewsets.ViewSet):
         """
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
         Sends invitation email to the new user.
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID if adding user to an existing organization
-              required: false
-              type: integer
-            - name: org_name
-              description: New organization name if creating a new organization for this user
-              required: false
-              type: string
-            - name: first_name
-              description: First name of new user
-              required: true
-              type: string
-            - name: last_name
-              description: Last name of new user
-              required: true
-              type: string
-            - name: role
-              description: one of owner, member, or viewer
-              required: true
-              type: string
-            - name: email
-              description: Email address of the new user
-              required: true
-              type: string
-        type:
-            status:
-                description: success or error
-                required: true
-                type: string
-            message:
-                description: email address of new user
-                required: true
-                type: string
-            org:
-                description: name of the new org (or existing org)
-                required: true
-                type: string
-            org_created:
-                description: True if new org created
-                required: true
-                type: string
-            username:
-                description: Username of new user
-                required: true
-                type: string
-            user_id:
-                description: User ID (pk) of new user
-                required: true
-                type: integer
         """
         body = request.data
         org_name = body.get('org_name')
@@ -335,14 +248,17 @@ class UserViewSet(viewsets.ViewSet):
             'user_id': user.id
         })
 
+    @swagger_auto_schema(
+        responses={
+            200: ListUsersResponseSerializer,
+        }
+    )
     @ajax_request_class
     @has_perm_class('requires_superuser')
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
         Only usable by superusers.
-        ---
-        response_serializer: ListUsersResponseSerializer
         """
         users = []
         for user in User.objects.only('id', 'email'):
@@ -365,6 +281,15 @@ class UserViewSet(viewsets.ViewSet):
         """
         return JsonResponse({'pk': request.user.id})
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'role': 'string',
+            },
+            description='new role for user',
+        ),
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
@@ -372,31 +297,6 @@ class UserViewSet(viewsets.ViewSet):
     def role(self, request, pk=None):
         """
         Updates a user's role within an organization.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: ID for the user to modify
-              type: integer
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization ID to update this user within
-              type: integer
-              required: true
-            - name: role
-              description: one of owner, member, or viewer
-              type: string
-              required: true
-        type:
-            status:
-                required: true
-                description: success or error
-                type: string
-            message:
-                required: false
-                description: error message, if any
-                type: string
         """
         body = request.data
         role = _get_role_from_js(body['role'])
@@ -432,41 +332,17 @@ class UserViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success'})
 
+    @swagger_auto_schema(
+        responses={
+            200: user_response_schema,
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
         Retrieves the a user's first_name, last_name, email
         and api key if exists by user ID (pk).
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID / primary key
-              type: integer
-              required: true
-              paramType: path
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            first_name:
-                description: user first name
-                type: string
-                required: true
-            last_name:
-                description: user last name
-                type: string
-                required: true
-            email:
-                description: user email
-                type: string
-                required: true
-            api_key:
-                description: user API key
-                type: string
-                required: true
         """
 
         ok, content = self.validate_request_user(pk, request)
@@ -516,52 +392,23 @@ class UserViewSet(viewsets.ViewSet):
             'api_key': User.objects.get(pk=pk).api_key
         }
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({
+            'first_name': 'string',
+            'last_name': 'string',
+            'email': 'string'
+        }),
+        description='An object containing meta data for a updated user: \n'
+                    '- Required - first_name, last_name, email',
+        responses={
+            200: user_response_schema,
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk=None):
         """
         Updates the user's first name, last name, and email
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID / primary key
-              type: integer
-              required: true
-              paramType: path
-            - name: first_name
-              description: New first name
-              type: string
-              required: true
-            - name: last_name
-              description: New last name
-              type: string
-              required: true
-            - name: email
-              description: New user email
-              type: string
-              required: true
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            first_name:
-                description: user first name
-                type: string
-                required: true
-            last_name:
-                description: user last name
-                type: string
-                required: true
-            email:
-                description: user email
-                type: string
-                required: true
-            api_key:
-                description: user API key
-                type: string
-                required: true
         """
         body = request.data
         ok, content = self.validate_request_user(pk, request)
@@ -583,36 +430,21 @@ class UserViewSet(viewsets.ViewSet):
             'api_key': user.api_key,
         })
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'current_password': 'string',
+                'password_1': 'string',
+                'password_2': 'string',
+            },
+            description='Fill in the current and new matching passwords'),
+    )
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def set_password(self, request, pk=None):
         """
         sets/updates a user's password, follows the min requirement of
         django password validation settings in config/settings/common.py
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: current_password
-              description: Users current password
-              type: string
-              required: true
-            - name: password_1
-              description: Users new password 1
-              type: string
-              required: true
-            - name: password_2
-              description: Users new password 2
-              type: string
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: false
         """
         body = request.data
         ok, content = self.validate_request_user(pk, request)
@@ -646,42 +478,30 @@ class UserViewSet(viewsets.ViewSet):
             'actions': list(PERMS.keys()),
         }
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'actions': ['string'],
+            },
+            description='A list of actions to check: examples include (requires_parent_org_owner, '
+                        'requires_owner, requires_member, requires_viewer, '
+                        'requires_superuser, can_create_sub_org, can_remove_org)'
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'auth': {
+                    'action_name': 'boolean'
+                }
+            })
+        }
+    )
     @ajax_request_class
     @action(detail=True, methods=['POST'])
     def is_authorized(self, request, pk=None):
         """
         Checks the auth for a given action, if user is the owner of the parent
         org then True is returned for each action
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID (primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: organization_id
-              description: ID (primary key) for organization
-              type: integer
-              required: true
-              paramType: query
-            - name: actions
-              type: array[string]
-              required: true
-              description: a list of actions to check
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: false
-            auth:
-                type: object
-                description: a dict of with keys equal to the actions, and values as bool
-                required: true
         """
         actions, org, error, message = self._parse_is_authenticated_params(request)
         if error:
@@ -763,32 +583,18 @@ class UserViewSet(viewsets.ViewSet):
             action: PERMS['requires_owner'](ou) for action in actions
         }
 
+    @swagger_auto_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'show_shared_buildings': 'boolean'
+            })
+        }
+    )
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def shared_buildings(self, request, pk=None):
         """
         Get the request user's ``show_shared_buildings`` attr
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID (primary key)
-              type: integer
-              required: true
-              paramType: path
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            show_shared_buildings:
-                type: string
-                description: the user show shared buildings attribute
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: false
         """
         ok, content = self.validate_request_user(pk, request)
         if ok:
@@ -801,32 +607,12 @@ class UserViewSet(viewsets.ViewSet):
             'show_shared_buildings': user.show_shared_buildings,
         })
 
+    @swagger_auto_schema_org_query_param
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def default_organization(self, request, pk=None):
         """
         Sets the user's default organization
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID (primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The new default organization ID to use for this user
-              type: integer
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: false
         """
         ok, content = self.validate_request_user(pk, request)
         if ok:
@@ -842,27 +628,6 @@ class UserViewSet(viewsets.ViewSet):
     def deactivate(self, request, pk=None):
         """
         Deactivates a user
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name:
-              description: User ID (primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The new default organization ID to use for this user
-              type: integer
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: false
         """
         try:
             user_id = pk

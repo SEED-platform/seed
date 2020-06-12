@@ -6,6 +6,8 @@
 """
 import logging
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
@@ -16,51 +18,23 @@ from seed.models.columns import Column
 from seed.serializers.columns import ColumnSerializer
 from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 _log = logging.getLogger(__name__)
 
 
-class ColumnSchema(AutoSchemaHelper):
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        self.manual_fields = {
-            ('GET', 'list'): [
-                self.org_id_field(),
-                self.query_string_field(
-                    name='inventory_type',
-                    required=False,
-                    description='Which inventory type is being matched (for related fields and naming)'
-                                '\nDefault: "property"'
-                ),
-                self.query_boolean_field(
-                    name='used_only',
-                    required=False,
-                    description='Determine whether or not to show only the used fields '
-                                '(i.e. only columns that have been mapped)'
-                                '\nDefault: "false"'
-                ),
-            ],
-            ('POST', 'create'): [self.org_id_field(required=False)],
-            ('GET', 'retrieve'): [self.org_id_field()],
-            ('DELETE', 'delete'): [self.org_id_field()],
-            ('POST', 'rename'): [
-                self.body_field(
-                    name='data',
-                    required=True,
-                    description="rename columns",
-                    params_to_formats={
-                        'new_column_name': 'string',
-                        'overwrite': 'boolean'
-                    }
-                )
-            ]
-        }
-
-        self.overwrite_params.extend([('POST', 'rename')])
-
-
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema_org_query_param
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema_org_query_param
+)
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema_org_query_param
+)
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, OrgCreateUpdateMixin):
     """
     create:
@@ -76,13 +50,30 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
     model = Column
     pagination_class = None
     parser_classes = (JSONParser, FormParser)
-    swagger_schema = ColumnSchema
 
     def get_queryset(self):
         # check if the request is properties or taxlots
         org_id = self.get_organization(self.request)
         return Column.objects.filter(organization_id=org_id)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=False),
+            AutoSchemaHelper.query_string_field(
+                name='inventory_type',
+                required=False,
+                description='Which inventory type is being matched (for related fields and naming)'
+                            '\nDefault: "property"'
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                name='used_only',
+                required=False,
+                description='Determine whether or not to show only the used fields '
+                            '(i.e. only columns that have been mapped)'
+                            '\nDefault: "false"'
+            ),
+        ],
+    )
     @ajax_request_class
     def list(self, request):
         """
@@ -90,31 +81,6 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         return all the columns across both the Property and Tax Lot tables. The related field will
         be true if the column came from the other table that is not the 'inventory_type' (which
         defaults to Property)
-        ___
-        parameters:
-           - name: organization_id
-             description: The organization_id for this user's organization
-             required: true
-             paramType: query
-           - name: inventory_type
-             description: Which inventory type is being matched (for related fields and naming).
-               property or taxlot
-             required: false
-             paramType: query
-           - name: used_only
-             description: Determine whether or not to show only the used fields (i.e. only columns that have been mapped)
-             type: boolean
-             required: false
-             paramType: query
-        type:
-           status:
-               required: true
-               type: string
-               description: Either success or error
-           columns:
-               required: true
-               type: array[column]
-               description: Returns an array where each item is a full column structure.
         """
         organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
@@ -125,27 +91,11 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'columns': columns,
         })
 
+    @swagger_auto_schema_org_query_param
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
         This API endpoint retrieves a Column
-        ---
-        parameters:
-            - name: organization_id
-              description: Organization ID
-              type: integer
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            column:
-                required: true
-                type: dictionary
-                description: Returns a dictionary of a full column structure with keys such as
-                             keys ''name'', ''id'', ''is_extra_data'', ''column_name'',
-                             ''table_name'',..
         """
         organization_id = self.get_organization(self.request)
         # check if column exists for the organization
@@ -168,13 +118,18 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'column': ColumnSerializer(c).data
         })
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory({
+            'new_column_name': 'string',
+            'overwrite': 'boolean'
+        })
+    )
     @ajax_request_class
     @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         """
         This API endpoint renames a Column
-        ---
         """
         org_id = self.get_organization(request)
         try:
