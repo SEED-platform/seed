@@ -2,6 +2,7 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from collections import namedtuple
 
@@ -10,24 +11,26 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from seed.models import StatusLabel as Label
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
-from seed.utils.labels import _get_labels
+from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.labels import get_labels
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class TaxlotLabelsViewSet(viewsets.ViewSet, OrgMixin):
+class TaxlotViewSet(viewsets.ViewSet, OrgMixin):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     _organization = None
 
-    def get_queryset(self):
-        labels = Label.objects.filter(
-            super_organization=self.get_parent_org(self.request)
-        ).order_by("name").distinct()
-        return labels
-
-    @swagger_auto_schema_org_query_param
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'selected': ['integer'],
+            },
+            description='An array of taxlot ids to be returned'
+        )
+    )
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
@@ -35,6 +38,9 @@ class TaxlotLabelsViewSet(viewsets.ViewSet, OrgMixin):
         in the response pertains to the labels applied to taxlot_view
         """
         inv_type = 'taxlot_view'
-        qs = self.get_queryset()
+        labels = Label.objects.filter(
+            super_organization=self.get_parent_org(self.request)
+        ).order_by("name").distinct()
         super_organization = self.get_organization(request)
-        return _get_labels(request, qs, super_organization, inv_type)
+        # TODO: refactor to avoid passing request here
+        return get_labels(request, labels, super_organization, inv_type)

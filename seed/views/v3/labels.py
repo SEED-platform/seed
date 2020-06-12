@@ -4,14 +4,16 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
+from docutils.nodes import status
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import response, status
+from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import DecoratorMixin
 from seed.filters import (
     LabelFilterBackend,
-    InventoryFilterBackendWithInvType,
 )
 from seed.models import (
     StatusLabel as Label,
@@ -22,6 +24,7 @@ from seed.serializers.labels import (
 from seed.utils.api import drf_api_endpoint
 from django.utils.decorators import method_decorator
 from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.labels import filter_labels_for_inv_type
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
@@ -40,7 +43,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='create',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="put in org id description")],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
@@ -104,7 +107,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
 
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization(self.request)
-        inventory = InventoryFilterBackendWithInvType().filter_queryset_with_inv(
+        inventory = filter_labels_for_inv_type(
             request=self.request, inv_type=None
         )
         kwargs['inventory'] = inventory

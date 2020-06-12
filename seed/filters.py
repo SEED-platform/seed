@@ -74,33 +74,3 @@ class InventoryFilterBackend(filters.BaseFilterBackend):
                     id__in=request.data['selected'],
                 )
         return queryset
-
-
-class InventoryFilterBackendWithInvType(filters.BaseFilterBackend):
-    """
-    A permutation of the InventoryFilterBackend class that uses inventory type as a method parameter
-    """
-
-    def filter_queryset_with_inv(self, request, inv_type):
-        params = request.query_params.dict()
-        # Since this is being passed in as a query string, the object ends up
-        # coming through as a string.
-        params['filter_params'] = json.loads(params.get('filter_params', '{}'))
-        inventory_type = inv_type
-        params = search.process_search_params(
-            params=params,
-            user=request.user,
-            is_api_request=True,
-        )
-        queryset = search.inventory_search_filter_sort(
-            inventory_type,
-            params=params,
-            user=request.user,
-        )
-        if 'selected' in request.data:
-            # Return labels limited to the 'selected' list.  Otherwise, if selected is empty, return all
-            if request.data['selected']:
-                return queryset.filter(
-                    id__in=request.data['selected'],
-                )
-        return queryset
