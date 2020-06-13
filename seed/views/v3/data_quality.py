@@ -174,18 +174,25 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.path_id_field(description="Import file ID or cache key")
+            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @action(detail=True, methods=['GET'])
-    def csv(self, request, pk):
+    @action(detail=False, methods=['GET'])
+    def results_csv(self, request):
         """
-        Download a csv of the data quality checks by the pk which is the cache_key
+        Download a csv of the results from data quality check run.
         """
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk))
+        run_id = request.query_params.get('run_id')
+        if run_id is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'must include Import file ID or cache key as run_id'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(run_id))
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
