@@ -127,7 +127,7 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.path_id_field(description="Organization ID - Used to identify the only data quality check for an organization."),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
@@ -148,23 +148,22 @@ class DataQualityViews(viewsets.ViewSet):
             })
         }
     )
-    def create(self, request):
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def start(self, request, pk):
         """
-        This API endpoint will create a new cleansing operation process in the background,
+        This API endpoint will create a new data_quality check process in the background,
         on potentially a subset of properties/taxlots, and return back a query key
         """
-        # step 0: retrieving the data
         body = request.data
         property_state_ids = body['property_state_ids']
         taxlot_state_ids = body['taxlot_state_ids']
-        organization = Organization.objects.get(pk=request.query_params['organization_id'])
 
-        # step 1: validate the check IDs all exist
-        # step 2: validate the check IDs all belong to this organization ID
-        # step 3: validate the actual user belongs to the passed in org ID
-        # step 4: kick off a background task
-        return_value = do_checks(organization.id, property_state_ids, taxlot_state_ids)
-        # step 5: create a new model instance
+        # pk, the organization_id, is the only key currently used to identify DataQualityChecks
+        return_value = do_checks(pk, property_state_ids, taxlot_state_ids)
+
         return JsonResponse({
             'num_properties': len(property_state_ids),
             'num_taxlots': len(taxlot_state_ids),
