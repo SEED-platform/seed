@@ -68,6 +68,27 @@ class DataQualityRulesResponseSerializer(serializers.Serializer):
     rules = DataQualityRulesSerializer()
 
 
+# TODO: convert these to serializers
+def _get_rule_type_from_js(data_type):
+    """return the Rules TYPE from the JS friendly data type
+
+    :param data_type: 'string', 'number', 'date', or 'year'
+    :returns: int data type as defined in data_quality.models
+    """
+    d = {v: k for k, v in dict(Rule.DATA_TYPES).items()}
+    return d.get(data_type)
+
+
+def _get_severity_from_js(severity):
+    """return the Rules SEVERITY from the JS friendly severity
+
+    :param severity: 'error', or 'warning'
+    :returns: int severity as defined in data_quality.models
+    """
+    d = {v: k for k, v in dict(Rule.SEVERITY).items()}
+    return d.get(severity)
+
+
 class RuleViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
@@ -138,3 +159,123 @@ class RuleViewSet(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(nested_1_pk)
         dq.reset_default_rules()
         return self.list(request, nested_1_pk)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.base_field(
+                "nested_1_pk",
+                "IN_PATH",
+                "Organization ID - identifier used to get an organization's Rules",
+                True,
+                "TYPE_INTEGER"
+            )
+        ],
+        request_body=SaveDataQualityRulesPayloadSerializer,
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_parent_org_owner')
+    @action(detail=False, methods=['POST'])
+    def batch_save(self, request, nested_1_pk=None):
+        """
+        Saves an organization's settings: name, query threshold, shared fields.
+        The method passes in all the fields again, so it is okay to remove
+        all the rules in the db, and just recreate them (albeit inefficient)
+        """
+        body = request.data
+        if body.get('data_quality_rules') is None:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'missing the data_quality_rules'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        posted_rules = body['data_quality_rules']
+        updated_rules = []
+        valid_rules = True
+        validation_messages = set()
+        for rule in posted_rules['properties']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
+            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
+                if rule['text_match'] is None or rule['text_match'] == '':
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'table_name': 'PropertyState',
+                    'enabled': rule['enabled'],
+                    'condition': rule['condition'],
+                    'data_type': _get_rule_type_from_js(rule['data_type']),
+                    'rule_type': rule['rule_type'],
+                    'required': rule['required'],
+                    'not_null': rule['not_null'],
+                    'min': rule['min'],
+                    'max': rule['max'],
+                    'text_match': rule['text_match'],
+                    'severity': _get_severity_from_js(rule['severity']),
+                    'units': rule['units'],
+                    'status_label_id': rule['label']
+                }
+            )
+
+        for rule in posted_rules['taxlots']:
+            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
+                valid_rules = False
+                validation_messages.add('Label must be assigned when using Valid Data Severity.')
+            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
+                if rule['text_match'] is None or rule['text_match'] == '':
+                    valid_rules = False
+                    validation_messages.add('Rule must not include or exclude an empty string.')
+            updated_rules.append(
+                {
+                    'field': rule['field'],
+                    'table_name': 'TaxLotState',
+                    'enabled': rule['enabled'],
+                    'condition': rule['condition'],
+                    'data_type': _get_rule_type_from_js(rule['data_type']),
+                    'rule_type': rule['rule_type'],
+                    'required': rule['required'],
+                    'not_null': rule['not_null'],
+                    'min': rule['min'],
+                    'max': rule['max'],
+                    'text_match': rule['text_match'],
+                    'severity': _get_severity_from_js(rule['severity']),
+                    'units': rule['units'],
+                    'status_label_id': rule['label']
+                }
+            )
+
+        if valid_rules is False:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(validation_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # This pattern of deleting and recreating Rules is slated to be deprecated
+        bad_rule_creation = False
+        error_messages = set()
+        # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
+        # At that point, nested_1_pk should be changed to data_quality_check_id
+        dq = DataQualityCheck.retrieve(nested_1_pk)
+        dq.remove_all_rules()
+        for rule in updated_rules:
+            with transaction.atomic():
+                try:
+                    dq.add_rule(rule)
+                except Exception as e:
+                    error_messages.add('Rule could not be recreated: ' + str(e))
+                    bad_rule_creation = True
+                    continue
+
+        if bad_rule_creation:
+            return JsonResponse({
+                'status': 'error',
+                'message': '\n'.join(error_messages),
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return self.list(request, nested_1_pk)
