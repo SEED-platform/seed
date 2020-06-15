@@ -183,7 +183,11 @@ class DataQualityViews(viewsets.ViewSet):
     @action(detail=False, methods=['GET'])
     def results_csv(self, request):
         """
-        Download a csv of the results from data quality check run.
+        Download a CSV of the results from a data quality run based on either the ID that was
+        given during the creation of the data quality task or the ID of the
+        import file which had it's records checked.
+        Note that it is not related to objects in the database, since the results
+        are stored in redis!
         """
         run_id = request.query_params.get('run_id')
         if run_id is None:
@@ -404,12 +408,7 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                name='data_quality_id',
-                required=True,
-                description="Task ID created when DataQuality task is created."
-            ),
+            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
     @api_endpoint_class
@@ -418,13 +417,13 @@ class DataQualityViews(viewsets.ViewSet):
     @action(detail=False, methods=['GET'])
     def results(self, request):
         """
-        Return the result of the data quality based on the ID that was given during the
-        creation of the data quality task. Note that it is not related to the object in the
-        database, since the results are stored in redis!
+        Return the results of a data quality run based on either the ID that was
+        given during the creation of the data quality task or the ID of the
+        import file which had it's records checked.
+        Note that it is not related to objects in the database, since the results
+        are stored in redis!
         """
-        Organization.objects.get(pk=request.query_params['organization_id'])
-
-        data_quality_id = request.query_params['data_quality_id']
+        data_quality_id = request.query_params['run_id']
         data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id))
         return JsonResponse({
             'data': data_quality_results
