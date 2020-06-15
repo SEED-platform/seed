@@ -17,7 +17,7 @@ from rest_framework import (
 )
 
 
-def filter_labels_for_inv_type(request, inv_type):
+def filter_labels_for_inv_type(request, inventory_type=None):
     """
     Method used to filter labels by inventory type and return is_applied inventory id's
     Method was initially built as a class defined function above to handle more parameters.
@@ -26,7 +26,6 @@ def filter_labels_for_inv_type(request, inv_type):
     # Since this is being passed in as a query string, the object ends up
     # coming through as a string.
     params['filter_params'] = json.loads(params.get('filter_params', '{}'))
-    inventory_type = inv_type
     params = search.process_search_params(
         params=params,
         user=request.user,

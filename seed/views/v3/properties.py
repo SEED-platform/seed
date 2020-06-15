@@ -25,7 +25,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
     _organization = None
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'selected': ['integer'],
@@ -39,10 +39,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         Returns a list of all labels where the is_applied field
         in the response pertains to the labels applied to property_view
         """
-        inv_type = 'property_view'
         labels = Label.objects.filter(
             super_organization=self.get_parent_org(self.request)
         ).order_by("name").distinct()
         super_organization = self.get_organization(request)
         # TODO: refactor to avoid passing request here
-        return get_labels(request, labels, super_organization, inv_type)
+        return get_labels(request, labels, super_organization, 'property_view')

@@ -28,19 +28,25 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='retrieve',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="Optional org id which "
+                                                                                           "overrides the users "
+                                                                                           "(default) current org id")]
     ),
 )
 @method_decorator(
     name='list',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="Optional org id which "
+                                                                                           "overrides the users ("
+                                                                                           "default) current org id")]
     ),
 )
 @method_decorator(
     name='create',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="put in org id description")],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="Optional org id which "
+                                                                                           "overrides the users ("
+                                                                                           "default) current org id")],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
@@ -54,13 +60,17 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 @method_decorator(
     name='destroy',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)]
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="Optional org id which "
+                                                                                           "overrides the users ("
+                                                                                           "default) current org id")]
     ),
 )
 @method_decorator(
     name='update',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False)],
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=False, description="Optional org id which "
+                                                                                           "overrides the users ("
+                                                                                           "default) current org id")],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'name': 'string',
@@ -105,7 +115,7 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), SEEDOrgNoPatchOrOrgCreateMo
     def get_serializer(self, *args, **kwargs):
         kwargs['super_organization'] = self.get_organization(self.request)
         inventory = filter_labels_for_inv_type(
-            request=self.request, inv_type=None
+            request=self.request
         )
         kwargs['inventory'] = inventory
         return super().get_serializer(*args, **kwargs)
