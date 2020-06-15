@@ -47,7 +47,7 @@ def filter_labels_for_inv_type(request, inventory_type=None):
 
 def get_labels(request, qs, super_organization, inv_type):
     inventory = filter_labels_for_inv_type(
-        request=request, inv_type=inv_type
+        request=request, inventory_type=inv_type
     )
     results = [
         LabelSerializer(
