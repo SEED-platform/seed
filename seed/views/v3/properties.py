@@ -30,7 +30,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
             {
                 'selected': ['integer'],
             },
-            description='An array of property ids to be returned'
+            description='IDs for properties to be checked for which labels are applied.'
         )
     )
     @action(detail=False, methods=['POST'])
