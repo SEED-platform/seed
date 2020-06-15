@@ -237,52 +237,6 @@ class DataQualityViews(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
-    @action(detail=False, methods=['GET'])
-    def data_quality_rules(self, request):
-        """
-        Returns the data_quality rules for an org.
-        """
-        organization = Organization.objects.get(pk=request.query_params['organization_id'])
-
-        result = {
-            'status': 'success',
-            'rules': {
-                'properties': [],
-                'taxlots': []
-            }
-        }
-
-        dq = DataQualityCheck.retrieve(organization.id)
-        rules = dq.rules.order_by('field', 'severity')
-        for rule in rules:
-            result['rules'][
-                'properties' if rule.table_name == 'PropertyState' else 'taxlots'].append({
-                    'field': rule.field,
-                    'enabled': rule.enabled,
-                    'condition': rule.condition,
-                    'data_type': _get_js_rule_type(rule.data_type),
-                    'rule_type': rule.rule_type,
-                    'required': rule.required,
-                    'not_null': rule.not_null,
-                    'min': rule.min,
-                    'max': rule.max,
-                    'text_match': rule.text_match,
-                    'severity': _get_js_rule_severity(rule.severity),
-                    'units': rule.units,
-                    'label': rule.status_label_id
-                })
-
-        return JsonResponse(result)
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        responses={
-            200: DataQualityRulesResponseSerializer
-        }
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
     @action(detail=False, methods=['PUT'])
     def reset_default_data_quality_rules(self, request):
         """

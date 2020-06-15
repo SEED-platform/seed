@@ -3,12 +3,15 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 
+from rest_framework_nested import routers as nested_routers
+
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.data_quality import DataQualityViews
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.organizations import OrganizationViewSet
+from seed.views.v3.rules import RuleViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
@@ -20,6 +23,11 @@ api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_fil
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
+# Add lookup attribute of 'data_quality_check' when organization_id is no longer used as identifying key
+data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks')
+data_quality_checks_router.register(r'rules', RuleViewSet, base_name='data_quality_check-rules')
+
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
+    url(r'^', include(data_quality_checks_router.urls)),
 ]
