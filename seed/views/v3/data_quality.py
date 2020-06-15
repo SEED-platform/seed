@@ -230,26 +230,6 @@ class DataQualityViews(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        responses={
-            200: DataQualityRulesResponseSerializer
-        }
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
-    @action(detail=False, methods=['PUT'])
-    def reset_default_data_quality_rules(self, request):
-        """
-        Resets an organization's data data_quality rules
-        """
-        organization = Organization.objects.get(pk=request.query_params['organization_id'])
-
-        dq = DataQualityCheck.retrieve(organization.id)
-        dq.reset_default_rules()
-        return self.data_quality_rules(request)
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=SaveDataQualityRulesPayloadSerializer,
         responses={
             200: DataQualityRulesResponseSerializer

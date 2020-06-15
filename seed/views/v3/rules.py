@@ -110,3 +110,31 @@ class RuleViewSet(viewsets.ViewSet):
         result['rules']['taxlots'] = RulesSerializer(taxlot_rules, many=True).data
 
         return JsonResponse(result)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.base_field(
+                "nested_1_pk",
+                "IN_PATH",
+                "Organization ID - identifier used to get an organization's Rules",
+                True,
+                "TYPE_INTEGER"
+            )
+        ],
+        responses={
+            200: DataQualityRulesResponseSerializer
+        }
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_parent_org_owner')
+    @action(detail=False, methods=['PUT'])
+    def reset(self, request, nested_1_pk=None):
+        """
+        Resets an organization's data data_quality rules
+        """
+        # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
+        # At that point, nested_1_pk should be changed to data_quality_check_id
+        dq = DataQualityCheck.retrieve(nested_1_pk)
+        dq.reset_default_rules()
+        return self.list(request, nested_1_pk)
