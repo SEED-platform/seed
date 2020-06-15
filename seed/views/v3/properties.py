@@ -814,15 +814,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             lots.append(TaxLotViewSerializer(lot).data)
         return lots
 
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=True, methods=['GET'])
-    def taxlots(self, pk):
-        """
-        Get related TaxLots for this property
-        """
-        return JsonResponse(self._get_taxlots(pk))
-
     def get_history(self, property_view):
         """Return history in reverse order"""
 
