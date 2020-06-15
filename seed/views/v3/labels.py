@@ -4,10 +4,7 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
-from docutils.nodes import status
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import response, status
-from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 

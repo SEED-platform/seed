@@ -32,7 +32,7 @@ spec:
         image: seedplatform/postgres-seed:11.2
         name: db-postrgres
 #        command: ["tail"]
-#        args: ['-f', '/dev/null']
+#        args: ['-f', '/dev/n
         ports:
         - containerPort: 5432
         resources:
