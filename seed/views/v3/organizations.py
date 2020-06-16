@@ -5,18 +5,23 @@
 """
 
 import logging
+from io import BytesIO
 from random import randint
+
+import dateutil
 
 from celery import shared_task
 from django.contrib.auth.decorators import permission_required
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from past.builtins import basestring
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
@@ -28,6 +33,7 @@ from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
 from seed.models import Column, Cycle, ImportFile, PropertyView, TaxLotView
 from seed.serializers.column_mappings import \
     SaveColumnMappingsRequestPayloadSerializer
+from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
@@ -35,6 +41,7 @@ from seed.utils.match import (matching_criteria_column_names,
                               whole_org_match_merge_link)
 from seed.utils.organizations import (create_organization,
                                       create_suborganization)
+from xlsxwriter import Workbook
 
 _log = logging.getLogger(__name__)
 
@@ -945,3 +952,191 @@ class OrganizationViewSet(viewsets.ViewSet):
             geocoding_columns[col['table_name']].append(col['column_name'])
 
         return JsonResponse(geocoding_columns)
+
+    def get_cycles(self, start, end):
+        organization_id = self.request.GET['organization_id']
+        if not isinstance(start, type(end)):
+            raise TypeError('start and end not same types')
+        # if of type int or convertable  assume they are cycle ids
+        try:
+            start = int(start)
+            end = int(end)
+        except ValueError as error:  # noqa
+            # assume string is JS date
+            if isinstance(start, basestring):
+                start_datetime = dateutil.parser.parse(start)
+                end_datetime = dateutil.parser.parse(end)
+            else:
+                raise Exception('Date is not a string')
+        # get date times from cycles
+        if isinstance(start, int):
+            cycle = Cycle.objects.get(pk=start, organization_id=organization_id)
+            start_datetime = cycle.start
+            if start == end:
+                end_datetime = cycle.end
+            else:
+                end_datetime = Cycle.objects.get(
+                    pk=end, organization_id=organization_id
+                ).end
+        return Cycle.objects.filter(
+            start__gte=start_datetime, end__lte=end_datetime,
+            organization_id=organization_id
+        ).order_by('start')
+
+    def get_data(self, property_view, x_var, y_var):
+        result = None
+        state = property_view.state
+        if getattr(state, x_var, None) and getattr(state, y_var, None):
+            result = {
+                "id": property_view.property_id,
+                "x": getattr(state, x_var),
+                "y": getattr(state, y_var),
+            }
+        return result
+
+    def get_raw_report_data(self, organization_id, cycles, x_var, y_var,
+                            campus_only):
+        all_property_views = PropertyView.objects.select_related(
+            'property', 'state'
+        ).filter(
+            property__organization_id=organization_id,
+            cycle_id__in=cycles
+        )
+        organization = Organization.objects.get(pk=organization_id)
+        results = []
+        for cycle in cycles:
+            property_views = all_property_views.filter(cycle_id=cycle)
+            count_total = []
+            count_with_data = []
+            data = []
+            for property_view in property_views:
+                property_pk = property_view.property_id
+                if property_view.property.campus and campus_only:
+                    count_total.append(property_pk)
+                    result = self.get_data(property_view, x_var, y_var)
+                    if result:
+                        result['yr_e'] = cycle.end.strftime('%Y')
+                        data.append(result)
+                        count_with_data.append(property_pk)
+                elif not property_view.property.campus:
+                    count_total.append(property_pk)
+                    result = self.get_data(property_view, x_var, y_var)
+                    if result:
+                        result['yr_e'] = cycle.end.strftime('%Y')
+                        de_unitted_result = apply_display_unit_preferences(organization, result)
+                        data.append(de_unitted_result)
+                        count_with_data.append(property_pk)
+            result = {
+                "cycle_id": cycle.pk,
+                "chart_data": data,
+                "property_counts": {
+                    "yr_e": cycle.end.strftime('%Y'),
+                    "num_properties": len(count_total),
+                    "num_properties_w-data": len(count_with_data),
+                },
+            }
+            results.append(result)
+        return results
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def export_reports_data(self, request):
+        params = {}
+        missing_params = []
+        error = ''
+        for param in ['x_var', 'x_label', 'y_var', 'y_label', 'organization_id', 'start', 'end']:
+            val = request.query_params.get(param, None)
+            if not val:
+                missing_params.append(param)
+            else:
+                params[param] = val
+        if missing_params:
+            error = "{} Missing params: {}".format(
+                error, ", ".join(missing_params)
+            )
+        if error:
+            status_code = status.HTTP_400_BAD_REQUEST
+            result = {'status': 'error', 'message': error}
+            return Response(result, status=status_code)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename="report-data"'
+
+        # Create WB
+        output = BytesIO()
+        wb = Workbook(output, {'remove_timezone': True})
+
+        # Create sheets
+        count_sheet = wb.add_worksheet('Counts')
+        base_sheet = wb.add_worksheet('Raw')
+        agg_sheet = wb.add_worksheet('Agg')
+
+        # Enable bold format and establish starting cells
+        bold = wb.add_format({'bold': True})
+        data_row_start = 0
+        data_col_start = 0
+
+        # Write all headers across all sheets
+        count_sheet.write(data_row_start, data_col_start, 'Year Ending', bold)
+        count_sheet.write(data_row_start, data_col_start + 1, 'Properties with Data', bold)
+        count_sheet.write(data_row_start, data_col_start + 2, 'Total Properties', bold)
+
+        base_sheet.write(data_row_start, data_col_start, 'ID', bold)
+        base_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('x_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + 2, request.query_params.get('y_label'), bold)
+        base_sheet.write(data_row_start, data_col_start + 3, 'Year Ending', bold)
+
+        agg_sheet.write(data_row_start, data_col_start, request.query_params.get('x_label'), bold)
+        agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get('y_label'), bold)
+        agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
+
+        # Gather base data
+        cycles = self.get_cycles(params['start'], params['end'])
+        data = self.get_raw_report_data(
+            params['organization_id'], cycles,
+            params['x_var'], params['y_var'], False
+        )
+
+        base_row = data_row_start + 1
+        agg_row = data_row_start + 1
+        count_row = data_row_start + 1
+
+        for cycle_results in data:
+            total_count = cycle_results['property_counts']['num_properties']
+            with_data_count = cycle_results['property_counts']['num_properties_w-data']
+            yr_e = cycle_results['property_counts']['yr_e']
+
+            # Write Counts
+            count_sheet.write(count_row, data_col_start, yr_e)
+            count_sheet.write(count_row, data_col_start + 1, with_data_count)
+            count_sheet.write(count_row, data_col_start + 2, total_count)
+
+            count_row += 1
+
+            # Write Base/Raw Data
+            data_rows = cycle_results['chart_data']
+            for datum in data_rows:
+                base_sheet.write(base_row, data_col_start, datum.get('id'))
+                base_sheet.write(base_row, data_col_start + 1, datum.get('x'))
+                base_sheet.write(base_row, data_col_start + 2, datum.get('y'))
+                base_sheet.write(base_row, data_col_start + 3, datum.get('yr_e'))
+
+                base_row += 1
+
+            # Gather and write Agg data
+            for agg_datum in self.aggregate_data(yr_e, params['y_var'], data_rows):
+                agg_sheet.write(agg_row, data_col_start, agg_datum.get('x'))
+                agg_sheet.write(agg_row, data_col_start + 1, agg_datum.get('y'))
+                agg_sheet.write(agg_row, data_col_start + 2, agg_datum.get('yr_e'))
+
+                agg_row += 1
+
+        wb.close()
+
+        xlsx_data = output.getvalue()
+
+        response.write(xlsx_data)
+
+        return response
