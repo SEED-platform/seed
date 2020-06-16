@@ -93,9 +93,9 @@ class RuleViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
-                "nested_1_pk",
+                "nested_organization_id",
                 "IN_PATH",
-                "Organization ID - identifier used to get an organization's Rules",
+                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
                 True,
                 "TYPE_INTEGER"
             )
@@ -107,7 +107,7 @@ class RuleViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
-    def list(self, request, nested_1_pk=None):
+    def list(self, request, nested_organization_id=None):
         """
         Returns the data quality rules for an org.
         """
@@ -121,8 +121,8 @@ class RuleViewSet(viewsets.ViewSet):
         }
 
         # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
-        # At that point, nested_1_pk should be changed to data_quality_check_id
-        dq = DataQualityCheck.retrieve(nested_1_pk)
+        # At that point, nested_organization_id should be changed to data_quality_check_id
+        dq = DataQualityCheck.retrieve(nested_organization_id)
 
         property_rules = dq.rules.filter(table_name='PropertyState').order_by('field', 'severity')
         taxlot_rules = dq.rules.filter(table_name='TaxLotState').order_by('field', 'severity')
@@ -135,9 +135,9 @@ class RuleViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
-                "nested_1_pk",
+                "nested_organization_id",
                 "IN_PATH",
-                "Organization ID - identifier used to get an organization's Rules",
+                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
                 True,
                 "TYPE_INTEGER"
             )
@@ -150,22 +150,22 @@ class RuleViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     @action(detail=False, methods=['PUT'])
-    def reset(self, request, nested_1_pk=None):
+    def reset(self, request, nested_organization_id=None):
         """
         Resets an organization's data data_quality rules
         """
         # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
-        # At that point, nested_1_pk should be changed to data_quality_check_id
-        dq = DataQualityCheck.retrieve(nested_1_pk)
+        # At that point, nested_organization_id should be changed to data_quality_check_id
+        dq = DataQualityCheck.retrieve(nested_organization_id)
         dq.reset_default_rules()
-        return self.list(request, nested_1_pk)
+        return self.list(request, nested_organization_id)
 
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
-                "nested_1_pk",
+                "nested_organization_id",
                 "IN_PATH",
-                "Organization ID - identifier used to get an organization's Rules",
+                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
                 True,
                 "TYPE_INTEGER"
             )
@@ -179,7 +179,7 @@ class RuleViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     @action(detail=False, methods=['POST'])
-    def batch_save(self, request, nested_1_pk=None):
+    def batch_save(self, request, nested_organization_id=None):
         """
         Saves an organization's settings: name, query threshold, shared fields.
         The method passes in all the fields again, so it is okay to remove
@@ -260,8 +260,8 @@ class RuleViewSet(viewsets.ViewSet):
         bad_rule_creation = False
         error_messages = set()
         # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
-        # At that point, nested_1_pk should be changed to data_quality_check_id
-        dq = DataQualityCheck.retrieve(nested_1_pk)
+        # At that point, nested_organization_id should be changed to data_quality_check_id
+        dq = DataQualityCheck.retrieve(nested_organization_id)
         dq.remove_all_rules()
         for rule in updated_rules:
             with transaction.atomic():
@@ -278,4 +278,4 @@ class RuleViewSet(viewsets.ViewSet):
                 'message': '\n'.join(error_messages),
             }, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return self.list(request, nested_1_pk)
+            return self.list(request, nested_organization_id)

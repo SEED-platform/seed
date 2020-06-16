@@ -38,9 +38,18 @@ class DataQualityViews(viewsets.ViewSet):
     (2) Respond with what changed
     """
 
+    # Remove lookup_field once data_quality_check_id is used and "pk" can be used
+    lookup_field = 'organization_id'
+
     @swagger_auto_schema(
         manual_parameters=[
-            AutoSchemaHelper.path_id_field(description="Organization ID - Used to identify the only data quality check for an organization."),
+            AutoSchemaHelper.base_field(
+                "organization_id",
+                "IN_PATH",
+                "Organization ID - identifier used to specify a DataQualityCheck",
+                True,
+                "TYPE_INTEGER"
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
@@ -65,7 +74,7 @@ class DataQualityViews(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     @action(detail=True, methods=['POST'])
-    def start(self, request, pk):
+    def start(self, request, organization_id):
         """
         This API endpoint will create a new data_quality check process in the background,
         on potentially a subset of properties/taxlots, and return back a query key
@@ -74,8 +83,8 @@ class DataQualityViews(viewsets.ViewSet):
         property_state_ids = body['property_state_ids']
         taxlot_state_ids = body['taxlot_state_ids']
 
-        # pk, the organization_id, is the only key currently used to identify DataQualityChecks
-        return_value = do_checks(pk, property_state_ids, taxlot_state_ids)
+        # For now, organization_id is the only key currently used to identify DataQualityChecks
+        return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids)
 
         return JsonResponse({
             'num_properties': len(property_state_ids),

@@ -23,8 +23,7 @@ api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_fil
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
-# Add lookup attribute of 'data_quality_check' when organization_id is no longer used as identifying key
-data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks')
+data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
 data_quality_checks_router.register(r'rules', RuleViewSet, base_name='data_quality_check-rules')
 
 urlpatterns = [
