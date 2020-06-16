@@ -18,7 +18,6 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from oauth2_provider.ext.rest_framework import OAuth2Authentication
-
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,

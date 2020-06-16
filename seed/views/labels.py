@@ -118,6 +118,21 @@ class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
 
 
 class UpdateInventoryLabelsAPIView(APIView):
+    """API endpoint for viewing and creating labels.
+
+            Returns::
+                [
+                    {
+                        'id': Label's primary key
+                        'name': Name given to label
+                        'color': Color of label,
+                        'organization_id': Id of organization label belongs to,
+                        'is_applied': Will be empty array if not applied to property/taxlots
+                    }
+                ]
+
+    ---
+    """
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     inventory_models = {'property': PropertyView, 'taxlot': TaxLotView}

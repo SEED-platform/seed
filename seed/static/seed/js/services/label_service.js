@@ -61,7 +61,7 @@ angular.module('BE.seed.service.label', [])
         return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids);
       }
 
-      function get_labels_for_org (org_id, inventory_type, filter_ids) {
+      function get_labels_for_org(org_id, inventory_type, filter_ids) {
         var params = {
           organization_id: org_id
         };
@@ -77,7 +77,6 @@ angular.module('BE.seed.service.label', [])
           params: params
         }).then(map_labels);
       }
-
 
       /*  Add a label to an organization's list of labels
 
@@ -104,7 +103,6 @@ angular.module('BE.seed.service.label', [])
           return map_label(response.data);
         });
       }
-
 
       /*  Update an existing a label in an organization
 
