@@ -28,7 +28,6 @@ from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
 from seed.models import Column, Cycle, ImportFile, PropertyView, TaxLotView
 from seed.serializers.column_mappings import \
     SaveColumnMappingsRequestPayloadSerializer
-from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
@@ -472,146 +471,6 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
-    @action(detail=True, methods=['GET'])
-    def users(self, request, pk=None):
-        """
-        Retrieve all users belonging to an org.
-        ---
-        response_serializer: OrganizationUsersSerializer
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
-        """
-        try:
-            org = Organization.objects.get(pk=pk)
-        except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
-        users = []
-        for u in org.organizationuser_set.all():
-            user = u.user
-
-            user_orgs = OrganizationUser.objects.filter(user=user).count()
-
-            users.append({
-                'email': user.email,
-                'first_name': user.first_name,
-                'last_name': user.last_name,
-                'number_of_orgs': user_orgs,
-                'user_id': user.pk,
-                'role': _get_js_role(u.role_level)
-            })
-
-        return JsonResponse({'status': 'success', 'users': users})
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['DELETE'])
-    def remove_user(self, request, pk=None):
-        """
-        Removes a user from an organization and deletes orphaned users.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: user_id
-              description: User ID (Primary key) of the user to remove from the organization
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: info/error message, if any
-                required: false
-        """
-        body = request.data
-
-        try:
-            org = Organization.objects.get(pk=pk)
-        except Organization.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'organization does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        if body.get('user_id') is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'missing the user_id'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            user = User.objects.get(pk=body['user_id'])
-        except User.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'user does not exist'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        # A super user can remove a user. The superuser logic is also part of the decorator which
-        # checks if super permissions have been limited per the ALLOW_SUPER_USER_PERMS setting.
-        org_owner = OrganizationUser.objects.filter(
-            user=request.user, organization=org, role_level=ROLE_OWNER
-        ).exists()
-        if not request.user.is_superuser and not org_owner:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'only the organization owner or superuser can remove a member'
-            }, status=status.HTTP_403_FORBIDDEN)
-
-        is_last_member = not OrganizationUser.objects.filter(
-            organization=org,
-        ).exclude(user=user).exists()
-
-        if is_last_member:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'an organization must have at least one member'
-            }, status=status.HTTP_409_CONFLICT)
-
-        is_last_owner = not OrganizationUser.objects.filter(
-            organization=org,
-            role_level=ROLE_OWNER,
-        ).exclude(user=user).exists()
-
-        if is_last_owner:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'an organization must have at least one owner level member'
-            }, status=status.HTTP_409_CONFLICT)
-
-        ou = OrganizationUser.objects.get(user=user, organization=org)
-        ou.delete()
-
-        # check the user and make sure they still have a valid organization to belong to
-        user_orgs = OrganizationUser.objects.filter(user=user)
-
-        if user_orgs.count() == 0:
-            # Deactivate orphaned user
-            user.is_active = False
-            user.save()
-        elif user.default_organization == org:
-            first_org = user_orgs.order_by('id').first()
-            user.default_organization = first_org.organization
-            user.save()
-
-        return JsonResponse({'status': 'success'})
-
-    @api_endpoint_class
-    @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     def create(self, request):
         """
@@ -658,51 +517,6 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'organization': _dict_org(request, [org])[0]
             }
         )
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_owner')
-    @action(detail=True, methods=['PUT'])
-    def add_user(self, request, pk=None):
-        """
-        Adds an existing user to an organization.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: user_id
-              description: User ID (Primary key) of the user to add to the organization
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: info/error message, if any
-                required: false
-        """
-        body = request.data
-        org = Organization.objects.get(pk=pk)
-        user = User.objects.get(pk=body['user_id'])
-
-        _orguser, status = org.add_member(user)
-
-        # Send an email if a new user has been added to the organization
-        if status:
-            try:
-                domain = request.get_host()
-            except Exception:
-                domain = 'seed-platform.org'
-            invite_to_organization(
-                domain, user, request.user.username, org.name
-            )
-
-        return JsonResponse({'status': 'success'})
 
     @api_endpoint_class
     @ajax_request_class
