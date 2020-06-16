@@ -520,6 +520,17 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
+    @method_decorator(permission_required('seed.can_access_admin'))
+    @action(detail=True, methods=['DELETE'])
+    def inventory(self, request, pk=None):
+        """
+        Starts a background task to delete all properties & taxlots
+        in an org.
+        """
+        return JsonResponse(tasks.delete_organization_inventory(pk))
+
+    @api_endpoint_class
+    @ajax_request_class
     @has_perm_class('requires_owner')
     @action(detail=True, methods=['PUT'])
     def save_settings(self, request, pk=None):
