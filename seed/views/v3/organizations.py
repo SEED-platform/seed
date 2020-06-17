@@ -1424,3 +1424,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         response.write(xlsx_data)
 
         return response
+
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def geocode_api_key_exists(self, request, pk=None):
+        """
+        Returns true if the organization has a mapquest api key
+        """
+        org = Organization.objects.get(id=pk)
+
+        if org.mapquest_api_key:
+            return True
+        else:
+            return False
