@@ -6,12 +6,14 @@
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
+  '$q',
   'urls',
   'user_service',
   'cycle_service',
   'spinner_utility',
   'naturalSort',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort) {
+  'Notification',
+  function ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -1000,6 +1002,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.update_settings_profile = function (id, data) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
       return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
         params: {
           organization_id: user_service.get_organization().id
@@ -1010,6 +1016,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.remove_settings_profile = function (id) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
       return $http.delete('/api/v2/column_list_settings/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id
