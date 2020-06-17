@@ -953,8 +953,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(geocoding_columns)
 
-    def get_cycles(self, start, end):
-        organization_id = self.request.GET['organization_id']
+    def get_cycles(self, start, end, organization_id):
         if not isinstance(start, type(end)):
             raise TypeError('start and end not same types')
         # if of type int or convertable  assume they are cycle ids
@@ -1038,15 +1037,52 @@ class OrganizationViewSet(viewsets.ViewSet):
             results.append(result)
         return results
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_string_field(
+                'x_var',
+                required=True,
+                description='Raw column name for x axis'
+            ),
+            AutoSchemaHelper.query_string_field(
+                'x_label',
+                required=True,
+                description='Label for x axis'
+            ),
+            AutoSchemaHelper.query_string_field(
+                'y_var',
+                required=True,
+                description='Raw column name for y axis'
+            ),
+            AutoSchemaHelper.query_string_field(
+                'y_label',
+                required=True,
+                description='Label for y axis'
+            ),
+            AutoSchemaHelper.query_string_field(
+                'start',
+                required=True,
+                description='Start time, in the format "2018-12-31T23:53:00-08:00"'
+            ),
+            AutoSchemaHelper.query_string_field(
+                'end',
+                required=True,
+                description='End time, in the format "2018-12-31T23:53:00-08:00"'
+            ),
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
-    def export_reports_data(self, request):
+    def report_export(self, request, pk=None):
+        """
+        Export a report as a spreadsheet
+        """
         params = {}
         missing_params = []
         error = ''
-        for param in ['x_var', 'x_label', 'y_var', 'y_label', 'organization_id', 'start', 'end']:
+        for param in ['x_var', 'x_label', 'y_var', 'y_label', 'start', 'end']:
             val = request.query_params.get(param, None)
             if not val:
                 missing_params.append(param)
@@ -1093,9 +1129,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         agg_sheet.write(data_row_start, data_col_start + 2, 'Year Ending', bold)
 
         # Gather base data
-        cycles = self.get_cycles(params['start'], params['end'])
+        cycles = self.get_cycles(params['start'], params['end'], pk)
         data = self.get_raw_report_data(
-            params['organization_id'], cycles,
+            pk, cycles,
             params['x_var'], params['y_var'], False
         )
 
