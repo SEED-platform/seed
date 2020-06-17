@@ -355,6 +355,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return progress_data.key
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_string_field(
+            'brief',
+            required=False,
+            description='If true, only return high-level organization details'
+        )]
+    )
     @api_endpoint_class
     @ajax_request_class
     def list(self, request):
