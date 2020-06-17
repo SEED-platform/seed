@@ -192,6 +192,12 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     fields = SaveSettingsOrgFieldSerializer(many=True)
     public_fields = SaveSettingsOrgFieldSerializer(many=True)
+    display_units_eui = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_EUI)
+    display_units_area = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_AREA)
+    display_significant_figures = serializers.IntegerField(min_value=0)
+    display_meter_units = serializers.JSONField()
+    thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
+    mapquest_api_key = serializers.CharField()
 
 
 class SaveSettingsSerializer(serializers.Serializer):
@@ -354,14 +360,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def list(self, request):
         """
         Retrieves all orgs the user has access to.
-        ---
-        type:
-            organizations:
-                required: true
-                type: array[organizations]
-                description: Returns an array where each item is a full organization structure, including
-                             keys ''name'', ''org_id'', ''number_of_users'', ''user_is_owner'',
-                             ''user_role'', ''sub_orgs'', ...
         """
 
         # if brief==true only return high-level organization details
@@ -404,23 +402,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            progress_key:
-                description: ID of background job, for retrieving job progress
-                type: string
-                required: true
         """
 
         return JsonResponse(tasks.delete_organization(pk))
@@ -431,18 +412,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         """
         Retrieves a single organization by id.
-        ---
-        type:
-            status:
-                required: true
-                type: string
-                description: success, or error
-            organization:
-                required: true
-                type: array[organizations]
-                description: Returns an array where each item is a full organization structure, including
-                             keys ''name'', ''org_id'', ''number_of_users'', ''user_is_owner'',
-                             ''user_role'', ''sub_orgs'', ...
         """
         org_id = pk
 
@@ -478,35 +447,24 @@ class OrganizationViewSet(viewsets.ViewSet):
             'organization': _dict_org(request, [org])[0],
         })
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'organization_name': 'string',
+                'user_id': 'integer',
+            },
+            required=['organization_name', 'user_id'],
+            description='Properties:\n'
+                        '- organization_name: The new organization name\n'
+                        '- user_id: The user ID (primary key) to be used as the owner of the new organization'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_parent_org_owner')
     def create(self, request):
         """
         Creates a new organization.
-        ---
-        parameters:
-            - name: organization_name
-              description: The new organization name
-              type: string
-              required: true
-            - name: user_id
-              description: The user ID (primary key) to be used as the owner of the new organization
-              type: integer
-              required: true
-        type:
-           status:
-               type: string
-               description: success or error
-               required: true
-           message:
-               type: string
-               description: error/informational message, if any
-               required: false
-           organization:
-               type: dict
-               description: A dictionary of the organization created
-               required: false
         """
         body = request.data
         user = User.objects.get(pk=body['user_id'])
@@ -538,35 +496,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         return JsonResponse(tasks.delete_organization_inventory(pk))
 
+    @swagger_auto_schema(
+        request_body=SaveSettingsSerializer,
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
     @action(detail=True, methods=['PUT'])
     def save_settings(self, request, pk=None):
         """
-        Saves an organization's settings: name, query threshold, shared fields
-        ---
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            message:
-                description: Error message, if any
-                type: string
-                required: false
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: body
-              description: JSON body containing organization settings information
-              paramType: body
-              pytype: SaveSettingsSerializer
-              required: true
+        Saves an organization's settings: name, query threshold, shared fields, etc
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
@@ -658,24 +597,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         members of sibling orgs must return at least this many buildings
         from orgs they do not belong to, or else buildings from orgs they
         don't belong to will be removed from the results.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-        type:
-            status:
-                type: string
-                required: true
-                description: success or error
-            query_threshold:
-                type: integer
-                required: true
-                description: Minimum number of buildings that must be returned from a search to avoid
-                             squelching non-member-org results
         """
         org = Organization.objects.get(pk=pk)
         return JsonResponse({
@@ -683,23 +604,17 @@ class OrganizationViewSet(viewsets.ViewSet):
             'query_threshold': org.query_threshold
         })
 
-    # TODO: Shared fields structure has a "class" attribute that won't serialize
+    @swagger_auto_schema(
+        responses={
+            200: SharedFieldsReturnSerializer
+        }
+    )
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
         Retrieves all fields marked as shared for the organization. Will only return used fields.
-
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-        response_serializer: SharedFieldsActualReturnSerializer
         """
         result = {
             'status': 'success',
@@ -720,41 +635,24 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(result)
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'sub_org_name': 'string',
+                'sub_org_owner_email': 'string',
+            },
+            required=['sub_org_name', 'sub_org_owner_email'],
+            description='Properties:\n'
+                        '- sub_org_name: Name of the new sub organization\n'
+                        '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['POST'])
     def sub_org(self, request, pk=None):
         """
         Creates a child org of a parent org.
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: Organization ID (Primary key)
-              type: integer
-              required: true
-              paramType: path
-            - name: sub_org_name
-              description: Name of the new sub organization
-              type: string
-              required: true
-            - name: sub_org_owner_email
-              description: Email of the owner of the sub organization, which must already exist
-              type: string
-              required: true
-        type:
-            status:
-                type: string
-                description: success or error
-                required: true
-            message:
-                type: string
-                description: error message, if any
-                required: true
-            organization_id:
-                type: integer
-                description: ID of newly-created org
-                required: true
         """
         body = request.data
         org = Organization.objects.get(pk=pk)
@@ -787,15 +685,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def matching_criteria_columns(self, request, pk=None):
         """
         Retrieve all matching criteria columns for an org.
-        ---
-        response_serializer: OrganizationUsersSerializer
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
         """
         try:
             org = Organization.objects.get(pk=pk)
@@ -814,6 +703,16 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(matching_criteria_column_names)
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'inventory_type': 'string'
+            },
+            required=['inventory_type'],
+            description='Properties:\n'
+                        '- inventory_type: either "properties" or "taxlots"'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -821,13 +720,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def match_merge_link(self, request, pk=None):
         """
         Run match_merge_link for an org.
-        ---
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
         """
         inventory_type = request.data.get('inventory_type', None)
         if inventory_type not in ['properties', 'taxlots']:
@@ -848,6 +740,20 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'progress_key': progress_key})
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'inventory_type': 'string',
+                'add': ['string'],
+                'remove': ['string'],
+            },
+            required=['inventory_type'],
+            description='Properties:\n'
+                        '- inventory_type: either "properties" or "taxlots"\n'
+                        '- add: list of column names\n'
+                        '- remove: list of column names'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -855,13 +761,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def match_merge_link_preview(self, request, pk=None):
         """
         Run match_merge_link preview for an org and record type.
-        ---
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
         """
         inventory_type = request.data.get('inventory_type', None)
         if inventory_type not in ['properties', 'taxlots']:
@@ -899,6 +798,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'progress_key': progress_key})
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field(
+            'match_merge_link_id',
+            required=True,
+            description='ID of match merge link'
+        )]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -914,7 +820,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         identifier = request.query_params['match_merge_link_id']
         result_key = _get_match_merge_link_key(identifier)
 
-        return JsonResponse(get_cache_raw(result_key))
+        # using unsafe serialization b/c the result might not be a dict
+        return JsonResponse(get_cache_raw(result_key), safe=False)
 
     @api_endpoint_class
     @ajax_request_class
@@ -923,15 +830,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     def geocoding_columns(self, request, pk=None):
         """
         Retrieve all geocoding columns for an org.
-        ---
-        response_serializer: OrganizationUsersSerializer
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              type: integer
-              description: Organization ID (primary key)
-              required: true
-              paramType: path
         """
         try:
             org = Organization.objects.get(pk=pk)
