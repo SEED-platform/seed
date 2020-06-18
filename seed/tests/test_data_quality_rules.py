@@ -31,6 +31,109 @@ class RuleViewTests(DataMappingBaseTestCase):
             email='test_user@demo.com'
         )
 
+    def test_update_rule_valid_severity_label_validation(self):
+        # Start with 1 Rule
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        base_rule_info = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'Test Rule 1',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+        }
+        dq.add_rule(base_rule_info)
+        rule = dq.rules.get()
+
+        # Send invalid update request
+        put_data = deepcopy(base_rule_info)
+        put_data['severity'] = dict(Rule.SEVERITY).get(Rule.SEVERITY_VALID)
+        put_data['status_label'] = None
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
+            'nested_organization_id': self.org.id,
+            'pk': rule.id
+        })
+        res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue('Label must be assigned when using \'Valid\' Data Severity.' in json.loads(res.content)['general_validation_error'])
+
+        # Add label to rule and change severity to valid, then try to remove label
+        rule.status_label = self.org.labels.first()
+        rule.severity = Rule.SEVERITY_VALID
+        rule.save()
+
+        put_data_2 = deepcopy(base_rule_info)
+        del put_data_2['severity']  # don't update severity
+        put_data_2['status_label'] = ""
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
+            'nested_organization_id': self.org.id,
+            'pk': rule.id
+        })
+        res = self.client.put(url, content_type='application/json', data=json.dumps(put_data_2))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue('Label must be assigned when using \'Valid\' Data Severity.' in json.loads(res.content)['general_validation_error'])
+
+    def test_update_rule_include_empty_text_match_validation(self):
+        # Start with 1 Rule
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        base_rule_info = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'Test Rule 1',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+        }
+        dq.add_rule(base_rule_info)
+        rule = dq.rules.get()
+
+        # Send invalid update request
+        put_data = deepcopy(base_rule_info)
+        put_data['text_match'] = None
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
+            'nested_organization_id': self.org.id,
+            'pk': rule.id
+        })
+        res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue('Rule must not include or exclude an empty string.' in json.loads(res.content)['general_validation_error'])
+
+        # Remove text_match and make condition NOT_NULL, then try making condition EXCLUDE
+        rule.text_match = None
+        rule.condition = Rule.RULE_NOT_NULL
+        rule.save()
+
+        put_data_2 = deepcopy(base_rule_info)
+        del put_data_2['text_match']  # don't update text_match
+        put_data_2['condition'] = Rule.RULE_EXCLUDE
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
+            'nested_organization_id': self.org.id,
+            'pk': dq.rules.get().id
+        })
+        res = self.client.put(url, content_type='application/json', data=json.dumps(put_data_2))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue('Rule must not include or exclude an empty string.' in json.loads(res.content)['general_validation_error'])
+
     def test_valid_data_rule_without_label_does_not_actually_update_or_delete_any_rules(self):
         # Start with 3 Rules
         dq = DataQualityCheck.retrieve(self.org.id)

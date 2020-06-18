@@ -26,15 +26,19 @@ from seed.serializers.notes import (
 )
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
+from seed.utils.viewsets import UpdateWithoutPatchModelMixin
 
 _log = logging.getLogger(__name__)
 
 # TODO: Move these serializers into seed/serializers (and maybe actually use them...)
 class RulesSerializer(serializers.ModelSerializer):
-    data_type = serializers.CharField(source='get_data_type_display')
-    label = serializers.SlugRelatedField(source="status_label", queryset=StatusLabel.objects.all(), slug_field='id')
-    severity = serializers.CharField(source='get_severity_display')
+    data_type = serializers.CharField(source='get_data_type_display', required=False)
+    status_label = serializers.PrimaryKeyRelatedField(
+        queryset=StatusLabel.objects.all(),
+        allow_null=True,
+        required=False
+    )
+    severity = serializers.CharField(source='get_severity_display', required=False)
 
     class Meta:
         model = Rule
@@ -43,16 +47,82 @@ class RulesSerializer(serializers.ModelSerializer):
             'data_type',
             'enabled',
             'field',
-            'label',
+            'id',
             'max',
             'min',
             'not_null',
             'required',
             'rule_type',
             'severity',
+            'status_label',
             'text_match',
             'units',
         ]
+
+    def validate_label(self, label):
+        """
+        Note: DQ Rules can be shared from parent to child but child orgs can
+        have their own labels. So, a Rule shouldn't be associated to Labels
+        from child orgs. In other words, Rule and associated Label should be
+        from the same org.
+        """
+        if label is not None and label.super_organization_id != self.instance.data_quality_check.organization_id:
+            raise serializers.ValidationError(
+                f'Label with ID {label.id} not found in organization, {self.instance.data_quality_check.organization.name}.'
+            )
+        else:
+            return label
+
+    def validate(self, data):
+        """
+        These are validations that involve values between multiple fields.
+
+        Custom validations for field values in isolation should still be
+        contained in 'validate_{field_name}' methods which are only checked when
+        that field is in 'data'.
+        """
+        data_invalid = False
+        validation_messages = []
+
+        # Rule with SEVERITY setting of "valid" should have a Label.
+        severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
+        severity_unchanged = 'get_severity_display' not in data
+        severity_will_be_valid = data.get('get_severity_display') == "valid"
+
+        if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
+            # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
+            label_will_be_removed = data.get('status_label', "FOO") in ["", None]
+            label_is_not_associated = self.instance.status_label is None
+            label_unchanged = 'status_label' not in data
+            if label_will_be_removed or (label_is_not_associated and label_unchanged):
+                data_invalid = True
+                validation_messages.append(
+                    'Label must be assigned when using \'Valid\' Data Severity.'
+                )
+
+        # Rule must NOT include or exclude an empty string.
+        is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+        condition_unchanged = 'condition' not in data
+        will_be_include_or_exclude = data.get('condition') in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+
+        if (is_include_or_exclude and condition_unchanged) or will_be_include_or_exclude:
+            # Defaulting to "FOO" enables a value check of either "" or None (only if key exists)
+            text_match_will_be_empty = data.get('text_match', "FOO") in ["", None]
+            text_match_is_empty = getattr(self.instance, 'text_match', "FOO") in ["", None]
+            text_match_unchanged = 'text_match' not in data
+
+            if text_match_will_be_empty or (text_match_is_empty and text_match_unchanged):
+                data_invalid = True
+                validation_messages.append(
+                    'Rule must not include or exclude an empty string.'
+                )
+
+        if data_invalid:
+            raise serializers.ValidationError({
+                'general_validation_error': validation_messages
+            })
+        else:
+            return data
 
 
 class DataQualityRulesSerializer(serializers.Serializer):
@@ -68,28 +138,20 @@ class DataQualityRulesResponseSerializer(serializers.Serializer):
     rules = DataQualityRulesSerializer()
 
 
-# TODO: convert these to serializers
-def _get_rule_type_from_js(data_type):
-    """return the Rules TYPE from the JS friendly data type
+class RuleViewSet(viewsets.GenericViewSet, UpdateWithoutPatchModelMixin):
+    serializer_class = RulesSerializer
+    model = Rule
+    pagination_class = None
 
-    :param data_type: 'string', 'number', 'date', or 'year'
-    :returns: int data type as defined in data_quality.models
-    """
-    d = {v: k for k, v in dict(Rule.DATA_TYPES).items()}
-    return d.get(data_type)
+    def get_queryset(self):
+        org_id = self.kwargs.get('nested_organization_id')
+        rule_id = self.kwargs.get('pk')
 
+        if rule_id is None:
+            return DataQualityCheck.retrieve(org_id).rules.all()
+        else:
+            return DataQualityCheck.retrieve(org_id).rules.filter(id=rule_id)
 
-def _get_severity_from_js(severity):
-    """return the Rules SEVERITY from the JS friendly severity
-
-    :param severity: 'error', or 'warning'
-    :returns: int severity as defined in data_quality.models
-    """
-    d = {v: k for k, v in dict(Rule.SEVERITY).items()}
-    return d.get(severity)
-
-
-class RuleViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.base_field(
@@ -159,123 +221,3 @@ class RuleViewSet(viewsets.ViewSet):
         dq = DataQualityCheck.retrieve(nested_organization_id)
         dq.reset_default_rules()
         return self.list(request, nested_organization_id)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.base_field(
-                "nested_organization_id",
-                "IN_PATH",
-                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
-                True,
-                "TYPE_INTEGER"
-            )
-        ],
-        request_body=SaveDataQualityRulesPayloadSerializer,
-        responses={
-            200: DataQualityRulesResponseSerializer
-        }
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
-    @action(detail=False, methods=['POST'])
-    def batch_save(self, request, nested_organization_id=None):
-        """
-        Saves an organization's settings: name, query threshold, shared fields.
-        The method passes in all the fields again, so it is okay to remove
-        all the rules in the db, and just recreate them (albeit inefficient)
-        """
-        body = request.data
-        if body.get('data_quality_rules') is None:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'missing the data_quality_rules'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        posted_rules = body['data_quality_rules']
-        updated_rules = []
-        valid_rules = True
-        validation_messages = set()
-        for rule in posted_rules['properties']:
-            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
-                valid_rules = False
-                validation_messages.add('Label must be assigned when using Valid Data Severity.')
-            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
-                if rule['text_match'] is None or rule['text_match'] == '':
-                    valid_rules = False
-                    validation_messages.add('Rule must not include or exclude an empty string.')
-            updated_rules.append(
-                {
-                    'field': rule['field'],
-                    'table_name': 'PropertyState',
-                    'enabled': rule['enabled'],
-                    'condition': rule['condition'],
-                    'data_type': _get_rule_type_from_js(rule['data_type']),
-                    'rule_type': rule['rule_type'],
-                    'required': rule['required'],
-                    'not_null': rule['not_null'],
-                    'min': rule['min'],
-                    'max': rule['max'],
-                    'text_match': rule['text_match'],
-                    'severity': _get_severity_from_js(rule['severity']),
-                    'units': rule['units'],
-                    'status_label_id': rule['label']
-                }
-            )
-
-        for rule in posted_rules['taxlots']:
-            if _get_severity_from_js(rule['severity']) == Rule.SEVERITY_VALID and rule['label'] is None:
-                valid_rules = False
-                validation_messages.add('Label must be assigned when using Valid Data Severity.')
-            if rule['condition'] == Rule.RULE_INCLUDE or rule['condition'] == Rule.RULE_EXCLUDE:
-                if rule['text_match'] is None or rule['text_match'] == '':
-                    valid_rules = False
-                    validation_messages.add('Rule must not include or exclude an empty string.')
-            updated_rules.append(
-                {
-                    'field': rule['field'],
-                    'table_name': 'TaxLotState',
-                    'enabled': rule['enabled'],
-                    'condition': rule['condition'],
-                    'data_type': _get_rule_type_from_js(rule['data_type']),
-                    'rule_type': rule['rule_type'],
-                    'required': rule['required'],
-                    'not_null': rule['not_null'],
-                    'min': rule['min'],
-                    'max': rule['max'],
-                    'text_match': rule['text_match'],
-                    'severity': _get_severity_from_js(rule['severity']),
-                    'units': rule['units'],
-                    'status_label_id': rule['label']
-                }
-            )
-
-        if valid_rules is False:
-            return JsonResponse({
-                'status': 'error',
-                'message': '\n'.join(validation_messages),
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        # This pattern of deleting and recreating Rules is slated to be deprecated
-        bad_rule_creation = False
-        error_messages = set()
-        # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
-        # At that point, nested_organization_id should be changed to data_quality_check_id
-        dq = DataQualityCheck.retrieve(nested_organization_id)
-        dq.remove_all_rules()
-        for rule in updated_rules:
-            with transaction.atomic():
-                try:
-                    dq.add_rule(rule)
-                except Exception as e:
-                    error_messages.add('Rule could not be recreated: ' + str(e))
-                    bad_rule_creation = True
-                    continue
-
-        if bad_rule_creation:
-            return JsonResponse({
-                'status': 'error',
-                'message': '\n'.join(error_messages),
-            }, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return self.list(request, nested_organization_id)
