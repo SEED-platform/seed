@@ -878,11 +878,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         - casts it as a PropertyState
         - builds a hash with all the same keys as the original property state
         - checks if any fields have changed
-        - if nothing has changed, return 422 - Really?  Not sure how I feel about that one, it *is* processable
+        - if nothing has changed, return 422
         - get the property audit log for this property state
         - if the new property state has extra_data, the original extra_data is update'd
-        - and then whoa stuff about the audit log?
-        - I'm going to assume 'Import Creation' is the key I'm looking for
         - create a serializer for the new property state
         - if it's valid, save this new serialized data to the db
         - assign it to the original property view and save the property view
