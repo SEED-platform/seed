@@ -138,7 +138,7 @@ class DataQualityRulesResponseSerializer(serializers.Serializer):
     rules = DataQualityRulesSerializer()
 
 
-class RuleViewSet(viewsets.GenericViewSet, UpdateWithoutPatchModelMixin):
+class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, UpdateWithoutPatchModelMixin):
     serializer_class = RulesSerializer
     model = Rule
     pagination_class = None

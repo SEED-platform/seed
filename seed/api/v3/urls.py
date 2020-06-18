@@ -9,9 +9,9 @@ from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.data_quality import DataQualityViews
+from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.organizations import OrganizationViewSet
-from seed.views.v3.rules import RuleViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
@@ -24,7 +24,7 @@ api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organiz
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
-data_quality_checks_router.register(r'rules', RuleViewSet, base_name='data_quality_check-rules')
+data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, base_name='data_quality_check-rules')
 
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
