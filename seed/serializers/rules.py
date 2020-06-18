@@ -103,17 +103,3 @@ class RuleSerializer(serializers.ModelSerializer):
             })
         else:
             return data
-
-
-class DataQualityRulesSerializer(serializers.Serializer):
-    properties = serializers.ListField(child=RuleSerializer())
-    taxlots = serializers.ListField(child=RuleSerializer())
-
-
-class SaveDataQualityRulesPayloadSerializer(serializers.Serializer):
-    data_quality_rules = DataQualityRulesSerializer()
-
-
-class DataQualityRulesResponseSerializer(serializers.Serializer):
-    status = serializers.CharField()
-    rules = DataQualityRulesSerializer()

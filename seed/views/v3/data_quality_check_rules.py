@@ -5,8 +5,6 @@
 """
 import logging
 
-from django.db import transaction
-from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 
 from drf_yasg.utils import swagger_auto_schema, no_body
@@ -14,18 +12,11 @@ from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
-from rest_framework.parsers import JSONParser, FormParser
-from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models.data_quality import DataQualityCheck, Rule
-from seed.models import StatusLabel
-from seed.serializers.rules import (
-    DataQualityRulesResponseSerializer,
-    RuleSerializer,
-)
+from seed.serializers.rules import RuleSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import UpdateWithoutPatchModelMixin
