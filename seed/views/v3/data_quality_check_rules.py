@@ -56,6 +56,10 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     pagination_class = None
 
     def get_queryset(self):
+        # Handle the anonymous case (e.g. Swagger page load)
+        if not self.kwargs:
+            return Rule.objects.none()
+
         org_id = self.kwargs.get('nested_organization_id')
         rule_id = self.kwargs.get('pk')
 
