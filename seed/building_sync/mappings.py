@@ -507,6 +507,7 @@ BASE_MAPPING_V2_0 = {
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_float,
+                'units': 'ft**2',
             },
             'net_floor_area': {
                 'xpath': './auc:Buildings/auc:Building/auc:FloorAreas/auc:FloorArea[auc:FloorAreaType="Net"]/auc:FloorAreaValue',

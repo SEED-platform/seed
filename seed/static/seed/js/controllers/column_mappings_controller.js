@@ -6,6 +6,7 @@ angular.module('BE.seed.controller.column_mappings', [])
   .controller('column_mappings_controller', [
     '$scope',
     '$state',
+    '$log',
     '$uibModal',
     'Notification',
     'auth_payload',
@@ -16,9 +17,13 @@ angular.module('BE.seed.controller.column_mappings', [])
     'mappable_taxlot_columns_payload',
     'organization_payload',
     'urls',
+    'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
       $state,
+      $log,
       $uibModal,
       Notification,
       auth_payload,
@@ -28,7 +33,10 @@ angular.module('BE.seed.controller.column_mappings', [])
       mappable_property_columns_payload,
       mappable_taxlot_columns_payload,
       organization_payload,
-      urls
+      urls,
+      COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -39,12 +47,12 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.mappable_taxlot_columns = mappable_taxlot_columns_payload;
 
       // Helpers to convert to and from DB column names and column display names
-      var mapping_db_to_display = function(mapping) {
+      var mapping_db_to_display = function (mapping) {
         var mappable_column;
 
-        if (mapping.to_table_name === "PropertyState") {
+        if (mapping.to_table_name === 'PropertyState') {
           mappable_column = _.find($scope.mappable_property_columns, {column_name: mapping.to_field});
-        } else if (mapping.to_table_name === "TaxLotState") {
+        } else if (mapping.to_table_name === 'TaxLotState') {
           mappable_column = _.find($scope.mappable_taxlot_columns, {column_name: mapping.to_field});
         }
 
@@ -53,16 +61,16 @@ angular.module('BE.seed.controller.column_mappings', [])
         }
       };
 
-      var mapping_display_to_db = function(mapping) {
+      var mapping_display_to_db = function (mapping) {
         // Also, clear from_units if mapping is not for units col
         if (!$scope.is_eui_column(mapping) && !$scope.is_area_column(mapping)) {
           mapping.from_units = null;
         }
 
         var mappable_column;
-        if (mapping.to_table_name === "PropertyState") {
+        if (mapping.to_table_name === 'PropertyState') {
           mappable_column = _.find($scope.mappable_property_columns, {displayName: mapping.to_field});
-        } else if (mapping.to_table_name === "TaxLotState") {
+        } else if (mapping.to_table_name === 'TaxLotState') {
           mappable_column = _.find($scope.mappable_taxlot_columns, {displayName: mapping.to_field});
         }
 
@@ -72,7 +80,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       // On page load, convert DB field names to display names
-      _.forEach(column_mapping_presets_payload, function(preset) {
+      _.forEach(column_mapping_presets_payload, function (preset) {
         _.forEach(preset.mappings, mapping_db_to_display);
       });
 
@@ -101,7 +109,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       // On load...
-      analyze_chosen_inventory_types()
+      analyze_chosen_inventory_types();
 
       $scope.updateSingleInventoryTypeDropdown = function () {
         analyze_chosen_inventory_types();
@@ -120,13 +128,19 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       // Preset-level CRUD modal-rending actions
       $scope.new_preset = function () {
+        var presetData = JSON.parse(JSON.stringify($scope.current_preset));
+        // change the preset type to custom if we've edited a default preset
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+          presetData.preset_type = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM;
+        }
+
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
           controller: 'column_mapping_preset_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant($scope.current_preset),
-            org_id: _.constant($scope.org.id),
+            data: _.constant(presetData),
+            org_id: _.constant($scope.org.id)
           }
         });
 
@@ -148,7 +162,7 @@ angular.module('BE.seed.controller.column_mappings', [])
           resolve: {
             action: _.constant('rename'),
             data: _.constant($scope.current_preset),
-            org_id: _.constant($scope.org.id),
+            org_id: _.constant($scope.org.id)
           }
         });
 
@@ -169,7 +183,7 @@ angular.module('BE.seed.controller.column_mappings', [])
           resolve: {
             action: _.constant('remove'),
             data: _.constant($scope.current_preset),
-            org_id: _.constant($scope.org.id),
+            org_id: _.constant($scope.org.id)
           }
         });
 
@@ -236,7 +250,7 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       // Add and remove column methods
       $scope.add_new_column = function () {
-        var empty_row = {from_field: "", from_units: null, to_field: "", to_table_name: ""};
+        var empty_row = {from_field: '', from_units: null, to_field: '', to_table_name: ''};
 
         if ($scope.current_preset.mappings[0]) {
           $scope.current_preset.mappings.push(empty_row);
@@ -257,9 +271,9 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       // Copy Comma-delimited list into headers
-      $scope.csv_headers = "";
+      $scope.csv_headers = '';
 
-      $scope.copy_csv_headers = function() {
+      $scope.copy_csv_headers = function () {
         $uibModal.open({
           template: '<div class="modal-header">' +
                       '<h3 class="modal-title" translate>Replacing Existing Columns</h3>' +
@@ -311,10 +325,36 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.header_duplicates_present = function () {
-        var grouped_by_from_field = _.groupBy($scope.current_preset.mappings, 'from_field')
+        var grouped_by_from_field = _.groupBy($scope.current_preset.mappings, 'from_field');
 
         return Boolean(_.find(
-          _.values(grouped_by_from_field), function (group) {return group.length > 1})
+          _.values(grouped_by_from_field), function (group) {
+            return group.length > 1;
+          })
         );
+      };
+
+      $scope.preset_action_ok = function (action) {
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_NORMAL) {
+          return true;
+        }
+
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+          return false;
+        }
+
+        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
+          var allowed_actions = [
+            'update',
+            'rename',
+            'delete',
+            'change_to_field',
+            'change_from_units'
+          ];
+          return allowed_actions.includes(action);
+        }
+
+        $log.warn('Unknown preset type "' + $scope.current_preset.preset_type + '"');
+        return false;
       };
     }]);

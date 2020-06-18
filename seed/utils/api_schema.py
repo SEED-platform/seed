@@ -2,20 +2,22 @@
 # encoding: utf-8
 from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
+    # overrides the serialization of existing endpoints
+    overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
-    body_parameter_formats = {
-        'interger_list': openapi.Schema(
-            type=openapi.TYPE_ARRAY,
-            items=openapi.Schema(type=openapi.TYPE_INTEGER)
-        ),
-        'string': openapi.Schema(type=openapi.TYPE_STRING)
+    openapi_types = {
+        'string': openapi.TYPE_STRING,
+        'boolean': openapi.TYPE_BOOLEAN,
+        'integer': openapi.TYPE_INTEGER,
     }
 
-    def base_field(self, name, location_attr, description, required, type):
+    @staticmethod
+    def base_field(name, location_attr, description, required, type):
         """
         Created to avoid needing to directly access openapi within ViewSets.
         Ideally, the cases below will be used instead of this one.
@@ -28,16 +30,18 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=type
         )
 
-    def org_id_field(self):
+    @staticmethod
+    def query_org_id_field(required=True, description="Organization ID"):
         return openapi.Parameter(
             'organization_id',
             openapi.IN_QUERY,
-            description='Organization ID',
-            required=True,
+            description=description,
+            required=required,
             type=openapi.TYPE_INTEGER
         )
 
-    def query_integer_field(self, name, required, description):
+    @staticmethod
+    def query_integer_field(name, required, description):
         return openapi.Parameter(
             name,
             openapi.IN_QUERY,
@@ -46,7 +50,28 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def path_id_field(self, description):
+    @staticmethod
+    def query_string_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
+    @staticmethod
+    def query_boolean_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_QUERY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_BOOLEAN
+        )
+
+    @staticmethod
+    def path_id_field(description):
         return openapi.Parameter(
             'id',
             openapi.IN_PATH,
@@ -55,27 +80,74 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
-    def body_field(self, required, description, name='body', params_to_formats={}):
+    @classmethod
+    def body_field(cls, required, description, name='body', params_to_formats={}):
         return openapi.Parameter(
             name,
             openapi.IN_BODY,
             description=description,
             required=required,
-            schema=self._build_body_schema(params_to_formats)
+            schema=cls.schema_factory(params_to_formats)
         )
 
-    def _build_body_schema(self, params_to_formats):
-        return openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                k: self.body_parameter_formats.get(format_name, "")
-                for k, format_name
-                in params_to_formats.items()
+    @classmethod
+    def schema_factory(cls, obj, **kwargs):
+        """Translates an object into an openapi Schema
+
+        This can handle nested objects (lists, dicts), and "types" defined as strings
+        For example:
+        {
+            'hello': ['string'],
+            'world': 'integer',
+            'fruits': {
+                'orange': 'boolean',
+                'apple': 'boolean'
             }
-        )
+        }
+
+        :param obj: str, list, dict[str, obj]
+        :return: drf_yasg.openapi.Schema
+        """
+        if type(obj) is str:
+            if obj not in cls.openapi_types:
+                raise Exception(f'Invalid type "{obj}"; expected one of {cls.openapi_types.keys()}')
+            return openapi.Schema(
+                type=cls.openapi_types[obj],
+                **kwargs
+            )
+
+        if type(obj) is list:
+            if len(obj) != 1:
+                raise Exception('List types must have exactly one element to specify the schema of `items`')
+            return openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=cls.schema_factory(obj[0]),
+                **kwargs
+            )
+
+        if type(obj) is dict:
+            return openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    k: cls.schema_factory(sub_obj)
+                    for k, sub_obj
+                    in obj.items()
+                },
+                **kwargs
+            )
+
+        raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
 
     def add_manual_parameters(self, parameters):
         manual_params = self.manual_fields.get((self.method, self.view.action), [])
 
+        if (self.method, self.view.action) in self.overwrite_params:
+            return manual_params
         # I think this should add to existing parameters, but haven't been able to confirm.
         return parameters + manual_params
+
+
+# this is a commonly used swagger decorator so moved here for DRYness
+swagger_auto_schema_org_query_param = swagger_auto_schema(
+    manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+)

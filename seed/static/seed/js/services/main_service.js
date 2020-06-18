@@ -9,7 +9,7 @@ angular.module('BE.seed.service.main', []).factory('main_service', [
     var main_factory = {};
 
     main_factory.version = function () {
-      return $http.get('/api/v2/version').then(function (response) {
+      return $http.get('/api/v2/version/').then(function (response) {
         return response.data;
       });
     };

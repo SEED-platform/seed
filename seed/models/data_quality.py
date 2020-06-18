@@ -161,6 +161,7 @@ class Rule(models.Model):
         }, {
             'table_name': 'TaxLotState',
             'field': 'address_line_1',
+            'data_type': TYPE_STRING,
             'not_null': True,
             'rule_type': RULE_TYPE_DEFAULT,
             'severity': SEVERITY_ERROR,

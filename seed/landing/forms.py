@@ -19,7 +19,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(
         label=_("Password"),
         widget=forms.PasswordInput(
-            attrs={'class': 'field', 'placeholder': _('Password')}
+            attrs={'class': 'field', 'placeholder': _('Password'), 'autocomplete': 'off'}
         ),
         required=True
     )
