@@ -7,8 +7,9 @@ import logging
 
 from django.db import transaction
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema, no_body
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -32,7 +33,24 @@ from seed.utils.viewsets import UpdateWithoutPatchModelMixin
 _log = logging.getLogger(__name__)
 
 
-class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, UpdateWithoutPatchModelMixin):
+nested_org_id_path_field = AutoSchemaHelper.base_field(
+    "nested_organization_id",
+    "IN_PATH",
+    "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
+    True,
+    "TYPE_INTEGER"
+)
+
+
+@method_decorator(
+    name='list',
+    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
+)
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
+)
+class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, UpdateWithoutPatchModelMixin):
     serializer_class = RuleSerializer
     model = Rule
     pagination_class = None
@@ -47,60 +65,9 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, UpdateWithoutPatchMod
             return DataQualityCheck.retrieve(org_id).rules.filter(id=rule_id)
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.base_field(
-                "nested_organization_id",
-                "IN_PATH",
-                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
-                True,
-                "TYPE_INTEGER"
-            )
-        ],
-        responses={
-            200: DataQualityRulesResponseSerializer
-        }
-    )
-    @has_perm_class('requires_member')
-    @api_endpoint_class
-    @ajax_request_class
-    def list(self, request, nested_organization_id=None):
-        """
-        Returns the data quality rules for an org.
-        """
-
-        result = {
-            'status': 'success',
-            'rules': {
-                'properties': [],
-                'taxlots': []
-            }
-        }
-
-        # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
-        # At that point, nested_organization_id should be changed to data_quality_check_id
-        dq = DataQualityCheck.retrieve(nested_organization_id)
-
-        property_rules = dq.rules.filter(table_name='PropertyState').order_by('field', 'severity')
-        taxlot_rules = dq.rules.filter(table_name='TaxLotState').order_by('field', 'severity')
-
-        result['rules']['properties'] = RuleSerializer(property_rules, many=True).data
-        result['rules']['taxlots'] = RuleSerializer(taxlot_rules, many=True).data
-
-        return JsonResponse(result)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.base_field(
-                "nested_organization_id",
-                "IN_PATH",
-                "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
-                True,
-                "TYPE_INTEGER"
-            )
-        ],
-        responses={
-            200: DataQualityRulesResponseSerializer
-        }
+        manual_parameters=[nested_org_id_path_field],
+        request_body=no_body,
+        responses={200: RuleSerializer(many=True)}
     )
     @api_endpoint_class
     @ajax_request_class

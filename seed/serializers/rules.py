@@ -34,6 +34,7 @@ class RuleSerializer(serializers.ModelSerializer):
             'rule_type',
             'severity',
             'status_label',
+            'table_name',
             'text_match',
             'units',
         ]
