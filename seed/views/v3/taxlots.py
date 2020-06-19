@@ -475,25 +475,18 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             'view_id': new_view1.id
         }
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """
         Get taxlot details for each linked taxlot across org cycles
-        ---
-        parameters:
-            - name: pk
-              description: The primary key of the TaxLotView
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
-        organization_id = request.data.get('organization_id', None)
+        organization_id = request.query_params.get('organization_id', None)
         base_view = TaxLotView.objects.select_related('cycle').filter(
             pk=pk,
             cycle__organization_id=organization_id
