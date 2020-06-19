@@ -169,32 +169,37 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(response)
 
-    # @require_organization_id
-    # @require_organization_membership
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle',
+                required=True,
+                description='The ID of the cycle to get taxlots'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'page',
+                required=False,
+                description='The current page of taxlots to return'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'per_page',
+                required=False,
+                description='The number of items per page to return'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'profile_id',
+                required=False,
+                description='The ID of the column profile to use'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     def list(self, request):
         """
         List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get taxlots
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of taxlots to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
         """
         return self._get_filtered_results(request, profile_id=-1)
 
