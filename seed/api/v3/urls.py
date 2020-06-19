@@ -7,7 +7,7 @@ from rest_framework_nested import routers as nested_routers
 
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
-from seed.views.v3.data_quality import DataQualityViews
+from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.labels import LabelViewSet
@@ -22,7 +22,7 @@ api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
 api_v3_router.register(r'labels', LabelViewSet, base_name='labels')
-api_v3_router.register(r'data_quality_checks', DataQualityViews, base_name='data_quality_checks')
+api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_name='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')

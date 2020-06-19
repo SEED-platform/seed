@@ -25,7 +25,7 @@ from seed.utils.cache import get_cache_raw
 logger = get_task_logger(__name__)
 
 
-class DataQualityViews(viewsets.ViewSet):
+class DataQualityCheckViewSet(viewsets.ViewSet):
     """
     Handles Data Quality API operations within Inventory backend.
     (1) Post, wait, get…
