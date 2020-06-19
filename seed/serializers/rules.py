@@ -67,7 +67,7 @@ class RuleSerializer(serializers.ModelSerializer):
         # Rule with SEVERITY setting of "valid" should have a Label.
         severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
         severity_unchanged = 'get_severity_display' not in data
-        severity_will_be_valid = data.get('get_severity_display') == "valid"
+        severity_will_be_valid = data.get('get_severity_display') == dict(Rule.SEVERITY)[Rule.SEVERITY_VALID]
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
