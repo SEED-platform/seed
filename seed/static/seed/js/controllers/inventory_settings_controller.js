@@ -51,26 +51,68 @@ angular.module('BE.seed.controller.inventory_settings', [])
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
-      var initializeRowSelections = function () {
-        if ($scope.gridApi) {
-          _.delay(function () {
-            $scope.$apply(function () {
-              _.forEach($scope.gridApi.grid.rows, function (row) {
-                if (row.entity.visible === false) row.setSelected(false);
-                else row.setSelected(true);
-              });
-            });
+      $scope.gridOptions = {
+        enableColumnMenus: false,
+        enableFiltering: true,
+        enableGridMenu: true,
+        enableSorting: false,
+        flatEntityAccess: true,
+        gridMenuShowHideColumns: false,
+        minRowsToShow: 30,
+        rowTemplate: '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
+        columnDefs: [{
+          name: 'pinnedLeft',
+          displayName: '',
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+            '  <a class="ui-grid-cell-contents pinnable" style="text-align: center;" ng-disabled="!COL_FIELD" ng-click="grid.appScope.togglePinned(row)">' +
+            '    <i class="fa fa-thumb-tack"></i>' +
+            '  </a>' +
+            '</div>',
+          enableColumnMenu: false,
+          enableFiltering: false,
+          enableSorting: false,
+          width: 30
+        }, {
+          name: 'displayName',
+          displayName: 'Column Name',
+          headerCellFilter: 'translate',
+          cellFilter: 'translate',
+          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.column_name $}">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type === "properties" ? ("tax lot" | translate) : ("property" | translate) $}</span></div>',
+          enableHiding: false
+        }],
+        onRegisterApi: function (gridApi) {
+          $scope.gridApi = gridApi;
+          initializeRowSelections();
+
+          gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
+          gridApi.draggableRows.on.rowDropped($scope, modified_service.setModified);
+
+          _.delay($scope.updateHeight, 150);
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
           });
         }
       };
 
+      var initializeRowSelections = function () {
+        $scope.gridApi.grid.modifyRows($scope.gridOptions.data);
+        _.forEach($scope.gridApi.grid.rows, function (row) {
+          if (row.entity.visible !== false) {
+            row.setSelected(true);
+          }
+        });
+      };
+
       var setColumnsForCurrentProfile = function () {
-        var deselected_columns = all_columns.slice();
+        var deselected_columns = angular.copy(all_columns);
         if ($scope.currentProfile) {
           var profileColumns = _.filter($scope.currentProfile.columns, function (col) {
-            return _.find(all_columns, {id: col.id});
+            return _.find(angular.copy(all_columns), {id: col.id});
           });
-          $scope.data = _.map(profileColumns, function (col) {
+          $scope.gridOptions.data = _.map(profileColumns, function (col) {
             var c = _.remove(deselected_columns, {id: col.id})[0];
             c.pinnedLeft = col.pinned;
             c.visible = true;
@@ -82,13 +124,12 @@ angular.module('BE.seed.controller.inventory_settings', [])
           }));
         } else {
           // No profiles exist
-          $scope.data = _.map(deselected_columns, function (col) {
+          var data = _.map(deselected_columns, function (col) {
             col.visible = !col.is_extra_data;
             return col;
           });
-          $scope.data = inventory_service.reorderSettings($scope.data);
+          $scope.gridOptions.data = inventory_service.reorderSettings(data);
         }
-        initializeRowSelections();
       };
       setColumnsForCurrentProfile();
 
@@ -114,7 +155,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         }
       });
 
-      function switchProfile (newProfile) {
+      function switchProfile(newProfile) {
         ignoreNextChange = true;
         if (newProfile) {
           $scope.currentProfile = _.find($scope.profiles, {id: newProfile.id});
@@ -124,6 +165,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
         }
 
         setColumnsForCurrentProfile();
+        initializeRowSelections();
       }
 
       // set up i18n
@@ -143,7 +185,7 @@ angular.module('BE.seed.controller.inventory_settings', [])
           row.entity.visible = row.isSelected;
           if (!row.isSelected && row.entity.pinnedLeft) row.entity.pinnedLeft = false;
         });
-        $scope.data = inventory_service.reorderSettings($scope.data);
+        $scope.gridOptions.data = inventory_service.reorderSettings($scope.gridOptions.data);
         modified_service.setModified();
       };
 
@@ -269,54 +311,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
           row.entity.visible = true;
           row.setSelected(true);
         }
-        $scope.data = inventory_service.reorderSettings($scope.data);
+        $scope.gridOptions.data = inventory_service.reorderSettings($scope.gridOptions.data);
         modified_service.setModified();
       };
 
-      $scope.gridOptions = {
-        data: 'data',
-        enableColumnMenus: false,
-        enableFiltering: true,
-        enableGridMenu: true,
-        enableSorting: false,
-        flatEntityAccess: true,
-        gridMenuShowHideColumns: false,
-        minRowsToShow: 30,
-        rowTemplate: '<div grid="grid" class="ui-grid-draggable-row" draggable="true"><div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader, \'custom\': true }" ui-grid-cell></div></div>',
-        columnDefs: [{
-          name: 'pinnedLeft',
-          displayName: '',
-          cellTemplate: '<div class="ui-grid-row-header-link">' +
-          '  <a class="ui-grid-cell-contents pinnable" style="text-align: center;" ng-disabled="!COL_FIELD" ng-click="grid.appScope.togglePinned(row)">' +
-          '    <i class="fa fa-thumb-tack"></i>' +
-          '  </a>' +
-          '</div>',
-          enableColumnMenu: false,
-          enableFiltering: false,
-          enableSorting: false,
-          width: 30
-        }, {
-          name: 'displayName',
-          displayName: 'Column Name',
-          headerCellFilter: 'translate',
-          cellFilter: 'translate',
-          cellTemplate: '<div class="ui-grid-cell-contents inventory-settings-cell" title="TOOLTIP" data-after-content="{$ row.entity.column_name $}">{$ COL_FIELD CUSTOM_FILTERS $} <span ng-if="row.entity.related" class="badge" style="margin-left: 10px;">{$ grid.appScope.inventory_type === "properties" ? ("tax lot" | translate) : ("property" | translate) $}</span></div>',
-          enableHiding: false
-        }],
-        onRegisterApi: function (gridApi) {
-          $scope.gridApi = gridApi;
-          initializeRowSelections();
-
-          gridApi.selection.on.rowSelectionChanged($scope, rowSelectionChanged);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, rowSelectionChanged);
-          gridApi.draggableRows.on.rowDropped($scope, modified_service.setModified);
-
-          _.delay($scope.updateHeight, 150);
-          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
-          angular.element($window).on('resize', debouncedHeightUpdate);
-          $scope.$on('$destroy', function () {
-            angular.element($window).off('resize', debouncedHeightUpdate);
-          });
-        }
-      };
     }]);
