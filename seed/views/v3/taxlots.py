@@ -25,7 +25,8 @@ from seed.serializers.pint import (add_pint_unit_suffix,
                                    apply_display_unit_preferences)
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
-                                      TaxLotViewSerializer)
+                                      TaxLotViewSerializer,
+                                      UpdateTaxLotPayloadSerializer)
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.labels import get_labels
@@ -286,6 +287,19 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return self._get_filtered_results(request, profile_id=profile_id)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'state_ids': ['integer']
+            },
+            required=['state_ids'],
+            description='Properties:\n'
+                        '- state_ids: Array containing tax lot state ids to merge'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -294,15 +308,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Merge multiple tax lot records into a single new record, and run this
         new record through a match and merge round within it's current Cycle.
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: state_ids
-              description: Array containing tax lot state ids to merge
-              paramType: body
         """
         body = request.data
 
@@ -331,6 +336,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return result
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -338,12 +346,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def unmerge(self, request, pk=None):
         """
         Unmerge a taxlot view into two taxlot views
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         try:
             old_view = TaxLotView.objects.select_related(
@@ -543,6 +545,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(result)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'property_id',
+                required=True,
+                description='The property id to pair up with this taxlot'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -550,28 +562,22 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def pair(self, request, pk=None):
         """
         Pair a property to this taxlot
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: property_id
-              description: The property id to pair up with this taxlot
-              required: true
-              paramType: query
-            - name: pk
-              description: pk (taxlot ID)
-              required: true
-              paramType: path
         """
-        # TODO: Call with PUT /api/v2/taxlots/1/pair/?property_id=1&organization_id=1
         organization_id = int(request.query_params.get('organization_id'))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'property_id',
+                required=True,
+                description='The property id to unpair from this taxlot'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -579,30 +585,22 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def unpair(self, request, pk=None):
         """
         Unpair a property from this taxlot
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: property_id
-              description: The property id to unpair from this taxlot
-              required: true
-              paramType: query
-            - name: pk
-              description: pk (taxlot ID)
-              required: true
-              paramType: path
         """
-        # TODO: Call with PUT /api/v2/taxlots/1/unpair/?property_id=1&organization_id=1
         organization_id = int(request.query_params.get('organization_id'))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
-    # @require_organization_id
-    # @require_organization_membership
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_boolean_field(
+                'only_used',
+                required=False,
+                description='Determine whether or not to show only the used fields. Ones that have been mapped'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -610,17 +608,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def columns(self, request):
         """
         List all tax lot columns
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: used_only
-              description: Determine whether or not to show only the used fields. Ones that have been mapped
-              type: boolean
-              required: false
-              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
         organization = Organization.objects.get(pk=organization_id)
@@ -631,6 +618,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -638,17 +628,21 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def mappable_columns(self, request):
         """
         List only taxlot columns that are mappable
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
         columns = Column.retrieve_mapping_columns(organization_id, 'taxlot')
 
         return JsonResponse({'status': 'success', 'columns': columns})
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'selected': ['integer']
+            },
+            required=['selected'],
+            description='A list of taxlot ids to delete'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -656,12 +650,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def batch_delete(self, request):
         """
         Batch delete several tax lots
-        ---
-        parameters:
-            - name: selected
-              description: A list of taxlot ids to delete
-              many: true
-              required: true
         """
         taxlot_states = request.data.get('selected', [])
         resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
@@ -729,21 +717,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         return JsonResponse(self._get_properties(pk))
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk):
         """
         Get taxlot details
-        ---
-        parameters:
-            - name: pk
-              description: The primary key of the TaxLotView
-              required: true
-              paramType: path
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         result = self._get_taxlot_view(pk)
         if result.get('status', None) != 'error':
@@ -760,18 +741,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=UpdateTaxLotPayloadSerializer,
+    )
     @api_endpoint_class
     @ajax_request_class
     def update(self, request, pk):
         """
         Update a taxlot and run the updated record through a match and merge
         round within it's current Cycle.
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
         """
         data = request.data
 
