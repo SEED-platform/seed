@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.column_settings', [])
     '$stateParams',
     '$uibModal',
     'Notification',
+    'all_columns',
     'columns',
     'organization_payload',
     'auth_payload',
@@ -28,6 +29,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $stateParams,
       $uibModal,
       Notification,
+      all_columns,
       columns,
       organization_payload,
       auth_payload,
@@ -393,6 +395,9 @@ angular.module('BE.seed.controller.column_settings', [])
               return diff;
             },
             all_columns: function () {
+              return all_columns;
+            },
+            columns: function () {
               return $scope.columns;
             },
             inventory_type: function () {

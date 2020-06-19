@@ -78,22 +78,9 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'name': 'ComStock',
                 'settings_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
                 'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
-                'columns': []
+                'columns': self.list_comstock_columns(org_id)
             }
         }
-
-        comstock_columns = Column.objects.filter(organization_id=org_id, comstock_mapping__isnull=False) \
-            .order_by('comstock_mapping')
-
-        for index, column in enumerate(comstock_columns):
-            result['data']['columns'].append({
-                "id": column.id,
-                "pinned": False,
-                "order": index + 1,
-                "column_name": column.column_name,
-                "table_name": column.table_name,
-                "comstock_mapping": column.comstock_mapping
-            })
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
@@ -130,11 +117,18 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         serializer = self.get_serializer(results, many=True)
 
         # Add ComStock columns
-        comstock_columns = Column.objects.filter(organization_id=org_id, comstock_mapping__isnull=False)\
+        serializer.data[len(serializer.data) - 1]['columns'] = self.list_comstock_columns(org_id)
+
+        return Response(serializer.data)
+
+    @staticmethod
+    def list_comstock_columns(org_id):
+        comstock_columns = Column.objects.filter(organization_id=org_id, comstock_mapping__isnull=False) \
             .order_by('comstock_mapping')
-        serializer.data[len(serializer.data) - 1]['columns'] = []
+
+        results = []
         for index, column in enumerate(comstock_columns):
-            serializer.data[len(serializer.data) - 1]['columns'].append({
+            results.append({
                 "id": column.id,
                 "pinned": False,
                 "order": index + 1,
@@ -143,4 +137,4 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 "comstock_mapping": column.comstock_mapping
             })
 
-        return Response(serializer.data)
+        return results
