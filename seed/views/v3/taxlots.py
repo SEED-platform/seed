@@ -203,30 +203,38 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         return self._get_filtered_results(request, profile_id=-1)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'profile_id',
+                required=False,
+                description='An ID of a list settings profile'
+            ),
+            AutoSchemaHelper.query_array(
+                'cycle_ids',
+                item_type='integer',
+                required=True,
+                description='The IDs of the cycle to get taxlots'
+            )
+        ]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['POST'])
-    def cycles(self, request):
+    @action(detail=False, methods=['GET'])
+    def filter_by_cycle(self, request):
         """
         List all the taxlots with all columns
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: profile_id
-              description: Either an id of a list settings profile, or undefined
-              paramType: body
-            - name: cycle_ids
-              description: The IDs of the cycle to get taxlots
-              required: true
-              paramType: query
         """
-        org_id = request.data.get('organization_id', None)
-        profile_id = request.data.get('profile_id', -1)
-        cycle_ids = request.data.get('cycle_ids', [])
+        org_id = request.query_params.get('organization_id', None)
+        profile_id = request.query_params.get('profile_id', -1)
+
+        # drf-yasg does not allow you to 'explode' query parameter arrays
+        # As a result we can't use Django's reqyest.GET.getlist(...) and manually
+        # have to split on commas
+        cycle_ids_str = request.GET.get('cycle_ids', '')
+        cycle_ids = [c.strip() for c in cycle_ids_str.split(',')]
 
         if not org_id:
             return JsonResponse(
