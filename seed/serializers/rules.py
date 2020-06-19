@@ -39,7 +39,7 @@ class RuleSerializer(serializers.ModelSerializer):
             'units',
         ]
 
-    def validate_label(self, label):
+    def validate_status_label(self, label):
         """
         Note: DQ Rules can be shared from parent to child but child orgs can
         have their own labels. So, a Rule shouldn't be associated to Labels

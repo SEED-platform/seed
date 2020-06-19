@@ -18,6 +18,8 @@ from seed.models.models import ASSESSED_RAW
 
 from seed.tests.util import DataMappingBaseTestCase
 
+from seed.utils.organizations import create_organization
+
 
 class RuleViewTests(DataMappingBaseTestCase):
     def setUp(self):
@@ -30,6 +32,42 @@ class RuleViewTests(DataMappingBaseTestCase):
             password='test_pass',
             email='test_user@demo.com'
         )
+
+    def test_update_rule_status_label_validation(self):
+        # Start with 1 Rule
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        base_rule_info = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'Test Rule 1',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+        }
+        dq.add_rule(base_rule_info)
+        rule = dq.rules.get()
+
+        # Send invalid update request that includes a label id from another org
+        new_org, _, _ = create_organization(self.user, "test-organization-a")
+        wrong_org_label_id = new_org.labels.first().id
+        put_data = deepcopy(base_rule_info)
+        put_data['status_label'] = wrong_org_label_id
+        url = reverse('api:v3:data_quality_check-rules-detail', kwargs={
+            'nested_organization_id': self.org.id,
+            'pk': rule.id
+        })
+        res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
+
+        self.assertEqual(res.status_code, 400)
+        self.assertTrue(f'Label with ID {wrong_org_label_id} not found in organization, {self.org.name}.' in json.loads(res.content)['status_label'])
 
     def test_update_rule_valid_severity_label_validation(self):
         # Start with 1 Rule
