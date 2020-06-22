@@ -15,7 +15,6 @@ from seed.models import (
     Meter,
     PropertyView,
 )
-from seed.utils.meters import PropertyMeterReadingsExporter
 
 
 class MeterViewSet(viewsets.ViewSet):
@@ -52,23 +51,6 @@ class MeterViewSet(viewsets.ViewSet):
             })
 
         return res
-
-    @ajax_request_class
-    @action(detail=False, methods=['POST'])
-    def property_meter_usage(self, request):
-        body = dict(request.data)
-        property_view_id = body['property_view_id']
-        interval = body['interval']
-        excluded_meter_ids = body['excluded_meter_ids']
-
-        property_view = PropertyView.objects.get(pk=property_view_id)
-        property_id = property_view.property.id
-        org_id = property_view.cycle.organization_id
-        scenario_ids = [s.id for s in property_view.state.scenarios.all()]
-
-        exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
-
-        return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
     @action(detail=False, methods=['GET'])
