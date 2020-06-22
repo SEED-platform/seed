@@ -3,6 +3,8 @@
 
 from django.http import JsonResponse
 
+from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework.decorators import action
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -12,28 +14,36 @@ from seed.models import (
     Organization,
 )
 from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.utils.api_schema import AutoSchemaHelper
 
 from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 
-class ColumnMappingProfileViewSet(ViewSet):
+class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )],
+        request_body=AutoSchemaHelper.schema_factory(
+            {'preset_type': ['string']},
+            description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
+        )
+    )
     @api_endpoint_class
     @has_perm_class('requires_member')
-    def list(self, request):
+    @action(detail=False, methods=['POST'])  # POST in order to provide array/list
+    def filter(self, request):
         """
         Retrieves all profiles for an organization.
-        parameters:
-           - name: organization_id
-             description: The organization_id for this user's organization
-             required: true (at least, nothing will be returned if not provided)
-             paramType: query
         """
         try:
-            preset_types = request.GET.getlist('preset_type')
+            preset_types = request.data.get('preset_type', [])
             preset_types = [ColumnMappingPreset.get_preset_type(pt) for pt in preset_types]
-            filter_params = {'organizations__pk': request.query_params.get('organization_id', None)}
+            filter_params = {'organizations__pk': self.get_organization(request, True).id}
             if preset_types:
                 filter_params['preset_type__in'] = preset_types
             profiles = ColumnMappingPreset.objects.filter(**filter_params)
