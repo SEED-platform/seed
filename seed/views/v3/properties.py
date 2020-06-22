@@ -2,6 +2,7 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from django.db.models import Q
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from collections import namedtuple
@@ -9,8 +10,10 @@ from collections import namedtuple
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
+from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
 from seed.models import (
+    Meter,
     PropertyView,
     StatusLabel as Label,
 )
@@ -77,3 +80,34 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
 
         return exporter.readings_and_column_defs(interval)
+
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def meters(self, request, pk):
+        property_view = PropertyView.objects.get(pk=pk)
+        property_id = property_view.property.id
+        scenario_ids = [s.id for s in property_view.state.scenarios.all()]
+        energy_types = dict(Meter.ENERGY_TYPES)
+
+        res = []
+        for meter in Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)):
+            if meter.source == meter.GREENBUTTON:
+                source = 'GB'
+                source_id = usage_point_id(meter.source_id)
+            elif meter.source == meter.BUILDINGSYNC:
+                source = 'BS'
+                source_id = meter.source_id
+            else:
+                source = 'PM'
+                source_id = meter.source_id
+
+            res.append({
+                'id': meter.id,
+                'type': energy_types[meter.type],
+                'source': source,
+                'source_id': source_id,
+                'scenario_id': meter.scenario.id if meter.scenario is not None else None,
+                'scenario_name': meter.scenario.name if meter.scenario is not None else None
+            })
+
+        return res
