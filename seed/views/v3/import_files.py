@@ -821,3 +821,28 @@ class ImportFileViewSet(viewsets.ViewSet):
         import_file.save()
 
         return result
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def pm_meters_preview(self, request, pk):
+        """
+        Returns validated type units, proposed imports and unlinkable PM ids
+        """
+        org_id = request.query_params.get('organization_id')
+
+        import_file = ImportFile.objects.get(pk=pk)
+        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
+        raw_meter_data = list(parser.data)
+
+        meters_parser = MetersParser(org_id, raw_meter_data)
+
+        result = {}
+
+        result["validated_type_units"] = meters_parser.validated_type_units()
+        result["proposed_imports"] = meters_parser.proposed_imports
+        result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
+
+        return result

@@ -6,43 +6,19 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
-from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
     usage_point_id,
 )
 from seed.decorators import ajax_request_class
-from seed.lib.mcm import reader
 from seed.models import (
     Meter,
-    ImportFile,
     PropertyView,
 )
 from seed.utils.meters import PropertyMeterReadingsExporter
 
 
 class MeterViewSet(viewsets.ViewSet):
-
-    @ajax_request_class
-    @action(detail=False, methods=['POST'])
-    def parsed_meters_confirmation(self, request):
-        body = dict(request.data)
-        file_id = body['file_id']
-        org_id = body['organization_id']
-
-        import_file = ImportFile.objects.get(pk=file_id)
-        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
-        raw_meter_data = list(parser.data)
-
-        meters_parser = MetersParser(org_id, raw_meter_data)
-
-        result = {}
-
-        result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports
-        result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
-
-        return result
 
     @ajax_request_class
     @action(detail=False, methods=['POST'])
