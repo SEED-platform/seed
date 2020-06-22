@@ -249,7 +249,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'cycle',
                 required=False,
                 description='The ID of the cycle to get tax lots'),
-            ],
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'profile_id': 'integer',
