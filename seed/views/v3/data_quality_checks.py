@@ -18,6 +18,7 @@ from seed.data_importer.tasks import do_checks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.data_quality import DataQualityCheck
+from seed.models import PropertyView, TaxLotView
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
@@ -47,12 +48,12 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'property_state_ids': ['integer'],
-                'taxlot_state_ids': ['integer'],
+                'property_view_ids': ['integer'],
+                'taxlot_view_ids': ['integer'],
             },
             description='An object containing IDs of the records to perform'
                         ' data quality checks on. Should contain two keys- '
-                        'property_state_ids and taxlot_state_ids, each of '
+                        'property_view_ids and taxlot_view_ids, each of '
                         'which is an array of appropriate IDs.',
         ),
         responses={
@@ -74,8 +75,15 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
         on potentially a subset of properties/taxlots, and return back a query key
         """
         body = request.data
-        property_state_ids = body['property_state_ids']
-        taxlot_state_ids = body['taxlot_state_ids']
+        property_view_ids = body['property_view_ids']
+        taxlot_view_ids = body['taxlot_view_ids']
+
+        property_state_ids = PropertyView.objects.filter(
+            id__in=property_view_ids
+        ).values_list('state_id', flat=True)
+        taxlot_state_ids = TaxLotView.objects.filter(
+            id__in=taxlot_view_ids
+        ).values_list('state_id', flat=True)
 
         # For now, organization_id is the only key currently used to identify DataQualityChecks
         return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids)
