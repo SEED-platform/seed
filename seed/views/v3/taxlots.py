@@ -703,15 +703,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=True, methods=['GET'])
-    def properties(self, pk):
-        """
-        Get related properties for this tax lot
-        """
-        return JsonResponse(self._get_properties(pk))
-
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
     )
