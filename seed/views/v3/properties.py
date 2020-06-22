@@ -299,32 +299,33 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return self._get_filtered_results(request, profile_id=-1)
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                'profile_id',
-                required=False,
-                description='Either an id of a list settings profile, or '
-                            'undefined'),
-            AutoSchemaHelper.query_array(
-                'cycle_ids',
-                item_type='integer',
-                required=True,
-                description='The IDs of the cycle to get properties',
-            )
-        ]
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'organization_id': 'integer',
+                'profile_id': 'integer',
+                'cycle_ids': ['integer'],
+            },
+            required=['organization_id', 'cycle_ids'],
+            description='Properties:\n'
+                        '- organization_id: ID of organization\n'
+                        '- profile_id: Either an id of a list settings profile, '
+                        'or undefined\n'
+                        '- cycle_ids: The IDs of the cycle to get properties'
+        )
     )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['POST'])
     def filter_by_cycle(self, request):
         """
         List all the properties	with all columns
         """
-        org_id = request.query_params.get('organization_id', None)
-        profile_id = request.query_params.get('profile_id', -1)
-        cycle_ids = request.query_params.get('cycle_ids', [])
+        # NOTE: we are using a POST http method b/c swagger and django handle
+        # arrays differently in query parameters. ie this is just simpler
+        org_id = request.data.get('organization_id', None)
+        profile_id = request.data.get('profile_id', -1)
+        cycle_ids = request.data.get('cycle_ids', [])
 
         if not org_id:
             return JsonResponse(
