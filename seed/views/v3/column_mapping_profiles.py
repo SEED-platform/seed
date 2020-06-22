@@ -197,9 +197,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         org_id = self.get_organization(request, True).id
         try:
-            # verify the org exists then validate and create the profile
-            Organization.objects.get(pk=org_id)
-
             profile_data = request.data
             profile_data['organizations'] = [org_id]
             ser_profile = ColumnMappingPresetSerializer(data=profile_data)
@@ -223,9 +220,15 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )]
+    )
     @api_endpoint_class
     @has_perm_class('can_modify_data')
-    def delete(self, request, pk=None):
+    def destroy(self, request, pk=None):
         """
         Deletes a specific profile.
         parameters:
@@ -234,8 +237,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
               required: true
               paramType: path
         """
+        org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(pk=pk)
+            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
