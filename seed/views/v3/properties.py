@@ -68,6 +68,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
+        """
+        Retrieves meter usage information
+        """
         body = dict(request.data)
         interval = body['interval']
         excluded_meter_ids = body['excluded_meter_ids']
@@ -84,6 +87,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def meters(self, request, pk):
+        """
+        Retrieves meters for the property
+        """
         property_view = PropertyView.objects.get(pk=pk)
         property_id = property_view.property.id
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
