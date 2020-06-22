@@ -380,23 +380,23 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return self._get_filtered_results(request, profile_id=profile_id)
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_array(
-                'inventory_ids',
-                item_type='integer',
-                required=True,
-                description='Array containing Property IDs.'
-            )
-        ]
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'inventory_ids': ['integer']
+            },
+            required=['inventory_ids'],
+            description='Properties:\n'
+                        '- inventory_ids: array containing Property IDs.'
+        )
     )
     @api_endpoint_class
     @ajax_request_class
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['POST'])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
         """
-        property_ids = request.query_params.get('inventory_ids', [])
+        property_ids = request.data.get('inventory_ids', [])
 
         return Meter.objects.filter(property_id__in=property_ids).exists()
 
