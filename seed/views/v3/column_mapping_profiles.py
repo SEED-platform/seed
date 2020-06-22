@@ -258,6 +258,17 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': "Successfully deleted",
             })
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )],
+        request_body=AutoSchemaHelper.schema_factory(
+            {'headers': ['string']},
+            description="Raw headers - the exact headers for columns in an import file.",
+            required=['headers']
+        )
+    )
     @api_endpoint_class
     @has_perm_class('requires_member')
     @action(detail=False, methods=['POST'])
@@ -272,7 +283,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
              paramType: query
         """
         try:
-            org_id = request.query_params.get('organization_id', None)
+            org_id = self.get_organization(request, True).id
             raw_headers = request.data.get('headers', [])
 
             suggested_mappings = mapper.build_column_mapping(
