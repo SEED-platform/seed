@@ -242,36 +242,32 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(response)
 
-    # @require_organization_id
-    # @require_organization_membership
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle',
+                required=False,
+                description='The ID of the cycle to get tax lots'),
+            ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'profile_id': 'integer',
+                'inventory_ids': ['integer'],
+            },
+            required=['profile_id'],
+            description='Properties:\n'
+                        '- profile_id: Either an id of a list settings profile, or undefined\n'
+                        '- inventory_ids: List of inventory ids'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
-        List all the properties
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: cycle
-              description: The ID of the cycle to get taxlots
-              required: true
-              paramType: query
-            - name: page
-              description: The current page of taxlots to return
-              required: false
-              paramType: query
-            - name: per_page
-              description: The number of items per page to return
-              required: false
-              paramType: query
-            - name: profile_id
-              description: Either an id of a list settings profile, or undefined
-              paramType: body
+        List all the tax lots
         """
         if 'profile_id' not in request.data:
             profile_id = None
