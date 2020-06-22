@@ -42,7 +42,7 @@
 <div class="modal-footer container-fluid" ng-switch on="step.number">
     <div ng-switch-when="1">
         <div class="row text-center" ng-show="preview_loading">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="true"  translate>Confirm</button>
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-disabled="true" translate>Confirm</button>
         </div>
         <div class="row text-center" ng-show="!preview_loading">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="confirm()" ng-disabled="!checks.warnings_acknowledged" translate>Confirm</button>

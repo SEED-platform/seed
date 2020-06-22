@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
     '$scope',
     '$uibModalInstance',
     'all_columns',
+    'columns',
     'cycle_service',
     'inventory_service',
     'inventory_type',
@@ -19,6 +20,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
       $scope,
       $uibModalInstance,
       all_columns,
+      columns,
       cycle_service,
       inventory_service,
       inventory_type,
@@ -30,7 +32,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
     ) {
       $scope.inventory_type = inventory_type;
       $scope.org_id = org_id;
-      $scope.all_columns = all_columns;
+      $scope.columns = columns;
 
       $scope.step = {
         number: 1
@@ -47,7 +49,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
       // parse proposed changes to create change summary to be presented to user
       var all_changed_settings = ['column_name']; // add column_name to describe each row
       $scope.change_summary_data = _.reduce(proposed_changes, function (summary, value, key) {
-        var column = _.find($scope.all_columns, {id: parseInt(key)});
+        var column = _.find($scope.columns, {id: parseInt(key)});
         var change = _.pick(_.cloneDeep(column), ['column_name']);
 
         // capture changed setting values
@@ -57,6 +59,19 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
         all_changed_settings = _.concat(all_changed_settings, _.keys(value));
         return summary;
       }, []);
+
+      // If a preexisting ComStock mapping exists on the other table add it to the diff list for removal
+      _.forEach($scope.change_summary_data, function (diff) {
+        if (!_.isNil(diff.comstock_mapping)) {
+          var found = _.find(all_columns, {related: true, comstock_mapping: diff.comstock_mapping});
+          if (found) {
+            $scope.change_summary_data.push({
+              column_name: found.column_name + ' (' + found.table_name + ')',
+              comstock_mapping: null
+            });
+          }
+        }
+      });
 
       var base_summary_column_defs = [
         {
@@ -86,22 +101,27 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           field: 'merge_protection',
           displayName: 'Merge Protection Change',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-show="{$ row.entity.merge_protection != undefined $}" ng-checked="{$ row.entity.merge_protection === \'Favor Existing\' $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-show="{$ row.entity.merge_protection != undefined $}" ng-checked="{$ row.entity.merge_protection === \'Favor Existing\' $}" style="margin: 0;">' +
             '</div>'
         },
         {
           field: 'recognize_empty',
           displayName: 'Recognize Empty',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.recognize_empty === undefined $}" ng-checked="{$ row.entity.recognize_empty === true $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.recognize_empty === undefined $}" ng-checked="{$ row.entity.recognize_empty === true $}" style="margin: 0;">' +
             '</div>'
         },
         {
           field: 'is_matching_criteria',
           displayName: 'Matching Criteria Change',
           cellTemplate: '<div class="ui-grid-cell-contents text-center">' +
-            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_matching_criteria === undefined $}" ng-checked="{$ row.entity.is_matching_criteria === true $}" style="margin: 0px;">' +
+            '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_matching_criteria === undefined $}" ng-checked="{$ row.entity.is_matching_criteria === true $}" style="margin: 0;">' +
             '</div>'
+        },
+        {
+          field: 'comstock_mapping',
+          displayName: 'ComStock Mapping Change',
+          cellTemplate: '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === undefined ? "" : row.entity.comstock_mapping === null ? "(removed)" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
         }
       ];
 
@@ -172,7 +192,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
       // Builds preview columns using non-extra_data columns
       var build_preview_columns = function () {
         // create copy in order to not change original column objects.
-        var preview_column_defs = _.reject(_.cloneDeep($scope.all_columns), 'is_extra_data');
+        var preview_column_defs = _.reject(_.cloneDeep($scope.columns), 'is_extra_data');
         var default_min_width = 50;
         var autopin_width = 100;
         var column_def_defaults = {

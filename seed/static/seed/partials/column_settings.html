@@ -33,13 +33,13 @@
             <h4 translate>MODIFYING_COLUMN_SETTINGS</h4>
             <p translate>MULTIPLE_COL_MOD_OPTIONS</p>
             <table class="column-settings-instructions">
-             <tr>
+                <tr>
                     <td translate>Display Name</td>
                     <td>
                         <ul>
-                           <li translate>COL_CHANGE_DISPLAY</li>
+                            <li translate>COL_CHANGE_DISPLAY</li>
                         </ul>
-                   </td>
+                    </td>
                 </tr>
                 <tr>
                     <td translate>Column Name</td>
@@ -101,6 +101,14 @@
                         </ul>
                     </td>
                 </tr>
+                <tr ng-if="::org.comstock_enabled">
+                    <td translate>ComStock Mapping</td>
+                    <td>
+                        <ul>
+                            <li translate>Map SEED fields to ComStock fields</li>
+                        </ul>
+                    </td>
+                </tr>
             </table>
         </div>
         <div class="section_content with_padding" style="margin-bottom:15px;">
@@ -136,6 +144,7 @@
                             <th class="text-center" style="min-width: 120px; width: 120px;" ng-click="toggle_matching_criteria_sort()">
                                 <span>Match Criteria</span> <i class="glyphicon glyphicon-sort"></i>
                             </th>
+                            <th class="text-center" style="min-width: 80px" ng-if="::org.comstock_enabled" translate>ComStock Mapping</th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -158,6 +167,7 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
+                            <th class="sub_head" ng-if="::org.comstock_enabled"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -198,6 +208,9 @@
                             </td>
                             <td class="text-center" ng-if="column.is_extra_data">
                                 <span ng-if="column.is_extra_data" translate>Ineligible</span>
+                            </td>
+                            <td class="text-center" ng-if="::org.comstock_enabled">
+                                <select class="form-control input-sm" ng-model="column.comstock_mapping" ng-options="type.id as type.label for type in ::comstock_types" ng-change="comstockModified(column)"></select>
                             </td>
                         </tr>
                     </tbody>
