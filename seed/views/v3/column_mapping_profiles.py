@@ -21,6 +21,16 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 
+mappings_description = (
+    "Each object in mappings must be in particular format:\n"
+    "to_field: [string of Display Name of target Column]\n"
+    "from_field: [string EXACTLY matching a header from an import file]\n"
+    "from_units: [one of the following:"
+    "'ft**2' 'm**2' 'kBtu/ft**2/year' 'kWh/m**2/year' 'GJ/m**2/year' 'MJ/m**2/year' 'kBtu/m**2/year']\n"
+    "to_table_name: [one of the following: 'TaxLotState' 'PropertyState']"
+)
+
+
 class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
     @swagger_auto_schema(
@@ -59,6 +69,24 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': 'string',
+                'mappings': [{
+                    'to_field': 'string',
+                    'from_field': 'string',
+                    'from_units': 'string',
+                    'to_table_name': 'string',
+                }]
+            },
+            description="Optional 'name' or 'mappings'.\n" + mappings_description
+        )
+    )
     @api_endpoint_class
     @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
@@ -79,8 +107,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
               required: false
               paramType: body
         """
+        org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(pk=pk)
+            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
         except ColumnMappingPreset.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
