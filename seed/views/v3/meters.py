@@ -46,31 +46,6 @@ class MeterViewSet(viewsets.ViewSet):
 
     @ajax_request_class
     @action(detail=False, methods=['POST'])
-    def greenbutton_parsed_meters_confirmation(self, request):
-        body = dict(request.data)
-        file_id = body['file_id']
-        org_id = body['organization_id']
-        view_id = body['view_id']
-
-        import_file = ImportFile.objects.get(pk=file_id)
-        parser = reader.GreenButtonParser(import_file.local_file)
-        raw_meter_data = list(parser.data)
-
-        property_id = PropertyView.objects.get(pk=view_id).property_id
-        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
-
-        result = {}
-
-        result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports
-
-        import_file.matching_results_data['property_id'] = property_id
-        import_file.save()
-
-        return result
-
-    @ajax_request_class
-    @action(detail=False, methods=['POST'])
     def property_meters(self, request):
         body = dict(request.data)
         property_view_id = body['property_view_id']
