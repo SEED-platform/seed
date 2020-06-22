@@ -7,7 +7,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework.decorators import action
 from seed.lib.mcm import mapper
-from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     Column,
     ColumnMappingPreset,
@@ -44,7 +43,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('requires_member')
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
     def filter(self, request):
         """
@@ -88,7 +86,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
         """
         Updates a profile given appropriate request data. The body should contain
@@ -176,7 +173,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('can_modify_data')
     def create(self, request, pk=None):
         """
         Creates a new profile given appropriate request data. The body should
@@ -227,7 +223,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )]
     )
     @api_endpoint_class
-    @has_perm_class('can_modify_data')
     def destroy(self, request, pk=None):
         """
         Deletes a specific profile.
@@ -270,7 +265,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         )
     )
     @api_endpoint_class
-    @has_perm_class('requires_member')
     @action(detail=False, methods=['POST'])
     def suggestions(self, request):
         """
