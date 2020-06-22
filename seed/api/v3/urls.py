@@ -12,6 +12,7 @@ from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.import_files import ImportFileViewSet
+from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
@@ -24,6 +25,7 @@ api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
 api_v3_router.register(r'labels', LabelViewSet, base_name='labels')
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_name='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
+api_v3_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
