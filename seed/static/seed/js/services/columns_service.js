@@ -9,12 +9,12 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
 
     var columns_service = {};
 
-    columns_service.patch_column = function (column_id, data) {
-      return columns_service.patch_column_for_org(user_service.get_organization().id, column_id, data);
+    columns_service.update_column = function (column_id, data) {
+      return columns_service.update_column_for_org(user_service.get_organization().id, column_id, data);
     };
 
-    columns_service.patch_column_for_org = function (org_id, column_id, data) {
-      return $http.patch('/api/v2/columns/' + column_id + '/', data, {
+    columns_service.update_column_for_org = function (org_id, column_id, data) {
+      return $http.put('/api/v2/columns/' + column_id + '/', data, {
         params: {
           organization_id: org_id
         }

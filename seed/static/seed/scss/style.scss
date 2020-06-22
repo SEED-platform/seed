@@ -3622,3 +3622,12 @@ $pairedCellWidth: 60px;
 .lock:hover .glyphicon-pushpin {
   Display: inline;
 }
+
+.readonly-grid {
+  cursor: default;
+  opacity: 0.5;
+
+  .ui-grid-canvas, .ui-grid-selection-row-header-buttons {
+    pointer-events: none;
+  }
+}
