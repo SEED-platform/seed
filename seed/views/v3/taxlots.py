@@ -285,11 +285,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'state_ids': ['integer']
+                'taxlot_view_ids': ['integer']
             },
-            required=['state_ids'],
+            required=['taxlot_view_ids'],
             description='Properties:\n'
-                        '- state_ids: Array containing tax lot state ids to merge'
+                        '- taxlot_view_ids: Array containing tax lot state ids to merge'
         )
     )
     @api_endpoint_class
@@ -303,17 +303,20 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         body = request.data
 
-        state_ids = body.get('state_ids', [])
+        taxlot_view_ids = body.get('taxlot_view_ids', [])
+        taxlot_state_ids = TaxLotView.objects.filter(
+            id__in=taxlot_view_ids
+        ).values_list('state_id', flat=True)
         organization_id = int(request.query_params.get('organization_id', None))
 
-        # Check the number of state_ids to merge
-        if len(state_ids) < 2:
+        # Check the number of taxlot_state_ids to merge
+        if len(taxlot_state_ids) < 2:
             return JsonResponse({
                 'status': 'error',
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
+        merged_state = merge_taxlots(taxlot_state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
 
