@@ -18,12 +18,12 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 
-class ColumnMappingPresetViewSet(ViewSet):
+class ColumnMappingProfileViewSet(ViewSet):
     @api_endpoint_class
     @has_perm_class('requires_member')
     def list(self, request):
         """
-        Retrieves all presets for an organization.
+        Retrieves all profiles for an organization.
         parameters:
            - name: organization_id
              description: The organization_id for this user's organization
@@ -36,8 +36,8 @@ class ColumnMappingPresetViewSet(ViewSet):
             filter_params = {'organizations__pk': request.query_params.get('organization_id', None)}
             if preset_types:
                 filter_params['preset_type__in'] = preset_types
-            presets = ColumnMappingPreset.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in presets]
+            profiles = ColumnMappingPreset.objects.filter(**filter_params)
+            data = [ColumnMappingPresetSerializer(p).data for p in profiles]
 
             return JsonResponse({
                 'status': 'success',
@@ -53,15 +53,15 @@ class ColumnMappingPresetViewSet(ViewSet):
     @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
         """
-        Updates a preset given appropriate request data. The body should contain
+        Updates a profile given appropriate request data. The body should contain
         only valid fields for ColumnMappingPreset objects.
         parameters:
             - name: pk
-              description: ID of Preset
+              description: ID of profile
               required: true
               paramType: path
             - name: name
-              description: Name of preset
+              description: Name of profile
               required: false
               paramType: body
             - name: mappings
@@ -70,32 +70,32 @@ class ColumnMappingPresetViewSet(ViewSet):
               paramType: body
         """
         try:
-            preset = ColumnMappingPreset.objects.get(pk=pk)
+            profile = ColumnMappingPreset.objects.get(pk=pk)
         except ColumnMappingPreset.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'data': 'No preset with given id'
+                'data': 'No profile with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
-                'data': 'Default BuildingSync presets are not editable'
+                'data': 'Default BuildingSync profile are not editable'
             }, status=HTTP_400_BAD_REQUEST)
 
         updated_name, updated_mappings = request.data.get('name'), request.data.get('mappings')
 
         # update the name
         if updated_name is not None:
-            preset.name = updated_name
+            profile.name = updated_name
 
-        # update the mappings according to the preset type
+        # update the mappings according to the profile type
         if updated_mappings is not None:
-            if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
+            if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
-                original_mappings_dict = {m['from_field']: m.copy() for m in preset.mappings}
+                original_mappings_dict = {m['from_field']: m.copy() for m in profile.mappings}
                 final_mappings = []
                 for updated_mapping in updated_mappings:
                     from_field = updated_mapping['from_field']
@@ -106,22 +106,22 @@ class ColumnMappingPresetViewSet(ViewSet):
                         final_mappings.append(original_mapping)
                         del original_mappings_dict[from_field]
 
-                preset.mappings = final_mappings
+                profile.mappings = final_mappings
             elif updated_mappings:
                 # indiscriminantly update the mappings
-                preset.mappings = updated_mappings
+                profile.mappings = updated_mappings
 
-        preset.save()
+        profile.save()
         return JsonResponse({
             'status': 'success',
-            'data': ColumnMappingPresetSerializer(preset).data,
+            'data': ColumnMappingPresetSerializer(profile).data,
         })
 
     @api_endpoint_class
     @has_perm_class('can_modify_data')
     def create(self, request, pk=None):
         """
-        Creates a new preset given appropriate request data. The body should
+        Creates a new profile given appropriate request data. The body should
         contain only valid fields for ColumnMappingPreset objects.
         parameters:
             - name: organization_id
@@ -129,7 +129,7 @@ class ColumnMappingPresetViewSet(ViewSet):
               required: true
               paramType: query
             - name: name
-              description: Name of preset
+              description: Name of profile
               required: false
               paramType: body
             - name: mappings
@@ -139,20 +139,20 @@ class ColumnMappingPresetViewSet(ViewSet):
         """
         org_id = request.query_params.get('organization_id', None)
         try:
-            # verify the org exists then validate and create the preset
+            # verify the org exists then validate and create the profile
             Organization.objects.get(pk=org_id)
 
-            preset_data = request.data
-            preset_data['organizations'] = [org_id]
-            ser_preset = ColumnMappingPresetSerializer(data=preset_data)
-            if ser_preset.is_valid():
-                preset = ser_preset.save()
+            profile_data = request.data
+            profile_data['organizations'] = [org_id]
+            ser_profile = ColumnMappingPresetSerializer(data=profile_data)
+            if ser_profile.is_valid():
+                profile = ser_profile.save()
                 response_status = 'success'
-                response_data = ColumnMappingPresetSerializer(preset).data
+                response_data = ColumnMappingPresetSerializer(profile).data
                 response_code = HTTP_200_OK
             else:
                 response_status = 'error'
-                response_data = ser_preset.errors
+                response_data = ser_profile.errors
                 response_code = HTTP_400_BAD_REQUEST
 
             return JsonResponse({
@@ -169,28 +169,28 @@ class ColumnMappingPresetViewSet(ViewSet):
     @has_perm_class('can_modify_data')
     def delete(self, request, pk=None):
         """
-        Deletes a specific preset.
+        Deletes a specific profile.
         parameters:
             - name: pk
-              description: ID of Preset
+              description: ID of profile
               required: true
               paramType: path
         """
         try:
-            preset = ColumnMappingPreset.objects.get(pk=pk)
+            profile = ColumnMappingPreset.objects.get(pk=pk)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
-                'data': 'Not allowed to edit default BuildingSync presets'
+                'data': 'Not allowed to edit default BuildingSync profiles'
             }, status=HTTP_400_BAD_REQUEST)
         else:
-            preset.delete()
+            profile.delete()
             return JsonResponse({
                 'status': 'success',
                 'data': "Successfully deleted",
@@ -203,7 +203,7 @@ class ColumnMappingPresetViewSet(ViewSet):
         """
         Retrieves suggestions given raw column headers.
         parameters:
-           - headers:---------------------------------------------------------------------------------------------------------------------------
+           - headers:
            - name: organization_id
              description: The organization_id for this user's organization
              required: true (at least, nothing will be returned if not provided)
