@@ -156,6 +156,25 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             'data': ColumnMappingPresetSerializer(profile).data,
         })
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'name': 'string',
+                'mappings': [{
+                    'to_field': 'string',
+                    'from_field': 'string',
+                    'from_units': 'string',
+                    'to_table_name': 'string',
+                }]
+            },
+            description=mappings_description,
+            required=['name', 'mappings']
+        )
+    )
     @api_endpoint_class
     @has_perm_class('can_modify_data')
     def create(self, request, pk=None):
@@ -176,7 +195,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
               required: false
               paramType: body
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request, True).id
         try:
             # verify the org exists then validate and create the profile
             Organization.objects.get(pk=org_id)
