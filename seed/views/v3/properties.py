@@ -403,10 +403,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'state_ids': ['integer']
+                'property_view_ids': ['integer']
             },
-            required=['state_ids'],
-            description='Array containing property state ids to merge'),
+            required=['property_view_ids'],
+            description='Array containing property view ids to merge'),
     )
     @api_endpoint_class
     @ajax_request_class
@@ -419,17 +419,20 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         body = request.data
 
-        state_ids = body.get('state_ids', [])
+        property_view_ids = body.get('property_view_ids', [])
+        property_state_ids = PropertyView.objects.filter(
+            id__in=property_view_ids
+        ).values_list('state_id', flat=True)
         organization_id = int(request.query_params.get('organization_id', None))
 
         # Check the number of state_ids to merge
-        if len(state_ids) < 2:
+        if len(property_state_ids) < 2:
             return JsonResponse({
                 'status': 'error',
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
+        merged_state = merge_properties(property_state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
