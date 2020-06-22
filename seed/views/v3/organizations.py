@@ -978,6 +978,9 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def report(self, request, pk=None):
+        """
+        Retrieve a summary report for charting x vs y
+        """
         campus_only = request.query_params.get('campus_only', False)
         params = {}
         missing_params = []
@@ -1051,6 +1054,9 @@ class OrganizationViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def report_aggregated(self, request, pk=None):
+        """
+        Retrieve a summary report for charting x vs y aggregated by y_var
+        """
         campus_only = request.query_params.get('campus_only', False)
         valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
