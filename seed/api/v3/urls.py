@@ -4,8 +4,6 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
-from rest_framework_nested import routers as nested_routers
-
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
