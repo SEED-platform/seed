@@ -13,14 +13,13 @@ from rest_framework import status
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
-from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.properties import PropertyViewAsStateSerializer
-from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
+from rest_framework import viewsets
 
 
-class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
+class BuildingFileViewSet(viewsets.ViewSet):
+
     model = BuildingFile
-    serializer_class = BuildingFileSerializer
     orgfilter = 'property_state__organization'
 
     # TODO: add the building_file serializer to this and override the methods (perform_create)

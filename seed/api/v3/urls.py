@@ -20,7 +20,7 @@ from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
-api_v3_router.register(r'building_file', BuildingFileViewSet, base_name='building_file')
+api_v3_router.register(r'building_files', BuildingFileViewSet, base_name='building_files')
 api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
