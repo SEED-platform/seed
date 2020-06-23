@@ -68,7 +68,10 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with id %s does not exist' % org_id
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not org.comstock_enabled or kwargs['pk'] != 'null':
+        inventory_type = request.query_params.get('inventory_type')
+        settings_location = request.query_params.get('settings_location')
+        if not org.comstock_enabled or kwargs['pk'] != 'null' \
+                or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
             return super(ColumnListingViewSet, self).retrieve(request, args, kwargs)
 
         result = {
@@ -96,7 +99,9 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with id %s does not exist' % org_id
             }, status=status.HTTP_404_NOT_FOUND)
 
-        if not org.comstock_enabled:
+        inventory_type = request.query_params.get('inventory_type')
+        settings_location = request.query_params.get('settings_location')
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
             return super(ColumnListingViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
