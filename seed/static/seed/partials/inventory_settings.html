@@ -54,7 +54,7 @@
             </label>
         </div>
         <h3 translate="NUMBER_COLUMNS_AVAILABLE"
-            translate-values="{ count: (data.length | number) }"></h3>
+            translate-values="{ count: (gridOptions.data.length | number) }"></h3>
         <p ng-if="inventory_type === 'taxlots'" translate>LIST_GUIDANCE_TAXLOTS</p>
         <p ng-if="inventory_type === 'properties'" translate>LIST_GUIDANCE_PROPERTIES</p>
     </div>
