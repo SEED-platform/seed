@@ -4,9 +4,6 @@ from django.conf.urls import url, include
 from rest_framework import routers
 
 from rest_framework_nested import routers as nested_routers
-
-from seed.data_importer.views import LocalUploaderViewSet
-
 from seed.views.v3.building_file import BuildingFileViewSet
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
@@ -19,6 +16,7 @@ from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
+from seed.views.v3.uploads import UploadViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
@@ -33,7 +31,7 @@ api_v3_router.register(r'measures', MeasureViewSet, base_name='import_files')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
-api_v3_router.register(r'upload', LocalUploaderViewSet, base_name='local_uploader')
+api_v3_router.register(r'upload', UploadViewSet, base_name='upload')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
