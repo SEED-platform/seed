@@ -12,6 +12,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     Meter,
     PropertyView,
@@ -40,6 +41,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
             description='IDs for properties to be checked for which labels are applied.'
         )
     )
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
@@ -66,6 +68,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         )
     )
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['POST'])
     def meter_usage(self, request, pk):
         """
@@ -85,6 +88,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         return exporter.readings_and_column_defs(interval)
 
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def meters(self, request, pk):
         """

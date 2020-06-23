@@ -797,6 +797,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         ]
     )
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -826,6 +827,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
     )
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def pm_meters_preview(self, request, pk):
         """
