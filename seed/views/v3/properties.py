@@ -26,7 +26,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
-from seed.serializers.pint import (PintJSONEncoder, add_pint_unit_suffix,
+from seed.serializers.pint import (PintJSONEncoder,
                                    apply_display_unit_preferences)
 from seed.serializers.properties import (PropertySerializer,
                                          PropertyStateSerializer,
@@ -719,32 +719,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         property_id = int(pk)
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_boolean_field(
-                'used_only',
-                required=False,
-                description='Determine whether or not to show only the used fields. Ones that have been mapped'
-            )
-        ]
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
-    def columns(self, request):
-        """
-        List all property columns
-        """
-        organization_id = int(request.query_params.get('organization_id'))
-        only_used = request.query_params.get('only_used', False)
-        columns = Column.retrieve_all(organization_id, 'property', only_used)
-        organization = Organization.objects.get(pk=organization_id)
-        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
-
-        return JsonResponse({'status': 'success', 'columns': unitted_columns})
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class

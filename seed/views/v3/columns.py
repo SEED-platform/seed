@@ -14,9 +14,13 @@ from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
-from seed.models.columns import Column
+from seed.models import (
+    Column,
+    Organization,
+)
 from seed.serializers.columns import ColumnSerializer
-from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin
+from seed.serializers.pint import add_pint_unit_suffix
+from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin, api_endpoint_class
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
@@ -72,8 +76,16 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                             '(i.e. only columns that have been mapped)'
                             '\nDefault: "false"'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                name='display_units',
+                required=False,
+                description='If true, any columns that have units will have them'
+                            ' added as a suffix to the display_name'
+                            '\nDefault: "false"'
+            ),
         ],
     )
+    @api_endpoint_class
     @ajax_request_class
     def list(self, request):
         """
@@ -86,6 +98,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         inventory_type = request.query_params.get('inventory_type', 'property')
         only_used = request.query_params.get('only_used', False)
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
+        organization = Organization.objects.get(pk=organization_id)
+        if request.query_params.get('display_units', False):
+            columns = [add_pint_unit_suffix(organization, x) for x in columns]
         return JsonResponse({
             'status': 'success',
             'columns': columns,
