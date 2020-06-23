@@ -5,6 +5,7 @@ from rest_framework import routers
 
 from rest_framework_nested import routers as nested_routers
 
+from seed.views.v3.building_file import BuildingFileViewSet
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
@@ -19,6 +20,7 @@ from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
+api_v3_router.register(r'building_file', BuildingFileViewSet, base_name='building_file')
 api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
