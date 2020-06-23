@@ -89,19 +89,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         Updates a profile given appropriate request data. The body should contain
         only valid fields for ColumnMappingPreset objects.
-        parameters:
-            - name: pk
-              description: ID of profile
-              required: true
-              paramType: path
-            - name: name
-              description: Name of profile
-              required: false
-              paramType: body
-            - name: mappings
-              description: List of dictionaries
-              required: false
-              paramType: body
         """
         org_id = self.get_organization(request, True).id
         try:
@@ -176,19 +163,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         Creates a new profile given appropriate request data. The body should
         contain only valid fields for ColumnMappingPreset objects.
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: name
-              description: Name of profile
-              required: false
-              paramType: body
-            - name: mappings
-              description: List of dictionaries
-              required: false
-              paramType: body
         """
         org_id = self.get_organization(request, True).id
         try:
@@ -225,11 +199,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def destroy(self, request, pk=None):
         """
         Deletes a specific profile.
-        parameters:
-            - name: pk
-              description: ID of profile
-              required: true
-              paramType: path
         """
         org_id = self.get_organization(request, True).id
         try:
@@ -268,12 +237,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def suggestions(self, request):
         """
         Retrieves suggestions given raw column headers.
-        parameters:
-           - headers:
-           - name: organization_id
-             description: The organization_id for this user's organization
-             required: true (at least, nothing will be returned if not provided)
-             paramType: query
         """
         try:
             org_id = self.get_organization(request, True).id
