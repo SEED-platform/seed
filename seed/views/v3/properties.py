@@ -383,11 +383,11 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'inventory_ids': ['integer']
+                'property_view_ids': ['integer']
             },
-            required=['inventory_ids'],
+            required=['property_view_ids'],
             description='Properties:\n'
-                        '- inventory_ids: array containing Property IDs.'
+                        '- property_view_ids: array containing Property view IDs.'
         )
     )
     @api_endpoint_class
@@ -397,9 +397,11 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Check to see if the given Properties (given by ID) have Meters.
         """
-        property_ids = request.data.get('inventory_ids', [])
-
-        return Meter.objects.filter(property_id__in=property_ids).exists()
+        property_view_ids = request.data.get('property_view_ids', [])
+        canonical_property_ids = PropertyView.objects.filter(
+            id__in=property_view_ids
+        ).values_list('id', flat=True)
+        return Meter.objects.filter(property_id__in=Subquery(canonical_property_ids)).exists()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
