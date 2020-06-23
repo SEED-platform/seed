@@ -877,19 +877,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Update a property and run the updated record through a match and merge
         round within it's current Cycle.
-
-        - looks up the property view
-        - casts it as a PropertyState
-        - builds a hash with all the same keys as the original property state
-        - checks if any fields have changed
-        - if nothing has changed, return 422
-        - get the property audit log for this property state
-        - if the new property state has extra_data, the original extra_data is update'd
-        - create a serializer for the new property state
-        - if it's valid, save this new serialized data to the db
-        - assign it to the original property view and save the property view
-        - create a new property audit log for this change
-        - return a 200 if created
         """
         data = request.data
 
