@@ -7,6 +7,8 @@
 # import json
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -16,24 +18,33 @@ from rest_framework.renderers import JSONRenderer
 from seed.models import (
     Measure,
 )
-from seed.serializers.measures import MeasureSerializer
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
+@method_decorator(
+    name='retrieve',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field(
+            name="id",
+            required=True,
+            description="A unique integer value identifying this measure.")]
+    ),
+)
 class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
     """
     list:
         Return a list of all measures
 
     retrieve:
-        Return a measure by a unique pk
+        Return a measure by a unique id
 
     """
-    serializer_class = MeasureSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
     queryset = Measure.objects.all()
     pagination_class = None
 
+    @swagger_auto_schema_org_query_param
     @action(detail=False, methods=['POST'])
     def reset(self, request):
         """
