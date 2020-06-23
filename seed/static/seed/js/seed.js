@@ -830,32 +830,24 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_settings.html',
         controller: 'column_settings_controller',
         resolve: {
-          columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var organization_id = $stateParams.organization_id;
 
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
-              });
+              return inventory_service.get_property_columns_for_org(organization_id);
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
-              });
+              return inventory_service.get_taxlot_columns_for_org(organization_id);
             }
+          }],
+          columns: ['all_columns', 'naturalSort', function (all_columns, naturalSort) {
+            var columns = _.reject(all_columns, 'related');
+            columns = _.map(columns, function (col) {
+              return _.omit(col, ['pinnedLeft', 'related']);
+            });
+            columns.sort(function (a, b) {
+              return naturalSort(a.displayName, b.displayName);
+            });
+            return columns;
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;

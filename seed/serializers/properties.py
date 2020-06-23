@@ -487,7 +487,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
                 'view': instance,
                 'organization_id': instance.property.organization_id
             }
-            # update exisiting state if PATCH
+            # update existing state if PATCH
             if self.context['request'].method == 'PATCH':
                 property_state_serializer = PropertyStateWritableSerializer(
                     instance.state, data=state

@@ -27,7 +27,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             getattr(openapi, location_attr),
             description=description,
             required=required,
-            type=type
+            type=getattr(openapi, type)
         )
 
     @staticmethod
@@ -46,7 +46,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             name,
             openapi.IN_QUERY,
             description=description,
-            required=True,
+            required=required,
             type=openapi.TYPE_INTEGER
         )
 

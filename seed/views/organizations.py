@@ -100,6 +100,7 @@ def _dict_org(request, organizations):
             'mapquest_api_key': o.mapquest_api_key or '',
             'display_meter_units': o.display_meter_units,
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
+            'comstock_enabled': o.comstock_enabled,
         }
         orgs.append(org)
 
@@ -696,8 +697,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.thermal_conversion_assumption = desired_thermal_conversion_assumption
 
         # Update MapQuest API Key if it's been changed
-        if posted_org.get('mapquest_api_key', '') != org.mapquest_api_key:
-            org.mapquest_api_key = posted_org.get('mapquest_api_key')
+        mapquest_api_key = posted_org.get('mapquest_api_key', '')
+        if mapquest_api_key != org.mapquest_api_key:
+            org.mapquest_api_key = mapquest_api_key
+
+        comstock_enabled = posted_org.get('comstock_enabled', False)
+        if comstock_enabled != org.comstock_enabled:
+            org.comstock_enabled = comstock_enabled
 
         org.save()
 

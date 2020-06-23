@@ -204,7 +204,7 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
             changed_fields=str(validated_data),
             description="Updated by api call."
         )
-        # PATCH request, remove exisiting urls only if urls is supplied
+        # PATCH request, remove existing urls only if urls is supplied
         # PUT request, always remove urls
         # remove any existing urls not in urls
         if urls or not self.partial:

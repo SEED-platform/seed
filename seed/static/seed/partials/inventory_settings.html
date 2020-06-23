@@ -25,13 +25,13 @@
                 <span>List Settings Profile: </span>
                 <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
 
-                <button class="btn btn-success" type="button" ng-click="saveProfile()" ng-disabled="!currentProfile || !isModified()" tooltip-placement="bottom" uib-tooltip="Save">
+                <button class="btn btn-success" type="button" ng-click="saveProfile()" ng-disabled="!currentProfile || !isModified() || currentProfile.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                     <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-primary" type="button" ng-click="renameProfile()" ng-disabled="!currentProfile" tooltip-placement="bottom" uib-tooltip="Rename">
+                <button class="btn btn-primary" type="button" ng-click="renameProfile()" ng-disabled="!currentProfile || currentProfile.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
                     <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
                 </button>
-                <button class="btn btn-danger" type="button" ng-click="removeProfile()" ng-disabled="!currentProfile" tooltip-placement="bottom" uib-tooltip="Delete">
+                <button class="btn btn-danger" type="button" ng-click="removeProfile()" ng-disabled="!currentProfile || currentProfile.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
                     <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
                 <button class="btn btn-info" type="button" ng-click="newProfile()" tooltip-placement="bottom" uib-tooltip="New">
@@ -59,7 +59,7 @@
         <p ng-if="inventory_type === 'properties'" translate>LIST_GUIDANCE_PROPERTIES</p>
     </div>
     <div class="section_content">
-        <div id="grid-container">
+        <div id="grid-container" ng-class="{'readonly-grid': currentProfile.id === null}">
             <div ui-grid="gridOptions" ui-grid-selection ui-grid-draggable-rows></div>
         </div>
     </div>

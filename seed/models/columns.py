@@ -594,6 +594,13 @@ class Column(models.Model):
 
     recognize_empty = models.BooleanField(default=False)
 
+    comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+        ]
+
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
