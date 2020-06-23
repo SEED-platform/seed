@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
+from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
@@ -762,10 +763,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'selected': ['integer']
+                'property_view_ids': ['integer']
             },
-            required=['selected'],
-            description='A list of property ids to delete')
+            required=['property_view_ids'],
+            description='A list of property view ids to delete')
     )
     @api_endpoint_class
     @ajax_request_class
@@ -775,8 +776,11 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Batch delete several properties
         """
-        property_states = request.data.get('selected', [])
-        resp = PropertyState.objects.filter(pk__in=property_states).delete()
+        property_view_ids = request.data.get('property_view_ids', [])
+        property_state_ids = PropertyView.objects.filter(
+            id__in=property_view_ids
+        ).values_list('state_id', flat=True)
+        resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
