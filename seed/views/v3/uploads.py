@@ -45,7 +45,7 @@ class UploadViewSet(viewsets.ViewSet):
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
-        ---
+
         parameters:
             - name: import_record
               description: the ID of the ImportRecord to associate this file with.
