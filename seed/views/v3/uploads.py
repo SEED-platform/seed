@@ -282,7 +282,7 @@ class UploadViewSet(viewsets.ViewSet):
 
                             # Coerce the value into a proper set of Pint units for us
                             if doing_pint:
-                                new_var = LocalUploaderViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
+                                new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
                                 if new_var['success']:
                                     pint_value = new_var['pint_value']
                                     this_row.append(pint_value.magnitude)
