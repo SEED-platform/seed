@@ -10,7 +10,6 @@ from seed.lib.mcm import mapper
 from seed.models import (
     Column,
     ColumnMappingPreset,
-    Organization,
 )
 from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
