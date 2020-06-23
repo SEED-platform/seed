@@ -12,6 +12,7 @@ from rest_framework import (
     response,
     status,
 )
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
@@ -21,6 +22,7 @@ from seed.models import (
     PropertyView,
     TaxLotView,
 )
+from seed.utils.api_schema import AutoSchemaHelper
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
@@ -151,6 +153,20 @@ class LabelInventoryViewSet(APIView):
             rqs.delete()
         return removed
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'add_label_ids': ['integer'],
+                'remove_label_ids': ['integer'],
+                'inventory_ids': ['integer'],
+            },
+            description='Properties:\n'
+                        '- add_label_ids: label ids to add to the inventories\n'
+                        '- remove_label_ids: label ids to remove from the inventories\n'
+                        '- inventory_ids: List of inventory IDs. If omitted, the effect is applied to all properties'
+        )
+    )
     def put(self, request, inventory_type):
         """
         Updates label assignments to inventory items.
