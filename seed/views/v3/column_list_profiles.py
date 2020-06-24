@@ -91,6 +91,24 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         return JsonResponse(result, status=status.HTTP_200_OK)
 
     # Overridden to augment with protected ComStock list profile if enabled
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False,
+                description="Optional org id which overrides the users (default) current org id"
+            ),
+            AutoSchemaHelper.query_string_field(
+                name='inventory_type',
+                required=True,
+                description="'Property' or 'Tax Lot' for filtering."
+            ),
+            AutoSchemaHelper.query_string_field(
+                name='settings_location',
+                required=True,
+                description="'List View Settings' or 'Detail View Settings' for filtering."
+            ),
+        ]
+    )
     def list(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
 
