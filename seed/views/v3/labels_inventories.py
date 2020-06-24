@@ -17,6 +17,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     StatusLabel as Label,
     PropertyView,
@@ -54,6 +55,10 @@ class LabelInventoryViewSet(APIView):
         'missing_org': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             'missing organization_id'
+        ),
+        'missing_inventory_ids': ErrorState(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            'missing inventory_ids'
         )
     }
 
@@ -126,11 +131,7 @@ class LabelInventoryViewSet(APIView):
         added = []
         if add_label_ids:
             model = self.models[inventory_type]
-            inventory_model = self.inventory_models[inventory_type]
             exclude = self.exclude(qs, inventory_type, add_label_ids)
-            inventory_ids = inventory_ids if inventory_ids else [
-                m.pk for m in inventory_model.objects.all()
-            ]
             new_inventory_labels = [
                 self.label_factory(inventory_type, label_id, pk)
                 for label_id in add_label_ids for pk in inventory_ids
@@ -161,24 +162,17 @@ class LabelInventoryViewSet(APIView):
                 'remove_label_ids': ['integer'],
                 'inventory_ids': ['integer'],
             },
+            required=['inventory_ids'],
             description='Properties:\n'
                         '- add_label_ids: label ids to add to the inventories\n'
                         '- remove_label_ids: label ids to remove from the inventories\n'
                         '- inventory_ids: List of inventory IDs. If omitted, the effect is applied to all properties'
         )
     )
+    @has_perm_class('can_modify_data')
     def put(self, request, inventory_type):
         """
         Updates label assignments to inventory items.
-
-        Payload::
-
-            {
-                "add_label_ids": {array}        Array of label ids to add
-                "remove_label_ids": {array}     Array of label ids to remove
-                "inventory_ids": {array}        Array property/taxlot ids
-                "organization_id": {integer}    The user's org ID
-            }
 
         Returns::
 
@@ -207,6 +201,8 @@ class LabelInventoryViewSet(APIView):
             error = self.errors['disjoint']
         elif not organization_id:
             error = self.errors['missing_org']
+        elif inventory_ids is None:
+            error = self.errors['missing_inventory_ids']
         if error:
             result = {
                 'status': 'error',
