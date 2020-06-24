@@ -13,7 +13,7 @@ from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.organizations import OrganizationViewSet
-from seed.views.v3.organizations_users import OrganizationUserViewSet
+from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.users import UserViewSet
