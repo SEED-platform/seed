@@ -530,6 +530,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success'})
 
+    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['GET'])
@@ -551,6 +552,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             200: SharedFieldsReturnSerializer
         }
     )
+    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['GET'])
