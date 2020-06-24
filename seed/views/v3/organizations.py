@@ -589,6 +589,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                         '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
         )
     )
+    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['POST'])
