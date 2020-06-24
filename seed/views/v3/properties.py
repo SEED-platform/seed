@@ -287,7 +287,18 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_integer_field(
                 'cycle',
                 required=False,
-                description='The ID of the cycle to get properties'),
+                description='The ID of the cycle to get properties'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'per_page',
+                required=False,
+                description='Number of properties per page'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'page',
+                required=False,
+                description='Page to fetch'
+            ),
         ]
     )
     @api_endpoint_class
