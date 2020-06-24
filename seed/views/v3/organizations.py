@@ -1274,6 +1274,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return response
 
+    @has_perm_class('requires_member')
     @ajax_request_class
     @action(detail=True, methods=['GET'])
     def geocode_api_key_exists(self, request, pk=None):
