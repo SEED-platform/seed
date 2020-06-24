@@ -4,10 +4,10 @@
 :author
 """
 
+import json
 import logging
 from collections import defaultdict
 from io import BytesIO
-import json
 from random import randint
 
 import dateutil
@@ -21,7 +21,7 @@ from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from past.builtins import basestring
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from seed import tasks
@@ -35,6 +35,8 @@ from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
 from seed.models import Column, Cycle, ImportFile, PropertyView, TaxLotView
 from seed.serializers.column_mappings import \
     SaveColumnMappingsRequestPayloadSerializer
+from seed.serializers.organizations import (SaveSettingsSerializer,
+                                            SharedFieldsReturnSerializer)
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
@@ -157,20 +159,6 @@ def _get_js_role(role):
     return roles.get(role, 'viewer')
 
 
-def _get_role_from_js(role):
-    """return the OrganizationUser role_level from the JS friendly role name
-
-    :param role: 'member', 'owner', or 'viewer'
-    :returns: int role as defined in superperms.models
-    """
-    roles = {
-        'owner': ROLE_OWNER,
-        'viewer': ROLE_VIEWER,
-        'member': ROLE_MEMBER,
-    }
-    return roles[role]
-
-
 def _get_match_merge_link_key(identifier):
     return "org_match_merge_link_result__%s" % identifier
 
@@ -182,60 +170,6 @@ def cache_match_merge_link_result(summary, identifier, progress_key):
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success()
-
-
-class SaveSettingsOrgFieldSerializer(serializers.Serializer):
-    sort_column = serializers.CharField()
-
-
-class SaveSettingsOrganizationSerializer(serializers.Serializer):
-    query_threshold = serializers.IntegerField()
-    name = serializers.CharField(max_length=100)
-    fields = SaveSettingsOrgFieldSerializer(many=True)
-    public_fields = SaveSettingsOrgFieldSerializer(many=True)
-    display_units_eui = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_EUI)
-    display_units_area = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_AREA)
-    display_significant_figures = serializers.IntegerField(min_value=0)
-    display_meter_units = serializers.JSONField()
-    thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
-    mapquest_api_key = serializers.CharField()
-
-
-class SaveSettingsSerializer(serializers.Serializer):
-    organization = SaveSettingsOrganizationSerializer()
-
-
-class SharedFieldSerializer(serializers.Serializer):
-    title = serializers.CharField(max_length=100)
-    sort_column = serializers.CharField(max_length=100)
-    field_class = serializers.CharField(max_length=100)
-    title_class = serializers.CharField(max_length=100)
-    type = serializers.CharField(max_length=100)
-    field_type = serializers.CharField(max_length=100)
-    sortable = serializers.CharField(max_length=100)
-
-
-class SharedFieldsReturnSerializer(serializers.Serializer):
-    status = serializers.CharField(max_length=100)
-    shared_fields = SharedFieldSerializer(many=True)
-    public_fields = SharedFieldSerializer(many=True)
-
-
-class SharedFieldsActualReturnSerializer(serializers.Serializer):
-    shared_fields = SharedFieldsReturnSerializer(many=True)
-
-
-class OrganizationUserSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=100)
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
-    user_id = serializers.IntegerField()
-    role = serializers.CharField(max_length=100)
-
-
-class OrganizationUsersSerializer(serializers.Serializer):
-    status = serializers.CharField(max_length=100)
-    users = OrganizationUserSerializer(many=True)
 
 
 class OrganizationViewSet(viewsets.ViewSet):
@@ -374,7 +308,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         brief = json.loads(request.query_params.get('brief', 'false'))
 
         if brief:
-            import pdb; pdb.set_trace()
             if request.user.is_superuser:
                 qs = Organization.objects.only('id', 'name', 'parent_org_id')
             else:
@@ -390,7 +323,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({'organizations': orgs})
         else:
-            import pdb; pdb.set_trace()
             if request.user.is_superuser:
                 qs = Organization.objects.all()
             else:
