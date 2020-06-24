@@ -7,6 +7,10 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 """
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+
+from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -24,15 +28,18 @@ from seed.serializers.column_list_settings import (
     ColumnListSettingSerializer,
 )
 from seed.utils.api import OrgValidateMixin
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
-class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
+
+
+class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     """
-    API endpoint for returning Column List Settings
+    API endpoint for returning Column List Profiles
 
     create:
-        Create a new list setting. The list of columns is an array of column primary keys. If using Swagger, then
+        Create a new list profile. The list of columns is an array of column primary keys. If using Swagger, then
         this will be enters as a list with returns between each primary key.
 
         JSON POST Example:
@@ -53,10 +60,10 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
     model = ColumnListSetting
     filter_backends = (ColumnListSettingFilterBackend,)
     pagination_class = None
-    # force_parent = True  # Ideally the column list settings would inherit from the parent,
+    # force_parent = True  # Ideally the column list profiles would inherit from the parent,
     # but not yet.
 
-    # Overridden to augment with protected ComStock list setting if enabled
+    # Overridden to augment with protected ComStock list profile if enabled
     def retrieve(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
 
@@ -72,7 +79,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         settings_location = request.query_params.get('settings_location')
         if not org.comstock_enabled or kwargs['pk'] != 'null' \
                 or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
-            return super(ColumnListingViewSet, self).retrieve(request, args, kwargs)
+            return super(ColumnListProfileViewSet, self).retrieve(request, args, kwargs)
 
         result = {
             'status': 'success',
@@ -87,7 +94,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
-    # Overridden to augment with protected ComStock list setting if enabled
+    # Overridden to augment with protected ComStock list profile if enabled
     def list(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
 
@@ -102,7 +109,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         inventory_type = request.query_params.get('inventory_type')
         settings_location = request.query_params.get('settings_location')
         if not org.comstock_enabled or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
-            return super(ColumnListingViewSet, self).list(request, args, kwargs)
+            return super(ColumnListProfileViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
 
