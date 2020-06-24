@@ -588,33 +588,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_boolean_field(
-                'only_used',
-                required=False,
-                description='Determine whether or not to show only the used fields. Ones that have been mapped'
-            )
-        ]
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
-    def columns(self, request):
-        """
-        List all tax lot columns
-        """
-        organization_id = int(request.query_params.get('organization_id'))
-        organization = Organization.objects.get(pk=organization_id)
-
-        only_used = request.query_params.get('only_used', False)
-        columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
-        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
-
-        return JsonResponse({'status': 'success', 'columns': unitted_columns})
-
-    @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()]
     )
     @api_endpoint_class
