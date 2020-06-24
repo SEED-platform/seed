@@ -7,6 +7,7 @@
 import logging
 from collections import defaultdict
 from io import BytesIO
+import json
 from random import randint
 
 import dateutil
@@ -356,7 +357,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         return progress_data.key
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_string_field(
+        manual_parameters=[AutoSchemaHelper.query_boolean_field(
             'brief',
             required=False,
             description='If true, only return high-level organization details'
@@ -370,9 +371,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
 
         # if brief==true only return high-level organization details
-        brief = request.GET.get('brief', '') == 'true'
+        brief = json.loads(request.query_params.get('brief', 'false'))
 
         if brief:
+            import pdb; pdb.set_trace()
             if request.user.is_superuser:
                 qs = Organization.objects.only('id', 'name', 'parent_org_id')
             else:
@@ -388,6 +390,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({'organizations': orgs})
         else:
+            import pdb; pdb.set_trace()
             if request.user.is_superuser:
                 qs = Organization.objects.all()
             else:
