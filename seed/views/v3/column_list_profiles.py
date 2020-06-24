@@ -75,10 +75,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
                 'message': 'organization with id %s does not exist' % org_id
             }, status=status.HTTP_404_NOT_FOUND)
 
-        inventory_type = request.query_params.get('inventory_type')
-        settings_location = request.query_params.get('settings_location')
-        if not org.comstock_enabled or kwargs['pk'] != 'null' \
-                or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
+        if not org.comstock_enabled or kwargs['pk'] != 'null':
             return super(ColumnListProfileViewSet, self).retrieve(request, args, kwargs)
 
         result = {
