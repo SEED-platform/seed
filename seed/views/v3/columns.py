@@ -4,7 +4,9 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
 import logging
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -70,7 +72,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                             '\nDefault: "property"'
             ),
             AutoSchemaHelper.query_boolean_field(
-                name='used_only',
+                name='only_used',
                 required=False,
                 description='Determine whether or not to show only the used fields '
                             '(i.e. only columns that have been mapped)'
@@ -96,7 +98,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         """
         organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
         organization = Organization.objects.get(pk=organization_id)
         if request.query_params.get('display_units', False):
