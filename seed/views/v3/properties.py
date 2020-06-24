@@ -722,20 +722,6 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
-    @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=False, methods=['GET'])
-    def mappable_columns(self, request):
-        """
-        List only property columns that are mappable
-        """
-        organization_id = int(request.query_params.get('organization_id'))
-        columns = Column.retrieve_mapping_columns(organization_id, 'property')
-
-        return JsonResponse({'status': 'success', 'columns': columns})
-
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {

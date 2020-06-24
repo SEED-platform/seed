@@ -174,3 +174,29 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 'success': True,
                 'message': result[1]
             })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field(
+                'inventory_type',
+                required=True,
+                description='Inventory Type, either "property" or "taxlot"'
+            )
+        ]
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['GET'])
+    def mappable(self, request):
+        """
+        List only inventory columns that are mappable
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        inventory_type = request.query_params.get('inventory_type')
+        if inventory_type not in ['property', 'taxlot']:
+            return JsonResponse({'status': 'error', 'message': 'Query param `inventory_type` must be "property" or "taxlot"'})
+        columns = Column.retrieve_mapping_columns(organization_id, inventory_type)
+
+        return JsonResponse({'status': 'success', 'columns': columns})
