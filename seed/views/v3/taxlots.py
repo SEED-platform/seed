@@ -5,6 +5,7 @@
 from collections import namedtuple
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Subquery
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -632,10 +633,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'selected': ['integer']
+                'taxlot_view_ids': ['integer']
             },
-            required=['selected'],
-            description='A list of taxlot ids to delete'
+            required=['taxlot_view_ids'],
+            description='A list of taxlot view ids to delete'
         )
     )
     @api_endpoint_class
@@ -646,8 +647,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Batch delete several tax lots
         """
-        taxlot_states = request.data.get('selected', [])
-        resp = TaxLotState.objects.filter(pk__in=taxlot_states).delete()
+        taxlot_view_ids = request.data.get('taxlot_view_ids', [])
+        taxlot_state_ids = TaxLotView.objects.filter(
+            id__in=taxlot_view_ids
+        ).values_list('state_id', flat=True)
+        resp = TaxLotState.objects.filter(pk__in=Subquery(taxlot_state_ids)).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
