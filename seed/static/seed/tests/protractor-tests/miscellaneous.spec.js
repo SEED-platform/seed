@@ -125,7 +125,7 @@ describe('When I do miscellaneous things', function () {
 
   it('should refesh and rules are correctly saved', function () {
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(true);
-    $$('[ng-click="removeLabelFromRule(rule)"]').first().click();
+    $$('[ng-click="remove_label(rule)"]').first().click();
     expect(element.all(by.repeater('rule in ruleGroup')).first().$('.form-control.label.label-primary').isPresent()).toBe(false);
     $$('[ng-click="save_settings()"]').first().click();
     browser.driver.navigate().refresh();
