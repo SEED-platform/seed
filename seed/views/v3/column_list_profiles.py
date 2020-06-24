@@ -24,9 +24,7 @@ from seed.models import (
     VIEW_LIST_PROPERTY,
     VIEW_LOCATION_TYPES,
 )
-from seed.serializers.column_list_settings import (
-    ColumnListSettingSerializer,
-)
+from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
@@ -54,7 +52,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             }
 
     """
-    serializer_class = ColumnListSettingSerializer
+    serializer_class = ColumnListProfileSerializer
     model = ColumnListSetting
     filter_backends = (ColumnListSettingFilterBackend,)
     pagination_class = None

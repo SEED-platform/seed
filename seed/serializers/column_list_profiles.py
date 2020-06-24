@@ -21,10 +21,12 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.serializers.base import ChoiceField
 
 
-class ColumnListProfileColumnSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.ReadOnlyField(source='column.id')
-    column_name = serializers.ReadOnlyField(source='column.column_name')
-    table_name = serializers.ReadOnlyField(source='column.table_name')
+class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='column.id')
+    order = serializers.IntegerField()
+    pinned = serializers.BooleanField()
+    column_name = serializers.CharField(source='column.column_name')
+    table_name = serializers.CharField(source='column.table_name')
 
     class Meta:
         model = ColumnListSettingColumn
@@ -32,7 +34,7 @@ class ColumnListProfileColumnSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ColumnListProfileSerializer(serializers.ModelSerializer):
-    columns = ColumnListSettingColumnSerializer(source='columnlistsettingcolumn_set', read_only=True, many=True)
+    columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', many=True)
     settings_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
