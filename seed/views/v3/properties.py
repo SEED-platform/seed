@@ -89,10 +89,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     'results': []
                 })
 
-        # Return property views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
-        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+        # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
+        if 'property_view_ids' in request.data and request.data['property_view_ids']:
             property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property_id__in=request.data['inventory_ids'],
+                .filter(id__in=request.data['property_view_ids'],
                         property__organization_id=org_id, cycle=cycle) \
                 .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
         else:
@@ -344,16 +344,25 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'cycle',
                 required=False,
                 description='The ID of the cycle to get properties'),
+            AutoSchemaHelper.query_integer_field(
+                'per_page',
+                required=False,
+                description='Number of properties per page'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'page',
+                required=False,
+                description='Page to fetch'
+            ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'profile_id': 'integer',
-                'inventory_ids': ['integer'],
+                'property_view_ids': ['integer'],
             },
-            required=['profile_id'],
             description='Properties:\n'
                         '- profile_id: Either an id of a list settings profile, or undefined\n'
-                        '- inventory_ids: List of inventory ids'
+                        '- property_view_ids: List of property view ids'
         )
     )
     @api_endpoint_class
