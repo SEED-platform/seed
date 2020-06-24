@@ -917,7 +917,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieve a summary report for charting x vs y
         """
-        campus_only = request.query_params.get('campus_only', False)
+        campus_only = json.loads(request.query_params.get('campus_only', 'false'))
         params = {}
         missing_params = []
         error = ''
@@ -993,7 +993,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         Retrieve a summary report for charting x vs y aggregated by y_var
         """
-        campus_only = request.query_params.get('campus_only', False)
+        campus_only = json.loads(request.query_params.get('campus_only', 'false'))
         valid_y_values = ['gross_floor_area', 'use_description', 'year_built']
         params = {}
         missing_params = []
