@@ -12,9 +12,9 @@ from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.import_files import ImportFileViewSet
-from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.labels import LabelViewSet
-from seed.views.v3.labels_inventories import LabelInventoryViewSet
+from seed.views.v3.label_inventories import LabelInventoryViewSet
+from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
