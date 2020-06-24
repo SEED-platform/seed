@@ -29,12 +29,10 @@ from seed.serializers.column_list_settings import (
 )
 from seed.utils.api import OrgValidateMixin
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-
-
-class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
+class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     API endpoint for returning Column List Profiles
 
