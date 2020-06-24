@@ -98,10 +98,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     'results': []
                 })
 
-        # Return taxlot views limited to the 'inventory_ids' list.  Otherwise, if selected is empty, return all
-        if 'inventory_ids' in request.data and request.data['inventory_ids']:
+        # Return taxlot views limited to the 'taxlot_view_ids' list.  Otherwise, if selected is empty, return all
+        if 'taxlot_view_ids' in request.data and request.data['taxlot_view_ids']:
             taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-                .filter(taxlot_id__in=request.data['inventory_ids'], taxlot__organization_id=org_id,
+                .filter(id__in=request.data['taxlot_view_ids'], taxlot__organization_id=org_id,
                         cycle=cycle) \
                 .order_by('id')
         else:
@@ -249,17 +249,28 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_integer_field(
                 'cycle',
                 required=False,
-                description='The ID of the cycle to get tax lots'),
+                description='The ID of the cycle to get tax lots'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'page',
+                required=False,
+                description='The current page of taxlots to return'
+            ),
+            AutoSchemaHelper.query_integer_field(
+                'per_page',
+                required=False,
+                description='The number of items per page to return'
+            ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'profile_id': 'integer',
-                'inventory_ids': ['integer'],
+                'taxlot_view_ids': ['integer'],
             },
             required=['profile_id'],
             description='Properties:\n'
                         '- profile_id: Either an id of a list settings profile, or undefined\n'
-                        '- inventory_ids: List of inventory ids'
+                        '- taxlot_view_ids: List of taxlot view ids'
         )
     )
     @api_endpoint_class
