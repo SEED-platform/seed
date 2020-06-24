@@ -34,6 +34,10 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
     name='create',
     decorator=swagger_auto_schema_org_query_param
 )
+@method_decorator(
+    name='update',
+    decorator=swagger_auto_schema_org_query_param
+)
 class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     API endpoint for returning Column List Profiles
