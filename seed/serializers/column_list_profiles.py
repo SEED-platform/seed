@@ -59,6 +59,12 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
         return instance
 
     def create(self, validated_data):
+        # Remove *reformatted* ColumnListSettingColumn data, use unformatted initial_data later.
+        del validated_data['columnlistsettingcolumn_set']
+
+        # Add the already-validated organization_id
+        validated_data['organization_id'] = self.context.get('request', None).query_params['organization_id']
+
         cls = ColumnListSetting.objects.create(**validated_data)
         if 'columns' in self.initial_data:
             for column in self.initial_data.get('columns', []):
