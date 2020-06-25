@@ -101,7 +101,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
         organization = Organization.objects.get(pk=organization_id)
-        if request.query_params.get('display_units', False):
+        if json.loads(request.query_params.get('display_units', 'false')):
             columns = [add_pint_unit_suffix(organization, x) for x in columns]
         return JsonResponse({
             'status': 'success',
