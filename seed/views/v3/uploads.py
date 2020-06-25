@@ -3,14 +3,17 @@ import datetime
 import logging
 import os
 
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema, no_body
 from past.builtins import basestring
 import pint
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, parser_classes
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import action
+from rest_framework.decorators import parser_classes as parser_classes_decorator
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from seed.data_importer.models import (
     ImportFile,
@@ -22,10 +25,37 @@ from seed.models import (
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
 from seed.utils.api import api_endpoint_class
+from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
 
 
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.upload_file_field(
+            name='file',
+            required=True,
+            description="File to Upload"),
+            AutoSchemaHelper.form_string_field(
+                name="dataset_id",
+                required=True,
+                description="the dataset ID you want to associate this file with."
+            ),
+            AutoSchemaHelper.form_string_field(
+                name="source_type",
+                required=False,
+                description="the ID of the ImportRecord to associate this file with."
+            ),
+            AutoSchemaHelper.form_string_field(
+                name="source_program_version",
+                required=False,
+                description="the ID of the ImportRecord to associate this file with."
+            ),
+        ],
+        request_body=no_body
+    ),
+)
 class UploadViewSet(viewsets.ViewSet):
     """
     Endpoint to upload data files to, if uploading to local file storage.
@@ -34,14 +64,15 @@ class UploadViewSet(viewsets.ViewSet):
     Returns::
 
         {
-            'success': True,
+            'import_record': True,
             'import_file_id': The ID of the newly-uploaded ImportFile
         }
 
     """
+    parser_classes = (MultiPartParser, FormParser)
+
     @api_endpoint_class
     @ajax_request_class
-    @parser_classes((MultiPartParser, FormParser,))
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
@@ -64,6 +95,7 @@ class UploadViewSet(viewsets.ViewSet):
               required: true
               paramType: Multipart
         """
+
         if len(request.FILES) == 0:
             return JsonResponse({
                 'success': False,
@@ -141,8 +173,19 @@ class UploadViewSet(viewsets.ViewSet):
                         'message': 'Unsupported units string: \"%s\"' % original_unit_string}
             return {'success': True, 'pint_value': pint_val}
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'import_record': 'string',
+                'color': 'string',
+            },
+            required=['name'],
+            description='An object containing meta data for updating a label'
+        )
+    )
     @api_endpoint_class
     @ajax_request_class
+    @parser_classes_decorator((JSONParser,))
     @action(detail=False, methods=['POST'])
     def create_from_pm_import(self, request):
         """
@@ -278,8 +321,8 @@ class UploadViewSet(viewsets.ViewSet):
                     else:
 
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
-
+                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable[
+                            '#text'] != 'Not Available':
                             # Coerce the value into a proper set of Pint units for us
                             if doing_pint:
                                 new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)

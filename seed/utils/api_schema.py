@@ -80,6 +80,36 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             type=openapi.TYPE_INTEGER
         )
 
+    @staticmethod
+    def form_string_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_FORM,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
+    @staticmethod
+    def upload_file_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_FORM,
+            description=description,
+            required=required,
+            type=openapi.TYPE_FILE
+        )
+
+    @staticmethod
+    def body_string_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_BODY,
+            description=description,
+            required=required,
+            type=openapi.TYPE_STRING
+        )
+
     @classmethod
     def body_field(cls, required, description, name='body', params_to_formats={}):
         return openapi.Parameter(
