@@ -671,6 +671,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             return JsonResponse(result)
 
     @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=no_body
     )
     @api_endpoint_class
@@ -743,6 +744,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'property_view_ids': ['integer']
