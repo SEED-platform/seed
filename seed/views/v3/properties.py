@@ -418,10 +418,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Check to see if the given Properties (given by ID) have Meters.
         """
         property_view_ids = request.data.get('property_view_ids', [])
-        canonical_property_ids = PropertyView.objects.filter(
+        property_views = PropertyView.objects.filter(
             id__in=property_view_ids
-        ).values_list('id', flat=True)
-        return Meter.objects.filter(property_id__in=Subquery(canonical_property_ids)).exists()
+        )
+        return Meter.objects.filter(property_id__in=Subquery(property_views.values('property_id'))).exists()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -759,10 +759,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Batch delete several properties
         """
         property_view_ids = request.data.get('property_view_ids', [])
-        property_state_ids = PropertyView.objects.filter(
+        property_states = PropertyView.objects.filter(
             id__in=property_view_ids
-        ).values_list('state_id', flat=True)
-        resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
+        )
+        resp = PropertyState.objects.filter(pk__in=Subquery(property_states.values('id'))).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
