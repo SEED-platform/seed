@@ -58,7 +58,7 @@ class LabelInventoryViewSet(APIView):
         ),
         'missing_inventory_ids': ErrorState(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
-            'missing inventory_ids'
+            'inventory_ids cannot be undefined or empty'
         )
     }
 
@@ -166,7 +166,7 @@ class LabelInventoryViewSet(APIView):
             description='Properties:\n'
                         '- add_label_ids: label ids to add to the inventories\n'
                         '- remove_label_ids: label ids to remove from the inventories\n'
-                        '- inventory_ids: List of inventory IDs. If omitted, the effect is applied to all properties'
+                        '- inventory_ids: List of inventory IDs'
         )
     )
     @has_perm_class('can_modify_data')
@@ -193,7 +193,7 @@ class LabelInventoryViewSet(APIView):
         """
         add_label_ids = request.data.get('add_label_ids', [])
         remove_label_ids = request.data.get('remove_label_ids', [])
-        inventory_ids = request.data.get('inventory_ids', None)
+        inventory_ids = request.data.get('inventory_ids', [])
         organization_id = request.query_params['organization_id']
         error = None
         # ensure add_label_ids and remove_label_ids are different
@@ -201,7 +201,7 @@ class LabelInventoryViewSet(APIView):
             error = self.errors['disjoint']
         elif not organization_id:
             error = self.errors['missing_org']
-        elif inventory_ids is None:
+        elif len(inventory_ids) == 0:
             error = self.errors['missing_inventory_ids']
         if error:
             result = {
