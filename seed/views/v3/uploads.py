@@ -33,10 +33,12 @@ _log = logging.getLogger(__name__)
 @method_decorator(
     name='create',
     decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.upload_file_field(
-            name='file',
-            required=True,
-            description="File to Upload"),
+        manual_parameters=
+        [
+            AutoSchemaHelper.upload_file_field(
+                name='file',
+                required=True,
+                description="File to Upload"),
             AutoSchemaHelper.form_string_field(
                 name="dataset_id",
                 required=True,
