@@ -98,7 +98,7 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
         # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'valid_xml_ex1_ex2.zip')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip')
 
         url = '/api/v2/building_file/'
         fsysparams = {
@@ -119,7 +119,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
     def test_upload_with_measure_duplicates(self):
         # import_record =
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures.xml')
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures_bad_names.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -176,8 +176,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
 
         response = self.client.post(url, fsysparams)
-        self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200, f'Expected 200 response. Message body: {result}')
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1889)

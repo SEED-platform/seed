@@ -100,12 +100,61 @@ class TestBuildingFiles(TestCase):
         )
 
         status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
-        self.assertTrue(status)
+        self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
         self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
         self.assertEqual(messages, {'errors': [], 'warnings': []})
 
         # look for scenarios, meters, and meterreadings
         scenarios = Scenario.objects.filter(property_state_id=property_state.id)
+        self.assertTrue(len(scenarios) > 0)
+        meters = Meter.objects.filter(scenario_id=scenarios[0].id)
+        self.assertTrue(len(meters) > 0)
+        readings = MeterReading.objects.filter(meter_id=meters[0].id)
+        self.assertTrue(len(readings) > 0)
+
+    def test_buildingsync_bricr_update_retains_scenarios(self):
+        # -- Setup
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
+        file = open(filename, 'rb')
+        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+
+        bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, property_view, messages = bf.process(self.org.id, self.org.cycles.first())
+        self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
+        self.assertEqual(property_state.address_line_1, '123 MAIN BLVD')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        # look for scenarios, meters, and meterreadings
+        scenarios = Scenario.objects.filter(property_state_id=property_state.id)
+        self.assertTrue(len(scenarios) > 0)
+        meters = Meter.objects.filter(scenario_id=scenarios[0].id)
+        self.assertTrue(len(meters) > 0)
+        readings = MeterReading.objects.filter(meter_id=meters[0].id)
+        self.assertTrue(len(readings) > 0)
+
+        # -- Act
+        new_bf = BuildingFile.objects.create(
+            file=simple_uploaded_file,
+            filename=filename,
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        # UPDATE the property using the same file
+        status, new_property_state, property_view, messages = new_bf.process(self.org.id, self.org.cycles.first(), property_view)
+
+        # -- Assert
+        self.assertTrue(status, f'Expected process() to succeed; messages: {messages}')
+        self.assertEqual(new_property_state.address_line_1, '123 MAIN BLVD')
+        self.assertEqual(messages, {'errors': [], 'warnings': []})
+
+        # look for scenarios, meters, and meterreadings
+        self.assertNotEqual(property_state.id, new_property_state.id, 'Expected BuildingFile to create a new property state')
+        scenarios = Scenario.objects.filter(property_state_id=new_property_state.id)
         self.assertTrue(len(scenarios) > 0)
         meters = Meter.objects.filter(scenario_id=scenarios[0].id)
         self.assertTrue(len(meters) > 0)
