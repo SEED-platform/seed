@@ -4,7 +4,9 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
 import logging
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -14,9 +16,13 @@ from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
-from seed.models.columns import Column
+from seed.models import (
+    Column,
+    Organization,
+)
 from seed.serializers.columns import ColumnSerializer
-from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin
+from seed.serializers.pint import add_pint_unit_suffix
+from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin, api_endpoint_class
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
@@ -66,14 +72,22 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                             '\nDefault: "property"'
             ),
             AutoSchemaHelper.query_boolean_field(
-                name='used_only',
+                name='only_used',
                 required=False,
                 description='Determine whether or not to show only the used fields '
                             '(i.e. only columns that have been mapped)'
                             '\nDefault: "false"'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                name='display_units',
+                required=False,
+                description='If true, any columns that have units will have them'
+                            ' added as a suffix to the display_name'
+                            '\nDefault: "false"'
+            ),
         ],
     )
+    @api_endpoint_class
     @ajax_request_class
     def list(self, request):
         """
@@ -84,8 +98,11 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         """
         organization_id = self.get_organization(self.request)
         inventory_type = request.query_params.get('inventory_type', 'property')
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
+        organization = Organization.objects.get(pk=organization_id)
+        if json.loads(request.query_params.get('display_units', 'false')):
+            columns = [add_pint_unit_suffix(organization, x) for x in columns]
         return JsonResponse({
             'status': 'success',
             'columns': columns,
@@ -159,3 +176,29 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 'success': True,
                 'message': result[1]
             })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field(
+                'inventory_type',
+                required=True,
+                description='Inventory Type, either "property" or "taxlot"'
+            )
+        ]
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=False, methods=['GET'])
+    def mappable(self, request):
+        """
+        List only inventory columns that are mappable
+        """
+        organization_id = int(request.query_params.get('organization_id'))
+        inventory_type = request.query_params.get('inventory_type')
+        if inventory_type not in ['property', 'taxlot']:
+            return JsonResponse({'status': 'error', 'message': 'Query param `inventory_type` must be "property" or "taxlot"'})
+        columns = Column.retrieve_mapping_columns(organization_id, inventory_type)
+
+        return JsonResponse({'status': 'success', 'columns': columns})
