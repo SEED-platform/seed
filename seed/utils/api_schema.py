@@ -16,6 +16,17 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         'integer': openapi.TYPE_INTEGER,
     }
 
+    @classmethod
+    def _openapi_type(cls, type_name):
+        """returns an openapi type
+
+        :param type_name: str (e.g. 'string', 'boolean', 'integer')
+        :return: openapi.TYPE_*
+        """
+        if type_name not in cls.openapi_types:
+            raise Exception(f'Invalid type "{type_name}"; expected one of {cls.openapi_types.keys()}')
+        return cls.openapi_types[type_name]
+
     @staticmethod
     def base_field(name, location_attr, description, required, type):
         """
@@ -139,10 +150,9 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         :return: drf_yasg.openapi.Schema
         """
         if type(obj) is str:
-            if obj not in cls.openapi_types:
-                raise Exception(f'Invalid type "{obj}"; expected one of {cls.openapi_types.keys()}')
+            openapi_type = cls._openapi_type(obj)
             return openapi.Schema(
-                type=cls.openapi_types[obj],
+                type=openapi_type,
                 **kwargs
             )
 

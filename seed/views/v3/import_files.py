@@ -10,56 +10,35 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import (
-    action,
-    permission_classes,
-)
-
-from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord
-)
-from seed.data_importer.models import ROW_DELIMITER
+from rest_framework.decorators import action, permission_classes
+from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
-from seed.data_importer.tasks import (
-    map_data,
-    geocode_buildings_task as task_geocode_buildings,
-    map_additional_models as task_map_additional_models,
-    match_buildings as task_match_buildings,
-    save_raw_data as task_save_raw,
-    validate_use_cases as task_validate_use_cases,
-)
+from seed.data_importer.tasks import \
+    geocode_buildings_task as task_geocode_buildings
+from seed.data_importer.tasks import \
+    map_additional_models as task_map_additional_models
+from seed.data_importer.tasks import map_data
+from seed.data_importer.tasks import match_buildings as task_match_buildings
+from seed.data_importer.tasks import save_raw_data as task_save_raw
+from seed.data_importer.tasks import \
+    validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mcm import mapper
-from seed.lib.xml_mapping import mapper as xml_mapper
+from seed.lib.mcm import mapper, reader
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (
-    Organization,
-)
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
-from seed.models import (
-    get_column_mapping,
-)
-from seed.models import (
-    obj_to_dict,
-    PropertyState,
-    TaxLotState,
-    DATA_STATE_MAPPING,
-    DATA_STATE_MATCHING,
-    MERGE_STATE_UNKNOWN,
-    MERGE_STATE_NEW,
-    MERGE_STATE_MERGED,
-    Cycle,
-    Column,
-    PropertyAuditLog,
-    TaxLotAuditLog,
-    AUDIT_USER_EDIT,
-    TaxLotProperty,
-)
+from seed.lib.xml_mapping import mapper as xml_mapper
+from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
+                         DATA_STATE_MATCHING, MERGE_STATE_MERGED,
+                         MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, Column, Cycle,
+                         ImportFile, Meter, PropertyAuditLog, PropertyState,
+                         PropertyView, TaxLotAuditLog, TaxLotProperty,
+                         TaxLotState, get_column_mapping, obj_to_dict)
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import (AutoSchemaHelper,
+                                   swagger_auto_schema_org_query_param)
 from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
@@ -806,3 +785,66 @@ class ImportFileViewSet(viewsets.ViewSet):
         # This does not actually delete the object because it is a NonDeletableModel
         import_file.delete()
         return JsonResponse({'status': 'success'})
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'view_id',
+                required=True,
+                description='ID for property view'
+            )
+        ]
+    )
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def greenbutton_meters_preview(self, request, pk):
+        """
+        Returns validated type units and proposed imports
+        """
+        org_id = request.query_params.get('organization_id')
+        view_id = request.query_params.get('view_id')
+
+        import_file = ImportFile.objects.get(pk=pk)
+        parser = reader.GreenButtonParser(import_file.local_file)
+        raw_meter_data = list(parser.data)
+
+        property_id = PropertyView.objects.get(pk=view_id).property_id
+        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+
+        result = {}
+
+        result["validated_type_units"] = meters_parser.validated_type_units()
+        result["proposed_imports"] = meters_parser.proposed_imports
+
+        import_file.matching_results_data['property_id'] = property_id
+        import_file.save()
+
+        return result
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def pm_meters_preview(self, request, pk):
+        """
+        Returns validated type units, proposed imports and unlinkable PM ids
+        """
+        org_id = request.query_params.get('organization_id')
+
+        import_file = ImportFile.objects.get(pk=pk)
+        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
+        raw_meter_data = list(parser.data)
+
+        meters_parser = MetersParser(org_id, raw_meter_data)
+
+        result = {}
+
+        result["validated_type_units"] = meters_parser.validated_type_units()
+        result["proposed_imports"] = meters_parser.proposed_imports
+        result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
+
+        return result
