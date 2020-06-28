@@ -2,7 +2,6 @@
 # encoding: utf-8
 from django.conf.urls import url, include
 from rest_framework import routers
-
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
@@ -16,6 +15,7 @@ from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.organizations import OrganizationViewSet
+from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.users import UserViewSet
@@ -38,7 +38,11 @@ api_v3_router.register(r'users', UserViewSet, base_name='user')
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
 data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, base_name='data_quality_check-rules')
 
+organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
+organizations_router.register(r'users', OrganizationUserViewSet, base_name='organization-users')
+
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
     url(r'^', include(data_quality_checks_router.urls)),
+    url(r'^', include(organizations_router.urls)),
 ]

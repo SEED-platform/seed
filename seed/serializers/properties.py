@@ -591,6 +591,10 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
         return audit_log
 
 
+class UpdatePropertyPayloadSerializer(serializers.Serializer):
+    state = PropertyStateSerializer()
+
+
 def conv_value(val):
     """Convert value to correct format"""
     # swagger makes everything lists
