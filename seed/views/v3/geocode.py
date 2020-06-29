@@ -12,7 +12,6 @@ from rest_framework.decorators import action
 from seed.decorators import ajax_request_class
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
