@@ -12,7 +12,7 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.ubid import decode_unique_ids
 
 
-class UbidViews(viewsets.ViewSet):
+class UbidViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
