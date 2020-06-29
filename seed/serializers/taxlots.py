@@ -68,3 +68,7 @@ class TaxLotViewSerializer(serializers.ModelSerializer):
         model = TaxLotView
         fields = '__all__'
         depth = 1
+
+
+class UpdateTaxLotPayloadSerializer(serializers.Serializer):
+    state = TaxLotStateSerializer()
