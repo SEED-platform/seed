@@ -1,7 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 from django.conf.urls import url, include
+
 from rest_framework import routers
+
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
@@ -11,8 +13,9 @@ from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
-from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.import_files import ImportFileViewSet
+from seed.views.v3.labels import LabelViewSet
+from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
@@ -44,5 +47,15 @@ organizations_router.register(r'users', OrganizationUserViewSet, base_name='orga
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
     url(r'^', include(data_quality_checks_router.urls)),
+    url(
+        r'^labels_property/$',
+        LabelInventoryViewSet.as_view(),
+        {'inventory_type': 'property'},
+    ),
+    url(
+        r'^labels_taxlot/$',
+        LabelInventoryViewSet.as_view(),
+        {'inventory_type': 'taxlot'},
+    ),
     url(r'^', include(organizations_router.urls)),
 ]
