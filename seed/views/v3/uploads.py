@@ -42,17 +42,17 @@ _log = logging.getLogger(__name__)
                 name="dataset_id",
                 required=True,
                 description="the dataset ID you want to associate this file with."
-        ),
+            ),
             AutoSchemaHelper.form_string_field(
                 name="source_type",
                 required=False,
                 description="the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')"
-        ),
+            ),
             AutoSchemaHelper.form_string_field(
                 name="source_program_version",
                 required=False,
                 description="the version of the file as related to the source_type"
-        )]
+            )]
     ),
 )
 class UploadViewSet(viewsets.ViewSet):
@@ -192,7 +192,6 @@ class UploadViewSet(viewsets.ViewSet):
             description='An object containing meta data for updating a label'
         )
     )
-
     @api_endpoint_class
     @ajax_request_class
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
@@ -329,7 +328,8 @@ class UploadViewSet(viewsets.ViewSet):
                     # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
                     else:
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
+                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable[
+                            '#text'] != 'Not Available':
                             # Coerce the value into a proper set of Pint units for us
                             if doing_pint:
                                 new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
