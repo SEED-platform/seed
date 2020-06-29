@@ -22,8 +22,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          Note, PropertyView, StatusLabel, TaxLot,
                          TaxLotAuditLog, TaxLotProperty, TaxLotState,
                          TaxLotView)
-from seed.serializers.pint import (add_pint_unit_suffix,
-                                   apply_display_unit_preferences)
+from seed.serializers.pint import apply_display_unit_preferences
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
                                       TaxLotViewSerializer,
