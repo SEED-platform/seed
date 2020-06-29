@@ -11,7 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
@@ -1171,35 +1171,35 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return new_state
 
-    @action(detail=True, methods=['PUT'])
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(
+                description='ID of the property (not property view) to update'
+            ),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='ID of the cycle to '
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='BuildingSync file to use',
+            ),
+            AutoSchemaHelper.form_string_field(
+                'file_type',
+                required=True,
+                description='Either "Unknown" or "BuildingSync"',
+            ),
+        ],
+        request_body=no_body,
+    )
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
     @has_perm_class('can_modify_data')
     def update_with_building_sync(self, request, pk):
         """
-        Does not work in Swagger!
-
         Update an existing PropertyView with a building file. Currently only supports BuildingSync.
-        ---
-        consumes:
-            - multipart/form-data
-        parameters:
-            - name: pk
-              description: The PropertyView to update with this buildingsync file
-              type: path
-              required: true
-            - name: organization_id
-              type: integer
-              required: true
-            - name: cycle_id
-              type: integer
-              required: true
-            - name: file_type
-              type: string
-              enum: ["Unknown", "BuildingSync"]
-              required: true
-            - name: file
-              description: In-memory file object
-              required: true
-              type: file
         """
         if len(request.FILES) == 0:
             return JsonResponse({
