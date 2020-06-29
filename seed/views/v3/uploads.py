@@ -311,8 +311,7 @@ class UploadViewSet(viewsets.ViewSet):
                     else:
 
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
-                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable[
-                                            '#text'] != 'Not Available':
+                        if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
                             # Coerce the value into a proper set of Pint units for us
                             if doing_pint:
                                 new_var = UploadViewSet._get_pint_var_from_pm_value_object(this_pm_variable)
