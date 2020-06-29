@@ -93,12 +93,17 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
             )
             property_states = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
 
-            ubid_unpopulated = len(property_states.filter(ubid__isnull=True))
-            ubid_successfully_decoded = len(property_states.filter(ubid__isnull=False,
-                                                              bounding_box__isnull=False,
-                                                              centroid__isnull=False))
+            ubid_unpopulated = property_states.filter(ubid__isnull=True).count()
+            ubid_successfully_decoded = property_states.filter(
+                ubid__isnull=False,
+                bounding_box__isnull=False,
+                centroid__isnull=False
+            ).count()
             # for ubid_not_decoded, bounding_box could be populated from a GeoJSON import
-            ubid_not_decoded = len(property_states.filter(ubid__isnull=False, centroid__isnull=True))
+            ubid_not_decoded = property_states.filter(
+                ubid__isnull=False,
+                centroid__isnull=True
+            ).count()
 
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
@@ -107,12 +112,17 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
             )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
 
-            ulid_unpopulated = len(taxlot_states.filter(ulid__isnull=True))
-            ulid_successfully_decoded = len(taxlot_states.filter(ulid__isnull=False,
-                                                           bounding_box__isnull=False,
-                                                           centroid__isnull=False))
+            ulid_unpopulated = taxlot_states.filter(ulid__isnull=True).count()
+            ulid_successfully_decoded = taxlot_states.filter(
+                ulid__isnull=False,
+                bounding_box__isnull=False,
+                centroid__isnull=False
+            ).count()
             # for ulid_not_decoded, bounding_box could be populated from a GeoJSON import
-            ulid_not_decoded = len(taxlot_states.filter(ulid__isnull=False, centroid__isnull=True))
+            ulid_not_decoded = taxlot_states.filter(
+                ulid__isnull=False,
+                centroid__isnull=True
+            ).count()
 
         result = {
             "ubid_unpopulated": ubid_unpopulated,
