@@ -247,7 +247,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 'cycle',
-                required=False,
+                required=True,
                 description='The ID of the cycle to get tax lots'
             ),
             AutoSchemaHelper.query_integer_field(
@@ -530,6 +530,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }
             return JsonResponse(result)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -598,6 +601,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
 
     @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'taxlot_view_ids': ['integer']
