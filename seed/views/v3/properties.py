@@ -1045,21 +1045,21 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }
         return result
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'preset_id',
+                required=True,
+                description='ID of a BuildingSync ColumnMappingPreset'
+            ),
+        ]
+    )
+    @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def building_sync(self, request, pk):
         """
         Return BuildingSync representation of the property
-
-        ---
-        parameters:
-            - name: pk
-              description: The PropertyView to return the BuildingSync file
-              type: path
-              required: true
-            - name: organization_id
-              type: integer
-              required: true
-              paramType: query
         """
         preset_pk = request.GET.get('preset_id')
         try:
@@ -1104,21 +1104,14 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
+    @has_perm_class('can_view_data')
     @action(detail=True, methods=['GET'])
     def hpxml(self, request, pk):
         """
         Return HPXML representation of the property
-
-        ---
-        parameters:
-            - name: pk
-              description: The PropertyView to return the HPXML file
-              type: path
-              required: true
-            - name: organization_id
-              type: integer
-              required: true
-              paramType: query
         """
         # Organization is checked in the orgfilter of the ViewSet
         try:
