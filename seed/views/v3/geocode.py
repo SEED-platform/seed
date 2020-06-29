@@ -16,7 +16,7 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.geocode import geocode_buildings
 
 
-class GeocodeViews(viewsets.ViewSet):
+class GeocodeViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
