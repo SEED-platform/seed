@@ -22,6 +22,7 @@ from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.properties import PropertyViewSet
+from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
 from seed.views.v3.users import UserViewSet
@@ -51,6 +52,9 @@ organizations_router.register(r'users', OrganizationUserViewSet, base_name='orga
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlots')
 taxlots_router.register(r'notes', NoteViewSet, base_name='taxlot-notes')
 
+scenarios_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
+scenarios_router.register(r'scenarios', PropertyScenarioViewSet, base_name='property-scenarios')
+
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
     url(r'^', include(data_quality_checks_router.urls)),
@@ -65,5 +69,6 @@ urlpatterns = [
         {'inventory_type': 'taxlot'},
     ),
     url(r'^', include(organizations_router.urls)),
+    url(r'^', include(scenarios_router.urls)),
     url(r'^', include(taxlots_router.urls)),
 ]
