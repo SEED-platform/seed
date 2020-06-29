@@ -189,7 +189,7 @@ class UploadViewSet(viewsets.ViewSet):
                 }],
             },
             required=['import_record_id', 'properties'],
-            description='An object containing meta data for updating a label'
+            description='An object containing meta data for a property'
         )
     )
     @api_endpoint_class
