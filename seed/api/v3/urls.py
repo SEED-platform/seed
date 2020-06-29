@@ -49,11 +49,14 @@ data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, base_
 
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
 organizations_router.register(r'users', OrganizationUserViewSet, base_name='organization-users')
-taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlots')
+
+properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
+properties_router.register(r'notes', NoteViewSet, base_name='property-notes')
+properties_router.register(r'scenarios', PropertyScenarioViewSet, base_name='property-scenarios')
+
+taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, base_name='taxlot-notes')
 
-scenarios_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
-scenarios_router.register(r'scenarios', PropertyScenarioViewSet, base_name='property-scenarios')
 
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
@@ -69,6 +72,6 @@ urlpatterns = [
         {'inventory_type': 'taxlot'},
     ),
     url(r'^', include(organizations_router.urls)),
-    url(r'^', include(scenarios_router.urls)),
+    url(r'^', include(properties_router.urls)),
     url(r'^', include(taxlots_router.urls)),
 ]
