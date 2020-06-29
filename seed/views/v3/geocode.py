@@ -96,23 +96,23 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 'not_geocoded': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__isnull=True
-                ),
+                ).count(),
                 'high_confidence': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='High'
-                ),
+                ).count(),
                 'low_confidence': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
-                ),
+                ).count(),
                 'manual': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
-                ),
+                ).count(),
                 'missing_address_components': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Missing address components (N/A)'
-                ),
+                ).count(),
             }
 
         if taxlot_view_ids:
@@ -124,23 +124,23 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 'not_geocoded': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__isnull=True
-                ),
+                ).count(),
                 'high_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='High'
-                ),
+                ).count(),
                 'low_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
-                ),
+                ).count(),
                 'manual': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
-                ),
+                ).count(),
                 'missing_address_components': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence='Missing address components (N/A)'
-                ),
+                ).count(),
             }
 
         return result
