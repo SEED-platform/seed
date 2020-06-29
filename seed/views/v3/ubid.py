@@ -13,12 +13,12 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.ubid import decode_unique_ids
 
 
-class UbidViewSet(viewsets.ViewSet):
+class UbidViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
@@ -35,18 +35,25 @@ class UbidViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def decode_by_ids(self, request):
         body = dict(request.data)
+        org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
 
         if property_view_ids:
-            property_views = PropertyView.objects.filter(id__in=property_view_ids)
+            property_views = PropertyView.objects.filter(
+                id__in=property_view_ids,
+                cycle__organization_id=org_id
+            )
             properties = PropertyState.objects.filter(
                 id__in=Subquery(property_views.values('state_id'))
             )
             decode_unique_ids(properties)
 
         if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids)
+            taxlot_views = TaxLotView.objects.filter(
+                id__in=taxlot_view_ids,
+                cycle__organization_id=org_id
+            )
             taxlots = TaxLotState.objects.filter(
                 id__in=Subquery(taxlot_views.values('state_id'))
             )
@@ -69,6 +76,7 @@ class UbidViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def decode_results(self, request):
         body = dict(request.data)
+        org_id = self.get_organization(request)
 
         ubid_unpopulated = 0
         ubid_successfully_decoded = 0
@@ -79,7 +87,10 @@ class UbidViewSet(viewsets.ViewSet):
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
         if property_view_ids:
-            property_views = PropertyView.objects.filter(id__in=property_view_ids)
+            property_views = PropertyView.objects.filter(
+                id__in=property_view_ids,
+                cycle__organization_id=org_id
+            )
             property_states = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
 
             ubid_unpopulated = len(property_states.filter(ubid__isnull=True))
@@ -90,7 +101,10 @@ class UbidViewSet(viewsets.ViewSet):
             ubid_not_decoded = len(property_states.filter(ubid__isnull=False, centroid__isnull=True))
 
         if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids)
+            taxlot_views = TaxLotView.objects.filter(
+                id__in=taxlot_view_ids,
+                cycle__organization_id=org_id
+            )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
 
             ulid_unpopulated = len(taxlot_states.filter(ulid__isnull=True))

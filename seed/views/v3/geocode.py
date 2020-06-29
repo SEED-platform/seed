@@ -16,12 +16,12 @@ from seed.lib.superperms.orgs.models import Organization
 
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.geocode import geocode_buildings
 
 
-class GeocodeViewSet(viewsets.ViewSet):
+class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -39,18 +39,25 @@ class GeocodeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def geocode_by_ids(self, request):
         body = dict(request.data)
+        org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
 
         if property_view_ids:
-            property_views = PropertyView.objects.filter(id__in=property_view_ids)
+            property_views = PropertyView.objects.filter(
+                id__in=property_view_ids,
+                cycle__organization_id=org_id
+            )
             properties = PropertyState.objects.filter(
                 id__in=Subquery(property_views.values('state_id'))
             )
             geocode_buildings(properties)
 
         if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids)
+            taxlot_views = TaxLotView.objects.filter(
+                id__in=taxlot_view_ids,
+                cycle__organization_id=org_id
+            )
             taxlots = TaxLotState.objects.filter(
                 id__in=Subquery(taxlot_views.values('state_id'))
             )
@@ -74,13 +81,17 @@ class GeocodeViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def confidence_summary(self, request):
         body = dict(request.data)
+        org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
 
         result = {}
 
         if property_view_ids:
-            property_views = PropertyView.objects.filter(id__in=property_view_ids)
+            property_views = PropertyView.objects.filter(
+                id__in=property_view_ids,
+                cycle__organization_id=org_id
+            )
             result["properties"] = {
                 'not_geocoded': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
@@ -105,7 +116,10 @@ class GeocodeViewSet(viewsets.ViewSet):
             }
 
         if taxlot_view_ids:
-            taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids)
+            taxlot_views = TaxLotView.objects.filter(
+                id__in=taxlot_view_ids,
+                cycle__organization_id=org_id
+            )
             result["tax_lots"] = {
                 'not_geocoded': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
