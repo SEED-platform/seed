@@ -130,14 +130,3 @@ class GeocodeViewSet(viewsets.ViewSet):
             }
 
         return result
-
-    @ajax_request_class
-    @action(detail=False, methods=['GET'])
-    def api_key_exists(self, request):
-        org_id = request.GET.get("organization_id")
-        org = Organization.objects.get(id=org_id)
-
-        if org.mapquest_api_key:
-            return True
-        else:
-            return False
