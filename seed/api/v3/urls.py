@@ -17,6 +17,7 @@ from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.meters import MeterViewSet
+from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.properties import PropertyViewSet
@@ -43,6 +44,8 @@ data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, base_
 
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
 organizations_router.register(r'users', OrganizationUserViewSet, base_name='organization-users')
+taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlots')
+taxlots_router.register(r'notes', NoteViewSet, base_name='taxlot-notes')
 
 urlpatterns = [
     url(r'^', include(api_v3_router.urls)),
@@ -58,4 +61,5 @@ urlpatterns = [
         {'inventory_type': 'taxlot'},
     ),
     url(r'^', include(organizations_router.urls)),
+    url(r'^', include(taxlots_router.urls)),
 ]
