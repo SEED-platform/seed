@@ -52,7 +52,7 @@ _log = logging.getLogger(__name__)
                 name="source_program_version",
                 required=False,
                 description="the version of the file as related to the source_type"
-         )]
+        )]
     ),
 )
 class UploadViewSet(viewsets.ViewSet):
