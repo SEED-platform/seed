@@ -23,6 +23,7 @@ from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
+from seed.views.v3.ubid import UbidViews
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
@@ -39,6 +40,7 @@ api_v3_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
+api_v3_router.register(r'ubid', UbidViews, base_name='ubid')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
