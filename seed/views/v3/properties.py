@@ -1137,13 +1137,13 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.path_id_field(
-                description='ID of the property (not property view) to update'
+                description='ID of the property view to update'
             ),
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 'cycle_id',
                 required=True,
-                description='ID of the cycle to '
+                description='ID of the cycle of the property view'
             ),
             AutoSchemaHelper.upload_file_field(
                 'file',
@@ -1175,33 +1175,37 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         organization_id = request.query_params.get('organization_id', None)
         cycle_pk = request.query_params.get('cycle_id', None)
 
-        if not cycle_pk:
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk)
+        except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': "Cycle ID is not defined"
-            })
-        else:
-            cycle = Cycle.objects.get(pk=cycle_pk)
+                'message': "Cycle ID is missing or Cycle does not exist"
+            }, status=status.HTTP_404_NOT_FOUND)
 
-        result = self._get_property_view_for_property(pk, cycle_pk)
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(pk=pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'property view does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
         p_status = False
         new_pv_state = None
-        if result.get('status', None) != 'error':
-            building_file = BuildingFile.objects.create(
-                file=the_file,
-                filename=the_file.name,
-                file_type=file_type,
-            )
+        building_file = BuildingFile.objects.create(
+            file=the_file,
+            filename=the_file.name,
+            file_type=file_type,
+        )
 
-            property_view = result.pop('property_view')
-            # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
-            # existing propertyview.
-            p_status, new_pv_state, new_pv_view, messages = building_file.process(
-                organization_id, cycle, property_view=property_view
-            )
-
-        else:
-            messages = ['Cannot match a PropertyView with property_id=%s; cycle_id=%s' % (pk, cycle_pk)]
+        # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
+        # existing propertyview.
+        p_status, new_pv_state, new_pv_view, messages = building_file.process(
+            organization_id, cycle, property_view=property_view
+        )
 
         if p_status and new_pv_state:
             return JsonResponse({
