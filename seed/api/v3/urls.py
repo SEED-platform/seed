@@ -4,6 +4,7 @@ from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
+from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
 from seed.views.v3.cycles import CycleViewSet
@@ -20,6 +21,7 @@ from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
+api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, base_name="column_list_profiles")
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, base_name='column_mapping_profiles')
 api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
