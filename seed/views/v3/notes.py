@@ -15,12 +15,12 @@ from seed.models import (
 from seed.serializers.notes import (
     NoteSerializer,
 )
-from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
+from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 _log = logging.getLogger(__name__)
 
 
-class NoteViewSet(SEEDOrgCreateUpdateModelViewSet):
+class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating notes.
 
             Returns::
