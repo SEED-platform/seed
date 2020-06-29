@@ -12,7 +12,6 @@ from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.decorators import parser_classes as parser_classes_decorator
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from seed.data_importer.models import (
@@ -173,10 +172,30 @@ class UploadViewSet(viewsets.ViewSet):
                         'message': 'Unsupported units string: \"%s\"' % original_unit_string}
             return {'success': True, 'pint_value': pint_val}
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'import_record_id': 'integer',
+                'properties': [{
+                    'address_1': 'string',
+                    'city': 'string',
+                    'state_province': 'string',
+                    'postal_code': 'string',
+                    'county': 'string',
+                    'country': 'string',
+                    'property_name': 'string',
+                    'property_id': 'integer',
+                    'year_built': 'integer',
+                }],
+            },
+            required=['import_record_id', 'properties'],
+            description='An object containing meta data for updating a label'
+        )
+    )
+
     @api_endpoint_class
     @ajax_request_class
-    @parser_classes_decorator((JSONParser,))
-    @action(detail=False, methods=['POST'])
+    @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """
         Create an import_record from a PM import request.
@@ -189,7 +208,7 @@ class UploadViewSet(viewsets.ViewSet):
 
         ---
         parameters:
-            - name: import_record
+            - name: import_record_id
               description: the ID of the ImportRecord to associate this file with.
               required: true
               paramType: body
@@ -309,7 +328,6 @@ class UploadViewSet(viewsets.ViewSet):
 
                     # If it isn't a string, it should be a dictionary, storing numeric data and units, etc.
                     else:
-
                         # As long as it is a valid dictionary, try to get a meaningful value out of it
                         if this_pm_variable and '#text' in this_pm_variable and this_pm_variable['#text'] != 'Not Available':
                             # Coerce the value into a proper set of Pint units for us
