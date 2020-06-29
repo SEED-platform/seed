@@ -29,4 +29,9 @@ class PropertyScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
 
     def get_queryset(self):
         org_id = self.get_organization(self.request)
-        return Scenario.objects.filter(property_state__organization_id=org_id).order_by('id')
+        property_view_id = self.kwargs.get('property_pk')
+
+        return Scenario.objects.filter(
+            property_state__organization_id=org_id,
+            property_state__propertyview=property_view_id,
+        ).order_by('id')

@@ -1252,6 +1252,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
 
+
 def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
