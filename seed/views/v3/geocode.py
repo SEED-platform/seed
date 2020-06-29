@@ -82,51 +82,51 @@ class GeocodeViewSet(viewsets.ViewSet):
         if property_view_ids:
             property_views = PropertyView.objects.filter(id__in=property_view_ids)
             result["properties"] = {
-                'not_geocoded': len(PropertyState.objects.filter(
+                'not_geocoded': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__isnull=True
-                )),
-                'high_confidence': len(PropertyState.objects.filter(
+                ),
+                'high_confidence': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='High'
-                )),
-                'low_confidence': len(PropertyState.objects.filter(
+                ),
+                'low_confidence': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
-                )),
-                'manual': len(PropertyState.objects.filter(
+                ),
+                'manual': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
-                )),
-                'missing_address_components': len(PropertyState.objects.filter(
+                ),
+                'missing_address_components': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
                     geocoding_confidence='Missing address components (N/A)'
-                )),
+                ),
             }
 
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(id__in=taxlot_view_ids)
             result["tax_lots"] = {
-                'not_geocoded': len(TaxLotState.objects.filter(
+                'not_geocoded': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__isnull=True
-                )),
-                'high_confidence': len(TaxLotState.objects.filter(
+                ),
+                'high_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='High'
-                )),
-                'low_confidence': len(TaxLotState.objects.filter(
+                ),
+                'low_confidence': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence__startswith='Low'
-                )),
-                'manual': len(TaxLotState.objects.filter(
+                ),
+                'manual': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence='Manually geocoded (N/A)'
-                )),
-                'missing_address_components': len(TaxLotState.objects.filter(
+                ),
+                'missing_address_components': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
                     geocoding_confidence='Missing address components (N/A)'
-                )),
+                ),
             }
 
         return result
