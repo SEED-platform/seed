@@ -44,22 +44,22 @@ class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     def get_queryset(self):
         # check if the request is properties or taxlots
         org_id = self.get_organization(self.request)
-        if self.kwargs.get('properties_pk', None):
-            return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get('properties_pk'))
-        elif self.kwargs.get('taxlots_pk', None):
-            return Note.objects.filter(organization_id=org_id, taxlot_view_id=self.kwargs.get('taxlots_pk'))
+        if self.kwargs.get('property_pk', None):
+            return Note.objects.filter(organization_id=org_id, property_view_id=self.kwargs.get('property_pk'))
+        elif self.kwargs.get('taxlot_pk', None):
+            return Note.objects.filter(organization_id=org_id, taxlot_view_id=self.kwargs.get('taxlot_pk'))
         else:
             return Note.objects.filter(organization_id=org_id)
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
-        if self.kwargs.get('properties_pk', None):
+        if self.kwargs.get('property_pk', None):
             serializer.save(
-                organization_id=org_id, user=self.request.user, property_view_id=self.kwargs.get('properties_pk', None)
+                organization_id=org_id, user=self.request.user, property_view_id=self.kwargs.get('property_pk', None)
             )
-        elif self.kwargs.get('taxlots_pk', None):
+        elif self.kwargs.get('taxlot_pk', None):
             serializer.save(
-                organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get('taxlots_pk', None)
+                organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get('taxlot_pk', None)
             )
         else:
-            _log.warn("Unable to create model without a property_pk or taxlots_pk")
+            _log.warn("Unable to create model without a property_pk or taxlot_pk")
