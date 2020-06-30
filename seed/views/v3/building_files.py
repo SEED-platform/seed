@@ -30,10 +30,6 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     parser_classes = (MultiPartParser,)
 
     def get_serializer_class(self):
-        # Super hacky, but this allows us to have separate serializers for different
-        # views
-        # This is necessary b/c bad swagger docs were being generated due to the
-        # serializer for the `create` view
         if self.request.method.lower() == 'post':
             return None
         return BuildingFileSerializer
