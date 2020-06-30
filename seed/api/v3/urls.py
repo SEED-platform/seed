@@ -21,6 +21,7 @@ from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organizations import OrganizationViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
+from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
@@ -40,6 +41,7 @@ api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_nam
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
 api_v3_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
+api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, base_name="portfolio_manager")
 api_v3_router.register(r'progress', ProgressViewSet, base_name="progress")
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
