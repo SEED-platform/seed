@@ -175,6 +175,7 @@ class UploadViewSet(viewsets.ViewSet):
             description='An object containing meta data for a property'
         )
     )
+    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
@@ -186,18 +187,6 @@ class UploadViewSet(viewsets.ViewSet):
         The process comprises the following steps:
 
         * Get a unique file name for this portfolio manager import
-        *
-
-        ---
-        parameters:
-            - name: import_record_id
-              description: the ID of the ImportRecord to associate this file with.
-              required: true
-              paramType: body
-            - name: properties
-              description: In-memory list of properties from PM import
-              required: true
-              paramType: body
         """
 
         doing_pint = False
