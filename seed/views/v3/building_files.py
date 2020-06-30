@@ -9,46 +9,59 @@ import zipfile
 from tempfile import NamedTemporaryFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.properties import PropertyViewAsStateSerializer
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
+@method_decorator(swagger_auto_schema_org_query_param, name='list')
+@method_decorator(swagger_auto_schema_org_query_param, name='retrieve')
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
-    serializer_class = BuildingFileSerializer
     orgfilter = 'property_state__organization'
+    parser_classes = (MultiPartParser,)
 
-    # TODO: add the building_file serializer to this and override the methods (perform_create)
+    def get_serializer_class(self):
+        # Super hacky, but this allows us to have separate serializers for different
+        # views
+        # This is necessary b/c bad swagger docs were being generated due to the
+        # serializer for the `create` view
+        if self.request.method.lower() == 'post':
+            return None
+        return BuildingFileSerializer
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='Cycle to upload to'
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='File to upload',
+            ),
+            AutoSchemaHelper.form_string_field(
+                'file_type',
+                required=True,
+                description='Either "Unknown", "BuildingSync" or "HPXML"',
+            ),
+        ],
+    )
     @has_perm_class('can_modify_data')
     def create(self, request):
         """
-        Does not work in Swagger!
-
-        Create a new Property from a building file.
-        ---
-        consumes:
-            - multipart/form-data
-        parameters:
-            - name: organization_id
-              type: integer
-              required: true
-            - name: cycle_id
-              type: integer
-              required: true
-            - name: file_type
-              type: string
-              enum: ["Unknown", "BuildingSync", "HPXML"]
-              required: true
-            - name: file
-              description: In-memory file object
-              required: true
-              type: file
+        Create a new property from a building file
         """
         if len(request.FILES) == 0:
             return JsonResponse({
@@ -59,8 +72,8 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
 
-        organization_id = request.data['organization_id']
-        cycle = request.data.get('cycle_id', None)
+        organization_id = self.get_organization(self.request)
+        cycle = request.query_params.get('cycle_id', None)
 
         if not cycle:
             return JsonResponse({
