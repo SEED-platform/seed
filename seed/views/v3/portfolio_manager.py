@@ -14,10 +14,16 @@ import time
 
 import requests
 import xmltodict
+
 from django.http import JsonResponse
+
+from drf_yasg.utils import swagger_auto_schema
+
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
+
+from seed.utils.api_schema import AutoSchemaHelper
 
 try:
     from urllib import quote  # python2.x
@@ -41,14 +47,34 @@ class PortfolioManagerViewSet(GenericViewSet):
     """
     serializer_class = PortfolioManagerSerializer
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'username': 'string',
+                'password': 'string'
+            },
+            description='ESPM account credentials.',
+            required=['username', 'password']
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'status': 'string',
+                'templates': [{
+                    'template_information_1': 'string',
+                    'template_information_2': 'integer',
+                    '[other keys...]': 'string'
+                }],
+                'message': 'string'
+            }),
+        }
+    )
     @action(detail=False, methods=['POST'])
     def template_list(self, request):
         """
         This API view makes a request to ESPM for the list of available report templates, including root templates and
         child data requests.
-
-        :param request: A request with a POST body containing the ESPM credentials (username and password)
-        :return: This API responds with a JSON object with two keys: status, which will be a string -
+        ---
+        This API responds with a JSON object with two keys: status, which will be a string -
         either error or success.  If successful, a second key, templates, will hold the list of templates from ESPM. If
         not successful, a second key, message, will include an error description that can be presented on the UI.
         """
