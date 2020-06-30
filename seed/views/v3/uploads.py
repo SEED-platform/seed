@@ -3,7 +3,6 @@ import datetime
 import logging
 import os
 
-from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema, no_body
 from past.builtins import basestring
 import pint
