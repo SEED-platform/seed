@@ -19,7 +19,7 @@ from seed.data_importer.models import (
     ImportRecord
 )
 from seed.decorators import ajax_request_class
-
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
@@ -29,32 +29,6 @@ from seed.utils.api_schema import AutoSchemaHelper
 _log = logging.getLogger(__name__)
 
 
-@method_decorator(
-    name='create',
-    decorator=swagger_auto_schema(
-        request_body=no_body,
-        manual_parameters=[AutoSchemaHelper.upload_file_field(
-            name='file',
-            required=True,
-            description="File to Upload"
-        ),
-            AutoSchemaHelper.form_integer_field(
-                name="dataset_id",
-                required=True,
-                description="the dataset ID you want to associate this file with."
-        ),
-            AutoSchemaHelper.form_string_field(
-                name="source_type",
-                required=False,
-                description="the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')"
-        ),
-            AutoSchemaHelper.form_string_field(
-                name="source_program_version",
-                required=False,
-                description="the version of the file as related to the source_type"
-        )]
-    ),
-)
 class UploadViewSet(viewsets.ViewSet):
     """
     Endpoint to upload data files to, if uploading to local file storage.
@@ -70,29 +44,38 @@ class UploadViewSet(viewsets.ViewSet):
     """
     parser_classes = (FormParser, MultiPartParser)
 
+    @swagger_auto_schema(
+        request_body=no_body,
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.upload_file_field(
+                name='file',
+                required=True,
+                description='File to Upload'
+            ),
+            AutoSchemaHelper.form_integer_field(
+                name='import_record',
+                required=True,
+                description='the dataset ID you want to associate this file with.'
+            ),
+            AutoSchemaHelper.form_string_field(
+                name='source_type',
+                required=True,
+                description='the type of file (e.g. "Portfolio Raw" or "Assessed Raw")'
+            ),
+            AutoSchemaHelper.form_string_field(
+                name='source_program_version',
+                required=False,
+                description='the version of the file as related to the source_type'
+            ),
+        ]
+    )
+    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
-
-        parameters:
-            - name: import_record
-              description: the ID of the ImportRecord to associate this file with.
-              required: true
-              paramType: body
-            - name: source_type
-              description: the type of file (e.g. 'Portfolio Raw' or 'Assessed Raw')
-              required: false
-              paramType: body
-            - name: source_program_version
-              description: the version of the file as related to the source_type
-              required: false
-              paramType: body
-            - name: file or qqfile
-              description: In-memory file object
-              required: true
-              paramType: Multipart
         """
 
         if len(request.FILES) == 0:
