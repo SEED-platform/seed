@@ -1174,9 +1174,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
         organization_id = request.query_params.get('organization_id', None)
         cycle_pk = request.query_params.get('cycle_id', None)
+        org_id = self.get_organization(self.request)
 
         try:
-            cycle = Cycle.objects.get(pk=cycle_pk)
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
         except Cycle.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -1184,9 +1185,11 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }, status=status.HTTP_404_NOT_FOUND)
 
         try:
+            # note that this is a "safe" query b/c we should have already returned
+            # if the cycle was not within the user's organization
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
-            ).get(pk=pk)
+            ).get(pk=pk, cycle_id=cycle_pk)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
