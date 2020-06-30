@@ -34,6 +34,9 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def decode_by_ids(self, request):
+        """
+        Submit a request to decode UBIDs for property and tax lot records.
+        """
         body = dict(request.data)
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
@@ -75,6 +78,10 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('can_view_data')
     @action(detail=False, methods=['POST'])
     def decode_results(self, request):
+        """
+        Generate a summary of populated, unpopulated, and decoded UBIDs for
+        property and tax lot records.
+        """
         body = dict(request.data)
         org_id = self.get_organization(request)
 

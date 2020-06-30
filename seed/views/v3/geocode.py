@@ -37,6 +37,9 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def geocode_by_ids(self, request):
+        """
+        Submit a request to geocode property and tax lot records.
+        """
         body = dict(request.data)
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
@@ -79,6 +82,10 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class('can_view_data')
     @action(detail=False, methods=['POST'])
     def confidence_summary(self, request):
+        """
+        Generate a summary of geocoding confidence values for property and
+        tax lot records.
+        """
         body = dict(request.data)
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
