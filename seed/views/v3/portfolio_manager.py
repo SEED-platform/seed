@@ -105,14 +105,36 @@ class PortfolioManagerViewSet(GenericViewSet):
             )
         return JsonResponse({'status': 'success', 'templates': possible_templates})
 
+    @swagger_auto_schema(
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'username': 'string',
+                'password': 'string',
+                'template': {
+                    '[copy information from template_list]': 'string'
+                }
+            },
+            description='ESPM account credentials.',
+            required=['username', 'password']
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({
+                'status': 'string',
+                'properties': [{
+                    'properties_information_1': 'string',
+                    'properties_information_2': 'integer',
+                    '[other keys...]': 'string'
+                }],
+                'message': 'string'
+            }),
+        }
+    )
     @action(detail=False, methods=['POST'])
     def report(self, request):
         """
         This API view makes a request to ESPM to generate and download a report based on a specific template.
-
-        :param request: A request with a POST body containing the ESPM credentials (username and password) as well as
-        a template key that contains one of the template objects retrieved using the /template_list/ endpoint
-        :return: This API responds with a JSON object with two keys: status, which will be a string -
+        ---
+        This API responds with a JSON object with two keys: status, which will be a string -
         either error or success.  If successful, a second key, properties, will hold the list of properties found in
         this generated report.  If not successful, a second key, message, will include an error description that can be
         presented on the UI.
