@@ -1062,7 +1062,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Return BuildingSync representation of the property
         """
         preset_pk = request.GET.get('preset_id')
-        org_id=self.get_organization(self.request)
+        org_id = self.get_organization(self.request)
         try:
             preset_pk = int(preset_pk)
             column_mapping_preset = ColumnMappingPreset.objects.get(
