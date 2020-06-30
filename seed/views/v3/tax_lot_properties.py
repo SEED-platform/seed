@@ -338,7 +338,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
             ws4.write('B1', 'scenario_id', bold)
             ws4.write('C1', 'measure_id', bold)
             for index, s in enumerate(datum['scenarios']):
-                # print("EXPORT SCENARIO: {}".format(inspect.getmembers(s)))
                 scenario_id = s.id
                 if add_s_headers:
                     # grab headers
@@ -437,9 +436,6 @@ class TaxLotPropertyViewSet(GenericViewSet):
                     appended alongside the previous geometry.
                     """
                     individual_geometry = {}
-
-                    print("VALUE:")
-                    print(value)
 
                     # long_lat
                     if key == 'long_lat':
