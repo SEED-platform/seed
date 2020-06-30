@@ -1112,9 +1112,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Return HPXML representation of the property
         """
-        # Organization is checked in the orgfilter of the ViewSet
+        org_id = self.get_organization(self.request)
         try:
-            property_view = PropertyView.objects.select_related('state').get(pk=pk)
+            property_view = (PropertyView.objects.select_related('state')
+                             .get(pk=pk, cycle__organization_id=org_id))
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'success': False,
