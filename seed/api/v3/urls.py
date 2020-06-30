@@ -25,6 +25,7 @@ from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
+from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
 from seed.views.v3.users import UserViewSet
@@ -44,6 +45,7 @@ api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organiz
 api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, base_name="portfolio_manager")
 api_v3_router.register(r'progress', ProgressViewSet, base_name="progress")
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
+api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, base_name="tax_lot_properties")
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, base_name='ubid')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
