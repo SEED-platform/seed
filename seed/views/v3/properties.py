@@ -1062,6 +1062,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Return BuildingSync representation of the property
         """
         preset_pk = request.GET.get('preset_id')
+        org_id=self.get_organization(self.request)
         try:
             preset_pk = int(preset_pk)
             column_mapping_preset = ColumnMappingPreset.objects.get(
@@ -1079,10 +1080,8 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # TODO: not checking organization? Is that right?
-            # TODO: this needs to call _get_property_view and use the property pk, not the property_view pk.
-            #   or we need to state the v2.1 of API uses property views instead of property
-            property_view = PropertyView.objects.select_related('state').get(pk=pk)
+            property_view = (PropertyView.objects.select_related('state')
+                             .get(pk=pk, cycle__organization_id=org_id))
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'success': False,
