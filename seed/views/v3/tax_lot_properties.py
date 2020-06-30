@@ -14,6 +14,9 @@ from collections import OrderedDict
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
+
+from drf_yasg.utils import swagger_auto_schema
+
 from quantityfield import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
@@ -41,6 +44,7 @@ from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
 )
 from seed.utils.api import api_endpoint_class
+from seed.utils.api_schema import AutoSchemaHelper
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
@@ -54,47 +58,32 @@ class TaxLotPropertyViewSet(GenericViewSet):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotPropertySerializer
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", True, "Cycle ID"),
+            AutoSchemaHelper.query_string_field(
+                "inventory_type",
+                False,
+                "Either 'taxlots' or 'properties' and defaults to 'properties'."),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'ids': ['integer'],
+                'filename': 'string',
+                'export_type': 'string',
+                'profile_id': 'integer'
+            },
+            description="Valid export_types: 'csv', 'geojson', 'xlsx' (defaulting to 'csv')"
+        ),
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     @action(detail=False, methods=['POST'])
     def export(self, request):
         """
-        Download a csv of the TaxLot and Properties
-
-        .. code-block::
-
-            {
-                "ids": [1,2,3],
-                "columns": ["tax_jurisdiction_tax_lot_id", "address_line_1", "property_view_id"]
-            }
-
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: cycle
-              description: cycle
-              required: true
-              paramType: query
-            - name: inventory_type
-              description: properties or taxlots (as defined by the inventory list page)
-              required: true
-              paramType: query
-            - name: ids
-              description: list of property/taxlot ids to export (not property/taxlot views)
-              required: true
-              paramType: body
-            - name: columns
-              description: list of columns to export
-              required: true
-              paramType: body
-            - name: filename
-              description: name of the file to create
-              required: false
-              paramType: body
-            - name: profile_id
-              description: Either an id of a list settings profile, or undefined
-              paramType: body
+        Download a collection of the TaxLot and Properties in multiple formats.
         """
         cycle_pk = request.query_params.get('cycle_id', None)
         if not cycle_pk:
