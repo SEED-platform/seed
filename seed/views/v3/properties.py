@@ -2,26 +2,29 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import os
 from collections import namedtuple
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
-from django.db.models import Subquery
-from django.http import JsonResponse
+from django.db.models import Q, Subquery
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
+from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
-                         Column, ColumnListSetting, ColumnListSettingColumn,
-                         Cycle, Meter, Note, Property, PropertyAuditLog,
+                         BuildingFile, Column, ColumnListSetting,
+                         ColumnListSettingColumn, ColumnMappingPreset, Cycle,
+                         Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
 from seed.models import StatusLabel as Label
@@ -30,6 +33,7 @@ from seed.serializers.pint import (PintJSONEncoder,
                                    apply_display_unit_preferences)
 from seed.serializers.properties import (PropertySerializer,
                                          PropertyStateSerializer,
+                                         PropertyViewAsStateSerializer,
                                          PropertyViewSerializer,
                                          UpdatePropertyPayloadSerializer)
 from seed.serializers.taxlots import TaxLotViewSerializer
@@ -1009,6 +1013,217 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     return JsonResponse(result, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+    def _get_property_view_for_property(self, pk, cycle_pk):
+        """
+        Return a property view based on the property id and cycle
+        :param pk: ID of property (not property view)
+        :param cycle_pk: ID of the cycle
+        :return: dict, propety view and status
+        """
+        try:
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(
+                property_id=pk,
+                cycle_id=cycle_pk,
+                property__organization_id=self.request.GET['organization_id']
+            )
+            result = {
+                'status': 'success',
+                'property_view': property_view
+            }
+        except PropertyView.DoesNotExist:
+            result = {
+                'status': 'error',
+                'message': 'property view with property id {} does not exist'.format(pk)
+            }
+        except PropertyView.MultipleObjectsReturned:
+            result = {
+                'status': 'error',
+                'message': 'Multiple property views with id {}'.format(pk)
+            }
+        return result
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'preset_id',
+                required=True,
+                description='ID of a BuildingSync ColumnMappingPreset'
+            ),
+        ]
+    )
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def building_sync(self, request, pk):
+        """
+        Return BuildingSync representation of the property
+        """
+        preset_pk = request.GET.get('preset_id')
+        org_id = self.get_organization(self.request)
+        try:
+            preset_pk = int(preset_pk)
+            column_mapping_preset = ColumnMappingPreset.objects.get(
+                pk=preset_pk,
+                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+        except TypeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Query param `preset_id` is either missing or invalid'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        except ColumnMappingPreset.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            property_view = (PropertyView.objects.select_related('state')
+                             .get(pk=pk, cycle__organization_id=org_id))
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot match a PropertyView with pk=%s' % pk
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        bs = BuildingSync()
+        # Check if there is an existing BuildingSync XML file to merge
+        bs_file = property_view.state.building_files.order_by('created').last()
+        if bs_file is not None and os.path.exists(bs_file.file.path):
+            bs.import_file(bs_file.file.path)
+
+        try:
+            xml = bs.export_using_preset(property_view.state, column_mapping_preset.mappings)
+            return HttpResponse(xml, content_type='application/xml')
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
+    )
+    @has_perm_class('can_view_data')
+    @action(detail=True, methods=['GET'])
+    def hpxml(self, request, pk):
+        """
+        Return HPXML representation of the property
+        """
+        org_id = self.get_organization(self.request)
+        try:
+            property_view = (PropertyView.objects.select_related('state')
+                             .get(pk=pk, cycle__organization_id=org_id))
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot match a PropertyView with pk=%s' % pk
+            })
+
+        hpxml = HPXML()
+        # Check if there is an existing BuildingSync XML file to merge
+        hpxml_file = property_view.state.building_files.last()
+        if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
+            hpxml.import_file(hpxml_file.file.path)
+            xml = hpxml.export(property_view.state)
+            return HttpResponse(xml, content_type='application/xml')
+        else:
+            # create a new XML from the record, do not import existing XML
+            xml = hpxml.export(property_view.state)
+            return HttpResponse(xml, content_type='application/xml')
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.path_id_field(
+                description='ID of the property view to update'
+            ),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                'cycle_id',
+                required=True,
+                description='ID of the cycle of the property view'
+            ),
+            AutoSchemaHelper.upload_file_field(
+                'file',
+                required=True,
+                description='BuildingSync file to use',
+            ),
+            AutoSchemaHelper.form_string_field(
+                'file_type',
+                required=True,
+                description='Either "Unknown" or "BuildingSync"',
+            ),
+        ],
+        request_body=no_body,
+    )
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def update_with_building_sync(self, request, pk):
+        """
+        Update an existing PropertyView with a building file. Currently only supports BuildingSync.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
+        organization_id = request.query_params.get('organization_id', None)
+        cycle_pk = request.query_params.get('cycle_id', None)
+        org_id = self.get_organization(self.request)
+
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': "Cycle ID is missing or Cycle does not exist"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # note that this is a "safe" query b/c we should have already returned
+            # if the cycle was not within the user's organization
+            property_view = PropertyView.objects.select_related(
+                'property', 'cycle', 'state'
+            ).get(pk=pk, cycle_id=cycle_pk)
+        except PropertyView.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'property view does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        p_status = False
+        new_pv_state = None
+        building_file = BuildingFile.objects.create(
+            file=the_file,
+            filename=the_file.name,
+            file_type=file_type,
+        )
+
+        # passing in the existing propertyview allows it to process the buildingsync file and attach it to the
+        # existing propertyview.
+        p_status, new_pv_state, new_pv_view, messages = building_file.process(
+            organization_id, cycle, property_view=property_view
+        )
+
+        if p_status and new_pv_state:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(new_pv_view).data,
+                },
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': "Could not process building file with messages {}".format(messages)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 def diffupdate(old, new):
