@@ -23,7 +23,6 @@ class PropertyScenarioViewSet(SEEDOrgReadOnlyModelViewSet):
     serializer_class = ScenarioSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
-    queryset = Scenario.objects.all()
     pagination_class = None
     orgfilter = 'property_state__organization_id'
 
