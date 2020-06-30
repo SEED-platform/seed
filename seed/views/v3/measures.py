@@ -6,29 +6,31 @@
 """
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
+from seed.lib.superperms.orgs.decorators import has_perm, has_perm_class
 from seed.models import (
     Measure,
 )
+from seed.serializers.measures import MeasureSerializer
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
-@method_decorator(
-    name='retrieve',
-    decorator=swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            name="id",
-            required=True,
-            description="A unique integer value identifying this measure.")]
-    ),
-)
-class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
+@method_decorator(name='retrieve', decorator=[
+    has_perm('can_view_data'),
+    swagger_auto_schema_org_query_param,
+])
+@method_decorator(name='list', decorator=[
+    has_perm('can_view_data'),
+    swagger_auto_schema_org_query_param,
+])
+class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
     """
     list:
         Return a list of all measures
@@ -37,31 +39,24 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet):
         Return a measure by a unique id
 
     """
+    serializer_class = MeasureSerializer
     parser_classes = (JSONParser, FormParser,)
     renderer_classes = (JSONRenderer,)
-    queryset = Measure.objects.all()
     pagination_class = None
 
-    @swagger_auto_schema_org_query_param
+    def get_queryset(self):
+        org_id = self.get_organization(self.request)
+        return Measure.objects.filter(organization_id=org_id)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=no_body
+    )
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def reset(self, request):
         """
         Reset all the measures back to the defaults (as provided by BuildingSync)
-        ---
-        parameters: {}
-        type:
-            organization_id:
-                required: true
-                type: integer
-                paramType: query
-            status:
-                required: true
-                type: string
-                description: Either success or error
-            measures:
-                required: true
-                type: list
-                description: list of measures
         """
         organization_id = request.query_params.get('organization_id', None)
         if not organization_id:
