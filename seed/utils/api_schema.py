@@ -92,6 +92,16 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         )
 
     @staticmethod
+    def form_integer_field(name, required, description):
+        return openapi.Parameter(
+            name,
+            openapi.IN_FORM,
+            description=description,
+            required=required,
+            type=openapi.TYPE_INTEGER
+        )
+
+    @staticmethod
     def upload_file_field(name, required, description):
         return openapi.Parameter(
             name,
