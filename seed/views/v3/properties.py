@@ -1124,7 +1124,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge
-        hpxml_file = property_view.state.building_files.last()
+        hpxml_file = (property_view.state.building_files
+                      .filter(file_type=BuildingFile.HPXML)
+                      .order_by('-created')
+                      .first())
         if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
             hpxml.import_file(hpxml_file.file.path)
             xml = hpxml.export(property_view.state)
