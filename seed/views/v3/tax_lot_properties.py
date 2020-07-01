@@ -74,7 +74,10 @@ class TaxLotPropertyViewSet(GenericViewSet):
                 'export_type': 'string',
                 'profile_id': 'integer'
             },
-            description="Valid export_types: 'csv', 'geojson', 'xlsx' (defaulting to 'csv')"
+            description='- ids: (View) IDs for records to be exported\n'
+                        '- filename: desired filename including extension (defaulting to \'ExportedData.{export_type}\')\n'
+                        '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
+                        '- profile_id: Column List Profile ID to use for customizing fields included in export'
         ),
     )
     @api_endpoint_class
