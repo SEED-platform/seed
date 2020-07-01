@@ -16,6 +16,7 @@ from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.import_files import ImportFileViewSet
+from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.meters import MeterViewSet
@@ -29,6 +30,7 @@ from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
+from seed.views.v3.uploads import UploadViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
@@ -42,6 +44,7 @@ api_v3_router.register(r'geocode', GeocodeViewSet, base_name='geocode')
 api_v3_router.register(r'labels', LabelViewSet, base_name='labels')
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_name='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
+api_v3_router.register(r'measures', MeasureViewSet, base_name='import_files')
 api_v3_router.register(r'meters', MeterViewSet, base_name='meters')
 api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organizations')
 api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, base_name="portfolio_manager")
@@ -50,6 +53,7 @@ api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
 api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, base_name="tax_lot_properties")
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, base_name='ubid')
+api_v3_router.register(r'upload', UploadViewSet, base_name='upload')
 api_v3_router.register(r'users', UserViewSet, base_name='user')
 
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
