@@ -63,6 +63,8 @@ class PropertyViewFilterBackend(filters.DjangoFilterBackend):
     """
     Used to add filters to the `search` view
     I was unable to find a better way to add the filterset_class to a single view
+
+    TODO: Add this to seed/filtersets.py or seed/filters.py
     """
     def get_filterset_class(self, view, queryset=None):
         return PropertyViewFilterSet
@@ -71,6 +73,8 @@ class PropertyViewFilterBackend(filters.DjangoFilterBackend):
 class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
     """
     Advanced filtering for PropertyView sets
+
+    TODO: Add this to seed/filtersets.py
     """
     address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
     analysis_state = CharFilter(method='analysis_state_filter')
