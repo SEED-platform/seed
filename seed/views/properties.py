@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
@@ -202,7 +202,7 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     queryset = PropertyView.objects.all()
 
 
-class PropertyViewSet(GenericViewSet, ProfileIdMixin):
+class PropertyViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
