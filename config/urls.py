@@ -12,7 +12,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
 from seed.landing.views import password_reset_complete, password_reset_confirm, password_reset_done
-from seed.views.main import angular_js_tests
+from seed.views.main import angular_js_tests, version
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -56,6 +56,7 @@ urlpatterns = [
 
     # API
     url(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'^api/version/$', version, name='version'),
     url(r'^api/', include((api, "seed"), namespace='api')),
     url(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
 ]
