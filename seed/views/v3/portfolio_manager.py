@@ -254,7 +254,7 @@ class PortfolioManagerImport(object):
         if '=' not in cookie_header:
             raise PMExcept('Malformed Cookie key in response headers; aborting.')
         cookie = cookie_header.split('=')[1]
-        _log.debug('Logged in and received cookie: ' + cookie)
+        # _log.debug('Logged in and received cookie: ' + cookie)
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
