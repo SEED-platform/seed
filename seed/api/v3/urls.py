@@ -15,6 +15,7 @@ from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.labels import LabelViewSet
@@ -41,6 +42,7 @@ api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
 api_v3_router.register(r'geocode', GeocodeViewSet, base_name='geocode')
+api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, base_name="green_assessment_properties")
 api_v3_router.register(r'labels', LabelViewSet, base_name='labels')
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_name='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
