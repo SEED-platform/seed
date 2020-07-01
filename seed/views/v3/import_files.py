@@ -445,6 +445,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         return task_validate_use_cases(import_file_id)
 
     @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
         request_body=AutoSchemaHelper.schema_factory({'cycle_id': 'string'})
     )
     @api_endpoint_class

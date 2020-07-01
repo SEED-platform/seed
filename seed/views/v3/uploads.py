@@ -155,6 +155,9 @@ class UploadViewSet(viewsets.ViewSet):
             return {'success': True, 'pint_value': pint_val}
 
     @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field()
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'import_record_id': 'integer',
