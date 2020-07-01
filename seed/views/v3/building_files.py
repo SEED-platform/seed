@@ -11,7 +11,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.parsers import MultiPartParser
 
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -28,10 +28,12 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     model = BuildingFile
     orgfilter = 'property_state__organization'
     parser_classes = (MultiPartParser,)
+    pagination_class = None
 
     def get_serializer_class(self):
-        if self.request.method.lower() == 'post':
-            return None
+        if self.action == 'create':
+            # pass "empty" serializer for Swagger page
+            return serializers.Serializer
         return BuildingFileSerializer
 
     @swagger_auto_schema(

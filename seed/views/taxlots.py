@@ -13,7 +13,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
@@ -68,7 +68,7 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
+class TaxLotViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
