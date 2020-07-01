@@ -8,8 +8,10 @@ from collections import namedtuple
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
+from django_filters import CharFilter, DateFilter
+from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
@@ -57,11 +59,90 @@ DISPLAY_RAW_EXTRADATA_TIME = True
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class PropertyViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
+class PropertyViewFilterBackend(filters.DjangoFilterBackend):
+    """
+    Used to add filters to the `search` view
+    I was unable to find a better way to add the filterset_class to a single view
+
+    TODO: Add this to seed/filtersets.py or seed/filters.py
+    """
+    def get_filterset_class(self, view, queryset=None):
+        return PropertyViewFilterSet
+
+
+class PropertyViewFilterSet(filters.FilterSet, OrgMixin):
+    """
+    Advanced filtering for PropertyView sets
+
+    TODO: Add this to seed/filtersets.py
+    """
+    address_line_1 = CharFilter(field_name="state__address_line_1", lookup_expr='contains')
+    analysis_state = CharFilter(method='analysis_state_filter')
+    identifier = CharFilter(method='identifier_filter')
+    cycle_start = DateFilter(field_name='cycle__start', lookup_expr='lte')
+    cycle_end = DateFilter(field_name='cycle__end', lookup_expr='gte')
+
+    class Meta:
+        model = PropertyView
+        fields = ['identifier', 'address_line_1', 'cycle', 'property', 'cycle_start', 'cycle_end', 'analysis_state']
+
+    def identifier_filter(self, queryset, name, value):
+        address_line_1 = Q(state__address_line_1__icontains=value)
+        jurisdiction_property_id = Q(state__jurisdiction_property_id__icontains=value)
+        custom_id_1 = Q(state__custom_id_1__icontains=value)
+        pm_property_id = Q(state__pm_property_id__icontains=value)
+        ubid = Q(state__ubid__icontains=value)
+
+        query = (
+            address_line_1 |
+            jurisdiction_property_id |
+            custom_id_1 |
+            pm_property_id |
+            ubid
+        )
+        return queryset.filter(query).order_by('-state__id')
+
+    def analysis_state_filter(self, queryset, name, value):
+        # For some reason a ChoiceFilter doesn't work on this object. I wanted to have it
+        # magically look up the map from the analysis_state string to the analysis_state ID, but
+        # it isn't working. Forcing it manually.
+
+        # If the user puts in a bogus filter, then it will return All, for now
+
+        state_id = None
+        for state in PropertyState.ANALYSIS_STATE_TYPES:
+            if state[1].upper() == value.upper():
+                state_id = state[0]
+                break
+
+        if state_id is not None:
+            return queryset.filter(Q(state__analysis_state__exact=state_id)).order_by('-state__id')
+        else:
+            return queryset.order_by('-state__id')
+
+
+class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     serializer_class = PropertySerializer
     _organization = None
+
+    @action(detail=False, filter_backends=[PropertyViewFilterBackend])
+    def search(self, request):
+        """
+        Filters the property views accessible to the user.
+        This is different from the properties/filter API because of the available
+        filtering parameters and because this view does not use list views for rendering
+        """
+        # here be dragons
+        org_id = self.get_organization(self.request)
+        qs = PropertyView.objects.filter(property__organization_id=org_id).order_by('-state__id')
+        # this is the entrypoint to the filtering backend
+        # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
+        qs = self.filter_queryset(qs)
+        # using list-comprehension here instead of Serializer(qs, many=True) b/c
+        # it was not properly serializing the objects with that method. No idea why
+        return JsonResponse([PropertyViewAsStateSerializer(x).data for x in qs.all()], safe=False)
 
     def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
