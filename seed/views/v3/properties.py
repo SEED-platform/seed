@@ -127,6 +127,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     serializer_class = PropertySerializer
     _organization = None
 
+    # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
+    queryset = PropertyView.objects.none()
+
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
         """
