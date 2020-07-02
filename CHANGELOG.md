@@ -53,17 +53,19 @@ Date Range: 12/21/19 - 03/27/20
 - Fixed [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
 - Fixed [#2139]( https://github.com/SEED-platform/seed/issues/2139 ), Missing reverse match for password reset
 
+# SEED Version 2.7.0-patch1
 
+- Fixed [#2202]( https://github.com/SEED-platform/seed/issues/2202 ), Organization's DQ Rules can be inadvertently deleted
 
-# SEED Version 2.7.0-Beta
+# SEED Version 2.7.0
 
-SEED Version 2.7.0-Beta includes several significant updates that need to be thoroughly tested on production data
+SEED Version 2.7.0 includes several significant updates that need to be thoroughly tested on production data
 before being deployed. The most notable changes:
 
 - User can define which fields to match/merge/pair/link
-- Properties and Tax Lots are not linked across multiple years or compliance cycles
+- Properties and Tax Lots are now linked across multiple years or compliance cycles
 - Users can define mapping profiles to save/recall mappings easier
-- 55 closed issues/new features
+- 57 closed issues/new features
 
 Date Range: 09/30/19 - 12/20/19
 
