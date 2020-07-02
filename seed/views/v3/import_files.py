@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
@@ -27,8 +27,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
+from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
                          DATA_STATE_MATCHING, MERGE_STATE_MERGED,
@@ -160,6 +159,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             'import_file': f,
         })
 
+    @swagger_auto_schema_org_query_param
+    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['GET'])
@@ -167,8 +168,13 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Retrieves the first five rows of an ImportFile.
         """
-        import_file = ImportFile.objects.get(pk=pk)
-        if import_file is None:
+        org_id = request.query_params.get('organization_id', None)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
@@ -190,6 +196,8 @@ class ImportFileViewSet(viewsets.ViewSet):
             'first_five_rows': convert_first_five_rows_to_list(header, data)
         })
 
+    @swagger_auto_schema_org_query_param
+    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
     @action(detail=True, methods=['GET'])
@@ -197,7 +205,18 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Retrieves a list of all column names from an ImportFile.
         """
-        import_file = ImportFile.objects.get(pk=pk)
+        org_id = request.query_params.get('organization_id', None)
+
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
         return JsonResponse({
             'status': 'success',
             'raw_columns': import_file.first_row_columns
@@ -213,16 +232,25 @@ class ImportFileViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     @action(detail=True, methods=['POST'], url_path='mapping_results')
     def mapping_results(self, request, pk=None):
         """
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         """
         import_file_id = pk
-        org_id = request.query_params.get('organization_id', False)
+        org_id = request.query_params.get('organization_id', None)
 
-        # get the field names that were in the mapping
-        import_file = ImportFile.objects.get(id=import_file_id)
+        try:
+            # get the field names that were in the mapping
+            import_file = ImportFile.objects.get(
+                pk=import_file_id,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         # List of the only fields to show
         field_names = import_file.get_cached_mapped_columns
@@ -346,6 +374,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         return audit_entry[0]
 
     @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
         request_body=AutoSchemaHelper.schema_factory({
             'remap': 'boolean',
             'mark_as_done': 'boolean',
@@ -365,7 +396,13 @@ class ImportFileViewSet(viewsets.ViewSet):
 
         remap = body.get('remap', False)
         mark_as_done = body.get('mark_as_done', True)
-        if not ImportFile.objects.filter(pk=pk).exists():
+
+        org_id = request.query_params.get('organization_id', None)
+        import_file = ImportFile.objects.filter(
+            pk=pk,
+            import_record__super_organization_id=org_id
+        )
+        if not import_file.exists():
             return {
                 'status': 'error',
                 'message': 'ImportFile {} does not exist'.format(pk)
@@ -374,6 +411,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         # return remap_data(import_file_id)
         return JsonResponse(map_data(pk, remap, mark_as_done))
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -383,22 +421,26 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
+        org_id = request.query_params.get('organization_id', None)
+
         try:
-            task_geocode_buildings(pk)
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            task_geocode_buildings(import_file.pk)
         except MapQuestAPIKeyError:
             result = JsonResponse({
                 'status': 'error',
                 'message': 'MapQuest API key may be invalid or at its limit.'
             }, status=status.HTTP_403_FORBIDDEN)
             return result
-
-        try:
-            import_file = ImportFile.objects.get(pk=pk)
-        except ImportFile.DoesNotExist:
-            return {
-                'status': 'error',
-                'message': 'ImportFile {} does not exist'.format(pk)
-            }
 
         # if the file is BuildingSync, don't do the merging, but instead finish
         # creating it's associated models (scenarios, meters, etc)
@@ -417,15 +459,26 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
-        organization = Organization.objects.get(pk=request.query_params['organization_id'])
+        org_id = request.query_params.get('organization_id', None)
 
-        return_value = do_checks(organization.id, None, None, pk)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return_value = do_checks(org_id, None, None, import_file.pk)
         # step 5: create a new model instance
         return JsonResponse({
             'progress_key': return_value['progress_key'],
             'progress': return_value,
         })
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -435,14 +488,19 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to call BuildingSync's use case validation
         tool.
         """
-        import_file_id = pk
-        if not import_file_id:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'must include pk of import_file to validate'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        org_id = request.query_params.get('organization_id', None)
 
-        return task_validate_use_cases(import_file_id)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return task_validate_use_cases(import_file.pk)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -469,6 +527,18 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass file_id of file to save'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        org_id = request.query_params.get('organization_id', None)
+
+        try:
+            import_file = ImportFile.objects.get(
+                pk=import_file_id,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
         cycle_id = body.get('cycle_id')
         if not cycle_id:
             return JsonResponse({
@@ -486,7 +556,6 @@ class ImportFileViewSet(viewsets.ViewSet):
             cycle = Cycle.objects.get(id=cycle_id)
             if cycle:
                 # assign the cycle id to the import file object
-                import_file = ImportFile.objects.get(id=import_file_id)
                 import_file.cycle = cycle
                 import_file.save()
             else:
@@ -495,8 +564,9 @@ class ImportFileViewSet(viewsets.ViewSet):
                     'message': 'cycle_id was invalid'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-        return JsonResponse(task_save_raw(import_file_id))
+        return JsonResponse(task_save_raw(import_file.id))
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -512,8 +582,13 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass import_file_id'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        org_id = request.query_params.get('organization_id', None)
+
         try:
-            import_file = ImportFile.objects.get(pk=import_file_id)
+            import_file = ImportFile.objects.get(
+                pk=import_file_id,
+                import_record__super_organization_id=org_id
+            )
         except ImportFile.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
@@ -530,6 +605,7 @@ class ImportFileViewSet(viewsets.ViewSet):
             }
         )
 
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -539,7 +615,17 @@ class ImportFileViewSet(viewsets.ViewSet):
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
         """
-        import_file = ImportFile.objects.get(pk=pk)
+        org_id = request.query_params.get('organization_id', None)
+
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         # property views associated with this imported file (including merges)
         properties_new = []
@@ -678,7 +764,6 @@ class ImportFileViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @permission_classes((SEEDOrgPermissions,))
     @action(detail=True, methods=['GET'])
     def mapping_suggestions(self, request, pk):
         """
@@ -698,10 +783,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         # dynamically match columns based on the names and not the db id (or support many-to-many).
         # parent_org = organization.get_parent()
 
-        import_file = ImportFile.objects.get(
-            pk=pk,
-            import_record__super_organization_id=organization.pk
-        )
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=organization.pk
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get a list of the database fields in a list, these are the db columns and the extra_data columns
         property_columns = Column.retrieve_mapping_columns(organization.pk, 'property')
@@ -764,14 +854,21 @@ class ImportFileViewSet(viewsets.ViewSet):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @permission_classes((SEEDOrgPermissions,))
     @has_perm_class('requires_member')
     def destroy(self, request, pk):
         """
         Deletes an import file
         """
         organization_id = int(request.query_params.get('organization_id', None))
-        import_file = ImportFile.objects.get(pk=pk)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=organization_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         # check if the import record exists for the file and organization
         d = ImportRecord.objects.filter(
@@ -809,11 +906,26 @@ class ImportFileViewSet(viewsets.ViewSet):
         org_id = request.query_params.get('organization_id')
         view_id = request.query_params.get('view_id')
 
-        import_file = ImportFile.objects.get(pk=pk)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
         parser = reader.GreenButtonParser(import_file.local_file)
         raw_meter_data = list(parser.data)
 
-        property_id = PropertyView.objects.get(pk=view_id).property_id
+        try:
+            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+        except PropertyView.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find property with pk=' + str(
+                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
+
         meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
 
         result = {}
@@ -838,7 +950,16 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         org_id = request.query_params.get('organization_id')
 
-        import_file = ImportFile.objects.get(pk=pk)
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
         parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
         raw_meter_data = list(parser.data)
 
