@@ -64,6 +64,11 @@ def get_org_id(request):
                 org_id = get_org_or_id(data)
         except ValueError:
             org_id = None
+
+    # Handle cases where the Org ID is nested as a path field that shows up in the kwargs
+    if org_id is None:
+        org_id = request.parser_context.get('kwargs', {}).get('nested_organization_id')
+
     return org_id
 
 
