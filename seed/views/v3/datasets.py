@@ -33,6 +33,7 @@ class DatasetViewSet(viewsets.ViewSet):
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
     def list(self, request):
         """
         Retrieves all datasets for the user's organization.
@@ -101,6 +102,7 @@ class DatasetViewSet(viewsets.ViewSet):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     def retrieve(self, request, pk=None):
         """
             Retrieves a dataset (ImportRecord).
