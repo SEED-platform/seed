@@ -14,7 +14,11 @@ from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
+from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
+from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
+from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
+from seed.views.v3.green_assessments import GreenAssessmentViewSet
 from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.labels import LabelViewSet
@@ -26,6 +30,7 @@ from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.progress import ProgressViewSet
 from seed.views.v3.properties import PropertyViewSet
+from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
@@ -40,7 +45,11 @@ api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, 
 api_v3_router.register(r'columns', ColumnViewSet, base_name='columns')
 api_v3_router.register(r'cycles', CycleViewSet, base_name='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, base_name='datasets')
+api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, base_name="properties")
 api_v3_router.register(r'geocode', GeocodeViewSet, base_name='geocode')
+api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, base_name="green_assessment_properties")
+api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, base_name="green_assessment_urls")
+api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, base_name="green_assessments")
 api_v3_router.register(r'labels', LabelViewSet, base_name='labels')
 api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, base_name='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, base_name='import_files')
@@ -50,6 +59,7 @@ api_v3_router.register(r'organizations', OrganizationViewSet, base_name='organiz
 api_v3_router.register(r'portfolio_manager', PortfolioManagerViewSet, base_name="portfolio_manager")
 api_v3_router.register(r'progress', ProgressViewSet, base_name="progress")
 api_v3_router.register(r'properties', PropertyViewSet, base_name='properties')
+api_v3_router.register(r'property_states', PropertyStateViewSet, base_name="property_states")
 api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, base_name="tax_lot_properties")
 api_v3_router.register(r'taxlots', TaxlotViewSet, base_name='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, base_name='ubid')
