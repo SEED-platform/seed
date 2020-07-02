@@ -98,6 +98,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
@@ -154,6 +155,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
