@@ -102,7 +102,7 @@ class DatasetViewSet(viewsets.ViewSet):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('can_view_data')
     def retrieve(self, request, pk=None):
         """
             Retrieves a dataset (ImportRecord).

@@ -854,7 +854,7 @@ class ImportFileViewSet(viewsets.ViewSet):
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('can_modify_data')
     def destroy(self, request, pk):
         """
         Deletes an import file
