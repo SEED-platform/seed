@@ -15,6 +15,7 @@ from rest_framework.mixins import ListModelMixin
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.serializers.rules import RuleSerializer
 from seed.utils.api import api_endpoint_class
@@ -45,6 +46,7 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     serializer_class = RuleSerializer
     model = Rule
     pagination_class = None
+    permission_classes = (SEEDOrgPermissions,)
 
     def get_queryset(self):
         # Handle the anonymous case (e.g. Swagger page load)
