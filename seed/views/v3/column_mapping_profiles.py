@@ -7,6 +7,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework.decorators import action
 from seed.lib.mcm import mapper
+from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
     Column,
     ColumnMappingPreset,
@@ -30,6 +31,9 @@ mappings_description = (
 
 
 class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
+    permission_classes = (SEEDOrgPermissions,)
+    # req by SEEDOrgPermissions, but currently not used by any methods.
+    queryset = ColumnMappingPreset.objects.none()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(
