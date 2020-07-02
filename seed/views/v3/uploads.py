@@ -103,10 +103,13 @@ class UploadViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-
+        org_id = request.query_params.get('organization_id', None)
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
-            record = ImportRecord.objects.get(pk=import_record_pk)
+            record = ImportRecord.objects.get(
+                pk=import_record_pk,
+                super_organization_id=org_id
+            )
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)
@@ -329,9 +332,13 @@ class UploadViewSet(viewsets.ViewSet):
                 pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)
+        org_id = request.query_params.get('organization_id', None)
         import_record_pk = request.data['import_record_id']
         try:
-            record = ImportRecord.objects.get(pk=import_record_pk)
+            record = ImportRecord.objects.get(
+                pk=import_record_pk,
+                super_organization_id=org_id
+            )
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
             os.unlink(path)

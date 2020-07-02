@@ -303,6 +303,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return get_labels(request, labels, super_organization, 'property_view')
 
     @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'interval': 'string',
@@ -324,16 +325,20 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         body = dict(request.data)
         interval = body['interval']
         excluded_meter_ids = body['excluded_meter_ids']
+        org_id = request.query_params.get('organization_id', None)
 
-        property_view = PropertyView.objects.get(pk=pk)
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
         property_id = property_view.property.id
-        org_id = property_view.cycle.organization_id
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
 
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
 
         return exporter.readings_and_column_defs(interval)
 
+    @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
@@ -341,7 +346,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Retrieves meters for the property
         """
-        property_view = PropertyView.objects.get(pk=pk)
+        org_id = request.query_params.get('organization_id', None)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
         property_id = property_view.property.id
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
         energy_types = dict(Meter.ENERGY_TYPES)
@@ -489,6 +499,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return self._get_filtered_results(request, profile_id=profile_id)
 
     @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
         request_body=AutoSchemaHelper.schema_factory(
             {
                 'property_view_ids': ['integer']
@@ -500,15 +511,26 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
         """
+        org_id = request.query_params.get('organization_id', None)
         property_view_ids = request.data.get('property_view_ids', [])
         property_views = PropertyView.objects.filter(
-            id__in=property_view_ids
+            id__in=property_view_ids,
+            cycle__organization_id=org_id
         )
+
+        # Check that property_view_ids given are all contained within given org.
+        if (property_views.count() != len(property_view_ids)) or len(property_view_ids) == 0:
+            return {
+                'status': 'error',
+                'message': 'Cannot check meters for given records.'
+            }
+
         return Meter.objects.filter(property_id__in=Subquery(property_views.values('property_id'))).exists()
 
     @swagger_auto_schema(
@@ -530,12 +552,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         new record through a match and merge round within it's current Cycle.
         """
         body = request.data
+        organization_id = int(request.query_params.get('organization_id', None))
 
         property_view_ids = body.get('property_view_ids', [])
         property_state_ids = PropertyView.objects.filter(
-            id__in=property_view_ids
+            id__in=property_view_ids,
+            cycle__organization_id=organization_id
         ).values_list('state_id', flat=True)
-        organization_id = int(request.query_params.get('organization_id', None))
+
+        if len(property_state_ids) != len(property_view_ids):
+            return {
+                'status': 'error',
+                'message': 'All records not found.'
+            }
 
         # Check the number of state_ids to merge
         if len(property_state_ids) < 2:
@@ -773,7 +802,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, link_count, view_id = match_merge_link(pk, 'PropertyState')
+        org_id = request.query_params.get('organization_id', None)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
         result = {
             'view_id': view_id,
@@ -848,9 +883,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Batch delete several properties
         """
+        org_id = request.query_params.get('organization_id', None)
+
         property_view_ids = request.data.get('property_view_ids', [])
         property_states = PropertyView.objects.filter(
-            id__in=property_view_ids
+            id__in=property_view_ids,
+            cycle__organization_id=org_id
         )
         resp = PropertyState.objects.filter(pk__in=Subquery(property_states.values('id'))).delete()
 
@@ -915,6 +953,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
     def retrieve(self, request, pk=None):
         """
         Get property details
@@ -949,6 +988,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge

@@ -28,7 +28,7 @@ from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
                                       TaxLotViewSerializer,
                                       UpdateTaxLotPayloadSerializer)
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_taxlots
@@ -313,12 +313,19 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         new record through a match and merge round within it's current Cycle.
         """
         body = request.data
+        organization_id = int(request.query_params.get('organization_id', None))
 
         taxlot_view_ids = body.get('taxlot_view_ids', [])
         taxlot_state_ids = TaxLotView.objects.filter(
-            id__in=taxlot_view_ids
+            id__in=taxlot_view_ids,
+            cycle__organization_id=organization_id
         ).values_list('state_id', flat=True)
-        organization_id = int(request.query_params.get('organization_id', None))
+
+        if len(taxlot_state_ids) != len(taxlot_view_ids):
+            return {
+                'status': 'error',
+                'message': 'All records not found.'
+            }
 
         # Check the number of taxlot_state_ids to merge
         if len(taxlot_state_ids) < 2:
@@ -544,7 +551,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        merge_count, link_count, view_id = match_merge_link(pk, 'TaxLotState')
+        org_id = request.query_params.get('organization_id', None)
+
+        taxlot_view = TaxLotView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        merge_count, link_count, view_id = match_merge_link(taxlot_view.pk, 'TaxLotState')
 
         result = {
             'view_id': view_id,
@@ -618,9 +631,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Batch delete several tax lots
         """
+        org_id = request.query_params.get('organization_id', None)
+
         taxlot_view_ids = request.data.get('taxlot_view_ids', [])
         taxlot_state_ids = TaxLotView.objects.filter(
-            id__in=taxlot_view_ids
+            id__in=taxlot_view_ids,
+            cycle__organization_id=org_id
         ).values_list('state_id', flat=True)
         resp = TaxLotState.objects.filter(pk__in=Subquery(taxlot_state_ids)).delete()
 
@@ -678,11 +694,10 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()]
-    )
+    @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_view_data')
     def retrieve(self, request, pk):
         """
         Get taxlot details
@@ -708,6 +723,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     )
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     def update(self, request, pk):
         """
         Update a taxlot and run the updated record through a match and merge

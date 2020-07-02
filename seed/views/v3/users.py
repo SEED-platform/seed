@@ -503,18 +503,18 @@ class UserViewSet(viewsets.ViewSet):
         Checks the auth for a given action, if user is the owner of the parent
         org then True is returned for each action
         """
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
+
         actions, org, error, message = self._parse_is_authenticated_params(request)
         if error:
             return JsonResponse({
                 'status': 'error',
                 'message': message
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        ok, content = self.validate_request_user(pk, request)
-        if ok:
-            user = content
-        else:
-            return content
 
         # If the only action requested is 'requires_superuser' no need to check an org affiliation
         if len(actions) == 1 and actions[0] == 'requires_superuser':
@@ -623,6 +623,7 @@ class UserViewSet(viewsets.ViewSet):
         user.save()
         return {'status': 'success'}
 
+    @has_perm_class('requires_superuser')
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):
