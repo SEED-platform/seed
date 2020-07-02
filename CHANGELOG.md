@@ -1,3 +1,7 @@
+# SEED Version 2.7.0-patch1
+
+- Fixed [#2202]( https://github.com/SEED-platform/seed/issues/2202 ), Organization's DQ Rules can be inadvertently deleted
+
 # SEED Version 2.7.0
 
 SEED Version 2.7.0 includes several significant updates that need to be thoroughly tested on production data
@@ -61,11 +65,6 @@ Closed Issues and Features:
 - Fixed [#1913]( https://github.com/SEED-platform/seed/issues/1913 ), Add Notes info to export
 - Fixed [#1713]( https://github.com/SEED-platform/seed/issues/1713 ), Return progress status immediately when uploading large files
 
-The item(s) below are patched applied to 2.7.0-Beta
-- Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
-- Update ESPM connection to support latest update.
-- Fixed [#2119]( https://github.com/SEED-platform/seed/issues/2119 ), Re-enable created and updated fields for master records on the front end
-
 # SEED Version 2.6.1-Patch1
 
 - Fixed [#2076]( https://github.com/SEED-platform/seed/issues/2076 ), ESPM import no longer works due to ESPM website updates
@@ -74,6 +73,7 @@ The item(s) below are patched applied to 2.7.0-Beta
 
 - This includes the patches from 2.6.0-patch0 since the patches were not complete until after the release of 2.6.1.
 - Fixed [#2039]( https://github.com/SEED-platform/seed/issues/2039 ), Portfolio Manager Login URL Changed
+- Fixed [#2058]( https://github.com/SEED-platform/seed/issues/2058 ), Portfolio Manager URL Changed (Flapping Issue)
 
 # SEED Version 2.6.1
 
