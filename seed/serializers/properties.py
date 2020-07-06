@@ -230,11 +230,11 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 
     # support naive datetime objects
     # support naive datetime objects
-    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
+    generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
+    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
 
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
