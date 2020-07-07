@@ -786,11 +786,11 @@ class DataQualityCheck(models.Model):
                         self.add_result_dimension_error(row.id, rule, display_name, value)
                         continue
 
-                    # Check for mandatory label for valid data:
+                    # Check min and max values for valid data:
                     try:
                         if rule.minimum_valid(value) and rule.maximum_valid(value):
                             if rule.severity == Rule.SEVERITY_VALID:
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                                label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
                     except MissingLabelError:
                         self.add_result_missing_label(row.id, rule, display_name, value)
                         continue
@@ -1044,7 +1044,7 @@ class DataQualityCheck(models.Model):
             'condition': rule.condition,
         })
 
-    def update_status_label(self, label_class, rule, linked_id, row_id):
+    def update_status_label(self, label_class, rule, linked_id, row_id, add_to_results=True):
         """
 
         :param label_class: statuslabel object, either propertyview label or taxlotview label
@@ -1082,7 +1082,8 @@ class DataQualityCheck(models.Model):
                         )
                     )
 
-            self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
+            if add_to_results:
+                self.results[row_id]['data_quality_results'][-1]['label'] = rule.status_label.name
 
             return True
 
