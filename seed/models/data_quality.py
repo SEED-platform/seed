@@ -48,10 +48,6 @@ class UnitMismatchError(Exception):
     pass
 
 
-class MissingLabelError(Exception):
-    pass
-
-
 def format_pint_violation(rule, source_value):
     """
     Format a pint min, max violation for human readability.
@@ -787,13 +783,10 @@ class DataQualityCheck(models.Model):
                         continue
 
                     # Check min and max values for valid data:
-                    try:
-                        if rule.minimum_valid(value) and rule.maximum_valid(value):
-                            if rule.severity == Rule.SEVERITY_VALID:
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
-                    except MissingLabelError:
-                        self.add_result_missing_label(row.id, rule, display_name, value)
-                        continue
+                    if rule.minimum_valid(value) and rule.maximum_valid(value):
+                        if rule.severity == Rule.SEVERITY_VALID:
+                            label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
+
 
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
@@ -988,19 +981,6 @@ class DataQualityCheck(models.Model):
             'severity': rule.get_severity_display(),
             'condition': rule.condition,
         })
-
-    def add_result_missing_label(self, row_id, rule, display_name, value):
-        if rule.severity == Rule.SEVERITY_VALID:
-            self.results[row_id]['data_quality_results'].append({
-                'field': rule.field,
-                'formatted_field': rule.field,
-                'value': value,
-                'table_name': rule.table_name,
-                'message': rule.status_label + ' is missing',
-                'detailed_message': rule.status_label + ' is required and missing',
-                'severity': rule.get_severity_display(),
-                'condition': rule.condition,
-            })
 
     def add_result_missing_and_none(self, row_id, rule, display_name, value):
         self.results[row_id]['data_quality_results'].append({
