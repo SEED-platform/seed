@@ -787,7 +787,6 @@ class DataQualityCheck(models.Model):
                         if rule.severity == Rule.SEVERITY_VALID:
                             label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
 
-
                 if not label_applied and rule.status_label_id in model_labels['label_ids']:
                     self.remove_status_label(label, rule, linked_id)
 
