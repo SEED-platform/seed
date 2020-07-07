@@ -174,8 +174,7 @@
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <!-- <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $} -->
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="false">{$:: 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated && !error_string"></i>
                 </button>
             </div>
