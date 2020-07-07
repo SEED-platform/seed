@@ -25,7 +25,7 @@
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated && !error_string"></i>
                 </button>
             </div>
@@ -38,6 +38,14 @@
             Restore Default Rules: reset only default rules.<br>
             Reset All Rules: delete all rules and reinitialize the default set of rules.</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
+
+            <div class="alert alert-danger" ng-show="invalid_conditions.length > 0" translate>
+                Fields that have a "Must Contain" or "Must Not Contain" Condition Check rule cannot have a "Range" Condition Check rule.
+            </div>
+            <div class="alert alert-danger" ng-show="invalid_data_types.length > 0" translate>
+                Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks.
+            </div>
+
             <div class="data-quality-tab-container">
                 <ul class="nav nav-tabs" style="margin-bottom:1px;">
                     <li ui-sref-active="active" heading="{$:: 'View by Property' | translate $}">
@@ -72,17 +80,39 @@
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.condition" ng-options="condition.id as condition.label for condition in ::conditions" ng-change="rule.rule_type = 1; change_condition(rule)"></select>
+                                <select class="form-control input-sm" ng-model="rule.condition"
+                                        ng-options="condition.id as condition.label for condition in ::conditions"
+                                        ng-change="rule.rule_type = 1; change_condition(rule, ruleGroups[inventory_type][field], field);"
+                                        ng-class="{'border-red red': invalid_conditions.includes(field)}"></select>
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-model="rule.field" ng-options="col.column_name as col.displayName for col in ::columns" ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)" title="{$ rule.field $}" focus-if="{$ rule.autofocus || 'false' $}"></select>
+                                <select class="form-control input-sm"
+                                        ng-model="rule.field"
+                                        ng-options="col.column_name as col.displayName for col in ::columns"
+                                        ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)"
+                                        title="{$ rule.field $}"
+                                        focus-if="{$ rule.autofocus || 'false' $}"></select>
                             </td>
                             <td ng-if="rule.condition === 'range'">
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-options="type.id as type.label for type in ::data_types[1]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                                <select class="form-control input-sm"
+                                        ng-model="rule.data_type"
+                                        ng-options="type.id as type.label for type in ::data_types[1]"
+                                        ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"
+                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
                             </td>
                             <td ng-if="rule.condition !== 'range'" >
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['include', 'exclude'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[0]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
-                                <select class="form-control input-sm" ng-model="rule.data_type" ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)" ng-options="type.id as type.label for type in ::data_types[2]" ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"></select>
+                                <select class="form-control input-sm"
+                                        ng-model="rule.data_type"
+                                        ng-if="_.includes(['include', 'exclude'], rule.condition)"
+                                        ng-options="type.id as type.label for type in ::data_types[0]"
+                                        ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"
+                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
+                                <select class="form-control input-sm"
+                                        ng-model="rule.data_type"
+                                        ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)"
+                                        ng-options="type.id as type.label for type in ::data_types[2]"
+                                        ng-change="rule.rule_type = 1; change_data_type(rule, '{$ rule.data_type $}')"
+                                        ng-class="{'border-red red': invalid_data_types.includes(field)}"></select>
                             </td>
                             <td ng-if="rule.data_type === 'string'" colspan="2">
                                 <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-if="_.includes(['include', 'exclude', 'required', 'not_null', '', null, 'None'], rule.condition)" ng-change="rule.rule_type = 1"
@@ -144,7 +174,8 @@
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
-                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified()">{$:: 'Save Changes' | translate $}
+                <!-- <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="!isModified() || invalid_conditions.length > 0 || invalid_data_types.length > 0">{$:: 'Save Changes' | translate $} -->
+                <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="false">{$:: 'Save Changes' | translate $}
                     <i class="fa fa-check" ng-show="rules_updated && !error_string"></i>
                 </button>
             </div>
