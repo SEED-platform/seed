@@ -153,23 +153,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.isModified = function () {
         return modified_service.isModified();
       };
-      var originalRules = angular.copy(data_quality_rules_payload.rules);
-      $scope.original = originalRules;
+
       $scope.change_rules = function () {
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
-        $scope.setModified();
-      };
-      $scope.setModified = function () {
-        var cleanRules = angular.copy($scope.ruleGroups);
-        _.each(originalRules, function (rules, index) {
-          Object.keys(rules).forEach(function (key) {
-            _.reduce(cleanRules[index][rules[key].field], function (result, value) {
-              return !_.isEqual(value, rules[key]) && modified_service.setModified();
-            }, []);
-          });
-        });
+        modified_service.setModified();
       };
 
       // Restores the default rules
@@ -447,10 +436,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       $scope.selectAll = function () {
-        $scope.rules_updated = false;
-        $scope.rules_reset = false;
-        $scope.defaults_restored = false;
-        $scope.setModified();
+        $scope.change_rules();
+
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {
