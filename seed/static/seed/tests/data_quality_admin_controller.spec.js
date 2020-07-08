@@ -14,6 +14,7 @@ describe('controller: data_quality_admin_controller', function () {
     inject(function (_$httpBackend_) {
       $httpBackend = _$httpBackend_;
       $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      $httpBackend.whenGET(/^\/static\/seed\/partials\/modified_modal\.html/).respond(200, {});
     });
     inject(function ($controller, $rootScope/*, $q*/) {
       controller = $controller;
