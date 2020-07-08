@@ -154,7 +154,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         return modified_service.isModified();
       };
 
-      $scope.change_rules = function () {
+      $scope.rules_changed = function () {
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
@@ -381,7 +381,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property += 1;
         else $scope.rule_count_taxlot += 1;
       };
@@ -412,7 +412,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
           delete $scope.ruleGroups[$scope.inventory_type][rule.field];
         } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
         else $scope.rule_count_taxlot -= 1;
       };
@@ -436,7 +436,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       $scope.selectAll = function () {
-        $scope.change_rules();
+        $scope.rules_changed();
 
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
