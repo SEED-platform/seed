@@ -95,7 +95,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Reduce labels to only records found in the current cycle
       $scope.selected_labels = [];
-      updateApplicableLabels();
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
