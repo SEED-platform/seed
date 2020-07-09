@@ -203,12 +203,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
         });
         // Ensure that no previously-applied labels remain
-        var new_labels = _.filter($scope.selected_labels, function (label) {
-          return _.includes($scope.labels, label.id);
+        // Filter on $scope.labels to refresh is_applied
+        $scope.selected_labels = _.filter($scope.labels, function (label) {
+          return _.find($scope.selected_labels, ['id', label.id]);
         });
-        if ($scope.selected_labels.length !== new_labels.length) {
-          $scope.selected_labels = new_labels;
-        }
       }
 
       var filterUsingLabels = function () {
