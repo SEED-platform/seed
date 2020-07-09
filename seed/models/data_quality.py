@@ -726,7 +726,7 @@ class DataQualityCheck(models.Model):
 
             # get the status_labels for the linked properties and tax lots
             linked_id = model_labels['linked_id']
-            # import pdb; pdb.set_trace()
+
             if (rule.table_name, rule.field) not in self.column_lookup:
                 # If the rule is not in the column lookup, then it may have been a required
                 # field that wasn't mapped
