@@ -7,7 +7,7 @@
 from django.forms.models import model_to_dict
 from quantityfield import ureg
 
-from seed.models import PropertyView
+from seed.models import Column, PropertyView
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
@@ -130,6 +130,98 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
                     self.assertEqual(violation['detailed_message'], 'Site EUI [525600] > 1000')
 
         self.assertEqual(error_found, True)
+    def test_check_example_with_extra_data_fields(self):
+        """Trigger 5 ED rules - 2 default and 3 custom rules - one of each condition type"""
+        ps_data = {
+            'no_default_data': True,
+            'custom_id_1': 'abcd',
+            'extra_data': {
+                'range_and_out_of_range': 1,
+                'include_and_doesnt': 'aaaaa',
+                'exclude_and_does': 'foo',
+            }
+        }
+        ps = self.property_state_factory.get_property_state(None, **ps_data)
+
+        # Create 5 column objects that correspond to the 3 ED rules since rules don't get
+        # checked for anything other than REQUIRED if they don't have a corresponding col object
+        column_names = [
+            'required_and_missing',
+            'not_null_and_missing',
+            'range_and_out_of_range',
+            'include_and_doesnt',
+            'exclude_and_does'
+        ]
+        for col_name in column_names:
+            Column.objects.create(
+                column_name=col_name,
+                table_name='PropertyState',
+                organization=self.org,
+                is_extra_data=True,
+            )
+
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+        rule_info = {
+            'field': 'required_and_missing',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_REQUIRED,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': None,
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+        }
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'not_null_and_missing'
+        rule_info['condition'] = Rule.RULE_NOT_NULL
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'range_and_out_of_range'
+        rule_info['condition'] = Rule.RULE_RANGE
+        rule_info['min'] = 100
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'include_and_doesnt'
+        rule_info['condition'] = Rule.RULE_INCLUDE
+        rule_info['text_match'] = 'zzzzzzzzz'
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'exclude_and_does'
+        rule_info['condition'] = Rule.RULE_EXCLUDE
+        rule_info['text_match'] = 'foo'
+        dq.add_rule(rule_info)
+
+        # Run DQ check and test that each rule was triggered
+        dq.check_data(ps.__class__.__name__, [ps])
+        record_results = dq.results[ps.id]
+
+        violation_fields = []
+        for violation in record_results['data_quality_results']:
+            field = violation['field']
+
+            if field == 'required_and_missing':
+                self.assertEqual(violation['detailed_message'], 'required_and_missing is required but is None')
+            elif field == 'not_null_and_missing':
+                self.assertEqual(violation['detailed_message'], 'not_null_and_missing is null')
+            elif field == 'range_and_out_of_range':
+                self.assertEqual(violation['detailed_message'], 'range_and_out_of_range [1] < 100')
+            elif field == 'include_and_doesnt':
+                self.assertEqual(violation['detailed_message'], 'include_and_doesnt [aaaaa] does not contain "zzzzzzzzz"')
+            elif field == 'exclude_and_does':
+                self.assertEqual(violation['detailed_message'], 'exclude_and_does [foo] contains "foo"')
+            else:  # we should have hit one of the cases above
+                self.fail('invalid "field" provided')
+
+            violation_fields.append(field)
+
+        self.assertCountEqual(column_names, violation_fields)
 
     def test_check_property_state_example_data_with_labels(self):
         dq = DataQualityCheck.retrieve(self.org.id)
