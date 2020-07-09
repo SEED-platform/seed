@@ -95,16 +95,44 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         )
 
     def test_check_property_state_example_data(self):
-        dq = DataQualityCheck.retrieve(self.org.id)
+        """Trigger 5 rules - 2 default and 3 custom rules - one of each condition type"""
         ps_data = {
             'no_default_data': True,
             'custom_id_1': 'abcd',
-            'address_line_1': '742 Evergreen Terrace',
             'pm_property_id': 'PMID',
             'site_eui': 525600,
         }
         ps = self.property_state_factory.get_property_state(None, **ps_data)
 
+        # Add 3 additionals rule to default set
+        dq = DataQualityCheck.retrieve(self.org.id)
+        rule_info = {
+            'field': 'custom_id_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'zzzzzzzzz',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+        }
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'pm_property_id'
+        rule_info['condition'] = Rule.RULE_EXCLUDE
+        rule_info['text_match'] = 'PMID'
+        dq.add_rule(rule_info)
+
+        rule_info['field'] = 'address_line_2'
+        rule_info['condition'] = Rule.RULE_REQUIRED
+        dq.add_rule(rule_info)
+
+        # Run DQ check and test that each rule was triggered
         dq.check_data(ps.__class__.__name__, [ps])
 
         # {
@@ -112,24 +140,45 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         #           'id': 11,
         #           'custom_id_1': 'abcd',
         #           'pm_property_id': 'PMID',
-        #           'address_line_1': '742 Evergreen Terrace',
         #           'data_quality_results': [
         #               {
         #                  'severity': 'error', 'value': '525600', 'field': 'site_eui', 'table_name': 'PropertyState', 'message': 'Site EUI out of range', 'detailed_message': 'Site EUI [525600] > 1000', 'formatted_field': 'Site EUI'
+        #                  ...
         #               }
         #           ]
         #       }
-        error_found = False
-        for index, row in dq.results.items():
-            self.assertEqual(row['custom_id_1'], 'abcd')
-            self.assertEqual(row['pm_property_id'], 'PMID')
-            self.assertEqual(row['address_line_1'], '742 Evergreen Terrace')
-            for violation in row['data_quality_results']:
-                if violation['message'] == 'Site EUI out of range':
-                    error_found = True
-                    self.assertEqual(violation['detailed_message'], 'Site EUI [525600] > 1000')
+        record_results = dq.results[ps.id]
+        self.assertEqual(record_results['custom_id_1'], 'abcd')
+        self.assertEqual(record_results['pm_property_id'], 'PMID')
 
-        self.assertEqual(error_found, True)
+        violation_fields = []
+        for violation in record_results['data_quality_results']:
+            field = violation['field']
+
+            if field == 'address_line_1':
+                self.assertEqual(violation['detailed_message'], 'Address Line 1 is null')
+            elif field == 'address_line_2':
+                self.assertEqual(violation['detailed_message'], 'Address Line 2 is required but is None')
+            elif field == 'custom_id_1':
+                self.assertEqual(violation['detailed_message'], 'Custom ID 1 [abcd] does not contain "zzzzzzzzz"')
+            elif field == 'pm_property_id':
+                self.assertEqual(violation['detailed_message'], 'PM Property ID [PMID] contains "PMID"')
+            elif field == 'site_eui':
+                self.assertEqual(violation['detailed_message'], 'Site EUI [525600] > 1000')
+            else:  # we should have hit one of the cases above
+                self.fail('invalid "field" provided')
+
+            violation_fields.append(field)
+
+        expected_fields = [
+            'address_line_1',
+            'address_line_2',
+            'custom_id_1',
+            'pm_property_id',
+            'site_eui',
+        ]
+        self.assertCountEqual(expected_fields, violation_fields)
+
     def test_check_example_with_extra_data_fields(self):
         """Trigger 5 ED rules - 2 default and 3 custom rules - one of each condition type"""
         ps_data = {
