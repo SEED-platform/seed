@@ -106,8 +106,8 @@ class PropertyListSerializer(serializers.ListSerializer):
 
 class PropertySerializer(serializers.ModelSerializer):
     # The created and updated fields are in UTC time and need to be casted accordingly in this format
-    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
-    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc)
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
 
     class Meta:
         model = Property
