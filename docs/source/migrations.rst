@@ -54,7 +54,7 @@ Version 2.7.1
 
 **Important Note:**
 
-If upgrading from < 2.7.0 to >= 2.7.1 or greater you may encounter a failed migration with ``0118_match_merge_link_all_orgs``.  Run the following code manually to fully migrate:
+If upgrading from < 2.7.0 to >= 2.7.1 you may encounter a failed migration with ``0118_match_merge_link_all_orgs``.  This is expected if the database is several versions behind, and it effectively reorders migration 118 to run after all other migrations have completed to prepare your database to recognize properties and taxlots across multiple cycles.  Run the following code manually to fully migrate:
 
 #. ``./manage.py migrate --fake seed 0118_match_merge_link_all_orgs``
 
