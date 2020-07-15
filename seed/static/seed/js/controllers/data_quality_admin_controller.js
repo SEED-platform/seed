@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     '$state',
     '$stateParams',
     'columns',
+    'used_columns',
     'organization_payload',
     'data_quality_rules_payload',
     'auth_payload',
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $state,
       $stateParams,
       columns,
+      used_columns,
       organization_payload,
       data_quality_rules_payload,
       auth_payload,
@@ -97,6 +99,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       ];
 
       $scope.columns = columns;
+
+      $scope.check_if_column_used = function (col) {
+        var display = col.displayName;
+
+        if (!_.find(used_columns, ['id', col.id])) {
+          display += " **";
+        }
+
+        return display;
+      }
 
       // if (flippers.is_active('release:orig_columns')) {
       //   // db may return _orig columns; don't suggest them in the select

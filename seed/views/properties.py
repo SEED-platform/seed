@@ -8,6 +8,8 @@ All rights reserved.  # NOQA
 :author
 """
 
+import json
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
@@ -814,7 +816,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, 'property', only_used)
         organization = Organization.objects.get(pk=organization_id)
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
