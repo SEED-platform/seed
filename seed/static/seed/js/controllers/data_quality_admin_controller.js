@@ -100,7 +100,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.columns = _.map(angular.copy(columns), function (col) {
         if (!_.find(used_columns, ['id', col.id])) {
-          col.group = 'Unused Fields';
+          col.group = 'Not Mapped';
         } else {
           col.group = 'Mapped Fields';
         }
