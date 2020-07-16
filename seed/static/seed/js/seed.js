@@ -941,6 +941,26 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }],
+          used_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var organization_id = $stateParams.organization_id;
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns_for_org(organization_id, true).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                return columns;
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns_for_org(organization_id, true).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                return columns;
+              });
+            }
+          }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);

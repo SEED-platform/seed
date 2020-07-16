@@ -34,7 +34,7 @@
     <div class="section_content_container">
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <h3 translate>Modifying Data Quality Rules</h3>
-            <p ng-bind-html-unsafe>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
+            <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
             Restore Default Rules: reset only default rules.<br>
             Reset All Rules: delete all rules and reinitialize the default set of rules.</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
@@ -69,7 +69,7 @@
                             <th translate>Minimum</th>
                             <th translate>Maximum</th>
                             <th translate>Units</th>
-                            <th style="min-width: 100px; width: 100px;" translate>Severity Level</th>
+                            <th style="min-width: 110px; width: 110px;" translate>Severity Level</th>
                             <th translate>Label</th>
                             <th style="min-width: 54px; width: 54px;" translate>Delete</th>
                         </tr>
@@ -88,7 +88,7 @@
                             <td>
                                 <select class="form-control input-sm"
                                         ng-model="rule.field"
-                                        ng-options="col.column_name as col.displayName for col in ::columns"
+                                        ng-options="col.column_name as col.displayName group by col.group for col in ::columns | orderBy: 'group'"
                                         ng-change="rule.rule_type = 1; change_field(rule, '{$ rule.field $}', $index)"
                                         title="{$ rule.field $}"
                                         focus-if="{$ rule.autofocus || 'false' $}"></select>

@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     '$state',
     '$stateParams',
     'columns',
+    'used_columns',
     'organization_payload',
     'data_quality_rules_payload',
     'auth_payload',
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $state,
       $stateParams,
       columns,
+      used_columns,
       organization_payload,
       data_quality_rules_payload,
       auth_payload,
@@ -96,7 +98,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
       ];
 
-      $scope.columns = columns;
+      $scope.columns = _.map(angular.copy(columns), function (col) {
+        if (!_.find(used_columns, ['id', col.id])) {
+          col.group = 'Not Mapped';
+        } else {
+          col.group = 'Mapped Fields';
+        }
+        return col;
+      });
 
       // if (flippers.is_active('release:orig_columns')) {
       //   // db may return _orig columns; don't suggest them in the select
