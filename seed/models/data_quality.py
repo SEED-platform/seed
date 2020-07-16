@@ -692,103 +692,98 @@ class DataQualityCheck(models.Model):
                 #                                             len(model_labels['label_ids'])))
 
         for rule in rules:
-            # create an extra data flag for the rule
-            is_extra_data = rule.field in row.extra_data
+            value = None
 
-            # check if the field exists
-            if hasattr(row, rule.field) or is_extra_data:
-                value = None
+            label_applied = False
+            display_name = rule.field
 
-                label_applied = False
-                display_name = rule.field
+            if hasattr(row, rule.field):
+                value = getattr(row, rule.field)
+                # TODO cleanup after the cleaner is better able to handle fields with units on import
+                # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
+                if isinstance(value, ureg.Quantity) and rule.units == '':
+                    value = value.magnitude
+            else:  # rule is for extra_data
+                value = row.extra_data.get(rule.field, None)
 
-                if hasattr(row, rule.field):
-                    value = getattr(row, rule.field)
-                    # TODO cleanup after the cleaner is better able to handle fields with units on import
-                    # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
-                    if isinstance(value, ureg.Quantity) and rule.units == '':
-                        value = value.magnitude
-                elif is_extra_data:
-                    value = row.extra_data[rule.field]
+                if ' (Invalid Footprint)' in rule.field and value is not None:
+                    self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
+                    continue
 
-                    if ' (Invalid Footprint)' in rule.field:
-                        self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
-                        continue
+                try:
+                    value = rule.str_to_data_type(value)
+                except DataQualityTypeCastError:
+                    self.add_result_type_error(row.id, rule, display_name, value)
+                    continue
 
-                    try:
-                        value = rule.str_to_data_type(value)
-                    except DataQualityTypeCastError:
-                        self.add_result_type_error(row.id, rule, display_name, value)
-                        continue
+            # get the display name of the rule
+            if (rule.table_name, rule.field) in self.column_lookup:
+                display_name = self.column_lookup[(rule.table_name, rule.field)]
 
-                # get the display name of the rule
-                if (rule.table_name, rule.field) in self.column_lookup:
-                    display_name = self.column_lookup[(rule.table_name, rule.field)]
+            # get the status_labels for the linked properties and tax lots
+            linked_id = model_labels['linked_id']
 
-                # get the status_labels for the linked properties and tax lots
-                linked_id = model_labels['linked_id']
+            if (rule.table_name, rule.field) not in self.column_lookup:
+                # If the rule is not in the column lookup, then it may have been a required
+                # field that wasn't mapped
+                if rule.condition == Rule.RULE_REQUIRED:
+                    self.add_result_missing_req(row.id, rule, display_name, value)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+            elif value is None or value == '':
+                if rule.condition == Rule.RULE_REQUIRED:
+                    self.add_result_missing_and_none(row.id, rule, display_name, value)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                elif rule.condition == Rule.RULE_NOT_NULL:
+                    self.add_result_is_null(row.id, rule, display_name, value)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+            elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
+                if not rule.valid_text(value):
+                    self.add_result_string_error(row.id, rule, display_name, value)
+                    label_applied = self.update_status_label(label, rule, linked_id, row.id)
+            elif rule.condition == Rule.RULE_RANGE:
+                try:
+                    if not rule.minimum_valid(value):
+                        if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
+                            label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                except ComparisonError:
+                    s_min, s_max, s_value = rule.format_strings(value)
+                    self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
+                    continue
+                except DataQualityTypeCastError:
+                    s_min, s_max, s_value = rule.format_strings(value)
+                    self.add_result_type_error(row.id, rule, display_name, s_value)
+                    continue
+                except UnitMismatchError:
+                    self.add_result_dimension_error(row.id, rule, display_name, value)
+                    continue
 
-                if (rule.table_name, rule.field) not in self.column_lookup:
-                    # If the rule is not in the column lookup, then it may have been a required
-                    # field that wasn't mapped
-                    if rule.condition == Rule.RULE_REQUIRED:
-                        self.add_result_missing_req(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                elif value is None or value == '':
-                    if rule.condition == Rule.RULE_REQUIRED:
-                        self.add_result_missing_and_none(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    elif rule.condition == Rule.RULE_NOT_NULL:
-                        self.add_result_is_null(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                elif rule.condition == Rule.RULE_INCLUDE or rule.condition == Rule.RULE_EXCLUDE:
-                    if not rule.valid_text(value):
-                        self.add_result_string_error(row.id, rule, display_name, value)
-                        label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                elif rule.condition == Rule.RULE_RANGE:
-                    try:
-                        if not rule.minimum_valid(value):
-                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_min_error(row.id, rule, display_name, s_value, s_min)
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    except ComparisonError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_min)
-                        continue
-                    except DataQualityTypeCastError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_type_error(row.id, rule, display_name, s_value)
-                        continue
-                    except UnitMismatchError:
-                        self.add_result_dimension_error(row.id, rule, display_name, value)
-                        continue
+                try:
+                    if not rule.maximum_valid(value):
+                        if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
+                            s_min, s_max, s_value = rule.format_strings(value)
+                            self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
+                            label_applied = self.update_status_label(label, rule, linked_id, row.id)
+                except ComparisonError:
+                    s_min, s_max, s_value = rule.format_strings(value)
+                    self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
+                    continue
+                except DataQualityTypeCastError:
+                    s_min, s_max, s_value = rule.format_strings(value)
+                    self.add_result_type_error(row.id, rule, display_name, s_value)
+                    continue
+                except UnitMismatchError:
+                    self.add_result_dimension_error(row.id, rule, display_name, value)
+                    continue
 
-                    try:
-                        if not rule.maximum_valid(value):
-                            if rule.severity == Rule.SEVERITY_ERROR or rule.severity == Rule.SEVERITY_WARNING:
-                                s_min, s_max, s_value = rule.format_strings(value)
-                                self.add_result_max_error(row.id, rule, display_name, s_value, s_max)
-                                label_applied = self.update_status_label(label, rule, linked_id, row.id)
-                    except ComparisonError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_comparison_error(row.id, rule, display_name, s_value, s_max)
-                        continue
-                    except DataQualityTypeCastError:
-                        s_min, s_max, s_value = rule.format_strings(value)
-                        self.add_result_type_error(row.id, rule, display_name, s_value)
-                        continue
-                    except UnitMismatchError:
-                        self.add_result_dimension_error(row.id, rule, display_name, value)
-                        continue
+                # Check min and max values for valid data:
+                if rule.minimum_valid(value) and rule.maximum_valid(value):
+                    if rule.severity == Rule.SEVERITY_VALID:
+                        label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
 
-                    # Check min and max values for valid data:
-                    if rule.minimum_valid(value) and rule.maximum_valid(value):
-                        if rule.severity == Rule.SEVERITY_VALID:
-                            label_applied = self.update_status_label(label, rule, linked_id, row.id, False)
-
-                if not label_applied and rule.status_label_id in model_labels['label_ids']:
-                    self.remove_status_label(label, rule, linked_id)
+            if not label_applied and rule.status_label_id in model_labels['label_ids']:
+                self.remove_status_label(label, rule, linked_id)
 
     def save_to_cache(self, identifier):
         """
