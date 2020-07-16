@@ -98,17 +98,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         {id: 'kBtu/m**2/year', label: 'kBtu/m²/year'}
       ];
 
-      $scope.columns = columns;
-
-      $scope.check_if_column_used = function (col) {
-        var display = col.displayName;
-
+      $scope.columns = _.map(angular.copy(columns), function (col) {
         if (!_.find(used_columns, ['id', col.id])) {
-          display += " **";
+          col.group = 'Unused Fields';
+        } else {
+          col.group = 'Mapped Fields';
         }
-
-        return display;
-      }
+        return col;
+      });
 
       // if (flippers.is_active('release:orig_columns')) {
       //   // db may return _orig columns; don't suggest them in the select
