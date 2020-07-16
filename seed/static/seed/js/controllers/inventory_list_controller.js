@@ -95,7 +95,6 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Reduce labels to only records found in the current cycle
       $scope.selected_labels = [];
-      updateApplicableLabels();
 
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
@@ -203,12 +202,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
         });
         // Ensure that no previously-applied labels remain
-        var new_labels = _.filter($scope.selected_labels, function (label) {
-          return _.includes($scope.labels, label.id);
+        // Filter on $scope.labels to refresh is_applied
+        $scope.selected_labels = _.filter($scope.labels, function (label) {
+          return _.find($scope.selected_labels, ['id', label.id]);
         });
-        if ($scope.selected_labels.length !== new_labels.length) {
-          $scope.selected_labels = new_labels;
-        }
       }
 
       var filterUsingLabels = function () {
@@ -650,6 +647,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           updateApplicableLabels(current_labels);
+          filterUsingLabels();
         });
       };
 
