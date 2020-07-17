@@ -163,7 +163,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         return modified_service.isModified();
       };
 
-      $scope.rules_changed = function () {
+      $scope.rules_changed = function (rule) {
+        if (rule) rule.rule_type = 1;
+
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
