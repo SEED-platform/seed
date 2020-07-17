@@ -1,3 +1,17 @@
+# SEED Version 2.7.2
+
+SEED Version 2.7.2 includes the introduction of API v3. This new API version will
+enable users to "Try" v3 endpoints using the Swagger page as well as improve on and
+consolidate previous API versions.  Endpoints have been copied over from previous versions.
+Many were left as is - functionally remaining the same. Some were copied over and enhanced.
+Others were identified as no longer used or redundant; these are slated for deprecation
+and were not copied over at all.
+
+The current list of endpoints slated for deprecation can be found [here](https://docs.google.com/spreadsheets/d/16SrXFM9ypLs5KD0MLrhvttIFO40rTU74mS438XchhAg/edit?usp=sharing).
+Deprecation will occur with the deactivation of endpoints contained in API versions 2.1 and prior.
+The deprecation schedule will be released at a later date, but we recommend that users begin using API v3.
+For any questions or concerns, please reach out to the SEED team.
+
 # SEED Version 2.7.1
 
 Date Range: 12/21/19 - 03/27/20
