@@ -423,6 +423,9 @@ angular.module('BE.seed.controller.column_settings', [])
             },
             all_column_names: function () {
               return _.map($scope.columns, 'column_name');
+            },
+            org_id: function () {
+              return $scope.org.id;
             }
           }
         });
