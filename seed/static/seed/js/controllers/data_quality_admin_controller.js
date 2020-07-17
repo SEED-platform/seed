@@ -295,7 +295,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.validate_conditions = function (group, group_name) {
         var conditions = _.map(group, 'condition');
-        if (conditions.includes("range") && (conditions.includes("include") || conditions.includes("exclude"))) {
+        if (conditions.includes('range') && (conditions.includes('include') || conditions.includes('exclude'))) {
           $scope.invalid_conditions = _.union($scope.invalid_conditions, [group_name]);
         } else if ($scope.invalid_conditions.includes(group_name)) {
           _.pull($scope.invalid_conditions, group_name);
@@ -323,7 +323,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       // perform checks on load
-      _.forEach($scope.ruleGroups[$scope.inventory_type], function(group, group_name) {
+      _.forEach($scope.ruleGroups[$scope.inventory_type], function (group, group_name) {
         $scope.validate_data_types(group, group_name);
         $scope.validate_conditions(group, group_name);
       });

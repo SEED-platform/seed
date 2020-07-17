@@ -347,10 +347,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
               if (current_step === 2 || current_step === 13) {
                 // if importing BuildingSync, validate then save, otherwise just save
-                if (file.source_type === "BuildingSync Raw") {
-                  validate_use_cases_then_save(file.file_id, file.cycle_id)
+                if (file.source_type === 'BuildingSync Raw') {
+                  validate_use_cases_then_save(file.file_id, file.cycle_id);
                 } else {
-                  save_raw_assessed_data(file.file_id, file.cycle_id, false)
+                  save_raw_assessed_data(file.file_id, file.cycle_id, false);
                 }
               }
               // Portfolio Data
@@ -497,45 +497,45 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.uploader.status_message = 'validating data';
         $scope.uploader.progress = 0;
 
-        const successHandler = (progress_data) => {
-          $scope.uploader.complete = false
-          $scope.uploader.in_progress = true
+        var successHandler = function (progress_data) {
+          $scope.uploader.complete = false;
+          $scope.uploader.in_progress = true;
           $scope.uploader.status_message = 'validation complete; starting to save data';
           $scope.uploader.progress = 100;
 
-          const result = JSON.parse(progress_data.message)
-          $scope.buildingsync_valid = result.valid
-          $scope.buildingsync_issues = result.issues
-          
+          var result = JSON.parse(progress_data.message);
+          $scope.buildingsync_valid = result.valid;
+          $scope.buildingsync_issues = result.issues;
+
           // if validation failed, end the import flow here; otherwise continue
           if ($scope.buildingsync_valid !== true) {
-            $scope.step_12_error_message = 'Failed to validate uploaded BuildingSync file(s)'
-            $scope.step_12_buildingsync_validation_error = true
-            $scope.step.number = 12
+            $scope.step_12_error_message = 'Failed to validate uploaded BuildingSync file(s)';
+            $scope.step_12_buildingsync_validation_error = true;
+            $scope.step.number = 12;
           } else {
             // successfully passed validation, save the data
-            save_raw_assessed_data(file_id, cycle_id, false)
+            save_raw_assessed_data(file_id, cycle_id, false);
           }
-        }
+        };
 
-        const errorHandler = (data) => {
+        var errorHandler = function (data) {
           $log.error(data.message);
-          if (data.hasOwnProperty('stacktrace')) $log.error(data.stacktrace);
+          if (data.stacktrace) $log.error(data.stacktrace);
           $scope.step_12_error_message = data.data ? data.data.message : data.message;
           $scope.step.number = 12;
-        }
+        };
 
         uploader_service.validate_use_cases(file_id)
-          .then(data => {
-            const progress = _.clamp(data.progress, 0, 100);
+          .then(function (data) {
+            var progress = _.clamp(data.progress, 0, 100);
             uploader_service.check_progress_loop(
               data.progress_key,
               progress, 1 - (progress / 100),
               successHandler,
               errorHandler,
-              $scope.uploader,
-            )
-          })
+              $scope.uploader
+            );
+          });
       };
 
       /**
