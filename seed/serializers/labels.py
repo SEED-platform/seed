@@ -47,6 +47,15 @@ class LabelSerializer(serializers.ModelSerializer):
         }
         model = Label
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        # Avoid the impression that no records "is_applied" if inventory isn't provided and a search never occurred
+        if not self.inventory:
+            del ret['is_applied']
+
+        return ret
+
     def get_is_applied(self, obj):
         filtered_result = []
         if self.inventory:
