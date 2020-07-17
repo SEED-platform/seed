@@ -162,23 +162,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.isModified = function () {
         return modified_service.isModified();
       };
-      var originalRules = angular.copy(data_quality_rules_payload.rules);
-      $scope.original = originalRules;
-      $scope.change_rules = function () {
+
+      $scope.rules_changed = function (rule) {
+        if (rule) rule.rule_type = 1;
+
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
-        $scope.setModified();
-      };
-      $scope.setModified = function () {
-        var cleanRules = angular.copy($scope.ruleGroups);
-        _.each(originalRules, function (rules, index) {
-          Object.keys(rules).forEach(function (key) {
-            _.reduce(cleanRules[index][rules[key].field], function (result, value) {
-              return !_.isEqual(value, rules[key]) && modified_service.setModified();
-            }, []);
-          });
-        });
+        modified_service.setModified();
       };
 
       // Restores the default rules
@@ -451,7 +442,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property += 1;
         else $scope.rule_count_taxlot += 1;
       };
@@ -482,7 +473,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
           delete $scope.ruleGroups[$scope.inventory_type][rule.field];
         } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
         else $scope.rule_count_taxlot -= 1;
       };
@@ -506,10 +497,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       $scope.selectAll = function () {
-        $scope.rules_updated = false;
-        $scope.rules_reset = false;
-        $scope.defaults_restored = false;
-        $scope.setModified();
+        $scope.rules_changed();
+
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {
