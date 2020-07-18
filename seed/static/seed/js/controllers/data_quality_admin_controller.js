@@ -334,7 +334,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.rules_reset = false;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {condition: 'required', data_type: 'string'})) rule.text_match = null;
+        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {
+          condition: 'required',
+          data_type: 'string'
+        })) rule.text_match = null;
         if (rule.condition !== 'range') {
           rule.units = '';
           rule.min = null;
@@ -375,8 +378,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         rule.data_type = newDataType;
 
         // move rule to appropriate spot in ruleGroups.
-        if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
-        else {
+        if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) {
+          $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
+        } else {
           // Rules already exist for the new field name, so match the data_type, required, and not_null columns
           var existingRule = _.first($scope.ruleGroups[$scope.inventory_type][rule.field]);
           rule.data_type = existingRule.data_type;
@@ -393,6 +397,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var group = $scope.ruleGroups[$scope.inventory_type][group_name];
         $scope.validate_data_types(group, group_name);
         $scope.validate_conditions(group, group_name);
+
+        $scope.validate_data_types($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
+        $scope.validate_conditions($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
       };
       // Keep field types consistent for identical fields
       $scope.change_data_type = function (rule, oldValue) {
