@@ -182,6 +182,7 @@ angular.module('BE.seed.controller.column_settings', [])
         // Remove any potential duplicates
         if (column.comstock_mapping !== null) {
           _.forEach($scope.columns, function (col) {
+            // eslint-disable-next-line lodash/prefer-matches
             if (col.id !== column.id && col.comstock_mapping === column.comstock_mapping) {
               col.comstock_mapping = null;
             }

@@ -162,23 +162,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.isModified = function () {
         return modified_service.isModified();
       };
-      var originalRules = angular.copy(data_quality_rules_payload.rules);
-      $scope.original = originalRules;
-      $scope.change_rules = function () {
+
+      $scope.rules_changed = function (rule) {
+        if (rule) rule.rule_type = 1;
+
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
-        $scope.setModified();
-      };
-      $scope.setModified = function () {
-        var cleanRules = angular.copy($scope.ruleGroups);
-        _.each(originalRules, function (rules, index) {
-          Object.keys(rules).forEach(function (key) {
-            _.reduce(cleanRules[index][rules[key].field], function (result, value) {
-              return !_.isEqual(value, rules[key]) && modified_service.setModified();
-            }, []);
-          });
-        });
+        modified_service.setModified();
       };
 
       // Restores the default rules
@@ -298,18 +289,65 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           spinner_utility.hide();
         });
       };
+
+      // check that contradictory conditions aren't being used in any Rule Group
+      $scope.invalid_conditions = [];
+
+      $scope.validate_conditions = function (group, group_name) {
+        var conditions = _.map(group, 'condition');
+        if (conditions.includes('range') && (conditions.includes('include') || conditions.includes('exclude'))) {
+          $scope.invalid_conditions = _.union($scope.invalid_conditions, [group_name]);
+        } else if ($scope.invalid_conditions.includes(group_name)) {
+          _.pull($scope.invalid_conditions, group_name);
+        }
+      };
+
+      // check that data_types are aligned in any Rule Group
+      $scope.invalid_data_types = [];
+
+      $scope.validate_data_types = function (group, group_name) {
+        var data_types = _.uniq(_.map(group, 'data_type'));
+        var conditions = _.map(group, 'condition');
+
+        var range_has_text = conditions.includes('range') && data_types.includes('string');
+        var numeric_types = _.map($scope.data_types[1], 'id');
+        var include_has_numeric = conditions.includes('include') && _.intersection(data_types, numeric_types).length > 0;
+        var exclude_has_numeric = conditions.includes('exclude') && _.intersection(data_types, numeric_types).length > 0;
+        var invalid_condition_data_type_combinations = range_has_text || include_has_numeric || exclude_has_numeric;
+
+        if (data_types.length > 1 || invalid_condition_data_type_combinations) {
+          $scope.invalid_data_types = _.uniq(_.concat($scope.invalid_data_types, group_name));
+        } else if ($scope.invalid_data_types.includes(group_name)) {
+          _.pull($scope.invalid_data_types, group_name);
+        }
+      };
+
+      // perform checks on load
+      _.forEach($scope.ruleGroups[$scope.inventory_type], function (group, group_name) {
+        $scope.validate_data_types(group, group_name);
+        $scope.validate_conditions(group, group_name);
+      });
+
       $scope.change_condition = function (rule) {
         $scope.rules_updated = false;
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
         if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {condition: 'required', data_type: 'string'})) rule.text_match = null;
+        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {
+          condition: 'required',
+          data_type: 'string'
+        })) rule.text_match = null;
         if (rule.condition !== 'range') {
           rule.units = '';
           rule.min = null;
           rule.max = null;
         }
+
+        var group_name = rule.field;
+        var group = $scope.ruleGroups[$scope.inventory_type][group_name];
+        $scope.validate_conditions(group, group_name);
+        $scope.validate_data_types(group, group_name);
       };
 
       $scope.check_null = false;
@@ -338,13 +376,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         rule.data_type = newDataType;
-        if (rule.data_type === 'None' || rule.data_type === null) rule.condition = '';
-        else if (rule.data_type === 'string') rule.condition = 'include';
-        else rule.condition = 'range';
 
         // move rule to appropriate spot in ruleGroups.
-        if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
-        else {
+        if (!_.has($scope.ruleGroups[$scope.inventory_type], rule.field)) {
+          $scope.ruleGroups[$scope.inventory_type][rule.field] = [];
+        } else {
           // Rules already exist for the new field name, so match the data_type, required, and not_null columns
           var existingRule = _.first($scope.ruleGroups[$scope.inventory_type][rule.field]);
           rule.data_type = existingRule.data_type;
@@ -356,11 +392,21 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if ($scope.ruleGroups[$scope.inventory_type][oldField].length === 1) delete $scope.ruleGroups[$scope.inventory_type][oldField];
         else $scope.ruleGroups[$scope.inventory_type][oldField].splice(index, 1);
         rule.autofocus = true;
+
+        var group_name = rule.field;
+        var group = $scope.ruleGroups[$scope.inventory_type][group_name];
+        $scope.validate_data_types(group, group_name);
+        $scope.validate_conditions(group, group_name);
+
+        $scope.validate_data_types($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
+        $scope.validate_conditions($scope.ruleGroups[$scope.inventory_type][oldField], oldField);
       };
       // Keep field types consistent for identical fields
       $scope.change_data_type = function (rule, oldValue) {
         var data_type = rule.data_type;
-        _.forEach($scope.ruleGroups[$scope.inventory_type][rule.field], function (currentRule) {
+        var rule_group = $scope.ruleGroups[$scope.inventory_type][rule.field];
+
+        _.forEach(rule_group, function (currentRule) {
           currentRule.text_match = null;
 
           if (!_.includes(['', 'number'], oldValue) || !_.includes([null, 'number'], data_type)) {
@@ -370,6 +416,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           }
           currentRule.data_type = data_type;
         });
+
+        $scope.validate_data_types(rule_group, rule.field);
       };
 
       $scope.remove_label = function (rule) {
@@ -401,7 +449,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           'new': true,
           autofocus: true
         });
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property += 1;
         else $scope.rule_count_taxlot += 1;
       };
@@ -432,7 +480,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         if ($scope.ruleGroups[$scope.inventory_type][rule.field].length === 1) {
           delete $scope.ruleGroups[$scope.inventory_type][rule.field];
         } else $scope.ruleGroups[$scope.inventory_type][rule.field].splice(index, 1);
-        $scope.change_rules();
+        $scope.rules_changed();
         if ($scope.inventory_type === 'properties') $scope.rule_count_property -= 1;
         else $scope.rule_count_taxlot -= 1;
       };
@@ -456,10 +504,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       };
 
       $scope.selectAll = function () {
-        $scope.rules_updated = false;
-        $scope.rules_reset = false;
-        $scope.defaults_restored = false;
-        $scope.setModified();
+        $scope.rules_changed();
+
         var allEnabled = $scope.allEnabled();
         _.forEach($scope.ruleGroups[$scope.inventory_type], function (ruleGroup) {
           _.forEach(ruleGroup, function (rule) {

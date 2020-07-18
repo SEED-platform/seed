@@ -46,18 +46,18 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
     uploader_factory.validate_use_cases = function (file_id) {
-      const org_id = user_service.get_organization().id
+      var org_id = user_service.get_organization().id;
       return $http.post('/api/v2/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
-        .then(response => {
-          return response.data
+        .then(function (response) {
+          return response.data;
         })
-        .catch(err => {
+        .catch(function (err) {
           if (err.data.status === 'error') {
-            return err.data
+            return err.data;
           }
           // something unexpected happened... throw it
-          throw err
-        })
+          throw err;
+        });
     };
 
     /**

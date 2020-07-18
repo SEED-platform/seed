@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }
       };
 
-      function populated_columns_modal() {
+      function populated_columns_modal () {
         $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
