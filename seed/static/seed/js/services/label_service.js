@@ -61,7 +61,7 @@ angular.module('BE.seed.service.label', [])
         return get_labels_for_org(user_service.get_organization().id, inventory_type, filter_ids);
       }
 
-      function get_labels_for_org(org_id, inventory_type, filter_ids) {
+      function get_labels_for_org (org_id, inventory_type, filter_ids) {
         var params = {
           organization_id: org_id
         };
