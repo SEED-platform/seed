@@ -34,14 +34,14 @@ spec:
         - name: POSTGRES_USER
           value: seed
         - name: SECRET_KEY
-          value: <Your Secret Key> #To be implemented with crypto secrets
+          value: <secret> #To be implemented with crypto secrets
         - name: SEED_ADMIN_ORG
           value: default
         - name: SEED_ADMIN_PASSWORD
           value: super-secret-password
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
-        image: seedplatform/seed:latest
+        image: seedplatform/seed:develop
         name: web
         ports:
         - containerPort: 80

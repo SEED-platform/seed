@@ -29,7 +29,7 @@ spec:
           value: super-secret-password
         - name: POSTGRES_USER
           value: seed
-        image: seedplatform/postgres-seed:11.2
+        image: timescale/timescaledb-postgis:latest-pg12
         name: db-postrgres
 #        command: ["tail"]
 #        args: ['-f', '/dev/null']

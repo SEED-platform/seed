@@ -36,16 +36,16 @@ spec:
         - name: POSTGRES_USER
           value: seed
         - name: SECRET_KEY
-          value: <Your Secret Key> #to be implemented with crypto secrets
-        image: seedplatform/seed:latest
+          value: <secret> #to be implemented with crypto secrets
+        image: seedplatform/seed:develop
         name: web-celery
         resources: {}
-#        volumeMounts:
-#        - mountPath: /seed/media
-#          name: seed-media
+        volumeMounts:
+        - mountPath: /seed/media
+          name: seed-media
       restartPolicy: Always
-#      volumes:
-#      - name: seed-media
-#        persistentVolumeClaim:
-#          claimName: seed-media
+      volumes:
+      - name: seed-media
+        persistentVolumeClaim:
+          claimName: seed-media
 status: {}
