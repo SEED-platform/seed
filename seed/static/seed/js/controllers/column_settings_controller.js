@@ -215,11 +215,6 @@ angular.module('BE.seed.controller.column_settings', [])
               return _.isEqual(value, cleanColumns[index][key]) ? result : result.concat(key);
             }, []);
             diff[originalCol.id] = _.pick(cleanColumns[index], modifiedKeys);
-            if (_.includes(modifiedKeys, 'displayName')) {
-              // Rename to match backend
-              diff[originalCol.id].display_name = diff[originalCol.id].displayName;
-              delete diff[originalCol.id].displayName;
-            }
           }
         });
       };
@@ -375,6 +370,7 @@ angular.module('BE.seed.controller.column_settings', [])
           _.forOwn(diff, function (delta, column_id) {
             column_id = Number(column_id);
             var col = angular.copy(_.find($scope.columns, {id: column_id}));
+            col.display_name = col.displayName;  // Add display_name for backend
             promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
           });
 

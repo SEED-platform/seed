@@ -78,7 +78,7 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', [])
           field: 'column_name'
         },
         {
-          field: 'display_name',
+          field: 'displayName',
           displayName: 'Display Name Change'
         },
         {
