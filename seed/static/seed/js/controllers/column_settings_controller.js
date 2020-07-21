@@ -371,6 +371,7 @@ angular.module('BE.seed.controller.column_settings', [])
             column_id = Number(column_id);
             var col = angular.copy(_.find($scope.columns, {id: column_id}));
             col.display_name = col.displayName;  // Add display_name for backend
+            delete col.displayName;
             promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
           });
 
