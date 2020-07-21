@@ -25,8 +25,8 @@ angular.module('BE.seed.controller.inventory_map', [])
       urls
     ) {
       // always map properties with taxlot in the 'related' field
-      $scope.inventory_type = 'properties';
-      //$scope.inventory_type = $stateParams.inventory_type;
+      // $scope.inventory_type = 'properties';
+      $scope.inventory_type = $stateParams.inventory_type;
 
       $scope.data = [];
       $scope.geocoded_data = [];
@@ -40,19 +40,35 @@ angular.module('BE.seed.controller.inventory_map', [])
 
       var fetch = function (page, chunk) {
         // console.log('Fetching page ' + page + ' (chunk size ' + chunk + ')');
-        return inventory_service.get_properties(page, chunk, undefined, undefined).then(function (data) {
-          $scope.progress = {
-            current: data.pagination.end,
-            total: data.pagination.total,
-            percent: Math.round(data.pagination.end / data.pagination.total * 100)
-          };
-          if (data.pagination.has_next) {
-            return fetch(page + 1, chunk).then(function (data2) {
-              return data.results.concat(data2);
-            });
-          }
-          return data.results;
-        });
+        if ($scope.inventory_type === 'properties') {
+          return inventory_service.get_properties(page, chunk, undefined, undefined).then(function (data) {
+            $scope.progress = {
+              current: data.pagination.end,
+              total: data.pagination.total,
+              percent: Math.round(data.pagination.end / data.pagination.total * 100)
+            };
+            if (data.pagination.has_next) {
+              return fetch(page + 1, chunk).then(function (data2) {
+                return data.results.concat(data2);
+              });
+            }
+            return data.results;
+          });
+        } else if ($scope.inventory_type === 'taxlots') {
+          return inventory_service.get_taxlots(page, chunk, undefined, undefined).then(function (data) {
+            $scope.progress = {
+              current: data.pagination.end,
+              total: data.pagination.total,
+              percent: Math.round(data.pagination.end / data.pagination.total * 100)
+            };
+            if (data.pagination.has_next) {
+              return fetch(page + 1, chunk).then(function (data2) {
+                return data.results.concat(data2);
+              });
+            }
+            return data.results;
+          });
+        }
       };
 
       var page = 1;
@@ -77,8 +93,6 @@ angular.module('BE.seed.controller.inventory_map', [])
           var taxlots = [];
           _.each(properties_data, function (record) {
             if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
-              // getting the ones with bounding boxes not long_lat
-              // since we are not interested in mapping points for taxlots
               var bb_taxlots = _.filter(record.related, 'bounding_box');
               taxlots = _.concat(taxlots, bb_taxlots);
             }
@@ -93,12 +107,22 @@ angular.module('BE.seed.controller.inventory_map', [])
         // store a mapping of layers z-index and visibility
         $scope.layers = {};
         $scope.layers.base_layer = {zIndex: 0, visible: 1};
-        $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
-        $scope.layers.points_layer = {zIndex: 2, visible: 1};
-        $scope.layers.building_bb_layer = {zIndex: 3, visible: 1};
-        $scope.layers.building_centroid_layer = {zIndex: 4, visible: 1};
-        $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 0};
-        $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 0};
+        if ($scope.inventory_type === 'properties') {
+          $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
+          $scope.layers.points_layer = {zIndex: 2, visible: 1};
+          $scope.layers.building_bb_layer = {zIndex: 3, visible: 1};
+          $scope.layers.building_centroid_layer = {zIndex: 4, visible: 1};
+          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 0};
+          $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 0};
+        } else {
+          // taxlots
+          $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
+          $scope.layers.points_layer = {zIndex: 2, visible: 1};
+          $scope.layers.building_bb_layer = {zIndex: 3, visible: 0};
+          $scope.layers.building_centroid_layer = {zIndex: 4, visible: 0};
+          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 1};
+          $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 1};
+        }
 
         // Map
         var base_layer = new ol.layer.Tile({
@@ -107,7 +131,6 @@ angular.module('BE.seed.controller.inventory_map', [])
           }),
           zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
         });
-
 
         // Define buildings source - the basis of layers
         var buildingPoint = function (building) {
@@ -147,7 +170,10 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingCentroid = function (building) {
           var format = new ol.format.WKT();
 
-          var bounding_box = building.centroid;
+          // var bounding_box = building.centroid;
+          var bounding_box = ""
+          if ($scope.inventory_type === 'properties') bounding_box = building.centroid;
+          else bounding_box = building.bounding_box;
           var feature = format.readFeature(bounding_box, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
@@ -166,10 +192,8 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingCentroidSources = function (records) {
           if (_.isUndefined(records)) records = $scope.bb_data;
           var features = _.map(records, buildingCentroid);
-
           return new ol.source.Vector({features: features});
         };
-
         // Define taxlot ULID bounding box
         var taxlotBB = function (taxlot) {
           var format = new ol.format.WKT();
@@ -365,10 +389,15 @@ angular.module('BE.seed.controller.inventory_map', [])
         });
 
         // Render map
-        // start with taxlot layers off
+        var layers = [];
+        if ($scope.inventory_type === 'properties') {
+          layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
+        } else {
+          layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
+        }
         $scope.map = new ol.Map({
           target: 'map',
-          layers: [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer]
+          layers: layers
         });
 
         // Toggle layers
@@ -395,6 +424,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.toggle_layer = function (z_index) {
           if ($scope.layerVisible(z_index)) {
             $scope.map.removeLayer(layer_at_z_index[z_index]);
+            return true;
           } else {
             $scope.map.addLayer(layer_at_z_index[z_index]);
           }

@@ -1153,7 +1153,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'inventory_map',
-        url: '/{inventory_type:properties}/map',
+        url: '/{inventory_type:properties|taxlots}/map',
         templateUrl: static_url + 'seed/partials/inventory_map.html',
         controller: 'inventory_map_controller',
         resolve: {

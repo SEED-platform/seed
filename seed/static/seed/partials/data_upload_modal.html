@@ -264,7 +264,7 @@
                     <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                     <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
                     <span ng-if="step_12_buildingsync_validation_error">
-                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p> 
+                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p>
                         <div ng-repeat="file_issues in buildingsync_issues">
                             <em>{$ file_issues.file $}</em>
                             <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0" style="word-wrap: break-word;">
