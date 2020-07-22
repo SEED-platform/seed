@@ -88,20 +88,6 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       });
     };
 
-    column_mappings_factory.delete_column_mapping = function (id) {
-      return column_mappings_factory.delete_column_mapping_for_org(user_service.get_organization().id, id);
-    };
-
-    column_mappings_factory.delete_column_mapping_for_org = function (org_id, id) {
-      return $http.delete('/api/v2/column_mappings/' + id + '/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return response.data;
-      });
-    };
-
     column_mappings_factory.delete_all_column_mappings = function () {
       return column_mappings_factory.delete_all_column_mappings_for_org(user_service.get_organization().id);
     };
