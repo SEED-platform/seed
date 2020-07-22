@@ -195,6 +195,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingCentroidSources = function (records) {
           if (_.isUndefined(records)) records = $scope.bb_data;
           var features = _.map(records, buildingCentroid);
+
           return new ol.source.Vector({features: features});
         };
 
@@ -434,7 +435,6 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.toggle_layer = function (z_index) {
           if ($scope.layerVisible(z_index)) {
             $scope.map.removeLayer(layer_at_z_index[z_index]);
-            return true;
           } else {
             $scope.map.addLayer(layer_at_z_index[z_index]);
           }
