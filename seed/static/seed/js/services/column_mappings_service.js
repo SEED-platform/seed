@@ -9,25 +9,6 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
 
     var column_mappings_factory = {};
 
-    column_mappings_factory.get_column_mappings = function () {
-      return column_mappings_factory.get_column_mappings_for_org(user_service.get_organization().id);
-    };
-
-    column_mappings_factory.get_column_mappings_for_org = function (org_id) {
-      return $http.get('/api/v2/column_mappings/', {
-        params: {
-          organization_id: org_id
-        }
-      }).then(function (response) {
-        return _.map(response.data, function (mapping) {
-          if (_.isEmpty(mapping.column_mapped.display_name)) {
-            mapping.column_mapped.display_name = mapping.column_mapped.column_name;
-          }
-          return mapping;
-        });
-      });
-    };
-
     column_mappings_factory.get_column_mapping_presets_for_org = function (org_id, filter_preset_types) {
       var params = {
         organization_id: org_id
