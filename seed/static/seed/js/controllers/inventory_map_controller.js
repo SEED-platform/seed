@@ -95,6 +95,8 @@ angular.module('BE.seed.controller.inventory_map', [])
             if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
               var bb_taxlots = _.filter(record.related, 'bounding_box');
               taxlots = _.concat(taxlots, bb_taxlots);
+            } else {
+              taxlots = _.concat(taxlots, record);
             }
           });
           return _.uniqBy(taxlots, 'id');
@@ -170,11 +172,12 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingCentroid = function (building) {
           var format = new ol.format.WKT();
 
-          // var bounding_box = building.centroid;
-          var bounding_box = ""
-          if ($scope.inventory_type === 'properties') bounding_box = building.centroid;
-          else bounding_box = building.bounding_box;
-          var feature = format.readFeature(bounding_box, {
+          // TODO: what to assign to taxlot centroid if it's null?
+          var centroid;
+          if (!_.isUndefined(building.centroid)) centroid = building.centroid;
+          else centroid = building.long_lat;
+
+          var feature = format.readFeature(centroid, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -194,6 +197,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           var features = _.map(records, buildingCentroid);
           return new ol.source.Vector({features: features});
         };
+
         // Define taxlot ULID bounding box
         var taxlotBB = function (taxlot) {
           var format = new ol.format.WKT();
@@ -211,8 +215,12 @@ angular.module('BE.seed.controller.inventory_map', [])
         var taxlotCentroid = function (taxlot) {
           var format = new ol.format.WKT();
 
-          var bounding_box = taxlot.centroid;
-          var feature = format.readFeature(bounding_box, {
+          // TODO: what to assign to taxlot centroid if it's null?
+          var centroid;
+          if(!_.isUndefined(taxlot.centroid)) centroid = taxlot.centroid;
+          else centroid = taxlot.long_lat;
+
+          var feature = format.readFeature(centroid, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -378,6 +386,8 @@ angular.module('BE.seed.controller.inventory_map', [])
           var total_eui = _.sum(site_euis);
           var opacity = Math.max(hexbin_min_opacity, total_eui / hexagon_size);
 
+          // TODO: what the proper opacity for a taxlot that doen't have euis?
+          if ($scope.inventory_type === 'taxlots') opacity = 0;
           return hexagonStyle(opacity);
         };
 
