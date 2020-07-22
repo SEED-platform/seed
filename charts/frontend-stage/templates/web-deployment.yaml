@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.20.0 ()
+  creationTimestamp: null
+  labels:
+    io.kompose.service: web-stage
+  name: web-stage
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.20.0 ()
+      creationTimestamp: null
+      labels:
+        io.kompose.service: web-stage
+    spec:
+      containers:
+      - env:
+        - name: DJANGO_SETTINGS_MODULE
+          value: config.settings.docker
+        - name: POSTGRES_DB
+          value: seed
+        - name: POSTGRES_PASSWORD
+          value: super-secret-password
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: POSTGRES_USER
+          value: seed
+        - name: SECRET_KEY
+          value: <secret> #To be implemented with crypto secrets
+        - name: SEED_ADMIN_ORG
+          value: default
+        - name: SEED_ADMIN_PASSWORD
+          value: super-secret-password
+        - name: SEED_ADMIN_USER
+          value: user@seed-platform.org
+        image: seedplatform/seed:develop
+        name: web-stage
+        ports:
+        - containerPort: 80
+        resources: {}
+        volumeMounts:
+        - mountPath: /seed/media
+          name: seed-media
+      restartPolicy: Always
+      volumes:
+      - name: seed-media
+        persistentVolumeClaim:
+          claimName: seed-media
+status: {}

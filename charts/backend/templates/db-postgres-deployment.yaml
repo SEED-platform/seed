@@ -31,8 +31,8 @@ spec:
           value: seed
         image: timescale/timescaledb-postgis:latest-pg12
         name: db-postrgres
-#        command: ["tail"]
-#        args: ['-f', '/dev/null']
+        command: ["tail"]
+        args: ['-f', '/dev/null']
         ports:
         - containerPort: 5432
         resources:
