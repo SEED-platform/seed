@@ -10,6 +10,7 @@ SEED is intended to be installed on Linux instances in the cloud (e.g. AWS), and
 
     aws
     linux
+    docker
 
 Migrations
 ----------

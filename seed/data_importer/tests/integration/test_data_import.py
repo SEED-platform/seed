@@ -10,6 +10,7 @@ import datetime
 import json
 import logging
 import os.path as osp
+import zipfile
 
 from dateutil import parser
 from django.core.files import File
@@ -17,6 +18,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
 
+from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data, map_data
@@ -35,8 +37,12 @@ from seed.models import (
     PropertyView,
     TaxLotState,
     Cycle,
+    Meter,
+    Scenario,
+    BuildingFile,
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
 
 _log = logging.getLogger(__name__)
 
@@ -142,6 +148,267 @@ class TestDataImport(DataMappingBaseTestCase):
         self.assertListEqual(
             sorted([d.column_name for d in data_columns]), ['Double Tester']
         )
+
+
+class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        # setup the ImportFile for using the example zip file
+        filename = 'ex1_no_schemaLocation_and_ex_1.zip'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        # Verify we have the expected number of BuildingSync files in the zip file
+        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+            filelist = openzip.infolist()
+            xml_files_found = 0
+            for f in filelist:
+                if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    xml_files_found += 1
+
+            self.assertEqual(xml_files_found, 2)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/zip"
+        )
+        self.import_file.save()
+
+    def test_save_raw_data_zip(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual('error', progress_info['status'])
+        self.assertIn('Invalid or missing schema specification', progress_info['message'])
+
+
+class TestBuildingSyncImportZip(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        # setup the ImportFile for using the example zip file
+        filename = 'ex_1_and_buildingsync_ex01_measures.zip'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        # Verify we have the expected number of BuildingSync files in the zip file
+        with zipfile.ZipFile(filepath, "r", zipfile.ZIP_STORED) as openzip:
+            filelist = openzip.infolist()
+            xml_files_found = 0
+            for f in filelist:
+                if '.xml' in f.filename and '__MACOSX' not in f.filename:
+                    xml_files_found += 1
+
+            self.assertEqual(xml_files_found, 2)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/zip"
+        )
+        self.import_file.uploaded_filename = filename
+        self.import_file.save()
+
+    def test_save_raw_data_zip(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
+        raw_saved = PropertyState.objects.filter(
+            import_file=self.import_file,
+        ).latest('id')
+        self.assertEqual(raw_saved.organization, self.org)
+
+    def test_map_data_zip(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
+
+        # make the column mappings
+        self.fake_mappings = default_buildingsync_preset_mappings()
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
+
+        # -- Act
+        progress_info = tasks.map_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual('success', progress_info['status'])
+        ps = PropertyState.objects.filter(address_line_1='123 Main St',
+                                          import_file=self.import_file)
+        self.assertEqual(len(ps), 2)
+
+    def test_map_all_models_zip(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 2)
+
+        # make the column mappings
+        self.fake_mappings = default_buildingsync_preset_mappings()
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
+
+        # map the data
+        progress_info = tasks.map_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'])
+        ps = PropertyState.objects.filter(address_line_1='123 Main St',
+                                          import_file=self.import_file)
+        self.assertEqual(ps.count(), 2)
+
+        # -- Act
+        tasks.map_additional_models(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual(ps.count(), 2)
+
+        # verify there are 2 building files
+        bfs = BuildingFile.objects.all()
+        self.assertEqual(bfs.count(), 2)
+
+        # check that scenarios were created
+        scenarios = Scenario.objects.all()
+        self.assertEqual(scenarios.count(), 31)
+
+
+class TestBuildingSyncImportXml(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        filename = 'buildingsync_v2_0_bricr_workflow.xml'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/xml"
+        )
+        self.import_file.uploaded_filename = filename
+        self.import_file.save()
+
+    def test_save_raw_data_xml(self):
+        # -- Act
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+
+        # -- Assert
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+        raw_saved = PropertyState.objects.filter(
+            import_file=self.import_file,
+        ).latest('id')
+        self.assertEqual(raw_saved.organization, self.org)
+
+    def test_map_all_models_xml(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # make the column mappings
+        self.fake_mappings = default_buildingsync_preset_mappings()
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
+
+        # map the data
+        progress_info = tasks.map_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD',
+                                          import_file=self.import_file)
+        self.assertEqual(len(ps), 1)
+
+        # -- Act
+        tasks.map_additional_models(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD', import_file=self.import_file)
+
+        self.assertEqual(ps.count(), 1)
+
+        # verify the property view, scenario and meter data were created
+        pv = PropertyView.objects.filter(state=ps[0])
+        self.assertEqual(pv.count(), 1)
+
+        scenario = Scenario.objects.filter(property_state=ps[0])
+        self.assertEqual(scenario.count(), 3)
+
+        # for bsync, meters are linked to scenarios only (not properties)
+        meters = Meter.objects.filter(scenario__in=scenario)
+        self.assertEqual(meters.count(), 6)
+
+
+class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        filename = 'buildingsync_ex01_measures_bad_names.xml'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/xml"
+        )
+        self.import_file.uploaded_filename = filename
+        self.import_file.save()
+
+    def test_map_all_models_xml(self):
+        # -- Setup
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = tasks.save_raw_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file).count(), 1)
+
+        # make the column mappings
+        self.fake_mappings = default_buildingsync_preset_mappings()
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
+
+        # map the data
+        progress_info = tasks.map_data(self.import_file.pk)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+        ps = PropertyState.objects.filter(address_line_1='123 Main St',
+                                          import_file=self.import_file)
+        self.assertEqual(ps.count(), 1)
+
+        # -- Act
+        progress_info = tasks.map_additional_models(self.import_file.pk)
+
+        # -- Assert
+        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
+        self.assertEqual(ps.count(), 1)
+
+        # !! we should have warnings for our file because of the bad measure names !!
+        self.assertNotEqual({}, progress_info.get('file_info', {}))
+        self.assertIn(self.import_file.uploaded_filename, list(progress_info['file_info'].keys()))
+        self.assertNotEqual([], progress_info['file_info'][self.import_file.uploaded_filename].get('warnings', []))
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):

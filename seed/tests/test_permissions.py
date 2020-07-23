@@ -59,6 +59,7 @@ class PermissionsFunctionsTests(TestCase):
 
         mock_request = mock.MagicMock()
         mock_request.query_params = {'organization': None}
+        mock_request.parser_context = {}
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_request).data = mock_value_error
         result = get_org_id(mock_request)

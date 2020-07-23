@@ -11,10 +11,12 @@ from os import path
 from django.urls import reverse
 from django.utils import timezone
 
+from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
     StatusLabel,
+    ColumnMappingPreset,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory, FakeColumnFactory,
@@ -49,6 +51,8 @@ class InventoryViewTests(DeleteModelsTestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
 
+        self.default_bsync_preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+
         self.client.login(**user_details)
 
     def test_get_building_sync(self):
@@ -60,7 +64,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # go to buildingsync endpoint
         params = {
-            'organization_id': self.org.pk
+            'organization_id': self.org.pk,
+            'preset_id': self.default_bsync_preset.id
         }
         url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
@@ -89,13 +94,14 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url)
+        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>',
                       response.content.decode("utf-8"))
 
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
-        filename = path.join(path.dirname(__file__), 'data', 'valid_xml_ex1_ex2.zip')
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip')
 
         url = '/api/v2/building_file/'
         fsysparams = {
@@ -115,7 +121,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
     def test_upload_with_measure_duplicates(self):
-        filename = path.join(path.dirname(__file__), 'data', 'buildingsync_ex01_measures.xml')
+        # import_record =
+        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures_bad_names.xml')
 
         url = reverse('api:v2:building_file-list')
         fsysparams = {
@@ -170,8 +177,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
 
         response = self.client.post(url, fsysparams)
-        self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
+        self.assertEqual(response.status_code, 200, f'Expected 200 response. Message body: {result}')
         self.assertEqual(result['status'], 'success')
         self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1889)
@@ -179,6 +186,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url)
+        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
                       response.content.decode('utf-8'))

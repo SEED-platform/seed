@@ -594,6 +594,13 @@ class Column(models.Model):
 
     recognize_empty = models.BooleanField(default=False)
 
+    comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+        ]
+
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
 
@@ -982,22 +989,32 @@ class Column(models.Model):
                     organization=organization,
                     table_name__in=[None, ''],
                     column_name=field['from_field'],
-                    units_pint=field.get('from_units'),  # might be None
-                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
             except Column.MultipleObjectsReturned:
+                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
+                # To do that, delete all multiples along with any associated ColumnMapping objects.
                 _log.debug(
                     "More than one from_column found for {}.{}".format(field['to_table_name'],
                                                                        field['to_field']))
 
-                # TODO: write something to remove the duplicate columns
-                from_org_col = Column.objects.filter(organization=organization,
-                                                     table_name__in=[None, ''],
-                                                     column_name=field['from_field'],
-                                                     units_pint=field.get('from_units'),
-                                                     # might be None
-                                                     is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first from_column")
+                all_from_cols = Column.objects.filter(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False
+                )
+
+                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
+                all_from_cols.delete()
+
+                from_org_col = Column.objects.create(
+                    organization=organization,
+                    table_name__in=[None, ''],
+                    column_name=field['from_field'],
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
+                )
+                _log.debug("Creating a new from_column")
 
             new_field['to_column_object'] = select_col_obj(field['to_field'],
                                                            field['to_table_name'], to_org_col)

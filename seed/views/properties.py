@@ -8,12 +8,14 @@ All rights reserved.  # NOQA
 :author
 """
 
+import json
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
@@ -199,10 +201,10 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
-    queryset = PropertyView.objects.all().select_related('state')
+    queryset = PropertyView.objects.all()
 
 
-class PropertyViewSet(GenericViewSet, ProfileIdMixin):
+class PropertyViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
@@ -265,7 +267,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
         # This uses an old method of returning the show_columns. There is a new method that
-        # is prefered in v2.1 API with the ProfileIdMixin.
+        # is preferred in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -814,7 +816,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
               paramType: query
         """
         organization_id = int(request.query_params.get('organization_id'))
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, 'property', only_used)
         organization = Organization.objects.get(pk=organization_id)
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
@@ -1032,7 +1034,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_property_state_data[key] = None
 
-            changed_fields = get_changed_fields(property_state_data, new_property_state_data)
+            changed_fields, previous_data = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
@@ -1099,8 +1101,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                 if 'extra_data' in new_property_state_data:
                     property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
-                property_state_data.update(new_property_state_data)
+                        new_property_state_data['extra_data']
+                    )
+
+                property_state_data.update(
+                    {k: v for k, v in new_property_state_data.items() if k != 'extra_data'}
+                )
 
                 log = PropertyAuditLog.objects.select_related().filter(
                     state=property_view.state
@@ -1127,6 +1133,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
+
+                        Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 

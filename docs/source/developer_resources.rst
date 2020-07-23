@@ -234,12 +234,44 @@ user:
 
 .. code-block:: console
 
+    createuser -U seed seeduser
+
     psql -c 'DROP DATABASE "seeddb"'
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER ROLE seeduser SUPERUSER;
-    psql -d seeddb -c "CREATE EXTENSION postgis;"
+    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
+    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+
     ./manage.py migrate
+    ./manage.py create_default_user \
+        --username=demo@seed-platform.org \
+        --password=password \
+        --organization=testorg
+
+Restoring a Database Dump
+-------------------------
+
+.. code-block:: console
+
+    psql -c 'DROP DATABASE "seeddb";'
+    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";'
+    psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
+
+    # restore a previous database dump (must be pg_restore 12+)
+    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seeddb /backups/prod-backups/seedv2_20191203_000002.dump
+
+    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+
+    ./manage.py migrate
+
+    # if needed add a user to the database
     ./manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
@@ -300,12 +332,12 @@ Best Practices
     **Enhancement** (these will appear as “Improved" in the changelog)
     **Bug** (these will appear as “Fixed” in the changelog)
 3. Move the ticket/issue to ‘In Progress’ in the GitHub project tracker when you begin work
-4. Branch off of the ‘develop’ branch (unless it’s a hotfix for production) 
-5. Write a test for the code added.  
+4. Branch off of the ‘develop’ branch (unless it’s a hotfix for production)
+5. Write a test for the code added.
 6. Make sure to test locally.  note that all branches created and pushed to GitHub will also be tested automatically.
 7. When done, create a pull request (you can group related issues together in the same PR).  Assign a reviewer to look over the code
 8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
-9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.    
+9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.
 
 Release Instructions
 --------------------

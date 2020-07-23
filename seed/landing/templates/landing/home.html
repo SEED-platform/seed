@@ -16,7 +16,7 @@
                     {% if 'logout' in request.GET %}
                         <p>{% trans "You have successfully logged out. You may log in again below." %}</p>
                     {% endif %}
-                    <form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form">{% csrf_token %}
+                    <form action="{% url "landing:login" %}?next={% url "seed:home" %}" method="POST" class="signup_form" autocomplete="off">{% csrf_token %}
                         <table class="signup_table">
                             {{ login_form.as_table }}
                         </table>

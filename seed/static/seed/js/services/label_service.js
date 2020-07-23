@@ -78,7 +78,6 @@ angular.module('BE.seed.service.label', [])
         }).then(map_labels);
       }
 
-
       /*  Add a label to an organization's list of labels
 
        @param {object} label       Label object to use for creating label on server.
@@ -104,7 +103,6 @@ angular.module('BE.seed.service.label', [])
           return map_label(response.data);
         });
       }
-
 
       /*  Update an existing a label in an organization
 

@@ -4,17 +4,14 @@
  */
 angular.module('BE.seed.controller.modified_modal', [])
   .controller('modified_modal_controller', [
-    '$rootScope',
     '$scope',
     '$uibModalInstance',
-    function ($rootScope, $scope, $uibModalInstance) {
+    function ($scope, $uibModalInstance) {
       $scope.leave = function () {
-        $rootScope.stay_on_page = false;
         $uibModalInstance.close();
       };
 
       $scope.stay = function () {
-        $rootScope.stay_on_page = true;
         $uibModalInstance.dismiss();
       };
     }]);

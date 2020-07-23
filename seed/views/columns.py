@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
 import logging
 
 import coreapi
@@ -16,7 +15,6 @@ from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
@@ -150,6 +148,20 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             'status': 'success',
             'column': ColumnSerializer(c).data
         })
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def update(self, request, pk=None):
+        organization_id = request.query_params.get('organization_id', None)
+
+        request.data['shared_field_type'] = request.data['sharedFieldType']
+        del request.data['sharedFieldType']
+
+        # Ensure ComStock uniqueness across properties and taxlots together
+        if request.data['comstock_mapping'] is not None:
+            Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
+                .update(comstock_mapping=None)
+        return super(ColumnViewSet, self).update(request, pk)
 
     @ajax_request_class
     @has_perm_class('can_modify_data')

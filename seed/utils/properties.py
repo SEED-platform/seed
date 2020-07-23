@@ -33,31 +33,42 @@ from seed.serializers.pint import apply_display_unit_preferences
 
 def get_changed_fields(old, new):
     """Return changed fields as json string"""
-    changed_fields, changed_extra_data = diffupdate(old, new)
+    changed_fields, changed_extra_data, previous_data = diffupdate(old, new)
+
     if 'id' in changed_fields:
         changed_fields.remove('id')
+        del previous_data['id']
+
     if 'pk' in changed_fields:
         changed_fields.remove('pk')
+        del previous_data['pk']
+
     if not (changed_fields or changed_extra_data):
         return None
     else:
         return json.dumps({
             'regular_fields': changed_fields,
             'extra_data_fields': changed_extra_data
-        })
+        }), previous_data
 
 
 def diffupdate(old, new):
     """Returns lists of fields changed"""
     changed_fields = []
     changed_extra_data = []
+    previous_data = {}
+
     for k, v in new.items():
         if old.get(k, None) != v or k not in old:
             changed_fields.append(k)
+            previous_data[k] = old.get(k, None)
+
     if 'extra_data' in changed_fields:
         changed_fields.remove('extra_data')
-        changed_extra_data, _ = diffupdate(old['extra_data'], new['extra_data'])
-    return changed_fields, changed_extra_data
+        changed_extra_data, _, previous_extra_data = diffupdate(old['extra_data'], new['extra_data'])
+        previous_data['extra_data'] = previous_extra_data
+
+    return changed_fields, changed_extra_data, previous_data
 
 
 def update_result_with_master(result, master):

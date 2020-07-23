@@ -418,6 +418,60 @@ msgstr "Compliance Information"
 msgid "compliance_type"
 msgstr "compliance_type"
 
+msgid "ComStock Mapping"
+msgstr "ComStock Mapping"
+
+msgid "comstock.aspect_ratio"
+msgstr "Aspect Ratio"
+
+msgid "comstock.building_shape"
+msgstr "Building Shape"
+
+msgid "comstock.building_type"
+msgstr "Building Type"
+
+msgid "comstock.built_code"
+msgstr "Built Code"
+
+msgid "comstock.climate_zone"
+msgstr "Climate Zone"
+
+msgid "comstock.county"
+msgstr "County"
+
+msgid "comstock.division"
+msgstr "Division"
+
+msgid "comstock.hvac_system_type"
+msgstr "HVAC System Type"
+
+msgid "comstock.number_of_stories"
+msgstr "Number of Stories"
+
+msgid "comstock.rentable_area"
+msgstr "Rentable Area"
+
+msgid "comstock.rotation"
+msgstr "Rotation"
+
+msgid "comstock.state"
+msgstr "State"
+
+msgid "comstock.weekday_duration"
+msgstr "Weekday Duration"
+
+msgid "comstock.weekday_start_time"
+msgstr "Weekday Start Time"
+
+msgid "comstock.weekend_duration"
+msgstr "Weekend Duration"
+
+msgid "comstock.weekend_start_time"
+msgstr "Weekend Start Time"
+
+msgid "comstock.year_built"
+msgstr "Year Built"
+
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concatenate Headers (Columns of Data)"
 
@@ -671,8 +725,8 @@ msgstr "Deadline:"
 msgid "Delete"
 msgstr "Delete"
 
-msgid "Delete All Columns"
-msgstr "Delete All Columns"
+msgid "Delete All Mappings"
+msgstr "Delete All Mappings"
 
 msgid "Delete Organization"
 msgstr "Delete Organization"
@@ -796,6 +850,9 @@ msgstr "Email Address"
 
 msgid "Email Address:"
 msgstr "Email Address:"
+
+msgid "Enable ComStock Functionality"
+msgstr "Enable ComStock Functionality"
 
 #: seed/models/models.py:237
 msgid "end_date"
@@ -1316,6 +1373,9 @@ msgstr "Mapping buildings for <strong>{filename}</strong>"
 
 msgid "MAPPING_STEP_2_ADVICE"
 msgstr "After you click the <span class=\"label label-primary\">Map Your Data</span> button, you will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want. If you need to change the mapping, click the <span class=\"label label-primary\">Back to Mapping</span> button and edit the field mapping. Make sure that the mappings are correct in this step. Once you have clicked on the <span class=\"label label-primary\">Save Mappings</span> button, you will not be able to change the field mappings."
+
+msgid "MapQuest API Key"
+msgstr "MapQuest API Key"
 
 msgid "MARKETING_BULLET_1"
 msgstr "Get started using SEED Platform™ by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading."

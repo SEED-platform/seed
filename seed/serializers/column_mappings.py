@@ -33,3 +33,38 @@ class ColumnMappingSerializer(serializers.ModelSerializer):
             result['column_mapped'] = ColumnSerializer(obj.column_mapped.first()).data
 
         return result
+
+
+class ImportMappingSerializer(serializers.Serializer):
+    from_field = serializers.CharField()
+    from_units = serializers.CharField()
+    to_field = serializers.CharField()
+    to_field_display_name = serializers.CharField()
+    to_table_name = serializers.CharField()
+
+
+class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):
+    """
+    Note that this is _not_ a model serializer, but used only for saving mappings
+
+    Example:
+    {
+        "mappings": [
+            {
+                'from_field': 'eui',  # raw field in import file
+                'from_units': 'kBtu/ft**2/year', # pint-parsable units, optional
+                'to_field': 'energy_use_intensity',
+                'to_field_display_name': 'Energy Use Intensity',
+                'to_table_name': 'PropertyState',
+            },
+            {
+                'from_field': 'gfa',
+                'from_units': 'ft**2', # pint-parsable units, optional
+                'to_field': 'gross_floor_area',
+                'to_field_display_name': 'Gross Floor Area',
+                'to_table_name': 'PropertyState',
+            }
+        ]
+    }
+    """
+    mappings = serializers.ListField(child=ImportMappingSerializer())

@@ -8,12 +8,14 @@ All rights reserved.  # NOQA
 :author
 """
 
+import json
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
 from seed.decorators import ajax_request_class
@@ -68,7 +70,7 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
+class TaxLotViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
@@ -624,7 +626,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         organization_id = int(request.query_params.get('organization_id'))
         organization = Organization.objects.get(pk=organization_id)
 
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
@@ -787,7 +789,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_taxlot_state_data[key] = None
 
-            changed_fields = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
+            changed_fields, previous_data = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
@@ -847,8 +849,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
 
                 if 'extra_data' in new_taxlot_state_data:
-                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
-                taxlot_state_data.update(new_taxlot_state_data)
+                    taxlot_state_data['extra_data'].update(
+                        new_taxlot_state_data['extra_data']
+                    )
+
+                taxlot_state_data.update(
+                    {k: v for k, v in new_taxlot_state_data.items() if k != 'extra_data'}
+                )
 
                 log = TaxLotAuditLog.objects.select_related().filter(
                     state=taxlot_view.state
@@ -875,6 +882,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
+
+                        Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 

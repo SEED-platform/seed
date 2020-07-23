@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.column_settings', [])
     '$stateParams',
     '$uibModal',
     'Notification',
+    'all_columns',
     'columns',
     'organization_payload',
     'auth_payload',
@@ -28,6 +29,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $stateParams,
       $uibModal,
       Notification,
+      all_columns,
       columns,
       organization_payload,
       auth_payload,
@@ -67,9 +69,30 @@ angular.module('BE.seed.controller.column_settings', [])
         {id: 'geometry', label: $translate.instant('Geometry')}
       ];
 
-      $scope.changeText = function(btnText) {
-        if(btnText === 'Collapse Help'){
-          $scope.btnText = 'Expand Help' ;
+      $scope.comstock_types = [
+        {id: null, label: ''},
+        {id: 'division', label: $translate.instant('comstock.division')},
+        {id: 'hvac_system_type', label: $translate.instant('comstock.hvac_system_type')},
+        {id: 'rentable_area', label: $translate.instant('comstock.rentable_area')},
+        {id: 'number_of_stories', label: $translate.instant('comstock.number_of_stories')},
+        {id: 'year_built', label: $translate.instant('comstock.year_built')},
+        {id: 'weekend_start_time', label: $translate.instant('comstock.weekend_start_time')},
+        {id: 'weekend_duration', label: $translate.instant('comstock.weekend_duration')},
+        {id: 'weekday_start_time', label: $translate.instant('comstock.weekday_start_time')},
+        {id: 'weekday_duration', label: $translate.instant('comstock.weekday_duration')},
+        {id: 'building_shape', label: $translate.instant('comstock.building_shape')},
+        {id: 'built_code', label: $translate.instant('comstock.built_code')},
+        {id: 'rotation', label: $translate.instant('comstock.rotation')},
+        {id: 'aspect_ratio', label: $translate.instant('comstock.aspect_ratio')},
+        {id: 'building_type', label: $translate.instant('comstock.building_type')},
+        {id: 'state', label: $translate.instant('comstock.state')},
+        {id: 'county', label: $translate.instant('comstock.county')},
+        {id: 'climate_zone', label: $translate.instant('comstock.climate_zone')}
+      ];
+
+      $scope.changeText = function (btnText) {
+        if (btnText === 'Collapse Help') {
+          $scope.btnText = 'Expand Help';
         } else {
           $scope.btnText = 'Collapse Help';
         }
@@ -79,10 +102,10 @@ angular.module('BE.seed.controller.column_settings', [])
         var change_to = (column.merge_protection === 'Favor New') ? 'Favor Existing' : 'Favor New';
 
         var geocoding_results_columns = ['geocoding_confidence', 'longitude', 'latitude'];
-        if (_.includes(geocoding_results_columns, column.column_name) ) {
+        if (_.includes(geocoding_results_columns, column.column_name)) {
           geocoding_results_columns.forEach(function (geo_col) {
-            _.find($scope.columns, { 'column_name': geo_col }).merge_protection = change_to;
-          })
+            _.find($scope.columns, {column_name: geo_col}).merge_protection = change_to;
+          });
         } else {
           column.merge_protection = change_to;
         }
@@ -155,6 +178,19 @@ angular.module('BE.seed.controller.column_settings', [])
         set_modified_and_check_sort();
       };
 
+      $scope.comstockModified = function (column) {
+        // Remove any potential duplicates
+        if (column.comstock_mapping !== null) {
+          _.forEach($scope.columns, function (col) {
+            // eslint-disable-next-line lodash/prefer-matches
+            if (col.id !== column.id && col.comstock_mapping === column.comstock_mapping) {
+              col.comstock_mapping = null;
+            }
+          });
+        }
+        $scope.setModified();
+      };
+
       $scope.setModified = function () {
         $scope.columns_updated = false;
         updateDiff();
@@ -179,11 +215,6 @@ angular.module('BE.seed.controller.column_settings', [])
               return _.isEqual(value, cleanColumns[index][key]) ? result : result.concat(key);
             }, []);
             diff[originalCol.id] = _.pick(cleanColumns[index], modifiedKeys);
-            if (_.includes(modifiedKeys, 'displayName')) {
-              // Rename to match backend
-              diff[originalCol.id].display_name = diff[originalCol.id].displayName;
-              delete diff[originalCol.id].displayName;
-            }
           }
         });
       };
@@ -241,7 +272,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.toggle_recognize_empty_sort = function () {
         if ($scope.column_sort !== 'recognize_empty') {
           $scope.columns = _.orderBy($scope.columns, 'recognize_empty', 'desc');
-          
+
           $scope.column_sort = 'recognize_empty';
         } else {
           default_sort_toggle();
@@ -272,10 +303,11 @@ angular.module('BE.seed.controller.column_settings', [])
 
         if (match_link_summary) {
           _.forOwn(match_link_summary, function (state_summary, state) {
+            var type;
             if (state === 'PropertyState') {
-              var type = 'Property';
+              type = 'Property';
             } else {
-              var type = 'TaxLot';
+              type = 'TaxLot';
             }
 
             var merged_count = state_summary.merged_count;
@@ -321,7 +353,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.save_settings = function () {
         $scope.columns_updated = false;
 
-        if (_.filter($scope.columns, 'is_matching_criteria').length == 0) {
+        if (_.filter($scope.columns, 'is_matching_criteria').length === 0) {
           Notification.error('Error: There must be at least one matching criteria column.');
           return;
         }
@@ -336,7 +368,11 @@ angular.module('BE.seed.controller.column_settings', [])
         modal_instance.result.then(function () { // User confirmed
           var promises = [];
           _.forOwn(diff, function (delta, column_id) {
-            promises.push(columns_service.patch_column_for_org($scope.org.id, column_id, delta));
+            column_id = Number(column_id);
+            var col = angular.copy(_.find($scope.columns, {id: column_id}));
+            col.display_name = col.displayName;  // Add display_name for backend
+            delete col.displayName;
+            promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
           });
 
           spinner_utility.show();
@@ -344,7 +380,6 @@ angular.module('BE.seed.controller.column_settings', [])
             $scope.$emit('app_error', data);
           });
         }).catch(function () { // User cancelled
-          return;
         });
       };
 
@@ -358,6 +393,9 @@ angular.module('BE.seed.controller.column_settings', [])
               return diff;
             },
             all_columns: function () {
+              return all_columns;
+            },
+            columns: function () {
               return $scope.columns;
             },
             inventory_type: function () {
@@ -383,6 +421,9 @@ angular.module('BE.seed.controller.column_settings', [])
             },
             all_column_names: function () {
               return _.map($scope.columns, 'column_name');
+            },
+            org_id: function () {
+              return $scope.org.id;
             }
           }
         });

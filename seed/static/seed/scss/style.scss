@@ -79,6 +79,10 @@ $pairingCellWidth: 200px;
   color: $red;
 }
 
+.border-red {
+  border-color: $red;
+}
+
 .green {
   color: $green;
 }
@@ -2811,7 +2815,7 @@ gs-input .tags .tag-item .remove-button {
   background-color: $highlighter;
 }
 
-#swagger-frame {
+#swagger-ui {
   height: calc(100vh - 60px);
   width: 100%;
 }
@@ -3621,4 +3625,13 @@ $pairedCellWidth: 60px;
 }
 .lock:hover .glyphicon-pushpin {
   Display: inline;
+}
+
+.readonly-grid {
+  cursor: default;
+  opacity: 0.5;
+
+  .ui-grid-canvas, .ui-grid-selection-row-header-buttons {
+    pointer-events: none;
+  }
 }

@@ -21,7 +21,6 @@
  * ng-switch-when="11" == Confirm Save Mappings?
  * ng-switch-when="12" == Error Processing Data
  * ng-switch-when="13" == Portfolio Manager Import
- * ng-switch-when="14" == Successful upload! [BuildingSync]
  */
 angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
@@ -318,33 +317,20 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           case 'upload_error':
             $scope.step_12_error_message = file.error;
             $scope.step.number = 12;
-            // add variables to identify buildingsync bulk uploads
-            $scope.building_sync_files = (file.source_type === 'BuildingSync');
-            $scope.bulk_upload = (_.last(file.filename.split('.')) === 'zip');
             break;
 
           case 'upload_in_progress':
             $scope.uploader.in_progress = true;
-            if (file.source_type === 'BuildingSync') {
-              $scope.uploader.progress = 100 * progress.loaded / progress.total;
-            } else {
-              $scope.uploader.progress = 25 * progress.loaded / progress.total;
-            }
+            $scope.uploader.progress = 25 * progress.loaded / progress.total;
             break;
 
           case 'upload_complete':
             var current_step = $scope.step.number;
             $scope.uploader.status_message = 'upload complete';
             $scope.dataset.filename = file.filename;
-            $scope.step_14_message = null;
+            $scope.source_type = file.source_type;
 
-            if (file.source_type === 'BuildingSync') {
-              $scope.uploader.complete = true;
-              $scope.uploader.in_progress = false;
-              $scope.uploader.progress = 100;
-              $scope.step.number = 14;
-              $scope.step_14_message = (_.size(file.message.warnings) > 0) ? file.message.warnings : null;
-            } else if (file.source_type === 'PM Meter Usage') {
+            if (file.source_type === 'PM Meter Usage') {
               $scope.cycle_id = file.cycle_id;
               $scope.file_id = file.file_id;
 
@@ -360,7 +346,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
               // Assessed Data; upload is step 2; PM import is currently treated as such, and is step 13
               if (current_step === 2 || current_step === 13) {
-                save_raw_assessed_data(file.file_id, file.cycle_id, false);
+                // if importing BuildingSync, validate then save, otherwise just save
+                if (file.source_type === 'BuildingSync Raw') {
+                  validate_use_cases_then_save(file.file_id, file.cycle_id);
+                } else {
+                  save_raw_assessed_data(file.file_id, file.cycle_id, false);
+                }
               }
               // Portfolio Data
               if (current_step === 4) {
@@ -496,6 +487,58 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       /**
+       * validate_use_cases_then_save: validates BuildingSync files for use cases
+       * before saving the data
+       *
+       * @param {string} file_id: the id of the import file
+       * @param cycle_id
+       */
+      var validate_use_cases_then_save = function (file_id, cycle_id) {
+        $scope.uploader.status_message = 'validating data';
+        $scope.uploader.progress = 0;
+
+        var successHandler = function (progress_data) {
+          $scope.uploader.complete = false;
+          $scope.uploader.in_progress = true;
+          $scope.uploader.status_message = 'validation complete; starting to save data';
+          $scope.uploader.progress = 100;
+
+          var result = JSON.parse(progress_data.message);
+          $scope.buildingsync_valid = result.valid;
+          $scope.buildingsync_issues = result.issues;
+
+          // if validation failed, end the import flow here; otherwise continue
+          if ($scope.buildingsync_valid !== true) {
+            $scope.step_12_error_message = 'Failed to validate uploaded BuildingSync file(s)';
+            $scope.step_12_buildingsync_validation_error = true;
+            $scope.step.number = 12;
+          } else {
+            // successfully passed validation, save the data
+            save_raw_assessed_data(file_id, cycle_id, false);
+          }
+        };
+
+        var errorHandler = function (data) {
+          $log.error(data.message);
+          if (data.stacktrace) $log.error(data.stacktrace);
+          $scope.step_12_error_message = data.data ? data.data.message : data.message;
+          $scope.step.number = 12;
+        };
+
+        uploader_service.validate_use_cases(file_id)
+          .then(function (data) {
+            var progress = _.clamp(data.progress, 0, 100);
+            uploader_service.check_progress_loop(
+              data.progress_key,
+              progress, 1 - (progress / 100),
+              successHandler,
+              errorHandler,
+              $scope.uploader
+            );
+          });
+      };
+
+      /**
        * save_raw_assessed_data: saves Assessed data
        *
        * @param {string} file_id: the id of the import file
@@ -519,7 +562,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           }, function (data) {
             $log.error(data.message);
             if (_.has(data, 'stacktrace')) $log.error(data.stacktrace);
-            $scope.step_12_error_message = data.message;
+            $scope.step_12_error_message = data.data ? data.data.message : data.message;
             $scope.step.number = 12;
           }, $scope.uploader);
         });
@@ -539,7 +582,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
           } else {
-            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function () {
+            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
 
@@ -573,6 +616,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 $scope.uploader.in_progress = false;
                 $scope.uploader.progress = 0;
                 $scope.uploader.status_message = '';
+                if (progress_data.file_info !== undefined) {
+                  // this only occurs in buildingsync, where we are not actually merging properties
+                  // thus we will always end up at step 10
+                  $scope.step_10_style = 'danger';
+                  $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2);
+                }
 
                 // If merges against existing exist, provide slightly different feedback
                 if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {

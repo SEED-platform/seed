@@ -6,12 +6,14 @@
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
+  '$q',
   'urls',
   'user_service',
   'cycle_service',
   'spinner_utility',
   'naturalSort',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort) {
+  'Notification',
+  function ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) {
 
     var inventory_service = {
       total_properties_for_user: 0,
@@ -54,7 +56,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v2/properties/cycles/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -163,7 +165,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http.post('/api/v2/properties/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+        organization_id: user_service.get_organization().id
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -288,7 +290,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.post('/api/v2/taxlots/cycles/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -392,7 +394,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
       return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+        organization_id: user_service.get_organization().id
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -501,10 +503,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_property_columns_for_org = function (org_id) {
+    inventory_service.get_property_columns_for_org = function (org_id, only_used) {
+      if (only_used === undefined) only_used = false;
       return $http.get('/api/v2/properties/columns/', {
         params: {
-          organization_id: org_id
+          organization_id: org_id,
+          only_used: only_used
         }
       }).then(function (response) {
         // Remove empty columns
@@ -579,10 +583,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_taxlot_columns_for_org = function (org_id) {
+    inventory_service.get_taxlot_columns_for_org = function (org_id, only_used) {
+      if (only_used === undefined) only_used = false;
       return $http.get('/api/v2/taxlots/columns/', {
         params: {
-          organization_id: org_id
+          organization_id: org_id,
+          only_used: only_used
         }
       }).then(function (response) {
         // Remove empty columns
@@ -1000,6 +1006,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.update_settings_profile = function (id, data) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
       return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
         params: {
           organization_id: user_service.get_organization().id
@@ -1010,6 +1020,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.remove_settings_profile = function (id) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
       return $http.delete('/api/v2/column_list_settings/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id

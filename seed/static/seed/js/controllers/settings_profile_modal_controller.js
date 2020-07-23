@@ -24,6 +24,8 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
           profile.name = $scope.newName;
           inventory_service.update_settings_profile(id, profile).then(function (result) {
             $uibModalInstance.close(result.name);
+          }).catch(function () {
+            $uibModalInstance.dismiss();
           });
         }
       };
@@ -31,6 +33,8 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
       $scope.remove_profile = function () {
         inventory_service.remove_settings_profile($scope.data.id).then(function () {
           $uibModalInstance.close();
+        }).catch(function () {
+          $uibModalInstance.dismiss();
         });
       };
 

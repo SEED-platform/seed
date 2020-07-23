@@ -55,6 +55,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
+  'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
@@ -152,7 +153,8 @@ var SEED_app = angular.module('BE.seed', [
   'BE.seed.directives',
   'BE.seed.services',
   'BE.seed.controllers',
-  'BE.seed.utilities'
+  'BE.seed.utilities',
+  'BE.seed.constants'
 ], ['$interpolateProvider', '$qProvider', function ($interpolateProvider, $qProvider) {
   $interpolateProvider.startSymbol('{$');
   $interpolateProvider.endSymbol('$}');
@@ -235,6 +237,14 @@ SEED_app.run([
         } else {
           $rootScope.load_error_message = '' || message || error;
         }
+      }
+
+      // Revert the url when the transition was triggered by a sidebar link (options.source === 'url')
+      if (transition.options().source === 'url') {
+        var $urlRouter = transition.router.urlRouter;
+
+        $urlRouter.push($state.$current.navigable.url, $state.params, {replace: true});
+        $urlRouter.update(true);
       }
     });
 
@@ -520,12 +530,37 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
-          column_mapping_presets_payload: ['column_mappings_service', 'user_service', function (column_mappings_service, user_service) {
-            var organization_id = user_service.get_organization().id;
-            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
-              return response.data;
-            });
-          }],
+          column_mapping_presets_payload: [
+            'column_mappings_service',
+            'user_service',
+            'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
+            'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
+            'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+            'import_file_payload',
+            function (
+              column_mappings_service,
+              user_service,
+              COLUMN_MAPPING_PRESET_TYPE_NORMAL,
+              COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+              COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM,
+              import_file_payload) {
+              var filter_preset_types;
+              if (import_file_payload.import_file.source_type === 'BuildingSync Raw') {
+                filter_preset_types = [
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                ];
+              } else {
+                filter_preset_types = [COLUMN_MAPPING_PRESET_TYPE_NORMAL];
+              }
+              var organization_id = user_service.get_organization().id;
+              return column_mappings_service.get_column_mapping_presets_for_org(
+                organization_id,
+                filter_preset_types
+              ).then(function (response) {
+                return response.data;
+              });
+            }],
           import_file_payload: ['dataset_service', '$stateParams', function (dataset_service, $stateParams) {
             var importfile_id = $stateParams.importfile_id;
             return dataset_service.get_import_file(importfile_id);
@@ -795,32 +830,24 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_settings.html',
         controller: 'column_settings_controller',
         resolve: {
-          columns: ['$stateParams', 'inventory_service', 'naturalSort', function ($stateParams, inventory_service, naturalSort) {
+          all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var organization_id = $stateParams.organization_id;
 
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
-              });
+              return inventory_service.get_property_columns_for_org(organization_id);
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns_for_org(organization_id).then(function (columns) {
-                columns = _.reject(columns, 'related');
-                columns = _.map(columns, function (col) {
-                  return _.omit(col, ['pinnedLeft', 'related']);
-                });
-                columns.sort(function (a, b) {
-                  return naturalSort(a.displayName, b.displayName);
-                });
-                return columns;
-              });
+              return inventory_service.get_taxlot_columns_for_org(organization_id);
             }
+          }],
+          columns: ['all_columns', 'naturalSort', function (all_columns, naturalSort) {
+            var columns = _.reject(all_columns, 'related');
+            columns = _.map(columns, function (col) {
+              return _.omit(col, ['pinnedLeft', 'related']);
+            });
+            columns.sort(function (a, b) {
+              return naturalSort(a.displayName, b.displayName);
+            });
+            return columns;
           }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
@@ -847,12 +874,12 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/column_mappings.html',
         controller: 'column_mappings_controller',
         resolve: {
-          mappable_property_columns_payload: ['inventory_service' , function (inventory_service) {
+          mappable_property_columns_payload: ['inventory_service', function (inventory_service) {
             return inventory_service.get_mappable_property_columns().then(function (result) {
               return result;
             });
           }],
-          mappable_taxlot_columns_payload: ['inventory_service' , function (inventory_service) {
+          mappable_taxlot_columns_payload: ['inventory_service', function (inventory_service) {
             return inventory_service.get_mappable_taxlot_columns().then(function (result) {
               return result;
             });
@@ -909,6 +936,26 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 });
                 columns.sort(function (a, b) {
                   return naturalSort(a.displayName, b.displayName);
+                });
+                return columns;
+              });
+            }
+          }],
+          used_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var organization_id = $stateParams.organization_id;
+            if ($stateParams.inventory_type === 'properties') {
+              return inventory_service.get_property_columns_for_org(organization_id, true).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
+                });
+                return columns;
+              });
+            } else if ($stateParams.inventory_type === 'taxlots') {
+              return inventory_service.get_taxlot_columns_for_org(organization_id, true).then(function (columns) {
+                columns = _.reject(columns, 'related');
+                columns = _.map(columns, function (col) {
+                  return _.omit(col, ['pinnedLeft', 'related']);
                 });
                 return columns;
               });

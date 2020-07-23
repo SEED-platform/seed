@@ -155,6 +155,11 @@ def _get_org_id(request):
     """Extract the ``organization_id`` regardless of HTTP method type."""
     # first try to get it from the query parameters
     org_id = request.GET.get('organization_id')
+
+    # Handle cases where the Org ID is a path field that shows up in the kwargs as 'organization_id'
+    if org_id is None:
+        org_id = request.parser_context.get('kwargs', {}).get('organization_id')
+
     # if that does not work...
     if org_id is None:
         # try getting it from the request body itself

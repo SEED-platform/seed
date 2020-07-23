@@ -424,6 +424,60 @@ msgstr "Informations de conformité"
 msgid "compliance_type"
 msgstr "conformité_type"
 
+msgid "ComStock Mapping"
+msgstr "Cartographie ComStock"
+
+msgid "comstock.aspect_ratio"
+msgstr "Ratio d'aspect"
+
+msgid "comstock.building_shape"
+msgstr "Forme du bâtiment"
+
+msgid "comstock.building_type"
+msgstr "Type de bâtiment"
+
+msgid "comstock.built_code"
+msgstr "Code construit"
+
+msgid "comstock.climate_zone"
+msgstr "Zone climatique"
+
+msgid "comstock.county"
+msgstr "Comté"
+
+msgid "comstock.division"
+msgstr "Division"
+
+msgid "comstock.hvac_system_type"
+msgstr "Type de système CVC"
+
+msgid "comstock.number_of_stories"
+msgstr "Nombre d'histoires"
+
+msgid "comstock.rentable_area"
+msgstr "Surface louable"
+
+msgid "comstock.rotation"
+msgstr "Rotation"
+
+msgid "comstock.state"
+msgstr "Etat"
+
+msgid "comstock.weekday_duration"
+msgstr "Durée de la semaine"
+
+msgid "comstock.weekday_start_time"
+msgstr "Heure de début de la semaine"
+
+msgid "comstock.weekend_duration"
+msgstr "Durée du week-end"
+
+msgid "comstock.weekend_start_time"
+msgstr "Heure de début du week-end"
+
+msgid "comstock.year_built"
+msgstr "Année de construction"
+
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concaténer les en-Têtes (colonnes de données)"
 
@@ -677,8 +731,8 @@ msgstr "Date limite:"
 msgid "Delete"
 msgstr "Supprimer"
 
-msgid "Delete All Columns"
-msgstr "Supprimer toutes les colonnes"
+msgid "Delete All Mappings"
+msgstr "Supprimer tous les mappages"
 
 msgid "Delete Organization"
 msgstr "Supprimer l'organisation"
@@ -803,6 +857,9 @@ msgstr "adresse e-mail"
 
 msgid "Email Address:"
 msgstr "Adresse e-mail:"
+
+msgid "Enable ComStock Functionality"
+msgstr "Activer la fonctionnalité ComStock"
 
 #: seed/models/models.py:237
 msgid "end_date"
@@ -1325,6 +1382,9 @@ msgstr "Appariant bâtiments pour <strong>{filename}</strong>"
 
 msgid "MAPPING_STEP_2_ADVICE"
 msgstr "Après avoir cliqué sur le bouton <span class=\"label label-primary\">Mapper vos données</span> , vous verrez une vue avec les champs mappés et vos données dans une grille, de sorte que vous pouvez vérifier que le mappage est ce que vous voulez. Si vous devez modifier le mappage, cliquez sur le bouton <span class=\"label label-primary\">Retour au mappage</span> et modifiez le mappage du champ. Assurez-vous que les mappages sont corrects dans cette étape. Une fois que vous avez cliqué sur le bouton <span class=\"label label-primary\">Enregistrer les correspondances</span> , vous ne pourrez pas modifier les mappages de champs."
+
+msgid "MapQuest API Key"
+msgstr "Clé API MapQuest"
 
 msgid "MARKETING_BULLET_1"
 msgstr "Commencez à utiliser SEED Platform™ en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe de séjour), puis vos données EPA Portfolio Manager. Assurez-vous que ces fichiers sont au format .csv, .xls, .xlsx ou .xml. La plate-forme SEED vous aidera à mapper et valider vos données dans le processus de chargement."
