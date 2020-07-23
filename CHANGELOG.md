@@ -12,6 +12,84 @@ Deprecation will occur with the deactivation of endpoints contained in API versi
 The deprecation schedule will be released at a later date, but we recommend that users begin using API v3.
 For any questions or concerns, please reach out to the SEED team.
 
+Date Range: 03/27/20 - 07/22/20
+
+Closed Issues and Features:
+- Improved [#786]( https://github.com/SEED-platform/seed/issues/786 ), Save Changes button sequence in Data Cleansing Admin
+- Feature [#1369]( https://github.com/SEED-platform/seed/issues/1369 ), DQ check - Add badge on each DQ admin tab (Property & Tax Lot) to indicate # of defined rules
+- Feature [#1591]( https://github.com/SEED-platform/seed/issues/1591 ), Detail Screen: Highlight the changes in the columns
+- Fixed [#1614]( https://github.com/SEED-platform/seed/issues/1614 ), Data Quality -- Not Null option needs refinement when there are multiple rule definitions for one field
+- Fixed [#1615]( https://github.com/SEED-platform/seed/issues/1615 ), DQ Required vs Not Null
+- Fixed [#1675]( https://github.com/SEED-platform/seed/issues/1675 ), Mapping to a field with units, that doesn't display the units, causes mapping to "hang"
+- Improved [#1716]( https://github.com/SEED-platform/seed/issues/1716 ), Keep track of hand edits in Detail View
+- Fixed [#1847]( https://github.com/SEED-platform/seed/issues/1847 ), Auto ESPM import -- criteria for duplicate records not being added
+- Improved [#1848]( https://github.com/SEED-platform/seed/issues/1848 ), DQ Rules -- Add warning to save rules before leaving screen
+- Fixed [#1882]( https://github.com/SEED-platform/seed/issues/1882 ), Filter operators ! and "" don't work on PM Generation Date
+- Improved [#1899]( https://github.com/SEED-platform/seed/issues/1899 ), Import fields from BuildingSync reports
+- Fixed [#1932]( https://github.com/SEED-platform/seed/issues/1932 ), BRICR upload/download
+- Improved [#1935]( https://github.com/SEED-platform/seed/issues/1935 ), BuildingSync V2.0 Updates
+- Fixed [#1946]( https://github.com/SEED-platform/seed/issues/1946 ), Meter data visible on some cycles but not all
+- Fixed [#1975]( https://github.com/SEED-platform/seed/issues/1975 ), Tax Lot -specific merge check is inadvertently performed on properties
+- Fixed [#1983]( https://github.com/SEED-platform/seed/issues/1983 ), Merging issue when Tax Lot data mapped differently
+- Chore [#1985]( https://github.com/SEED-platform/seed/issues/1985 ), Reconcile SEED with BuildingSync file for Audit Template Tool compatibility
+- Improved [#1994]( https://github.com/SEED-platform/seed/issues/1994 ), Store timeseries data from scenarios
+- Improved [#2020]( https://github.com/SEED-platform/seed/issues/2020 ), DQ: Defining multiple rules for the same field is limited
+- Feature [#2024]( https://github.com/SEED-platform/seed/issues/2024 ), Mapping: allow user to set up a mapping profile for a BuildingSync file
+- Fixed [#2066]( https://github.com/SEED-platform/seed/issues/2066 ), Page not refreshed when switch menu tabs without saving changes and click on "stay on page"
+- Fixed [#2069]( https://github.com/SEED-platform/seed/issues/2069 ), Selected Cycle not set on different inventory pages
+- Feature [#2082]( https://github.com/SEED-platform/seed/issues/2082 ), Static SEED Webpage Development
+- Fixed [#2096]( https://github.com/SEED-platform/seed/issues/2096 ), Meter import bug - postgres unique constraints removed from meterreading table
+- Fixed [#2098]( https://github.com/SEED-platform/seed/issues/2098 ), Admin: Create User: Prevent adding an org with existing name
+- Feature [#2102]( https://github.com/SEED-platform/seed/issues/2102 ), Add "Freeze Master Column" feature in Detail View
+- Fixed [#2105]( https://github.com/SEED-platform/seed/issues/2105 ), Error message when editing in Detail view is incomprehensible
+- Fixed [#2114]( https://github.com/SEED-platform/seed/issues/2114 ), Deleting a rule after saving previous changes does not reactive save buttons
+- Fixed [#2119]( https://github.com/SEED-platform/seed/issues/2119 ), Re-enable created and updated fields for master records on the front end
+- Improved [#2121]( https://github.com/SEED-platform/seed/issues/2121 ), User Testing for 2.7.0
+- Fixed [#2122]( https://github.com/SEED-platform/seed/issues/2122 ), Uploading ESPM file as Spreadsheet, doesn't ignore header lines in file
+- Improved [#2127]( https://github.com/SEED-platform/seed/issues/2127 ), Add functionality to see entire SEED HEADER field name in Mapping
+- Improved [#2131]( https://github.com/SEED-platform/seed/issues/2131 ), Bricr-dev testing for potential merge into develop
+- Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
+- Feature [#2137]( https://github.com/SEED-platform/seed/issues/2137 ), BuildingSync to handle v1.1 and v2.0
+- Fixed [#2139]( https://github.com/SEED-platform/seed/issues/2139 ), Missing reverse match for password reset
+- Fixed [#2164]( https://github.com/SEED-platform/seed/issues/2164 ), Update label get_is_applied to support OEP
+- Improved [#2169]( https://github.com/SEED-platform/seed/issues/2169 ), Use Docker Compose instead of Swarm
+- Feature [#2175]( https://github.com/SEED-platform/seed/issues/2175 ), API V3 - Import Files
+- Feature [#2176]( https://github.com/SEED-platform/seed/issues/2176 ), API V3 - Users
+- Feature [#2177]( https://github.com/SEED-platform/seed/issues/2177 ), API V3 - Columns
+- Feature [#2178]( https://github.com/SEED-platform/seed/issues/2178 ), API V3 - Labels
+- Feature [#2179]( https://github.com/SEED-platform/seed/issues/2179 ), API V3 - Data Quality
+- Feature [#2180]( https://github.com/SEED-platform/seed/issues/2180 ), API V3 - Dataset
+- Feature [#2181]( https://github.com/SEED-platform/seed/issues/2181 ), API V3 - Cycles
+- Feature [#2182]( https://github.com/SEED-platform/seed/issues/2182 ), API V3 - Column List Profiles
+- Feature [#2183]( https://github.com/SEED-platform/seed/issues/2183 ), API V3 - Column Mapping Profiles
+- Fixed [#2184]( https://github.com/SEED-platform/seed/issues/2184 ), Minimum value input form disabled when a new rule is created with 'None' data_type
+- Fixed [#2200]( https://github.com/SEED-platform/seed/issues/2200 ), Resolve WAVA Issues
+- Fixed [#2202]( https://github.com/SEED-platform/seed/issues/2202 ), Organization's DQ Rules can be inadvertently deleted
+- Fixed [#2209]( https://github.com/SEED-platform/seed/issues/2209 ), Data quality error report does not show applied labels
+- Fixed [#2216]( https://github.com/SEED-platform/seed/issues/2216 ), StopIteration Error
+- Fixed [#2226]( https://github.com/SEED-platform/seed/issues/2226 ), Losing unit-aware data on import after initial column mapping
+- Fixed [#2230]( https://github.com/SEED-platform/seed/issues/2230 ), Default PM Mappings need improvements
+- Fixed [#2232]( https://github.com/SEED-platform/seed/issues/2232 ), Swagger Django Errors
+- Fixed [#2238]( https://github.com/SEED-platform/seed/issues/2238 ), Data quality - data type missing for rule "Address line 1" on taxlots view
+- Feature [#2242]( https://github.com/SEED-platform/seed/issues/2242 ), ComStock Support
+- Feature [#2245]( https://github.com/SEED-platform/seed/issues/2245 ), Integrate BuildingSync Selection Tool's Use Case API
+- Feature [#2249]( https://github.com/SEED-platform/seed/issues/2249 ), API V3 - Organization
+- Feature [#2250]( https://github.com/SEED-platform/seed/issues/2250 ), API V3 - Properties
+- Feature [#2251]( https://github.com/SEED-platform/seed/issues/2251 ), API V3 - Tax Lots
+- Feature [#2252]( https://github.com/SEED-platform/seed/issues/2252 ), API V3 - Meters
+- Feature [#2253]( https://github.com/SEED-platform/seed/issues/2253 ), API V3 - Measures, building file, and upload
+- Feature [#2254]( https://github.com/SEED-platform/seed/issues/2254 ), API V3 - Geocode, UBID, and Misc.
+- Feature [#2259]( https://github.com/SEED-platform/seed/issues/2259 ), API V3 - LabelInventory (property or tax lot)
+- Feature [#2263]( https://github.com/SEED-platform/seed/issues/2263 ), API V3 - GBR-related endpoints
+- Fixed [#2272]( https://github.com/SEED-platform/seed/issues/2272 ), DQ Export problems
+- Fixed [#2281]( https://github.com/SEED-platform/seed/issues/2281 ), Making new DQ rule, set Condition check, then set Field, condition check get set to blank
+- Fixed [#2286]( https://github.com/SEED-platform/seed/issues/2286 ), Indicate mapped fields in DQ Admin definition or when running DQ Check in Inventory
+- Fixed [#2289]( https://github.com/SEED-platform/seed/issues/2289 ), DQ Admin: Can't Save New Rule after deleting all existing rules
+- Fixed [#2290]( https://github.com/SEED-platform/seed/issues/2290 ), DQ Admin: Valid Data Rule run from Inventory seems to "hang"
+- Fixed [#2293]( https://github.com/SEED-platform/seed/issues/2293 ), DQ check - Not Null and Required rules for extra_data fields bug
+- Fixed [#2295]( https://github.com/SEED-platform/seed/issues/2295 ), Migrating from very old versions to the latest can fail
+- Fixed [#2324]( https://github.com/SEED-platform/seed/issues/2324 ), Can't change Column display name
+
 # SEED Version 2.7.1
 
 Date Range: 12/21/19 - 03/27/20
