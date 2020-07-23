@@ -49,7 +49,6 @@ Closed Issues and Features:
 - Improved [#2127]( https://github.com/SEED-platform/seed/issues/2127 ), Add functionality to see entire SEED HEADER field name in Mapping
 - Improved [#2131]( https://github.com/SEED-platform/seed/issues/2131 ), Bricr-dev testing for potential merge into develop
 - Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
-- Feature [#2137]( https://github.com/SEED-platform/seed/issues/2137 ), BuildingSync to handle v1.1 and v2.0
 - Fixed [#2139]( https://github.com/SEED-platform/seed/issues/2139 ), Missing reverse match for password reset
 - Fixed [#2164]( https://github.com/SEED-platform/seed/issues/2164 ), Update label get_is_applied to support OEP
 - Improved [#2169]( https://github.com/SEED-platform/seed/issues/2169 ), Use Docker Compose instead of Swarm
