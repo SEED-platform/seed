@@ -95,6 +95,7 @@ angular.module('BE.seed.controller.inventory_map', [])
               var bb_taxlots = _.filter(record.related, 'bounding_box');
               taxlots = _.concat(taxlots, bb_taxlots);
             } else {
+              record = _.filter(record, 'bounding_box');
               taxlots = _.concat(taxlots, record);
             }
           });
@@ -409,8 +410,6 @@ angular.module('BE.seed.controller.inventory_map', [])
           target: 'map',
           layers: layers
         });
-
-        // Toggle layers
 
         // If a layer's z-index is changed, it should be changed here as well.
         var layer_at_z_index = {
