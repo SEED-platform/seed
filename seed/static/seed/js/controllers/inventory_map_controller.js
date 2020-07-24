@@ -25,7 +25,6 @@ angular.module('BE.seed.controller.inventory_map', [])
       urls
     ) {
       // always map properties with taxlot in the 'related' field
-      // $scope.inventory_type = 'properties';
       $scope.inventory_type = $stateParams.inventory_type;
 
       $scope.data = [];
