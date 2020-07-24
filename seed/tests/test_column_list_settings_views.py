@@ -51,7 +51,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
 
     def test_create_column_settings(self):
         response = self.client.post(
-            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-create') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
