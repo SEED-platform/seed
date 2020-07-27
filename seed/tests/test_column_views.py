@@ -120,7 +120,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_get_all_columns(self):
         # test building list columns
-        response = self.client.get(reverse('api:v2:columns-list'), {
+        response = self.client.get(reverse('api:v3:columns-list'), {
             'organization_id': self.org.id
         })
         data = json.loads(response.content)['columns']
@@ -171,7 +171,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
@@ -203,7 +203,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
                               "na": None}]
 
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
@@ -215,7 +215,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.assertFalse(result['success'])
 
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
@@ -252,7 +252,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
@@ -272,7 +272,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_rename_column_wrong_org(self):
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[self.cross_org_column.pk]),
+            reverse('api:v3:columns-rename', args=[self.cross_org_column.pk]),
             content_type='application/json',
         )
         result = response.json()
@@ -285,7 +285,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
     def test_rename_column_dne(self):
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[-999]),
+            reverse('api:v3:columns-rename', args=[-999]),
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 404)
