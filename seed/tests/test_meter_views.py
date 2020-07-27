@@ -24,7 +24,7 @@ class TestMeterValidTypesUnits(DataMappingBaseTestCase):
         self.client.login(**self.user_details)
 
     def test_view_that_returns_valid_types_and_units_for_meters(self):
-        url = reverse('api:v2:meters-valid-types-units')
+        url = reverse('api:v3:meters-valid-types-units')
 
         result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
