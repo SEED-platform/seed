@@ -96,13 +96,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         )
 
     def test_parsed_meters_confirmation_verifies_energy_type_and_units(self):
-        url = reverse('api:v2:meters-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': self.import_file.id,
-            'organization_id': self.org.pk,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
@@ -130,13 +126,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle
         )
 
-        url = reverse('api:v2:meters-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': import_file_with_invalids.id,
-            'organization_id': self.org.pk,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': import_file_with_invalids.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
@@ -153,13 +145,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict.get("validated_type_units"), expectation)
 
     def test_parsed_meters_confirmation_returns_pm_property_ids_and_corresponding_incoming_counts(self):
-        url = reverse('api:v2:meters-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': self.import_file.id,
-            'organization_id': self.org.pk,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
@@ -208,13 +196,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle
         )
 
-        url = reverse('api:v2:meters-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': cost_import_file.id,
-            'organization_id': self.org.pk,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': cost_import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         validated_type_units = [
@@ -286,7 +270,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         self.org.thermal_conversion_assumption = Organization.CAN
         self.org.save()
 
-        can_result = self.client.post(url, post_params, content_type="application/json")
+        can_result = self.client.get(url)
         can_result_dict = ast.literal_eval(can_result.content.decode("utf-8"))
 
         validated_type_units[2] = {
@@ -308,14 +292,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             cycle=self.cycle
         )
 
-        url = reverse('api:v2:meters-greenbutton-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': xml_import_file.id,
-            'organization_id': self.org.pk,
-            'view_id': self.property_view_1.id,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-greenbutton-meters-preview', kwargs={'pk': xml_import_file.id})
+        url += f'?organization_id={self.org.pk}&view_id={self.property_view_1.id}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         proposed_imports = [
@@ -343,13 +322,9 @@ class TestMeterViewSet(DataMappingBaseTestCase):
     def test_parsed_meters_confirmation_returns_unlinkable_pm_property_ids(self):
         PropertyState.objects.all().delete()
 
-        url = reverse('api:v2:meters-parsed-meters-confirmation')
-
-        post_params = json.dumps({
-            'file_id': self.import_file.id,
-            'organization_id': self.org.pk,
-        })
-        result = self.client.post(url, post_params, content_type="application/json")
+        url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        result = self.client.get(url)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
         expectation = [
