@@ -111,5 +111,24 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       }, failure_fn);
     };
 
+    uploader_factory.parsed_meters_confirmation = function (file_id, org_id) {
+      return $http.post('/api/v2/meters/parsed_meters_confirmation/', {
+        file_id: file_id,
+        organization_id: org_id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    uploader_factory.greenbutton_parsed_meters_confirmation = function (file_id, org_id, view_id) {
+      return $http.post('/api/v2/meters/greenbutton_parsed_meters_confirmation/', {
+        file_id: file_id,
+        organization_id: org_id,
+        view_id: view_id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     return uploader_factory;
   }]);
