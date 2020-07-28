@@ -4,10 +4,11 @@ angular.module('BE.seed.service.meter', [])
     function ($http) {
       var meter_factory = {};
 
-      meter_factory.get_meters = function (property_view_id) {
-        return $http.post('/api/v2/meters/property_meters/', {
-          property_view_id: property_view_id
-        }).then(function (response) {
+      meter_factory.get_meters = function (property_view_id, organization_id) {
+        return $http.get(
+          '/api/v3/properties/' + property_view_id + '/meters/',
+          { params: { organization_id } }
+        ).then(function (response) {
           return response.data;
         });
       };
