@@ -42,9 +42,12 @@ class ColumnListSettingsView(DeleteModelsTestCase):
             "settings_location": "List View Settings",
             "inventory_type": "Property",
             "columns": [
-                {"id": self.column_1.id, "pinned": False, "order": 1},
-                {"id": self.column_2.id, "pinned": False, "order": 2},
-                {"id": self.column_3.id, "pinned": True, "order": 3},
+                {"id": self.column_1.id, "pinned": False, "order": 1, "column_name": self.column_1.column_name,
+                 "table_name": self.column_1.table_name},
+                {"id": self.column_2.id, "pinned": False, "order": 2, "column_name": self.column_2.column_name,
+                 "table_name": self.column_2.table_name},
+                {"id": self.column_3.id, "pinned": True, "order": 3, "column_name": self.column_3.column_name,
+                 "table_name": self.column_3.table_name},
             ]
         }
         self.client.login(**user_details)
@@ -102,8 +105,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
-
-        id_to_delete = json.loads(to_delete.content)['data'][0]['id']
+        id_to_delete = json.loads(to_delete.content)['data']['id']
         response = self.client.delete(
             reverse('api:v3:column_list_profiles-detail',
                     args=[id_to_delete]) + '?organization_id=' + str(self.org.id)
@@ -128,6 +130,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
             "name": "New Name",
             "inventory_type": "Tax Lot",
             "settings_location": "List View Settings",
+            "columns": []
         }
         url = reverse('api:v3:column_list_profiles-detail',
                       args=[json.loads(cls.content)['data']['id']]) + '?organization_id=' + str(
@@ -140,7 +143,8 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(result['data']['inventory_type'], 'Tax Lot')
         self.assertEqual(len(result['data']['columns']), 0)
 
-        payload['columns'] = [{"id": self.column_1.id, "pinned": True, "order": 999}]
+        payload['columns'] = [{"id": self.column_1.id, "pinned": True, "order": 999, "column_name": self.column_3.column_name,
+                 "table_name": self.column_3.table_name}]
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(len(result['data']['columns']), 1)
