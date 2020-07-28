@@ -336,7 +336,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               $scope.uploader.progress = 50;
               $scope.uploader.status_message = 'analyzing file';
               uploader_service
-                .parsed_meters_confirmation(file.file_id, $scope.organization.org_id)
+                .pm_meters_preview(file.file_id, $scope.organization.org_id)
                 .then(present_parsed_meters_confirmation)
                 .catch(present_meter_import_error);
             } else {
