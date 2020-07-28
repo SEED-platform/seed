@@ -143,8 +143,10 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         self.assertEqual(result['data']['inventory_type'], 'Tax Lot')
         self.assertEqual(len(result['data']['columns']), 0)
 
-        payload['columns'] = [{"id": self.column_1.id, "pinned": True, "order": 999, "column_name": self.column_3.column_name,
-                 "table_name": self.column_3.table_name}]
+        payload['columns'] = [
+            {"id": self.column_1.id, "pinned": True, "order": 999, "column_name": self.column_3.column_name,
+             "table_name": self.column_3.table_name}
+        ]
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(len(result['data']['columns']), 1)
