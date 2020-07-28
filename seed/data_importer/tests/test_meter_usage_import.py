@@ -868,12 +868,9 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         )
 
         # Check that meters pre-upload confirmation runs without problems
-        confirmation_url = reverse('api:v2:meters-parsed-meters-confirmation')
-        confirmation_post_params = json.dumps({
-            'file_id': pm_meter_file.id,
-            'organization_id': self.org.pk,
-        })
-        self.client.post(confirmation_url, confirmation_post_params, content_type="application/json")
+        confirmation_url = reverse('api:v3:import_files-pm-meters-preview', kwargs={'pk': pm_meter_file.id})
+        confirmation_url += f'?organization_id={self.org.pk}'
+        self.client.get(confirmation_url)
 
         url = reverse("api:v2:import_files-save-raw-data", args=[pm_meter_file.id])
         post_params = {
