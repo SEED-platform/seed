@@ -17,7 +17,7 @@ from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
-class ColumnListSettingsView(DeleteModelsTestCase):
+class ColumnListProfilesView(DeleteModelsTestCase):
     """
     Tests of the SEED default custom saved columns
     """
@@ -52,7 +52,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         }
         self.client.login(**user_details)
 
-    def test_create_column_settings(self):
+    def test_create_column_profile(self):
         response = self.client.post(
             reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
@@ -64,7 +64,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(data['data']['inventory_type'], 'Property')
         self.assertEqual(data['data']['settings_location'], 'List View Settings')
 
-    def test_get_column_settings(self):
+    def test_get_column_profile(self):
         # Create two list settings
         self.client.post(
             reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
@@ -93,7 +93,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(data['data']['id'], id)
         self.assertEqual(len(data['data']['columns']), 3)
 
-    def test_delete_column_settings(self):
+    def test_delete_column_profile(self):
         # Create two list settings
         to_delete = self.client.post(
             reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
@@ -120,7 +120,7 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(len(data['data']), 1)
         self.assertNotEqual(data['data'][0]['id'], id_to_delete)
 
-    def test_update_column_settings(self):
+    def test_update_column_profile(self):
         cls = self.client.post(
             reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
