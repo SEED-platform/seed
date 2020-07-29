@@ -662,7 +662,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           password: pm_password,
           template: pm_template
         }).then(function (response) {
-          response = $http.post('/api/v2/upload/create_from_pm_import/', {
+          response = $http.post('/api/v3/upload/create_from_pm_import/', {
             properties: response.data.properties,
             import_record_id: $scope.dataset.id
           });
