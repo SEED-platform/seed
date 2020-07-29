@@ -6,7 +6,6 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
     'uiGridConstants',
     'filler_cycle',
     'dataset_service',
-    'meters_service',
     'organization_id',
     'uploader_service',
     'view_id',
@@ -18,7 +17,6 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       uiGridConstants,
       filler_cycle,
       dataset_service,
-      meters_service,
       organization_id,
       uploader_service,
       view_id,
@@ -112,7 +110,7 @@ angular.module('BE.seed.controller.green_button_upload_modal', [])
       };
 
       var show_confirmation_info = function () {
-        meters_service.greenbutton_parsed_meters_confirmation($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
+        uploader_service.greenbutton_meters_preview($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
           $scope.proposed_imports_options = {
             data: result.proposed_imports,
             columnDefs: base_green_button_col_defs,

@@ -135,6 +135,20 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'column': ColumnSerializer(c).data
         })
 
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def update(self, request, pk=None):
+        organization_id = request.query_params.get('organization_id', None)
+
+        request.data['shared_field_type'] = request.data['sharedFieldType']
+        del request.data['sharedFieldType']
+
+        # Ensure ComStock uniqueness across properties and taxlots together
+        if request.data['comstock_mapping'] is not None:
+            Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
+                .update(comstock_mapping=None)
+        return super(ColumnViewSet, self).update(request, pk)
+
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({
             'new_column_name': 'string',
