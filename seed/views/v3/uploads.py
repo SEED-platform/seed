@@ -46,7 +46,6 @@ class UploadViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         request_body=no_body,
         manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.upload_file_field(
                 name='file',
                 required=True,
@@ -59,7 +58,7 @@ class UploadViewSet(viewsets.ViewSet):
             ),
             AutoSchemaHelper.form_string_field(
                 name='source_type',
-                required=True,
+                required=False,
                 description='the type of file (e.g. "Portfolio Raw" or "Assessed Raw")'
             ),
             AutoSchemaHelper.form_string_field(
@@ -103,12 +102,11 @@ class UploadViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-        org_id = request.query_params.get('organization_id', None)
+
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(
                 pk=import_record_pk,
-                super_organization_id=org_id
             )
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file
