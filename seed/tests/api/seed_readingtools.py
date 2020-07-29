@@ -134,7 +134,7 @@ def check_progress(main_url, header, progress_key):
     print("checking progress {}".format(progress_key))
     try:
         progress_result = requests.get(
-            main_url + '/api/v2/progress/{}/'.format(progress_key),
+            main_url + '/api/v3/progress/{}/'.format(progress_key),
             headers=header
         )
         print("... {} ...".format(progress_result.json()['progress']))
