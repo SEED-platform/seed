@@ -120,9 +120,9 @@ angular.module('BE.seed.controller.inventory_map', [])
           // taxlots
           $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
           $scope.layers.points_layer = {zIndex: 2, visible: 1};
-          $scope.layers.building_bb_layer = {zIndex: 3, visible: 0};
+          $scope.layers.building_bb_layer = {zIndex: 3, visible: 1};
           $scope.layers.building_centroid_layer = {zIndex: 4, visible: 0};
-          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 1};
+          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 0};
           $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 1};
         }
 
@@ -172,12 +172,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingCentroid = function (building) {
           var format = new ol.format.WKT();
 
-          // TODO: what to assign to taxlot centroid if it's null?
-          var centroid;
-          if (!_.isUndefined(building.centroid)) centroid = building.centroid;
-          else centroid = building.long_lat;
-
-          var feature = format.readFeature(centroid, {
+          var feature = format.readFeature(building.centroid, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -216,12 +211,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var taxlotCentroid = function (taxlot) {
           var format = new ol.format.WKT();
 
-          // TODO: what to assign to taxlot centroid if it's null?
-          var centroid;
-          if(!_.isUndefined(taxlot.centroid)) centroid = taxlot.centroid;
-          else centroid = taxlot.long_lat;
-
-          var feature = format.readFeature(centroid, {
+          var feature = format.readFeature(taxlot.centroid, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -237,7 +227,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var taxlotCentroidSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.taxlots;
+          if (_.isUndefined(records)) records = $scope.bb_data;
           var features = _.map(records, taxlotCentroid);
 
           return new ol.source.Vector({features: features});
@@ -404,7 +394,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         if ($scope.inventory_type === 'properties') {
           layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
         } else {
-          layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
+          layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.taxlot_centroid_layer];
         }
         $scope.map = new ol.Map({
           target: 'map',
