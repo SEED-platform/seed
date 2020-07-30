@@ -142,6 +142,16 @@ class PintQuantitySerializerField(serializers.Field):
         field = self.root.Meta.model._meta.get_field(self.field_name)
 
         try:
+            org = self.root.instance.organization
+
+            if field.base_units == 'kBtu/ft**2/year':
+                data = float(data) * ureg(org.display_units_eui)
+            elif field.base_units == 'ft**2':
+                data = float(data) * ureg(org.display_units_area)
+            else:
+                # This shouldn't happen unless we're supporting a new pints_unit QuantityField.
+                data = float(data) * ureg(field.base_units)
+        except AttributeError:
             data = float(data) * ureg(field.base_units)
         except ValueError:
             data = None
