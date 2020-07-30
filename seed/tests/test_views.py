@@ -656,6 +656,31 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['state']['gross_floor_area'], 11235.00)
         self.assertEqual(result['state']['site_eui'], 90.10)
 
+    def test_update_pint_fields_with_modified_display_settings(self):
+        self.org.display_units_area = 'm**2'
+        self.org.display_units_eui = 'kWh/m**2/year'
+        self.org.save()
+
+        state = self.property_state_factory.get_property_state(self.org)
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        url = reverse(
+            'api:v2:properties-detail', args=[pv.id]
+        ) + '?cycle_id=%s&organization_id=%s' % (self.cycle.id, self.org.id)
+        params = {
+            'state': {
+                'gross_floor_area': 11235,
+                'site_eui': 90.1,
+            }
+        }
+        response = self.client.put(url, data=json.dumps(params), content_type='application/json')
+        result = response.json()
+        self.assertEqual(result['state']['gross_floor_area'], 11235.00)
+        self.assertEqual(result['state']['site_eui'], 90.10)
+
     def test_get_properties_with_taxlots(self):
         property_state = self.property_state_factory.get_property_state()
         property_property = self.property_factory.get_property(campus=True)
