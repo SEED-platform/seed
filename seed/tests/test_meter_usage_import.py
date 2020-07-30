@@ -742,7 +742,7 @@ class MeterUsageImportTest(TestCase):
         """
         dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
         dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
-        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + dup_filename
+        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + dup_filename
 
         dup_file = ImportFile.objects.create(
             import_record=dup_import_record,

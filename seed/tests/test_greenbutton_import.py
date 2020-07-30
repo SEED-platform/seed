@@ -229,7 +229,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
 
     def test_error_noted_in_response_if_meter_has_overlapping_readings_in_the_same_batch(self):
         filename = 'example-GreenButton-data-1002-1-dup.xml'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + filename
 
         one_dup_import_file = ImportFile.objects.create(
             import_record=self.import_record,
