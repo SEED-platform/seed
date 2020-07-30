@@ -362,7 +362,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # Just make sure we were saved correctly
         self.assertEqual(import_file.cached_first_row, expected_saved_format)
 
-        url = reverse_lazy("api:v2:import_files-raw-column-names", args=[import_file.pk])
+        url = reverse_lazy("api:v3:import_files-raw-column-names", args=[import_file.pk])
         resp = self.client.get(
             url, content_type='application/json'
         )
@@ -399,7 +399,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             import_file.cached_second_to_fifth_row, expected_saved_format
         )
 
-        url = reverse_lazy("api:v2:import_files-first-five-rows", args=[import_file.pk])
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[import_file.pk])
         resp = self.client.get(
             url, content_type='application/json'
         )
@@ -529,10 +529,10 @@ class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
         }
         self.client.login(**user_details)
 
-        url = reverse_lazy("api:v2:import_files-first-five-rows", args=[self.import_file.pk])
-        resp = self.client.get(url, content_type='application/json')
+        url = reverse_lazy("api:v3:import_files-first-five-rows", args=[self.import_file.pk])
+        resp = self.client.get(url, {'organization_id': self.org.pk}, content_type='application/json')
         body = json.loads(resp.content)
-        self.assertEqual(body['status'], 'success')
+        self.assertEqual(body['status'], 'success', body)
         self.assertEqual(len(body['first_five_rows']), 5)
 
         expected_property_notes = 'These are property notes:\n- Nice building\n- Large atrium\n- Extra crlf here'
@@ -565,7 +565,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
     def test_delete_file_no_perms(self):
         """ tests the delete_file request invalid request"""
-        url = reverse("api:v2:import_files-detail", args=[self.import_file_2.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file_2.pk])
         response = self.client.delete(
             url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
@@ -575,15 +575,14 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
         # assert
         self.assertEqual(data, {
-            'status': 'error',
-            'message': 'user does not have permission to delete file'
+            'detail': 'Method "DELETE" not allowed.'
         })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 405)
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
     def test_delete_file_wrong_org(self):
         """ tests the delete_file request with wrong org"""
-        url = reverse("api:v2:import_files-detail", args=[self.import_file_2.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file_2.pk])
         response = self.client.delete(
             url + '?organization_id=' + str(self.org_2.pk),
             content_type='application/json',
@@ -593,8 +592,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
 
         # assert
         self.assertEqual(data, {
-            'status': 'error',
-            'message': 'No relationship to organization'
+            'detail': 'Method "DELETE" not allowed.'
         })
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
@@ -670,7 +668,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #     self.assertEqual(logs.count(), 14)
     #
     # def test_get_filtered_mapping_results_date(self):
-    #     url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file.pk])
+    #     url = reverse("api:v3:import_files-filtered-mapping-results", args=[self.import_file.pk])
     #     resp = self.client.post(
     #         url, data=json.dumps({"organization_id": self.org.id}), content_type='application/json'
     #     )
@@ -685,7 +683,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
     #             self.assertEqual(body['properties'][2]['recent_sale_date'], None)
     #
     # def test_get_filtered_mapping_results(self):
-    #     url = reverse("api:v2:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
+    #     url = reverse("api:v3:import_files-filtered-mapping-results", args=[self.import_file_2.pk])
     #     resp = self.client.post(
     #         url, data=json.dumps({"get_coparents": True}), content_type='application/json'
     #     )
@@ -780,7 +778,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         #     "state_id": property_state.id,
         #     "coparent_id": coparents['id']
         # }
-        # url = reverse("api:v2:import_files-unmatch", args=[self.import_file_2.pk])
+        # url = reverse("api:v3:import_files-unmatch", args=[self.import_file_2.pk])
         # resp = self.client.post(
         #     url, data=json.dumps(data), content_type='application/json'
         # )
