@@ -26,7 +26,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         }
         self.client.login(**user_details)
 
-    def test_list_preset_endpoint(self):
+    def test_list_profile_endpoint(self):
         preset_info = {
             "name": 'test_preset_1',
             "mappings": [
@@ -37,9 +37,9 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
 
         self.org.columnmappingpreset_set.create(**preset_info)
 
-        url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
+        url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
 
-        response = self.client.get(url)
+        response = self.client.post(url)
         self.assertEqual(200, response.status_code)
 
         data = loads(response.content)['data']
@@ -47,20 +47,21 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
 
         self.assertCountEqual(['Portfolio Manager Defaults', 'BuildingSync v2.0 Defaults', 'test_preset_1'], names)
 
-    def test_list_preset_endpoint_by_type(self):
+    def test_filter_profile_endpoint_by_type(self):
         preset_info = {
             "name": 'test_preset_1',
             "mappings": [
                 {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
                 {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
             ],
+            "preset_type": ColumnMappingPreset.NORMAL
         }
-
+        args = {"preset_type": ['Normal']}
         self.org.columnmappingpreset_set.create(**preset_info)
 
-        url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id) + '&preset_type=Normal'
+        url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
 
-        response = self.client.get(url)
+        response = self.client.post(url, args, content_type='application/json')
         self.assertEqual(200, response.status_code, response.content)
 
         data = loads(response.content)['data']
@@ -68,7 +69,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
 
         self.assertCountEqual(['Portfolio Manager Defaults', 'test_preset_1'], names)
 
-    def test_list_preset_endpoint_by_multiple_types(self):
+    def test_filter_profile_endpoint_by_multiple_types(self):
         preset_info = {
             "name": 'test_preset_1',
             "mappings": [
@@ -77,15 +78,12 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
             ],
             "preset_type": ColumnMappingPreset.BUILDINGSYNC_CUSTOM
         }
-
+        args = {"preset_type": ['BuildingSync Default', 'BuildingSync Custom']}
         self.org.columnmappingpreset_set.create(**preset_info)
 
-        url = (reverse('api:v3:column_mapping_profiles-list')
-               + '?organization_id=' + str(self.org.id)
-               + '&preset_type=BuildingSync Default'
-               + '&preset_type=BuildingSync Custom')
+        url = (reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id))
 
-        response = self.client.get(url)
+        response = self.client.post(url, args, content_type='application/json')
         self.assertEqual(200, response.status_code, response.content)
 
         data = loads(response.content)['data']
@@ -93,7 +91,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
 
         self.assertCountEqual(['BuildingSync v2.0 Defaults', 'test_preset_1'], names)
 
-    def test_update_preset_endpoint(self):
+    def test_update_profile_endpoint(self):
         preset_info = {
             "name": 'test_preset_1',
             "mappings": [
@@ -120,8 +118,8 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         self.assertEqual('changed_preset_name', datum['name'])
         self.assertEqual(1, ColumnMappingPreset.objects.filter(name='changed_preset_name').count())
 
-    def test_create_preset_endpoint(self):
-        url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
+    def test_create_profile_endpoint(self):
+        url = reverse('api:v2:column_mapping_presets-list') + '?organization_id=' + str(self.org.id)
 
         preset_info = dumps({
             "name": 'test_preset_1',
@@ -139,7 +137,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         self.assertEqual('test_preset_1', datum['name'])
         self.assertEqual(1, ColumnMappingPreset.objects.filter(name='test_preset_1').count())
 
-    def test_delete_preset_endpoint(self):
+    def test_delete_profile_endpoint(self):
         preset = self.org.columnmappingpreset_set.get(preset_type=ColumnMappingPreset.NORMAL)
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[preset.id]) + '?organization_id=' + str(self.org.id)
@@ -149,7 +147,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         self.assertFalse(ColumnMappingPreset.objects.filter(preset_type=ColumnMappingPreset.NORMAL).exists())
 
 
-class ColumnMappingPresetViewsNonCrud(DataMappingBaseTestCase):
+class ColumnMappingProfilesViewsNonCrud(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars
@@ -197,7 +195,7 @@ class ColumnMappingPresetViewsNonCrud(DataMappingBaseTestCase):
             self.assertEqual(expected[header], results[header])
 
 
-class ColumnMappingPresetViewsBuildingSync(DataMappingBaseTestCase):
+class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
         self.user, self.org, _import_file, _import_record, _cycle = selfvars

@@ -36,52 +36,6 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     # req by SEEDOrgPermissions, but currently not used by any methods.
     queryset = ColumnMappingPreset.objects.none()
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
-    )
-    @api_endpoint_class
-    @has_perm_class('requires_member')
-    def list(self, request):
-        """
-        Retrieves all presets for an organization.
-        parameters:
-           - name: organization_id
-             description: The organization_id for this user's organization
-             required: true (at least, nothing will be returned if not provided)
-             paramType: query
-        """
-        try:
-            preset_types = request.GET.getlist('preset_type')
-            preset_types = [ColumnMappingPreset.get_preset_type(pt) for pt in preset_types]
-            filter_params = {'organizations__pk': request.query_params.get('organization_id', None)}
-            if preset_types:
-                filter_params['preset_type__in'] = preset_types
-            presets = ColumnMappingPreset.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in presets]
-
-            return JsonResponse({
-                'status': 'success',
-                'data': data,
-            })
-        except Exception as e:
-            return JsonResponse({
-                'status': 'error',
-                'data': str(e),
-            }, status=HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(
-            required=False,
-            description="Optional org id which overrides the users (default) current org id"
-        )],
-        request_body=AutoSchemaHelper.schema_factory(
-            {'preset_type': ['string']},
-            description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
-        )
-    )
     @api_endpoint_class
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
     def filter(self, request):
