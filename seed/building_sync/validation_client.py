@@ -5,7 +5,7 @@ import requests
 
 VALIDATION_API_URL = "https://selectiontool.buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = '2.0.0'
-DEFAULT_USE_CASE = 'SEED'
+DEFAULT_USE_CASE = 'SEED v2.0.0'
 
 
 class ValidationClientException(Exception):
