@@ -46,6 +46,7 @@ class UploadViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         request_body=no_body,
         manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.upload_file_field(
                 name='file',
                 required=True,
@@ -58,7 +59,7 @@ class UploadViewSet(viewsets.ViewSet):
             ),
             AutoSchemaHelper.form_string_field(
                 name='source_type',
-                required=False,
+                required=True,
                 description='the type of file (e.g. "Portfolio Raw" or "Assessed Raw")'
             ),
             AutoSchemaHelper.form_string_field(
