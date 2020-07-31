@@ -119,7 +119,7 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         self.assertEqual(1, ColumnMappingPreset.objects.filter(name='changed_preset_name').count())
 
     def test_create_profile_endpoint(self):
-        url = reverse('api:v3:column_mapping_presets-create') + '?organization_id=' + str(self.org.id)
+        url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
 
         preset_info = dumps({
             "name": 'test_preset_1',
