@@ -195,7 +195,7 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_matching_and_geocoding_results(self):
         response = self.client.get(
-            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/')
+            '/api/v3/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/?organization_id=' + str(self.org.pk))
         self.assertEqual('success', response.json()['status'])
 
 
