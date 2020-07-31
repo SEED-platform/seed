@@ -574,10 +574,8 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data, {
-            'detail': 'Method "DELETE" not allowed.'
-        })
-        self.assertEqual(response.status_code, 405)
+        self.assertEqual(data.get('status'), 'error')
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
     def test_delete_file_wrong_org(self):
@@ -591,9 +589,7 @@ class DeleteFileViewTests(DataMappingBaseTestCase):
         data = json.loads(json_string)
 
         # assert
-        self.assertEqual(data, {
-            'detail': 'Method "DELETE" not allowed.'
-        })
+        self.assertEqual(data.get('status'), 'error')
         self.assertEqual(ImportFile.objects.all().count(), 2)
 
 
