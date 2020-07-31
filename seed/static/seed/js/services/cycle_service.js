@@ -31,7 +31,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.get_cycles_for_org = function (org_id) {
-      return $http.get('/api/v2/cycles/', {
+      return $http.get('/api/v3/cycles/', {
         params: {
           organization_id: org_id
         }
@@ -56,7 +56,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.create_cycle_for_org = function (cycle, org_id) {
-      return $http.post('/api/v2/cycles/', cycle, {
+      return $http.post('/api/v3/cycles/', cycle, {
         params: {
           organization_id: org_id
         }
@@ -80,7 +80,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.update_cycle_for_org = function (cycle, org_id) {
-      return $http.put('/api/v2/cycles/' + cycle.id + '/', cycle, {
+      return $http.put('/api/v3/cycles/' + cycle.id + '/', cycle, {
         params: {
           organization_id: org_id
         }
@@ -94,7 +94,7 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
     };
 
     cycle_factory.delete_cycle_for_org = function (cycle, org_id) {
-      return $http.delete('/api/v2/cycles/' + cycle.id + '/', {
+      return $http.delete('/api/v3/cycles/' + cycle.id + '/', {
         data: cycle,
         params: {
           organization_id: org_id

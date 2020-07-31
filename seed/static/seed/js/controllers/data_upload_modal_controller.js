@@ -35,7 +35,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'dataset_service',
     'mapping_service',
     'matching_service',
-    'meters_service',
     'inventory_service',
     'spinner_utility',
     'step',
@@ -54,7 +53,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       dataset_service,
       mapping_service,
       matching_service,
-      meters_service,
       inventory_service,
       spinner_utility,
       step,
@@ -337,8 +335,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               // Hardcoded as this is a 2 step process: upload & analyze
               $scope.uploader.progress = 50;
               $scope.uploader.status_message = 'analyzing file';
-              meters_service
-                .parsed_meters_confirmation(file.file_id, $scope.organization.org_id)
+              uploader_service
+                .pm_meters_preview(file.file_id, $scope.organization.org_id)
                 .then(present_parsed_meters_confirmation)
                 .catch(present_meter_import_error);
             } else {

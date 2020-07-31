@@ -17,7 +17,7 @@ from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 
-class ColumnListSettingsView(DeleteModelsTestCase):
+class ColumnListProfilesView(DeleteModelsTestCase):
     """
     Tests of the SEED default custom saved columns
     """
@@ -42,16 +42,19 @@ class ColumnListSettingsView(DeleteModelsTestCase):
             "settings_location": "List View Settings",
             "inventory_type": "Property",
             "columns": [
-                {"id": self.column_1.id, "pinned": False, "order": 1},
-                {"id": self.column_2.id, "pinned": False, "order": 2},
-                {"id": self.column_3.id, "pinned": True, "order": 3},
+                {"id": self.column_1.id, "pinned": False, "order": 1, "column_name": self.column_1.column_name,
+                 "table_name": self.column_1.table_name},
+                {"id": self.column_2.id, "pinned": False, "order": 2, "column_name": self.column_2.column_name,
+                 "table_name": self.column_2.table_name},
+                {"id": self.column_3.id, "pinned": True, "order": 3, "column_name": self.column_3.column_name,
+                 "table_name": self.column_3.table_name},
             ]
         }
         self.client.login(**user_details)
 
-    def test_create_column_settings(self):
+    def test_create_column_profile(self):
         response = self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
@@ -61,21 +64,21 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(data['data']['inventory_type'], 'Property')
         self.assertEqual(data['data']['settings_location'], 'List View Settings')
 
-    def test_get_column_settings(self):
+    def test_get_column_profile(self):
         # Create two list settings
         self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
         self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
 
         response = self.client.get(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id)
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
         self.assertEqual(len(data['data']), 2)
@@ -83,44 +86,43 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         # test getting a single one
         id = data['data'][0]['id']
         response = self.client.get(
-            reverse('api:v2:column_list_settings-detail', args=[id]) + '?organization_id=' + str(
+            reverse('api:v3:column_list_profiles-detail', args=[id]) + '?organization_id=' + str(
                 self.org.id)
         )
         data = json.loads(response.content)
         self.assertEqual(data['data']['id'], id)
         self.assertEqual(len(data['data']['columns']), 3)
 
-    def test_delete_column_settings(self):
+    def test_delete_column_profile(self):
         # Create two list settings
         to_delete = self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
         self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
-
         id_to_delete = json.loads(to_delete.content)['data']['id']
         response = self.client.delete(
-            reverse('api:v2:column_list_settings-detail',
+            reverse('api:v3:column_list_profiles-detail',
                     args=[id_to_delete]) + '?organization_id=' + str(self.org.id)
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # check to make sure that it isn't in the column list setting list.
         response = self.client.get(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id)
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id)
         )
         data = json.loads(response.content)
         self.assertEqual(len(data['data']), 1)
         self.assertNotEqual(data['data'][0]['id'], id_to_delete)
 
-    def test_update_column_settings(self):
+    def test_update_column_profile(self):
         cls = self.client.post(
-            reverse('api:v2:column_list_settings-list') + '?organization_id=' + str(self.org.id),
+            reverse('api:v3:column_list_profiles-list') + '?organization_id=' + str(self.org.id),
             data=json.dumps(self.payload_data),
             content_type='application/json'
         )
@@ -128,8 +130,9 @@ class ColumnListSettingsView(DeleteModelsTestCase):
             "name": "New Name",
             "inventory_type": "Tax Lot",
             "settings_location": "List View Settings",
+            "columns": []
         }
-        url = reverse('api:v2:column_list_settings-detail',
+        url = reverse('api:v3:column_list_profiles-detail',
                       args=[json.loads(cls.content)['data']['id']]) + '?organization_id=' + str(
             self.org.id)
 
@@ -140,7 +143,10 @@ class ColumnListSettingsView(DeleteModelsTestCase):
         self.assertEqual(result['data']['inventory_type'], 'Tax Lot')
         self.assertEqual(len(result['data']['columns']), 0)
 
-        payload['columns'] = [{"id": self.column_1.id, "pinned": True, "order": 999}]
+        payload['columns'] = [
+            {"id": self.column_1.id, "pinned": True, "order": 999, "column_name": self.column_3.column_name,
+             "table_name": self.column_3.table_name}
+        ]
         response = self.client.put(url, data=json.dumps(payload), content_type='application/json')
         result = json.loads(response.content)
         self.assertEqual(len(result['data']['columns']), 1)

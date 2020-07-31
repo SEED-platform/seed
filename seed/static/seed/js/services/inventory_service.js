@@ -952,7 +952,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_used_columns = function (org_id) {
-      return $http.get('/api/v2/columns/', {
+      return $http.get('/api/v3/columns/', {
         params: {
           organization_id: org_id,
           only_used: true
@@ -973,7 +973,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
-      return $http.get('/api/v2/column_list_settings/', {
+      return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
@@ -996,7 +996,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.new_settings_profile = function (data) {
-      return $http.post('/api/v2/column_list_settings/', data, {
+      return $http.post('/api/v3/column_list_profiles/', data, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -1010,7 +1010,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
       }
-      return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
+      return $http.put('/api/v3/column_list_profiles/' + id + '/', data, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -1024,7 +1024,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
       }
-      return $http.delete('/api/v2/column_list_settings/' + id + '/', {
+      return $http.delete('/api/v3/column_list_profiles/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
