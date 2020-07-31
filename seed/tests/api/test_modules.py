@@ -354,7 +354,7 @@ def delete_set(header, main_url, organization_id, dataset_id, log):
 def cycles(header, main_url, organization_id, log):
     print('API Function: get_cycles\n')
     partmsg = 'get_cycles'
-    result = requests.get(main_url + '/api/v2/cycles/',
+    result = requests.get(main_url + '/api/v3/cycles/',
                           headers=header,
                           params={'organization_id': organization_id})
     check_status(result, partmsg, log, piid_flag='cycles')
@@ -374,7 +374,7 @@ def cycles(header, main_url, organization_id, log):
             'end': "2016-01-01T08:00",
             'name': "TestCycle"
         }
-        result = requests.post(main_url + '/api/v2/cycles/',
+        result = requests.post(main_url + '/api/v3/cycles/',
                                headers=header,
                                params={'organization_id': organization_id},
                                json=payload)
@@ -391,7 +391,7 @@ def cycles(header, main_url, organization_id, log):
         'name': "TestCycle",
         'id': cycle_id
     }
-    result = requests.put(main_url + '/api/v2/cycles/{}/'.format(cycle_id),
+    result = requests.put(main_url + '/api/v3/cycles/{}/'.format(cycle_id),
                           headers=header,
                           params={'organization_id': organization_id},
                           json=payload)
