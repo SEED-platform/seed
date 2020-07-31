@@ -87,7 +87,7 @@ class TestApi(TestCase):
     def test_user_profile(self):
         # test logging in with the password, the remaining versions will use the HTTP Authentication
         self.client.login(username='test_user@demo.com', password='test_pass')
-        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True)
+        r = self.client.get('/api/v3/users/' + str(self.user.pk) + '/', follow=True)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
@@ -98,7 +98,7 @@ class TestApi(TestCase):
 
     def test_with_http_authorization(self):
         r = self.client.get(
-            '/api/v2/users/{}/'.format(str(self.user.pk)),
+            '/api/v3/users/{}/'.format(str(self.user.pk)),
             follow=True,
             data={},
             **self.headers
@@ -202,11 +202,11 @@ class TestApi(TestCase):
             'last_name': 'Stark',
             'email': self.user.username
         }
-        r = self.client.put('/api/v2/users/%s/' % self.user.pk, data=json.dumps(user_payload),
+        r = self.client.put('/api/v3/users/{}/'.format(self.user.pk), data=json.dumps(user_payload),
                             content_type='application/json', **self.headers)
 
         # re-retrieve the user profile
-        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
         r = json.loads(r.content)
 
         self.assertEqual(r['status'], 'success')
@@ -225,7 +225,7 @@ class TestApi(TestCase):
             'role': 'member',
         }
 
-        r = self.client.post('/api/v2/users/?organization_id=' + str(organization_id),
+        r = self.client.post('/api/v3/users/?organization_id=' + str(organization_id),
                              data=json.dumps(new_user),
                              content_type='application/json',
                              **self.headers)
@@ -275,7 +275,7 @@ class TestApi(TestCase):
         }
 
         r = self.client.put(
-            '/api/v2/users/%s/update_role/?organization_id=%s' % (user_id, organization_id),
+            '/api/v3/users/{}/role/?organization_id={}'.format(user_id, organization_id),
             data=json.dumps(payload),
             content_type='application/json',
             **self.headers)
