@@ -19,7 +19,6 @@ from seed.utils.api_schema import AutoSchemaHelper
 from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
-
 mappings_description = (
     "Each object in mappings must be in particular format:\n"
     "to_field: [string of Display Name of target Column]\n"
@@ -35,6 +34,16 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     # req by SEEDOrgPermissions, but currently not used by any methods.
     queryset = ColumnMappingPreset.objects.none()
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field(
+            required=False,
+            description="Optional org id which overrides the users (default) current org id"
+        )],
+        request_body=AutoSchemaHelper.schema_factory(
+            {'preset_type': ['string']},
+            description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
+        )
+    )
     @api_endpoint_class
     @action(detail=False, methods=['POST'])  # POST in order to provide array/list
     def filter(self, request):
