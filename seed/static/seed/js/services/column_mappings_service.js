@@ -16,7 +16,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       if (filter_preset_types != null) {
         params.preset_type = filter_preset_types;
       }
-      return $http.get('/api/v3/column_mapping_profiles/', {
+      return $http.post('/api/v3/column_mapping_profiles/filter/', params.preset_type, {
         params: params
       }).then(function (response) {
         return response.data;
