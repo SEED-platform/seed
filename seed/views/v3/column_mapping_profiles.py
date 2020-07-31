@@ -7,7 +7,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 from rest_framework.decorators import action
 from seed.lib.mcm import mapper
-from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
     Column,
