@@ -593,7 +593,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'page': 1,
         'per_page': 999999999
     }
-    result = requests.post(main_url + '/api/v2/taxlots/filter/',
+    result = requests.post(main_url + '/api/v3/taxlots/filter/',
                            headers=header,
                            params=params)
     lot_ids = [lot['id'] for lot in result.json()['results']]
