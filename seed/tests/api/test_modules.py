@@ -413,7 +413,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
         'name': 'TestLabel',
         'color': 'red'
     }
-    result = requests.post(main_url + '/api/v2/labels/',
+    result = requests.post(main_url + '/api/v3/labels/',
                            headers=header,
                            params=params,
                            json=payload)
@@ -442,7 +442,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
         'add_label_ids': [label_id],
         'inventory_ids': inventory_ids
     }
-    result = requests.put(main_url + '/api/v2/labels-property/',
+    result = requests.put(main_url + '/api/v3/labels_property/',
                           headers=header,
                           params=params,
                           json=payload)
@@ -454,7 +454,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     params = {
         'organization_id': organization_id
     }
-    result = requests.delete(main_url + '/api/v2/labels/%s/' % label_id,
+    result = requests.delete(main_url + '/api/v3/labels/%s/' % label_id,
                              headers=header,
                              params=params)
     check_status(result, partmsg, log)
