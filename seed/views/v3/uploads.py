@@ -103,11 +103,12 @@ class UploadViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-
+        org_id = request.query_params.get('organization_id', None)
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(
                 pk=import_record_pk,
+                super_organization_id=org_id
             )
         except ImportRecord.DoesNotExist:
             # clean up the uploaded file

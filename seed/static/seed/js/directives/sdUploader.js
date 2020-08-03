@@ -17,7 +17,6 @@
  */
 
 var makeFileSystemUploader = function (scope, element, allowed_extensions) {
-  console.log(scope);
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
