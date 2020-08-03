@@ -50,7 +50,7 @@ def upload_file(upload_header, organization_id, upload_filepath, main_url, uploa
             "filename": "DataforSEED_dos15.csv"
         }
     """
-    upload_url = "%s%s" % (main_url, '/api/v3/upload/?organization_id='+organization_id+"")
+    upload_url = "%s/api/v3/upload/?organization_id=%s" % (main_url, organization_id)
     params = {
         'qqfile': upload_filepath,
         'import_record': upload_dataset_id,
