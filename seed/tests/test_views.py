@@ -1451,7 +1451,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse('api:v2:cycles-list'), params
+            reverse('api:v3:cycles-list'), params
         )
         results = response.json()
         self.assertEqual(results['status'], 'success')

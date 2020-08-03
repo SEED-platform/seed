@@ -3,9 +3,7 @@
 version: '3'
 services:
   db-postgres:
-    image: seedplatform/postgres-seed:11.2
-    build:
-      context: ./docker/postgres
+    image: timescale/timescaledb-postgis:latest-pg12
   db-redis:
     image: redis:5.0.1
   web:
