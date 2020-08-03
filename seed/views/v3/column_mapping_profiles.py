@@ -19,7 +19,6 @@ from seed.utils.api_schema import AutoSchemaHelper
 from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
-
 mappings_description = (
     "Each object in mappings must be in particular format:\n"
     "to_field: [string of Display Name of target Column]\n"
