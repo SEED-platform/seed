@@ -9,10 +9,10 @@ angular.module('BE.seed.controller.delete_modal', [])
     '$uibModalInstance',
     'inventory_service',
     'property_states',
-    'taxlot_states',
-    function ($scope, $q, $uibModalInstance, inventory_service, property_states, taxlot_states) {
+    'taxlot_view_ids',
+    function ($scope, $q, $uibModalInstance, inventory_service, property_states, taxlot_view_ids) {
       $scope.property_states = _.uniq(property_states);
-      $scope.taxlot_states = _.uniq(taxlot_states);
+      $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
       $scope.delete_state = 'delete';
 
       $scope.delete_inventory = function () {
@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.delete_modal', [])
 
         var promises = [];
         if ($scope.property_states.length) promises.push(inventory_service.delete_property_states($scope.property_states));
-        if ($scope.taxlot_states.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_states));
+        if ($scope.taxlot_view_ids.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_view_ids));
 
         return $q.all(promises).then(function (results) {
           $scope.deletedProperties = 0;
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.delete_modal', [])
               else $scope.deletedTaxlots = result.data.taxlots;
             }
           });
-          if ($scope.property_states.length !== $scope.deletedProperties || $scope.taxlot_states.length !== $scope.deletedTaxlots) {
+          if ($scope.property_states.length !== $scope.deletedProperties || $scope.taxlot_view_ids.length !== $scope.deletedTaxlots) {
             $scope.delete_state = 'incomplete';
             return;
           }
@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.delete_modal', [])
         $uibModalInstance.dismiss({
           delete_state: $scope.delete_state,
           property_states: $scope.property_states,
-          taxlot_states: $scope.taxlot_states
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
 
@@ -64,7 +64,7 @@ angular.module('BE.seed.controller.delete_modal', [])
         $uibModalInstance.close({
           delete_state: $scope.delete_state,
           property_states: $scope.property_states,
-          taxlot_states: $scope.taxlot_states
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
     }]);

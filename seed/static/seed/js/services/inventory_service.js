@@ -242,15 +242,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.delete_taxlot_states = function (ids) {
-      return $http.delete('/api/v2/taxlots/batch_delete/', {
+    inventory_service.delete_taxlot_states = function (taxlot_view_ids) {
+      return $http.delete('/api/v3/taxlots/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
-        data: {
-          organization_id: user_service.get_organization().id,
-          selected: ids
-        }
+        data: { taxlot_view_ids },
+        params: { organization_id: user_service.get_organization().id }
       });
     };
 
