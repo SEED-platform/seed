@@ -13,7 +13,12 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       var params = {
         organization_id: org_id
       };
-      return $http.post('/api/v3/column_mapping_profiles/filter/', filter_preset_types, {
+      if (filter_preset_types != null) {
+        var data = {
+          preset_type: filter_preset_types
+        };
+      }
+      return $http.post('/api/v3/column_mapping_profiles/filter/', data, {
         params: params
       }).then(function (response) {
         return response.data;
