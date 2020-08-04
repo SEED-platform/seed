@@ -313,24 +313,6 @@ class AccountsViewTests(TestCase):
                 'message': 'an organization must have at least one owner level member'
             })
 
-    def test_remove_user_from_org_missing_org_id(self):
-        u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
-        with self.assertRaises(NoReverseMatch):
-            self.client.delete(
-                reverse_lazy('api:v3:organization-users-remove') + '?organization_id=' + str(
-                    self.org.id),
-            )
-
-    def test_remove_user_from_org_missing_user_id(self):
-        u = User.objects.create(username='b@b.com', email='b@be.com')
-        self.org.add_member(u)
-
-        with self.assertRaises(NoReverseMatch):
-            self.client.delete(
-                reverse_lazy('api:v3:organization-users-remove', args=[self.org.id]),
-            )
-
     def test_remove_user_from_org_user_DNE(self):
         """DNE = does not exist"""
         u = User.objects.create(username='b@b.com', email='b@be.com')
