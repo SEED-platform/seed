@@ -522,10 +522,10 @@ class PropertyViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": property_1.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
@@ -696,10 +696,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
@@ -728,10 +728,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
@@ -760,10 +760,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
             cycle=self.cycle,
         )
-        pm_import_url = reverse("api:v2:import_files-save-raw-data", args=[pm_import_file.id])
+        pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
+        pm_import_url += f'?organization_id={self.org.pk}'
         pm_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(pm_import_url, pm_import_post_params)
 
@@ -778,10 +778,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
@@ -819,10 +819,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
@@ -837,10 +837,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
-        gb_overlapping_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_overlapping_import_file.id])
+        gb_overlapping_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_overlapping_import_file.id])
+        gb_overlapping_import_url += f'?organization_id={self.org.pk}'
         gb_overlapping_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_overlapping_import_url, gb_overlapping_import_post_params)
 
@@ -930,10 +930,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
             cycle=self.cycle,
         )
-        pm_import_url = reverse("api:v2:import_files-save-raw-data", args=[pm_import_file.id])
+        pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
+        pm_import_url += f'?organization_id={self.org.pk}'
         pm_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(pm_import_url, pm_import_post_params)
 
@@ -1038,10 +1038,10 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
-        gb_import_url = reverse("api:v2:import_files-save-raw-data", args=[gb_import_file.id])
+        gb_import_url = reverse("api:v3:import_files-start-save-data", args=[gb_import_file.id])
+        gb_import_url += f'?organization_id={self.org.pk}'
         gb_import_post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(gb_import_url, gb_import_post_params)
 

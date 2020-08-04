@@ -201,7 +201,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     var checkStatusLoop = function (deferred, progress_key) {
-      $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
+      $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
         $timeout(function () {
           if (response.data.progress < 100) {
             checkStatusLoop(deferred, progress_key);

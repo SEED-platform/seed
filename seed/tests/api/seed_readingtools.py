@@ -32,7 +32,7 @@ def report_memory():
 
 
 # Three-step upload process
-def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upload_datatype):
+def upload_file(upload_header, organization_id, upload_filepath, main_url, upload_dataset_id, upload_datatype):
     """
     Proceeds with the filesystem upload.
 
@@ -50,15 +50,7 @@ def upload_file(upload_header, upload_filepath, main_url, upload_dataset_id, upl
             "filename": "DataforSEED_dos15.csv"
         }
     """
-
-    # Get the upload details.
-    upload_details = requests.get(main_url + '/api/v2/get_upload_details/',
-                                  headers=upload_header)
-    upload_details = upload_details.json()
-
-    # filename = os.path.basename(upload_filepath)
-
-    upload_url = "%s%s" % (main_url, upload_details['upload_path'])
+    upload_url = "%s/api/v3/upload/?organization_id=%s" % (main_url, organization_id)
     params = {
         'qqfile': upload_filepath,
         'import_record': upload_dataset_id,
@@ -134,7 +126,7 @@ def check_progress(main_url, header, progress_key):
     print("checking progress {}".format(progress_key))
     try:
         progress_result = requests.get(
-            main_url + '/api/v2/progress/{}/'.format(progress_key),
+            main_url + '/api/v3/progress/{}/'.format(progress_key),
             headers=header
         )
         print("... {} ...".format(progress_result.json()['progress']))

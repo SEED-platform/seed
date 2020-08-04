@@ -344,7 +344,7 @@ class TestApi(TestCase):
         upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
-        self.assertEqual(upload_details['upload_path'], '/api/v2/upload/')
+        self.assertEqual(upload_details['upload_path'], '/api/v3/upload/')
 
         # create hash for /data/upload/
         fsysparams = {
@@ -364,10 +364,9 @@ class TestApi(TestCase):
 
         # Save the data to the Property / TaxLots
         payload = {
-            'organization_id': organization_id,
             'cycle_id': self.cycle.id,
         }
-        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_raw_data/',
+        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/start_save_data/?organization_id=' + organization_id,
                              data=json.dumps(payload),
                              content_type='application/json',
                              follow=True, **self.headers)
@@ -384,7 +383,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get(reverse_lazy('api:v2:progress-detail', args=[progress_key]),
+        r = self.client.get(reverse_lazy('api:v3:progress-detail', args=[progress_key]),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -399,7 +398,6 @@ class TestApi(TestCase):
 
         # Save the column mappings.
         payload = {
-            'organization_id': organization_id,
             'mappings': [
                 {
                     'from_field': 'City',  # raw field in import file
@@ -445,7 +443,7 @@ class TestApi(TestCase):
             ]
         }
         r = self.client.post(
-            '/api/v2/import_files/' + str(import_file_id) + '/save_column_mappings/',
+            '/api/v3/organizations/' + str(organization_id) + '/column_mappings/?import_file_id=' + str(import_file_id),
             data=json.dumps(payload),
             content_type='application/json',
             follow=True,
@@ -461,9 +459,8 @@ class TestApi(TestCase):
         # Map the buildings with new column mappings.
         payload = {
             'remap': True,
-            'organization_id': organization_id
         }
-        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/perform_mapping/',
+        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/map/?organization_id=' + str(organization_id),
                              data=json.dumps(payload), content_type='application/json', follow=True,
                              **self.headers)
         self.assertEqual(r.status_code, 200)
@@ -482,7 +479,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get('/api/v2/progress/{}/'.format(progress_key),
+        r = self.client.get('/api/v3/progress/{}/'.format(progress_key),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -498,7 +495,7 @@ class TestApi(TestCase):
 
         # # Get the mapping suggestions
         r = self.client.post(
-            '/api/v2/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
+            '/api/v3/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
                                                                                      organization_id),
             content_type='application/json',
             follow=True,

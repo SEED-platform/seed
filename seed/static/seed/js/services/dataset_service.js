@@ -43,7 +43,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
     };
 
     dataset_service.delete_file = function (file_id) {
-      return $http.delete('/api/v2/import_files/' + file_id + '/', {
+      return $http.delete('/api/v3/import_files/' + file_id + '/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
@@ -78,7 +78,7 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
     };
 
     dataset_service.get_import_file = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/', {
+      return $http.get('/api/v3/import_files/' + import_file_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
