@@ -711,11 +711,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
           controller: 'delete_modal_controller',
           resolve: {
-            property_states: function () {
+            property_view_ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
                 if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
+              }), 'property_view_id');
             },
             taxlot_states: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
