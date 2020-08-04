@@ -638,7 +638,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report_template_names = function (pm_username, pm_password) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
-        $http.post('/api/v2_1/portfolio_manager/template_list/', {
+        $http.post('/api/v3/portfolio_manager/template_list/', {
           username: pm_username,
           password: pm_password
         }).then(function (response) {
@@ -657,7 +657,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
-        $http.post('/api/v2_1/portfolio_manager/report/', {
+        $http.post('/api/v3/portfolio_manager/report/', {
           username: pm_username,
           password: pm_password,
           template: pm_template

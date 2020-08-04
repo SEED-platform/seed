@@ -6,7 +6,7 @@ angular.module('BE.seed.service.ubid', [])
       var ubid_factory = {};
 
       ubid_factory.decode_by_ids = function (property_state_ids, taxlot_state_ids) {
-        return $http.post('/api/v2/ubid/decode_by_ids/', {
+        return $http.post('/api/v3/ubid/decode_by_ids/', {
           property_ids: property_state_ids,
           taxlot_ids: taxlot_state_ids
         }, {
@@ -19,7 +19,7 @@ angular.module('BE.seed.service.ubid', [])
       };
 
       ubid_factory.decode_results = function (property_state_ids, taxlot_state_ids) {
-        return $http.post('/api/v2/ubid/decode_results/', {
+        return $http.post('/api/v3/ubid/decode_results/', {
           property_ids: property_state_ids,
           taxlot_ids: taxlot_state_ids
         }).then(function (response) {
