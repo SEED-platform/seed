@@ -6,7 +6,7 @@ if [ "${TRAVIS_BRANCH}" == "develop" ]; then
 elif [ "${TRAVIS_BRANCH}" == "master" ]; then
     # Retrieve the version number from package.json
     IMAGETAG=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
-elif [ "${TRAVIS_EVENT_TYPE}" == "pull_request" ]; then
+elif [ "${TRAVIS_EVENT_TYPE}" == "push" ]; then
     IMAGETAG=testing_pr_image
 fi
 
