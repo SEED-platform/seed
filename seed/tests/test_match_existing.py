@@ -95,7 +95,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             }
         }
         target_view_id = ps_1.propertyview_set.first().id
-        url = reverse('api:v2:properties-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -122,7 +122,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
                 "pm_property_id": "1337AnotherDifferentID"
             }
         }
-        url = reverse('api:v2:properties-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -265,10 +265,13 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         self.assertEqual(PropertyState.objects.count(), 4)
         self.assertEqual(PropertyView.objects.count(), 4)
 
+        pv_1 = ps_1.propertyview_set.first()
+        pv_2 = ps_2.propertyview_set.first()
+
         # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
-        url = reverse('api:v2:properties-merge') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:properties-merge') + '?organization_id={}'.format(self.org.pk)
         post_params = json.dumps({
-            'state_ids': [ps_2.pk, ps_1.pk]
+            'property_view_ids': [pv_2.pk, pv_1.pk]
         })
         raw_response = self.client.post(url, post_params, content_type='application/json')
         response = json.loads(raw_response.content)
@@ -455,8 +458,10 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing 1 rollup merge should expose a set -State having
         '3rd Oldest City' and state_order of 'third'.
         """
-        rollback_unmerge_url_1 = reverse('api:v2:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(rollback_unmerge_url_1, content_type='application/json')
+        rollback_unmerge_url_1 = reverse('api:v3:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        response = self.client.put(rollback_unmerge_url_1, content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('success', json.loads(response.content).get('status'))
 
         rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
         self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
@@ -466,8 +471,10 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing another rollup merge should expose a set -State having
         '2nd Oldest City' and state_order of 'second'.
         """
-        rollback_unmerge_url_2 = reverse('api:v2:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
-        self.client.post(rollback_unmerge_url_2, content_type='application/json')
+        rollback_unmerge_url_2 = reverse('api:v3:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        response = self.client.put(rollback_unmerge_url_2, content_type='application/json')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('success', json.loads(response.content).get('status'))
 
         rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
         self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
