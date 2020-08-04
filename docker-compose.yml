@@ -18,7 +18,7 @@ services:
         max-file: '5'
   db-redis:
     image: redis:5.0.1
-  web:
+  web-stage:
     image: seedplatform/seed:latest
     build: .
     environment:
@@ -64,7 +64,7 @@ services:
     depends_on:
       - db-redis
       - db-postgres
-      - web
+      - web-stage
     volumes:
       - seed_media:/seed/media
     logging:
