@@ -344,7 +344,7 @@ class TestApi(TestCase):
         upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
-        self.assertEqual(upload_details['upload_path'], '/api/v2/upload/')
+        self.assertEqual(upload_details['upload_path'], '/api/v3/upload/')
 
         # create hash for /data/upload/
         fsysparams = {
@@ -384,7 +384,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get(reverse_lazy('api:v2:progress-detail', args=[progress_key]),
+        r = self.client.get(reverse_lazy('api:v3:progress-detail', args=[progress_key]),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -482,7 +482,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get('/api/v2/progress/{}/'.format(progress_key),
+        r = self.client.get('/api/v3/progress/{}/'.format(progress_key),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 

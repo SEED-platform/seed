@@ -394,7 +394,7 @@ def get_upload_details(request):
 
     """
     ret = {
-        'upload_path': '/api/v2/upload/'
+        'upload_path': '/api/v3/upload/'
     }
     return JsonResponse(ret)
 
