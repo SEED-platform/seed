@@ -65,7 +65,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        url = reverse('api:v2:labels-list')
+        url = reverse('api:v3:labels-list')
 
         response = client.get(url, {'organization_id': organization.pk, 'inventory_type': 'property'})
 
@@ -106,7 +106,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        url = reverse('api:v2:labels-list')
+        url = reverse('api:v3:labels-list')
 
         response_a = client.get(url, {'organization_id': organization_a.pk, 'inventory_type': 'property'})
         response_b = client.get(url, {'organization_id': organization_b.pk, 'inventory_type': 'property'})
@@ -139,7 +139,7 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        url = reverse('api:v2:labels-list')
+        url = reverse('api:v3:labels-list')
 
         response_a = client.get(url)
 
@@ -176,9 +176,8 @@ class TestLabelsViewSet(DeleteModelsTestCase):
         client = APIClient()
         client.login(username=user.username, password='secret')
 
-        # TODO: change these to POST /properties/labels and /taxlots/labels
-        url = reverse('api:v2:labels-filter')
-        response_a = client.post(url + '?organization_id={}&inventory_type={}'.format(organization_a.pk, 'property_view'))
+        url = reverse('api:v3:properties-labels')
+        response_a = client.post(url + '?organization_id={}'.format(organization_a.pk))
         data = json.loads(response_a.content)
 
         for label in data:
@@ -304,7 +303,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             username=self.user_details['username'],
             password=self.user_details['password']
         )
-        r = reverse('api:v2:property-labels')
+        r = '/api/v3/labels_property/'
         url = "{}?organization_id={}".format(
             r, self.org.id
         )

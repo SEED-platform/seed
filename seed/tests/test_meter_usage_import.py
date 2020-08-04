@@ -102,10 +102,10 @@ class MeterUsageImportTest(TestCase):
         Each meter will have 2 readings, for a total of 8 readings.
         These come from 8 meter usage rows in the .xlsx file - 1 per reading.
         """
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -205,10 +205,10 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle
         )
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[import_file_with_invalids.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[import_file_with_invalids.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -242,10 +242,10 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle
         )
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[cost_meter_import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -289,10 +289,10 @@ class MeterUsageImportTest(TestCase):
         unsaved_meter_reading.save()
         existing_meter_reading = MeterReading.objects.get(reading=12345)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -335,10 +335,10 @@ class MeterUsageImportTest(TestCase):
         )
         unsaved_meter_reading.save()
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -370,10 +370,10 @@ class MeterUsageImportTest(TestCase):
         # new state and cycle associated to old property
         PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -404,10 +404,10 @@ class MeterUsageImportTest(TestCase):
         property_4 = self.property_factory.get_property()
         PropertyView.objects.create(property=property_4, cycle=new_cycle, state=new_property_2)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -439,10 +439,10 @@ class MeterUsageImportTest(TestCase):
 
         PropertyView.objects.create(property=new_property, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
@@ -454,10 +454,10 @@ class MeterUsageImportTest(TestCase):
         self.assertEqual(refreshed_new_property.meters.count(), 0)
 
     def test_the_response_contains_expected_and_actual_reading_counts_single_cycle(self):
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         response = self.client.post(url, post_params)
 
@@ -518,10 +518,10 @@ class MeterUsageImportTest(TestCase):
 
         PropertyView.objects.create(property=self.property_1, cycle=new_cycle, state=new_property_state)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         response = self.client.post(url, post_params)
 
@@ -583,10 +583,10 @@ class MeterUsageImportTest(TestCase):
         property_3 = self.property_factory.get_property()
         PropertyView.objects.create(property=property_3, cycle=self.cycle, state=new_property_state)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         response = self.client.post(url, post_params)
 
@@ -663,10 +663,10 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle
         )
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[cost_meter_import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[cost_meter_import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         response = self.client.post(url, post_params)
 
@@ -742,7 +742,7 @@ class MeterUsageImportTest(TestCase):
         """
         dup_import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
         dup_filename = "example-pm-monthly-meter-usage-1-dup.xlsx"
-        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + dup_filename
+        dup_filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + dup_filename
 
         dup_file = ImportFile.objects.create(
             import_record=dup_import_record,
@@ -752,10 +752,10 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle
         )
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[dup_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[dup_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         response = self.client.post(url, post_params)
 
@@ -872,10 +872,10 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         confirmation_url += f'?organization_id={self.org.pk}'
         self.client.get(confirmation_url)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[pm_meter_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[pm_meter_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
             'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
         }
         self.client.post(url, post_params)
 
