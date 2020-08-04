@@ -86,9 +86,10 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
      * @return {promise obj}         promise object
      */
     organization_factory.update_role = function (user_id, org_id, role) {
-      return $http.put('/api/v2/users/' + user_id + '/update_role/', {
-        organization_id: org_id,
+      return $http.put('/api/v3/users/' + user_id + '/role/', {
         role: role
+      }, {
+        params: { organization_id: org_id }
       }).then(function (response) {
         return response.data;
       });
@@ -200,7 +201,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     var checkStatusLoop = function (deferred, progress_key) {
-      $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
+      $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
         $timeout(function () {
           if (response.data.progress < 100) {
             checkStatusLoop(deferred, progress_key);

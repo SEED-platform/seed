@@ -51,17 +51,17 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-top: 20px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>
         <div class="row">
@@ -71,7 +71,7 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload BuildingSync Data' | translate $}</div>
+                <div class="btn btn-primary upload-btn" sd-uploader  organization-id="organization.org_id" sourcetype="BuildingSync Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload BuildingSync Data' | translate $}</div>
             </div>
         </div>
         <!--<div class="row">
@@ -117,7 +117,7 @@
         <div class="row">
             <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
             <div class="form-group col-sm-12">
-                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                <div sd-uploader organization-id="organization.org_id" sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top"
                          translate="UPLOADING_PROGRESS"
@@ -264,7 +264,7 @@
                     <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                     <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
                     <span ng-if="step_12_buildingsync_validation_error">
-                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p> 
+                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p>
                         <div ng-repeat="file_issues in buildingsync_issues">
                             <em>{$ file_issues.file $}</em>
                             <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0" style="word-wrap: break-word;">

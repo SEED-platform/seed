@@ -181,11 +181,11 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_import_file(self):
         response = self.client.get(
-            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+            reverse('api:v3:import_files-detail', args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk, response.json()['import_file']['id'])
 
     def test_delete_file(self):
-        url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk])
         response = self.client.delete(
             url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
@@ -195,7 +195,7 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_matching_and_geocoding_results(self):
         response = self.client.get(
-            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/')
+            '/api/v3/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/?organization_id=' + str(self.org.pk))
         self.assertEqual('success', response.json()['status'])
 
 
@@ -254,7 +254,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -262,7 +262,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions_pm_file(self):
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -288,7 +288,7 @@ class TestMCMViews(TestCase):
         mapping.save()
 
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -297,7 +297,8 @@ class TestMCMViews(TestCase):
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
         resp = self.client.get(
-            reverse_lazy('api:v2:import_files-raw-column-names', args=[self.import_file.id]),
+            reverse_lazy('api:v3:import_files-raw-column-names',
+                         args=[self.import_file.id]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
 
@@ -321,7 +322,8 @@ class TestMCMViews(TestCase):
             is_extra_data=True)
 
         resp = self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'mappings': [
                     {
@@ -362,7 +364,8 @@ class TestMCMViews(TestCase):
         # Save the first mapping, just like before
         self.assertEqual(ColumnMapping.objects.filter(super_organization=self.org).count(), 0)
         resp = self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'mappings': [
                     {
@@ -391,7 +394,8 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
@@ -416,7 +420,7 @@ class TestMCMViews(TestCase):
         progress_data.save()
         progress_data.step('Some Status Message')  # bump to 50%
 
-        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_data.key]),
+        resp = self.client.get(reverse('api:v3:progress-detail', args=[progress_data.key]),
                                content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
