@@ -37,8 +37,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     user_factory.set_organization = function (org) {
       organization = org;
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.put('/api/v2/users/' + this_user_id + '/default_organization/', {
-          organization_id: org.id
+        return $http.put('/api/v3/users/' + this_user_id + '/default_organization/', {}, {
+          params: { organization_id: org.id }
         }).then(function (response) {
           return response.data;
         });
@@ -46,7 +46,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
     };
 
     user_factory.get_users = function () {
-      return $http.get('/api/v2/users/').then(function (response) {
+      return $http.get('/api/v3/users/').then(function (response) {
         return response.data;
       });
     };
@@ -60,11 +60,12 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         role: user.role
       };
 
+      const params = {}
       if (!_.isUndefined(user.organization)) {
-        new_user_details.organization_id = user.organization.org_id;
+        params.organization_id = user.organization.org_id
       }
 
-      return $http.post('/api/v2/users/', new_user_details).then(function (response) {
+      return $http.post('/api/v3/users/', new_user_details, { params }).then(function (response) {
         return response.data;
       });
     };
@@ -84,7 +85,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
     user_factory.get_shared_buildings = function () {
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.get('/api/v2/users/' + this_user_id + '/shared_buildings/').then(function (response) {
+        return $http.get('/api/v3/users/' + this_user_id + '/shared_buildings/').then(function (response) {
           return response.data;
         });
       });
@@ -96,7 +97,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.get_user_profile = function () {
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.get('/api/v2/users/' + this_user_id + '/').then(function (response) {
+        return $http.get('/api/v3/users/' + this_user_id + '/').then(function (response) {
           return response.data;
         });
       });
@@ -108,7 +109,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.generate_api_key = function () {
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.get('/api/v2/users/' + this_user_id + '/generate_api_key/').then(function (response) {
+        return $http.post('/api/v3/users/' + this_user_id + '/generate_api_key/').then(function (response) {
           return response.data;
         });
       });
@@ -137,7 +138,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.update_user = function (user) {
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.put('/api/v2/users/' + this_user_id + '/', {
+        return $http.put('/api/v3/users/' + this_user_id + '/', {
           first_name: user.first_name,
           last_name: user.last_name,
           email: user.email
@@ -155,7 +156,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.set_password = function (current_password, password_1, password_2) {
       return user_factory.get_user_id().then(function (this_user_id) {
-        return $http.put('/api/v2/users/' + this_user_id + '/set_password/', {
+        return $http.put('/api/v3/users/' + this_user_id + '/set_password/', {
           current_password: current_password,
           password_1: password_1,
           password_2: password_2
@@ -170,7 +171,7 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      */
     user_factory.get_user_id = function () {
       if (_.isUndefined(user_id)) {
-        user_id = $http.get('/api/v2/users/current_user_id/').then(function (response) {
+        user_id = $http.get('/api/v3/users/current/').then(function (response) {
           return response.data.pk;
         });
       }

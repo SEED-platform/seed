@@ -199,7 +199,7 @@ def account(header, main_url, username, log):
     # Retrieve the user id key for later retrievals
     print('API Function: current_user_id\n')
     result = requests.get(
-        main_url + '/api/v2/users/current_user_id/',
+        main_url + '/api/v3/users/current/',
         headers=header
     )
     user_pk = json.loads(result.content)['pk']
@@ -207,7 +207,7 @@ def account(header, main_url, username, log):
     # Retrieve the user profile
     print('API Function: get_user_profile\n')
     partmsg = 'get_user_profile'
-    result = requests.get(main_url + '/api/v2/users/%s/' % user_pk,
+    result = requests.get(main_url + '/api/v3/users/%s/' % user_pk,
                           headers=header)
     check_status(result, partmsg, log)
 
@@ -248,7 +248,7 @@ def account(header, main_url, username, log):
         'last_name': 'Holmes',
         'email': username
     }
-    result = requests.put(main_url + '/api/v2/users/%s/' % user_pk,
+    result = requests.put(main_url + '/api/v3/users/%s/' % user_pk,
                           headers=header,
                           data=user_payload)
     check_status(result, partmsg, log)

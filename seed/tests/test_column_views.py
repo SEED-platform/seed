@@ -94,7 +94,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # self.assertEqual(data['columns'], columns)
 
         # get show_shared_buildings
-        url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
+        url = reverse_lazy('api:v3:user-shared-buildings', args=[self.user.pk])
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(data['show_shared_buildings'], True)
