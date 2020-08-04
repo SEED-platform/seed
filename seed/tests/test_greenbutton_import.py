@@ -79,10 +79,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.tz_obj = timezone(TIME_ZONE)
 
     def test_green_button_import_base_case(self):
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(url, post_params)
 
@@ -140,10 +140,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         unsaved_meter_reading.save()
         existing_meter_reading = MeterReading.objects.get(reading=12345)
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(url, post_params)
 
@@ -186,10 +186,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         )
         unsaved_meter_reading.save()
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         self.client.post(url, post_params)
 
@@ -206,10 +206,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.assertEqual(meter_reading.conversion_factor, 3.41)
 
     def test_the_response_contains_expected_and_actual_reading_counts(self):
-        url = reverse("api:v2:import_files-save-raw-data", args=[self.import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         response = self.client.post(url, post_params)
 
@@ -229,7 +229,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
 
     def test_error_noted_in_response_if_meter_has_overlapping_readings_in_the_same_batch(self):
         filename = 'example-GreenButton-data-1002-1-dup.xml'
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/../data_importer/tests/data/" + filename
 
         one_dup_import_file = ImportFile.objects.create(
             import_record=self.import_record,
@@ -240,10 +240,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             matching_results_data={"property_id": self.property_1.id}
         )
 
-        url = reverse("api:v2:import_files-save-raw-data", args=[one_dup_import_file.id])
+        url = reverse("api:v3:import_files-start-save-data", args=[one_dup_import_file.id])
+        url += f'?organization_id={self.org.pk}'
         post_params = {
-            'cycle_id': self.cycle.pk,
-            'organization_id': self.org.pk,
+            'cycle_id': self.cycle.pk
         }
         response = self.client.post(url, post_params)
         result = json.loads(response.content)

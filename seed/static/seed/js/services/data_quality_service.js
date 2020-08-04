@@ -67,7 +67,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     };
 
     data_quality_factory.start_data_quality_checks_for_import_file = function (org_id, import_file_id) {
-      return $http.post('/api/v2/import_files/' + import_file_id + '/start_data_quality_checks/?organization_id=' + org_id).then(function (response) {
+      return $http.post('/api/v3/import_files/' + import_file_id + '/start_data_quality_checks/?organization_id=' + org_id).then(function (response) {
         return response.data;
       });
     };
