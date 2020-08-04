@@ -27,10 +27,10 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
-    matching_service.mergeProperties = function (state_ids) {
+    matching_service.mergeProperties = function (property_view_ids) {
       spinner_utility.show();
-      return $http.post('/api/v2/properties/merge/', {
-        state_ids: state_ids
+      return $http.post('/api/v3/properties/merge/', {
+        property_view_ids
       }, {
         params: {
           organization_id: user_service.get_organization().id
@@ -44,7 +44,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
 
     matching_service.unmergeProperties = function (view_id) {
       spinner_utility.show();
-      return $http.post('/api/v2/properties/' + view_id + '/unmerge/', {}, {
+      return $http.put('/api/v3/properties/' + view_id + '/unmerge/', {}, {
         params: {
           organization_id: user_service.get_organization().id
         }
