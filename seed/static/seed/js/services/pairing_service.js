@@ -21,7 +21,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
     };
 
     pairing_service.pair_taxlot_to_property = function (property_id, taxlot_id) {
-      return $http.put('/api/v2/properties/' + property_id + '/pair/', {}, {
+      return $http.put('/api/v3/properties/' + property_id + '/pair/', {}, {
         params: {
           organization_id: user_service.get_organization().id,
           taxlot_id: taxlot_id
@@ -43,7 +43,7 @@ angular.module('BE.seed.service.pairing', []).factory('pairing_service', [
     };
 
     pairing_service.unpair_taxlot_from_property = function (property_id, taxlot_id) {
-      return $http.put('/api/v2/properties/' + property_id + '/unpair/', {}, {
+      return $http.put('/api/v3/properties/' + property_id + '/unpair/', {}, {
         params: {
           organization_id: user_service.get_organization().id,
           taxlot_id: taxlot_id
