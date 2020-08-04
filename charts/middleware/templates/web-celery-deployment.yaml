@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - args:
-          - /seed/docker/start_celery_k8.sh
+          - /seed/docker/start_celery_docker.sh
         env:
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings.docker
