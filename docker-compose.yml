@@ -51,7 +51,7 @@ services:
   web-celery:
     image: seedplatform/seed:latest
     build: .
-    command: /seed/docker/start_celery_docker.sh
+    command: /seed/docker/start_celery_k8.sh
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_PORT=5432

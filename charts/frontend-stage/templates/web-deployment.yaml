@@ -41,7 +41,7 @@ spec:
           value: super-secret-password
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
-        image: seedplatform/seed:develop
+        image: seedplatform/seed:test
         name: web-stage
         ports:
         - containerPort: 80
