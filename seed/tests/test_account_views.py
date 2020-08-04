@@ -327,7 +327,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u)
 
         with self.assertRaises(NoReverseMatch):
-            resp = self.client.delete(
+            self.client.delete(
                 reverse_lazy('api:v3:organization-users-remove', args=[self.org.id]),
             )
 
