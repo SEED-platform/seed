@@ -209,12 +209,6 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
 
-      // Remove files, measures, scenarios from the update of the property.
-      // These relationships will be dropped on the new state.
-      state = _.omit(state, 'files');
-      state = _.omit(state, 'measures');
-      state = _.omit(state, 'scenarios');
-
       return $http.put('/api/v2/properties/' + view_id + '/', {
         state: state
       }, {
