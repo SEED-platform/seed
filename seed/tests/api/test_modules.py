@@ -26,7 +26,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     # Upload the covered-buildings-sample file
     print('API Function: upload_file\n'),
     partmsg = 'upload_file'
-    result = upload_file(header, filepath, main_url, dataset_id, filetype)
+    result = upload_file(header, organization_id, filepath, main_url, dataset_id, filetype)
     check_status(result, partmsg, log)
 
     # Get import ID

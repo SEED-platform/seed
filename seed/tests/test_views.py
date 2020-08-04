@@ -420,7 +420,7 @@ class TestMCMViews(TestCase):
         progress_data.save()
         progress_data.step('Some Status Message')  # bump to 50%
 
-        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_data.key]),
+        resp = self.client.get(reverse('api:v3:progress-detail', args=[progress_data.key]),
                                content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)

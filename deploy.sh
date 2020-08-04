@@ -118,13 +118,13 @@ docker-compose -f docker-compose.build.yml pull
 docker-compose -f docker-compose.build.yml build --pull
 
 # Get the versions out of the docker-compose.build file
-DOCKER_PG_VERSION=$( sed -n 's/.*image\: seedplatform\/postgres-seed\:\(.*\)/\1/p' docker-compose.build.yml )
+DOCKER_PG_VERSION=$( sed -n 's/.*image\: timescale\/timescaledb-postgis\:latest-pg\(.*\)/\1/p' docker-compose.build.yml )
 DOCKER_OEP_VERSION=$( sed -n 's/.*image\: seedplatform\/oep\:\(.*\)/\1/p' docker-compose.build.yml )
 DOCKER_REDIS_VERSION=$( sed -n 's/.*image\: redis\:\(.*\)/\1/p' docker-compose.build.yml )
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag seedplatform/postgres-seed:$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
+docker tag timescale/timescaledb-postgis:latest-pg$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
 docker tag redis:5.0.1 127.0.0.1:5000/redis
 docker tag seedplatform/oep:$DOCKER_OEP_VERSION 127.0.0.1:5000/oep
 
