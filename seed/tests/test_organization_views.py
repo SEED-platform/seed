@@ -39,7 +39,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.client.login(**user_details)
 
     def test_matching_criteria_columns_view(self):
-        url = reverse('api:v2:organizations-matching-criteria-columns', args=[self.org.id])
+        url = reverse('api:v3:organizations-matching-criteria-columns', args=[self.org.id])
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
 
@@ -86,7 +86,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
             geocoding_order=4
         )
 
-        url = reverse('api:v2:organizations-geocoding-columns', args=[self.org.id])
+        url = reverse('api:v3:organizations-geocoding-columns', args=[self.org.id])
         raw_result = self.client.get(url)
         result = json.loads(raw_result.content)
 
@@ -112,7 +112,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertEqual(result['TaxLotState'], default_matching_criteria_display_names['TaxLotState'])
 
     def test_whole_org_match_merge_link_endpoint_properties(self):
-        url = reverse('api:v2:organizations-match-merge-link', args=[self.org.id])
+        url = reverse('api:v3:organizations-match-merge-link', args=[self.org.id])
         post_params = json.dumps({"inventory_type": "properties"})
         raw_result = self.client.post(url, post_params, content_type='application/json')
 
@@ -129,7 +129,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
 
         # try to get result using results endpoint
-        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+        get_result_url = reverse('api:v3:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
 
         get_result_raw_response = self.client.get(get_result_url)
         summary = json.loads(get_result_raw_response.content)
@@ -139,7 +139,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
 
     def test_whole_org_match_merge_link_endpoint_taxlots(self):
-        url = reverse('api:v2:organizations-match-merge-link', args=[self.org.id])
+        url = reverse('api:v3:organizations-match-merge-link', args=[self.org.id])
         post_params = json.dumps({"inventory_type": "taxlots"})
         raw_result = self.client.post(url, post_params, content_type='application/json')
 
@@ -156,7 +156,7 @@ class TestOrganizationViews(DataMappingBaseTestCase):
         self.assertCountEqual(['PropertyState', 'TaxLotState'], summary_keys)
 
         # try to get result using results endpoint
-        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+        get_result_url = reverse('api:v3:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
 
         get_result_raw_response = self.client.get(get_result_url)
         summary = json.loads(get_result_raw_response.content)
@@ -189,7 +189,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
     def test_whole_org_match_merge_link_preview_endpoint_invalid_columns(self):
-        url = reverse('api:v2:organizations-match-merge-link-preview', args=[self.org.id])
+        url = reverse('api:v3:organizations-match-merge-link-preview', args=[self.org.id])
         post_params = json.dumps({
             "inventory_type": "properties",
             "add": ['DNE col 1'],
@@ -228,7 +228,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         # Check there doesn't exist links
         self.assertNotEqual(ps_1.propertyview_set.first().property_id, ps_2.propertyview_set.first().property_id)
 
-        url = reverse('api:v2:organizations-match-merge-link-preview', args=[self.org.id])
+        url = reverse('api:v3:organizations-match-merge-link-preview', args=[self.org.id])
         post_params = json.dumps({
             "inventory_type": "properties",
             "add": ['property_name'],
@@ -255,7 +255,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         self.assertEqual(summary[str(self.cycle_1.id)][0]['id'], summary[str(self.cycle_2.id)][0]['id'])
 
         # try to get result using results endpoint
-        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+        get_result_url = reverse('api:v3:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
 
         get_result_raw_response = self.client.get(get_result_url)
         raw_summary = json.loads(get_result_raw_response.content)
@@ -298,7 +298,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         # Check there doesn't exist links
         self.assertNotEqual(tls_1.taxlotview_set.first().taxlot_id, tls_2.taxlotview_set.first().taxlot_id)
 
-        url = reverse('api:v2:organizations-match-merge-link-preview', args=[self.org.id])
+        url = reverse('api:v3:organizations-match-merge-link-preview', args=[self.org.id])
         post_params = json.dumps({
             "inventory_type": "taxlots",
             "add": ['district'],
@@ -326,7 +326,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         self.assertEqual(summary[str(self.cycle_1.id)][0]['id'], summary[str(self.cycle_2.id)][0]['id'])
 
         # try to get result using results endpoint
-        get_result_url = reverse('api:v2:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
+        get_result_url = reverse('api:v3:organizations-match-merge-link-result', args=[self.org.id]) + '?match_merge_link_id=' + str(identifier)
 
         get_result_raw_response = self.client.get(get_result_url)
         raw_summary = json.loads(get_result_raw_response.content)
