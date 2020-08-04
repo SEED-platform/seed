@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - args:
-        - /seed/docker/start_celery_docker.sh
+        - /seed/docker/start_celery_k8.sh
         env:
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings.docker
@@ -37,7 +37,7 @@ spec:
           value: seed
         - name: SECRET_KEY
           value: <secret> #to be implemented with crypto secrets
-        image: seedplatform/seed:develop
+        image: seedplatform/seed:testing_pr_image
         name: web-celery
         resources: {}
         volumeMounts:
