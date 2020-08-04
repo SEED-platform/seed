@@ -37,7 +37,7 @@ spec:
           value: seed
         - name: SECRET_KEY
           value: <secret> #to be implemented with crypto secrets
-        image: seedplatform/seed:testing_pr_image
+        image: seedplatform/seed:test
         name: web-celery
         resources: {}
         volumeMounts:
