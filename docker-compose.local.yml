@@ -46,7 +46,7 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-  web:
+  web-stage:
     image: 127.0.0.1:5000/seed
     environment:
       - AWS_ACCESS_KEY_ID
@@ -99,7 +99,7 @@ services:
     depends_on:
       - db-redis
       - db-postgres
-      - web
+      - web-stage
     volumes:
       - seed_media:/seed/media
     command: /seed/docker/start_celery_docker.sh
