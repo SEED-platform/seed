@@ -164,9 +164,9 @@ angular.module('BE.seed.controller.merge_modal', [])
             $scope.processing = false;
           });
         } else {
-          state_ids = _.map($scope.data, 'taxlot_state_id').reverse();
-          return matching_service.mergeTaxlots(state_ids).then(function (data) {
-            Notification.success('Successfully merged ' + state_ids.length + ' tax lots');
+          const view_ids = _.map($scope.data, 'taxlot_view_id').reverse();
+          return matching_service.mergeTaxlots(view_ids).then(function (data) {
+            Notification.success('Successfully merged ' + view_ids.length + ' tax lots');
             notify_merges_and_links(data);
             $scope.close();
           }, function (err) {

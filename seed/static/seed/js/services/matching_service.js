@@ -55,10 +55,10 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       });
     };
 
-    matching_service.mergeTaxlots = function (state_ids) {
+    matching_service.mergeTaxlots = function (taxlot_view_ids) {
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/merge/', {
-        state_ids: state_ids
+      return $http.post('/api/v3/taxlots/merge/', {
+        taxlot_view_ids
       }, {
         params: {
           organization_id: user_service.get_organization().id
@@ -72,7 +72,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
 
     matching_service.unmergeTaxlots = function (view_id) {
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/' + view_id + '/unmerge/', {}, {
+      return $http.post('/api/v3/taxlots/' + view_id + '/unmerge/', {}, {
         params: {
           organization_id: user_service.get_organization().id
         }
