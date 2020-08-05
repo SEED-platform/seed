@@ -1040,12 +1040,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
             'cycle', self.cycle.pk
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1093,11 +1093,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': columnlistsetting.pk})
+        ), data={'profile_id': columnlistsetting.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -1105,12 +1105,12 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # test with queryparam
 
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
             'profile_id', columnlistsetting.pk,
-        ))
+        ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -1133,12 +1133,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        url = '/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
         )
-        response = self.client.post(url, data={})
+        response = self.client.post(url, data={}, content_type='application/json')
         results = response.json()['results']
 
         self.assertEquals(len(results), 1)
@@ -1152,13 +1152,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view_1, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        url = '/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
         )
         data = {}
-        response = self.client.post(url, data=data)
+        response = self.client.post(url, data=data, content_type='application/json')
         result = response.json()
 
         column_name_mappings_related = {}
@@ -1209,12 +1209,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view_2,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
         self.assertEquals(len(results), 2)
 
@@ -1280,12 +1280,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1319,12 +1319,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 'bad',
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -1355,12 +1355,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -1406,7 +1406,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         params = {
             'organization_id': self.org.pk,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
+        response = self.client.get('/api/v3/taxlots/' + str(taxlot_view.id) + '/', params)
         result = response.json()
 
         labels = result['labels']
@@ -1560,10 +1560,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
         params = {
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'inventory_type': 'taxlot',
         }
-        response = self.client.get('/api/v2/taxlots/columns/', params)
+        response = self.client.get('/api/v3/columns/', params)
         results = response.json()['columns']
 
         self.assertTrue('id' in results[0])

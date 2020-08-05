@@ -109,7 +109,7 @@ class TestApi(TestCase):
 
     def test_organization(self):
         self.client.login(username='test_user@demo.com', password='test_pass')
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         # {
@@ -158,12 +158,12 @@ class TestApi(TestCase):
             }])
 
     def test_organization_details(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
         # get details on the organization
-        r = self.client.get('/api/v2/organizations/' + str(organization_id) + '/', follow=True,
+        r = self.client.get('/api/v3/organizations/' + str(organization_id) + '/', follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -214,7 +214,7 @@ class TestApi(TestCase):
         self.assertEqual(r['last_name'], 'Stark')
 
     def test_adding_user(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
         new_user = {
@@ -231,14 +231,14 @@ class TestApi(TestCase):
                              **self.headers)
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get('/api/v2/organizations/%s/' % organization_id, follow=True,
+        r = self.client.get('/api/v3/organizations/%s/' % organization_id, follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
                             content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
@@ -283,7 +283,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
                             content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -291,11 +291,11 @@ class TestApi(TestCase):
         self.assertEqual(new_user['role'], 'owner')
 
     def test_get_query_threshold(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/query_threshold/" % organization_id,
+        r = self.client.get("/api/v3/organizations/%s/query_threshold/" % organization_id,
                             follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
@@ -304,11 +304,11 @@ class TestApi(TestCase):
         self.assertEqual(r['query_threshold'], None)
 
     def test_shared_fields(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/shared_fields/" % organization_id,
+        r = self.client.get("/api/v3/organizations/%s/shared_fields/" % organization_id,
                             follow=True,
                             **self.headers)
 
@@ -319,7 +319,7 @@ class TestApi(TestCase):
 
     @skip('appears to be broken by use of login_required')
     def test_upload_buildings_file(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
