@@ -214,7 +214,7 @@ def account(header, main_url, username, log):
     # Retrieve the organizations
     print('API Function: get_organizations\n'),
     partmsg = 'get_organizations'
-    result = requests.get(main_url + '/api/v2/organizations/',
+    result = requests.get(main_url + '/api/v3/organizations/',
                           headers=header)
     check_status(result, partmsg, log, piid_flag='organizations')
 
@@ -235,7 +235,7 @@ def account(header, main_url, username, log):
 
     # Get the organization details
     partmsg = 'get_organization (2)'
-    mod_url = main_url + '/api/v2/organizations/%s' % str(organization_id)
+    mod_url = main_url + '/api/v3/organizations/%s' % str(organization_id)
     result = requests.get(mod_url, headers=header)
     check_status(result, partmsg, log)
 
@@ -256,21 +256,21 @@ def account(header, main_url, username, log):
     # Get organization users
     print('API Function: get_organizations_users\n'),
     partmsg = 'get_organizations_users'
-    result = requests.get(main_url + '/api/v2/organizations/%s/users/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/users/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log, piid_flag='users')
 
     # Get organizations settings
     print('API Function: get_query_treshold\n'),
     partmsg = 'get_query_threshold'
-    result = requests.get(main_url + '/api/v2/organizations/%s/query_threshold/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/query_threshold/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log)
 
     # Get shared fields
     print('API Function: get_shared_fields\n'),
     partmsg = 'get_shared_fields'
-    result = requests.get(main_url + '/api/v2/organizations/%s/shared_fields/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/shared_fields/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log)
 
@@ -282,7 +282,7 @@ def account(header, main_url, username, log):
         'user_id': user_pk,
         'organization_name': org_name  # hopefully ensuring a unique org name
     }
-    result = requests.post(main_url + '/api/v2/organizations/',
+    result = requests.post(main_url + '/api/v3/organizations/',
                            headers=header,
                            json=payload)
     check_status(result, partmsg, log)
@@ -291,7 +291,7 @@ def account(header, main_url, username, log):
     # Delete an organization
     print('API Function: delete_org\n'),
     partmsg = 'delete_org'
-    result = requests.delete(main_url + '/api/v2/organizations/%s/' % org_id,
+    result = requests.delete(main_url + '/api/v3/organizations/%s/' % org_id,
                              headers=header)
     check_status(result, partmsg, log)
 
@@ -302,7 +302,7 @@ def account(header, main_url, username, log):
         'sub_org_name': 'TestSuborg',
         'sub_org_owner_email': username
     }
-    result = requests.post(main_url + '/api/v2/organizations/%s/sub_org/' % organization_id,
+    result = requests.post(main_url + '/api/v3/organizations/%s/sub_org/' % organization_id,
                            headers=header,
                            data=payload)
     check_status(result, partmsg, log)
@@ -311,7 +311,7 @@ def account(header, main_url, username, log):
     # Delete a suborganization
     print('API Function: delete_sub_org\n'),
     partmsg = 'delete_sub_org'
-    result = requests.delete(main_url + '/api/v2/organizations/%s/' % suborg_id,
+    result = requests.delete(main_url + '/api/v3/organizations/%s/' % suborg_id,
                              headers=header)
     check_status(result, partmsg, log)
 
@@ -593,7 +593,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'page': 1,
         'per_page': 999999999
     }
-    result = requests.post(main_url + '/api/v2/taxlots/filter/',
+    result = requests.post(main_url + '/api/v3/taxlots/filter/',
                            headers=header,
                            params=params)
     lot_ids = [lot['id'] for lot in result.json()['results']]
