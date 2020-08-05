@@ -316,10 +316,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         organization_id = int(request.query_params.get('organization_id', None))
 
         taxlot_view_ids = body.get('taxlot_view_ids', [])
-        taxlot_state_ids = TaxLotView.objects.filter(
+        taxlot_states = TaxLotView.objects.filter(
             id__in=taxlot_view_ids,
             cycle__organization_id=organization_id
-        ).values_list('state_id', flat=True)
+        ).values('id', 'state_id')
+        # get the state ids in order according to the given view ids
+        taxlot_states_dict = {t['id']: t['state_id'] for t in taxlot_states}
+        taxlot_state_ids = [
+            taxlot_states_dict[view_id]
+            for view_id in taxlot_view_ids if view_id in taxlot_states_dict
+        ]
 
         if len(taxlot_state_ids) != len(taxlot_view_ids):
             return {

@@ -169,7 +169,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
             }
         }
         target_view_id = tls_1.taxlotview_set.first().id
-        url = reverse('api:v2:taxlots-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:taxlots-detail', args=[target_view_id]) + '?organization_id={}'.format(self.org.pk)
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -194,7 +194,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
                 "jurisdiction_tax_lot_id": "1337AnotherDifferentID"
             }
         }
-        url = reverse('api:v2:taxlots-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:taxlots-detail', args=[changed_view.id]) + '?organization_id={}'.format(self.org.pk)
         raw_response = self.client.put(url, json.dumps(new_data), content_type='application/json')
         response = json.loads(raw_response.content)
 
@@ -300,11 +300,13 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         }
         # Create 4 non-matching taxlots where merging 1 and 2, will match 4
         tls_1 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        tlv_1 = tls_1.promote(self.cycle)
 
         del base_details['jurisdiction_tax_lot_id']
         base_details['address_line_1'] = '123 Match Street'
         base_details['city'] = 'Denver'
         tls_2 = self.taxlot_state_factory.get_taxlot_state(**base_details)
+        tlv_2 = tls_2.promote(self.cycle)
 
         # TaxLot 3 is here to be sure it remains unchanged
         del base_details['address_line_1']
@@ -327,9 +329,9 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
         self.assertEqual(TaxLotView.objects.count(), 4)
 
         # Merge -State 1 and 2 - which should then match merge with -State 4 with precedence to the initial merged -State
-        url = reverse('api:v2:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
+        url = reverse('api:v3:taxlots-merge') + '?organization_id={}'.format(self.org.pk)
         post_params = json.dumps({
-            'state_ids': [tls_2.pk, tls_1.pk]
+            'taxlot_view_ids': [tlv_2.pk, tlv_1.pk]
         })
         raw_response = self.client.post(url, post_params, content_type='application/json')
         response = json.loads(raw_response.content)
@@ -594,7 +596,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing 1 rollup merge should expose a set -State having
         '3rd Oldest City' and state_order of 'third'.
         """
-        rollback_unmerge_url_1 = reverse('api:v2:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_1 = reverse('api:v3:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_1, content_type='application/json')
 
         rollback_view_1 = TaxLotView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
@@ -605,7 +607,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
         Undoing another rollup merge should expose a set -State having
         '2nd Oldest City' and state_order of 'second'.
         """
-        rollback_unmerge_url_2 = reverse('api:v2:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
+        rollback_unmerge_url_2 = reverse('api:v3:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_2, content_type='application/json')
 
         rollback_view_2 = TaxLotView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
