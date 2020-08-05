@@ -49,9 +49,9 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      return $http.get(window.BE.urls.get_inventory_report_data, {
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report/', {
         params: {
-          organization_id: user_service.get_organization().id,
           x_var: xVar,
           y_var: yVar,
           start: start,
@@ -102,9 +102,9 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      return $http.get(window.BE.urls.get_aggregated_inventory_report_data, {
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report_aggregated/', {
         params: {
-          organization_id: user_service.get_organization().id,
           x_var: xVar,
           y_var: yVar,
           start: start,
@@ -129,9 +129,9 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      return $http.get('/api/v2/export_reports_data/', {
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report_export/', {
         params: {
-          organization_id: user_service.get_organization().id,
           x_var: xVar,
           x_label: xLabel,
           y_var: yVar,

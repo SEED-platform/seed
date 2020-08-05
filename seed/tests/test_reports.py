@@ -63,11 +63,10 @@ class ExportReport(DataMappingBaseTestCase):
                 cycle_id=self.cycle_2.id
             )
 
-        url = reverse('api:v2:export_reports_data')
+        url = reverse('api:v3:organizations-report-export', args=[self.org.pk])
 
         # needs to be turned into post?
-        response = self.client.get(url + '?{}={}&{}={}&{}={}&{}={}&{}={}&{}={}&{}={}'.format(
-            'organization_id', self.org.pk,
+        response = self.client.get(url + '?{}={}&{}={}&{}={}&{}={}&{}={}&{}={}'.format(
             'start', '2014-12-31T00:00:00-07:53',
             'end', '2017-12-31T00:00:00-07:53',
             'x_var', 'site_eui',
