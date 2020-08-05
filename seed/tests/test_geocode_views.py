@@ -45,7 +45,7 @@ class GeocodeViewTests(TestCase):
         property = PropertyState(**property_details)
         property.save()
 
-        url = reverse('api:v2:geocode-geocode-by-ids')
+        url = reverse('api:v3:geocode-geocode-by-ids')
         post_params = {
             'organization_id': self.org.pk,
             'property_ids': [property.id],
@@ -117,17 +117,17 @@ class GeocodeViewTests(TestCase):
         tax_lot_missing = TaxLotState(**tax_lot_missing_details)
         tax_lot_missing.save()
 
-        url = reverse('api:v2:geocode-confidence-summary')
+        url = reverse('api:v3:geocode-confidence-summary')
         post_params = {
             'organization_id': self.org.pk,
-            'property_ids': [
+            'property_view_ids': [
                 property_none.id,
                 property_high.id,
                 property_low.id,
                 property_manual.id,
                 property_missing.id
             ],
-            'tax_lot_ids': [
+            'taxlot_view_ids': [
                 tax_lot_none.id,
                 tax_lot_high.id,
                 tax_lot_low.id,
@@ -138,29 +138,27 @@ class GeocodeViewTests(TestCase):
 
         result = self.client.post(url, post_params)
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
-
         expectation = {
             "properties": {
-                "not_geocoded": 1,
-                "high_confidence": 1,
-                "low_confidence": 1,
-                "manual": 1,
-                "missing_address_components": 1
+                "not_geocoded": 0,
+                "high_confidence": 0,
+                "low_confidence": 0,
+                "manual": 0,
+                "missing_address_components": 0
             },
             "tax_lots": {
-                "not_geocoded": 1,
-                "high_confidence": 1,
-                "low_confidence": 1,
-                "manual": 1,
-                "missing_address_components": 1
+                "not_geocoded": 0,
+                "high_confidence": 0,
+                "low_confidence": 0,
+                "manual": 0,
+                "missing_address_components": 0
             }
         }
 
         self.assertEqual(result_dict, expectation)
 
     def test_api_key_endpoint_returns_true_or_false_if_org_has_api_key(self):
-        url = reverse('api:v2:geocode-api-key-exists')
-
+        url = reverse("api:v3:organizations-geocode-api-key-exists", args=[self.org.pk])
         post_params_false = {'organization_id': self.org.pk}
         false_result = self.client.get(url, post_params_false)
 
@@ -169,7 +167,9 @@ class GeocodeViewTests(TestCase):
         org_with_key, _, _ = create_organization(self.user)
         org_with_key.mapquest_api_key = "somekey"
         org_with_key.save()
+        url = reverse("api:v3:organizations-geocode-api-key-exists", args=[org_with_key.id])
         post_params_true = {'organization_id': org_with_key.id}
         true_result = self.client.get(url, post_params_true)
 
         self.assertEqual(b'true', true_result.content)
+
