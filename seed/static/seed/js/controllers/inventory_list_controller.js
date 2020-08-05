@@ -326,8 +326,16 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             has_meters: function () {
               if ($scope.inventory_type === 'properties') {
-                var inventory_ids = $scope.selectedOrder.slice().reverse();
-                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
+                const selected_property_view_ids = _.map(
+                  _.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                    return row.$$treeLevel === 0;
+                  }),
+                  'property_view_id'
+                ).reverse();
+
+                return inventory_service.properties_meters_exist(
+                  selected_property_view_ids
+                ).then(function (has_meters) {
                   return has_meters;
                 });
               } else {
