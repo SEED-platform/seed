@@ -41,15 +41,16 @@ class GeocodeViewTests(TestCase):
         property_details['organization_id'] = self.org.id
         property_details['latitude'] = 39.765251
         property_details['longitude'] = -104.986138
+        property_details['long_lat'] = f"POINT ({property_details['longitude']} {property_details['latitude']})"
 
         property = PropertyState(**property_details)
         property.save()
 
-        url = reverse('api:v3:geocode-geocode-by-ids')
+        url = reverse('api:v3:geocode-geocode-by-ids') + '?organization_id=%s' % self.org.pk
+
         post_params = {
-            'organization_id': self.org.pk,
-            'property_ids': [property.id],
-            'taxlot_ids': []
+            'property_view_ids': [property.id],
+            'taxlot_view_ids': []
         }
 
         self.client.post(url, post_params)
