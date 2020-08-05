@@ -242,15 +242,13 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.delete_taxlot_states = function (ids) {
-      return $http.delete('/api/v2/taxlots/batch_delete/', {
+    inventory_service.delete_taxlot_states = function (taxlot_view_ids) {
+      return $http.delete('/api/v3/taxlots/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
-        data: {
-          organization_id: user_service.get_organization().id,
-          selected: ids
-        }
+        data: { taxlot_view_ids },
+        params: { organization_id: user_service.get_organization().id }
       });
     };
 
@@ -273,7 +271,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        return $http.post('/api/v2/taxlots/filter/', {
+        return $http.post('/api/v3/taxlots/filter/', {
           // Pass the specific ids if they exist
           inventory_ids: inventory_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
@@ -287,7 +285,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
-      return $http.post('/api/v2/taxlots/cycles/', {
+      return $http.post('/api/v3/taxlots/filter_by_cycle/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
         cycle_ids: cycle_ids
@@ -374,7 +372,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/taxlots/' + view_id + '/', {
+      return $http.get('/api/v3/taxlots/' + view_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -393,8 +391,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id
+      return $http.get('/api/v3/taxlots/' + view_id + '/links/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -410,7 +410,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/' + view_id + '/match_merge_link/').then(function (response) {
+      return $http.post('/api/v3/taxlots/' + view_id + '/match_merge_link/', {}, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();
@@ -437,7 +441,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.put('/api/v2/taxlots/' + view_id + '/', {
+      return $http.put('/api/v3/taxlots/' + view_id + '/', {
         state: state
       }, {
         params: {
@@ -585,8 +589,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.get_taxlot_columns_for_org = function (org_id, only_used) {
       if (only_used === undefined) only_used = false;
-      return $http.get('/api/v2/taxlots/columns/', {
+      return $http.get('/api/v3/columns/', {
         params: {
+          inventory_type: 'taxlot',
           organization_id: org_id,
           only_used: only_used
         }
@@ -623,9 +628,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_mappable_taxlot_columns = function () {
-      return $http.get('/api/v2/taxlots/mappable_columns/', {
+      return $http.get('/api/v3/columns/mappable/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: 'taxlot',
         }
       }).then(function (response) {
         // Remove empty columns
