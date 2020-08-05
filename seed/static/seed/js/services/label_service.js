@@ -65,15 +65,22 @@ angular.module('BE.seed.service.label', [])
         var params = {
           organization_id: org_id
         };
-        var body = null;
-        if (inventory_type === 'properties') {
-          params.inventory_type = 'property_view';
-          body = {selected: filter_ids};
-        } else if (inventory_type === 'taxlots') {
-          params.inventory_type = 'taxlot_view';
-          body = {selected: filter_ids};
+
+        if (inventory_type == null) {
+          return $http.get('/api/v3/labels/', { params }).then(map_labels)
         }
-        return $http.post('/api/v2/labels/filter/', body, {
+
+        let endpoint = null;
+        var body = {selected: filter_ids};
+        if (inventory_type === 'properties') {
+          endpoint = 'properties/labels'
+        } else if (inventory_type === 'taxlots') {
+          endpoint = 'taxlots/labels'
+        } else {
+          throw Error(`Invalid inventory_type "${inventory_type}". Expecting properties or taxlots`)
+        }
+
+        return $http.post(`/api/v3/${endpoint}/`, body, {
           params: params
         }).then(map_labels);
       }
@@ -95,7 +102,7 @@ angular.module('BE.seed.service.label', [])
       }
 
       function create_label_for_org (org_id, label) {
-        return $http.post('/api/v2/labels/', label, {
+        return $http.post('/api/v3/labels/', label, {
           params: {
             organization_id: org_id
           }
@@ -120,7 +127,7 @@ angular.module('BE.seed.service.label', [])
       }
 
       function update_label_for_org (org_id, label) {
-        return $http.put('/api/v2/labels/' + label.id + '/', label, {
+        return $http.put('/api/v3/labels/' + label.id + '/', label, {
           params: {
             organization_id: org_id
           }
@@ -143,7 +150,7 @@ angular.module('BE.seed.service.label', [])
       }
 
       function delete_label_for_org (org_id, label) {
-        return $http.delete('/api/v2/labels/' + label.id + '/', {
+        return $http.delete('/api/v3/labels/' + label.id + '/', {
           params: {
             organization_id: org_id
           }
@@ -171,7 +178,7 @@ angular.module('BE.seed.service.label', [])
 
        */
       function update_property_labels (add_label_ids, remove_label_ids, selected) {
-        return $http.put('/api/v2/labels-property/', {
+        return $http.put('/api/v3/labels_property/', {
           inventory_ids: selected,
           add_label_ids: add_label_ids,
           remove_label_ids: remove_label_ids
@@ -199,7 +206,7 @@ angular.module('BE.seed.service.label', [])
 
        */
       function update_taxlot_labels (add_label_ids, remove_label_ids, selected) {
-        return $http.put('/api/v2/labels-taxlot/', {
+        return $http.put('/api/v3/labels_taxlot/', {
           inventory_ids: selected,
           add_label_ids: add_label_ids,
           remove_label_ids: remove_label_ids

@@ -47,7 +47,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      */
     uploader_factory.validate_use_cases = function (file_id) {
       var org_id = user_service.get_organization().id;
-      return $http.post('/api/v2/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
+      return $http.post('/api/v3/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
         .then(function (response) {
           return response.data;
         })
@@ -67,9 +67,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
     uploader_factory.save_raw_data = function (file_id, cycle_id) {
-      return $http.post('/api/v2/import_files/' + file_id + '/save_raw_data/', {
+      return $http.post('/api/v3/import_files/' + file_id + '/start_save_data/', {
         cycle_id: cycle_id,
-        organization_id: user_service.get_organization().id
+      }, {
+        params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
         return response.data;
       });
