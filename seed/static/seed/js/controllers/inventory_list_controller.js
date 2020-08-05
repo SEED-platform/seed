@@ -296,13 +296,18 @@ angular.module('BE.seed.controller.inventory_list', [])
               });
             },
             data: function () {
-              var selectedOrder = $scope.selectedOrder.slice().reverse();
-              var data = new Array($scope.selectedOrder.length);
+              const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id'
+              const selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                return row.$$treeLevel === 0
+              }), viewIdProp).reverse()
+              var data = new Array(selectedViewIds.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
-                  _.forEach(selectedOrder, function (id, index) {
-                    var match = _.find(inventory_data.results, {id: id});
+                return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
+                  _.forEach(selectedViewIds, function (id, index) {
+                    const matchPredicate = {}
+                    matchPredicate[viewIdProp] = id
+                    var match = _.find(inventory_data.results, matchPredicate);
                     if (match) {
                       data[index] = match;
                     }
@@ -310,9 +315,11 @@ angular.module('BE.seed.controller.inventory_list', [])
                   return data;
                 });
               } else if ($scope.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
-                  _.forEach(selectedOrder, function (id, index) {
-                    var match = _.find(inventory_data.results, {id: id});
+                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
+                  _.forEach(selectedViewIds, function (id, index) {
+                    const matchPredicate = {}
+                    matchPredicate[viewIdProp] = id
+                    var match = _.find(inventory_data.results, matchPredicate);
                     if (match) {
                       data[index] = match;
                     }
