@@ -166,7 +166,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
     button: element[0],
     request: {
       method: 'PUT',
-      endpoint: '/api/v2.1/properties/' + scope.importrecord + '/update_with_building_sync/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId,
+      endpoint: '/api/v3/properties/' + scope.importrecord + '/update_with_building_sync/?cycle_id=' + scope.cycleId + '&organization_id=' + scope.organizationId,
       inputName: 'file',
       paramsInBody: true,
       forceMultipart: true,
