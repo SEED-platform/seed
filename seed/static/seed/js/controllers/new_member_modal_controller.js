@@ -36,7 +36,11 @@ angular.module('BE.seed.controller.new_member_modal', [])
        * adds a user to the org
        */
       $scope.submit_form = function () {
-        user_service.add($scope.user).then(function () {
+        // make `role` a string 
+        const u = _.cloneDeep($scope.user)
+        u.role = u.role.value
+
+        user_service.add(u).then(function () {
           $uibModalInstance.close();
         }, function (data) {
           $scope.$emit('app_error', data);
