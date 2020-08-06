@@ -44,7 +44,7 @@ def get_changed_fields(old, new):
         del previous_data['pk']
 
     if not (changed_fields or changed_extra_data):
-        return None
+        return None, None
     else:
         return json.dumps({
             'regular_fields': changed_fields,

@@ -10,7 +10,7 @@ import logging
 
 from django.db import models
 
-from seed.building_sync.building_sync import BuildingSync
+from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
 from seed.models import (
@@ -142,11 +142,14 @@ class BuildingFile(models.Model):
             return False, None, None, "File format was not one of: {}".format(acceptable_file_types)
 
         parser = Parser()
-        parser.import_file(self.file.path)
-        parser_args = []
-        parser_kwargs = {}
-        # TODO: use table_mappings for BuildingSync process method
-        data, messages = parser.process(*parser_args, **parser_kwargs)
+        try:
+            parser.import_file(self.file.path)
+            parser_args = []
+            parser_kwargs = {}
+            # TODO: use table_mappings for BuildingSync process method
+            data, messages = parser.process(*parser_args, **parser_kwargs)
+        except ParsingError as e:
+            return False, None, None, [str(e)]
 
         if len(messages['errors']) > 0 or not data:
             return False, None, None, messages

@@ -360,9 +360,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.diff = function () {
         if (_.isEmpty($scope.item_copy)) return {};
         // $scope.item_state, $scope.item_copy
+        const ignored_root_keys = ['extra_data', 'files', 'measures', 'scenarios']
         var result = {};
         _.forEach($scope.item_state, function (value, key) {
-          if (key === 'extra_data') return;
+          if (ignored_root_keys.includes(key)) return;
           if (value === $scope.item_copy[key]) return;
           if (_.isNull($scope.item_copy[key]) && _.isString(value) && _.isEmpty(value)) return;
           if (_.isNumber($scope.item_copy[key]) && _.isString(value) && $scope.item_copy[key] === _.toNumber(value)) return;

@@ -121,7 +121,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.save_mappings = function () {
         // API request to tell backend that it is finished with the mappings
-        $http.put('/api/v2/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
+        $http.post('/api/v3/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
           params: {
             organization_id: $scope.organization.org_id
           }
@@ -662,7 +662,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           password: pm_password,
           template: pm_template
         }).then(function (response) {
-          response = $http.post('/api/v2/upload/create_from_pm_import/', {
+          response = $http.post('/api/v3/upload/create_from_pm_import/', {
             properties: response.data.properties,
             import_record_id: $scope.dataset.id
           });

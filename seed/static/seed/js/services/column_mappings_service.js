@@ -14,9 +14,11 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
         organization_id: org_id
       };
       if (filter_preset_types != null) {
-        params.preset_type = filter_preset_types;
+        var data = {
+          preset_type: filter_preset_types
+        };
       }
-      return $http.get('/api/v2/column_mapping_presets/', {
+      return $http.post('/api/v3/column_mapping_profiles/filter/', data, {
         params: params
       }).then(function (response) {
         return response.data;
@@ -24,7 +26,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     };
 
     column_mappings_factory.new_column_mapping_preset_for_org = function (org_id, data) {
-      return $http.post('/api/v2/column_mapping_presets/', data, {
+      return $http.post('/api/v3/column_mapping_profiles/', data, {
         params: {
           organization_id: org_id
         }
@@ -38,7 +40,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     };
 
     column_mappings_factory.get_header_suggestions_for_org = function (org_id, headers) {
-      return $http.post('/api/v2/column_mapping_presets/suggestions/', {
+      return $http.post('/api/v3/column_mapping_profiles/suggestions/', {
         headers: headers
       }, {
         params: {
@@ -50,7 +52,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     };
 
     column_mappings_factory.update_column_mapping_preset = function (org_id, id, data) {
-      return $http.put('/api/v2/column_mapping_presets/' + id + '/', data, {
+      return $http.put('/api/v3/column_mapping_profiles/' + id + '/', data, {
         params: {
           organization_id: org_id
         }
@@ -60,7 +62,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     };
 
     column_mappings_factory.delete_column_mapping_preset = function (org_id, id) {
-      return $http.delete('/api/v2/column_mapping_presets/' + id + '/', {
+      return $http.delete('/api/v3/column_mapping_profiles/' + id + '/', {
         params: {
           organization_id: org_id
         }

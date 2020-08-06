@@ -26,7 +26,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
       }
      */
     note_factory.get_notes = function (org_id, inventory_type, view_id) {
-      return $http.get('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, {
+      return $http.get('/api/v3/' + inventory_type + '/' + view_id + '/notes/', {
         params: {
           organization_id: org_id
         }
@@ -36,7 +36,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     };
 
     note_factory.delete_note = function (inventory_type, view_id, note_id) {
-      return $http.delete('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', {}).then(function (response) {
+      return $http.delete('/api/v3/' + inventory_type + '/' + view_id + '/notes/' + note_id + '/', {}).then(function (response) {
         return response.data;
       });
     };
@@ -55,7 +55,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     note_factory.create_note = function (org_id, inventory_type, view_id, note_data) {
       var payload = note_data;
       payload.organization_id = org_id;
-      return $http.post('/api/v2.1/' + inventory_type + '/' + view_id + /notes/, payload).then(function (response) {
+      return $http.post('/api/v3/' + inventory_type + '/' + view_id + '/notes/', payload).then(function (response) {
         return response.data;
       });
     };
@@ -63,7 +63,7 @@ angular.module('BE.seed.service.note', []).factory('note_service', [
     note_factory.update_note = function (org_id, inventory_type, view_id, note_id, note_data) {
       var payload = note_data;
       payload.organization_id = org_id;
-      return $http.put('/api/v2.1/' + inventory_type + '/' + view_id + /notes/ + note_id + '/', payload).then(function (response) {
+      return $http.put('/api/v3/' + inventory_type + '/' + view_id + '/notes/' + note_id + '/', payload).then(function (response) {
         return response.data;
       });
     };

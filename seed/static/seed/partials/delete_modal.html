@@ -8,12 +8,12 @@
 <div class="modal-body row" style="padding-bottom: 0;">
     <div class="col-sm-12" ng-show="delete_state === 'delete'"
         translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
-        translate-values="{ num_properties: property_states.length, num_taxlots: taxlot_states.length }">
+        translate-values="{ num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length }">
     </div>
     <div class="col-sm-12" ng-show="delete_state === 'incomplete' || delete_state === 'success'">
         <div ng-if="(deletedProperties + deletedTaxlots) > 0"
             translate="NUM_PROPERTIES_AND_TAXLOTS_DELETED"
-            translate-values="{ num_properties: property_states.length, num_taxlots: taxlot_states.length }">
+            translate-values="{ num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length }">
         </div>
     </div>
     <div ng-if="(deletedProperties + deletedTaxlots) == 0">

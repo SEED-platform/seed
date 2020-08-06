@@ -296,13 +296,16 @@ angular.module('BE.seed.controller.inventory_list', [])
               });
             },
             data: function () {
-              var selectedOrder = $scope.selectedOrder.slice().reverse();
-              var data = new Array($scope.selectedOrder.length);
+              const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id'
+              const selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                return row.$$treeLevel === 0
+              }), viewIdProp).reverse()
+              var data = new Array(selectedViewIds.length);
 
               if ($scope.inventory_type === 'properties') {
-                return inventory_service.get_properties(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
-                  _.forEach(selectedOrder, function (id, index) {
-                    var match = _.find(inventory_data.results, {id: id});
+                return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
+                  _.forEach(selectedViewIds, function (id, index) {
+                    var match = _.find(inventory_data.results, [viewIdProp, id]);
                     if (match) {
                       data[index] = match;
                     }
@@ -310,9 +313,9 @@ angular.module('BE.seed.controller.inventory_list', [])
                   return data;
                 });
               } else if ($scope.inventory_type === 'taxlots') {
-                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedOrder).then(function (inventory_data) {
-                  _.forEach(selectedOrder, function (id, index) {
-                    var match = _.find(inventory_data.results, {id: id});
+                return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
+                  _.forEach(selectedViewIds, function (id, index) {
+                    var match = _.find(inventory_data.results, [viewIdProp, id]);
                     if (match) {
                       data[index] = match;
                     }
@@ -326,8 +329,16 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             has_meters: function () {
               if ($scope.inventory_type === 'properties') {
-                var inventory_ids = $scope.selectedOrder.slice().reverse();
-                return inventory_service.properties_meters_exist(inventory_ids).then(function (has_meters) {
+                const selected_property_view_ids = _.map(
+                  _.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                    return row.$$treeLevel === 0;
+                  }),
+                  'property_view_id'
+                ).reverse();
+
+                return inventory_service.properties_meters_exist(
+                  selected_property_view_ids
+                ).then(function (has_meters) {
                   return has_meters;
                 });
               } else {
@@ -711,17 +722,17 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
           controller: 'delete_modal_controller',
           resolve: {
-            property_states: function () {
+            property_view_ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
                 if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
+              }), 'property_view_id');
             },
-            taxlot_states: function () {
+            taxlot_view_ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
                 if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
                 return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
+              }), 'taxlot_view_id');
             }
           }
         });

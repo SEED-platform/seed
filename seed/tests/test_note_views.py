@@ -53,7 +53,7 @@ class NoteViewTests(TestCase):
         self.tl.notes.add(self.note4)
 
     def test_get_notes_property(self):
-        url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
+        url = reverse('api:v3:property-notes-list', args=[self.pv.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         results = json.loads(response.content)
@@ -75,7 +75,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(results[1]['note_type'], 'Note')
 
     def test_create_note_property(self):
-        url = reverse('api:v2.1:property-notes-list', args=[self.pv.pk])
+        url = reverse('api:v3:property-notes-list', args=[self.pv.pk])
 
         payload = {
             "note_type": "Note",
@@ -95,7 +95,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['user_id'], self.user.pk)
 
     def test_create_note_taxlot(self):
-        url = reverse('api:v2.1:taxlot-notes-list', args=[self.tl.pk])
+        url = reverse('api:v3:taxlot-notes-list', args=[self.tl.pk])
 
         payload = {
             "note_type": "Note",
@@ -113,7 +113,7 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['taxlot_view_id'], self.tl.pk)
 
     def test_update_note(self):
-        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.pk, self.note3.pk])
+        url = reverse('api:v3:taxlot-notes-detail', args=[self.tl.pk, self.note3.pk])
 
         payload = {
             "name": "update, validation should fail"
@@ -134,22 +134,11 @@ class NoteViewTests(TestCase):
         self.assertEqual(result['name'], payload['name'])
         self.assertEqual(result['text'], payload['text'])
 
-    def test_patch_note(self):
-        url = reverse('api:v2.1:taxlot-notes-detail', args=[self.tl.pk, self.note4.pk])
-
-        payload = {
-            "name": "new note name that is meaningless"
-        }
-        response = self.client.patch(url, data=json.dumps(payload), content_type='application/json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        result = json.loads(response.content)
-        self.assertEqual(result['name'], payload['name'])
-
     def test_get_detail_and_delete_note(self):
         note5 = self.note_factory.get_note()
         self.pv.notes.add(note5)
 
-        url = reverse('api:v2.1:property-notes-detail', args=[self.pv.pk, note5.pk])
+        url = reverse('api:v3:property-notes-detail', args=[self.pv.pk, note5.pk])
         response = self.client.get(url, content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         result = json.loads(response.content)
