@@ -341,6 +341,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                         fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
+
+                tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
                 tax_lot_results.append(tax_lot_dict)
 
             result['tax_lots'] = tax_lot_results
