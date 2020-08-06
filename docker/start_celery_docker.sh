@@ -8,7 +8,7 @@ echo "Waiting for postgres to start"
 echo "Waiting for redis to start"
 /usr/local/wait-for-it.sh --strict -t 0 db-redis:6379
 
-echo "Waiting for web to start"
+echo "Waiting for web-stage to start"
 /usr/local/wait-for-it.sh --strict -t 0 web-stage:80
 
 # check if the number of workers is set in the env
