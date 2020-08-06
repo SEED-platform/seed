@@ -633,6 +633,19 @@ class TestViewsMatching(DataMappingBaseTestCase):
         }
         self.client.login(**user_details)
 
+    def test_get_mapping_results_returns_numbers_for_unitted_values(self):
+        url = reverse("api:v3:import_files-mapping-results", args=[self.import_file.pk])
+        url += f'?organization_id={self.org.pk}'
+        resp = self.client.post(url, content_type='application/json')
+
+        self.assertEqual(200, resp.status_code)
+        mapped_property = json.loads(resp.content)['properties'][0]
+        unitted_column_names = ['gross_floor_area', 'site_eui']
+        for column_name, val in mapped_property.items():
+            for unitted_column_name in unitted_column_names:
+                if column_name.startswith(unitted_column_name):
+                    self.assertTrue(isinstance(val, (float, int)))
+
     # def test_use_description_updated(self):
     #     """
     #     Most of the buildings will match, except the ones that haven't changed.
