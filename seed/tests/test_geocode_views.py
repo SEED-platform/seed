@@ -9,12 +9,13 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 
-from seed.models.properties import PropertyState
+from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState
 
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
+    FakePropertyViewFactory
 )
 
 from seed.utils.geocode import long_lat_wkt
@@ -35,13 +36,13 @@ class GeocodeViewTests(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
 
     def test_geocode_endpoint_base_with_prepopulated_lat_long_no_api_request(self):
         property_details = self.property_state_factory.get_details()
         property_details['organization_id'] = self.org.id
         property_details['latitude'] = 39.765251
         property_details['longitude'] = -104.986138
-        property_details['long_lat'] = f"POINT ({property_details['longitude']} {property_details['latitude']})"
 
         property = PropertyState(**property_details)
         property.save()
@@ -53,10 +54,11 @@ class GeocodeViewTests(TestCase):
             'taxlot_view_ids': []
         }
 
-        self.client.post(url, post_params)
+        result = self.client.post(url, post_params)
 
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
+        self.assertEqual(200, result.status_code)
         self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
 
     def test_geocode_confidence_summary_returns_summary_dictionary(self):

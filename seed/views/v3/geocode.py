@@ -44,8 +44,18 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
-
+        """
         if property_view_ids:
+            properties = PropertyState.objects.filter(id__in=property_view_ids, organization_id=org_id)
+            geocode_buildings(properties)
+
+        if taxlot_view_ids:
+            taxlots = TaxLotState.objects.filter(id__in=taxlot_view_ids, organization_id=org_id)
+            geocode_buildings(taxlots)
+        """
+        if property_view_ids:
+            print("property  view objects: ", PropertyView.objects.all())
+            print("property state objects: ", PropertyState.objects.all())
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
                 cycle__organization_id=org_id
@@ -98,6 +108,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
+
             result["properties"] = {
                 'not_geocoded': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),
