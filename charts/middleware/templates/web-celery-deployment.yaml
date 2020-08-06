@@ -34,7 +34,7 @@ spec:
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_USER
-          value: seed
+          value: seeduser
         - name: SECRET_KEY
           value: <secret> #to be implemented with crypto secrets
         image: seedplatform/seed:test
