@@ -42,6 +42,7 @@ spec:
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
         image: seedplatform/seed:test
+        imagePullPolicy: Always
         name: web-stage
         ports:
         - containerPort: 80

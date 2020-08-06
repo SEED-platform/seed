@@ -30,6 +30,7 @@ spec:
         - name: POSTGRES_USER
           value: seed
         image: timescale/timescaledb-postgis:latest-pg12
+        imagePullPolicy: Always
         name: db-postrgres
 #        command: ["tail"]
 #        args: ['-f', '/dev/null']

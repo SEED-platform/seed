@@ -6,7 +6,7 @@ services:
     image: timescale/timescaledb-postgis:latest-pg12
   db-redis:
     image: redis:5.0.1
-  web-stage:
+  web:
     image: seedplatform/seed:latest
     build: .
   web-celery:
