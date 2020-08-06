@@ -31,6 +31,7 @@ angular.module('BE.seed.controller.mapping', [])
     'simple_modal_service',
     'Notification',
     'organization_payload',
+    'naturalSort',
     'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
     'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
     'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
@@ -62,6 +63,7 @@ angular.module('BE.seed.controller.mapping', [])
       simple_modal_service,
       Notification,
       organization_payload,
+      naturalSort,
       COLUMN_MAPPING_PRESET_TYPE_NORMAL,
       COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
       COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
@@ -704,6 +706,7 @@ angular.module('BE.seed.controller.mapping', [])
                 options.filter = inventory_service.dateFilter();
               } else if (col.data_type === 'area' || col.data_type === 'eui') {
                 options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+                options.sortingAlgorithm = naturalSort;
               } else {
                 options.filter = inventory_service.combinedFilter();
               }
