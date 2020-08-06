@@ -305,9 +305,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               if ($scope.inventory_type === 'properties') {
                 return inventory_service.get_properties(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
                   _.forEach(selectedViewIds, function (id, index) {
-                    const matchPredicate = {}
-                    matchPredicate[viewIdProp] = id
-                    var match = _.find(inventory_data.results, matchPredicate);
+                    var match = _.find(inventory_data.results, [viewIdProp, id]);
                     if (match) {
                       data[index] = match;
                     }
@@ -317,9 +315,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               } else if ($scope.inventory_type === 'taxlots') {
                 return inventory_service.get_taxlots(1, undefined, undefined, -1, selectedViewIds).then(function (inventory_data) {
                   _.forEach(selectedViewIds, function (id, index) {
-                    const matchPredicate = {}
-                    matchPredicate[viewIdProp] = id
-                    var match = _.find(inventory_data.results, matchPredicate);
+                    var match = _.find(inventory_data.results, [viewIdProp, id]);
                     if (match) {
                       data[index] = match;
                     }
