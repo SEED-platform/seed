@@ -75,7 +75,7 @@ describe('controller: new_member_modal_controller', function () {
           first_name: 'JB',
           last_name: 'Smooth',
           email: 'jb.smooth@be.com',
-          role: ctrl_scope.roles[0],
+          role: ctrl_scope.roles[0].value,
           organization: {
             organization_id: 1
           }
