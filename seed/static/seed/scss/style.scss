@@ -2737,6 +2737,13 @@ gs-input .tags .tag-item .remove-button {
     color: #000;
     border-bottom: 1px solid #F1F1F1;
   }
+
+  .label-tabs {
+    margin-left: -10px;
+    margin-bottom: -2px;
+    background-color: #F1F1F1;
+    //border-top: 1px solid #D1D1D1;
+  }
 }
 
 .matching-tab-container {
