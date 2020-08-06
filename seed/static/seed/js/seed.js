@@ -595,6 +595,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }, function (data) {
                 return $q.reject(data.message);
               });
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }]
         }
       })
