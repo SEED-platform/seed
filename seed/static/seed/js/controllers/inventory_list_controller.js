@@ -26,6 +26,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$translate',
     'uiGridConstants',
     'i18nService', // from ui-grid
+    'organization_payload',
     function (
       $scope,
       $filter,
@@ -48,7 +49,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       naturalSort,
       $translate,
       uiGridConstants,
-      i18nService
+      i18nService,
+      organization_payload,
     ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
@@ -62,6 +64,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
         cycles: cycles.cycles
       };
+      $scope.organization = organization_payload.organization;
 
       // set up i18n
       //
@@ -346,7 +349,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               }
             },
             org_id: function () {
-              return user_service.get_organization().id;
+              return $scope.organization.id;
             }
           }
         });
@@ -421,7 +424,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
-            data_quality_service.get_data_quality_results(user_service.get_organization().id, result.unique_id).then(function (dq_result) {
+            data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id).then(function (dq_result) {
               var modalInstance = $uibModal.open({
                 templateUrl: urls.static_url + 'seed/partials/data_quality_modal.html',
                 controller: 'data_quality_modal_controller',
@@ -433,7 +436,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   name: _.constant(null),
                   uploaded: _.constant(null),
                   importFileId: _.constant(result.unique_id),
-                  orgId: _.constant(user_service.get_organization().id)
+                  orgId: _.constant($scope.organization.id)
                 }
               });
               modalInstance.result.then(function () {
@@ -467,6 +470,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.dateFilter();
         } else if (col.data_type === 'date') {
           options.filter = inventory_service.dateFilter();
+        } else if (col.data_type === 'eui' || col.data_type === 'area') {
+          options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
         } else {
           options.filter = inventory_service.combinedFilter();
           options.sortingAlgorithm = naturalSort;
@@ -703,7 +708,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               }), 'taxlot_state_id');
             },
             org_id: function () {
-              return user_service.get_organization().id;
+              return $scope.organization.id;
             },
             inventory_type: function () {
               return $scope.inventory_type;

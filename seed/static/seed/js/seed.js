@@ -1148,6 +1148,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns();
             }
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }]
         }
       })
