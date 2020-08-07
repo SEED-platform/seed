@@ -98,7 +98,6 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
-
             result["properties"] = {
                 'not_geocoded': PropertyState.objects.filter(
                     id__in=Subquery(property_views.values('state_id')),

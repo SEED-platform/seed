@@ -16,7 +16,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
-    FakePropertyFactory
+    FakeTaxLotViewFactory
 )
 
 from seed.utils.geocode import long_lat_wkt
@@ -38,6 +38,7 @@ class GeocodeViewTests(TestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.tax_lot_state_factory = FakeTaxLotStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
 
     def test_geocode_endpoint_base_with_prepopulated_lat_long_no_api_request(self):
         property_details = self.property_state_factory.get_details()
@@ -61,12 +62,14 @@ class GeocodeViewTests(TestCase):
         refreshed_property = PropertyState.objects.get(pk=property.id)
 
         self.assertEqual('POINT (-104.986138 39.765251)', long_lat_wkt(refreshed_property))
-    """
+
     def test_geocode_confidence_summary_returns_summary_dictionary(self):
         property_none_details = self.property_state_factory.get_details()
         property_none_details["organization_id"] = self.org.id
         property_none = PropertyState(**property_none_details)
         property_none.save()
+
+        self.property_view_factory.get_property_view(state=property_none)
 
         property_high_details = self.property_state_factory.get_details()
         property_high_details["organization_id"] = self.org.id
@@ -74,11 +77,15 @@ class GeocodeViewTests(TestCase):
         property_high = PropertyState(**property_high_details)
         property_high.save()
 
+        self.property_view_factory.get_property_view(state=property_high)
+
         property_low_details = self.property_state_factory.get_details()
         property_low_details["organization_id"] = self.org.id
         property_low_details["geocoding_confidence"] = "Low (P1CCC)"
         property_low = PropertyState(**property_low_details)
         property_low.save()
+
+        self.property_view_factory.get_property_view(state=property_low)
 
         property_manual_details = self.property_state_factory.get_details()
         property_manual_details["organization_id"] = self.org.id
@@ -86,16 +93,22 @@ class GeocodeViewTests(TestCase):
         property_manual = PropertyState(**property_manual_details)
         property_manual.save()
 
+        self.property_view_factory.get_property_view(state=property_manual)
+
         property_missing_details = self.property_state_factory.get_details()
         property_missing_details["organization_id"] = self.org.id
         property_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
         property_missing = PropertyState(**property_missing_details)
         property_missing.save()
 
+        self.property_view_factory.get_property_view(state=property_missing)
+
         tax_lot_none_details = self.tax_lot_state_factory.get_details()
         tax_lot_none_details["organization_id"] = self.org.id
         tax_lot_none = TaxLotState(**tax_lot_none_details)
         tax_lot_none.save()
+
+        self.taxlot_view_factory.get_taxlot_view(state=tax_lot_none)
 
         tax_lot_high_details = self.tax_lot_state_factory.get_details()
         tax_lot_high_details["organization_id"] = self.org.id
@@ -103,11 +116,15 @@ class GeocodeViewTests(TestCase):
         tax_lot_high = TaxLotState(**tax_lot_high_details)
         tax_lot_high.save()
 
+        self.taxlot_view_factory.get_taxlot_view(state=tax_lot_high)
+
         tax_lot_low_details = self.tax_lot_state_factory.get_details()
         tax_lot_low_details["organization_id"] = self.org.id
         tax_lot_low_details["geocoding_confidence"] = "Low (P1CCC)"
         tax_lot_low = TaxLotState(**tax_lot_low_details)
         tax_lot_low.save()
+
+        self.taxlot_view_factory.get_taxlot_view(state=tax_lot_low)
 
         tax_lot_manual_details = self.tax_lot_state_factory.get_details()
         tax_lot_manual_details["organization_id"] = self.org.id
@@ -115,11 +132,15 @@ class GeocodeViewTests(TestCase):
         tax_lot_manual = TaxLotState(**tax_lot_manual_details)
         tax_lot_manual.save()
 
+        self.taxlot_view_factory.get_taxlot_view(state=tax_lot_manual)
+
         tax_lot_missing_details = self.tax_lot_state_factory.get_details()
         tax_lot_missing_details["organization_id"] = self.org.id
         tax_lot_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
         tax_lot_missing = TaxLotState(**tax_lot_missing_details)
         tax_lot_missing.save()
+
+        self.taxlot_view_factory.get_taxlot_view(state=tax_lot_missing)
 
         url = reverse('api:v3:geocode-confidence-summary')
         post_params = {
@@ -144,18 +165,18 @@ class GeocodeViewTests(TestCase):
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
         expectation = {
             "properties": {
-                "not_geocoded": 0,
-                "high_confidence": 0,
-                "low_confidence": 0,
-                "manual": 0,
-                "missing_address_components": 0
+                "not_geocoded": 1,
+                "high_confidence": 1,
+                "low_confidence": 1,
+                "manual": 1,
+                "missing_address_components": 1
             },
             "tax_lots": {
-                "not_geocoded": 0,
-                "high_confidence": 0,
-                "low_confidence": 0,
-                "manual": 0,
-                "missing_address_components": 0
+                "not_geocoded": 1,
+                "high_confidence": 1,
+                "low_confidence": 1,
+                "manual": 1,
+                "missing_address_components": 1
             }
         }
 
@@ -176,4 +197,3 @@ class GeocodeViewTests(TestCase):
         true_result = self.client.get(url, post_params_true)
 
         self.assertEqual(b'true', true_result.content)
-    """
