@@ -17,10 +17,11 @@
 <div class="inventory-list-controls">
     <form name="listControlsForm" class="form-inline" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="form-group">
-            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()">
+            <div uib-dropdown class="btn-group pointer" ng-style="nothing_selected_cursor()" auto-close="disabled">
                 <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
+                <!-- START HEREEEEEEEEEEEEEEEEEEEEEEEE -->
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem">
                         <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
@@ -37,6 +38,17 @@
                     <li role="menuitem">
                         <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
                     </li>
+                    <!-- WRITTEN -->
+                    <li role="menuitem">
+                        <select>
+                            <option hidden>Email</option>
+                            <option>Template1</option>
+                            <option>Template2</option>
+                            <option>Template3</option>
+                        </select>
+
+                    </li>
+                    <!-- END -->
                     <li class="divider"></li>
                     <li role="menuitem">
                         <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
