@@ -1337,7 +1337,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var currentProfile = _.first(profiles);
             if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
-          }]
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
         }
       })
       .state({
