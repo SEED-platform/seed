@@ -9,7 +9,7 @@ from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 
-from seed.models.properties import PropertyState, PropertyView
+from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 
 from seed.test_helpers.fake import (
