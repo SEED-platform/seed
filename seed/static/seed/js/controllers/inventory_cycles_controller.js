@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
     'inventory_service',
     'inventory',
     'cycles',
+    'organization_payload',
     'profiles',
     'current_profile',
     'all_columns',
@@ -27,6 +28,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
       inventory_service,
       inventory,
       cycles,
+      organization_payload,
       profiles,
       current_profile,
       all_columns,
@@ -40,6 +42,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
     ) {
       spinner_utility.show();
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.organization = organization_payload.organization;
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -175,6 +178,9 @@ angular.module('BE.seed.controller.inventory_cycles', [])
           if (col.data_type === 'datetime') {
             options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
             options.filter = inventory_service.dateFilter();
+          } else if (col.data_type === 'eui' || col.data_type === 'area') {
+            options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
+            options.filter = inventory_service.combinedFilter();
           } else {
             options.filter = inventory_service.combinedFilter();
           }
