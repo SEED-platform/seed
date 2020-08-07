@@ -192,6 +192,7 @@ class GeocodeViewTests(TestCase):
         org_with_key, _, _ = create_organization(self.user)
         org_with_key.mapquest_api_key = "somekey"
         org_with_key.save()
+
         url = reverse("api:v3:organizations-geocode-api-key-exists", args=[org_with_key.id])
         post_params_true = {'organization_id': org_with_key.id}
         true_result = self.client.get(url, post_params_true)
