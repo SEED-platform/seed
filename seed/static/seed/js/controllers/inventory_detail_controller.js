@@ -21,12 +21,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
-    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
     'current_profile',
     'labels_payload',
+    'organization_payload',
     function (
       $http,
       $state,
@@ -45,15 +45,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
       inventory_service,
       matching_service,
       pairing_service,
-      user_service,
       inventory_payload,
       columns,
       profiles,
       current_profile,
-      labels_payload
+      labels_payload,
+      organization_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.organization = user_service.get_organization();
+      $scope.organization = organization_payload.organization;
 
       // Detail Settings Profile
       $scope.profiles = profiles;
@@ -681,6 +681,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
           table_container.width() + table_container.scrollLeft()
         );
       });
+
+      $scope.displayValue = function(dataType, value) {
+        if (dataType === 'datetime') {
+          return $filter('date')(value, 'yyyy-MM-dd h:mm a')
+        } else if (dataType === 'eui' || dataType === 'area') {
+          return $filter('number')(value, $scope.organization.display_significant_figures)
+        }
+        return value
+      }
 
       /**
        *   init: sets default state of inventory detail page,
