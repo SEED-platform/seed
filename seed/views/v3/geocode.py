@@ -47,7 +47,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
 
         if property_view_ids:
             property_views = PropertyView.objects.filter(
-                id__in=property_view_ids,
+                state_id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             properties = PropertyState.objects.filter(
@@ -56,6 +56,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
             geocode_buildings(properties)
 
         if taxlot_view_ids:
+            print("should not id__in for taxlot view")
             taxlot_views = TaxLotView.objects.filter(
                 id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
@@ -95,7 +96,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
 
         if property_view_ids:
             property_views = PropertyView.objects.filter(
-                id__in=property_view_ids,
+                state_id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             result["properties"] = {
@@ -122,6 +123,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
             }
 
         if taxlot_view_ids:
+            print("also should not be id__in for taxlot view")
             taxlot_views = TaxLotView.objects.filter(
                 id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
