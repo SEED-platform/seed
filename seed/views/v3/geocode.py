@@ -56,14 +56,15 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
             geocode_buildings(properties)
 
         if taxlot_view_ids:
-            print("should not id__in for taxlot view")
             taxlot_views = TaxLotView.objects.filter(
-                id__in=taxlot_view_ids,
+                state_id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
             taxlots = TaxLotState.objects.filter(
                 id__in=Subquery(taxlot_views.values('state_id'))
             )
+            print("geocode_by_ids state_id__in for taxlot view values: ", taxlot_views.values())
+            print("geocode_by_ids taxlot state values: ", taxlots.values())
             geocode_buildings(taxlots)
 
         return JsonResponse({'status': 'success'})
@@ -123,11 +124,11 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
             }
 
         if taxlot_view_ids:
-            print("also should not be id__in for taxlot view")
             taxlot_views = TaxLotView.objects.filter(
-                id__in=taxlot_view_ids,
+                state_id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
+            print("geocode_confidence state_id__in for taxlot view values: ", taxlot_views.values())
             result["tax_lots"] = {
                 'not_geocoded': TaxLotState.objects.filter(
                     id__in=Subquery(taxlot_views.values('state_id')),
@@ -150,5 +151,6 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                     geocoding_confidence='Missing address components (N/A)'
                 ).count(),
             }
+            print("geocode_confidence taxlot state values: ", result["tax_lots"])
 
         return result
