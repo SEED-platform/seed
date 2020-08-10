@@ -16,7 +16,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
     StatusLabel,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory, FakeColumnFactory,
@@ -51,7 +51,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
 
-        self.default_bsync_preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+        self.default_bsync_preset = ColumnMappingProfile.objects.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         self.client.login(**user_details)
 

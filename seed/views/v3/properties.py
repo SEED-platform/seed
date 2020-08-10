@@ -25,7 +25,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
                          BuildingFile, Column, ColumnListSetting,
-                         ColumnListSettingColumn, ColumnMappingPreset, Cycle,
+                         ColumnListSettingColumn, ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
@@ -1195,15 +1195,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         org_id = self.get_organization(self.request)
         try:
             preset_pk = int(preset_pk)
-            column_mapping_preset = ColumnMappingPreset.objects.get(
+            column_mapping_preset = ColumnMappingProfile.objects.get(
                 pk=preset_pk,
-                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+                preset_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
                 'success': False,
                 'message': 'Query param `preset_id` is either missing or invalid'
             }, status=status.HTTP_400_BAD_REQUEST)
-        except ColumnMappingPreset.DoesNotExist:
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'success': False,
                 'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'

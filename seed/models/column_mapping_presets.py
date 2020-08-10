@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import JSONField
 from seed.lib.superperms.orgs.models import Organization
 
 
-class ColumnMappingPreset(models.Model):
+class ColumnMappingProfile(models.Model):
     NORMAL = 0
     BUILDINGSYNC_DEFAULT = 1
     BUILDINGSYNC_CUSTOM = 2

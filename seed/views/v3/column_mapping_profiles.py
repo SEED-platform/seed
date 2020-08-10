@@ -10,7 +10,7 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
     Column,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
 )
 from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
@@ -32,7 +32,7 @@ mappings_description = (
 class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     permission_classes = (SEEDOrgPermissions,)
     # req by SEEDOrgPermissions, but currently not used by any methods.
-    queryset = ColumnMappingPreset.objects.none()
+    queryset = ColumnMappingProfile.objects.none()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(
@@ -52,11 +52,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         try:
             preset_types = request.data.get('preset_type', [])
-            preset_types = [ColumnMappingPreset.get_preset_type(pt) for pt in preset_types]
+            preset_types = [ColumnMappingProfile.get_preset_type(pt) for pt in preset_types]
             filter_params = {'organizations__pk': self.get_organization(request, True).id}
             if preset_types:
                 filter_params['preset_type__in'] = preset_types
-            profiles = ColumnMappingPreset.objects.filter(**filter_params)
+            profiles = ColumnMappingProfile.objects.filter(**filter_params)
             data = [ColumnMappingPresetSerializer(p).data for p in profiles]
 
             return JsonResponse({
@@ -64,6 +64,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': data,
             })
         except Exception as e:
+            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
@@ -95,14 +96,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
-        except ColumnMappingPreset.DoesNotExist:
+            profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'data': 'No profile with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Default BuildingSync profile are not editable'
@@ -116,7 +117,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
         # update the mappings according to the profile type
         if updated_mappings is not None:
-            if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
+            if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
@@ -205,14 +206,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
+            profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Not allowed to edit default BuildingSync profiles'

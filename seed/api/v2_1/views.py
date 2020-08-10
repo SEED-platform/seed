@@ -24,7 +24,7 @@ from seed.models import (
     PropertyState,
     BuildingFile,
     Cycle,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
 )
 from seed.serializers.properties import (
     PropertyViewAsStateSerializer,
@@ -173,18 +173,18 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         preset_pk = request.GET.get('preset_id')
         try:
             preset_pk = int(preset_pk)
-            column_mapping_preset = ColumnMappingPreset.objects.get(
+            column_mapping_preset = ColumnMappingProfile.objects.get(
                 pk=preset_pk,
-                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+                preset_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
                 'success': False,
                 'message': 'Query param `preset_id` is either missing or invalid'
             }, status=status.HTTP_400_BAD_REQUEST)
-        except ColumnMappingPreset.DoesNotExist:
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+                'message': f'Cannot find a BuildingSync ColumnMappingProfile with pk={preset_pk}'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
