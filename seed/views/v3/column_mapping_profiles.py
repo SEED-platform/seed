@@ -12,7 +12,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
+from seed.serializers.column_mapping_presets import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -57,7 +57,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             if profile_types:
                 filter_params['profile_type__in'] = profile_types
             profiles = ColumnMappingProfile.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in profiles]
+            data = [ColumnMappingProfileSerializer(p).data for p in profiles]
 
             return JsonResponse({
                 'status': 'success',
@@ -140,7 +140,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         profile.save()
         return JsonResponse({
             'status': 'success',
-            'data': ColumnMappingPresetSerializer(profile).data,
+            'data': ColumnMappingProfileSerializer(profile).data,
         })
 
     @swagger_auto_schema(
@@ -172,11 +172,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         try:
             profile_data = request.data
             profile_data['organizations'] = [org_id]
-            ser_profile = ColumnMappingPresetSerializer(data=profile_data)
+            ser_profile = ColumnMappingProfileSerializer(data=profile_data)
             if ser_profile.is_valid():
                 profile = ser_profile.save()
                 response_status = 'success'
-                response_data = ColumnMappingPresetSerializer(profile).data
+                response_data = ColumnMappingProfileSerializer(profile).data
                 response_code = HTTP_200_OK
             else:
                 response_status = 'error'

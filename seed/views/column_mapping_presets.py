@@ -11,7 +11,7 @@ from seed.models import (
     ColumnMappingProfile,
     Organization,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
+from seed.serializers.column_mapping_presets import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class
 
 from rest_framework.viewsets import ViewSet
@@ -37,7 +37,7 @@ class ColumnMappingPresetViewSet(ViewSet):
             if profile_types:
                 filter_params['profile_type__in'] = profile_types
             presets = ColumnMappingProfile.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in presets]
+            data = [ColumnMappingProfileSerializer(p).data for p in presets]
 
             return JsonResponse({
                 'status': 'success',
@@ -114,7 +114,7 @@ class ColumnMappingPresetViewSet(ViewSet):
         preset.save()
         return JsonResponse({
             'status': 'success',
-            'data': ColumnMappingPresetSerializer(preset).data,
+            'data': ColumnMappingProfileSerializer(preset).data,
         })
 
     @api_endpoint_class
@@ -144,11 +144,11 @@ class ColumnMappingPresetViewSet(ViewSet):
 
             preset_data = request.data
             preset_data['organizations'] = [org_id]
-            ser_preset = ColumnMappingPresetSerializer(data=preset_data)
+            ser_preset = ColumnMappingProfileSerializer(data=preset_data)
             if ser_preset.is_valid():
                 preset = ser_preset.save()
                 response_status = 'success'
-                response_data = ColumnMappingPresetSerializer(preset).data
+                response_data = ColumnMappingProfileSerializer(preset).data
                 response_code = HTTP_200_OK
             else:
                 response_status = 'error'
