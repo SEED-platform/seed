@@ -279,7 +279,54 @@ angular.module('BE.seed.controller.inventory_list', [])
           get_labels();
         });
       };
+        $scope.email_template_modal = function () {
+          var modalInstance = $uibModal.open({
+            templateUrl:  urls.static_url + 'seed/partials/email_template_modal.html',
+            resolve: {
+              items: function () {
+                return $scope.items;
+              }
+            }
+          });
+        }
+        
+      //   var modalInstance = $uibModal.open({
+      //     templateUrl: urls.static_url + 'seed/partials/email_template_modal.html',
+      //     controller: 'email_template_modal_controller',
+      //     resolve: {
+      //       inventory_ids: function () {
+      //         var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+      //         return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
+      //       },
+      //       inventory_type: function () {
+      //         return $scope.inventory_type;
+      //       }
+      //     }
+      //   });
+      //   modalInstance.result.then(function () {
+      //     //dialog was closed with 'Done' button.
+      //     get_labels();
+      //   });
 
+      // START HERE
+      // var modalInstance = $uibModal.open({
+      //   templateUrl: urls.static_url + 'seed/partials/email_template_modal.html',
+      //   controller: 'email_template_modal_controller',
+      //   // resolve: {
+      //   //   inventory_ids: function () {
+      //   //     var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+      //   //     return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
+      //   //   },
+      //   //   inventory_type: function () {
+      //   //     return $scope.inventory_type;
+      //   //   }
+      //   // }
+      // });
+      // modalInstance.result.then(function () {
+      //   //dialog was closed with 'Done' button.
+      //   // get_templates();
+      // });
+      // END
       $scope.open_merge_modal = function () {
         spinner_utility.show();
         var modalInstance = $uibModal.open({

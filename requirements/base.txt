@@ -33,6 +33,8 @@ django-pint==0.4
 djangorestframework==3.11.2
 # simplejson dependency needs to be installed via github due to a pip segfault with Python 3.6.7
 -e git+https://github.com/simplejson/simplejson@v3.16.1#egg=simplejson
+# Django-post-office dependency needs to be installed via github
+-e git+https://github.com/ui/django-post_office.git#egg=django-post_office-master
 drf-yasg==1.17.1
 django-filter==2.2.0
 drf-nested-routers==0.91

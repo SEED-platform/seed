@@ -116,6 +116,14 @@ SEED_CORE_APPS = (
     'seed.docs'
 )
 
+# BEAM_APPS = (
+# 'django-post-office',
+# )
+
+# INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS +BEAM_APPS
+
+
+
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
