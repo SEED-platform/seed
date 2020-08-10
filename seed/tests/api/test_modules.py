@@ -579,7 +579,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'profile_id': None,
         'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+    result = requests.post(main_url + '/api/v3/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)
@@ -612,7 +612,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'profile_id': None,
         'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+    result = requests.post(main_url + '/api/v3/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)
