@@ -12,7 +12,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingProfileSerializer
+from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 

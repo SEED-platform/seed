@@ -11,7 +11,7 @@ from seed.models import (
     ColumnMappingProfile,
     Organization,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingProfileSerializer
+from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class
 
 from rest_framework.viewsets import ViewSet
