@@ -12,7 +12,7 @@ class ColumnMappingProfile(models.Model):
     BUILDINGSYNC_DEFAULT = 1
     BUILDINGSYNC_CUSTOM = 2
 
-    COLUMN_MAPPING_PRESET_TYPES = (
+    COLUMN_MAPPING_PROFILE_TYPES = (
         (NORMAL, 'Normal'),
         (BUILDINGSYNC_DEFAULT, 'BuildingSync Default'),
         (BUILDINGSYNC_CUSTOM, 'BuildingSync Custom')
@@ -26,19 +26,19 @@ class ColumnMappingProfile(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
-    preset_type = models.IntegerField(choices=COLUMN_MAPPING_PRESET_TYPES, default=NORMAL)
+    profile_type = models.IntegerField(choices=COLUMN_MAPPING_PROFILE_TYPES, default=NORMAL)
 
     @classmethod
-    def get_preset_type(cls, preset_type):
-        """Returns the integer value for a preset type. Raises exception when
-        preset_type is invalid.
+    def get_profile_type(cls, profile_type):
+        """Returns the integer value for a profile type. Raises exception when
+        profile_type is invalid.
 
-        :param preset_type: int | str
+        :param profile_type: int | str
         :return: str
         """
-        if isinstance(preset_type, int):
-            return preset_type
-        types_dict = dict((v, k) for k, v in cls.COLUMN_MAPPING_PRESET_TYPES)
-        if preset_type in types_dict:
-            return types_dict[preset_type]
-        raise Exception(f'Invalid preset type "{preset_type}"')
+        if isinstance(profile_type, int):
+            return profile_type
+        types_dict = dict((v, k) for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES)
+        if profile_type in types_dict:
+            return types_dict[profile_type]
+        raise Exception(f'Invalid profile type "{profile_type}"')

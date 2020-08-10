@@ -40,7 +40,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional org id which overrides the users (default) current org id"
         )],
         request_body=AutoSchemaHelper.schema_factory(
-            {'preset_type': ['string']},
+            {'profile_type': ['string']},
             description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
         )
     )
@@ -51,11 +51,11 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         Retrieves all profiles for an organization.
         """
         try:
-            preset_types = request.data.get('preset_type', [])
-            preset_types = [ColumnMappingProfile.get_preset_type(pt) for pt in preset_types]
+            profile_types = request.data.get('profile_type', [])
+            profile_types = [ColumnMappingProfile.get_profile_type(pt) for pt in profile_types]
             filter_params = {'organizations__pk': self.get_organization(request, True).id}
-            if preset_types:
-                filter_params['preset_type__in'] = preset_types
+            if profile_types:
+                filter_params['profile_type__in'] = profile_types
             profiles = ColumnMappingProfile.objects.filter(**filter_params)
             data = [ColumnMappingPresetSerializer(p).data for p in profiles]
 
@@ -103,7 +103,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': 'No profile with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
+        if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Default BuildingSync profile are not editable'
@@ -117,7 +117,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
         # update the mappings according to the profile type
         if updated_mappings is not None:
-            if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
+            if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
@@ -213,7 +213,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
+        if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Not allowed to edit default BuildingSync profiles'

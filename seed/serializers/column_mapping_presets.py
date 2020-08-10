@@ -8,7 +8,7 @@ from seed.models import ColumnMappingProfile
 
 
 class ColumnMappingPresetSerializer(serializers.ModelSerializer):
-    preset_type = ChoiceField(choices=ColumnMappingProfile.COLUMN_MAPPING_PRESET_TYPES, default=ColumnMappingProfile.NORMAL)
+    profile_type = ChoiceField(choices=ColumnMappingProfile.COLUMN_MAPPING_PROFILE_TYPES, default=ColumnMappingProfile.NORMAL)
 
     class Meta:
         model = ColumnMappingProfile
@@ -16,13 +16,13 @@ class ColumnMappingPresetSerializer(serializers.ModelSerializer):
 
     def validate_mappings(self, mappings):
         """if the preset is for BuildingSync, make sure it has valid mappings"""
-        preset_types_dict = dict(ColumnMappingProfile.COLUMN_MAPPING_PRESET_TYPES)
+        profile_types_dict = dict(ColumnMappingProfile.COLUMN_MAPPING_PROFILE_TYPES)
         bsync_presets = [
-            preset_types_dict[ColumnMappingProfile.BUILDINGSYNC_DEFAULT],
-            preset_types_dict[ColumnMappingProfile.BUILDINGSYNC_CUSTOM]
+            profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_DEFAULT],
+            profile_types_dict[ColumnMappingProfile.BUILDINGSYNC_CUSTOM]
         ]
-        preset_type = self.initial_data.get('preset_type')
-        if preset_type is None or preset_type not in bsync_presets:
+        profile_type = self.initial_data.get('profile_type')
+        if profile_type is None or profile_type not in bsync_presets:
             return mappings
 
         for mapping in mappings:

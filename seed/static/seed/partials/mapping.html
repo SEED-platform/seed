@@ -99,7 +99,7 @@
               <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset.id === current_preset.id" translate>
                 Apply Preset
               </button>
-              <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!mappings_change_possible || (dropdown_selected_preset.id === 0) || (dropdown_selected_preset.id != current_preset.id) || current_preset.preset_type == 'BuildingSync Default'" tooltip-placement="bottom" uib-tooltip="Save">
+              <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!mappings_change_possible || (dropdown_selected_preset.id === 0) || (dropdown_selected_preset.id != current_preset.id) || current_preset.profile_type == 'BuildingSync Default'" tooltip-placement="bottom" uib-tooltip="Save">
                   <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
               </button>
               <button class="btn btn-info" type="button" ng-click="new_preset()" tooltip-placement="bottom" uib-tooltip="New">

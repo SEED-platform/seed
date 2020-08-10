@@ -135,11 +135,11 @@ angular.module('BE.seed.controller.mapping', [])
             to_field: mapping.suggestion_column_name || mapping.suggestion || '',
             to_table_name: mapping.suggestion_table_name
           };
-          var isBuildingSyncPreset = $scope.current_preset.preset_type !== undefined
+          var isBuildingSyncPreset = $scope.current_preset.profile_type !== undefined
             && [
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
-            ].includes($scope.current_preset.preset_type);
+            ].includes($scope.current_preset.profile_type);
 
           if (isBuildingSyncPreset) {
             this_mapping.from_field_value = mapping.from_field_value;
@@ -160,16 +160,16 @@ angular.module('BE.seed.controller.mapping', [])
 
           // make sure the new preset mapping data has the required data
           var currentPresetForBuildingSync =
-            $scope.current_preset.preset_type !== undefined
+            $scope.current_preset.profile_type !== undefined
             && [
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
-            ].includes($scope.current_preset.preset_type);
+            ].includes($scope.current_preset.profile_type);
 
           if (!currentPresetForBuildingSync) {
             // we need to add mapping data, from_field_value, using the default mapping
             var defaultPreset = $scope.presets.find(function (preset) {
-              return preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT;
+              return preset.profile_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT;
             });
             preset_mapping_data = preset_mapping_data.map(function (mapping) {
               // find the corresponding mapping in the default preset
@@ -188,7 +188,7 @@ angular.module('BE.seed.controller.mapping', [])
           controller: 'column_mapping_preset_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant({mappings: preset_mapping_data, preset_type: presetType}),
+            data: _.constant({mappings: preset_mapping_data, profile_type: presetType}),
             org_id: _.constant(user_service.get_organization().id)
           }
         });

@@ -1197,7 +1197,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             preset_pk = int(preset_pk)
             column_mapping_preset = ColumnMappingProfile.objects.get(
                 pk=preset_pk,
-                preset_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
+                profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
                 'success': False,

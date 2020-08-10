@@ -148,7 +148,7 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     organization.columnmappingprofile_set.create(
         name='BuildingSync v2.0 Defaults',
         mappings=default_buildingsync_preset_mappings(),
-        preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT
+        profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT
     )
 
     # create the default rules for this organization

@@ -1174,7 +1174,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        preset = ColumnMappingProfile.objects.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        preset = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         # -- Act
         url = reverse('api:v2.1:properties-building-sync', args=[view.id])
@@ -1210,11 +1210,11 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
                 mapping['to_field'] = 'longitude'
 
         custom_preset_name = 'BSync Custom Preset'
-        self.org.columnmappingprofile_set.create(name=custom_preset_name, mappings=preset_mappings, preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+        self.org.columnmappingprofile_set.create(name=custom_preset_name, mappings=preset_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
         custom_preset = self.org.columnmappingprofile_set.get(name=custom_preset_name)
 
         # grab the default preset to export with for comparison
-        default_preset = self.org.columnmappingprofile_set.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        default_preset = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         # -- Act
         url = reverse('api:v2.1:properties-building-sync', args=[view.id])

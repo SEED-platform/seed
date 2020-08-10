@@ -130,8 +130,8 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.new_preset = function () {
         var presetData = JSON.parse(JSON.stringify($scope.current_preset));
         // change the preset type to custom if we've edited a default preset
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
-          presetData.preset_type = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM;
+        if ($scope.current_preset.profile_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+          presetData.profile_type = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM;
         }
 
         var modalInstance = $uibModal.open({
@@ -335,15 +335,15 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.preset_action_ok = function (action) {
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_NORMAL) {
+        if ($scope.current_preset.profile_type === COLUMN_MAPPING_PRESET_TYPE_NORMAL) {
           return true;
         }
 
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+        if ($scope.current_preset.profile_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
           return false;
         }
 
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
+        if ($scope.current_preset.profile_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
           var allowed_actions = [
             'update',
             'rename',
@@ -354,7 +354,7 @@ angular.module('BE.seed.controller.column_mappings', [])
           return allowed_actions.includes(action);
         }
 
-        $log.warn('Unknown preset type "' + $scope.current_preset.preset_type + '"');
+        $log.warn('Unknown preset type "' + $scope.current_preset.profile_type + '"');
         return false;
       };
     }]);

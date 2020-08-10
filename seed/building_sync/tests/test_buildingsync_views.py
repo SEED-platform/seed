@@ -51,7 +51,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
 
-        self.default_bsync_preset = ColumnMappingProfile.objects.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        self.default_bsync_preset = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         self.client.login(**user_details)
 

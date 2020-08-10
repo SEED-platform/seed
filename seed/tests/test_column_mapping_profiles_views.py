@@ -54,9 +54,9 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
                 {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
                 {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
             ],
-            "preset_type": ColumnMappingProfile.NORMAL
+            "profile_type": ColumnMappingProfile.NORMAL
         }
-        args = {"preset_type": ['Normal']}
+        args = {"profile_type": ['Normal']}
         self.org.columnmappingprofile_set.create(**preset_info)
 
         url = reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id)
@@ -76,9 +76,9 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
                 {"from_field": "Property Id", "from_units": None, "to_field": "PM Property ID", "to_table_name": "PropertyState"},
                 {"from_field": "Property Name", "from_units": None, "to_field": "Property Name", "to_table_name": "PropertyState"},
             ],
-            "preset_type": ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+            "profile_type": ColumnMappingProfile.BUILDINGSYNC_CUSTOM
         }
-        args = {"preset_type": ['BuildingSync Default', 'BuildingSync Custom']}
+        args = {"profile_type": ['BuildingSync Default', 'BuildingSync Custom']}
         self.org.columnmappingprofile_set.create(**preset_info)
 
         url = (reverse('api:v3:column_mapping_profiles-filter') + '?organization_id=' + str(self.org.id))
@@ -138,13 +138,13 @@ class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
         self.assertEqual(1, ColumnMappingProfile.objects.filter(name='test_preset_1').count())
 
     def test_delete_profile_endpoint(self):
-        preset = self.org.columnmappingprofile_set.get(preset_type=ColumnMappingProfile.NORMAL)
+        preset = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.NORMAL)
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[preset.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url)
 
         self.assertEqual(200, response.status_code)
-        self.assertFalse(ColumnMappingProfile.objects.filter(preset_type=ColumnMappingProfile.NORMAL).exists())
+        self.assertFalse(ColumnMappingProfile.objects.filter(profile_type=ColumnMappingProfile.NORMAL).exists())
 
 
 class ColumnMappingProfilesViewsNonCrud(DataMappingBaseTestCase):
@@ -208,7 +208,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         self.client.login(**user_details)
 
     def test_update_default_bsync_preset_fails(self):
-        preset = self.org.columnmappingprofile_set.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        preset = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[preset.id]) + '?organization_id=' + str(self.org.id)
         update_vals = {
@@ -221,13 +221,13 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         response = self.client.put(url, dumps(update_vals), content_type='application/json')
         self.assertEqual(400, response.status_code)
 
-        preset_after = self.org.columnmappingprofile_set.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        preset_after = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
         self.assertNotEqual(preset.name, update_vals['name'])
         updated_mapping = [m for m in preset_after.mappings if m['from_field'] == 'Updated Property Name']
         self.assertEqual([], updated_mapping)
 
     def test_delete_default_bsync_preset_fails(self):
-        preset = self.org.columnmappingprofile_set.get(preset_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        preset = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[preset.id]) + '?organization_id=' + str(self.org.id)
         response = self.client.delete(url)
@@ -239,7 +239,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         preset = self.org.columnmappingprofile_set.create(
             name='Custom BSync Preset',
             mappings=[],
-            preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
+            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM
         )
 
         url = reverse('api:v3:column_mapping_profiles-detail', args=[preset.id]) + '?organization_id=' + str(self.org.id)
@@ -256,7 +256,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,
             mappings=preset_mappings,
-            preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
 
         # -- Act
         # change one of the mapping's to_field
@@ -289,7 +289,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,
             mappings=preset_mappings,
-            preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
 
         # -- Act
         # remove one of the mappings and update it
@@ -322,7 +322,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,
             mappings=preset_mappings,
-            preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+            profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
 
         # -- Act
         # change one of the mappings in an acceptable way
@@ -366,7 +366,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
                     "to_table_name": "PropertyState"
                 }
             ],
-            "preset_type": "BuildingSync Custom"
+            "profile_type": "BuildingSync Custom"
         })
 
         response = self.client.post(url, preset_info, content_type='application/json')
@@ -375,7 +375,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
         datum = loads(response.content)['data']
 
         self.assertEqual('BSync Preset', datum.get('name'))
-        self.assertEqual(1, ColumnMappingProfile.objects.filter(name='BSync Preset', preset_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM).count())
+        self.assertEqual(1, ColumnMappingProfile.objects.filter(name='BSync Preset', profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM).count())
 
     def test_create_custom_bsync_preset_fails_when_missing_from_field_value(self):
         url = reverse('api:v3:column_mapping_profiles-list') + '?organization_id=' + str(self.org.id)
@@ -397,7 +397,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
                     "to_table_name": "PropertyState"
                 }
             ],
-            "preset_type": "BuildingSync Custom"
+            "profile_type": "BuildingSync Custom"
         })
 
         response = self.client.post(url, preset_info, content_type='application/json')

@@ -31,11 +31,11 @@ class ColumnMappingPresetViewSet(ViewSet):
              paramType: query
         """
         try:
-            preset_types = request.GET.getlist('preset_type')
-            preset_types = [ColumnMappingProfile.get_preset_type(pt) for pt in preset_types]
+            profile_types = request.GET.getlist('profile_type')
+            profile_types = [ColumnMappingProfile.get_profile_type(pt) for pt in profile_types]
             filter_params = {'organizations__pk': request.query_params.get('organization_id', None)}
-            if preset_types:
-                filter_params['preset_type__in'] = preset_types
+            if profile_types:
+                filter_params['profile_type__in'] = profile_types
             presets = ColumnMappingProfile.objects.filter(**filter_params)
             data = [ColumnMappingPresetSerializer(p).data for p in presets]
 
@@ -77,7 +77,7 @@ class ColumnMappingPresetViewSet(ViewSet):
                 'data': 'No preset with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
+        if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Default BuildingSync presets are not editable'
@@ -91,7 +91,7 @@ class ColumnMappingPresetViewSet(ViewSet):
 
         # update the mappings according to the preset type
         if updated_mappings is not None:
-            if preset.preset_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
+            if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
@@ -184,7 +184,7 @@ class ColumnMappingPresetViewSet(ViewSet):
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
+        if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Not allowed to edit default BuildingSync presets'
