@@ -173,8 +173,8 @@ msgstr "api key"
 msgid "API Key"
 msgstr "API Key"
 
-msgid "Apply Preset"
-msgstr "Apply Preset"
+msgid "Apply Profile"
+msgstr "Apply Profile"
 
 #: seed/models/projects.py:107 seed/models/projects.py:134
 #: seed/models/projects.py:159
@@ -348,28 +348,28 @@ msgstr "Check the appropriate fields, as well as their order for the program to 
 msgid "COL_GEOCODING_TOGGLE_EXT"
 msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
 
-msgid "COL_MAP_PRESET_IMPORT_ADVICE"
-msgstr "Column Mapping Presets can be used to help you easily and consistently map your data. Note that file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used."
+msgid "COL_MAP_PROFILE_IMPORT_ADVICE"
+msgstr "Column Mapping Profiles can be used to help you easily and consistently map your data. Note that file header columns defined in the profile must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used."
 
-msgid "COL_MAP_PRESET_INTRO"
-msgstr "Column mapping presets can help you standardize and simplify your file import mapping process."
+msgid "COL_MAP_PROFILE_INTRO"
+msgstr "Column mapping profiles can help you standardize and simplify your file import mapping process."
 
-msgid "COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE"
-msgstr "You can create mapping rows for a preset by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right."
+msgid "COL_MAP_PROFILE_MAPPING_CSV_BUTTON_ADVICE"
+msgstr "You can create mapping rows for a profile by adding them individually or by copying Data File header values in a comma-delimited list by using the input box on the right."
 
-msgid "COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_DIRECT_COPY_ADVICE"
 msgstr "Also, you can copy Data File header values directly over to SEED headers via the button below."
 
-msgid "COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE"
-msgstr "When using a preset for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated."
+msgid "COL_MAP_PROFILE_MAPPING_EXACT_MATCH_ADVICE"
+msgstr "When using a profile for an incoming file, Data File header values must match exactly in order for the mappings to be prepopulated."
 
-msgid "COL_MAP_PRESET_MAPPING_INTRO"
+msgid "COL_MAP_PROFILE_MAPPING_INTRO"
 msgstr "Create mappings to specific Data File header values - mapping SEED headers, Inventory Types, and if applicable, Measurement Units."
 
-msgid "COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_SUGGESTION_ADVICE"
 msgstr "Alternatively, you can get SEED header suggestions based on existing column names using the other button below."
 
-msgid "COL_MAP_PRESET_MAPPING_TYPING"
+msgid "COL_MAP_PROFILE_MAPPING_TYPING"
 msgstr "SEED header values can be manually typed. As you type, a list of suggestions will appear if the value is similar to a column that SEED already recognizes."
 
 msgid "COL_MATCHING_CRITERIA_TOGGLE"
@@ -381,8 +381,8 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
-msgid "Column Mapping Preset"
-msgstr "Column Mapping Preset"
+msgid "Column Mapping Profile"
+msgstr "Column Mapping Profile"
 
 msgid "Column Mappings"
 msgstr "Column Mappings"
@@ -495,8 +495,8 @@ msgstr "Confirm Save Mappings?"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
 
-msgid "CONFIRMING_DELETE_PRESET"
-msgstr "Are you sure you want to delete the preset"
+msgid "CONFIRMING_DELETE_PROFILE"
+msgstr "Are you sure you want to delete the profile"
 
 msgid "Contact"
 msgstr "Contact"
@@ -581,8 +581,8 @@ msgstr "Create new sub-organization"
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
 
-msgid "Create Preset"
-msgstr "Create Preset"
+msgid "Create Profile"
+msgstr "Create Profile"
 
 msgid "Create Project"
 msgstr "Create Project"
@@ -606,8 +606,8 @@ msgstr "Created new Cycle {cycle_name}"
 msgid "Cross-Cycles"
 msgstr "Cross-Cycles"
 
-msgid "Current Column Mapping Preset"
-msgstr "Current Column Mapping Preset"
+msgid "Current Column Mapping Profile"
+msgstr "Current Column Mapping Profile"
 
 msgid "Current Name"
 msgstr "Current Name"
@@ -746,8 +746,8 @@ msgstr "Delete your Data Set"
 msgid "Delete your Inventory"
 msgstr "Delete your Inventory"
 
-msgid "Delete your Preset"
-msgstr "Delete your Preset"
+msgid "Delete your Profile"
+msgstr "Delete your Profile"
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
@@ -1857,8 +1857,8 @@ msgstr "Potential Matches from Source"
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
 
-msgid "Preset Name"
-msgstr "Preset Name"
+msgid "Profile Name"
+msgstr "Profile Name"
 
 msgid "Preview"
 msgstr "Preview"
@@ -2034,11 +2034,11 @@ msgstr "Remove User"
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
 
-msgid "Rename Preset"
-msgstr "Rename Preset"
+msgid "Rename Profile"
+msgstr "Rename Profile"
 
-msgid "Rename your Preset"
-msgstr "Rename your Preset"
+msgid "Rename your Profile"
+msgstr "Rename your Profile"
 
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
@@ -2377,8 +2377,8 @@ msgstr "Please verify before continuing."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Update the geocoding column settings in your organization's column settings page."
 
-msgid "Switch Presets"
-msgstr "Switch Presets"
+msgid "Switch Profiles"
+msgstr "Switch Profiles"
 
 msgid "Tax Lot"
 msgstr "Tax Lot"
@@ -2792,8 +2792,8 @@ msgstr "You should be receiving it shortly."
 msgid "You successfully created the project"
 msgstr "You successfully created the project"
 
-msgid "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
-msgstr "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
+msgid "You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?"
+msgstr "You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"

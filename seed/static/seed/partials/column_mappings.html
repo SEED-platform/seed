@@ -28,7 +28,7 @@
 
         <!-- possibly generlize settings_profile? -->
         <div class="section_action_container right_wide settings_profile">
-          <span>{$:: 'Column Mapping Preset' | translate $}: </span>
+          <span>{$:: 'Column Mapping Profile' | translate $}: </span>
           <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="check_for_changes()" ng-disabled="!presets.length" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
 
           <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!changes_possible || header_duplicates_present() || !preset_action_ok('update')" tooltip-placement="bottom" uib-tooltip="Save">
@@ -52,13 +52,13 @@
     <div class="section_tab_container">
         <div class="row" style="border-top: 1px solid #ddd;">
             <div class="col-sm-7 tab_content wide">
-                <p translate>COL_MAP_PRESET_INTRO</p>
-                <p translate>COL_MAP_PRESET_MAPPING_INTRO</p>
-                <p translate>COL_MAP_PRESET_MAPPING_TYPING</p>
-                <p translate>COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE</p>
-                <p translate>COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE</p>
-                <p translate>COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE</p>
-                <strong><p translate>COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE</p></strong>
+                <p translate>COL_MAP_PROFILE_INTRO</p>
+                <p translate>COL_MAP_PROFILE_MAPPING_INTRO</p>
+                <p translate>COL_MAP_PROFILE_MAPPING_TYPING</p>
+                <p translate>COL_MAP_PROFILE_MAPPING_DIRECT_COPY_ADVICE</p>
+                <p translate>COL_MAP_PROFILE_MAPPING_SUGGESTION_ADVICE</p>
+                <p translate>COL_MAP_PROFILE_MAPPING_CSV_BUTTON_ADVICE</p>
+                <strong><p translate>COL_MAP_PROFILE_MAPPING_EXACT_MATCH_ADVICE</p></strong>
             </div>
 
             <div class="col-sm-5 key tab_content wide" ng-hide="!preset_action_ok('copy_csv_headers')">

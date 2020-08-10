@@ -174,7 +174,7 @@ msgstr "clé API"
 msgid "API Key"
 msgstr "Clé API"
 
-msgid "Apply Preset"
+msgid "Apply Profile"
 msgstr "Appliquer un préréglage"
 
 #: seed/models/projects.py:107 seed/models/projects.py:134
@@ -353,28 +353,28 @@ msgstr "Activer / désactiver l’implication du géocodage et, si elle est acti
 msgid "COL_GEOCODING_TOGGLE_EXT"
 msgstr "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne et son remplissage pour construire des adresses complètes."
 
-msgid "COL_MAP_PRESET_IMPORT_ADVICE"
+msgid "COL_MAP_PROFILE_IMPORT_ADVICE"
 msgstr "Les préréglages de mappage de colonnes peuvent être utilisés pour vous aider à mapper facilement et de manière cohérente vos données. Notez que les colonnes d'en-tête de fichier définies dans le préréglage doivent correspondre exactement (espaces, minuscules, majuscules, etc.) pour que les informations de colonne SEED correspondantes soient utilisées."
 
-msgid "COL_MAP_PRESET_INTRO"
+msgid "COL_MAP_PROFILE_INTRO"
 msgstr "Les préréglages de mappage de colonnes peuvent vous aider à normaliser et à simplifier votre processus de mappage d'importation de fichiers."
 
-msgid "COL_MAP_PRESET_MAPPING_CSV_BUTTON_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_CSV_BUTTON_ADVICE"
 msgstr "Vous pouvez créer des lignes de mappage pour un préréglage en les ajoutant individuellement ou en copiant les valeurs d'en-tête du fichier de données dans une liste délimitée par des virgules en utilisant la zone de saisie à droite."
 
-msgid "COL_MAP_PRESET_MAPPING_DIRECT_COPY_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_DIRECT_COPY_ADVICE"
 msgstr "En outre, vous pouvez copier les valeurs d'en-tête du fichier de données directement sur les en-têtes SEED via le bouton ci-dessous."
 
-msgid "COL_MAP_PRESET_MAPPING_EXACT_MATCH_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_EXACT_MATCH_ADVICE"
 msgstr "Lorsque vous utilisez un préréglage pour un fichier entrant, les valeurs d'en-tête du fichier de données doivent correspondre exactement pour que les mappages soient préremplis."
 
-msgid "COL_MAP_PRESET_MAPPING_INTRO"
+msgid "COL_MAP_PROFILE_MAPPING_INTRO"
 msgstr "Créez des mappages à des valeurs d'en-tête de fichier de données spécifiques - mappant les en-têtes SEED, les types d'inventaire et, le cas échéant, les unités de mesure."
 
-msgid "COL_MAP_PRESET_MAPPING_SUGGESTION_ADVICE"
+msgid "COL_MAP_PROFILE_MAPPING_SUGGESTION_ADVICE"
 msgstr "Alternativement, vous pouvez obtenir des suggestions d'en-tête SEED basées sur les noms de colonnes existants en utilisant l'autre bouton ci-dessous."
 
-msgid "COL_MAP_PRESET_MAPPING_TYPING"
+msgid "COL_MAP_PROFILE_MAPPING_TYPING"
 msgstr "Les valeurs d'en-tête SEED peuvent être saisies manuellement. Au fur et à mesure que vous tapez, une liste de suggestions apparaîtra si la valeur est similaire à une colonne déjà reconnue par SEED."
 
 #, fuzzy
@@ -387,7 +387,7 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
-msgid "Column Mapping Preset"
+msgid "Column Mapping Profile"
 msgstr "Préréglage de mappage de colonne"
 
 msgid "Column Mappings"
@@ -501,7 +501,7 @@ msgstr "Confirmer enregistrer les mappages?"
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 
-msgid "CONFIRMING_DELETE_PRESET"
+msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Voulez-vous vraiment supprimer le préréglage"
 
 msgid "Contact"
@@ -587,7 +587,7 @@ msgstr "Créer une nouvelle sous-organisation"
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
 
-msgid "Create Preset"
+msgid "Create Profile"
 msgstr "Créer un préréglage"
 
 msgid "Create Project"
@@ -612,7 +612,7 @@ msgstr "Nouveau cycle créé avec nom {cycle_name}"
 msgid "Cross-Cycles"
 msgstr "Entre les Cycles"
 
-msgid "Current Column Mapping Preset"
+msgid "Current Column Mapping Profile"
 msgstr "Préréglage de mappage de colonne actuel"
 
 msgid "Current Name"
@@ -752,7 +752,7 @@ msgstr "Supprimez votre ensemble de données"
 msgid "Delete your Inventory"
 msgstr "Supprimez votre inventaire"
 
-msgid "Delete your Preset"
+msgid "Delete your Profile"
 msgstr "Supprimer votre préréglage"
 
 msgid "DELETE_LABEL_AND_REMOVE"
@@ -1866,7 +1866,7 @@ msgstr "Correspondances possibles à partir de la source"
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
 
-msgid "Preset Name"
+msgid "Profile Name"
 msgstr "Nom de préréglage"
 
 msgid "Preview"
@@ -2044,10 +2044,10 @@ msgstr "Supprimer l'utilisateur"
 msgid "Removing buildings from project"
 msgstr "Retrait des bâtiments du projet"
 
-msgid "Rename Preset"
+msgid "Rename Profile"
 msgstr "Renommer le préréglage"
 
-msgid "Rename your Preset"
+msgid "Rename your Profile"
 msgstr "Renommez votre préréglage"
 
 msgid "RENAME_COLUMN_TITLE"
@@ -2391,7 +2391,7 @@ msgstr "Veuillez vérifier les points suivants avant de continuer."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
 
-msgid "Switch Presets"
+msgid "Switch Profiles"
 msgstr "Commuter les préréglages"
 
 msgid "Tax Lot"
@@ -2806,7 +2806,7 @@ msgstr "Vous devriez le recevoir sous peu."
 msgid "You successfully created the project"
 msgstr "Vous avez réussi à créer le projet"
 
-msgid "You will lose your unsaved changes if you switch presets without saving. Would you like to continue?"
+msgid "You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?"
 msgstr "Vous perdrez vos modifications non enregistrées si vous changez de préréglage sans enregistrer. Voulez-vous continuer?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2

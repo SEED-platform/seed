@@ -26,7 +26,7 @@
                         <p><strong translate>MAPPING YOUR DATA TO SEED</strong></p>
                         <p translate>It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile.</p>
                         <p translate>In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view.</p>
-                        <p translate>COL_MAP_PRESET_IMPORT_ADVICE</p>
+                        <p translate>COL_MAP_PROFILE_IMPORT_ADVICE</p>
                         <p>
                             <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Properties' | translate $}:</span>
                             <span><strong>{$ property_matching_criteria_columns $}</strong></span>
@@ -94,10 +94,10 @@
     <div class="section_content_container" style="padding: 0 16px;">
         <div class="section_content">
             <div class="section_action_container right_wide settings_profile" style="padding-bottom: 10px;margin-left: 5px;" ng-hide="review_mappings || import_file.matching_done">
-              <span translate>Current Column Mapping Preset</span>: <label class="label label-default">{$ current_preset.name $}</label>
+              <span translate>Current Column Mapping Profile</span>: <label class="label label-default">{$ current_preset.name $}</label>
               <select class="form-control input-sm" ng-model="dropdown_selected_preset" ng-change="flag_preset_change()" ng-options="preset as preset.name for preset in presets track by preset.id"></select>
               <button type="button" class="btn btn-primary" ng-click="apply_preset()" ng-hide="import_file.matching_done" ng-disabled="dropdown_selected_preset.id === current_preset.id" translate>
-                Apply Preset
+                Apply Profile
               </button>
               <button class="btn btn-success" type="button" ng-click="save_preset()" ng-disabled="!mappings_change_possible || (dropdown_selected_preset.id === 0) || (dropdown_selected_preset.id != current_preset.id) || current_preset.profile_type == 'BuildingSync Default'" tooltip-placement="bottom" uib-tooltip="Save">
                   <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
