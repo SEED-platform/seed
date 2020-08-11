@@ -64,31 +64,30 @@ angular.module('BE.seed.controller.mapping', [])
       COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
       COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
     ) {
-      $scope.presets = [
+      $scope.profiles = [
         {id: 0, mappings: [], name: '<None selected>'}
       ].concat(column_mapping_profiles_payload);
 
-      // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
-      $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
+      $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
 
       // Track changes to help prevent losing changes when data could be lost
-      $scope.preset_change_possible = false;
+      $scope.profile_change_possible = false;
 
-      $scope.flag_preset_change = function () {
-        $scope.preset_change_possible = true;
+      $scope.flag_profile_change = function () {
+        $scope.profile_change_possible = true;
       };
 
       $scope.flag_mappings_change = function () {
         $scope.mappings_change_possible = true;
       };
 
-      $scope.is_buildingsync_and_preset_not_ok = function () {
+      $scope.is_buildingsync_and_profile_not_ok = function () {
         if (!$scope.mappingBuildingSync) {
           return false;
         }
-        // BuildingSync requires a saved preset to be applied
-        return $scope.current_preset.id === 0
-          || $scope.preset_change_possible
+        // BuildingSync requires a saved profile to be applied
+        return $scope.current_profile.id === 0
+          || $scope.profile_change_possible
           || $scope.mappings_change_possible;
       };
 
@@ -103,77 +102,77 @@ angular.module('BE.seed.controller.mapping', [])
         }
       };
 
-      $scope.apply_preset = function () {
+      $scope.apply_profile = function () {
         if ($scope.mappings_change_possible) {
           $uibModal.open({
             template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Profiles</button></div>'
           }).result.then(function () {
-            $scope.preset_change_possible = false;
+            $scope.profile_change_possible = false;
             $scope.mappings_change_possible = false;
-            $scope.current_preset = $scope.dropdown_selected_preset;
+            $scope.current_profile = $scope.dropdown_selected_profile;
             $scope.initialize_mappings();
             analyze_chosen_inventory_types();
           }).catch(function () {
-            $scope.dropdown_selected_preset = $scope.current_preset;
+            $scope.dropdown_selected_profile = $scope.current_profile;
             return;
           });
         } else {
-          $scope.preset_change_possible = false;
-          $scope.current_preset = $scope.dropdown_selected_preset;
+          $scope.profile_change_possible = false;
+          $scope.current_profile = $scope.dropdown_selected_profile;
           $scope.initialize_mappings();
           analyze_chosen_inventory_types();
         }
       };
 
-      // Preset-level create and update modal-rending actions
-      var preset_mappings_from_working_mappings = function () {
+      // Profile-level create and update modal-rending actions
+      var profile_mappings_from_working_mappings = function () {
         // for to_field, try DB col name, if not use col display name
-        return _.reduce($scope.mappings, function (preset_mapping_data, mapping) {
+        return _.reduce($scope.mappings, function (profile_mapping_data, mapping) {
           var this_mapping = {
             from_field: mapping.name,
             from_units: mapping.from_units,
             to_field: mapping.suggestion_column_name || mapping.suggestion || '',
             to_table_name: mapping.suggestion_table_name
           };
-          var isBuildingSyncPreset = $scope.current_preset.profile_type !== undefined
+          var isBuildingSyncProfile = $scope.current_profile.profile_type !== undefined
             && [
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
-            ].includes($scope.current_preset.profile_type);
+            ].includes($scope.current_profile.profile_type);
 
-          if (isBuildingSyncPreset) {
+          if (isBuildingSyncProfile) {
             this_mapping.from_field_value = mapping.from_field_value;
           }
-          preset_mapping_data.push(this_mapping);
-          return preset_mapping_data;
+          profile_mapping_data.push(this_mapping);
+          return profile_mapping_data;
         }, []);
       };
 
-      $scope.new_preset = function () {
-        var preset_mapping_data = preset_mappings_from_working_mappings();
+      $scope.new_profile = function () {
+        var profile_mapping_data = profile_mappings_from_working_mappings();
 
-        var presetType;
+        var profileType;
         if (!$scope.mappingBuildingSync) {
-          presetType = COLUMN_MAPPING_PROFILE_TYPE_NORMAL;
+          profileType = COLUMN_MAPPING_PROFILE_TYPE_NORMAL;
         } else {
-          presetType = COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM;
+          profileType = COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM;
 
-          // make sure the new preset mapping data has the required data
-          var currentPresetForBuildingSync =
-            $scope.current_preset.profile_type !== undefined
+          // make sure the new profile mapping data has the required data
+          var currentProfileForBuildingSync =
+            $scope.current_profile.profile_type !== undefined
             && [
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
-            ].includes($scope.current_preset.profile_type);
+            ].includes($scope.current_profile.profile_type);
 
-          if (!currentPresetForBuildingSync) {
+          if (!currentProfileForBuildingSync) {
             // we need to add mapping data, from_field_value, using the default mapping
-            var defaultPreset = $scope.presets.find(function (preset) {
-              return preset.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT;
+            var defaultProfile = $scope.profiles.find(function (profile) {
+              return profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT;
             });
-            preset_mapping_data = preset_mapping_data.map(function (mapping) {
-              // find the corresponding mapping in the default preset
-              var defaultMapping = defaultPreset.mappings.find(function (defaultMapping) {
+            profile_mapping_data = profile_mapping_data.map(function (mapping) {
+              // find the corresponding mapping in the default profile
+              var defaultMapping = defaultProfile.mappings.find(function (defaultMapping) {
                 return defaultMapping.from_field === mapping.from_field;
               });
               return _.merge({}, mapping, {
@@ -188,34 +187,34 @@ angular.module('BE.seed.controller.mapping', [])
           controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant({mappings: preset_mapping_data, profile_type: presetType}),
+            data: _.constant({mappings: profile_mapping_data, profile_type: profileType}),
             org_id: _.constant(user_service.get_organization().id)
           }
         });
 
-        modalInstance.result.then(function (new_preset) {
-          $scope.presets.push(new_preset);
-          $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+        modalInstance.result.then(function (new_profile) {
+          $scope.profiles.push(new_profile);
+          $scope.dropdown_selected_profile = $scope.current_profile = _.last($scope.profiles);
 
-          $scope.preset_change_possible = false;
+          $scope.profile_change_possible = false;
           $scope.mappings_change_possible = false;
-          Notification.primary('Saved ' + $scope.current_preset.name);
+          Notification.primary('Saved ' + $scope.current_profile.name);
         });
       };
 
-      $scope.save_preset = function () {
-        var preset_id = $scope.current_preset.id;
-        var preset_index = _.findIndex($scope.presets, ['id', preset_id]);
+      $scope.save_profile = function () {
+        var profile_id = $scope.current_profile.id;
+        var profile_index = _.findIndex($scope.profiles, ['id', profile_id]);
 
-        var preset_mapping_data = preset_mappings_from_working_mappings();
+        var profile_mapping_data = profile_mappings_from_working_mappings();
 
-        column_mappings_service.update_column_mapping_profile(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
-          $scope.presets[preset_index].mappings = result.data.mappings;
-          $scope.presets[preset_index].updated = result.data.updated;
+        column_mappings_service.update_column_mapping_profile(user_service.get_organization().id, profile_id, {mappings: profile_mapping_data}).then(function (result) {
+          $scope.profiles[profile_index].mappings = result.data.mappings;
+          $scope.profiles[profile_index].updated = result.data.updated;
 
-          $scope.preset_change_possible = false;
+          $scope.profile_change_possible = false;
           $scope.mappings_change_possible = false;
-          Notification.primary('Saved ' + $scope.current_preset.name);
+          Notification.primary('Saved ' + $scope.current_profile.name);
         });
       };
 
@@ -394,7 +393,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       var get_col_from_suggestion = function (name) {
 
-        var suggestion = _.find($scope.current_preset.mappings, {from_field: name}) || {};
+        var suggestion = _.find($scope.current_profile.mappings, {from_field: name}) || {};
 
         return {
           from_units: suggestion.from_units,
