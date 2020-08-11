@@ -508,16 +508,16 @@ angular.module('BE.seed.controller.inventory_detail', [])
             },
             column_mapping_presets: [
               'column_mappings_service',
-              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
-              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
               function (
                 column_mappings_service,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
               ) {
                 var filter_preset_types = [
-                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
                 ];
                 return column_mappings_service.get_column_mapping_presets_for_org(
                   $scope.organization.id,
