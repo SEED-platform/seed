@@ -63,14 +63,14 @@ class Command(BaseCommand):
                     }
                 )
 
-        # create the mapping preset
+        # create the mapping profile
         cmp, created = org.columnmappingprofile_set.get_or_create(name=options['name'])
         if not created and not options['overwrite']:
-            self.stdout.write(f"Column mapping preset already exists: {options['name']}")
-            self.stdout.write("Pass --overwrite to overwrite existing mappings in preset if desired")
+            self.stdout.write(f"Column mapping profile already exists: {options['name']}")
+            self.stdout.write("Pass --overwrite to overwrite existing mappings in profile if desired")
             exit(0)
 
         cmp.mappings = mappings
         cmp.save()
 
-        self.stdout.write(f"Finished adding column mapping preset for {options['name']}")
+        self.stdout.write(f"Finished adding column mapping profile for {options['name']}")
