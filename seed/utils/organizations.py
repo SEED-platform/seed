@@ -138,13 +138,13 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     # the default columns
     _create_default_columns(organization.id)
 
-    # ... and the default column mapping preset for Portfolio Manager
+    # ... and the default column mapping profile for Portfolio Manager
     organization.columnmappingprofile_set.create(
         name='Portfolio Manager Defaults',
         mappings=default_pm_mappings()
     )
 
-    # ... and the default column mapping preset for BuildingSync
+    # ... and the default column mapping profile for BuildingSync
     organization.columnmappingprofile_set.create(
         name='BuildingSync v2.0 Defaults',
         mappings=default_buildingsync_profile_mappings(),
