@@ -15,23 +15,23 @@ angular.module('BE.seed.controller.column_mapping_profile_modal', [])
       $scope.data = data;
       $scope.org_id = org_id;
 
-      $scope.rename_preset = function () {
+      $scope.rename_profile = function () {
         if (!$scope.disabled()) {
-          var preset_id = $scope.data.id;
+          var profile_id = $scope.data.id;
           var updated_data = {name: $scope.newName};
-          column_mappings_service.update_column_mapping_profile($scope.org_id, preset_id, updated_data).then(function (result) {
+          column_mappings_service.update_column_mapping_profile($scope.org_id, profile_id, updated_data).then(function (result) {
             $uibModalInstance.close(result.data.name);
           });
         }
       };
 
-      $scope.remove_preset = function () {
+      $scope.remove_profile = function () {
         column_mappings_service.delete_column_mapping_profile($scope.org_id, $scope.data.id).then(function () {
           $uibModalInstance.close();
         });
       };
 
-      $scope.new_preset = function () {
+      $scope.new_profile = function () {
         if (!$scope.disabled()) {
           column_mappings_service.new_column_mapping_profile_for_org($scope.org_id, {
             name: $scope.newName,
