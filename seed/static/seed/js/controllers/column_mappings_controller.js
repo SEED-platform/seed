@@ -199,7 +199,7 @@ angular.module('BE.seed.controller.column_mappings', [])
         _.forEach($scope.current_preset.mappings, mapping_display_to_db);
         var updated_data = {mappings: $scope.current_preset.mappings};
 
-        column_mappings_service.update_column_mapping_preset($scope.org.id, $scope.current_preset.id, updated_data).then(function (result) {
+        column_mappings_service.update_column_mapping_profile($scope.org.id, $scope.current_preset.id, updated_data).then(function (result) {
           // If applicable, convert db names back to display names for rendering
           _.forEach($scope.current_preset.mappings, mapping_db_to_display);
           $scope.current_preset.updated = result.data.updated;

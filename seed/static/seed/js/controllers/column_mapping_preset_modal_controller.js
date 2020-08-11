@@ -19,21 +19,21 @@ angular.module('BE.seed.controller.column_mapping_preset_modal', [])
         if (!$scope.disabled()) {
           var preset_id = $scope.data.id;
           var updated_data = {name: $scope.newName};
-          column_mappings_service.update_column_mapping_preset($scope.org_id, preset_id, updated_data).then(function (result) {
+          column_mappings_service.update_column_mapping_profile($scope.org_id, preset_id, updated_data).then(function (result) {
             $uibModalInstance.close(result.data.name);
           });
         }
       };
 
       $scope.remove_preset = function () {
-        column_mappings_service.delete_column_mapping_preset($scope.org_id, $scope.data.id).then(function () {
+        column_mappings_service.delete_column_mapping_profile($scope.org_id, $scope.data.id).then(function () {
           $uibModalInstance.close();
         });
       };
 
       $scope.new_preset = function () {
         if (!$scope.disabled()) {
-          column_mappings_service.new_column_mapping_preset_for_org($scope.org_id, {
+          column_mappings_service.new_column_mapping_profile_for_org($scope.org_id, {
             name: $scope.newName,
             mappings: $scope.data.mappings,
             profile_type: $scope.data.profile_type

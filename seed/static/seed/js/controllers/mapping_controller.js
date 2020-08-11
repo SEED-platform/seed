@@ -209,7 +209,7 @@ angular.module('BE.seed.controller.mapping', [])
 
         var preset_mapping_data = preset_mappings_from_working_mappings();
 
-        column_mappings_service.update_column_mapping_preset(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
+        column_mappings_service.update_column_mapping_profile(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
           $scope.presets[preset_index].mappings = result.data.mappings;
           $scope.presets[preset_index].updated = result.data.updated;
 

@@ -519,7 +519,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
                   COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
                   COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
                 ];
-                return column_mappings_service.get_column_mapping_presets_for_org(
+                return column_mappings_service.get_column_mapping_profiles_for_org(
                   $scope.organization.id,
                   filter_preset_types
                 ).then(function (response) {

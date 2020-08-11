@@ -554,7 +554,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 filter_preset_types = [COLUMN_MAPPING_PROFILE_TYPE_NORMAL];
               }
               var organization_id = user_service.get_organization().id;
-              return column_mappings_service.get_column_mapping_presets_for_org(
+              return column_mappings_service.get_column_mapping_profiles_for_org(
                 organization_id,
                 filter_preset_types
               ).then(function (response) {
@@ -886,7 +886,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
-            return column_mappings_service.get_column_mapping_presets_for_org(organization_id).then(function (response) {
+            return column_mappings_service.get_column_mapping_profiles_for_org(organization_id).then(function (response) {
               return response.data;
             });
           }],

@@ -9,7 +9,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
 
     var column_mappings_factory = {};
 
-    column_mappings_factory.get_column_mapping_presets_for_org = function (org_id, filter_profile_types) {
+    column_mappings_factory.get_column_mapping_profiles_for_org = function (org_id, filter_profile_types) {
       var params = {
         organization_id: org_id
       };
@@ -25,7 +25,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       });
     };
 
-    column_mappings_factory.new_column_mapping_preset_for_org = function (org_id, data) {
+    column_mappings_factory.new_column_mapping_profile_for_org = function (org_id, data) {
       return $http.post('/api/v3/column_mapping_profiles/', data, {
         params: {
           organization_id: org_id
@@ -51,7 +51,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       });
     };
 
-    column_mappings_factory.update_column_mapping_preset = function (org_id, id, data) {
+    column_mappings_factory.update_column_mapping_profile = function (org_id, id, data) {
       return $http.put('/api/v3/column_mapping_profiles/' + id + '/', data, {
         params: {
           organization_id: org_id
@@ -61,7 +61,7 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
       });
     };
 
-    column_mappings_factory.delete_column_mapping_preset = function (org_id, id) {
+    column_mappings_factory.delete_column_mapping_profile = function (org_id, id) {
       return $http.delete('/api/v3/column_mapping_profiles/' + id + '/', {
         params: {
           organization_id: org_id
