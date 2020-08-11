@@ -28,7 +28,7 @@ from seed.data_importer.models import (
     ImportRecord,
 )
 from seed.data_importer.tasks import match_buildings, save_raw_data
-from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 from seed.models import (
     DATA_STATE_MAPPING,
@@ -1202,7 +1202,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         )
 
         # create a preset mapping where longitude and latitude are swapped
-        preset_mappings = default_buildingsync_preset_mappings()
+        preset_mappings = default_buildingsync_profile_mappings()
         for mapping in preset_mappings:
             if mapping['to_field'] == 'longitude':
                 mapping['to_field'] = 'latitude'

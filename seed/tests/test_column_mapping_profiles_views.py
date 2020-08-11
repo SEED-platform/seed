@@ -11,7 +11,7 @@ from seed.models import (
     Column,
     ColumnMappingProfile,
 )
-from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 
 class ColumnMappingPresetViewsCore(DataMappingBaseTestCase):
@@ -251,7 +251,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
     def test_update_custom_bsync_preset_successfully_changes_to_fields(self):
         # -- Setup
         # create the custom preset
-        preset_mappings = default_buildingsync_preset_mappings()
+        preset_mappings = default_buildingsync_profile_mappings()
         preset_name = 'Custom BSync Preset'
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,
@@ -284,7 +284,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
     def test_update_custom_bsync_preset_successfully_removes_mappings(self):
         # -- Setup
         # create the custom preset
-        preset_mappings = default_buildingsync_preset_mappings()
+        preset_mappings = default_buildingsync_profile_mappings()
         preset_name = 'Custom BSync Preset'
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,
@@ -317,7 +317,7 @@ class ColumnMappingProfilesViewsBuildingSync(DataMappingBaseTestCase):
     def test_update_custom_bsync_preset_does_NOT_change_from_fields(self):
         # -- Setup
         # create the custom preset
-        preset_mappings = default_buildingsync_preset_mappings()
+        preset_mappings = default_buildingsync_profile_mappings()
         preset_name = 'Custom BSync Preset'
         preset = self.org.columnmappingprofile_set.create(
             name=preset_name,

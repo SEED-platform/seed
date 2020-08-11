@@ -13,7 +13,7 @@ from seed.lib.superperms.orgs.models import (
     OrganizationUser,
     ROLE_MEMBER
 )
-from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import Column, ColumnMappingProfile
 from seed.models.data_quality import DataQualityCheck
 
@@ -147,7 +147,7 @@ def create_organization(user=None, org_name='', *args, **kwargs):
     # ... and the default column mapping preset for BuildingSync
     organization.columnmappingprofile_set.create(
         name='BuildingSync v2.0 Defaults',
-        mappings=default_buildingsync_preset_mappings(),
+        mappings=default_buildingsync_profile_mappings(),
         profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT
     )
 
