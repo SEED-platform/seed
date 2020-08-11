@@ -8,7 +8,7 @@ angular.module('BE.seed.controller.mapping', [])
     '$log',
     '$q',
     '$filter',
-    'column_mapping_presets_payload',
+    'column_mapping_profiles_payload',
     'import_file_payload',
     'suggested_mappings_payload',
     'raw_columns_payload',
@@ -38,7 +38,7 @@ angular.module('BE.seed.controller.mapping', [])
       $log,
       $q,
       $filter,
-      column_mapping_presets_payload,
+      column_mapping_profiles_payload,
       import_file_payload,
       suggested_mappings_payload,
       raw_columns_payload,
@@ -66,7 +66,7 @@ angular.module('BE.seed.controller.mapping', [])
     ) {
       $scope.presets = [
         {id: 0, mappings: [], name: '<None selected>'}
-      ].concat(column_mapping_presets_payload);
+      ].concat(column_mapping_profiles_payload);
 
       // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};

@@ -10,7 +10,7 @@ angular.module('BE.seed.controller.column_mappings', [])
     '$uibModal',
     'Notification',
     'auth_payload',
-    'column_mapping_presets_payload',
+    'column_mapping_profiles_payload',
     'column_mappings_service',
     'inventory_service',
     'mappable_property_columns_payload',
@@ -27,7 +27,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       $uibModal,
       Notification,
       auth_payload,
-      column_mapping_presets_payload,
+      column_mapping_profiles_payload,
       column_mappings_service,
       inventory_service,
       mappable_property_columns_payload,
@@ -80,11 +80,11 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       // On page load, convert DB field names to display names
-      _.forEach(column_mapping_presets_payload, function (preset) {
+      _.forEach(column_mapping_profiles_payload, function (preset) {
         _.forEach(preset.mappings, mapping_db_to_display);
       });
 
-      $scope.presets = column_mapping_presets_payload;
+      $scope.presets = column_mapping_profiles_payload;
 
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
 

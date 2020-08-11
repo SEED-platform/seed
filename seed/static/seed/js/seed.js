@@ -530,7 +530,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/mapping.html',
         controller: 'mapping_controller',
         resolve: {
-          column_mapping_presets_payload: [
+          column_mapping_profiles_payload: [
             'column_mappings_service',
             'user_service',
             'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
@@ -544,19 +544,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
               COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
               import_file_payload) {
-              var filter_preset_types;
+              var filter_profile_types;
               if (import_file_payload.import_file.source_type === 'BuildingSync Raw') {
-                filter_preset_types = [
+                filter_profile_types = [
                   COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
                   COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
                 ];
               } else {
-                filter_preset_types = [COLUMN_MAPPING_PROFILE_TYPE_NORMAL];
+                filter_profile_types = [COLUMN_MAPPING_PROFILE_TYPE_NORMAL];
               }
               var organization_id = user_service.get_organization().id;
               return column_mappings_service.get_column_mapping_profiles_for_org(
                 organization_id,
-                filter_preset_types
+                filter_profile_types
               ).then(function (response) {
                 return response.data;
               });
@@ -884,7 +884,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return result;
             });
           }],
-          column_mapping_presets_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
+          column_mapping_profiles_payload: ['column_mappings_service', '$stateParams', function (column_mappings_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return column_mappings_service.get_column_mapping_profiles_for_org(organization_id).then(function (response) {
               return response.data;
