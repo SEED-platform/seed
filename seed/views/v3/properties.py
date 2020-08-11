@@ -1225,7 +1225,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             bs.import_file(bs_file.file.path)
 
         try:
-            xml = bs.export_using_preset(property_view.state, column_mapping_preset.mappings)
+            xml = bs.export_using_profile(property_view.state, column_mapping_preset.mappings)
             return HttpResponse(xml, content_type='application/xml')
         except Exception as e:
             return JsonResponse({
