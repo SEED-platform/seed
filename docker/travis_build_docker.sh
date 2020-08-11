@@ -10,7 +10,7 @@ elif [ "${TRAVIS_EVENT_TYPE}" == "push" ]; then
     IMAGETAG=${TRAVIS_BRANCH}
 fi
 
-if [ "${IMAGETAG}" != "skip" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
+if [ "${IMAGETAG}" == "master" ] || [ "${IMAGETAG}" == "develop" ] && [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
     docker-compose build --pull
     docker login -u $DOCKER_USER -p $DOCKER_PASS
 
