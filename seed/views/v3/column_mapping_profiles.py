@@ -92,7 +92,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def update(self, request, pk=None):
         """
         Updates a profile given appropriate request data. The body should contain
-        only valid fields for ColumnMappingPreset objects.
+        only valid fields for ColumnMappingProfile objects.
         """
         org_id = self.get_organization(request, True).id
         try:
@@ -166,7 +166,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def create(self, request, pk=None):
         """
         Creates a new profile given appropriate request data. The body should
-        contain only valid fields for ColumnMappingPreset objects.
+        contain only valid fields for ColumnMappingProfile objects.
         """
         org_id = self.get_organization(request, True).id
         try:
