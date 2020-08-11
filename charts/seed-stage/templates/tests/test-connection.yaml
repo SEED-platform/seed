@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "seed-stage.fullname" . }}-test-connection"
+  labels:
+    {{- include "seed-stage.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test-success
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "seed-stage.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
