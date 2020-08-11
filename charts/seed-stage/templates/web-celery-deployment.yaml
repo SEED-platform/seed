@@ -6,8 +6,8 @@ metadata:
     kompose.version: 1.20.0 ()
   creationTimestamp: null
   labels:
-    io.kompose.service: web
-  name: web
+    io.kompose.service: web-celery
+  name: web-celery
 spec:
   replicas: 1
   strategy:
@@ -19,10 +19,12 @@ spec:
         kompose.version: 1.20.0 ()
       creationTimestamp: null
       labels:
-        io.kompose.service: web
+        io.kompose.service: web-celery
     spec:
       containers:
-      - env:
+      - args:
+          - /seed/docker/start_celery_docker.sh
+        env:
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings.docker
         - name: POSTGRES_DB
@@ -32,19 +34,12 @@ spec:
         - name: POSTGRES_PORT
           value: "5432"
         - name: POSTGRES_USER
-          value: seed
+          value: seeduser
         - name: SECRET_KEY
-          value: <Your Secret Key> #To be implemented with crypto secrets
-        - name: SEED_ADMIN_ORG
-          value: default
-        - name: SEED_ADMIN_PASSWORD
-          value: super-secret-password
-        - name: SEED_ADMIN_USER
-          value: user@seed-platform.org
-        image: seedplatform/seed:latest
-        name: web
-        ports:
-        - containerPort: 80
+          value: <secret> #to be implemented with crypto secrets
+        image: seedplatform/seed:test
+        imagePullPolicy: Always
+        name: web-celery
         resources: {}
         volumeMounts:
         - mountPath: /seed/media
