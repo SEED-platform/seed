@@ -10,7 +10,7 @@
 
 # Start with 2.6.0. note that the source code will be removed and re-copied to this container. The
 # version of SEED here is used to load in the core system packages and dependencies.
-FROM seedplatform/seed:test
+FROM seedplatform/seed:2.6.0
 
 # DO NOT UPGRADE until libgeos and shapely fix the connection.
 #RUN apk add --no-cache python \
