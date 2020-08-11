@@ -555,10 +555,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         organization_id = int(request.query_params.get('organization_id', None))
 
         property_view_ids = body.get('property_view_ids', [])
-        property_state_ids = PropertyView.objects.filter(
+        property_states = PropertyView.objects.filter(
             id__in=property_view_ids,
             cycle__organization_id=organization_id
-        ).values_list('state_id', flat=True)
+        ).values('id', 'state_id')
+        # get the state ids in order according to the given view ids
+        property_states_dict = {p['id']: p['state_id'] for p in property_states}
+        property_state_ids = [
+            property_states_dict[view_id]
+            for view_id in property_view_ids if view_id in property_states_dict
+        ]
 
         if len(property_state_ids) != len(property_view_ids):
             return {
@@ -886,11 +892,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         org_id = request.query_params.get('organization_id', None)
 
         property_view_ids = request.data.get('property_view_ids', [])
-        property_states = PropertyView.objects.filter(
+        property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
             cycle__organization_id=org_id
-        )
-        resp = PropertyState.objects.filter(pk__in=Subquery(property_states.values('id'))).delete()
+        ).values_list('state_id', flat=True)
+        resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})

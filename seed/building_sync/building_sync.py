@@ -36,6 +36,10 @@ etree.set_default_parser(parser)
 etree.register_namespace('auc', BUILDINGSYNC_URI)
 
 
+class ParsingError(Exception):
+    pass
+
+
 class BuildingSync(object):
     BUILDINGSYNC_V2_0 = '2.0'
     VERSION_MAPPINGS_DICT = {
@@ -57,7 +61,7 @@ class BuildingSync(object):
         # save element tree
         if isinstance(source, str):
             if not os.path.isfile(source):
-                raise Exception("File not found: {}".format(source))
+                raise ParsingError("File not found: {}".format(source))
             with open(source) as f:
                 self.element_tree = etree.parse(f)
         else:
@@ -109,7 +113,7 @@ class BuildingSync(object):
         :param version: string, should be one of the valid BuildingSync versions
         """
         if version not in self.VERSION_MAPPINGS_DICT:
-            raise Exception(f'Invalid version "{version}"')
+            raise ParsingError(f'Invalid version "{version}"')
 
         xml_string = '''<?xml version="1.0"?>
         <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{}/BuildingSync.xsd">
@@ -177,7 +181,7 @@ class BuildingSync(object):
         if version == cls.BUILDINGSYNC_V2_0:
             schema_path = os.path.join(schema_dir, 'BuildingSync_v2_0.xsd')
         else:
-            raise Exception(f'Unknown file version "{version}"')
+            raise ParsingError(f'Unknown file version "{version}"')
 
         return xmlschema.XMLSchema(schema_path)
 
@@ -300,7 +304,7 @@ class BuildingSync(object):
         # prcess_struct = new_use_case (from Building Selection Tool)
         base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
         if base_mapping is None:
-            raise Exception(f'Version of BuildingSync object is not supported: "{self.version}"')
+            raise ParsingError(f'Version of BuildingSync object is not supported: "{self.version}"')
 
         # convert the table_mappings into a buildingsync mapping
         custom_mapping = None
@@ -319,7 +323,7 @@ class BuildingSync(object):
         """
         base_mapping = self.VERSION_MAPPINGS_DICT.get(self.version)
         if base_mapping is None:
-            raise Exception(f'Version of BuildingSync object is not supported: "{self.version}"')
+            raise ParsingError(f'Version of BuildingSync object is not supported: "{self.version}"')
 
         # convert the table_mappings into a buildingsync mapping
         custom_mapping = None
@@ -353,7 +357,7 @@ class BuildingSync(object):
         :return: string, schema version (raises Exception when not found or invalid)
         """
         if self.element_tree is None:
-            raise Exception('A file must first be imported with import method')
+            raise ParsingError('A file must first be imported with import method')
 
         # first check if it's a file form Audit Template Tool and infer the version
         # Currently ATT doesn't include a schemaLocation so this is necessary
@@ -362,7 +366,7 @@ class BuildingSync(object):
 
         bsync_element = self.element_tree.getroot()
         if not bsync_element.tag.endswith('BuildingSync'):
-            raise Exception('Expected BuildingSync element as root element in xml')
+            raise ParsingError('Expected BuildingSync element as root element in xml')
 
         # attempt to parse the version from the xsi:schemaLocation
         schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()
@@ -375,9 +379,9 @@ class BuildingSync(object):
                 if parsed_version in self.VERSION_MAPPINGS_DICT:
                     return parsed_version
 
-                raise Exception(f'Unsupported BuildingSync schema version "{parsed_version}". Supported versions: {list(self.VERSION_MAPPINGS_DICT.keys())}')
+                raise ParsingError(f'Unsupported BuildingSync schema version "{parsed_version}". Supported versions: {list(self.VERSION_MAPPINGS_DICT.keys())}')
 
-        raise Exception('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')
+        raise ParsingError('Invalid or missing schema specification. Expected a valid BuildingSync schemaLocation in the BuildingSync element. For example: https://raw.githubusercontent.com/BuildingSync/schema/v<schema version here>/BuildingSync.xsd')
 
     def _is_from_audit_template_tool(self):
         """Determines if the source file is from audit template tool
@@ -397,5 +401,5 @@ class BuildingSync(object):
 
     def get_base_mapping(self):
         if not self.version:
-            raise Exception('You must call import_file to determine the version first')
+            raise ParsingError('You must call import_file to determine the version first')
         return copy.deepcopy(self.VERSION_MAPPINGS_DICT[self.version])

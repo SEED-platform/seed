@@ -55,7 +55,7 @@
 
 <div class="modal-footer container-fluid" ng-switch on="step.number">
     <div class="row text-center" ng-switch-when="1">
-        <button type="button" class="btn btn-primary col-sm-6 center-block" sd-uploader sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined"><span translate>UPLOAD_FILE</span></button>
+        <button type="button" class="btn btn-primary col-sm-6 center-block" sd-uploader organization-id="organization_id" sourcetype="GreenButton" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined"><span translate>UPLOAD_FILE</span></button>
     </div>
 
     <div ng-switch-when="2">
