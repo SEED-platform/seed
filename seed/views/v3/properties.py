@@ -1181,7 +1181,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_integer_field(
                 'preset_id',
                 required=True,
-                description='ID of a BuildingSync ColumnMappingPreset'
+                description='ID of a BuildingSync ColumnMappingProfile'
             ),
         ]
     )
@@ -1191,12 +1191,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Return BuildingSync representation of the property
         """
-        preset_pk = request.GET.get('preset_id')
+        profile_pk = request.GET.get('preset_id')
         org_id = self.get_organization(self.request)
         try:
-            preset_pk = int(preset_pk)
-            column_mapping_preset = ColumnMappingProfile.objects.get(
-                pk=preset_pk,
+            profile_pk = int(profile_pk)
+            column_mapping_profile = ColumnMappingProfile.objects.get(
+                pk=profile_pk,
                 profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
@@ -1206,7 +1206,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+                'message': f'Cannot find a BuildingSync ColumnMappingProfile with pk={profile_pk}'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -1225,7 +1225,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             bs.import_file(bs_file.file.path)
 
         try:
-            xml = bs.export_using_profile(property_view.state, column_mapping_preset.mappings)
+            xml = bs.export_using_profile(property_view.state, column_mapping_profile.mappings)
             return HttpResponse(xml, content_type='application/xml')
         except Exception as e:
             return JsonResponse({
