@@ -135,8 +135,8 @@ angular.module('BE.seed.controller.column_mappings', [])
         }
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
             data: _.constant(presetData),
@@ -157,8 +157,8 @@ angular.module('BE.seed.controller.column_mappings', [])
         var old_name = $scope.current_preset.name;
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('rename'),
             data: _.constant($scope.current_preset),
@@ -178,8 +178,8 @@ angular.module('BE.seed.controller.column_mappings', [])
         var old_preset = angular.copy($scope.current_preset);
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('remove'),
             data: _.constant($scope.current_preset),

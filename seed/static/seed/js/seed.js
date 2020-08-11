@@ -38,7 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.api',
-  'BE.seed.controller.column_mapping_preset_modal',
+  'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
   'BE.seed.controller.column_settings',
   'BE.seed.controller.confirm_column_settings_modal',

@@ -184,8 +184,8 @@ angular.module('BE.seed.controller.mapping', [])
         }
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
             data: _.constant({mappings: preset_mapping_data, profile_type: presetType}),
