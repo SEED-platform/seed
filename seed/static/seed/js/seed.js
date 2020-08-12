@@ -135,6 +135,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.column_mappings',
   'BE.seed.service.columns',
   'BE.seed.service.cycle',
+  // 'BE.seed.service.template',
   'BE.seed.service.dataset',
   'BE.seed.service.meter',
   'BE.seed.service.flippers',

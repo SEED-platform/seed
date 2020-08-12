@@ -42,6 +42,8 @@ from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
 from seed.views.v3.uploads import UploadViewSet
 from seed.views.v3.users import UserViewSet
+# Add Routes for post_office
+from seed.views.v3.postoffice import PostOfficeViewSet
 
 api_v3_router = routers.DefaultRouter()
 api_v3_router.register(r'analyses', AnalysisViewSet, basename='analyses')
@@ -72,6 +74,8 @@ api_v3_router.register(r'taxlots', TaxlotViewSet, basename='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, basename='ubid')
 api_v3_router.register(r'upload', UploadViewSet, basename='upload')
 api_v3_router.register(r'users', UserViewSet, basename='user')
+# Add Routes for post_office
+api_v3_router.register(r'postoffice', PostOfficeViewSet, base_name='postoffice')
 
 data_quality_checks_router = nested_routers.NestedSimpleRouter(api_v3_router, r'data_quality_checks', lookup="nested")
 data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, basename='data_quality_check-rules')

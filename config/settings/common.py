@@ -116,11 +116,9 @@ SEED_CORE_APPS = (
     'seed.docs'
 )
 
-# BEAM_APPS = (
-# 'django-post-office',
-# )
-
-# INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS +BEAM_APPS
+BEAM_APPS = (
+    'post_office',
+)
 
 
 
@@ -128,7 +126,7 @@ SEED_CORE_APPS = (
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS + BEAM_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (
