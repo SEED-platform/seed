@@ -113,6 +113,7 @@ angular.module('BE.seed.controller.mapping', [])
             $scope.current_preset = $scope.dropdown_selected_preset;
             $scope.initialize_mappings();
             analyze_chosen_inventory_types();
+            $scope.updateColDuplicateStatus();
           }).catch(function () {
             $scope.dropdown_selected_preset = $scope.current_preset;
             return;
@@ -122,6 +123,7 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.current_preset = $scope.dropdown_selected_preset;
           $scope.initialize_mappings();
           analyze_chosen_inventory_types();
+          $scope.updateColDuplicateStatus();
         }
       };
 
