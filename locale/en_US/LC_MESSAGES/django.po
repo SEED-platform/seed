@@ -242,6 +242,9 @@ msgstr "auto-mapping energy data"
 msgid "auto-matching energy data"
 msgstr "auto-matching energy data"
 
+msgid "available templates"
+msgstr "available templates"
+
 #: seed/landing/templates/landing/thank_you.html:17
 msgid "Back"
 msgstr "Back"

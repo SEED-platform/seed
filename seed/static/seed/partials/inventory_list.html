@@ -21,8 +21,6 @@
                 <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">
                     {$:: 'Actions' | translate $} <span class="caret"></span>
                 </button>
-                <!-- START HERE -->
-                <!-- auto-close="disabled" -->
                 <ul id="inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem">
                         <a ng-click="open_merge_modal()" ng-disabled="selectedParentCount < 2">Merge Selected</a>
@@ -39,18 +37,9 @@
                     <li role="menuitem">
                         <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
                     </li>
-                    <!-- WRITTEN -->
                     <li role="menuitem">
-                        <a ng-click="email_template_modal()" ng-disabled="selectedCount === 0" translate>Email</a>
-                        <!-- email_template_modal() -->
-                        <!-- <select>
-                            <option hidden>Email</option>
-                            <option>Template1</option>
-                            <option>Template2</option>
-                            <option>Template3</option>
-                        </select> -->
+                        <a ng-click="open_postoffice_modal()" ng-disabled="selectedCount === 0" translate>Email</a>
                     </li>
-                    <!-- END -->
                     <li class="divider"></li>
                     <li role="menuitem">
                         <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>

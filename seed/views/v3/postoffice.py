@@ -16,7 +16,7 @@ from post_office.models import EmailTemplate
 from seed.serializers.postoffice import PostOfficeSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
-
+# Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
@@ -152,9 +152,14 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
     def get_queryset(self):
         # temp_id = self.get_templates(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
+        # print(EmailTemplate.objects.order_by('name'))
         return EmailTemplate.objects.order_by('name')
 
     # def perform_create(self, serializer):
     #     # org_id = self.get_organization(self.request)
     #     # user = self.request.user
     #     serializer.save(organization_id=org_id, user=user)
+
+#emailviewset
+# class Email():
+#     def send_templated_email():

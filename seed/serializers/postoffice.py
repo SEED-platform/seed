@@ -13,8 +13,5 @@ class PostOfficeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailTemplate
         fields = ('id', 'name','description', 'subject','content' ,'html_content','created','last_updated', 'default_template_id', 'language',)
-        # extra_kwargs = {
-        #     'user': {'read_only': True},
-        #     'organization': {'read_only': True}
-        # }
+
 
