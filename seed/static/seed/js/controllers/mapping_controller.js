@@ -30,6 +30,8 @@ angular.module('BE.seed.controller.mapping', [])
     'i18nService', // from ui-grid
     'simple_modal_service',
     'Notification',
+    'organization_payload',
+    'naturalSort',
     'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
     'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
     'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
@@ -60,6 +62,8 @@ angular.module('BE.seed.controller.mapping', [])
       i18nService,
       simple_modal_service,
       Notification,
+      organization_payload,
+      naturalSort,
       COLUMN_MAPPING_PRESET_TYPE_NORMAL,
       COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
       COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
@@ -70,6 +74,7 @@ angular.module('BE.seed.controller.mapping', [])
 
       // $scope.selected_preset = $scope.applied_preset = $scope.mock_presets[0];
       $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
+      $scope.organization = organization_payload.organization;
 
       // Track changes to help prevent losing changes when data could be lost
       $scope.preset_change_possible = false;
@@ -189,7 +194,7 @@ angular.module('BE.seed.controller.mapping', [])
           resolve: {
             action: _.constant('new'),
             data: _.constant({mappings: preset_mapping_data, preset_type: presetType}),
-            org_id: _.constant(user_service.get_organization().id)
+            org_id: _.constant($scope.organization.id)
           }
         });
 
@@ -209,7 +214,7 @@ angular.module('BE.seed.controller.mapping', [])
 
         var preset_mapping_data = preset_mappings_from_working_mappings();
 
-        column_mappings_service.update_column_mapping_preset(user_service.get_organization().id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
+        column_mappings_service.update_column_mapping_preset($scope.organization.id, preset_id, {mappings: preset_mapping_data}).then(function (result) {
           $scope.presets[preset_index].mappings = result.data.mappings;
           $scope.presets[preset_index].updated = result.data.updated;
 
@@ -514,7 +519,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      var org_id = user_service.get_organization().id;
+      var org_id = $scope.organization.id;
       geocode_service.check_org_has_api_key(org_id).then(function (result) {
         $scope.org_has_api_key = result;
         if (result) {
@@ -699,6 +704,9 @@ angular.module('BE.seed.controller.mapping', [])
               if (col.data_type === 'datetime') {
                 options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                 options.filter = inventory_service.dateFilter();
+              } else if (col.data_type === 'area' || col.data_type === 'eui') {
+                options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+                options.sortingAlgorithm = naturalSort;
               } else {
                 options.filter = inventory_service.combinedFilter();
               }
@@ -736,11 +744,11 @@ angular.module('BE.seed.controller.mapping', [])
           $log.error(response);
         }).finally(function () {
           // Submit the data quality checks and wait for the results
-          data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id, $scope.import_file.id).then(function (response) {
+          data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then(function (response) {
             data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
               // Fetch data quality check results
               $scope.data_quality_results_ready = false;
-              $scope.data_quality_results = data_quality_service.get_data_quality_results(user_service.get_organization().id, check_result.unique_id);
+              $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
               $scope.data_quality_results.then(function (data) {
                 $scope.data_quality_results_ready = true;
                 $scope.data_quality_errors = 0;
@@ -783,7 +791,7 @@ angular.module('BE.seed.controller.mapping', [])
             importFileId: function () {
               return $scope.import_file.id;
             },
-            orgId: _.constant(user_service.get_organization().id)
+            orgId: _.constant($scope.organization.id)
           }
         });
       };
