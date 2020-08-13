@@ -539,7 +539,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         //   profileId = $scope.currentProfile.id;
         // }
 
-        $http.post('/api/v2.1/tax_lot_properties/export/', {
+        $http.post('/api/v3/tax_lot_properties/export/', {
           ids: [$stateParams.view_id],
           filename: filename,
           profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
