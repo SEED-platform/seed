@@ -44,6 +44,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
+
         if property_view_ids:
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
