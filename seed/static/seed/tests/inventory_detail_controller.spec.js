@@ -169,6 +169,10 @@ describe('controller: inventory_detail_controller', function () {
       current_profile: undefined,
       labels_payload: {
         audit_logs: []
+      },
+      organization_payload: {
+        id: 1,
+        display_significant_figures: 2,
       }
     });
   }

@@ -595,6 +595,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               }, function (data) {
                 return $q.reject(data.message);
               });
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }]
         }
       })
@@ -1148,6 +1151,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns();
             }
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }]
         }
       })
@@ -1211,6 +1217,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             } else if ($stateParams.inventory_type === 'taxlots') {
               return inventory_service.get_taxlot_columns();
             }
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }]
         }
       })
@@ -1268,7 +1277,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           labels_payload: ['$stateParams', 'inventory_payload', 'label_service', function ($stateParams, inventory_payload, label_service) {
             return label_service.get_labels($stateParams.inventory_type, [$stateParams.view_id]);
-          }]
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
         }
       })
       .state({
@@ -1325,7 +1337,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var currentProfile = _.first(profiles);
             if (currentProfile) inventory_service.save_last_detail_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
-          }]
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
         }
       })
       .state({
