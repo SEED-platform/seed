@@ -55,7 +55,7 @@ class GeocodeViewTests(TestCase):
             'property_view_ids': [property_view.id],
             'taxlot_view_ids': []
         }
-        print("post params: ", post_params)
+
         url = reverse('api:v3:geocode-geocode-by-ids') + '?organization_id=%s' % self.org.pk
         self.client.post(url, post_params)
 
@@ -70,7 +70,7 @@ class GeocodeViewTests(TestCase):
         property_none.save()
 
         property_none_view = self.property_view_factory.get_property_view(state=property_none)
-        print("property_none view id: ", property_none_view.id)
+
         property_high_details = self.property_state_factory.get_details()
         property_high_details["organization_id"] = self.org.id
         property_high_details["geocoding_confidence"] = "High (P1AAA)"
@@ -78,7 +78,7 @@ class GeocodeViewTests(TestCase):
         property_high.save()
 
         property_high_view = self.property_view_factory.get_property_view(state=property_high)
-        print("property_high view id: ", property_high_view.id)
+
         property_low_details = self.property_state_factory.get_details()
         property_low_details["organization_id"] = self.org.id
         property_low_details["geocoding_confidence"] = "Low (P1CCC)"
@@ -86,7 +86,7 @@ class GeocodeViewTests(TestCase):
         property_low.save()
 
         property_low_view = self.property_view_factory.get_property_view(state=property_low)
-        print("property_low view id: ", property_low_view.id)
+
         property_manual_details = self.property_state_factory.get_details()
         property_manual_details["organization_id"] = self.org.id
         property_manual_details["geocoding_confidence"] = "Manually geocoded (N/A)"
@@ -94,7 +94,7 @@ class GeocodeViewTests(TestCase):
         property_manual.save()
 
         property_manual_view = self.property_view_factory.get_property_view(state=property_manual)
-        print("property_manual_view id: ", property_manual_view.id)
+
         property_missing_details = self.property_state_factory.get_details()
         property_missing_details["organization_id"] = self.org.id
         property_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
@@ -102,14 +102,14 @@ class GeocodeViewTests(TestCase):
         property_missing.save()
 
         property_missing_view = self.property_view_factory.get_property_view(state=property_missing)
-        print("property_missing view id; ", property_missing_view.id)
+
         tax_lot_none_details = self.tax_lot_state_factory.get_details()
         tax_lot_none_details["organization_id"] = self.org.id
         tax_lot_none = TaxLotState(**tax_lot_none_details)
         tax_lot_none.save()
 
         taxlot_none_view = self.taxlot_view_factory.get_taxlot_view(state=tax_lot_none)
-        print("property_none view id: ", taxlot_none_view.id)
+
         tax_lot_high_details = self.tax_lot_state_factory.get_details()
         tax_lot_high_details["organization_id"] = self.org.id
         tax_lot_high_details["geocoding_confidence"] = "High (P1AAA)"
@@ -117,7 +117,7 @@ class GeocodeViewTests(TestCase):
         tax_lot_high.save()
 
         taxlot_high_view = self.taxlot_view_factory.get_taxlot_view(state=tax_lot_high)
-        print("taxlot_high view id: ", taxlot_high_view.id)
+
         tax_lot_low_details = self.tax_lot_state_factory.get_details()
         tax_lot_low_details["organization_id"] = self.org.id
         tax_lot_low_details["geocoding_confidence"] = "Low (P1CCC)"
@@ -125,7 +125,7 @@ class GeocodeViewTests(TestCase):
         tax_lot_low.save()
 
         taxlot_low_view = self.taxlot_view_factory.get_taxlot_view(state=tax_lot_low)
-        print("taxlot_low view id: ", taxlot_low_view.id)
+
         tax_lot_manual_details = self.tax_lot_state_factory.get_details()
         tax_lot_manual_details["organization_id"] = self.org.id
         tax_lot_manual_details["geocoding_confidence"] = "Manually geocoded (N/A)"
@@ -133,7 +133,7 @@ class GeocodeViewTests(TestCase):
         tax_lot_manual.save()
 
         taxlot_manual_view = self.taxlot_view_factory.get_taxlot_view(state=tax_lot_manual)
-        print("taxlot_manual_view id: ", taxlot_manual_view.id)
+
         tax_lot_missing_details = self.tax_lot_state_factory.get_details()
         tax_lot_missing_details["organization_id"] = self.org.id
         tax_lot_missing_details["geocoding_confidence"] = "Missing address components (N/A)"
@@ -141,7 +141,7 @@ class GeocodeViewTests(TestCase):
         tax_lot_missing.save()
 
         taxlot_missing_view = self.taxlot_view_factory.get_taxlot_view(state=tax_lot_missing)
-        print("taxlot_missing_view id: ", taxlot_missing_view.id)
+
         url = reverse('api:v3:geocode-confidence-summary')
         post_params = {
             'organization_id': self.org.pk,
