@@ -44,10 +44,11 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         org_id = self.get_organization(request)
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
-
+        print("geocode_by_ids: property view object: ", PropertyView.objects.all())
+        print("heocode_by_ids: property state objects: ", PropertyState.objects.all())
         if property_view_ids:
             property_views = PropertyView.objects.filter(
-                state_id__in=property_view_ids,
+                id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             properties = PropertyState.objects.filter(
@@ -57,7 +58,7 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
 
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
-                state_id__in=taxlot_view_ids,
+                id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
             taxlots = TaxLotState.objects.filter(
@@ -93,9 +94,11 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
 
         result = {}
 
+        print("confidency summary: property view object: ", PropertyView.objects.all())
+        print("confidence summary: property state objects: ", PropertyState.objects.all())
         if property_view_ids:
             property_views = PropertyView.objects.filter(
-                state_id__in=property_view_ids,
+                id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             result["properties"] = {
@@ -121,9 +124,11 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
                 ).count(),
             }
 
+        print("confidency summary: taxlot view object: ", TaxLotView.objects.all())
+        print("confidence summary: taxlot state objects: ", TaxLotState.objects.all())
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
-                state_id__in=taxlot_view_ids,
+                id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
             result["tax_lots"] = {
