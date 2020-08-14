@@ -32,9 +32,11 @@ from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
                          DATA_STATE_MATCHING, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, MERGE_STATE_UNKNOWN, Column, Cycle,
-                         ImportFile, Meter, PropertyAuditLog, PropertyState,
-                         PropertyView, TaxLotAuditLog, TaxLotProperty,
-                         TaxLotState, get_column_mapping, obj_to_dict)
+                         ImportFile, Meter, Organization, PropertyAuditLog,
+                         PropertyState, PropertyView, TaxLotAuditLog,
+                         TaxLotProperty, TaxLotState, get_column_mapping,
+                         obj_to_dict)
+from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
@@ -240,6 +242,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         import_file_id = pk
         org_id = request.query_params.get('organization_id', None)
+        org = Organization.objects.get(pk=org_id)
 
         try:
             # get the field names that were in the mapping
@@ -310,6 +313,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                         fields=prop.extra_data.keys(),
                     ).items()
                 )
+
+                prop_dict = apply_display_unit_preferences(org, prop_dict)
                 property_results.append(prop_dict)
 
             result['properties'] = property_results
@@ -336,6 +341,8 @@ class ImportFileViewSet(viewsets.ViewSet):
                         fields=tax_lot.extra_data.keys(),
                     ).items()
                 )
+
+                tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
                 tax_lot_results.append(tax_lot_dict)
 
             result['tax_lots'] = tax_lot_results
