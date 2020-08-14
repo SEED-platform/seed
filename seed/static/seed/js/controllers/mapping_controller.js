@@ -97,17 +97,6 @@ angular.module('BE.seed.controller.mapping', [])
           || $scope.mappings_change_possible;
       };
 
-      var analyze_chosen_inventory_types = function () {
-        var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
-        var all_cols_have_table_name = !_.find($scope.mappings, {suggestion_table_name: undefined});
-
-        if (chosenTypes.length === 1 && all_cols_have_table_name) {
-          $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
-        } else {
-          $scope.setAllFields = '';
-        }
-      };
-
       $scope.apply_preset = function () {
         if ($scope.mappings_change_possible) {
           $uibModal.open({
@@ -117,7 +106,8 @@ angular.module('BE.seed.controller.mapping', [])
             $scope.mappings_change_possible = false;
             $scope.current_preset = $scope.dropdown_selected_preset;
             $scope.initialize_mappings();
-            analyze_chosen_inventory_types();
+            $scope.updateInventoryTypeDropdown();
+            $scope.updateColDuplicateStatus();
           }).catch(function () {
             $scope.dropdown_selected_preset = $scope.current_preset;
             return;
@@ -126,7 +116,8 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.preset_change_possible = false;
           $scope.current_preset = $scope.dropdown_selected_preset;
           $scope.initialize_mappings();
-          analyze_chosen_inventory_types();
+          $scope.updateInventoryTypeDropdown();
+          $scope.updateColDuplicateStatus();
         }
       };
 
