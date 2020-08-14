@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
     'columns',
     'profiles',
     'current_profile',
+    'organization_payload',
     function (
       $scope,
       $filter,
@@ -26,7 +27,8 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
       inventory_payload,
       columns,
       profiles,
-      current_profile
+      current_profile,
+      organization_payload
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory = {
@@ -40,6 +42,8 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         cycles_by_id[cycle.id] = cycle;
         return cycles_by_id;
       }, {});
+
+      $scope.organization = organization_payload.organization
 
       // Flag columns whose values have changed between cycles.
       var changes_check = function (column) {
@@ -94,5 +98,14 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
           table_container.width() + table_container.scrollLeft()
         );
       });
+
+      $scope.displayValue = function(dataType, value) {
+        if (dataType === 'datetime') {
+          return $filter('date')(value, 'yyyy-MM-dd h:mm a')
+        } else if (dataType === 'eui' || dataType === 'area') {
+          return $filter('number')(value, $scope.organization.display_significant_figures)
+        }
+        return value
+      }
 
     }]);
