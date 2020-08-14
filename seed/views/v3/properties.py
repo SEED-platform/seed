@@ -1324,7 +1324,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             # if the cycle was not within the user's organization
             property_view = PropertyView.objects.select_related(
                 'property', 'cycle', 'state'
-            ).get(pk=pk, cycle_id=cycle_pk)
+            ).get(property_id=pk, cycle_id=cycle_pk)
         except PropertyView.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
