@@ -55,14 +55,35 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
     };
 
     /**
-     * saves the organization data data_quality rules
-     * @param  {int} org_id the id of the organization
-     * @param  {obj} data_quality_rules the updated rules to save
+     * create a data quality rule
+     * @param  {int} org_id the ID of the organization
+     * @param  {obj} rule the details of the rule
      */
-    data_quality_factory.save_data_quality_rules = function (org_id, data_quality_rules) {
-      return $http.post('/api/v2/data_quality_checks/save_data_quality_rules/?organization_id=' + org_id, {
-        data_quality_rules: data_quality_rules
-      }).then(function (response) {
+    data_quality_factory.create_data_quality_rule = function (org_id, rule) {
+      return $http.post('/api/v3/data_quality_checks/' + org_id + '/rules/', rule).then(function (response) {
+        return response.data;
+      });
+    };
+
+    /**
+     * update a data quality rule
+     * @param  {int} org_id the ID of the organization
+     * @param  {int} rule_id the ID of the rule to update
+     * @param  {obj} rule the details of the rule
+     */
+    data_quality_factory.update_data_quality_rule = function (org_id, rule_id, rule) {
+      return $http.put('/api/v3/data_quality_checks/' + org_id + '/rules/' + rule_id + '/', rule).then(function (response) {
+        return response.data;
+      });
+    };
+
+    /**
+     * delete a data quality rule
+     * @param  {int} org_id the ID of the organization
+     * @param  {obj} rule_id the ID of the rule to delete
+     */
+    data_quality_factory.delete_data_quality_rule = function (org_id, rule_id) {
+      return $http.delete('/api/v3/data_quality_checks/' + org_id + '/rules/' + rule_id + '/').then(function (response) {
         return response.data;
       });
     };
