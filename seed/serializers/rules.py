@@ -11,13 +11,11 @@ from seed.models import StatusLabel
 
 
 class RuleSerializer(serializers.ModelSerializer):
-    data_type = serializers.CharField(source='get_data_type_display', required=False)
     status_label = serializers.PrimaryKeyRelatedField(
         queryset=StatusLabel.objects.all(),
         allow_null=True,
         required=False
     )
-    severity = serializers.CharField(source='get_severity_display', required=False)
 
     class Meta:
         model = Rule

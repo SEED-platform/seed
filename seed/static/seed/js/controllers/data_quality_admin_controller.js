@@ -65,28 +65,49 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.original_rules = angular.copy(data_quality_rules_payload);
 
+      $scope.data_type_keys = {
+        'number': 0,
+        'string': 1,
+        'date': 2,
+        'year': 3,
+        'area': 4,
+        'eui': 5,
+      };
+
       $scope.data_types = [
         [
           {id: null, label: ''},
-          {id: 'string', label: $translate.instant('Text')}
+          {id: $scope.data_type_keys.string, label: $translate.instant('Text')},
         ],
         [
           {id: null, label: ''},
-          {id: 'number', label: $translate.instant('Number')},
-          {id: 'date', label: $translate.instant('Date')},
-          {id: 'year', label: $translate.instant('Year')},
-          {id: 'area', label: $translate.instant('Area')},
-          {id: 'eui', label: $translate.instant('EUI')}
+          {id: $scope.data_type_keys.number, label: $translate.instant('Number')},
+          {id: $scope.data_type_keys.date, label: $translate.instant('Date')},
+          {id: $scope.data_type_keys.year, label: $translate.instant('Year')},
+          {id: $scope.data_type_keys.area, label: $translate.instant('Area')},
+          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')},
         ],
         [
           {id: null, label: ''},
-          {id: 'number', label: $translate.instant('Number')},
-          {id: 'string', label: $translate.instant('Text')},
-          {id: 'date', label: $translate.instant('Date')},
-          {id: 'year', label: $translate.instant('Year')},
-          {id: 'area', label: $translate.instant('Area')},
-          {id: 'eui', label: $translate.instant('EUI')}
+          {id: $scope.data_type_keys.number, label: $translate.instant('Number')},
+          {id: $scope.data_type_keys.string, label: $translate.instant('Text')},
+          {id: $scope.data_type_keys.date, label: $translate.instant('Date')},
+          {id: $scope.data_type_keys.year, label: $translate.instant('Year')},
+          {id: $scope.data_type_keys.area, label: $translate.instant('Area')},
+          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')},
         ]
+      ];
+
+      $scope.severity_type_keys = {
+        'error': 0,
+        'warning': 1,
+        'valid': 2,
+      };
+
+      $scope.severity_types = [
+        {id: 0, label: $translate.instant('Error')},
+        {id: 1, label: $translate.instant('Warning')},
+        {id: 2, label: $translate.instant('Valid')}
       ];
 
       $scope.units = [
@@ -248,7 +269,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               }
               r.condition = rule.condition;
 
-              if (rule.data_type === 'date') {
+              if (rule.data_type === $scope.data_type_keys.date) {
                 if (rule.min) r.min = Number(moment(rule.min).format('YYYYMMDD'));
                 if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
               }
@@ -315,7 +336,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         var data_types = _.uniq(_.map(group, 'data_type'));
         var conditions = _.map(group, 'condition');
 
-        var range_has_text = conditions.includes('range') && data_types.includes('string');
+        var range_has_text = conditions.includes('range') && data_types.includes($scope.data_type_keys.string);
         var numeric_types = _.map($scope.data_types[1], 'id');
         var include_has_numeric = conditions.includes('include') && _.intersection(data_types, numeric_types).length > 0;
         var exclude_has_numeric = conditions.includes('exclude') && _.intersection(data_types, numeric_types).length > 0;
@@ -338,11 +359,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         $scope.rules_updated = false;
         $scope.defaults_restored = false;
         $scope.rules_reset = false;
-        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== 'string') rule.data_type = 'string';
-        if (_.isMatch(rule, {condition: 'range', data_type: 'string'})) rule.data_type = null;
-        if (_.isMatch(rule, {condition: 'not_null', data_type: 'string'}) || _.isMatch(rule, {
+        if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== $scope.data_type_keys.string) rule.data_type = $scope.data_type_keys.string;
+        if (_.isMatch(rule, {condition: 'range', data_type: $scope.data_type_keys.string})) rule.data_type = null;
+        if (_.isMatch(rule, {condition: 'not_null', data_type: $scope.data_type_keys.string}) || _.isMatch(rule, {
           condition: 'required',
-          data_type: 'string'
+          data_type: $scope.data_type_keys.string
         })) rule.text_match = null;
         if (rule.condition !== 'range') {
           rule.units = '';
@@ -374,7 +395,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           rule.text_match = null;
           rule.units = '';
 
-          if (!_.includes([null, 'number'], original) || !_.includes([null, 'number'], newDataType)) {
+          if (!_.includes([null, $scope.data_type_keys.number], original) || !_.includes([null, $scope.data_type_keys.number], newDataType)) {
             // Reset min/max if the data type is something other than null <-> number
             rule.min = null;
             rule.max = null;
@@ -415,7 +436,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         _.forEach(rule_group, function (currentRule) {
           currentRule.text_match = null;
 
-          if (!_.includes(['', 'number'], oldValue) || !_.includes([null, 'number'], data_type)) {
+          if (!_.includes(['', $scope.data_type_keys.number], oldValue) || !_.includes([null, $scope.data_type_keys.number], data_type)) {
             // Reset min/max if the data type is something other than null <-> number
             currentRule.min = null;
             currentRule.max = null;
@@ -441,7 +462,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           condition: '',
           field: field,
           displayName: field,
-          data_type: 'number',
+          data_type: $scope.data_type_keys.number,
           rule_type: 1,
           required: false,
           not_null: false,
