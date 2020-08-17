@@ -62,14 +62,14 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
       });
     };
 
-    data_quality_factory.start_data_quality_checks = function (property_state_ids, taxlot_state_ids) {
-      return data_quality_factory.start_data_quality_checks_for_org(user_service.get_organization().id, property_state_ids, taxlot_state_ids);
+    data_quality_factory.start_data_quality_checks = function (property_view_ids, taxlot_view_ids) {
+      return data_quality_factory.start_data_quality_checks_for_org(user_service.get_organization().id, property_view_ids, taxlot_view_ids);
     };
 
-    data_quality_factory.start_data_quality_checks_for_org = function (org_id, property_state_ids, taxlot_state_ids) {
-      return $http.post('/api/v2/data_quality_checks/?organization_id=' + org_id, {
-        property_state_ids: property_state_ids,
-        taxlot_state_ids: taxlot_state_ids
+    data_quality_factory.start_data_quality_checks_for_org = function (org_id, property_view_ids, taxlot_view_ids) {
+      return $http.post('/api/v3/data_quality_checks/' + org_id + '/start/', {
+        property_view_ids: property_view_ids,
+        taxlot_view_ids: taxlot_view_ids
       }).then(function (response) {
         return response.data;
       });
