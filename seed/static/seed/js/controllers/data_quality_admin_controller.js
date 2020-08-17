@@ -192,33 +192,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.rules_changed = function (rule) {
         if (rule) rule.rule_type = 1;
 
-        $scope.defaults_restored = false;
         $scope.rules_reset = false;
         $scope.rules_updated = false;
         modified_service.setModified();
       };
 
-      // Restores the default rules
-      $scope.restore_defaults = function () {
-        $scope.defaults_restored = false;
-        $scope.rules_reset = false;
-        $scope.rules_updated = false;
-        spinner_utility.show();
-        data_quality_service.reset_default_data_quality_rules($scope.org.org_id).then(function (rules) {
-          loadRules(rules);
-          $scope.defaults_restored = true;
-          modified_service.resetModified();
-        }, function (data) {
-          $scope.$emit('app_error', data);
-        }).finally(function () {
-          spinner_utility.hide();
-        });
-      };
-
       // Reset all rules
       $scope.reset_all_rules = function () {
         return modified_service.showResetDialog().then(function () {
-          $scope.defaults_restored = false;
           $scope.rules_reset = false;
           $scope.rules_updated = false;
           spinner_utility.show();
@@ -358,7 +339,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
       $scope.change_condition = function (rule) {
         $scope.rules_updated = false;
-        $scope.defaults_restored = false;
         $scope.rules_reset = false;
         if (rule.condition === 'include' || rule.condition === 'exclude' && rule.data_type !== $scope.data_type_keys.string) rule.data_type = $scope.data_type_keys.string;
         if (_.isMatch(rule, {condition: 'range', data_type: $scope.data_type_keys.string})) rule.data_type = null;

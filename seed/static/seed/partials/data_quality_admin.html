@@ -19,9 +19,6 @@
                 <h2><i class="fa fa-flag"></i> <span translate>Data Quality</span></h2>
             </div>
             <div class="section_action_container right_40 section_action_btn pull-right">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$:: 'Restore Default Rules' | translate $}
-                    <i class="fa fa-check" ng-show="defaults_restored"></i>
-                </button>
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
@@ -35,7 +32,6 @@
         <div class="section_content with_padding" style="margin-bottom:15px;">
             <h3 translate>Modifying Data Quality Rules</h3>
             <p>From the table below, select the rules that you want to: 1) enable/disable within your organization, 2) modify the minimum/maximum values to validate against on file upload, and 3) optionally assign or remove a label if the condition is not met.<br>
-            Restore Default Rules: reset only default rules.<br>
             Reset All Rules: delete all rules and reinitialize the default set of rules.</p>
             <button class="btn btn-info btn-sm" style="margin-bottom: 15px;" ng-click="create_new_rule()" translate>Create a new rule</button>
 
@@ -168,9 +164,6 @@
         </div>
         <div class="section_content_container">
             <div class="section_content with_padding pull-right" style="padding-bottom: 15px;">
-                <button type="button" class="btn btn-danger" ng-click="restore_defaults()">{$:: 'Restore Default Rules' | translate $}
-                    <i class="fa fa-check" ng-show="defaults_restored"></i>
-                </button>
                 <button type="button" class="btn btn-danger" ng-click="reset_all_rules()">{$:: 'Reset All Rules' | translate $}
                     <i class="fa fa-check" ng-show="rules_reset"></i>
                 </button>
