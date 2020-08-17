@@ -11,7 +11,7 @@ from drf_yasg.utils import swagger_auto_schema, no_body
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import ListModelMixin, DestroyModelMixin
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -42,7 +42,11 @@ nested_org_id_path_field = AutoSchemaHelper.base_field(
     name='update',
     decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
 )
-class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, UpdateWithoutPatchModelMixin):
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
+)
+class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, UpdateWithoutPatchModelMixin, DestroyModelMixin):
     serializer_class = RuleSerializer
     model = Rule
     pagination_class = None
