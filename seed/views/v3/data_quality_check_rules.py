@@ -68,7 +68,7 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
+    @has_perm_class('requires_owner')
     @action(detail=False, methods=['PUT'])
     def reset(self, request, nested_organization_id=None):
         """
@@ -77,5 +77,5 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
         # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
         # At that point, nested_organization_id should be changed to data_quality_check_id
         dq = DataQualityCheck.retrieve(nested_organization_id)
-        dq.reset_default_rules()
+        dq.remove_all_rules()
         return self.list(request, nested_organization_id)

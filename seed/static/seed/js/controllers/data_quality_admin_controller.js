@@ -139,7 +139,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       // }
 
       $scope.all_labels = labels_payload;
-      // console.log(labels_payload)
 
       var loadRules = function (rules_payload) {
         var ruleGroups = {
@@ -224,6 +223,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           $scope.rules_updated = false;
           spinner_utility.show();
           return data_quality_service.reset_all_data_quality_rules($scope.org.org_id).then(function (rules) {
+            $scope.original_rules = angular.copy(rules);
             loadRules(rules);
             $scope.rules_reset = true;
             modified_service.resetModified();
@@ -234,6 +234,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
         });
       };
+
       // Saves the configured rules
       $scope.error_string = false;
       $scope.save_settings = function () {

@@ -38,7 +38,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
      * @param  {int} org_id the id of the organization
      */
     data_quality_factory.reset_all_data_quality_rules = function (org_id) {
-      return $http.put('/api/v2/data_quality_checks/reset_all_data_quality_rules/?organization_id=' + org_id).then(function (response) {
+      return $http.put('/api/v3/data_quality_checks/' + org_id + '/rules/reset/').then(function (response) {
         return response.data;
       });
     };
