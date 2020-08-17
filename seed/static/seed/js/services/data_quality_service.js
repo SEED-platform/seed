@@ -17,9 +17,20 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
      * @param  {int} org_id the id of the organization
      * @param  {int} data_quality_id, ID of the data quality results
      */
-    data_quality_factory.get_data_quality_results = function (org_id, data_quality_id) {
-      return $http.get('/api/v2/data_quality_checks/results/?organization_id=' + org_id + '&data_quality_id=' + data_quality_id).then(function (response) {
+    data_quality_factory.get_data_quality_results = function (org_id, run_id) {
+      return $http.get('/api/v3/data_quality_checks/results/?organization_id=' + org_id + '&run_id=' + run_id).then(function (response) {
         return response.data.data;
+      });
+    };
+
+    /**
+     * return data_quality results in CSV format.
+     * @param  {int} org_id the id of the organization
+     * @param  {int} run_id, ID of the data quality results
+     */
+    data_quality_factory.get_data_quality_results_csv = function (org_id, run_id) {
+      return $http.get('/api/v3/data_quality_checks/results_csv/?organization_id=' + org_id + '&run_id=' + run_id).then(function (response) {
+        return response.data;
       });
     };
 
