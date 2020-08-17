@@ -63,6 +63,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         {id: 'exclude', label: 'Must Not Contain'}
       ];
 
+      $scope.original_rules = angular.copy(data_quality_rules_payload);
+
       $scope.data_types = [
         [
           {id: null, label: ''},
@@ -123,28 +125,32 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           properties: {},
           taxlots: {}
         };
-        _.forEach(rules_payload.rules, function (inventory_type, index) {
-          _.forEach(inventory_type, function (rule) {
+        var inventory_type;
+        _.forEach(rules_payload, function (rule) {
+          if (rule.table_name === 'PropertyState') {
+            inventory_type = 'properties';
+          } else if (rule.table_name === 'TaxLotState') {
+            inventory_type = 'taxlots';
+          } else {
+            inventory_type = rule.table_name
+            ;
+          }
 
-            if (!_.has(ruleGroups[index], rule.field)) ruleGroups[index][rule.field] = [];
-            var row = rule;
-            if (row.data_type === 'date') {
-              if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
-              if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
+          if (!_.has(ruleGroups[inventory_type], rule.field)) ruleGroups[inventory_type][rule.field] = [];
+          var row = rule;
+          if (row.data_type === 2) {
+            if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
+            if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
+          }
+          if (rule.label) {
+            var match = _.find($scope.all_labels, function (label) {
+              return label.id === rule.label;
+            });
+            if (match) {
+              row.label = match;
             }
-            if (rule.label) {
-              // console.log('load: ', rule.label)
-              var match = _.find($scope.all_labels, function (label) {
-                // console.log('found: ', label)
-                return label.id === rule.label;
-              });
-              if (match) {
-                // console.log('row label: ', match);
-                row.label = match;
-              }
-            }
-            ruleGroups[index][rule.field].push(row);
-          });
+          }
+          ruleGroups[inventory_type][rule.field].push(row);
         });
 
         $scope.ruleGroups = ruleGroups;
