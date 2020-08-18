@@ -60,12 +60,12 @@ class RuleSerializer(serializers.ModelSerializer):
         that field is in 'data'.
         """
         data_invalid = False
-        validation_messages = []
+        validation_message = ''
 
         # Rule with SEVERITY setting of "valid" should have a Label.
         severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
-        severity_unchanged = 'get_severity_display' not in data
-        severity_will_be_valid = data.get('get_severity_display') == dict(Rule.SEVERITY)[Rule.SEVERITY_VALID]
+        severity_unchanged = 'severity' not in data
+        severity_will_be_valid = data.get('severity') == Rule.SEVERITY_VALID
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
@@ -74,9 +74,7 @@ class RuleSerializer(serializers.ModelSerializer):
             label_unchanged = 'status_label' not in data
             if label_will_be_removed or (label_is_not_associated and label_unchanged):
                 data_invalid = True
-                validation_messages.append(
-                    'Label must be assigned when using \'Valid\' Data Severity.'
-                )
+                validation_message += 'Label must be assigned when using \'Valid\' Data Severity. '
 
         # Rule must NOT include or exclude an empty string.
         is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
@@ -91,13 +89,11 @@ class RuleSerializer(serializers.ModelSerializer):
 
             if text_match_will_be_empty or (text_match_is_empty and text_match_unchanged):
                 data_invalid = True
-                validation_messages.append(
-                    'Rule must not include or exclude an empty string.'
-                )
+                validation_message += 'Rule must not include or exclude an empty string. '
 
         if data_invalid:
             raise serializers.ValidationError({
-                'general_validation_error': validation_messages
+                'message': validation_message
             })
         else:
             return data
