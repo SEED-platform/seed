@@ -89,6 +89,30 @@ class RuleViewTests(DataMappingBaseTestCase):
         self.assertEqual(taxlot_count, 2)
         self.assertEqual(property_count, 20)
 
+    def test_create_rule_validations(self):
+        base_rule_info = {
+            'field': 'address_line_1',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': None,
+            'severity': Rule.SEVERITY_VALID,
+            'units': "",
+            'status_label': None,
+        }
+
+        url = reverse('api:v3:data_quality_check-rules-list', kwargs={'nested_organization_id': self.org.id})
+        res = self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
+
+        expected_message = 'Label must be assigned when using \'Valid\' Data Severity. Rule must not include or exclude an empty string. '
+        self.assertTrue(expected_message in json.loads(res.content)['message'])
+
     def test_update_rule_status_label_validation(self):
         # Start with 1 Rule
         dq = DataQualityCheck.retrieve(self.org.id)

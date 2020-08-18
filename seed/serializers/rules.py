@@ -63,21 +63,30 @@ class RuleSerializer(serializers.ModelSerializer):
         validation_message = ''
 
         # Rule with SEVERITY setting of "valid" should have a Label.
-        severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
+        if self.instance is None:
+            # Rule is new
+            severity_is_valid = False
+            label_is_not_associated = False
+        else:
+            severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
+            label_is_not_associated = self.instance.status_label is None
         severity_unchanged = 'severity' not in data
         severity_will_be_valid = data.get('severity') == Rule.SEVERITY_VALID
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
             label_will_be_removed = data.get('status_label', "FOO") in ["", None]
-            label_is_not_associated = self.instance.status_label is None
             label_unchanged = 'status_label' not in data
             if label_will_be_removed or (label_is_not_associated and label_unchanged):
                 data_invalid = True
                 validation_message += 'Label must be assigned when using \'Valid\' Data Severity. '
 
         # Rule must NOT include or exclude an empty string.
-        is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+        if self.instance is None:
+            # Rule is new, so severity "could not have been" include or exclude.
+            is_include_or_exclude = False
+        else:
+            is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
         condition_unchanged = 'condition' not in data
         will_be_include_or_exclude = data.get('condition') in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
 
