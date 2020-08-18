@@ -216,13 +216,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
       };
 
-      // Saves the configured rules
-      $scope.error_string = false;
-      $scope.save_settings = function () {
-        var rules = {
-          properties: [],
-          taxlots: []
-        };
+      // In order to save rules, the configured rules need to be reformatted.
+      var get_configured_rules = function () {
+        var rules = [];
+        var misconfigured_rules = [];
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
             _.forEach(ruleGroup, function (rule) {
@@ -233,16 +230,18 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 enabled: rule.enabled,
                 condition: rule.condition,
                 field: rule.field,
+                id: rule.id,
                 data_type: rule.data_type,
                 rule_type: rule.rule_type,
                 required: rule.required,
                 not_null: rule.not_null,
                 min: rule.min,
                 max: rule.max,
+                table_name: inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState',
                 text_match: rule.text_match,
                 severity: rule.severity,
                 units: rule.units,
-                label: null
+                status_label: null
               };
               if (rule.condition === 'not_null' || rule.condition === 'required') {
                 r.min = null;
@@ -256,8 +255,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 if (rule.max) r.max = Number(moment(rule.max).format('YYYYMMDD'));
               }
               if (rule.label) {
-                // console.log('la: ', rule.label)
-                r.label = rule.label.id;
+                r.status_label = rule.label.id;
               }
               if (rule.new) {
                 rule.new = null;
@@ -276,22 +274,66 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   r.max = min;
                 }
               }
-              if (r.condition === 'include' || r.condition === 'exclude') {
-                $scope.error_string = (r.text_match === null || r.text_match === '');
+
+              var include_or_exclude_without_text = (r.condition === 'include' || r.condition === 'exclude') && (r.text_match === null || r.text_match === '');
+              var valid_severity_without_label = (r.severity === $scope.severity_type_keys.valid) && !r.status_label;
+              if (include_or_exclude_without_text || valid_severity_without_label) {
+                misconfigured_rules.push({
+                  'rule': rule,
+                  'include_or_exclude_without_text': include_or_exclude_without_text,
+                  'valid_severity_without_label': valid_severity_without_label,
+                })
+              } else {
+                rules.push(r);
               }
-              rules[inventory_type].push(r);
             });
           });
         });
 
+        return [rules, misconfigured_rules];
+      }
+
+      $scope.save_settings = function () {
+        var [rules, misconfigured_rules] = get_configured_rules();
+        var promises = [];
+
+        if (misconfigured_rules.length) {
+        }
+
+        // Find rules to delete
+        _.forEach($scope.original_rules, function (or) {
+          if (
+            !_.find(rules, ['id', or.id]) &&
+            !_.find(misconfigured_rules, function(m_rule) { return m_rule.rule.id === or.id; })
+          ) {
+            promises.push(data_quality_service.delete_data_quality_rule($scope.org.id, or.id));
+          }
+        });
+
+        // Find rules to update or create
+        _.forEach(rules, function (rule) {
+          var previous_copy = _.find($scope.original_rules, ['id', rule.id]);
+
+          if (!previous_copy) {
+            promises.push(data_quality_service.create_data_quality_rule($scope.org.id, rule));
+          } else if (!_.isMatch(previous_copy, rule)) {
+            promises.push(data_quality_service.update_data_quality_rule($scope.org.id, rule.id, rule));
+          }
+        });
+
         spinner_utility.show();
-        data_quality_service.save_data_quality_rules($scope.org.org_id, rules).then(function (rules) {
-          loadRules(rules);
+        $q.all(promises).then(function () {
+          data_quality_service.data_quality_rules($scope.org.id).then(function (update_rules){
+            $scope.original_rules = angular.copy(updated_rules);
+            loadRules(updated_rules);
+          });
           modified_service.resetModified();
         }).then(function (data) {
           $scope.rules_updated = true;
           $scope.$emit('app_success', data);
         }).catch(function (data) {
+          // If we aren't preventing misconfigured_rules from sending requests
+          // this needs to be updated to await all requests and display error messages afterwards.
           $scope.$emit('app_error', data);
         }).finally(function () {
           $scope.rules_updated = true;
