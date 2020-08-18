@@ -120,9 +120,9 @@ angular.module('BE.seed.controller.inventory_map', [])
           // taxlots
           $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
           $scope.layers.points_layer = {zIndex: 2, visible: 1};
-          $scope.layers.building_bb_layer = {zIndex: 3, visible: 1};
+          $scope.layers.building_bb_layer = {zIndex: 3, visible: 0};
           $scope.layers.building_centroid_layer = {zIndex: 4, visible: 0};
-          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 0};
+          $scope.layers.taxlot_bb_layer = {zIndex: 5, visible: 1};
           $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 1};
         }
 
@@ -454,7 +454,7 @@ angular.module('BE.seed.controller.inventory_map', [])
               '</a>';
           } else {
             link_html = '<a href="#/taxlots/' +
-              point_info.property_view_id +
+              point_info.taxlot_view_id +
               '">' +
               icon_html +
               '</a>';
