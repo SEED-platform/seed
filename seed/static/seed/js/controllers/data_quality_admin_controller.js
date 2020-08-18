@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     '$q',
     '$state',
     '$stateParams',
+    'Notification',
     'columns',
     'used_columns',
     'organization_payload',
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $q,
       $state,
       $stateParams,
+      Notification,
       columns,
       used_columns,
       organization_payload,
@@ -293,11 +295,61 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         return [rules, misconfigured_rules];
       }
 
+      // Capture misconfigured rule fields for UI indicators
+      var init_misconfigured_fields_ref = function () {
+        $scope.misconfigured_fields_ref = {
+          'condition': [],
+          'text_match': [],
+          'severity': [],
+          'label': [],
+        }
+      };
+      init_misconfigured_fields_ref();
+
+      var show_configuration_errors = function(misconfigured_rules) {
+        var include_or_exclude_without_text_count = 0;
+        var valid_severity_without_label_count = 0;
+
+        _.forEach(misconfigured_rules, function (entry) {
+          if (entry.include_or_exclude_without_text) {
+            include_or_exclude_without_text_count += 1;
+            $scope.misconfigured_fields_ref.condition.push(entry.rule.$$hashKey);
+            $scope.misconfigured_fields_ref.text_match.push(entry.rule.$$hashKey);
+          }
+
+          if (entry.valid_severity_without_label) {
+            valid_severity_without_label_count += 1;
+
+            $scope.misconfigured_fields_ref.severity.push(entry.rule.$$hashKey);
+            $scope.misconfigured_fields_ref.label.push(entry.rule.$$hashKey);
+          }
+        });
+
+        if (include_or_exclude_without_text_count) {
+          Notification.error({
+            message: "Must Contain and Must Not Contain rules cannot have empty text. Count: " + include_or_exclude_without_text_count,
+            delay: 60000,
+          });
+        }
+
+        if (valid_severity_without_label_count) {
+          Notification.error({
+            message: "Rules with valid severity must have a label. Count: " + valid_severity_without_label_count,
+            delay: 60000,
+          });
+        }
+      };
+
       $scope.save_settings = function () {
+        // Clear notifications and misconfigured indicators in case there were any from previous save attempts.
+        Notification.clearAll();
+        init_misconfigured_fields_ref();
+
         var [rules, misconfigured_rules] = get_configured_rules();
         var promises = [];
 
         if (misconfigured_rules.length) {
+          show_configuration_errors(misconfigured_rules);
         }
 
         // Find rules to delete
@@ -320,6 +372,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             promises.push(data_quality_service.update_data_quality_rule($scope.org.id, rule.id, rule));
           }
         });
+
+        if (!promises.length) {
+          return Notification.error({message: "No changes made.", delay: 10000});
+        }
 
         spinner_utility.show();
         $q.all(promises).then(function () {
