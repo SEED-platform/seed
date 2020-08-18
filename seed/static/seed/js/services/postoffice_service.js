@@ -5,8 +5,12 @@
 angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
     '$http',
     'user_service',
+    // 'cycle_id',
+    // 'columns',
+    // 'inventory_type',
+    // 'profile_id',
     function ($http, user_service) {
-  
+      // , cycle_id, columns, inventory_type, profile_id
       var template_factory = {};
       /** Post_office Service:
        --------------------------------------------------
@@ -16,21 +20,28 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
   
       /** Returns an array of templates.
   
-       Returned template objects should have the following properties,
-       with 'text' and 'color' properties assigned locally.
+       Returned EmailTemplate objects should have the following properties,
   
-       id {integer}            The id of the Cycle.
-       name {string}           The text that appears in the Cycle.
-       start_date {string}     Start date for Cycle.
-       end_date {string}       End date for Cycle.
+       id {integer}            
+       name {string}           
+       description {string}
+       subject {string}
+       content {string}
+       html_content {string}
+       created {string}
+       last_updated {string}
+       default_template_id {integer}   
+       language {string}
   
        */
   
       template_factory.get_templates = function () {
         return $http.get('/api/v3/postoffice/', {
-          // params: {
-          //   organization_id: org_id
-          // }
+          params: {
+            organization_id: user_service.get_organization().id,
+            // cycle_id: cycle_id,
+            // inventory_type: inventory_type
+          }
         }).then(function (response) {
           return response.data.data;
         });
@@ -50,16 +61,24 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       //   });
       // };
 
-    //   template_factory.send_templated_email = function (template_id) {
-    //     return $http.post('/api/v3/postoffice_email/send_templated_email/', {
-    //       params: {
-    //         organization_id: org_id,
-    //         id: template_id
-    //       }
-    //     }).then(function (response) {
-    //       return response.data;
-    //     });
-    //   };
+      template_factory.send_templated_email = function (template_id, building_id) {
+        console.log("SERVICE");
+        console.log(template_id);
+        console.log(building_id);
+        return $http.post('/api/v3/postoffice_email/', {
+            from_email: "hello@example.com",
+            id: template_id,
+            building_id: building_id
+        },{
+          params: {
+            organization_id: user_service.get_organization().id,
+            // cycle_id: cycle_id,
+            // inventory_type: inventory_type
+          }
+        }).then(function (response) {
+          return response.data;
+        }).catch(_.constant('Error fetching templates'));
+      };
       
       return template_factory;
     }]);

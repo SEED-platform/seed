@@ -284,12 +284,38 @@ angular.module('BE.seed.controller.inventory_list', [])
             templateUrl:  urls.static_url + 'seed/partials/postoffice_modal.html',
             controller: 'postoffice_modal_controller',
             resolve: {
-              items: function () {
-                return $scope.items;
+              // items: function () {
+              //   return $scope.items;
+              // }
+              property_states: function () {
+                return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                  if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                  return !_.has(row, '$$treeLevel');
+                }), 'property_state_id');
+              },
+              taxlot_states: function () {
+                return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                  if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                  return !_.has(row, '$$treeLevel');
+                }), 'taxlot_state_id');
+              },
+              cycle_id: function () {
+                return $scope.cycle.selected_cycle.id;
+              },
+              inventory_type: function () {
+                return $scope.inventory_type;
+              },
+              profile_id: function () {
+                // Check to see if the profile id is set
+                if ($scope.currentProfile) {
+                  return $scope.currentProfile.id;
+                } else {
+                  return null;
+                }
               }
             }
           });
-        }
+        };
         
       $scope.open_merge_modal = function () {
         spinner_utility.show();

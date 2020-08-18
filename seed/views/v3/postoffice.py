@@ -10,11 +10,15 @@ All rights reserved.  # NOQA
 # from seed.filtersets import CycleFilterSet
 #from helix.models import HELIXGreenAssessment as GreenAssessment
 # from seed.models import Cycle
-from post_office.models import EmailTemplate
+from post_office.models import EmailTemplate, Email
 
 # MAKE A SERIALIZER!
-from seed.serializers.postoffice import PostOfficeSerializer
+from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
+from seed.models import PropertyState
+from post_office import mail
+
+
 
 # Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
@@ -160,6 +164,67 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
     #     # user = self.request.user
     #     serializer.save(organization_id=org_id, user=user)
 
-#emailviewset
-# class Email():
-#     def send_templated_email():
+
+class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
+    model = Email
+    serializer_class = PostOfficeEmailSerializer
+    pagination_class = None
+    # queryset = Email.objects.all()
+
+
+    def get_queryset(self):
+        # print(id)
+        # print(building_id)
+        # temp_id = self.get_templates(self.request)
+        # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
+        # print(EmailTemplate.objects.order_by('name'))
+        return Email.objects.all()
+        
+
+    def perform_create(self, serializer):
+        # org_id = self.get_organization(self.request)
+        # user = self.request.user
+        # serializer.save(status="hi", to="ashray")
+
+        # NOTES
+        # -- Take building IDs and pull out the email (use building ID to pull owner email)
+        # -- Send the email (mail.send)
+        # -- Save
+        # -- Add organization (maybe user)
+        # Seed property, property view, property_state
+
+        
+        # emails = PropertyState.objects.filter(id__in=property_id).values_list('owner_email', flat=True)
+        # EmailTemplate.objects.get(template_id)
+
+        # Working!!!
+        print("BACKEND")
+        id = self.request.data.get('id')
+        print(id)
+        building_id = self.request.data.get('building_id', [])
+        print(building_id)
+        print("*****************")
+        # states = PropertyState.objects.filter(id__in=building_id)
+        # print(states)
+
+        
+
+
+
+
+        email_list = []
+
+        mail.send(
+            ['to_email@example.com'], # List of email addresses also accepted
+            'from@example.com',
+            # template=
+            subject='My email',
+            message='Hello there!',
+            html_message='Hi <strong>there</strong>!',
+        )
+        # serializer.save()
+
+
+
+
+    

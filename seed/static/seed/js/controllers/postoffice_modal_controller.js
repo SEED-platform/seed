@@ -16,11 +16,28 @@ angular.module('BE.seed.controller.postoffice_modal', [])
     '$log',
     '$uibModalInstance',
     'postoffice_service',
-    function ($scope, $log, $uibModalInstance, postoffice_service) {
+    'property_states',
+    'taxlot_states',
+    function ($scope, $log, $uibModalInstance, postoffice_service, property_states, taxlot_states) {
     $scope.loading = false;
     $scope.available_templates = [];
     postoffice_service.get_templates().then(function(templates){
       $scope.available_templates = templates;
-    })  
+    });
+
+    $scope.cancel = function () {
+      $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.send_templated_email = function (template_id){
+      var building_id = property_states.length > 0 ? property_states : taxlot_states;
+      console.log("CONTROLLER");
+      console.log(template_id);
+      console.log("****************");
+      console.log(property_states);
+      console.log("****************");
+      console.log(building_id);
+      postoffice_service.send_templated_email(template_id, building_id);
+    }
     }]);
 
