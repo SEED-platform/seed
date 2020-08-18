@@ -548,7 +548,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           max: null,
           min: null,
           text_match: null,
-          severity: 'error',
+          severity: $scope.severity_type_keys.error,
           units: '',
           // label: 'Invalid ' + label,
           label: null,
