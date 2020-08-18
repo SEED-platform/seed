@@ -162,9 +162,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
-          if (rule.label) {
+          if (rule.status_label) {
             var match = _.find($scope.all_labels, function (label) {
-              return label.id === rule.label;
+              return label.id === rule.status_label;
             });
             if (match) {
               row.label = match;
