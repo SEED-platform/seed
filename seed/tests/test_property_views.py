@@ -73,7 +73,6 @@ COLUMNS_TO_SEND = [
 ]
 
 
-# These tests mostly use V2.1 API except for when writing back to the API for updates
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {
@@ -106,11 +105,11 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'columns': COLUMNS_TO_SEND,
         }
 
-        url = reverse('api:v2.1:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
+        url = reverse('api:v3:properties-search') + '?cycle_id={}'.format(self.cycle.pk)
         response = self.client.get(url, params)
         data = json.loads(response.content)
-        self.assertEqual(len(data['properties']), 1)
-        result = data['properties'][0]
+        self.assertEqual(len(data), 1)
+        result = data[0]
         self.assertEqual(result['state']['address_line_1'], state.address_line_1)
 
         db_created_time = result['created']
@@ -302,11 +301,11 @@ class PropertyViewTests(DataMappingBaseTestCase):
             'organization_id': self.org.pk,
             'profile_id': columnlistsetting.id,
         }
-        url = reverse('api:v2.1:properties-list') + '?cycle_id={}'.format(self.cycle.pk)
+        url = reverse('api:v3:properties-search') + '?cycle_id={}'.format(self.cycle.pk)
         response = self.client.get(url, params)
         data = response.json()
-        self.assertEqual(len(data['properties']), 1)
-        result = data['properties'][0]
+        self.assertEqual(len(data), 1)
+        result = data[0]
         self.assertEqual(result['state']['address_line_1'], state.address_line_1)
         self.assertEqual(result['state']['extra_data']['field_1'], 'value_1')
         self.assertFalse(result['state'].get('city', None))
@@ -437,24 +436,22 @@ class PropertyViewTests(DataMappingBaseTestCase):
                                                      analysis_state=PropertyState.ANALYSIS_STATE_QUEUED)
 
         # Typically looks like this
-        # http://localhost:8000/api/v2.1/properties/?organization_id=265&cycle=219&identifier=09-IS
+        # http://localhost:8000/api/v3/properties/search?organization_id=265&cycle=219&identifier=09-IS
 
         # check for all items
         query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk)
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 5)
 
         # check for 2 items with 123
         query_params = "?cycle={}&organization_id={}&identifier={}".format(self.cycle.pk, self.org.pk, '123')
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         # print out the result of this when there are more than two in an attempt to catch the
         # non-deterministic part of this test
         if len(results) > 2:
@@ -464,42 +461,38 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         # check the analysis states
         query_params = "?cycle={}&organization_id={}&analysis_state={}".format(self.cycle.pk, self.org.pk, 'Completed')
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 0)
 
         query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
             self.cycle.pk, self.org.pk, 'Not Started'
         )
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 3)
 
         query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
             self.cycle.pk, self.org.pk, 'Queued'
         )
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 2)
 
         # check the combination of both the identifier and the analysis state
         query_params = "?cycle={}&organization_id={}&identifier={}&analysis_state={}".format(
             self.cycle.pk, self.org.pk, 'Long', 'Queued'
         )
-        url = reverse('api:v2.1:properties-list') + query_params
+        url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
-        result = json.loads(response.content)
-        self.assertEqual(result['status'], 'success')
-        results = result['properties']
+        results = json.loads(response.content)
+        self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 1)
 
     def test_meters_exist(self):
@@ -1177,7 +1170,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
 
         # -- Act
-        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        url = reverse('api:v3:properties-building-sync', args=[view.id])
         response = self.client.get(url, {'preset_id': preset.id})
 
         # -- Assert
@@ -1217,9 +1210,9 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         default_preset = self.org.columnmappingpreset_set.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
 
         # -- Act
-        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        url = reverse('api:v3:properties-building-sync', args=[view.id])
         default_export_response = self.client.get(url, {'preset_id': default_preset.id})
-        url = reverse('api:v2.1:properties-building-sync', args=[view.id])
+        url = reverse('api:v3:properties-building-sync', args=[view.id])
         custom_export_response = self.client.get(url, {'preset_id': custom_preset.id})
 
         # -- Assert
