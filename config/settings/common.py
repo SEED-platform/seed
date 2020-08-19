@@ -120,6 +120,14 @@ BEAM_APPS = (
     'post_office',
 )
 
+# Added by Ashray Wadhwa
+POST_OFFICE = {
+    'BACKENDS': {
+        'default': 'smtp.EmailBackend',
+        'post_office_backend': 'django.core.mail.backends.console.EmailBackend',
+    }
+}
+
 
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.

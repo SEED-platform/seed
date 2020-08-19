@@ -20,6 +20,7 @@ from post_office import mail
 
 
 
+
 # Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
@@ -169,7 +170,6 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     model = Email
     serializer_class = PostOfficeEmailSerializer
     pagination_class = None
-    # queryset = Email.objects.all()
 
 
     def get_queryset(self):
@@ -193,34 +193,31 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         # -- Add organization (maybe user)
         # Seed property, property view, property_state
 
-        
-        # emails = PropertyState.objects.filter(id__in=property_id).values_list('owner_email', flat=True)
-        # EmailTemplate.objects.get(template_id)
 
-        # Working!!!
         print("BACKEND")
-        id = self.request.data.get('id')
-        print(id)
+        name = self.request.data.get('name')
+        print(name)
         building_id = self.request.data.get('building_id', [])
         print(building_id)
         print("*****************")
-        # states = PropertyState.objects.filter(id__in=building_id)
-        # print(states)
+        email_list = []
+        for ids in range(len(building_id)):
+            state = PropertyState.objects.filter(id=building_id[ids])
+            email = state.values_list('owner_email', flat=True)
+            #QuerySet is returned, so we extract the email out of it
+            email = email[0]
+            email_list.append(email)
 
+        print(email_list)
+
+        print(EmailTemplate.objects.all())
         
 
-
-
-
-        email_list = []
-
         mail.send(
-            ['to_email@example.com'], # List of email addresses also accepted
+            email_list,
             'from@example.com',
-            # template=
-            subject='My email',
-            message='Hello there!',
-            html_message='Hi <strong>there</strong>!',
+            template = EmailTemplate.objects.get(name=name),
+            backend = 'post_office_backend',
         )
         # serializer.save()
 

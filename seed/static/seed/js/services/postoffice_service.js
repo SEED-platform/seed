@@ -61,13 +61,13 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       //   });
       // };
 
-      template_factory.send_templated_email = function (template_id, building_id) {
+      template_factory.send_templated_email = function (template_name, building_id) {
         console.log("SERVICE");
-        console.log(template_id);
+        console.log(template_name);
         console.log(building_id);
         return $http.post('/api/v3/postoffice_email/', {
             from_email: "hello@example.com",
-            id: template_id,
+            name: template_name,
             building_id: building_id
         },{
           params: {

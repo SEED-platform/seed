@@ -29,15 +29,15 @@ angular.module('BE.seed.controller.postoffice_modal', [])
       $uibModalInstance.dismiss('cancel');
     };
 
-    $scope.send_templated_email = function (template_id){
+    $scope.send_templated_email = function (template_name){
       var building_id = property_states.length > 0 ? property_states : taxlot_states;
       console.log("CONTROLLER");
-      console.log(template_id);
+      console.log(template_name);
       console.log("****************");
       console.log(property_states);
       console.log("****************");
       console.log(building_id);
-      postoffice_service.send_templated_email(template_id, building_id);
+      postoffice_service.send_templated_email(template_name, building_id);
     }
     }]);
 

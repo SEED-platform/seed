@@ -10,7 +10,6 @@ from post_office.models import EmailTemplate, Email
 
 import post_office.fields
 
-# , Email
 
 
 class PostOfficeSerializer(serializers.ModelSerializer):
