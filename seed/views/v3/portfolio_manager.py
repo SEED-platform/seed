@@ -182,7 +182,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                     status=status.HTTP_400_BAD_REQUEST)
             try:
                 possible_properties = content_object['report']['informationAndMetrics']['row']
-                if isinstance(possible_properties, list):
+                if isinstance(possible_properties, list) or isinstance(possible_properties, dict):
                     properties = possible_properties
                 else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
                     return JsonResponse(
