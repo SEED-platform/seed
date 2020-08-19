@@ -664,7 +664,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         }).then(function (response) {
           response = $http.post('/api/v3/upload/create_from_pm_import/', {
             properties: response.data.properties,
-            import_record_id: $scope.dataset.id
+            import_record_id: $scope.dataset.id,
+            organization_id: $scope.organization.org_id
           });
           return response;
         }).then(function (response) {
