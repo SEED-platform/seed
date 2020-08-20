@@ -91,7 +91,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
@@ -123,7 +123,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
@@ -159,7 +159,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
@@ -191,7 +191,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c['name'])
 
         # call the API
-        url = reverse_lazy('api:v2.1:tax_lot_properties-export')
+        url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
             url + '?{}={}&{}={}&{}={}'.format(
                 'organization_id', self.org.pk,

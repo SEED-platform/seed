@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
 
-      return $http.post('/api/v2.1/tax_lot_properties/export/', {
+      return $http.post('/api/v3/tax_lot_properties/export/', {
         ids: ids,
         filename: filename,
         profile_id: profile_id,

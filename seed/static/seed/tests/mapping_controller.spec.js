@@ -230,6 +230,15 @@ describe('controller: mapping_controller', function () {
       status: 'success',
       first_five_rows: mock_first_five_rows
     };
+
+    const fake_organization_payload = {
+      status: 'success',
+      organization: {
+        display_significant_figures: 2,
+        id: 1,
+      }
+    }
+
     controller('mapping_controller', {
       $scope: mapping_controller_scope,
       import_file_payload: fake_import_file_payload,
@@ -239,7 +248,8 @@ describe('controller: mapping_controller', function () {
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
       column_mapping_profiles_payload: [],
       cycles: mock_cycles,
-      inventory_service: mock_inventory_service
+      inventory_service: mock_inventory_service,
+      organization_payload: fake_organization_payload,
     });
   }
 

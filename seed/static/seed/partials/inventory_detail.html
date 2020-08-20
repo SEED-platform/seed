@@ -53,7 +53,7 @@
                 </button>
                 <ul id="#inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
-                        <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
+                        <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="inventory.view_id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
                     </li>
 
                     <li ng-if="::inventory_type === 'properties'" role="menuitem">
@@ -150,24 +150,21 @@
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: item_state[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_state[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, item_state[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_state.extra_data[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, item_state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'property / taxlot' fields -->
                             <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_parent[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_parent[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_parent[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, item_parent[col.column_name]) $}</span>
                                 </span>
                             </td>
 
@@ -187,12 +184,10 @@
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
-                                    <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state[col.column_name] $}</span>
-                                    <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, historical_item.state[col.column_name]) $}</span>
                                 </span>
                                 <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
-                                    <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state.extra_data[col.column_name] $}</span>
-                                    <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, historical_item.state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>
                         </tr>

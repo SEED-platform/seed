@@ -30,6 +30,8 @@ angular.module('BE.seed.controller.mapping', [])
     'i18nService', // from ui-grid
     'simple_modal_service',
     'Notification',
+    'organization_payload',
+    'naturalSort',
     'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
     'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
     'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
@@ -60,6 +62,8 @@ angular.module('BE.seed.controller.mapping', [])
       i18nService,
       simple_modal_service,
       Notification,
+      organization_payload,
+      naturalSort,
       COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
       COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
       COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
@@ -69,6 +73,7 @@ angular.module('BE.seed.controller.mapping', [])
       ].concat(column_mapping_profiles_payload);
 
       $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
+      $scope.organization = organization_payload.organization;
 
       // Track changes to help prevent losing changes when data could be lost
       $scope.profile_change_possible = false;
@@ -91,17 +96,6 @@ angular.module('BE.seed.controller.mapping', [])
           || $scope.mappings_change_possible;
       };
 
-      var analyze_chosen_inventory_types = function () {
-        var chosenTypes = _.uniq(_.map($scope.mappings, 'suggestion_table_name'));
-        var all_cols_have_table_name = !_.find($scope.mappings, {suggestion_table_name: undefined});
-
-        if (chosenTypes.length === 1 && all_cols_have_table_name) {
-          $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
-        } else {
-          $scope.setAllFields = '';
-        }
-      };
-
       $scope.apply_profile = function () {
         if ($scope.mappings_change_possible) {
           $uibModal.open({
@@ -111,7 +105,8 @@ angular.module('BE.seed.controller.mapping', [])
             $scope.mappings_change_possible = false;
             $scope.current_profile = $scope.dropdown_selected_profile;
             $scope.initialize_mappings();
-            analyze_chosen_inventory_types();
+            $scope.updateInventoryTypeDropdown();
+            $scope.updateColDuplicateStatus();
           }).catch(function () {
             $scope.dropdown_selected_profile = $scope.current_profile;
             return;
@@ -120,7 +115,8 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.profile_change_possible = false;
           $scope.current_profile = $scope.dropdown_selected_profile;
           $scope.initialize_mappings();
-          analyze_chosen_inventory_types();
+          $scope.updateInventoryTypeDropdown();
+          $scope.updateColDuplicateStatus();
         }
       };
 
@@ -188,7 +184,7 @@ angular.module('BE.seed.controller.mapping', [])
           resolve: {
             action: _.constant('new'),
             data: _.constant({mappings: profile_mapping_data, profile_type: profileType}),
-            org_id: _.constant(user_service.get_organization().id)
+            org_id: _.constant($scope.organization.id)
           }
         });
 
@@ -208,7 +204,7 @@ angular.module('BE.seed.controller.mapping', [])
 
         var profile_mapping_data = profile_mappings_from_working_mappings();
 
-        column_mappings_service.update_column_mapping_profile(user_service.get_organization().id, profile_id, {mappings: profile_mapping_data}).then(function (result) {
+        column_mappings_service.update_column_mapping_profile($scope.organization.id, profile_id, {mappings: profile_mapping_data}).then(function (result) {
           $scope.profiles[profile_index].mappings = result.data.mappings;
           $scope.profiles[profile_index].updated = result.data.updated;
 
@@ -513,7 +509,7 @@ angular.module('BE.seed.controller.mapping', [])
         });
       };
 
-      var org_id = user_service.get_organization().id;
+      var org_id = $scope.organization.id;
       geocode_service.check_org_has_api_key(org_id).then(function (result) {
         $scope.org_has_api_key = result;
         if (result) {
@@ -698,6 +694,9 @@ angular.module('BE.seed.controller.mapping', [])
               if (col.data_type === 'datetime') {
                 options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                 options.filter = inventory_service.dateFilter();
+              } else if (col.data_type === 'area' || col.data_type === 'eui') {
+                options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+                options.sortingAlgorithm = naturalSort;
               } else {
                 options.filter = inventory_service.combinedFilter();
               }
@@ -735,11 +734,11 @@ angular.module('BE.seed.controller.mapping', [])
           $log.error(response);
         }).finally(function () {
           // Submit the data quality checks and wait for the results
-          data_quality_service.start_data_quality_checks_for_import_file(user_service.get_organization().id, $scope.import_file.id).then(function (response) {
+          data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then(function (response) {
             data_quality_service.data_quality_checks_status(response.progress_key).then(function (check_result) {
               // Fetch data quality check results
               $scope.data_quality_results_ready = false;
-              $scope.data_quality_results = data_quality_service.get_data_quality_results(user_service.get_organization().id, check_result.unique_id);
+              $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
               $scope.data_quality_results.then(function (data) {
                 $scope.data_quality_results_ready = true;
                 $scope.data_quality_errors = 0;
@@ -782,7 +781,7 @@ angular.module('BE.seed.controller.mapping', [])
             importFileId: function () {
               return $scope.import_file.id;
             },
-            orgId: _.constant(user_service.get_organization().id)
+            orgId: _.constant($scope.organization.id)
           }
         });
       };

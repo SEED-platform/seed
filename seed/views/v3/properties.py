@@ -143,9 +143,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
-        # using list-comprehension here instead of Serializer(qs, many=True) b/c
-        # it was not properly serializing the objects with that method. No idea why
-        return JsonResponse([PropertyViewAsStateSerializer(x).data for x in qs.all()], safe=False)
+        # converting QuerySet to list b/c serializer will only use column list profile this way
+        return JsonResponse(
+            PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
+            safe=False,
+        )
 
     def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
