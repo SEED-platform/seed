@@ -93,7 +93,7 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         ulid_not_decoded = 0
         property_view_ids = body.get('property_view_ids')
         taxlot_view_ids = body.get('taxlot_view_ids')
-
+        print("view ids: ", property_view_ids, taxlot_view_ids)
         if property_view_ids:
             property_views = PropertyView.objects.filter(
                 state_id__in=property_view_ids,
