@@ -14,9 +14,8 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       var template_factory = {};
       /** Post_office Service:
        --------------------------------------------------
-       Provides methods to add/edit templates on the server.
-       */
-  
+       Provides methods to access email templates and to send emails on the server 
+      */
   
       /** Returns an array of templates.
   
@@ -34,7 +33,8 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
        language {string}
   
        */
-  
+       
+      // Extracting EmailTemplate objects by running a get request on postoffice 
       template_factory.get_templates = function () {
         return $http.get('/api/v3/postoffice/', {
           params: {
@@ -46,29 +46,18 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
           return response.data.data;
         });
       };
-      // user_service.get_organization().id
-  
-      // template_factory.get_templates_for_org = function () {
-      //   return $http.get('/api/v3/postoffice/', {
-      //     // params: {
-      //     //   organization_id: org_id
-      //     // }
-      //   }).then(function (response) {
-      //     console.log("****************************************");
-      //     console.log(response.data);
-      //     console.log("****************************************");
-      //     return response.data;
-      //   });
-      // };
+      
 
-      template_factory.send_templated_email = function (template_name, building_id) {
+      template_factory.send_templated_email = function (template_name, inventory_id, inventory_type) {
         console.log("SERVICE");
         console.log(template_name);
-        console.log(building_id);
+        console.log(inventory_id);
+        console.log(inventory_type);
         return $http.post('/api/v3/postoffice_email/', {
             from_email: "hello@example.com",
             name: template_name,
-            building_id: building_id
+            inventory_id: inventory_id,
+            inventory_type: inventory_type
         },{
           params: {
             organization_id: user_service.get_organization().id,

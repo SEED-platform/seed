@@ -5,17 +5,15 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
-:authors Paul Munday<paul@paulmunday.net> Fable Turas <fable@raintechpdx.com>
+
 """
 # from seed.filtersets import CycleFilterSet
 #from helix.models import HELIXGreenAssessment as GreenAssessment
 # from seed.models import Cycle
 from post_office.models import EmailTemplate, Email
-
-# MAKE A SERIALIZER!
 from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
-from seed.models import PropertyState
+from seed.models import PropertyState, TaxLotState
 from post_office import mail
 
 
@@ -151,8 +149,7 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = EmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
-    # data_name = 'name'
-    # filter_class = CycleFilterSet
+
 
     def get_queryset(self):
         # temp_id = self.get_templates(self.request)
@@ -160,10 +157,6 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         # print(EmailTemplate.objects.order_by('name'))
         return EmailTemplate.objects.order_by('name')
 
-    # def perform_create(self, serializer):
-    #     # org_id = self.get_organization(self.request)
-    #     # user = self.request.user
-    #     serializer.save(organization_id=org_id, user=user)
 
 
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
@@ -182,44 +175,48 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         
 
     def perform_create(self, serializer):
-        # org_id = self.get_organization(self.request)
-        # user = self.request.user
-        # serializer.save(status="hi", to="ashray")
 
         # NOTES
         # -- Take building IDs and pull out the email (use building ID to pull owner email)
         # -- Send the email (mail.send)
         # -- Save
         # -- Add organization (maybe user)
-        # Seed property, property view, property_state
 
+        # CLEAN UP THE FOLLOWING CODE
+        # DISTINCTION
+        # ORGANIZATION ID
+
+        # Adding Organization ID to Template and Email, User to Template and Email
+        # After 1st Column add organizations and users
+
+
+        # org_id = self.get_organization(self.request)
+        # user = self.request.user
+        # serializer.save(organization_id=org_id, user=user)
 
         print("BACKEND")
         name = self.request.data.get('name')
         print(name)
-        building_id = self.request.data.get('building_id', [])
-        print(building_id)
+        inventory_id = self.request.data.get('inventory_id', [])
+        print(inventory_id)
+        print("*****************")
+        print(self.request.data.get('inventory_type'))
         print("*****************")
         email_list = []
-        for ids in range(len(building_id)):
-            state = PropertyState.objects.filter(id=building_id[ids])
-            email = state.values_list('owner_email', flat=True)
-            #QuerySet is returned, so we extract the email out of it
-            email = email[0]
-            email_list.append(email)
-
-        print(email_list)
-
-        print(EmailTemplate.objects.all())
-        
-
+        if self.request.data.get('inventory_type') == "properties" :
+            State = PropertyState
+        else :
+            State = TaxLotState
+        # QuerySet is returned when calling values_list() function, so we convert it into a list 
+        email_list = list(State.objects.filter(id__in=inventory_id).values_list('owner_email', flat=True))
         mail.send(
             email_list,
+            # self.request.data.get(from_email)
             'from@example.com',
             template = EmailTemplate.objects.get(name=name),
             backend = 'post_office_backend',
         )
-        # serializer.save()
+        
 
 
 
