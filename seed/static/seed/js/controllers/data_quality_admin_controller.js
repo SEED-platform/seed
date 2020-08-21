@@ -160,7 +160,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
           if (!_.has(ruleGroups[inventory_type], rule.field)) ruleGroups[inventory_type][rule.field] = [];
           var row = rule;
-          if (row.data_type === 2) {
+          if (row.data_type === $scope.data_type_keys.date) {
             if (row.min) row.min = moment(row.min, 'YYYYMMDD').toDate();
             if (row.max) row.max = moment(row.max, 'YYYYMMDD').toDate();
           }
@@ -466,9 +466,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.change_field = function (rule, oldField, index) {
         if (oldField === '') oldField = null;
         var original = rule.data_type;
-        var newDataType = _.find(columns, {column_name: rule.field}).data_type;
+        var newDataTypeString = _.find(columns, {column_name: rule.field}).data_type;
+        var newDataType = $scope.data_type_keys[newDataTypeString];
 
-        if (_.isNil(newDataType)) newDataType = null;
+        if (_.isNil(newDataType)) newDataType = $scope.data_type_keys.number;
         // clear columns that are type specific.
         if (newDataType !== original) {
           rule.text_match = null;
