@@ -109,7 +109,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         }
 
         url = reverse('api:v3:data_quality_check-rules-list', kwargs={'nested_organization_id': self.org.id})
-        res = self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
+        self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
 
         dq = DataQualityCheck.retrieve(self.org.id)
 
