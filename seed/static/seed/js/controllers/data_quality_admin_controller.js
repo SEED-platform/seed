@@ -466,7 +466,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.change_field = function (rule, oldField, index) {
         if (oldField === '') oldField = null;
         var original = rule.data_type;
-        var newDataTypeString = _.find(columns, {column_name: rule.field}).data_type;
+        var newDataTypeString = _.find($scope.columns, {column_name: rule.field}).data_type;
         var newDataType = $scope.data_type_keys[newDataTypeString];
 
         if (_.isNil(newDataType)) newDataType = $scope.data_type_keys.number;
