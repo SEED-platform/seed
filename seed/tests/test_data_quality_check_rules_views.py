@@ -90,7 +90,10 @@ class RuleViewTests(DataMappingBaseTestCase):
         self.assertEqual(property_count, 20)
 
     def test_create_rule_using_org_id_to_establish_dq_check_relationship(self):
-        # This test assumes that no address_line_2 rules exist by default
+        # Ensure no address_line_2 rules exist by default beforehand
+        dq = DataQualityCheck.retrieve(self.org.id)
+        self.assertEqual(0, dq.rules.filter(field='address_line_2').count())
+
         base_rule_info = {
             'field': 'address_line_2',
             'table_name': 'PropertyState',
@@ -112,7 +115,6 @@ class RuleViewTests(DataMappingBaseTestCase):
         self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
 
         dq = DataQualityCheck.retrieve(self.org.id)
-
         self.assertEqual(1, dq.rules.filter(field='address_line_2').count())
 
     def test_create_rule_validations(self):
