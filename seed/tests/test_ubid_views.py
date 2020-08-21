@@ -50,9 +50,9 @@ class UbidViewTests(TestCase):
         property.save()
 
         property_view = self.property_view_factory.get_property_view(state=property)
-        print("property view id, state_id, property_id: ", property_view.id, property_view.state_id, property_view.property_id)
+
         url = reverse('api:v3:ubid-decode-by-ids') + '?organization_id=%s' % self.org.pk
-        post_params = {'property_view_ids': [property_view.state_id]}
+        post_params = {'property_view_ids': [property_view.id]}
 
         self.client.post(url, post_params)
 
@@ -124,9 +124,9 @@ class UbidViewTests(TestCase):
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
         post_params = {
             'property_view_ids': [
-                property_none_view.state_id,
-                property_correctly_populated_view.state_id,
-                property_not_decoded_view.state_id
+                property_none_view.id,
+                property_correctly_populated_view.id,
+                property_not_decoded_view.id
             ]
         }
 
@@ -193,9 +193,9 @@ class UbidViewTests(TestCase):
         url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
         post_params = {
             'taxlot_view_ids': [
-                taxlot_none_view.state_id,
-                taxlot_correctly_populated_view.state_id,
-                taxlot_not_decoded_view.state_id
+                taxlot_none_view.id,
+                taxlot_correctly_populated_view.id,
+                taxlot_not_decoded_view.id
             ]
         }
 
@@ -210,6 +210,5 @@ class UbidViewTests(TestCase):
             "ulid_successfully_decoded": 1,
             "ulid_not_decoded": 1
         }
-        print("result_dict: ", result_dict)
 
         self.assertEqual(result_dict, expectation)
