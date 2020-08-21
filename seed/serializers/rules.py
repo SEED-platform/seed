@@ -6,7 +6,7 @@
 """
 
 from rest_framework import serializers
-from seed.models.data_quality import Rule
+from seed.models.data_quality import Rule, DataQualityCheck
 from seed.models import StatusLabel
 
 
@@ -36,6 +36,13 @@ class RuleSerializer(serializers.ModelSerializer):
             'text_match',
             'units',
         ]
+
+    def create(self, validated_data):
+        # For now, use an Org ID to find the DQ Check ID to apply (later, use the DQ Check ID directly)
+        org_id = self.context['request'].parser_context['kwargs']['nested_organization_id']
+        validated_data['data_quality_check_id'] = DataQualityCheck.retrieve(org_id).id
+
+        return Rule.objects.create(**validated_data)
 
     def validate_status_label(self, label):
         """

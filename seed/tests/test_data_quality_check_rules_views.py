@@ -89,6 +89,32 @@ class RuleViewTests(DataMappingBaseTestCase):
         self.assertEqual(taxlot_count, 2)
         self.assertEqual(property_count, 20)
 
+    def test_create_rule_using_org_id_to_establish_dq_check_relationship(self):
+        # This test assumes that no address_line_2 rules exist by default
+        base_rule_info = {
+            'field': 'address_line_2',
+            'table_name': 'PropertyState',
+            'enabled': True,
+            'data_type': Rule.TYPE_STRING,
+            'rule_type': Rule.RULE_TYPE_DEFAULT,
+            'condition': Rule.RULE_INCLUDE,
+            'required': False,
+            'not_null': False,
+            'min': None,
+            'max': None,
+            'text_match': 'some random text',
+            'severity': Rule.SEVERITY_ERROR,
+            'units': "",
+            'status_label': None,
+        }
+
+        url = reverse('api:v3:data_quality_check-rules-list', kwargs={'nested_organization_id': self.org.id})
+        res = self.client.post(url, content_type='application/json', data=json.dumps(base_rule_info))
+
+        dq = DataQualityCheck.retrieve(self.org.id)
+
+        self.assertEqual(1, dq.rules.filter(field='address_line_2').count())
+
     def test_create_rule_validations(self):
         base_rule_info = {
             'field': 'address_line_1',
