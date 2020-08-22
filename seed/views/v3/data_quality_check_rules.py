@@ -11,7 +11,11 @@ from drf_yasg.utils import swagger_auto_schema, no_body
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import (
+    ListModelMixin,
+    DestroyModelMixin,
+    CreateModelMixin,
+)
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -42,7 +46,15 @@ nested_org_id_path_field = AutoSchemaHelper.base_field(
     name='update',
     decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
 )
-class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, UpdateWithoutPatchModelMixin):
+@method_decorator(
+    name='destroy',
+    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
+)
+@method_decorator(
+    name='create',
+    decorator=swagger_auto_schema(manual_parameters=[nested_org_id_path_field])
+)
+class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, UpdateWithoutPatchModelMixin, DestroyModelMixin, CreateModelMixin):
     serializer_class = RuleSerializer
     model = Rule
     pagination_class = None
@@ -68,7 +80,7 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
+    @has_perm_class('requires_owner')
     @action(detail=False, methods=['PUT'])
     def reset(self, request, nested_organization_id=None):
         """
@@ -77,5 +89,5 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
         # TODO: Refactor to get all the rules for a DataQualityCheck object directly.
         # At that point, nested_organization_id should be changed to data_quality_check_id
         dq = DataQualityCheck.retrieve(nested_organization_id)
-        dq.reset_default_rules()
+        dq.remove_all_rules()
         return self.list(request, nested_organization_id)

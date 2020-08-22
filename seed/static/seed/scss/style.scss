@@ -2099,6 +2099,12 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   background-color: #FDF4BF !important;
 }
 
+td {
+  &.error-bg {
+    background-color: #FFB7B7;
+  }
+}
+
 select {
   &.error-bg {
     background-color: #FFB7B7;
