@@ -24,7 +24,6 @@ angular.module('BE.seed.controller.inventory_map', [])
       labels,
       urls
     ) {
-      // always map properties with taxlot in the 'related' field
       $scope.inventory_type = $stateParams.inventory_type;
 
       $scope.data = [];
@@ -36,38 +35,20 @@ angular.module('BE.seed.controller.inventory_map', [])
         selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
         cycles: cycles.cycles
       };
-
-      var fetch = function (page, chunk) {
-        // console.log('Fetching page ' + page + ' (chunk size ' + chunk + ')');
-        if ($scope.inventory_type === 'properties') {
-          return inventory_service.get_properties(page, chunk, undefined, undefined).then(function (data) {
-            $scope.progress = {
-              current: data.pagination.end,
-              total: data.pagination.total,
-              percent: Math.round(data.pagination.end / data.pagination.total * 100)
-            };
-            if (data.pagination.has_next) {
-              return fetch(page + 1, chunk).then(function (data2) {
-                return data.results.concat(data2);
-              });
-            }
-            return data.results;
-          });
-        } else if ($scope.inventory_type === 'taxlots') {
-          return inventory_service.get_taxlots(page, chunk, undefined, undefined).then(function (data) {
-            $scope.progress = {
-              current: data.pagination.end,
-              total: data.pagination.total,
-              percent: Math.round(data.pagination.end / data.pagination.total * 100)
-            };
-            if (data.pagination.has_next) {
-              return fetch(page + 1, chunk).then(function (data2) {
-                return data.results.concat(data2);
-              });
-            }
-            return data.results;
-          });
-        }
+      var fetch = function (page, chunk, func) {
+        return func(page, chunk, undefined, undefined).then(function (data) {
+          $scope.progress = {
+            current: data.pagination.end,
+            total: data.pagination.total,
+            percent: Math.round(data.pagination.end / data.pagination.total * 100)
+          };
+          if (data.pagination.has_next) {
+            return fetch(page + 1, chunk).then(function (data2) {
+              return data.results.concat(data2);
+            });
+          }
+          return data.results;
+        });
       };
 
       var page = 1;
@@ -79,32 +60,30 @@ angular.module('BE.seed.controller.inventory_map', [])
         windowClass: 'inventory-progress-modal',
         scope: $scope
       });
-      return fetch(page, chunk).then(function (data) {
+
+      if ($scope.inventory_type == "properties") var getInventoryFunc = inventory_service.get_properties;
+      else getInventoryFunc = inventory_service.get_taxlots;
+      return fetch(page, chunk, getInventoryFunc).then(function (data) {
         modalInstance.close();
 
         $scope.data = data;
         $scope.geocoded_data = _.filter($scope.data, 'long_lat');
         $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
-        // buildings with UBID bounding boxes
-        $scope.bb_data = _.filter($scope.data, 'bounding_box');
 
-        var geocodedTaxlots = function (properties_data) {
+        // buildings with UBID bounding boxes
+        if ($scope.inventory_type == 'properties') $scope.bb_data = _.filter($scope.data, 'bounding_box');
+        else {
           var taxlots = [];
-          _.each(properties_data, function (record) {
+          _.each($scope.data, function(record) {
             if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
               var bb_taxlots = _.filter(record.related, 'bounding_box');
               taxlots = _.concat(taxlots, bb_taxlots);
             } else {
-              record = _.filter(record, 'bounding_box');
-              taxlots = _.concat(taxlots, record);
+              if (!_.isNull(record['bounding_box'])) taxlots = _.concat(taxlots, record);
             }
           });
-          return _.uniqBy(taxlots, 'id');
-        };
-
-        // extract related taxlots from building inventory
-        $scope.taxlots = geocodedTaxlots($scope.data);
-        // $log.log('taxlots: ', $scope.taxlots);
+          $scope.bb_data = _.uniqBy(taxlots, 'id');
+        }
 
         // store a mapping of layers z-index and visibility
         $scope.layers = {};
@@ -118,7 +97,7 @@ angular.module('BE.seed.controller.inventory_map', [])
           $scope.layers.taxlot_centroid_layer = {zIndex: 6, visible: 0};
         } else {
           // taxlots
-          $scope.layers.hexbin_layer = {zIndex: 1, visible: 1};
+          $scope.layers.hexbin_layer = {zIndex: 1, visible: 0};
           $scope.layers.points_layer = {zIndex: 2, visible: 1};
           $scope.layers.building_bb_layer = {zIndex: 3, visible: 0};
           $scope.layers.building_centroid_layer = {zIndex: 4, visible: 0};
@@ -138,8 +117,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingPoint = function (building) {
           var format = new ol.format.WKT();
 
-          var long_lat = building.long_lat;
-          var feature = format.readFeature(long_lat, {
+          var feature = format.readFeature(building.long_lat, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -159,8 +137,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var buildingBB = function (building) {
           var format = new ol.format.WKT();
 
-          var bounding_box = building.bounding_box;
-          var feature = format.readFeature(bounding_box, {
+          var feature = format.readFeature(building.bounding_box, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -198,8 +175,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         var taxlotBB = function (taxlot) {
           var format = new ol.format.WKT();
 
-          var bounding_box = taxlot.bounding_box;
-          var feature = format.readFeature(bounding_box, {
+          var feature = format.readFeature(taxlot.bounding_box, {
             dataProjection: 'EPSG:4326',
             featureProjection: 'EPSG:3857'
           });
@@ -220,7 +196,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var taxlotBBSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.taxlots;
+          if (_.isUndefined(records)) records = $scope.bb_data;
           var features = _.map(records, taxlotBB);
 
           return new ol.source.Vector({features: features});
@@ -377,8 +353,6 @@ angular.module('BE.seed.controller.inventory_map', [])
           var total_eui = _.sum(site_euis);
           var opacity = Math.max(hexbin_min_opacity, total_eui / hexagon_size);
 
-          // TODO: what the proper opacity for a taxlot that doen't have euis?
-          if ($scope.inventory_type === 'taxlots') opacity = 0;
           return hexagonStyle(opacity);
         };
 
@@ -394,12 +368,14 @@ angular.module('BE.seed.controller.inventory_map', [])
         if ($scope.inventory_type === 'properties') {
           layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.building_centroid_layer];
         } else {
-          layers = [base_layer, $scope.hexbin_layer, $scope.points_layer, $scope.building_bb_layer, $scope.taxlot_centroid_layer];
+          layers = [base_layer, $scope.points_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
         }
         $scope.map = new ol.Map({
           target: 'map',
           layers: layers
         });
+
+        // Toggle layers
 
         // If a layer's z-index is changed, it should be changed here as well.
         var layer_at_z_index = {
