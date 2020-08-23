@@ -389,6 +389,7 @@ class TaxLotProperty(models.Model):
                 # Do not make these timestamps naive. They persist correctly.
                 if 'analysis_state' in filtered_fields:
                     obj_dict[obj_column_name_mapping['analysis_state']] = obj.state.get_analysis_state_display()
+
             # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
             # Also, do not make these timestamps naive. They persist correctly.
             if 'updated' in filtered_fields:
