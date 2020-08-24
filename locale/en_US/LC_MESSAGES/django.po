@@ -157,21 +157,21 @@ msgstr "Admin"
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
-msgid "AND"
-msgstr "AND"
-
 msgid "and"
 msgstr "and"
+
+msgid "AND"
+msgstr "AND"
 
 msgid "API Documentation"
 msgstr "API Documentation"
 
+msgid "API Key"
+msgstr "API Key"
+
 #: seed/landing/models.py:69
 msgid "api key"
 msgstr "api key"
-
-msgid "API Key"
-msgstr "API Key"
 
 msgid "Apply Profile"
 msgstr "Apply Profile"
@@ -538,11 +538,11 @@ msgstr "Create a New Project"
 msgid "Create a new rule"
 msgstr "Create a new rule"
 
-msgid "Create a new sub-organization"
-msgstr "Create a new sub-organization"
-
 msgid "Create a New Sub-Organization"
 msgstr "Create a New Sub-Organization"
+
+msgid "Create a new sub-organization"
+msgstr "Create a new sub-organization"
 
 msgid "Create a new..."
 msgstr "Create a new..."
@@ -575,11 +575,11 @@ msgstr "Create new data set"
 msgid "Create new label"
 msgstr "Create new label"
 
-msgid "Create new sub-organization"
-msgstr "Create new sub-organization"
-
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
+
+msgid "Create new sub-organization"
+msgstr "Create new sub-organization"
 
 msgid "Create Profile"
 msgstr "Create Profile"
@@ -591,11 +591,11 @@ msgstr "Create Project"
 msgid "Create Your Account"
 msgstr "Create Your Account"
 
-msgid "Created"
-msgstr "Created"
-
 msgid "created"
 msgstr "created"
+
+msgid "Created"
+msgstr "Created"
 
 msgid "CREATED_LABEL_NAMED"
 msgstr "Created label {label_name}"
@@ -827,11 +827,11 @@ msgstr "duplicate"
 msgid "Duplicates"
 msgstr "Duplicates"
 
-msgid "edit"
-msgstr "edit"
-
 msgid "Edit"
 msgstr "Edit"
+
+msgid "edit"
+msgstr "edit"
 
 msgid "Edit Name"
 msgstr "Edit Name"
@@ -1457,23 +1457,23 @@ msgstr "Measurement Units"
 msgid "Member"
 msgstr "Member"
 
-msgid "Member Email"
-msgstr "Member Email"
-
 msgid "member email"
 msgstr "member email"
 
-msgid "Member Name"
-msgstr "Member Name"
+msgid "Member Email"
+msgstr "Member Email"
 
 msgid "member name"
 msgstr "member name"
 
-msgid "Member Role"
-msgstr "Member Role"
+msgid "Member Name"
+msgstr "Member Name"
 
 msgid "member role"
 msgstr "member role"
+
+msgid "Member Role"
+msgstr "Member Role"
 
 msgid "Members"
 msgstr "Members"
@@ -1715,11 +1715,11 @@ msgstr "Organizations:"
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Overwrite data?"
 
-msgid "Owner"
-msgstr "Owner"
-
 msgid "owner"
 msgstr "owner"
+
+msgid "Owner"
+msgstr "Owner"
 
 msgid "Owner Address"
 msgstr "Owner Address"
@@ -1857,9 +1857,6 @@ msgstr "Potential Matches from Source"
 msgid "Preparing your inventory for deletion"
 msgstr "Preparing your inventory for deletion"
 
-msgid "Profile Name"
-msgstr "Profile Name"
-
 msgid "Preview"
 msgstr "Preview"
 
@@ -1880,6 +1877,9 @@ msgstr "Profile Info"
 
 msgid "Profile Information"
 msgstr "Profile Information"
+
+msgid "Profile Name"
+msgstr "Profile Name"
 
 #: seed/models/models.py:239
 msgid "Project"
@@ -2113,11 +2113,11 @@ msgstr "Row 4"
 msgid "Row 5"
 msgstr "Row 5"
 
-msgid "save"
-msgstr "save"
-
 msgid "Save"
 msgstr "Save"
+
+msgid "save"
+msgstr "save"
 
 msgid "Save Changes"
 msgstr "Save Changes"

@@ -158,24 +158,24 @@ msgstr "Admin"
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
-msgid "AND"
-msgstr "ET"
-
 msgid "and"
 msgstr "et"
 
+msgid "AND"
+msgstr "ET"
+
 msgid "API Documentation"
 msgstr "Documentation de l'API"
+
+msgid "API Key"
+msgstr "Clé API"
 
 #: seed/landing/models.py:69
 msgid "api key"
 msgstr "clé API"
 
-msgid "API Key"
-msgstr "Clé API"
-
 msgid "Apply Profile"
-msgstr "Appliquer un préréglage"
+msgstr "Appliquer le profil"
 
 #: seed/models/projects.py:107 seed/models/projects.py:134
 #: seed/models/projects.py:159
@@ -354,19 +354,19 @@ msgid "COL_GEOCODING_TOGGLE_EXT"
 msgstr "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne et son remplissage pour construire des adresses complètes."
 
 msgid "COL_MAP_PROFILE_IMPORT_ADVICE"
-msgstr "Les préréglages de mappage de colonnes peuvent être utilisés pour vous aider à mapper facilement et de manière cohérente vos données. Notez que les colonnes d'en-tête de fichier définies dans le préréglage doivent correspondre exactement (espaces, minuscules, majuscules, etc.) pour que les informations de colonne SEED correspondantes soient utilisées."
+msgstr "Les profils de mappage de colonnes peuvent être utilisés pour vous aider à mapper facilement et de manière cohérente vos données. Notez que les colonnes d'en-tête de fichier définies dans le profil doivent correspondre exactement (espaces, minuscules, majuscules, etc.) pour que les informations de colonne SEED correspondantes soient utilisées."
 
 msgid "COL_MAP_PROFILE_INTRO"
-msgstr "Les préréglages de mappage de colonnes peuvent vous aider à normaliser et à simplifier votre processus de mappage d'importation de fichiers."
+msgstr "Les profils de mappage de colonne peuvent vous aider à standardiser et à simplifier votre processus de mappage d'importation de fichiers."
 
 msgid "COL_MAP_PROFILE_MAPPING_CSV_BUTTON_ADVICE"
-msgstr "Vous pouvez créer des lignes de mappage pour un préréglage en les ajoutant individuellement ou en copiant les valeurs d'en-tête du fichier de données dans une liste délimitée par des virgules en utilisant la zone de saisie à droite."
+msgstr "Vous pouvez créer des lignes de mappage pour un profil en les ajoutant individuellement ou en copiant les valeurs d'en-tête du fichier de données dans une liste délimitée par des virgules à l'aide de la zone de saisie sur la droite."
 
 msgid "COL_MAP_PROFILE_MAPPING_DIRECT_COPY_ADVICE"
 msgstr "En outre, vous pouvez copier les valeurs d'en-tête du fichier de données directement sur les en-têtes SEED via le bouton ci-dessous."
 
 msgid "COL_MAP_PROFILE_MAPPING_EXACT_MATCH_ADVICE"
-msgstr "Lorsque vous utilisez un préréglage pour un fichier entrant, les valeurs d'en-tête du fichier de données doivent correspondre exactement pour que les mappages soient préremplis."
+msgstr "Lors de l'utilisation d'un profil pour un fichier entrant, les valeurs d'en-tête du fichier de données doivent correspondre exactement pour que les mappages soient préremplis."
 
 msgid "COL_MAP_PROFILE_MAPPING_INTRO"
 msgstr "Créez des mappages à des valeurs d'en-tête de fichier de données spécifiques - mappant les en-têtes SEED, les types d'inventaire et, le cas échéant, les unités de mesure."
@@ -388,7 +388,7 @@ msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
 msgid "Column Mapping Profile"
-msgstr "Préréglage de mappage de colonne"
+msgstr "Profil de mappage de colonne"
 
 msgid "Column Mappings"
 msgstr "Mappages de colonnes"
@@ -502,7 +502,7 @@ msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirmer et commencer l'appariement"
 
 msgid "CONFIRMING_DELETE_PROFILE"
-msgstr "Voulez-vous vraiment supprimer le préréglage"
+msgstr "Êtes-vous sûr de vouloir supprimer le profil"
 
 msgid "Contact"
 msgstr "Contact"
@@ -544,10 +544,10 @@ msgstr "Créer un nouveau projet"
 msgid "Create a new rule"
 msgstr "Créer une nouvelle règle"
 
-msgid "Create a new sub-organization"
+msgid "Create a New Sub-Organization"
 msgstr "Créer une nouvelle sous-organisation"
 
-msgid "Create a New Sub-Organization"
+msgid "Create a new sub-organization"
 msgstr "Créer une nouvelle sous-organisation"
 
 msgid "Create a new..."
@@ -581,14 +581,14 @@ msgstr "Créer un nouveau jeu de données"
 msgid "Create new label"
 msgstr "Créer une nouvelle étiquette"
 
-msgid "Create new sub-organization"
-msgstr "Créer une nouvelle sous-organisation"
-
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
 
+msgid "Create new sub-organization"
+msgstr "Créer une nouvelle sous-organisation"
+
 msgid "Create Profile"
-msgstr "Créer un préréglage"
+msgstr "Créer un profil"
 
 msgid "Create Project"
 msgstr "Créer un projet"
@@ -597,11 +597,11 @@ msgstr "Créer un projet"
 msgid "Create Your Account"
 msgstr "Créez votre compte"
 
-msgid "Created"
-msgstr "Créé"
-
 msgid "created"
 msgstr "créé"
+
+msgid "Created"
+msgstr "Créé"
 
 msgid "CREATED_LABEL_NAMED"
 msgstr "Créé étiquette {label_name}"
@@ -612,8 +612,9 @@ msgstr "Nouveau cycle créé avec nom {cycle_name}"
 msgid "Cross-Cycles"
 msgstr "Entre les Cycles"
 
+#, fuzzy
 msgid "Current Column Mapping Profile"
-msgstr "Préréglage de mappage de colonne actuel"
+msgstr "Profil de mappage de colonne actuel"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
@@ -753,7 +754,7 @@ msgid "Delete your Inventory"
 msgstr "Supprimez votre inventaire"
 
 msgid "Delete your Profile"
-msgstr "Supprimer votre préréglage"
+msgstr "Supprimer votre profil"
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
@@ -833,11 +834,11 @@ msgstr "dupliquer"
 msgid "Duplicates"
 msgstr "Copies"
 
-msgid "edit"
-msgstr "modifier"
-
 msgid "Edit"
 msgstr "Modifier"
+
+msgid "edit"
+msgstr "modifier"
 
 msgid "Edit Name"
 msgstr "Modifier le nom"
@@ -1466,23 +1467,23 @@ msgstr "Unités de mesure"
 msgid "Member"
 msgstr "Membre"
 
-msgid "Member Email"
-msgstr "Email du membre"
-
 msgid "member email"
 msgstr "email du membre"
 
-msgid "Member Name"
-msgstr "Nom de membre"
+msgid "Member Email"
+msgstr "Email du membre"
 
 msgid "member name"
 msgstr "nom de membre"
 
-msgid "Member Role"
-msgstr "Rôle de membre"
+msgid "Member Name"
+msgstr "Nom de membre"
 
 msgid "member role"
 msgstr "rôle de membre"
+
+msgid "Member Role"
+msgstr "Rôle de membre"
 
 msgid "Members"
 msgstr "Membres"
@@ -1724,11 +1725,11 @@ msgstr "Organisations:"
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Écraser les données?"
 
-msgid "Owner"
-msgstr "Propriétaire"
-
 msgid "owner"
 msgstr "propriétaire"
+
+msgid "Owner"
+msgstr "Propriétaire"
 
 msgid "Owner Address"
 msgstr "Adresse du propriétaire"
@@ -1866,9 +1867,6 @@ msgstr "Correspondances possibles à partir de la source"
 msgid "Preparing your inventory for deletion"
 msgstr "Préparer votre inventaire pour la suppression"
 
-msgid "Profile Name"
-msgstr "Nom de préréglage"
-
 msgid "Preview"
 msgstr "Aperçu"
 
@@ -1888,7 +1886,10 @@ msgid "Profile Info"
 msgstr "Informations sur le profil"
 
 msgid "Profile Information"
-msgstr "Renseignements sur le profil"
+msgstr "Informations sur le profil"
+
+msgid "Profile Name"
+msgstr "Nom de profil"
 
 #: seed/models/models.py:239
 msgid "Project"
@@ -2045,8 +2046,9 @@ msgid "Removing buildings from project"
 msgstr "Retrait des bâtiments du projet"
 
 msgid "Rename Profile"
-msgstr "Renommer le préréglage"
+msgstr "Renommer le profil"
 
+#, fuzzy
 msgid "Rename your Profile"
 msgstr "Renommez votre préréglage"
 
@@ -2124,11 +2126,11 @@ msgstr "Rangée 4"
 msgid "Row 5"
 msgstr "Rangée 5"
 
-msgid "save"
-msgstr "enregistrer"
-
 msgid "Save"
 msgstr "Enregistrer"
+
+msgid "save"
+msgstr "enregistrer"
 
 msgid "Save Changes"
 msgstr "Enregistrer Les Modifications"
@@ -2392,7 +2394,7 @@ msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
 
 msgid "Switch Profiles"
-msgstr "Commuter les préréglages"
+msgstr "Changer de profil"
 
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
@@ -2807,7 +2809,7 @@ msgid "You successfully created the project"
 msgstr "Vous avez réussi à créer le projet"
 
 msgid "You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?"
-msgstr "Vous perdrez vos modifications non enregistrées si vous changez de préréglage sans enregistrer. Voulez-vous continuer?"
+msgstr "Vous perdrez vos modifications non enregistrées si vous changez de profil sans enregistrer. Voulez-vous continuer?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"
