@@ -15,4 +15,9 @@ class Migration(migrations.Migration):
             old_name='ColumnMappingPreset',
             new_name='ColumnMappingProfile',
         ),
+        migrations.RenameField(
+            model_name='columnmappingprofile',
+            old_name='preset_type',
+            new_name='profile_type',
+        ),
     ]
