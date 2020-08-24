@@ -6,18 +6,16 @@
 """
 
 from rest_framework import serializers
-from seed.models.data_quality import Rule
+from seed.models.data_quality import Rule, DataQualityCheck
 from seed.models import StatusLabel
 
 
 class RuleSerializer(serializers.ModelSerializer):
-    data_type = serializers.CharField(source='get_data_type_display', required=False)
     status_label = serializers.PrimaryKeyRelatedField(
         queryset=StatusLabel.objects.all(),
         allow_null=True,
         required=False
     )
-    severity = serializers.CharField(source='get_severity_display', required=False)
 
     class Meta:
         model = Rule
@@ -38,6 +36,13 @@ class RuleSerializer(serializers.ModelSerializer):
             'text_match',
             'units',
         ]
+
+    def create(self, validated_data):
+        # For now, use an Org ID to find the DQ Check ID to apply (later, use the DQ Check ID directly)
+        org_id = self.context['request'].parser_context['kwargs']['nested_organization_id']
+        validated_data['data_quality_check_id'] = DataQualityCheck.retrieve(org_id).id
+
+        return Rule.objects.create(**validated_data)
 
     def validate_status_label(self, label):
         """
@@ -62,26 +67,33 @@ class RuleSerializer(serializers.ModelSerializer):
         that field is in 'data'.
         """
         data_invalid = False
-        validation_messages = []
+        validation_message = ''
 
         # Rule with SEVERITY setting of "valid" should have a Label.
-        severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
-        severity_unchanged = 'get_severity_display' not in data
-        severity_will_be_valid = data.get('get_severity_display') == dict(Rule.SEVERITY)[Rule.SEVERITY_VALID]
+        if self.instance is None:
+            # Rule is new
+            severity_is_valid = False
+            label_is_not_associated = False
+        else:
+            severity_is_valid = self.instance.severity == Rule.SEVERITY_VALID
+            label_is_not_associated = self.instance.status_label is None
+        severity_unchanged = 'severity' not in data
+        severity_will_be_valid = data.get('severity') == Rule.SEVERITY_VALID
 
         if (severity_is_valid and severity_unchanged) or severity_will_be_valid:
             # Defaulting to "FOO" enables a value check of either "" or None (even if key doesn't exist)
             label_will_be_removed = data.get('status_label', "FOO") in ["", None]
-            label_is_not_associated = self.instance.status_label is None
             label_unchanged = 'status_label' not in data
             if label_will_be_removed or (label_is_not_associated and label_unchanged):
                 data_invalid = True
-                validation_messages.append(
-                    'Label must be assigned when using \'Valid\' Data Severity.'
-                )
+                validation_message += 'Label must be assigned when using \'Valid\' Data Severity. '
 
         # Rule must NOT include or exclude an empty string.
-        is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
+        if self.instance is None:
+            # Rule is new, so severity "could not have been" include or exclude.
+            is_include_or_exclude = False
+        else:
+            is_include_or_exclude = self.instance.condition in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
         condition_unchanged = 'condition' not in data
         will_be_include_or_exclude = data.get('condition') in [Rule.RULE_INCLUDE, Rule.RULE_EXCLUDE]
 
@@ -93,13 +105,11 @@ class RuleSerializer(serializers.ModelSerializer):
 
             if text_match_will_be_empty or (text_match_is_empty and text_match_unchanged):
                 data_invalid = True
-                validation_messages.append(
-                    'Rule must not include or exclude an empty string.'
-                )
+                validation_message += 'Rule must not include or exclude an empty string. '
 
         if data_invalid:
             raise serializers.ValidationError({
-                'general_validation_error': validation_messages
+                'message': validation_message
             })
         else:
             return data
