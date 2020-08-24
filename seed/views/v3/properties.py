@@ -1181,7 +1181,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                'preset_id',
+                'profile_id',
                 required=True,
                 description='ID of a BuildingSync ColumnMappingProfile'
             ),
@@ -1193,7 +1193,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Return BuildingSync representation of the property
         """
-        profile_pk = request.GET.get('preset_id')
+        profile_pk = request.GET.get('profile_id')
         org_id = self.get_organization(self.request)
         try:
             profile_pk = int(profile_pk)
@@ -1203,7 +1203,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except TypeError:
             return JsonResponse({
                 'success': False,
-                'message': 'Query param `preset_id` is either missing or invalid'
+                'message': 'Query param `profile_id` is either missing or invalid'
             }, status=status.HTTP_400_BAD_REQUEST)
         except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
