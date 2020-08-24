@@ -7,6 +7,11 @@
 # Then, as shown in the code below, move the unzipped .json files into the
 # seed/static/seed/locales directory.
 
+if [[ ! -f lokalise.cfg ]]; then
+  echo "Missing lokalise.cfg. Copy from lokalise.cfg.example"
+  exit 1
+fi
+
 tmp=tmp/angular_locales
 dest=seed/static/seed/locales
 
