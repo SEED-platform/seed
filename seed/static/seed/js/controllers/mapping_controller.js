@@ -778,7 +778,7 @@ angular.module('BE.seed.controller.mapping', [])
             uploaded: function () {
               return $scope.import_file.created;
             },
-            importFileId: function () {
+            run_id: function () {
               return $scope.import_file.id;
             },
             orgId: _.constant($scope.organization.id)
