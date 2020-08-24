@@ -1171,7 +1171,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        response = self.client.get(url, {'preset_id': profile.id})
+        response = self.client.get(url, {'profile_id': profile.id})
 
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
@@ -1211,9 +1211,9 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        default_export_response = self.client.get(url, {'preset_id': default_profile.id})
+        default_export_response = self.client.get(url, {'profile_id': default_profile.id})
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        custom_export_response = self.client.get(url, {'preset_id': custom_profile.id})
+        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id})
 
         # -- Assert
         self.assertEqual(200, default_export_response.status_code, default_export_response.content)

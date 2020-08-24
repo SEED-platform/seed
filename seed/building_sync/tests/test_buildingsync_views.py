@@ -65,7 +65,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         # go to buildingsync endpoint
         params = {
             'organization_id': self.org.pk,
-            'preset_id': self.default_bsync_profile.id
+            'profile_id': self.default_bsync_profile.id
         }
         url = reverse('api:v3:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
@@ -94,7 +94,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v3:properties-building-sync', args=[property_id])
-        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_profile.id})
+        response = self.client.get(url, {'organization_id': self.org.pk, 'profile_id': self.default_bsync_profile.id})
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>',
                       response.content.decode("utf-8"))
 
@@ -184,6 +184,6 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
         url = reverse('api:v3:properties-building-sync', args=[property_id])
-        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_profile.id})
+        response = self.client.get(url, {'organization_id': self.org.pk, 'profile_id': self.default_bsync_profile.id})
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
                       response.content.decode('utf-8'))
