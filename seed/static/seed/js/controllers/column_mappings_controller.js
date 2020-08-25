@@ -10,16 +10,16 @@ angular.module('BE.seed.controller.column_mappings', [])
     '$uibModal',
     'Notification',
     'auth_payload',
-    'column_mapping_presets_payload',
+    'column_mapping_profiles_payload',
     'column_mappings_service',
     'inventory_service',
     'mappable_property_columns_payload',
     'mappable_taxlot_columns_payload',
     'organization_payload',
     'urls',
-    'COLUMN_MAPPING_PRESET_TYPE_NORMAL',
-    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
-    'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+    'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
+    'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
+    'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
       $state,
@@ -27,16 +27,16 @@ angular.module('BE.seed.controller.column_mappings', [])
       $uibModal,
       Notification,
       auth_payload,
-      column_mapping_presets_payload,
+      column_mapping_profiles_payload,
       column_mappings_service,
       inventory_service,
       mappable_property_columns_payload,
       mappable_taxlot_columns_payload,
       organization_payload,
       urls,
-      COLUMN_MAPPING_PRESET_TYPE_NORMAL,
-      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-      COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+      COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
+      COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+      COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -80,13 +80,13 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       // On page load, convert DB field names to display names
-      _.forEach(column_mapping_presets_payload, function (preset) {
-        _.forEach(preset.mappings, mapping_db_to_display);
+      _.forEach(column_mapping_profiles_payload, function (profile) {
+        _.forEach(profile.mappings, mapping_db_to_display);
       });
 
-      $scope.presets = column_mapping_presets_payload;
+      $scope.profiles = column_mapping_profiles_payload;
 
-      $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
+      $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
 
       // Inventory Types
       $scope.setAllFields = '';
@@ -99,7 +99,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       }];
 
       var analyze_chosen_inventory_types = function () {
-        var chosenTypes = _.uniq(_.map($scope.current_preset.mappings, 'to_table_name'));
+        var chosenTypes = _.uniq(_.map($scope.current_profile.mappings, 'to_table_name'));
 
         if (chosenTypes.length === 1) {
           $scope.setAllFields = _.find($scope.setAllFieldsOptions, {value: chosenTypes[0]});
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.setAllInventoryTypes = function () {
-        _.forEach($scope.current_preset.mappings, function (mapping) {
+        _.forEach($scope.current_profile.mappings, function (mapping) {
           if (mapping.to_table_name !== $scope.setAllFields.value) {
             mapping.to_table_name = $scope.setAllFields.value;
             $scope.flag_change();
@@ -126,89 +126,89 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
-      // Preset-level CRUD modal-rending actions
-      $scope.new_preset = function () {
-        var presetData = JSON.parse(JSON.stringify($scope.current_preset));
-        // change the preset type to custom if we've edited a default preset
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
-          presetData.preset_type = COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM;
+      // Profile-level CRUD modal-rending actions
+      $scope.new_profile = function () {
+        var profileData = JSON.parse(JSON.stringify($scope.current_profile));
+        // change the profile type to custom if we've edited a default profile
+        if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) {
+          profileData.profile_type = COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM;
         }
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: _.constant(presetData),
+            data: _.constant(profileData),
             org_id: _.constant($scope.org.id)
           }
         });
 
-        modalInstance.result.then(function (new_preset) {
-          $scope.presets.push(new_preset);
-          $scope.dropdown_selected_preset = $scope.current_preset = _.last($scope.presets);
+        modalInstance.result.then(function (new_profile) {
+          $scope.profiles.push(new_profile);
+          $scope.dropdown_selected_profile = $scope.current_profile = _.last($scope.profiles);
 
           $scope.changes_possible = false;
-          Notification.primary('Saved ' + $scope.current_preset.name);
+          Notification.primary('Saved ' + $scope.current_profile.name);
         });
       };
 
-      $scope.rename_preset = function () {
-        var old_name = $scope.current_preset.name;
+      $scope.rename_profile = function () {
+        var old_name = $scope.current_profile.name;
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('rename'),
-            data: _.constant($scope.current_preset),
+            data: _.constant($scope.current_profile),
             org_id: _.constant($scope.org.id)
           }
         });
 
         modalInstance.result.then(function (new_name) {
-          var preset_index = _.findIndex($scope.presets, ['id', $scope.dropdown_selected_preset.id]);
-          $scope.presets[preset_index].name = new_name;
+          var profile_index = _.findIndex($scope.profiles, ['id', $scope.dropdown_selected_profile.id]);
+          $scope.profiles[profile_index].name = new_name;
 
           Notification.primary('Renamed ' + old_name + ' to ' + new_name);
         });
       };
 
-      $scope.remove_preset = function () {
-        var old_preset = angular.copy($scope.current_preset);
+      $scope.remove_profile = function () {
+        var old_profile = angular.copy($scope.current_profile);
 
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/column_mapping_preset_modal.html',
-          controller: 'column_mapping_preset_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/column_mapping_profile_modal.html',
+          controller: 'column_mapping_profile_modal_controller',
           resolve: {
             action: _.constant('remove'),
-            data: _.constant($scope.current_preset),
+            data: _.constant($scope.current_profile),
             org_id: _.constant($scope.org.id)
           }
         });
 
         modalInstance.result.then(function () {
-          _.remove($scope.presets, old_preset);
-          $scope.dropdown_selected_preset = $scope.current_preset = $scope.presets[0] || {};
+          _.remove($scope.profiles, old_profile);
+          $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
           $scope.changes_possible = false;
         });
       };
 
-      $scope.save_preset = function () {
+      $scope.save_profile = function () {
         // If applicable, convert display names to db names for saving
-        _.forEach($scope.current_preset.mappings, mapping_display_to_db);
-        var updated_data = {mappings: $scope.current_preset.mappings};
+        _.forEach($scope.current_profile.mappings, mapping_display_to_db);
+        var updated_data = {mappings: $scope.current_profile.mappings};
 
-        column_mappings_service.update_column_mapping_preset($scope.org.id, $scope.current_preset.id, updated_data).then(function (result) {
+        column_mappings_service.update_column_mapping_profile($scope.org.id, $scope.current_profile.id, updated_data).then(function (result) {
           // If applicable, convert db names back to display names for rendering
-          _.forEach($scope.current_preset.mappings, mapping_db_to_display);
-          $scope.current_preset.updated = result.data.updated;
+          _.forEach($scope.current_profile.mappings, mapping_db_to_display);
+          $scope.current_profile.updated = result.data.updated;
 
-          var preset_id = $scope.current_preset.id;
-          _.find($scope.presets, ['id', preset_id]).mappings = $scope.current_preset.mappings;
+          var profile_id = $scope.current_profile.id;
+          _.find($scope.profiles, ['id', profile_id]).mappings = $scope.current_profile.mappings;
 
           $scope.changes_possible = false;
-          Notification.primary('Saved ' + $scope.current_preset.name);
+          Notification.primary('Saved ' + $scope.current_profile.name);
         });
       };
 
@@ -222,16 +222,16 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.check_for_changes = function () {
         if ($scope.changes_possible) {
           $uibModal.open({
-            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch presets without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Presets</button></div>'
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch profiles without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Profiles</button></div>'
           }).result.then(function () {
             $scope.changes_possible = false;
           }).catch(function () {
-            $scope.dropdown_selected_preset = $scope.current_preset;
+            $scope.dropdown_selected_profile = $scope.current_profile;
             return;
           });
         }
 
-        $scope.current_preset = $scope.dropdown_selected_preset;
+        $scope.current_profile = $scope.dropdown_selected_profile;
         analyze_chosen_inventory_types();
       };
 
@@ -252,21 +252,21 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.add_new_column = function () {
         var empty_row = {from_field: '', from_units: null, to_field: '', to_table_name: ''};
 
-        if ($scope.current_preset.mappings[0]) {
-          $scope.current_preset.mappings.push(empty_row);
+        if ($scope.current_profile.mappings[0]) {
+          $scope.current_profile.mappings.push(empty_row);
         } else {
-          $scope.current_preset.mappings = [empty_row];
+          $scope.current_profile.mappings = [empty_row];
         }
         $scope.flag_change();
       };
 
       $scope.remove_column = function (index) {
-        $scope.current_preset.mappings.splice(index, 1);
+        $scope.current_profile.mappings.splice(index, 1);
         $scope.flag_change();
       };
 
       $scope.remove_all_columns = function () {
-        $scope.current_preset.mappings = [];
+        $scope.current_profile.mappings = [];
         $scope.flag_change();
       };
 
@@ -284,10 +284,10 @@ angular.module('BE.seed.controller.column_mappings', [])
                       '<button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Yes</button>' +
                     '</div>'
         }).result.then(function () {
-          $scope.current_preset.mappings = [];
+          $scope.current_profile.mappings = [];
           _.forEach($scope.csv_headers.split(','), function (col_header) {
             $scope.add_new_column();
-            _.last($scope.current_preset.mappings).from_field = col_header;
+            _.last($scope.current_profile.mappings).from_field = col_header;
           });
         }).catch(function () {
           return;
@@ -296,7 +296,7 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       // Copy Data File Header values into SEED Header values
       $scope.mirror_data_file_headers = function () {
-        _.forEach($scope.current_preset.mappings, function (mapping) {
+        _.forEach($scope.current_profile.mappings, function (mapping) {
           mapping.to_field = mapping.from_field;
         });
 
@@ -304,10 +304,10 @@ angular.module('BE.seed.controller.column_mappings', [])
       };
 
       $scope.suggestions_from_existing_columns = function () {
-        var raw_headers = _.map($scope.current_preset.mappings, 'from_field');
+        var raw_headers = _.map($scope.current_profile.mappings, 'from_field');
 
         column_mappings_service.get_header_suggestions(raw_headers).then(function (results) {
-          _.forEach($scope.current_preset.mappings, function (mapping) {
+          _.forEach($scope.current_profile.mappings, function (mapping) {
             var suggestion = results.data[mapping.from_field];
             mapping.to_table_name = suggestion[0];
             mapping.to_field = suggestion[1];
@@ -318,14 +318,14 @@ angular.module('BE.seed.controller.column_mappings', [])
         });
       };
 
-      // Identify individual header duplicates and if a preset has header duplicates
+      // Identify individual header duplicates and if a profile has header duplicates
       $scope.is_file_header_duplicate = function (mapping) {
-        var mapping_by_from_field = _.filter($scope.current_preset.mappings, {from_field: mapping.from_field});
+        var mapping_by_from_field = _.filter($scope.current_profile.mappings, {from_field: mapping.from_field});
         return mapping_by_from_field.length > 1;
       };
 
       $scope.header_duplicates_present = function () {
-        var grouped_by_from_field = _.groupBy($scope.current_preset.mappings, 'from_field');
+        var grouped_by_from_field = _.groupBy($scope.current_profile.mappings, 'from_field');
 
         return Boolean(_.find(
           _.values(grouped_by_from_field), function (group) {
@@ -334,16 +334,16 @@ angular.module('BE.seed.controller.column_mappings', [])
         );
       };
 
-      $scope.preset_action_ok = function (action) {
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_NORMAL) {
+      $scope.profile_action_ok = function (action) {
+        if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_NORMAL) {
           return true;
         }
 
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT) {
+        if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) {
           return false;
         }
 
-        if ($scope.current_preset.preset_type === COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM) {
+        if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM) {
           var allowed_actions = [
             'update',
             'rename',
@@ -354,7 +354,7 @@ angular.module('BE.seed.controller.column_mappings', [])
           return allowed_actions.includes(action);
         }
 
-        $log.warn('Unknown preset type "' + $scope.current_preset.preset_type + '"');
+        $log.warn('Unknown profile type "' + $scope.current_profile.profile_type + '"');
         return false;
       };
     }]);

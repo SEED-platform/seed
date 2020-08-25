@@ -28,7 +28,7 @@ from seed.data_importer.models import (
     ImportRecord,
 )
 from seed.data_importer.tasks import match_buildings, save_raw_data
-from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 from seed.models import (
     DATA_STATE_MAPPING,
@@ -43,7 +43,7 @@ from seed.models import (
     Column,
     BuildingFile,
     Scenario,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
     Organization,
 )
 from seed.test_helpers.fake import (
@@ -1160,24 +1160,24 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
         self.client.login(**user_details)
 
-    def test_export_bsync_works_with_default_preset(self):
+    def test_export_bsync_works_with_default_profile(self):
         # -- Setup
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         view = PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+        profile = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        response = self.client.get(url, {'preset_id': preset.id})
+        response = self.client.get(url, {'profile_id': profile.id})
 
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
 
-    def test_export_bsync_works_with_custom_preset(self):
-        """Tests that using a different column mapping preset from the default
+    def test_export_bsync_works_with_custom_profile(self):
+        """Tests that using a different column mapping profile from the default
         results in a different xml output
         """
         # -- Setup
@@ -1194,26 +1194,26 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
             property=prprty, cycle=self.cycle, state=state
         )
 
-        # create a preset mapping where longitude and latitude are swapped
-        preset_mappings = default_buildingsync_preset_mappings()
-        for mapping in preset_mappings:
+        # create a profile mapping where longitude and latitude are swapped
+        profile_mappings = default_buildingsync_profile_mappings()
+        for mapping in profile_mappings:
             if mapping['to_field'] == 'longitude':
                 mapping['to_field'] = 'latitude'
             elif mapping['to_field'] == 'latitude':
                 mapping['to_field'] = 'longitude'
 
-        custom_preset_name = 'BSync Custom Preset'
-        self.org.columnmappingpreset_set.create(name=custom_preset_name, mappings=preset_mappings, preset_type=ColumnMappingPreset.BUILDINGSYNC_CUSTOM)
-        custom_preset = self.org.columnmappingpreset_set.get(name=custom_preset_name)
+        custom_profile_name = 'BSync Custom Profile'
+        self.org.columnmappingprofile_set.create(name=custom_profile_name, mappings=profile_mappings, profile_type=ColumnMappingProfile.BUILDINGSYNC_CUSTOM)
+        custom_profile = self.org.columnmappingprofile_set.get(name=custom_profile_name)
 
-        # grab the default preset to export with for comparison
-        default_preset = self.org.columnmappingpreset_set.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+        # grab the default profile to export with for comparison
+        default_profile = self.org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         # -- Act
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        default_export_response = self.client.get(url, {'preset_id': default_preset.id})
+        default_export_response = self.client.get(url, {'profile_id': default_profile.id})
         url = reverse('api:v3:properties-building-sync', args=[view.id])
-        custom_export_response = self.client.get(url, {'preset_id': custom_preset.id})
+        custom_export_response = self.client.get(url, {'profile_id': custom_profile.id})
 
         # -- Assert
         self.assertEqual(200, default_export_response.status_code, default_export_response.content)

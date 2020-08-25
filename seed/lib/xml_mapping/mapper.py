@@ -25,8 +25,8 @@ def build_column_mapping(base_mapping=None, custom_mapping=None):
     }
 
 
-def default_buildingsync_preset_mappings():
-    """Returns the default ColumnMappingPreset mappings for BuildingSync
+def default_buildingsync_profile_mappings():
+    """Returns the default ColumnMappingProfile mappings for BuildingSync
     :return: list
     """
     # taken from mapping partial (./static/seed/partials/mapping.html)

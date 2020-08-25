@@ -8,10 +8,10 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     Column,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
     Organization,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
+from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class
 
 from rest_framework.viewsets import ViewSet
@@ -31,13 +31,13 @@ class ColumnMappingPresetViewSet(ViewSet):
              paramType: query
         """
         try:
-            preset_types = request.GET.getlist('preset_type')
-            preset_types = [ColumnMappingPreset.get_preset_type(pt) for pt in preset_types]
+            profile_types = request.GET.getlist('profile_type')
+            profile_types = [ColumnMappingProfile.get_profile_type(pt) for pt in profile_types]
             filter_params = {'organizations__pk': request.query_params.get('organization_id', None)}
-            if preset_types:
-                filter_params['preset_type__in'] = preset_types
-            presets = ColumnMappingPreset.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in presets]
+            if profile_types:
+                filter_params['profile_type__in'] = profile_types
+            presets = ColumnMappingProfile.objects.filter(**filter_params)
+            data = [ColumnMappingProfileSerializer(p).data for p in presets]
 
             return JsonResponse({
                 'status': 'success',
@@ -70,14 +70,14 @@ class ColumnMappingPresetViewSet(ViewSet):
               paramType: body
         """
         try:
-            preset = ColumnMappingPreset.objects.get(pk=pk)
-        except ColumnMappingPreset.DoesNotExist:
+            preset = ColumnMappingProfile.objects.get(pk=pk)
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'data': 'No preset with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Default BuildingSync presets are not editable'
@@ -91,7 +91,7 @@ class ColumnMappingPresetViewSet(ViewSet):
 
         # update the mappings according to the preset type
         if updated_mappings is not None:
-            if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
+            if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
@@ -114,7 +114,7 @@ class ColumnMappingPresetViewSet(ViewSet):
         preset.save()
         return JsonResponse({
             'status': 'success',
-            'data': ColumnMappingPresetSerializer(preset).data,
+            'data': ColumnMappingProfileSerializer(preset).data,
         })
 
     @api_endpoint_class
@@ -144,11 +144,11 @@ class ColumnMappingPresetViewSet(ViewSet):
 
             preset_data = request.data
             preset_data['organizations'] = [org_id]
-            ser_preset = ColumnMappingPresetSerializer(data=preset_data)
+            ser_preset = ColumnMappingProfileSerializer(data=preset_data)
             if ser_preset.is_valid():
                 preset = ser_preset.save()
                 response_status = 'success'
-                response_data = ColumnMappingPresetSerializer(preset).data
+                response_data = ColumnMappingProfileSerializer(preset).data
                 response_code = HTTP_200_OK
             else:
                 response_status = 'error'
@@ -177,14 +177,14 @@ class ColumnMappingPresetViewSet(ViewSet):
               paramType: path
         """
         try:
-            preset = ColumnMappingPreset.objects.get(pk=pk)
+            preset = ColumnMappingProfile.objects.get(pk=pk)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if preset.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if preset.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Not allowed to edit default BuildingSync presets'
