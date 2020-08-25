@@ -69,21 +69,22 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.data = data;
         $scope.geocoded_data = _.filter($scope.data, 'long_lat');
         $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
+        $scope.bb_data = _.filter($scope.data, 'bounding_box');
 
-        // buildings with UBID bounding boxes
-        if ($scope.inventory_type == 'properties') $scope.bb_data = _.filter($scope.data, 'bounding_box');
-        else {
-          var taxlots = [];
-          _.each($scope.data, function(record) {
+        // buildings with UBID bounding boxesand gecoded data
+        var geocodedRelated = function(data, field) {
+          var related = [];
+          _.each(data, function(record) {
             if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
-              var bb_taxlots = _.filter(record.related, 'bounding_box');
-              taxlots = _.concat(taxlots, bb_taxlots);
-            } else {
-              if (!_.isNull(record['bounding_box'])) taxlots = _.concat(taxlots, record);
+              related = _.concat(related, _.filter(record.related, field));
             }
           });
-          $scope.bb_data = _.uniqBy(taxlots, 'id');
-        }
+          return _.uniqBy(related, 'id');
+        };
+        $scope.bb_related = geocodedRelated($scope.data, 'bounding_box');
+        $scope.geocoded_related = geocodedRelated($scope.data, 'long_lat');
+        $scope.bb_data = !_.isEmpty($scope.bb_data) ? $scope.bb_data : $scope.bb_related;
+        $scope.geocoded_data = !_.isEmpty($scope.geocoded_data) ? $scope.geocoded_data : $scope.geocoded_related;
 
         // store a mapping of layers z-index and visibility
         $scope.layers = {};

@@ -379,10 +379,9 @@ class TaxLotProperty(models.Model):
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
             obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
+            obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
 
             # store the property / taxlot data to the object dictionary as well. This is hacky.
-            # bring in GIS data
-            obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
             if lookups['obj_class'] == 'PropertyView':
                 if 'campus' in filtered_fields:
                     obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
