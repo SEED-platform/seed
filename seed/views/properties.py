@@ -815,13 +815,27 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
               required: false
               paramType: query
         """
-        organization_id = int(request.query_params.get('organization_id'))
-        only_used = json.loads(request.query_params.get('only_used', 'false'))
-        columns = Column.retrieve_all(organization_id, 'property', only_used)
-        organization = Organization.objects.get(pk=organization_id)
-        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
+        org_id = request.query_params.get('organization_id', None)
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+        org_id = int(org_id)
 
-        return JsonResponse({'status': 'success', 'columns': unitted_columns})
+        try:
+            Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'organization with id %s does not exist' % org_id
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
+        columns = Column.retrieve_all(org_id, 'property', only_used)
+        organization = Organization.objects.get(pk=org_id)
+        columns_with_units = [add_pint_unit_suffix(organization, x) for x in columns]
+
+        return JsonResponse({'status': 'success', 'columns': columns_with_units})
 
     @api_endpoint_class
     @ajax_request_class
