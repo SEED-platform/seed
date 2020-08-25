@@ -5,12 +5,7 @@
 angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
     '$http',
     'user_service',
-    // 'cycle_id',
-    // 'columns',
-    // 'inventory_type',
-    // 'profile_id',
     function ($http, user_service) {
-      // , cycle_id, columns, inventory_type, profile_id
       var template_factory = {};
       /** Post_office Service:
        --------------------------------------------------
@@ -39,8 +34,6 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
         return $http.get('/api/v3/postoffice/', {
           params: {
             organization_id: user_service.get_organization().id,
-            // cycle_id: cycle_id,
-            // inventory_type: inventory_type
           }
         }).then(function (response) {
           return response.data.data;
@@ -54,15 +47,14 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
         console.log(inventory_id);
         console.log(inventory_type);
         return $http.post('/api/v3/postoffice_email/', {
-            from_email: "hello@example.com",
+            // The from email_field has to be passed to the view, can put a dummy email in place. 
+            from_email: "dummy_email@example.com",
             name: template_name,
             inventory_id: inventory_id,
             inventory_type: inventory_type
         },{
           params: {
             organization_id: user_service.get_organization().id,
-            // cycle_id: cycle_id,
-            // inventory_type: inventory_type
           }
         }).then(function (response) {
           return response.data;

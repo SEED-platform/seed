@@ -29,6 +29,7 @@ from .analysis_property_views import *  # noqa
 from .analysis_input_files import *  # noqa
 from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
+from .postoffice import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

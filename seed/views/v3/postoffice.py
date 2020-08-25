@@ -7,17 +7,12 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 
 """
-# from seed.filtersets import CycleFilterSet
-#from helix.models import HELIXGreenAssessment as GreenAssessment
-# from seed.models import Cycle
-from post_office.models import EmailTemplate, Email
+
 from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 from seed.models import PropertyState, TaxLotState
-from post_office import mail
-
-
-
+from seed.models import PostOfficeEmail, PostOfficeEmailTemplate
+from post_office import mail                      
 
 # Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
@@ -146,7 +141,7 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
             :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
             :required: false
     """
-    model = EmailTemplate
+    model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
 
@@ -155,12 +150,17 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         # temp_id = self.get_templates(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
         # print(EmailTemplate.objects.order_by('name'))
-        return EmailTemplate.objects.order_by('name')
+        return PostOfficeEmailTemplate.objects.order_by('name')
+
+    def perform_create(self, serializer):
+        org_id = self.get_organization(self.request)
+        user = self.request.user
+        serializer.save(organization_id=org_id, user=user)
 
 
 
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
-    model = Email
+    model = PostOfficeEmail
     serializer_class = PostOfficeEmailSerializer
     pagination_class = None
 
@@ -171,7 +171,7 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         # temp_id = self.get_templates(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
         # print(EmailTemplate.objects.order_by('name'))
-        return Email.objects.all()
+        return PostOfficeEmail.objects.all()
         
 
     def perform_create(self, serializer):
@@ -194,6 +194,9 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         # user = self.request.user
         # serializer.save(organization_id=org_id, user=user)
 
+
+        #HANDLE TEMPLATE DOES NOT EXIST
+
         print("BACKEND")
         name = self.request.data.get('name')
         print(name)
@@ -209,13 +212,44 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             State = TaxLotState
         # QuerySet is returned when calling values_list() function, so we convert it into a list 
         email_list = list(State.objects.filter(id__in=inventory_id).values_list('owner_email', flat=True))
-        mail.send(
-            email_list,
-            # self.request.data.get(from_email)
-            'from@example.com',
-            template = EmailTemplate.objects.get(name=name),
-            backend = 'post_office_backend',
-        )
+        email_sender = 'from@example.com'
+
+        # org_id = self.get_organization(self.request)
+        # user = self.request.user
+        # serializer.save(organization_id=org_id, user=user)
+        ptr = mail.send(
+                email_list,
+                # self.request.data.get(from_email)
+                email_sender,
+                template = PostOfficeEmailTemplate.objects.get(name=name),
+                backend = 'post_office_backend')
+    
+        org = self.get_organization(self.request)
+        user = self.request.user
+        # Assigning all the fields inside of postoffice to seed_postoffice
+        email_data = {
+            'email_ptr_id': ptr.id, 
+            'from_email': ptr.from_email,
+            'to': ptr.to, 
+            'cc': ptr.cc, 
+            'bcc': ptr.bcc, 
+            'subject': ptr.subject, 
+            'message': ptr.message, 
+            'html_message': ptr.message,
+            'status': ptr.status, 
+            'priority': ptr.priority, 
+            'created': ptr.created, 
+            'last_updated': ptr.last_updated,
+            'scheduled_time': ptr.scheduled_time,
+            'headers': ptr.headers,
+            'context': ptr.context,  
+            'template_id': ptr.template_id,
+            'backend_alias': ptr.backend_alias,
+            'number_of_retries': ptr.number_of_retries,  
+            'expires_at': ptr.expires_at
+        }
+
+        serializer.save(**email_data, organization_id=org, user=user)
         
 
 

@@ -120,7 +120,7 @@ BEAM_APPS = (
     'post_office',
 )
 
-# Added by Ashray Wadhwa
+# Added by Ashray Wadhwa (08/19/2020)
 POST_OFFICE = {
     'BACKENDS': {
         'default': 'smtp.EmailBackend',

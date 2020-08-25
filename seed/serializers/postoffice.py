@@ -6,26 +6,24 @@
 """
 from rest_framework import serializers
 
-from post_office.models import EmailTemplate, Email
+# from post_office.models import EmailTemplate, Email
+from seed.models import PostOfficeEmail as Email, PostOfficeEmailTemplate as EmailTemplate
 
-import post_office.fields
+# import post_office.fields
 
 
 
 class PostOfficeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailTemplate
-        fields = ('id', 'name','description', 'subject','content' ,'html_content','created','last_updated', 'default_template_id', 'language')
+        fields = ('id','name','description','subject','content','html_content','created','last_updated','default_template_id','language')
 
 
 class PostOfficeEmailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Email
-        fields = '__all__'
-        # '__all__'
-        # ('from_email', 'message')
-        # ('from_email','to', 'cc', 'bcc', 'subject', 'message', 'html_message', 'status', 'priority', 'created', 'last_updated', 'scheduled_time', 'expires_at', 'number_of_retries', 'headers', 'template', )
-        # 'status'
-        # extra_kwargs = {
-        #     'organization': {'read_only': True}
-        # }
+        fields =  ('id', 'from_email','to', 'cc', 'bcc', 'subject', 'message', 'html_message', 'status', 'priority', 'created', 'last_updated', 'scheduled_time', 'headers', 'context', 'template_id', 'backend_alias', 'number_of_retries', 'expires_at') 
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'organization': {'read_only': True}
+        }
