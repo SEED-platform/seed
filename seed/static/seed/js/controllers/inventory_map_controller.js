@@ -400,7 +400,6 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         $scope.toggle_layer = function (z_index) {
-          console.log($scope.inventory_type, "z_index: ", z_index);
           if ($scope.layerVisible(z_index)) {
             $scope.map.removeLayer(layer_at_z_index[z_index]);
           } else {
