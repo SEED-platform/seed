@@ -5,10 +5,10 @@ angular.module('BE.seed.service.geocode', [])
     function ($http, user_service) {
       var geocode_factory = {};
 
-      geocode_factory.geocode_by_ids = function (property_state_ids, taxlot_state_ids) {
+      geocode_factory.geocode_by_ids = function (property_view_ids, taxlot_view_ids) {
         return $http.post('/api/v3/geocode/geocode_by_ids/', {
-          property_ids: property_state_ids,
-          taxlot_ids: taxlot_state_ids
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
         }, {
           params: {
             organization_id: user_service.get_organization().id
@@ -18,10 +18,10 @@ angular.module('BE.seed.service.geocode', [])
         });
       };
 
-      geocode_factory.confidence_summary = function (property_state_ids, taxlot_state_ids) {
+      geocode_factory.confidence_summary = function (property_view_ids, taxlot_view_ids) {
         return $http.post('/api/v3/geocode/confidence_summary/', {
-          property_ids: property_state_ids,
-          tax_lot_ids: taxlot_state_ids
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
         }).then(function (response) {
           return response.data;
         });
@@ -29,7 +29,7 @@ angular.module('BE.seed.service.geocode', [])
 
       geocode_factory.check_org_has_api_key = function (org_id) {
         var params = {organization_id: org_id};
-        return $http.get('/api/v3/organizations/' + org_id + '/api_key_exists', {
+        return $http.get('/api/v3/organizations/' + org_id + '/geocode_api_key_exists/', {
           params: params
         }).then(function (response) {
           return response.data;
