@@ -69,7 +69,6 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.data = data;
         $scope.geocoded_data = _.filter($scope.data, 'long_lat');
         $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
-        $scope.bb_data = _.filter($scope.data, 'bounding_box');
 
         // buildings with UBID bounding boxesand gecoded data
         var geocodedRelated = function(data, field) {
@@ -81,10 +80,13 @@ angular.module('BE.seed.controller.inventory_map', [])
           });
           return _.uniqBy(related, 'id');
         };
-        $scope.bb_related = geocodedRelated($scope.data, 'bounding_box');
-        $scope.geocoded_related = geocodedRelated($scope.data, 'long_lat');
-        $scope.bb_data = !_.isEmpty($scope.bb_data) ? $scope.bb_data : $scope.bb_related;
-        $scope.geocoded_data = !_.isEmpty($scope.geocoded_data) ? $scope.geocoded_data : $scope.geocoded_related;
+        if ($scope.inventory_type === 'properties') {
+          $scope.property = _.filter($scope.data, 'bounding_box');
+          $scope.taxlot = geocodedRelated($scope.data, 'bounding_box');
+        } else {
+          $scope.property = geocodedRelated($scope.data, 'bounding_box');
+          $scope.taxlot = _.filter($scope.data, 'bounding_box');
+        }
 
         // store a mapping of layers z-index and visibility
         $scope.layers = {};
@@ -159,14 +161,14 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var buildingBBSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.bb_data;
+          if (_.isUndefined(records)) records = $scope.property;
           var features = _.map(records, buildingBB);
 
           return new ol.source.Vector({features: features});
         };
 
         var buildingCentroidSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.bb_data;
+          if (_.isUndefined(records)) records = $scope.property;
           var features = _.map(records, buildingCentroid);
 
           return new ol.source.Vector({features: features});
@@ -197,14 +199,14 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var taxlotBBSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.bb_data;
+          if (_.isUndefined(records)) records = $scope.taxlot;
           var features = _.map(records, taxlotBB);
 
           return new ol.source.Vector({features: features});
         };
 
         var taxlotCentroidSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.bb_data;
+          if (_.isUndefined(records)) records = $scope.taxlot;
           var features = _.map(records, taxlotCentroid);
 
           return new ol.source.Vector({features: features});
@@ -398,6 +400,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         $scope.toggle_layer = function (z_index) {
+          console.log($scope.inventory_type, "z_index: ", z_index);
           if ($scope.layerVisible(z_index)) {
             $scope.map.removeLayer(layer_at_z_index[z_index]);
           } else {
