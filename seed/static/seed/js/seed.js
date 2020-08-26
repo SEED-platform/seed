@@ -63,6 +63,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_org_modal',
   'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
+  'BE.seed.controller.email_templates',
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
@@ -105,8 +106,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal',
-  // HERE
-  // 'BE.seed.controller.email_template_modal'
+  
 ]);
 angular.module('BE.seed.filters', [
   'district',
@@ -1243,6 +1243,34 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           user_profile_payload: ['user_service', function (user_service) {
             return user_service.get_user_profile();
           }]
+        }
+      })
+      .state({
+        name: 'organization_email_templates',
+        url: '/accounts/{organization_id:int}/email_templates',
+        templateUrl: static_url + 'seed/partials/email_templates.html',
+        controller: 'email_templates_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          // cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
+          //   return cycle_service.get_cycles_for_org($stateParams.organization_id);
+          // }],
+          // auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+          //   var organization_id = $stateParams.organization_id;
+          //   return auth_service.is_authorized(organization_id, ['requires_owner'])
+          //     .then(function (data) {
+          //       if (data.auth.requires_owner) {
+          //         return data;
+          //       } else {
+          //         return $q.reject('not authorized');
+          //       }
+          //     }, function (data) {
+          //       return $q.reject(data.message);
+          //     });
+          // }]
         }
       })
       .state({

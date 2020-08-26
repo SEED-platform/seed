@@ -36,6 +36,7 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
             organization_id: user_service.get_organization().id,
           }
         }).then(function (response) {
+          console.log(response.data);
           return response.data.data;
         });
       };

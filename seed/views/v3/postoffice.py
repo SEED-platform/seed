@@ -16,131 +16,6 @@ from post_office import mail
 
 # Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
-    """API endpoint for viewing and creating cycles (time periods).
-
-        Returns::
-            {
-                'status': 'success',
-                'cycles': [
-                    {
-                        'id': Cycle`s primary key,
-                        'name': Name given to cycle,
-                        'start': Start date of cycle,
-                        'end': End date of cycle,
-                        'created': Created date of cycle,
-                        'properties_count': Count of properties in cycle,
-                        'taxlots_count': Count of tax lots in cycle,
-                        'organization': Id of organization cycle belongs to,
-                        'user': Id of user who created cycle
-                    }
-                ]
-            }
-
-
-    retrieve:
-        Return a cycle instance by pk if it is within user`s specified org.
-
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-
-    list:
-        Return all cycles available to user through user`s specified org.
-
-        :GET: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: name
-            :Description: optional name for filtering cycles
-            :required: false
-            :Parameter: start_lte
-            :Description: optional iso date for filtering by cycles
-                that start on or before the given date
-            :required: false
-            :Parameter: end_gte
-            :Description: optional iso date for filtering by cycles
-                that end on or after the given date
-            :required: false
-
-    create:
-        Create a new cycle within user`s specified org.
-
-        :POST: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: true
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-
-    delete:
-        Remove an existing cycle.
-
-        :DELETE: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-
-    update:
-        Update a cycle record.
-
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: true
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: true
-
-    partial_update:
-        Update one or more fields on an existing cycle.
-
-        :PUT: Expects organization_id in query string.
-        :Parameters:
-            :Parameter: organization_id
-            :Description: organization_id for this user`s organization
-            :required: true
-            :Parameter: cycle pk
-            :Description: id for desired cycle
-            :required: true
-            :Parameter: name
-            :Description: cycle name
-            :required: false
-            :Parameter: start
-            :Description: cycle start date. format: ``YYYY-MM-DDThh:mm``
-            :required: false
-            :Parameter: end
-            :Description: cycle end date. format: ``YYYY-MM-DDThh:mm``
-            :required: false
-    """
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
@@ -150,7 +25,9 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
         # temp_id = self.get_templates(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
         # print(EmailTemplate.objects.order_by('name'))
-        return PostOfficeEmailTemplate.objects.order_by('name')
+
+        # self.get_organization(self.request)
+        return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by('name')
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)

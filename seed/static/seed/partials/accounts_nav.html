@@ -7,5 +7,5 @@
      --><a ui-sref="organization_labels(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Labels</a><!--
      --><a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a><!--
      --><a ui-sref="organization_members(::{organization_id: org.id})" ui-sref-active="active" translate>Members</a><!--
-     --><a ui-sref="organization_members(::{organization_id: org.id})" translate>Email Templates</a><!--
+     --><a ui-sref="organization_email_templates(::{organization_id: org.id})" ui-sref-active="active" translate>Email Templates</a>
      --><a ui-sref="analyses(::{organization_id: org.id})" ui-sref-active="active" translate>Analyses</a>
