@@ -25,9 +25,9 @@ Mapping
 -------
 
 Once files are uploaded, file header columns need to be mapped to SEED columns. Mappings can be specified/decided manually for any particular file import,
-or mapping presets can be created and subsequently applied to any file imports.
+or mapping profiles can be created and subsequently applied to any file imports.
 
-When a column mapping preset is applied to an import file, file header columns defined in the preset must match exactly (spaces, lowercase, uppercase, etc.)
+When a column mapping profile is applied to an import file, file header columns defined in the profile must match exactly (spaces, lowercase, uppercase, etc.)
 in order for the corresponding SEED column information to be used/mapped.
 
 Matching

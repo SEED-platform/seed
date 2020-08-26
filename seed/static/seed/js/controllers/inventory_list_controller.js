@@ -412,17 +412,17 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.run_data_quality_check = function () {
         spinner_utility.show();
 
-        var property_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+        var property_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
           if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
           return !_.has(row, '$$treeLevel');
-        }), 'property_state_id');
+        }), 'property_view_id');
 
-        var taxlot_states = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+        var taxlot_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
           if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
           return !_.has(row, '$$treeLevel');
-        }), 'taxlot_state_id');
+        }), 'taxlot_view_id');
 
-        data_quality_service.start_data_quality_checks(property_states, taxlot_states).then(function (response) {
+        data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
             data_quality_service.get_data_quality_results($scope.organization.id, result.unique_id).then(function (dq_result) {
               var modalInstance = $uibModal.open({
@@ -435,8 +435,8 @@ angular.module('BE.seed.controller.inventory_list', [])
                   },
                   name: _.constant(null),
                   uploaded: _.constant(null),
-                  importFileId: _.constant(result.unique_id),
-                  orgId: _.constant($scope.organization.id)
+                  run_id: _.constant(result.unique_id),
+                  orgId: _.constant($scope.organization.id),
                 }
               });
               modalInstance.result.then(function () {

@@ -121,11 +121,11 @@ class BuildingSync(object):
         self.element_tree = etree.parse(StringIO(xml_string))
         self.version = version
 
-    def export_using_preset(self, property_state, column_mapping_preset=None):
+    def export_using_profile(self, property_state, column_mapping_profile=None):
         """Export BuildingSync file from an existing BuildingSync file (from import), property_state and
         a custom mapping.
 
-        expected column_mapping_preset structure
+        expected column_mapping_profile structure
         [
             {from_field: <absolute xpath>, from_field_value: 'text' | @<attr> | ..., to_field: <db_column>},
             {from_field: <absolute xpath>, from_field_value: 'text' | @<attr> | ..., to_field: <db_column>},
@@ -135,7 +135,7 @@ class BuildingSync(object):
         ]
 
         :param property_state: object, PropertyState to merge into BuildingSync
-        :param column_mapping_preset: list, mappings from ColumnMappingPreset
+        :param column_mapping_profile: list, mappings from ColumnMappingProfile
         :return: string, as XML
         """
         if not property_state:
@@ -149,7 +149,7 @@ class BuildingSync(object):
         # iterate through the mappings doing the following
         # - if the property_state has the field, update the xml with that value
         # - else, ignore it
-        for mapping in column_mapping_preset:
+        for mapping in column_mapping_profile:
             field = mapping['to_field']
             xml_element_xpath = mapping['from_field']
             xml_element_value = mapping['from_field_value']

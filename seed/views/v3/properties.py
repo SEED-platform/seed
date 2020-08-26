@@ -25,7 +25,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
                          BuildingFile, Column, ColumnListSetting,
-                         ColumnListSettingColumn, ColumnMappingPreset, Cycle,
+                         ColumnListSettingColumn, ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
@@ -1181,9 +1181,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                'preset_id',
+                'profile_id',
                 required=True,
-                description='ID of a BuildingSync ColumnMappingPreset'
+                description='ID of a BuildingSync ColumnMappingProfile'
             ),
         ]
     )
@@ -1193,22 +1193,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Return BuildingSync representation of the property
         """
-        preset_pk = request.GET.get('preset_id')
+        profile_pk = request.GET.get('profile_id')
         org_id = self.get_organization(self.request)
         try:
-            preset_pk = int(preset_pk)
-            column_mapping_preset = ColumnMappingPreset.objects.get(
-                pk=preset_pk,
-                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+            profile_pk = int(profile_pk)
+            column_mapping_profile = ColumnMappingProfile.objects.get(
+                pk=profile_pk,
+                profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
                 'success': False,
-                'message': 'Query param `preset_id` is either missing or invalid'
+                'message': 'Query param `profile_id` is either missing or invalid'
             }, status=status.HTTP_400_BAD_REQUEST)
-        except ColumnMappingPreset.DoesNotExist:
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+                'message': f'Cannot find a BuildingSync ColumnMappingProfile with pk={profile_pk}'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -1227,7 +1227,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             bs.import_file(bs_file.file.path)
 
         try:
-            xml = bs.export_using_preset(property_view.state, column_mapping_preset.mappings)
+            xml = bs.export_using_profile(property_view.state, column_mapping_profile.mappings)
             return HttpResponse(xml, content_type='application/xml')
         except Exception as e:
             return JsonResponse({
