@@ -81,11 +81,11 @@ angular.module('BE.seed.controller.inventory_map', [])
           return _.uniqBy(related, 'id');
         };
         if ($scope.inventory_type === 'properties') {
-          $scope.property = _.filter($scope.data, 'bounding_box');
-          $scope.taxlot = geocodedRelated($scope.data, 'bounding_box');
+          $scope.properties = _.filter($scope.data, 'bounding_box');
+          $scope.taxlots = geocodedRelated($scope.data, 'bounding_box');
         } else {
-          $scope.property = geocodedRelated($scope.data, 'bounding_box');
-          $scope.taxlot = _.filter($scope.data, 'bounding_box');
+          $scope.properties = geocodedRelated($scope.data, 'bounding_box');
+          $scope.taxlots = _.filter($scope.data, 'bounding_box');
         }
 
         // store a mapping of layers z-index and visibility
@@ -161,14 +161,14 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var buildingBBSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.property;
+          if (_.isUndefined(records)) records = $scope.properties;
           var features = _.map(records, buildingBB);
 
           return new ol.source.Vector({features: features});
         };
 
         var buildingCentroidSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.property;
+          if (_.isUndefined(records)) records = $scope.properties;
           var features = _.map(records, buildingCentroid);
 
           return new ol.source.Vector({features: features});
@@ -199,14 +199,14 @@ angular.module('BE.seed.controller.inventory_map', [])
         };
 
         var taxlotBBSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.taxlot;
+          if (_.isUndefined(records)) records = $scope.taxlots;
           var features = _.map(records, taxlotBB);
 
           return new ol.source.Vector({features: features});
         };
 
         var taxlotCentroidSources = function (records) {
-          if (_.isUndefined(records)) records = $scope.taxlot;
+          if (_.isUndefined(records)) records = $scope.taxlots;
           var features = _.map(records, taxlotCentroid);
 
           return new ol.source.Vector({features: features});
