@@ -43,8 +43,6 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         taxlot_view_ids = body.get('taxlot_view_ids')
 
         if property_view_ids:
-            for i in PropertyView.objects.all():
-                print("ids: ", i, property_view_ids)
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
                 cycle__organization_id=org_id

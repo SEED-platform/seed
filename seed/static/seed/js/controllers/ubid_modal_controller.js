@@ -2,8 +2,8 @@ angular.module('BE.seed.controller.ubid_modal', [])
   .controller('ubid_modal_controller', [
     '$scope',
     '$uibModalInstance',
-    'property_state_ids',
-    'taxlot_state_ids',
+    'property_view_ids',
+    'taxlot_view_ids',
     'ubid_service',
     function ($scope, $uibModalInstance, property_view_ids, taxlot_view_ids, ubid_service) {
       $scope.property_view_ids = _.uniq(property_view_ids);
@@ -49,8 +49,8 @@ angular.module('BE.seed.controller.ubid_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss({
           decode_ubid_state: $scope.decode_ubid_state,
-          property_state_ids: $scope.property_state_ids,
-          taxlot_state_ids: $scope.taxlot_state_ids
+          property_view_ids: $scope.property_view_ids,
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
 
@@ -60,8 +60,8 @@ angular.module('BE.seed.controller.ubid_modal', [])
       $scope.close = function () {
         $uibModalInstance.close({
           decode_ubid_state: $scope.decode_ubid_state,
-          property_state_ids: $scope.property_state_ids,
-          taxlot_state_ids: $scope.taxlot_state_ids
+          property_view_ids: $scope.property_view_ids,
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
     }
