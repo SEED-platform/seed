@@ -43,8 +43,10 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         taxlot_view_ids = body.get('taxlot_view_ids')
 
         if property_view_ids:
+            for i in PropertyView.objects.all():
+                print("ids: ", i, property_view_ids)
             property_views = PropertyView.objects.filter(
-                state_id__in=property_view_ids,
+                id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             properties = PropertyState.objects.filter(
@@ -54,7 +56,7 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
 
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
-                state_id__in=taxlot_view_ids,
+                id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
             taxlots = TaxLotState.objects.filter(
@@ -95,7 +97,7 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
         taxlot_view_ids = body.get('taxlot_view_ids')
         if property_view_ids:
             property_views = PropertyView.objects.filter(
-                state_id__in=property_view_ids,
+                id__in=property_view_ids,
                 cycle__organization_id=org_id
             )
             property_states = PropertyState.objects.filter(id__in=Subquery(property_views.values('state_id')))
@@ -114,7 +116,7 @@ class UbidViewSet(viewsets.ViewSet, OrgMixin):
 
         if taxlot_view_ids:
             taxlot_views = TaxLotView.objects.filter(
-                state_id__in=taxlot_view_ids,
+                id__in=taxlot_view_ids,
                 cycle__organization_id=org_id
             )
             taxlot_states = TaxLotState.objects.filter(id__in=Subquery(taxlot_views.values('state_id')))
