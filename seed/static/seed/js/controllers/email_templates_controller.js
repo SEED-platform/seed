@@ -10,28 +10,22 @@ angular.module('BE.seed.controller.email_templates', [])
         'postoffice_service',
         '$uibModal',
         'urls',
-        //     '$uibModalInstance', //?
-        //     'action', //new_group
-        //     'group_service', //from before
-        //     'inventory_service', //from before
-        //     //'settings_location',
-        //     'inventory_type', //new_group
-        //     'data', //new_group
-        //     'org_id', //new_group
+        'modified_service',
+        'flippers',
+        '$translate',
+        'i18nService',
+
         function (
             $scope,
             organization_payload,
             postoffice_service,
             $uibModal,
             urls,
-            //       $uibModalInstance,
-            //       action,
-            //       group_service,
-            //       inventory_service,
-            //       //settings_location,
-            //       inventory_type,
-            //       data,
-            //       org_id
+            modified_service,
+            // dropdown_selected_template,
+            flippers,
+            $translate,
+            i18nService,
         ) {
             $scope.org = organization_payload.organization;
             $scope.available_templates = [];
@@ -43,7 +37,7 @@ angular.module('BE.seed.controller.email_templates', [])
 
                 var modalInstance = $uibModal.open({
                     templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
-                    // controller: 'email_templates_modal_controller',
+                    controller: 'email_templates_modal_controller',
                     resolve: {
                         action: _.constant('rename'),
                         data: _.constant($scope.dropdown_selected_template),
@@ -58,21 +52,26 @@ angular.module('BE.seed.controller.email_templates', [])
             };
             $scope.removeTemplate = function () {
                 var oldTemplate = angular.copy($scope.dropdown_selected_template);
-        
+
                 var modalInstance = $uibModal.open({
-                  templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
-                //   controller: 'email_templates_modal_controller',
-                  resolve: {
-                    action: _.constant('remove'),
-                    data: _.constant($scope.dropdown_selected_template),
-                  }
+                    templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
+                      controller: 'email_templates_modal_controller',
+                    resolve: {
+                        action: _.constant('remove'),
+                        data: _.constant($scope.dropdown_selected_template),
+                    }
                 });
-        
+
                 modalInstance.result.then(function () {
-                  _.remove($scope.available_templates, oldTemplate);
-                  modified_service.resetModified();
-                  $scope.dropdown_selected_template = _.first($scope.available_templates);
-                  Notification.primary('Removed ' + oldTemplate.name);
+                    _.remove($scope.available_templates, oldTemplate);
+                    modified_service.resetModified();
+                    $scope.dropdown_selected_template = _.first($scope.available_templates);
+                    Notification.primary('Removed ' + oldTemplate.name);
                 });
-              };
+            };
+
+            //updating modified
+            $scope.isModified = function () {
+                return modified_service.isModified();
+            };
         }]);

@@ -40,6 +40,32 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
           return response.data.data;
         });
       };
+
+      template_factory.update_template = function (id, data) {
+        if (id === null) {
+          Notification.error('This group is protected from modifications');
+          return $q.reject();
+        }
+        return $http.put('/api/v3/postoffice/' + id + '/', data, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }).then(function (response) {
+          return response.data.data;
+        });
+      };
+  
+      template_factory.remove_template = function (id) {
+        if (id === null) {
+          Notification.error('This template is protected from modifications');
+          return $q.reject();
+        }
+        return $http.delete('/api/v3/postoffice/' + id + '/', {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        });
+      };
       
 
       template_factory.send_templated_email = function (template_name, inventory_id, inventory_type) {
