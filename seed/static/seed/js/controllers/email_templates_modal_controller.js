@@ -1,83 +1,72 @@
-// /**
-//  * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-//  * :author
-//  */
-// angular.module('BE.seed.controller.group_modal', [])
-//   .controller('group_modal_controller', [
-//     '$scope', //from before
-//     '$uibModalInstance', //?
-//     'action', //new_group
-//     'group_service', //from before
-//     'inventory_service', //from before
-//     //'settings_location',
-//     'inventory_type', //new_group
-//     'data', //new_group
-//     'org_id', //new_group
-//     function (
-//       $scope,
-//       $uibModalInstance,
-//       action,
-//       group_service,
-//       inventory_service,
-//       //settings_location,
-//       inventory_type,
-//       data,
-//       org_id
-//     ) {
-//         $scope.action = action;
-//         $scope.data = data;
-//         $scope.org_id = org_id;
-//         //$scope.settings_location = settings_location;
-//         $scope.inventory_type = inventory_type;
+angular.module('BE.seed.controller.email_templates_modal', [])
+    .controller('email_templates_controller', [
+        '$scope', //from before
+        // 'organization_payload',
+        // 'postoffice_service',
+        // //     '$uibModalInstance', //?
+        // //     'action', //new_group
+        // //     'group_service', //from before
+        // //     'inventory_service', //from before
+        // //     //'settings_location',
+        // //     'inventory_type', //new_group
+        // //     'data', //new_group
+        // //     'org_id', //new_group
+        function (
+            $scope,
+            // organization_payload,
+            // postoffice_service,
+            //       $uibModalInstance,
+            //       action,
+            //       group_service,
+            //       inventory_service,
+            //       //settings_location,
+            //       inventory_type,
+            //       data,
+            //       org_id
+        ) {
+            // $scope.org = organization_payload.organization;
+            // $scope.available_templates = [];
+            // postoffice_service.get_templates().then(function (templates) {
+            //     $scope.available_templates = templates;
+            // });
+            // $scope.renameTemplate = function () {
+            //     var oldTemplate = angular.copy($scope.dropdown_selected_template);
 
-//         $scope.rename_group = function () {
-//           if (!$scope.disabled()) {
-//             var id = $scope.data.id;
-//             var group = _.omit($scope.data, 'id');
-//             group.name = $scope.newName;
-//             group_service.update_group(id, group).then(function (result) {
-//               $uibModalInstance.close(result.name);
-//             }).catch(function () {
-//               $uibModalInstance.dismiss();
-//             });
-//           }
-//         };
+            //     var modalInstance = $uibModal.open({
+            //         templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
+            //         controller: 'email_templates_modal_controller',
+            //         resolve: {
+            //             action: _.constant('rename'),
+            //             data: _.constant($scope.dropdown_selected_template),
+            //         }
+            //     });
 
-//         $scope.remove_group = function () {
-//           group_service.remove_group($scope.data.id).then(function () {
-//             $uibModalInstance.close();
-//           }).catch(function () {
-//             $uibModalInstance.dismiss();
-//           });
-//         };
+            //     modalInstance.result.then(function (newName) {
+            //         $scope.dropdown_selected_template.name = newName;
+            //         _.find($scope.available_templates, { id: $scope.dropdown_selected_template.id }).name = newName;
+            //         Notification.primary('Renamed ' + oldTemplate.name + ' to ' + newName);
+            //     });
+            // };
+            // $scope.removeTemplate = function () {
+            //     var oldTemplate = angular.copy($scope.dropdown_selected_template);
 
-//         //referenced from column_mapping_preset_modal_controller
-//         $scope.new_group = function () { //called when modal button clicked
-//           if (!$scope.disabled()) {
-//             group_service.new_group({
-//               name: $scope.newName,
-//               inventory_type: $scope.inventory_type,
-//               organization: $scope.org_id
-//             }).then(function (result) {
-//               $uibModalInstance.close(result.data);
-//             });
-//           }
-//         };
+            //     var modalInstance = $uibModal.open({
+            //         templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
+            //         controller: 'email_templates_modal_controller',
+            //         resolve: {
+            //             action: _.constant('remove'),
+            //             data: _.constant($scope.dropdown_selected_template),
+            //         }
+            //     });
 
-//         $scope.disabled = function () {
-//           if ($scope.action === 'rename') {
-//             return _.isEmpty($scope.newName) || $scope.newName === $scope.data.name;
-//           } else if ($scope.action === 'new') {
-//             return _.isEmpty($scope.newName);
-//           }
-//         };
-
-//         $scope.cancel = function () {
-//           $uibModalInstance.dismiss();
-//         };
-//   }]);
-
-
-
-
-
+            //     modalInstance.result.then(function () {
+            //         _.remove($scope.available_templates, oldTemplate);
+            //         modified_service.resetModified();
+            //         $scope.dropdown_selected_template = _.first($scope.available_templates);
+            //         Notification.primary('Removed ' + oldTemplate.name);
+            //     });
+            // };
+            $scope.cancel = function () {
+                $uibModalInstance.dismiss();
+            };
+        }]);
