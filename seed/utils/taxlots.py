@@ -35,7 +35,7 @@ def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
             profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=VIEW_LIST,
+                profile_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_TAXLOT
             )
             show_columns = list(ColumnListProfileColumn.objects.filter(

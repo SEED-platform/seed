@@ -35,12 +35,12 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
 
 class ColumnListProfileSerializer(serializers.ModelSerializer):
     columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', many=True)
-    settings_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
+    profile_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
     class Meta:
         model = ColumnListProfile
-        fields = ('id', 'name', 'settings_location', 'inventory_type', 'columns')
+        fields = ('id', 'name', 'profile_location', 'inventory_type', 'columns')
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step

@@ -764,7 +764,7 @@ class FakeColumnListSettingsFactory(BaseFake):
         cls_details = {
             'organization_id': organization.pk,
             'name': 'test column list setting',
-            'settings_location': location,
+            'profile_location': location,
             'inventory_type': inventory_type,
         }
         cls = ColumnListProfile.objects.create(**cls_details)

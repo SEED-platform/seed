@@ -25,11 +25,11 @@ class ColumnListSettingFilterBackend(filters.BaseFilterBackend):
                 queryset = queryset.filter(
                     inventory_type=result[0],
                 )
-        if 'settings_location' in request.query_params:
-            result = [k for k, v in VIEW_LOCATION_TYPES if v == request.query_params['settings_location']]
+        if 'profile_location' in request.query_params:
+            result = [k for k, v in VIEW_LOCATION_TYPES if v == request.query_params['profile_location']]
             if len(result) == 1:
                 queryset = queryset.filter(
-                    settings_location=result[0],
+                    profile_location=result[0],
                 )
         return queryset
 

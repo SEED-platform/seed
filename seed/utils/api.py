@@ -268,7 +268,7 @@ class ProfileIdMixin(object):
         profile_exists = ColumnListProfile.objects.filter(
             organization_id=org_id,
             id=profile_id,
-            settings_location=VIEW_LIST,
+            profile_location=VIEW_LIST,
             inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
@@ -284,7 +284,7 @@ class ProfileIdMixin(object):
             profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=VIEW_LIST,
+                profile_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_PROPERTY
             )
             for col in list(ColumnListProfileColumn.objects.filter(column_list_setting_id=profile.id).values(

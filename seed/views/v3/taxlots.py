@@ -138,7 +138,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=VIEW_LIST,
+                    profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_TAXLOT
                 )
                 show_columns = list(ColumnListProfileColumn.objects.filter(

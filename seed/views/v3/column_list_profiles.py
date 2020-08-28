@@ -50,7 +50,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
             {
                 "name": "some new name 3",
-                "settings_location": "List View Settings",
+                "profile_location": "List View Settings",
                 "inventory_type": "Tax Lot",
                 "columns": [
                     {"id": 1, "pinned": false, "order": 10},
@@ -87,7 +87,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             'data': {
                 'id': None,
                 'name': 'ComStock',
-                'settings_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
+                'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
                 'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
                 'columns': self.list_comstock_columns(org_id)
             }
@@ -108,7 +108,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
                 description="'Property' or 'Tax Lot' for filtering."
             ),
             AutoSchemaHelper.query_string_field(
-                name='settings_location',
+                name='profile_location',
                 required=True,
                 description="'List View Settings' or 'Detail View Settings' for filtering."
             ),
@@ -126,8 +126,8 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             }, status=status.HTTP_404_NOT_FOUND)
 
         inventory_type = request.query_params.get('inventory_type')
-        settings_location = request.query_params.get('settings_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
+        profile_location = request.query_params.get('profile_location')
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Settings':
             return super(ColumnListProfileViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
@@ -141,7 +141,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         results.append({
             "id": None,
             "name": "ComStock",
-            "settings_location": 0,
+            "profile_location": 0,
             "inventory_type": 0
         })
 
