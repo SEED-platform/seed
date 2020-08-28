@@ -1,11 +1,11 @@
-// /**
-//  * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-//  * :author
-//  */
+/**
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
 
 angular.module('BE.seed.controller.email_templates', [])
     .controller('email_templates_controller', [
-        '$scope', //from before
+        '$scope',
         'organization_payload',
         'postoffice_service',
         '$uibModal',
@@ -22,7 +22,6 @@ angular.module('BE.seed.controller.email_templates', [])
             $uibModal,
             urls,
             modified_service,
-            // dropdown_selected_template,
             flippers,
             $translate,
             i18nService,
@@ -32,6 +31,8 @@ angular.module('BE.seed.controller.email_templates', [])
             postoffice_service.get_templates().then(function (templates) {
                 $scope.available_templates = templates;
             });
+
+            
             $scope.renameTemplate = function () {
                 var oldTemplate = angular.copy($scope.dropdown_selected_template);
 
@@ -55,7 +56,7 @@ angular.module('BE.seed.controller.email_templates', [])
 
                 var modalInstance = $uibModal.open({
                     templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
-                      controller: 'email_templates_modal_controller',
+                    controller: 'email_templates_modal_controller',
                     resolve: {
                         action: _.constant('remove'),
                         data: _.constant($scope.dropdown_selected_template),

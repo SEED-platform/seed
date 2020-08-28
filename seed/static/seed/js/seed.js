@@ -1256,22 +1256,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
           }],
-          // cycles_payload: ['cycle_service', '$stateParams', function (cycle_service, $stateParams) {
-          //   return cycle_service.get_cycles_for_org($stateParams.organization_id);
-          // }],
-          // auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-          //   var organization_id = $stateParams.organization_id;
-          //   return auth_service.is_authorized(organization_id, ['requires_owner'])
-          //     .then(function (data) {
-          //       if (data.auth.requires_owner) {
-          //         return data;
-          //       } else {
-          //         return $q.reject('not authorized');
-          //       }
-          //     }, function (data) {
-          //       return $q.reject(data.message);
-          //     });
-          // }]
         }
       })
       .state({

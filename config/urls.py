@@ -51,9 +51,6 @@ urlpatterns = [
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
     url(r'^documentation/', include(('seed.docs.urls', 'seed.docs'), namespace='docs')),
 
-    # HERE
-    # url(r'^django-post-offices/', include(('seed.urls', "seed"), namespace="seed")),
-
     # root configuration items
     url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^robots\.txt', robots_txt, name='robots_txt'),

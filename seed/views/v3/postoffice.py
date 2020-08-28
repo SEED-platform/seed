@@ -7,14 +7,12 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 
 """
-
 from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 from seed.models import PropertyState, TaxLotState
 from seed.models import PostOfficeEmail, PostOfficeEmailTemplate
 from post_office import mail                      
 
-# Change to template view set
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
@@ -22,18 +20,12 @@ class PostOfficeViewSet(SEEDOrgModelViewSet):
 
 
     def get_queryset(self):
-        # temp_id = self.get_templates(self.request)
-        # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
-        # print(EmailTemplate.objects.order_by('name'))
-
-        # self.get_organization(self.request)
         return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by('name')
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
         user = self.request.user
         serializer.save(organization_id=org_id, user=user)
-
 
 
 class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
@@ -43,66 +35,28 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
 
 
     def get_queryset(self):
-        # print(id)
-        # print(building_id)
-        # temp_id = self.get_templates(self.request)
-        # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
-        # print(EmailTemplate.objects.order_by('name'))
         return PostOfficeEmail.objects.all()
         
 
     def perform_create(self, serializer):
-
-        # NOTES
-        # -- Take building IDs and pull out the email (use building ID to pull owner email)
-        # -- Send the email (mail.send)
-        # -- Save
-        # -- Add organization (maybe user)
-
-        # CLEAN UP THE FOLLOWING CODE
-        # DISTINCTION
-        # ORGANIZATION ID
-
-        # Adding Organization ID to Template and Email, User to Template and Email
-        # After 1st Column add organizations and users
-
-
-        # org_id = self.get_organization(self.request)
-        # user = self.request.user
-        # serializer.save(organization_id=org_id, user=user)
-
-
-        #HANDLE TEMPLATE DOES NOT EXIST
-
-        print("BACKEND")
         name = self.request.data.get('name')
-        print(name)
         inventory_id = self.request.data.get('inventory_id', [])
-        print(inventory_id)
-        print("*****************")
-        print(self.request.data.get('inventory_type'))
-        print("*****************")
         email_list = []
         if self.request.data.get('inventory_type') == "properties" :
             State = PropertyState
         else :
             State = TaxLotState
-        # QuerySet is returned when calling values_list() function, so we convert it into a list 
+        # QuerySet is returned when calling values_list() function, so we flatten it out into a list 
         email_list = list(State.objects.filter(id__in=inventory_id).values_list('owner_email', flat=True))
         email_sender = 'from@example.com'
-
-        # org_id = self.get_organization(self.request)
-        # user = self.request.user
-        # serializer.save(organization_id=org_id, user=user)
         ptr = mail.send(
                 email_list,
-                # self.request.data.get(from_email)
                 email_sender,
                 template = PostOfficeEmailTemplate.objects.get(name=name),
                 backend = 'post_office_backend')
-    
         org = self.get_organization(self.request)
         user = self.request.user
+
         # Assigning all the fields inside of postoffice to seed_postoffice
         email_data = {
             'email_ptr_id': ptr.id, 

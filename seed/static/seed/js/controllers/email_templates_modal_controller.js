@@ -1,13 +1,15 @@
+/**
+ * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :author
+ */
+
 angular.module('BE.seed.controller.email_templates_modal', [])
     .controller('email_templates_modal_controller', [
-        '$scope', //from before
+        '$scope', 
         'postoffice_service',
-        '$uibModalInstance', //?
-        'action', //new_group
-        // 'inventory_service', //from before
-        // inventory_type', //new_group
-        'data', //new_group
-        // 'org_id', //new_group
+        '$uibModalInstance', 
+        'action', 
+        'data', 
         function (
             $scope,
             postoffice_service,
@@ -18,7 +20,6 @@ angular.module('BE.seed.controller.email_templates_modal', [])
             $scope.action = action;
             $scope.data = data;
             $scope.rename_template = function () {
-                console.log("Reached the rename modal controller");
                 if (!$scope.disabled()) {
                     var id = $scope.data.id;
                     var template = _.omit($scope.data, 'id');
@@ -32,7 +33,6 @@ angular.module('BE.seed.controller.email_templates_modal', [])
             };
 
             $scope.remove_template = function () {
-                console.log("Reached the remove modal controller");
                 postoffice_service.remove_template($scope.data.id).then(function () {
                     $uibModalInstance.close();
                 }).catch(function () {
