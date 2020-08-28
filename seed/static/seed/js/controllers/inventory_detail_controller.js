@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           resolve: {
             action: _.constant('new'),
             data: profile_formatted_columns,
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
