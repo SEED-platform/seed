@@ -17,7 +17,7 @@ from seed.utils.organizations import create_organization
 from past.builtins import basestring
 
 
-class TestColumnListSettings(TestCase):
+class TestColumnListProfile(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
