@@ -32,7 +32,7 @@ class ColumnListProfileColumnSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ColumnListProfileSerializer(serializers.ModelSerializer):
-    columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', read_only=True, many=True)
+    columns = ColumnListProfileColumnSerializer(source='columnlistprofilecolumn_set', read_only=True, many=True)
     profile_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 

@@ -34,7 +34,7 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
 
 
 class ColumnListProfileSerializer(serializers.ModelSerializer):
-    columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', many=True)
+    columns = ColumnListProfileColumnSerializer(source='columnlistprofilecolumn_set', many=True)
     profile_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
@@ -60,7 +60,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Remove *reformatted* ColumnListSettingColumn data, use unformatted initial_data later.
-        del validated_data['columnlistsettingcolumn_set']
+        del validated_data['columnlistprofilecolumn_set']
 
         # Add the already-validated organization_id
         validated_data['organization_id'] = self.context.get('request', None).query_params['organization_id']

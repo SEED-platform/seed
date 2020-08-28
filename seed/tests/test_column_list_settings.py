@@ -48,8 +48,8 @@ class TestColumnListSettings(TestCase):
 
         ColumnListProfileColumn.objects.filter(column=col1, column_list_profile=new_list_setting).delete()
         self.assertEqual(new_list_setting.columns.count(), 1)
-        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.count(), 1)
-        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.first().column.column_name, 'Second Column')
+        self.assertEqual(new_list_setting.columnlistprofilecolumn_set.count(), 1)
+        self.assertEqual(new_list_setting.columnlistprofilecolumn_set.first().column.column_name, 'Second Column')
 
     def test_returning_columns_no_profile(self):
         # do not set up a profile and return the columns, should be all columns
