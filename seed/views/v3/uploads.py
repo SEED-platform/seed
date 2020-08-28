@@ -332,7 +332,7 @@ class UploadViewSet(viewsets.ViewSet):
                 pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)
-        org_id = request.query_params.get('organization_id', None)
+        org_id = request.data['organization_id']
         import_record_pk = request.data['import_record_id']
         try:
             record = ImportRecord.objects.get(
