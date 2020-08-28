@@ -21,7 +21,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
@@ -165,16 +165,16 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
         ).values_list('id', flat=True))
     else:
         try:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
                 settings_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_PROPERTY
             )
-            show_columns = list(ColumnListSettingColumn.objects.filter(
+            show_columns = list(ColumnListProfileColumn.objects.filter(
                 column_list_setting_id=profile.id
             ).values_list('column_id', flat=True))
-        except ColumnListSetting.DoesNotExist:
+        except ColumnListProfile.DoesNotExist:
             show_columns = None
 
     results = {}

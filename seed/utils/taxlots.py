@@ -13,7 +13,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     TaxLotProperty,
     TaxLotView,
     VIEW_LIST,
@@ -38,7 +38,7 @@ def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
                 settings_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_TAXLOT
             )
-            show_columns = list(ColumnListSettingColumn.objects.filter(
+            show_columns = list(ColumnListProfileColumn.objects.filter(
                 column_list_setting_id=profile.id
             ).values_list('column_id', flat=True))
         except ColumnListProfile.DoesNotExist:

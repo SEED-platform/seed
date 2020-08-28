@@ -25,7 +25,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
                          BuildingFile, Column, ColumnListProfile,
-                         ColumnListSettingColumn, ColumnMappingProfile, Cycle,
+                         ColumnListProfileColumn, ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
@@ -223,7 +223,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     settings_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_PROPERTY
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
+                show_columns = list(ColumnListProfileColumn.objects.filter(
                     column_list_setting_id=profile.id
                 ).values_list('column_id', flat=True))
             except ColumnListProfile.DoesNotExist:

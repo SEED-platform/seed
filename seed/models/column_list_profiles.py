@@ -36,10 +36,10 @@ class ColumnListProfile(models.Model):
 
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=512, db_index=True)
-    settings_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
+    profile_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
     columns = models.ManyToManyField(Column, related_name='column_list_settings',
-                                     through='seed.ColumnListSettingColumn')
+                                     through='seed.ColumnListProfileColumn')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
     COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}
@@ -73,7 +73,7 @@ class ColumnListProfile(models.Model):
         selected_columns_from_database = []
 
         if profile_id:
-            for c in apps.get_model('seed', 'ColumnListSettingColumn').objects.filter(
+            for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(
                 column_list_setting_id=profile_id
             ).order_by('order'):
                 # find the items from the columns_from_database object and return only the ones that are in the

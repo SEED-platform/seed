@@ -29,7 +29,7 @@ from seed.models import (
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
@@ -781,7 +781,7 @@ class FakeColumnListSettingsFactory(BaseFake):
 
         # associate all the columns
         for idx, c in enumerate(columns):
-            ColumnListSettingColumn.objects.create(column=c, column_list_setting=cls, order=idx)
+            ColumnListProfileColumn.objects.create(column=c, column_list_setting=cls, order=idx)
 
         return cls
 

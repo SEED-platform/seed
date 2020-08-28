@@ -27,7 +27,7 @@ from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import (
     Column,
     ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
 
@@ -287,7 +287,7 @@ class ProfileIdMixin(object):
                 settings_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_PROPERTY
             )
-            for col in list(ColumnListSettingColumn.objects.filter(column_list_setting_id=profile.id).values(
+            for col in list(ColumnListProfileColumn.objects.filter(column_list_setting_id=profile.id).values(
                     'column__column_name', 'column__is_extra_data')):
                 if col['column__is_extra_data']:
                     show_columns['extra_data'].append(col['column__column_name'])

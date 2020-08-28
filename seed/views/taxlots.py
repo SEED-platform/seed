@@ -31,7 +31,7 @@ from seed.models import (
     MERGE_STATE_DELETE,
     Column,
     ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     Cycle,
     Note,
     PropertyView,
@@ -147,7 +147,7 @@ class TaxLotViewSet(ViewSet, ProfileIdMixin):
                     settings_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_TAXLOT
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
+                show_columns = list(ColumnListProfileColumn.objects.filter(
                     column_list_setting_id=profile.id
                 ).values_list('column_id', flat=True))
             except ColumnListProfile.DoesNotExist:

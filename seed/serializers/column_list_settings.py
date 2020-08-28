@@ -13,7 +13,7 @@ from rest_framework import serializers
 from seed.models import (
     Column,
     ColumnListProfile,
-    ColumnListSettingColumn,
+    ColumnListProfileColumn,
     VIEW_LOCATION_TYPES,
     VIEW_LIST_INVENTORY_TYPE
 )
@@ -27,7 +27,7 @@ class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
     table_name = serializers.ReadOnlyField(source='column.table_name')
 
     class Meta:
-        model = ColumnListSettingColumn
+        model = ColumnListProfileColumn
         fields = ('id', 'pinned', 'order', 'column_name', 'table_name',)
 
 
@@ -42,12 +42,12 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
-        ColumnListSettingColumn.objects.filter(column_list_setting_id=instance.id).delete()
+        ColumnListProfileColumn.objects.filter(column_list_setting_id=instance.id).delete()
         for column in self.initial_data.get('columns', []):
             column_id = column.get('id')
             order = column.get('order')
             pinned = column.get('pinned')
-            ColumnListSettingColumn(
+            ColumnListProfileColumn(
                 column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
             ).save()
 
@@ -65,7 +65,7 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
                 column_id = column.get('id')
                 order = column.get('order')
                 pinned = column.get('pinned')
-                ColumnListSettingColumn(
+                ColumnListProfileColumn(
                     column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
                 ).save()
         cls.save()
