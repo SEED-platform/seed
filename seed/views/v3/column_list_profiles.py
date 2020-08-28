@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 
-from seed.filters import ColumnListSettingFilterBackend
+from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
     ColumnListProfile,
     Organization,
@@ -62,7 +62,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
     """
     serializer_class = ColumnListProfileSerializer
     model = ColumnListProfile
-    filter_backends = (ColumnListSettingFilterBackend,)
+    filter_backends = (ColumnListProfileFilterBackend,)
     pagination_class = None
     # force_parent = True  # Ideally the column list profiles would inherit from the parent,
     # but not yet.

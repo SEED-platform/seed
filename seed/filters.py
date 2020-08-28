@@ -12,7 +12,7 @@ from seed import search
 from seed.models import VIEW_LOCATION_TYPES, VIEW_LIST_INVENTORY_TYPE
 
 
-class ColumnListSettingFilterBackend(filters.BaseFilterBackend):
+class ColumnListProfileFilterBackend(filters.BaseFilterBackend):
     @staticmethod
     def filter_queryset(request, queryset, view):
         if 'organization_id' in request.query_params:
