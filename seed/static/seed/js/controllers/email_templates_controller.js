@@ -32,7 +32,15 @@ angular.module('BE.seed.controller.email_templates', [])
                 $scope.available_templates = templates;
             });
 
-            
+            $scope.saveTemplate = function (newSubject, newContent, newHtmlContent) {
+                var id = $scope.dropdown_selected_template.id;
+                    var template = _.omit($scope.dropdown_selected_template, 'id');
+                    template.subject = newSubject;
+                    template.content = newContent;
+                    template.html_content = newHtmlContent;
+                    postoffice_service.update_template(id, template);
+            };
+
             $scope.renameTemplate = function () {
                 var oldTemplate = angular.copy($scope.dropdown_selected_template);
 

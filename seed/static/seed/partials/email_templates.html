@@ -32,7 +32,7 @@
                 ng-disabled="!available_templates.length"
                 ng-options="template.name for template in available_templates"></select>
 
-            <button class="btn btn-success" type="button" ng-click="saveTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+            <button class="btn btn-success" type="button" ng-click="saveTemplate(dropdown_selected_template.subject, dropdown_selected_template.content, dropdown_selected_template.html_content)" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
             </button>
             <button class="btn btn-info" type="button" ng-click="renameTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
