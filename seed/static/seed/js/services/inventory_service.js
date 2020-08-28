@@ -976,12 +976,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
+    inventory_service.get_settings_profiles = function (profile_location, inventory_type) {
       return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
-          settings_location: settings_location
+          profile_location: profile_location
         }
       }).then(function (response) {
         var profiles = response.data.data.sort(function (a, b) {
