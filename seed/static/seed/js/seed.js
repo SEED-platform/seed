@@ -441,7 +441,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('List View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -484,7 +484,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('Detail View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1126,7 +1126,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('List View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1199,7 +1199,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('List View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('List View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1263,7 +1263,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('Detail View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1326,7 +1326,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
-            return inventory_service.get_settings_profiles('Detail View Settings', inventory_type);
+            return inventory_service.get_column_list_profiles('Detail View Settings', inventory_type);
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');

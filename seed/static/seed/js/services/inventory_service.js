@@ -976,7 +976,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_settings_profiles = function (profile_location, inventory_type) {
+    inventory_service.get_column_list_profiles = function (profile_location, inventory_type) {
       return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
@@ -999,7 +999,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.new_settings_profile = function (data) {
+    inventory_service.new_column_list_profile = function (data) {
       return $http.post('/api/v3/column_list_profiles/', data, {
         params: {
           organization_id: user_service.get_organization().id
@@ -1009,7 +1009,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.update_settings_profile = function (id, data) {
+    inventory_service.update_column_list_profile = function (id, data) {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
@@ -1023,7 +1023,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.remove_settings_profile = function (id) {
+    inventory_service.remove_column_list_profile = function (id) {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
         return $q.reject();
