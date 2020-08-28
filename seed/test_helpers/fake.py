@@ -781,7 +781,7 @@ class FakeColumnListSettingsFactory(BaseFake):
 
         # associate all the columns
         for idx, c in enumerate(columns):
-            ColumnListProfileColumn.objects.create(column=c, column_list_setting=cls, order=idx)
+            ColumnListProfileColumn.objects.create(column=c, column_list_profile=cls, order=idx)
 
         return cls
 

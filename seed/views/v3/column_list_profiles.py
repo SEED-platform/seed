@@ -50,7 +50,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
             {
                 "name": "some new name 3",
-                "profile_location": "List View Settings",
+                "profile_location": "List View Profile",
                 "inventory_type": "Tax Lot",
                 "columns": [
                     {"id": 1, "pinned": false, "order": 10},
@@ -110,7 +110,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             AutoSchemaHelper.query_string_field(
                 name='profile_location',
                 required=True,
-                description="'List View Settings' or 'Detail View Settings' for filtering."
+                description="'List View Profile' or 'Detail View Profile' for filtering."
             ),
         ]
     )
@@ -127,7 +127,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
         inventory_type = request.query_params.get('inventory_type')
         profile_location = request.query_params.get('profile_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Settings':
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListProfileViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())

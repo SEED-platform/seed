@@ -18,8 +18,8 @@ from seed.models import (
 VIEW_LIST = 0
 VIEW_DETAIL = 1
 VIEW_LOCATION_TYPES = [
-    (VIEW_LIST, 'List View Settings'),
-    (VIEW_DETAIL, 'Detail View Settings'),
+    (VIEW_LIST, 'List View Profile'),
+    (VIEW_DETAIL, 'Detail View Profile'),
 ]
 
 VIEW_LIST_PROPERTY = 0

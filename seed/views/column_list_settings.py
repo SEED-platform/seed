@@ -20,7 +20,7 @@ from seed.models import (
     VIEW_LIST_PROPERTY,
     VIEW_LOCATION_TYPES,
 )
-from seed.serializers.column_list_settings import (
+from seed.serializers.column_list_profiles import (
     ColumnListProfileSerializer,
 )
 from seed.utils.api import OrgValidateMixin
@@ -71,7 +71,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         inventory_type = request.query_params.get('inventory_type')
         profile_location = request.query_params.get('profile_location')
         if not org.comstock_enabled or kwargs['pk'] != 'null' \
-                or inventory_type == 'Tax Lot' or profile_location == 'Detail View Settings':
+                or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListingViewSet, self).retrieve(request, args, kwargs)
 
         result = {
@@ -101,7 +101,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
         inventory_type = request.query_params.get('inventory_type')
         profile_location = request.query_params.get('profile_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Settings':
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListingViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
