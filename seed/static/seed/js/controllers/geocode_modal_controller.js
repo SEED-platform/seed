@@ -19,7 +19,6 @@ angular.module('BE.seed.controller.geocode_modal', [])
       });
 
       organization_service.geocoding_columns(org_id).then(function (data) {
-        console.log("data: ", data);
         if ($scope.inventory_type === 'properties') {
           $scope.has_enough_geocoding_columns = data.PropertyState.length > 0;
         } else if ($scope.inventory_type === 'taxlots') {

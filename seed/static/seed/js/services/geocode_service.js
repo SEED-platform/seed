@@ -22,6 +22,10 @@ angular.module('BE.seed.service.geocode', [])
         return $http.post('/api/v3/geocode/confidence_summary/', {
           property_view_ids: property_view_ids,
           taxlot_view_ids: taxlot_view_ids
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
         }).then(function (response) {
           return response.data;
         });
