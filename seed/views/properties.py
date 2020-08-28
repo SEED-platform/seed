@@ -27,7 +27,7 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import (
     AUDIT_USER_EDIT,
     Column,
-    ColumnListSetting,
+    ColumnListProfile,
     ColumnListSettingColumn,
     Cycle,
     DATA_STATE_MATCHING,
@@ -276,7 +276,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             ).values_list('id', flat=True))
         else:
             try:
-                profile = ColumnListSetting.objects.get(
+                profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
                     settings_location=VIEW_LIST,
@@ -285,7 +285,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
                 show_columns = list(ColumnListSettingColumn.objects.filter(
                     column_list_setting_id=profile.id
                 ).values_list('column_id', flat=True))
-            except ColumnListSetting.DoesNotExist:
+            except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
         related_results = TaxLotProperty.get_related(property_views, show_columns,

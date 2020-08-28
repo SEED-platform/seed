@@ -16,7 +16,7 @@ from rest_framework.response import Response
 
 from seed.filters import ColumnListSettingFilterBackend
 from seed.models import (
-    ColumnListSetting,
+    ColumnListProfile,
     Organization,
     Column,
     VIEW_LIST,
@@ -61,7 +61,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
     """
     serializer_class = ColumnListProfileSerializer
-    model = ColumnListSetting
+    model = ColumnListProfile
     filter_backends = (ColumnListSettingFilterBackend,)
     pagination_class = None
     # force_parent = True  # Ideally the column list profiles would inherit from the parent,

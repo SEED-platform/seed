@@ -26,7 +26,7 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import (
     Column,
-    ColumnListSetting,
+    ColumnListProfile,
     ColumnListSettingColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
@@ -265,7 +265,7 @@ class ProfileIdMixin(object):
             'fields': ['extra_data', 'id'],  # , 'bounding_box', 'long_lat', 'centroid',
             'extra_data': []
         }
-        profile_exists = ColumnListSetting.objects.filter(
+        profile_exists = ColumnListProfile.objects.filter(
             organization_id=org_id,
             id=profile_id,
             settings_location=VIEW_LIST,
@@ -281,7 +281,7 @@ class ProfileIdMixin(object):
                 table_name='PropertyState',
                 is_extra_data=True).values_list('column_name', flat=True))
         else:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
                 settings_location=VIEW_LIST,

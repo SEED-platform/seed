@@ -12,7 +12,7 @@ from rest_framework import serializers
 
 from seed.models import (
     Column,
-    ColumnListSetting,
+    ColumnListProfile,
     ColumnListSettingColumn,
     VIEW_LOCATION_TYPES,
     VIEW_LIST_INVENTORY_TYPE
@@ -39,7 +39,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
     class Meta:
-        model = ColumnListSetting
+        model = ColumnListProfile
         fields = ('id', 'name', 'settings_location', 'inventory_type', 'columns')
 
     def update(self, instance, validated_data):
@@ -65,7 +65,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
         # Add the already-validated organization_id
         validated_data['organization_id'] = self.context.get('request', None).query_params['organization_id']
 
-        cls = ColumnListSetting.objects.create(**validated_data)
+        cls = ColumnListProfile.objects.create(**validated_data)
         if 'columns' in self.initial_data:
             for column in self.initial_data.get('columns', []):
                 # At this point the column will exist for the organization based on the validation

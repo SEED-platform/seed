@@ -10,7 +10,7 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
-    ColumnListSetting,
+    ColumnListProfile,
     ColumnListSettingColumn,
 )
 from seed.utils.organizations import create_organization
@@ -39,7 +39,7 @@ class TestColumnListSettings(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListSetting.objects.create(name='example list setting')
+        new_list_setting = ColumnListProfile.objects.create(name='example list setting')
         ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
         ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
 
@@ -53,7 +53,7 @@ class TestColumnListSettings(TestCase):
 
     def test_returning_columns_no_profile(self):
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, None)
+        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, None)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
@@ -74,12 +74,12 @@ class TestColumnListSettings(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListSetting.objects.create(name='example list setting')
+        new_list_setting = ColumnListProfile.objects.create(name='example list setting')
         ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
         ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
 
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, new_list_setting.id)
+        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, new_list_setting.id)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)

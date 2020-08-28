@@ -30,7 +30,7 @@ VIEW_LIST_INVENTORY_TYPE = [
 ]
 
 
-class ColumnListSetting(models.Model):
+class ColumnListProfile(models.Model):
     """Ability to persist a list of views with different columns. The list of column views points to the columns that
     are contained in the list view."""
 
@@ -56,7 +56,7 @@ class ColumnListSetting(models.Model):
         :return: list, column_ids, column_name_mappings, and selected_columns_from_database
         """
         try:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization=organization_id,
                 id=profile_id,
                 settings_location=VIEW_LIST,
@@ -64,7 +64,7 @@ class ColumnListSetting(models.Model):
             )
             profile_id = profile.id
 
-        except ColumnListSetting.DoesNotExist:
+        except ColumnListProfile.DoesNotExist:
             profile_id = False
 
         column_ids = []

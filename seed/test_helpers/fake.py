@@ -28,7 +28,7 @@ from seed.models import (
     Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
+    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
     ColumnListSettingColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
@@ -767,7 +767,7 @@ class FakeColumnListSettingsFactory(BaseFake):
             'settings_location': location,
             'inventory_type': inventory_type,
         }
-        cls = ColumnListSetting.objects.create(**cls_details)
+        cls = ColumnListProfile.objects.create(**cls_details)
 
         columns = []
         if 'columns' in kw:

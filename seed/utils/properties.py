@@ -20,7 +20,7 @@ from rest_framework import status
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
-    ColumnListSetting,
+    ColumnListProfile,
     ColumnListSettingColumn,
     PropertyView,
     TaxLotProperty,
