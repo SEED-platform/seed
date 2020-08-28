@@ -21,7 +21,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.serializers.base import ChoiceField
 
 
-class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
+class ColumnListProfileColumnSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.ReadOnlyField(source='column.id')
     column_name = serializers.ReadOnlyField(source='column.column_name')
     table_name = serializers.ReadOnlyField(source='column.table_name')
@@ -31,8 +31,8 @@ class ColumnListSettingColumnSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('id', 'pinned', 'order', 'column_name', 'table_name',)
 
 
-class ColumnListSettingSerializer(serializers.ModelSerializer):
-    columns = ColumnListSettingColumnSerializer(source='columnlistsettingcolumn_set', read_only=True, many=True)
+class ColumnListProfileSerializer(serializers.ModelSerializer):
+    columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', read_only=True, many=True)
     profile_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
@@ -42,13 +42,13 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
-        ColumnListProfileColumn.objects.filter(column_list_setting_id=instance.id).delete()
+        ColumnListProfileColumn.objects.filter(column_list_profile_id=instance.id).delete()
         for column in self.initial_data.get('columns', []):
             column_id = column.get('id')
             order = column.get('order')
             pinned = column.get('pinned')
             ColumnListProfileColumn(
-                column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
+                column_list_profile=instance, column_id=column_id, pinned=pinned, order=order
             ).save()
 
         instance.__dict__.update(**validated_data)
@@ -66,7 +66,7 @@ class ColumnListSettingSerializer(serializers.ModelSerializer):
                 order = column.get('order')
                 pinned = column.get('pinned')
                 ColumnListProfileColumn(
-                    column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
+                    column_list_profile=cls, column_id=column_id, pinned=pinned, order=order
                 ).save()
         cls.save()
 

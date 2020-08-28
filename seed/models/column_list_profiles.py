@@ -38,7 +38,7 @@ class ColumnListProfile(models.Model):
     name = models.CharField(max_length=512, db_index=True)
     profile_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
-    columns = models.ManyToManyField(Column, related_name='column_list_settings',
+    columns = models.ManyToManyField(Column, related_name='column_list_profiles',
                                      through='seed.ColumnListProfileColumn')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
@@ -74,7 +74,7 @@ class ColumnListProfile(models.Model):
 
         if profile_id:
             for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(
-                column_list_setting_id=profile_id
+                column_list_profile_id=profile_id
             ).order_by('order'):
                 # find the items from the columns_from_database object and return only the ones that are in the
                 # selected profile

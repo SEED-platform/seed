@@ -172,7 +172,7 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
                 inventory_type=VIEW_LIST_PROPERTY
             )
             show_columns = list(ColumnListProfileColumn.objects.filter(
-                column_list_setting_id=profile.id
+                column_list_profile_id=profile.id
             ).values_list('column_id', flat=True))
         except ColumnListProfile.DoesNotExist:
             show_columns = None

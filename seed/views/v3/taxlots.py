@@ -142,7 +142,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     inventory_type=VIEW_LIST_TAXLOT
                 )
                 show_columns = list(ColumnListProfileColumn.objects.filter(
-                    column_list_setting_id=profile.id
+                    column_list_profile_id=profile.id
                 ).values_list('column_id', flat=True))
             except ColumnListProfile.DoesNotExist:
                 show_columns = None

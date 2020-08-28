@@ -287,7 +287,7 @@ class ProfileIdMixin(object):
                 profile_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_PROPERTY
             )
-            for col in list(ColumnListProfileColumn.objects.filter(column_list_setting_id=profile.id).values(
+            for col in list(ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values(
                     'column__column_name', 'column__is_extra_data')):
                 if col['column__is_extra_data']:
                     show_columns['extra_data'].append(col['column__column_name'])

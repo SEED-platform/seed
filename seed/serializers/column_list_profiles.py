@@ -44,7 +44,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
-        ColumnListProfileColumn.objects.filter(column_list_setting_id=instance.id).delete()
+        ColumnListProfileColumn.objects.filter(column_list_profile_id=instance.id).delete()
         for column in self.initial_data.get('columns', []):
             column_id = column.get('id')
             order = column.get('order')
