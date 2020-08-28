@@ -39,17 +39,17 @@ class TestColumnListProfile(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListProfile.objects.create(name='example list setting')
-        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_setting, order=1, pinned=False)
-        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_setting, order=2, pinned=True)
+        new_list_profile = ColumnListProfile.objects.create(name='example list profile')
+        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_profile, order=1, pinned=False)
+        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_profile, order=2, pinned=True)
 
-        self.assertEqual(new_list_setting.columns.count(), 2)
-        self.assertEqual(new_list_setting.columns.first().column_name, 'New Column')
+        self.assertEqual(new_list_profile.columns.count(), 2)
+        self.assertEqual(new_list_profile.columns.first().column_name, 'New Column')
 
-        ColumnListProfileColumn.objects.filter(column=col1, column_list_profile=new_list_setting).delete()
-        self.assertEqual(new_list_setting.columns.count(), 1)
-        self.assertEqual(new_list_setting.columnlistprofilecolumn_set.count(), 1)
-        self.assertEqual(new_list_setting.columnlistprofilecolumn_set.first().column.column_name, 'Second Column')
+        ColumnListProfileColumn.objects.filter(column=col1, column_list_profile=new_list_profile).delete()
+        self.assertEqual(new_list_profile.columns.count(), 1)
+        self.assertEqual(new_list_profile.columnlistprofilecolumn_set.count(), 1)
+        self.assertEqual(new_list_profile.columnlistprofilecolumn_set.first().column.column_name, 'Second Column')
 
     def test_returning_columns_no_profile(self):
         # do not set up a profile and return the columns, should be all columns
@@ -74,12 +74,12 @@ class TestColumnListProfile(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListProfile.objects.create(name='example list setting')
-        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_setting, order=1, pinned=False)
-        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_setting, order=2, pinned=True)
+        new_list_profile = ColumnListProfile.objects.create(name='example list profile')
+        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_profile, order=1, pinned=False)
+        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_profile, order=2, pinned=True)
 
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, new_list_setting.id)
+        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, new_list_profile.id)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
