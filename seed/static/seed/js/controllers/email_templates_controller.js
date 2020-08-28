@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.email_templates', [])
         'flippers',
         '$translate',
         'i18nService',
+        'Notification',
 
         function (
             $scope,
@@ -25,6 +26,7 @@ angular.module('BE.seed.controller.email_templates', [])
             flippers,
             $translate,
             i18nService,
+            Notification,
         ) {
             $scope.org = organization_payload.organization;
             $scope.available_templates = [];
@@ -39,6 +41,7 @@ angular.module('BE.seed.controller.email_templates', [])
                     template.content = newContent;
                     template.html_content = newHtmlContent;
                     postoffice_service.update_template(id, template);
+                    Notification.primary("Template Saved")
             };
 
             $scope.renameTemplate = function () {
