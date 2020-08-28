@@ -741,9 +741,9 @@ class FakeTaxLotViewFactory(BaseFake):
         return TaxLotView.objects.create(**property_view_details)
 
 
-class FakeColumnListSettingsFactory(BaseFake):
+class FakeColumnListProfileFactory(BaseFake):
     """
-    Factory Class for producing ColumnList Settings
+    Factory Class for producing ColumnList Profiles
 
     * This is faker, its predictable based on seed passed to fake factory.
     """
@@ -752,12 +752,12 @@ class FakeColumnListSettingsFactory(BaseFake):
         super().__init__()
         self.organization = organization
 
-    def get_columnlistsettings(self, organization=None,
+    def get_columnlistprofile(self, organization=None,
                                inventory_type=VIEW_LIST_PROPERTY,
                                location=VIEW_LIST,
                                table_name='PropertyState',
                                **kw):
-        """Get columnlistsettings instance."""
+        """Get columnlistprofile instance."""
         if not organization:
             organization = self.organization
 

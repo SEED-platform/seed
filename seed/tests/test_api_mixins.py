@@ -28,7 +28,7 @@ from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeColumnListSettingsFactory
+    FakeColumnListProfileFactory
 )
 from seed.utils.api import (
     OrgMixin,
@@ -340,7 +340,7 @@ class TestProfileIdMixin(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
-        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
@@ -380,18 +380,18 @@ class TestProfileIdMixin(TestCase):
         self.assertListEqual(columns['extra_data'], ['field_1'])
 
         # no extra data
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistsetting.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], [])
 
         # with extra data
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(
             columns=['address_line_1', 'site_eui', 'field_1']
         )
-        columns = self.mixin_class.get_show_columns(self.org.id, columnlistsetting.id)
+        columns = self.mixin_class.get_show_columns(self.org.id, columnlistprofile.id)
         self.assertListEqual(columns['fields'], ['extra_data', 'id', 'address_line_1', 'site_eui'])
         self.assertListEqual(columns['extra_data'], ['field_1'])
 

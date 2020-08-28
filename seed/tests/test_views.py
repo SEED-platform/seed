@@ -33,7 +33,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
     FakeTaxLotFactory,
-    FakeColumnListSettingsFactory,
+    FakeColumnListProfileFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -503,7 +503,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.status_label = StatusLabel.objects.create(
             name='test', super_organization=self.org
         )
-        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
 
         self.client.login(**user_details)
 
@@ -538,8 +538,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings()
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile()
 
         column_name_mappings = {}
         for c in Column.retrieve_all(self.org.pk, 'property'):
@@ -550,7 +550,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': columnlistsetting.pk}, content_type='application/json')
+        ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -562,7 +562,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
-            'profile_id', columnlistsetting.pk,
+            'profile_id', columnlistprofile.pk,
         ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
@@ -1081,8 +1081,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(
             inventory_type=VIEW_LIST_TAXLOT
         )
 
@@ -1095,7 +1095,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': columnlistsetting.pk}, content_type='application/json')
+        ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -1107,7 +1107,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
-            'profile_id', columnlistsetting.pk,
+            'profile_id', columnlistprofile.pk,
         ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
