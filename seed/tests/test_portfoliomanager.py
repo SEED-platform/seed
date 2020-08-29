@@ -79,7 +79,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
 
     def test_template_list_interface_no_username(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-template-list'),
+            reverse_lazy('api:v3:portfolio_manager-template-list'),
             json.dumps({'password': 'nothing'}),
             content_type='application/json'
         )
@@ -95,7 +95,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
 
     def test_template_list_interface_no_password(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-template-list'),
+            reverse_lazy('api:v3:portfolio_manager-template-list'),
             json.dumps({'username': 'nothing'}),
             content_type='application/json',
         )
@@ -112,7 +112,7 @@ class PortfolioManagerTemplateListViewTestsFailure(TestCase):
     @pm_skip_test_check
     def test_template_list_invalid_credentials(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-template-list'),
+            reverse_lazy('api:v3:portfolio_manager-template-list'),
             json.dumps({'password': 'nothing', 'username': 'nothing'}),
             content_type='application/json',
         )
@@ -152,7 +152,7 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
 
         # so now we'll make the call out to PM
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-template-list'),
+            reverse_lazy('api:v3:portfolio_manager-template-list'),
             json.dumps({'username': pm_un, 'password': pm_pw}),
             content_type='application/json',
         )
@@ -201,7 +201,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
 
     def test_report_interface_no_username(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps({'password': 'nothing', 'template': 'nothing'}),
             content_type='application/json',
         )
@@ -217,7 +217,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
 
     def test_report_interface_no_password(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps({'username': 'nothing', 'template': 'nothing'}),
             content_type='application/json',
         )
@@ -233,7 +233,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
 
     def test_report_interface_no_template(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps({'password': 'nothing', 'username': 'nothing'}),
             content_type='application/json',
         )
@@ -250,7 +250,7 @@ class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
     @pm_skip_test_check
     def test_report_invalid_credentials(self):
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps(
                 {
                     'password': 'nothing',
@@ -309,7 +309,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
         # so now we'll call out to PM to get a parent template report
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps({'username': self.pm_un, 'password': self.pm_pw, 'template': parent_template}),
             content_type='application/json',
         )
@@ -348,7 +348,7 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
         # so now we'll call out to PM to get a child template report
         resp = self.client.post(
-            reverse_lazy('api:v2.1:portfolio_manager-report'),
+            reverse_lazy('api:v3:portfolio_manager-report'),
             json.dumps({'username': self.pm_un, 'password': self.pm_pw, 'template': child_template}),
             content_type='application/json',
         )

@@ -6,12 +6,12 @@ angular.module('BE.seed.controller.geocode_modal', [])
     'inventory_type',
     'org_id',
     'organization_service',
-    'property_state_ids',
-    'taxlot_state_ids',
-    function ($scope, $uibModalInstance, geocode_service, inventory_type, org_id, organization_service, property_state_ids, taxlot_state_ids) {
+    'property_view_ids',
+    'taxlot_view_ids',
+    function ($scope, $uibModalInstance, geocode_service, inventory_type, org_id, organization_service, property_view_ids, taxlot_view_ids) {
       $scope.inventory_type = inventory_type;
-      $scope.property_state_ids = _.uniq(property_state_ids);
-      $scope.taxlot_state_ids = _.uniq(taxlot_state_ids);
+      $scope.property_view_ids = _.uniq(property_view_ids);
+      $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
       $scope.geocode_state = 'verify';
 
       geocode_service.check_org_has_api_key(org_id).then(function (result) {
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
         }
       });
 
-      geocode_service.confidence_summary($scope.property_state_ids, $scope.taxlot_state_ids).then(function (result) {
+      geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
         if (result.properties) {
           $scope.pre_properties_not_geocoded = result.properties.not_geocoded;
 
@@ -49,8 +49,8 @@ angular.module('BE.seed.controller.geocode_modal', [])
       $scope.geocode_buildings = function () {
         $scope.geocode_state = 'geocoding';
 
-        geocode_service.geocode_by_ids($scope.property_state_ids, $scope.taxlot_state_ids).then(function () {
-          geocode_service.confidence_summary($scope.property_state_ids, $scope.taxlot_state_ids).then(function (result) {
+        geocode_service.geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function () {
+          geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
             if (result.properties) {
               $scope.properties_geocoded_high_confidence = result.properties.high_confidence;
               $scope.properties_geocoded_low_confidence = result.properties.low_confidence;
@@ -76,8 +76,8 @@ angular.module('BE.seed.controller.geocode_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss({
           geocode_state: $scope.geocode_state,
-          property_state_ids: $scope.property_state_ids,
-          taxlot_state_ids: $scope.taxlot_state_ids
+          property_view_ids: $scope.property_view_ids,
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
 
@@ -87,8 +87,8 @@ angular.module('BE.seed.controller.geocode_modal', [])
       $scope.close = function () {
         $uibModalInstance.close({
           geocode_state: $scope.geocode_state,
-          property_state_ids: $scope.property_state_ids,
-          taxlot_state_ids: $scope.taxlot_state_ids
+          property_view_ids: $scope.property_view_ids,
+          taxlot_view_ids: $scope.taxlot_view_ids
         });
       };
     }]);

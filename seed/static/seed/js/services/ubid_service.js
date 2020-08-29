@@ -5,10 +5,10 @@ angular.module('BE.seed.service.ubid', [])
     function ($http, user_service) {
       var ubid_factory = {};
 
-      ubid_factory.decode_by_ids = function (property_state_ids, taxlot_state_ids) {
-        return $http.post('/api/v2/ubid/decode_by_ids/', {
-          property_ids: property_state_ids,
-          taxlot_ids: taxlot_state_ids
+      ubid_factory.decode_by_ids = function (property_view_ids, taxlot_view_ids) {
+        return $http.post('/api/v3/ubid/decode_by_ids/', {
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
         }, {
           params: {
             organization_id: user_service.get_organization().id
@@ -18,10 +18,14 @@ angular.module('BE.seed.service.ubid', [])
         });
       };
 
-      ubid_factory.decode_results = function (property_state_ids, taxlot_state_ids) {
-        return $http.post('/api/v2/ubid/decode_results/', {
-          property_ids: property_state_ids,
-          taxlot_ids: taxlot_state_ids
+      ubid_factory.decode_results = function (property_view_ids, taxlot_view_ids) {
+        return $http.post('/api/v3/ubid/decode_results/', {
+          property_view_ids: property_view_ids,
+          taxlot_view_ids: taxlot_view_ids
+        }, {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
         }).then(function (response) {
           return response.data;
         });
