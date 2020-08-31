@@ -86,7 +86,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-list'),
+        response = self.client.get(reverse('api:v3:datasets-list'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(response.json()['datasets']))
 
@@ -94,7 +94,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-count'),
+        response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -105,7 +105,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-count'),
+        response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': 666})
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -117,7 +117,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
-            reverse('api:v2:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
+            reverse('api:v3:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
                 self.org.pk)
         )
         self.assertEqual('success', response.json()['status'])
@@ -128,7 +128,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         response = self.client.delete(
-            reverse_lazy('api:v2:datasets-detail',
+            reverse_lazy('api:v3:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -146,7 +146,7 @@ class GetDatasetsViewsTests(TestCase):
         }
 
         response = self.client.put(
-            reverse_lazy('api:v2:datasets-detail',
+            reverse_lazy('api:v3:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
@@ -433,7 +433,7 @@ class TestMCMViews(TestCase):
         DATASET_NAME_1 = 'test_name 1'
         DATASET_NAME_2 = 'city compliance dataset 2014'
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
@@ -443,7 +443,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(data['name'], DATASET_NAME_1)
 
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_2,
             }),
@@ -463,7 +463,7 @@ class TestMCMViews(TestCase):
 
         # test duplicate name
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
