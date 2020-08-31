@@ -112,7 +112,7 @@ angular.module('BE.seed.controller.show_populated_columns_modal', [])
         var id = $scope.currentProfile.id;
         var profile = _.omit($scope.currentProfile, 'id');
         profile.columns = columns;
-        inventory_service.update_settings_profile(id, profile).then(function (/*updatedProfile*/) {
+        inventory_service.update_column_list_profile(id, profile).then(function (/*updatedProfile*/) {
           modified_service.resetModified();
           $scope.progress = 100;
           $scope.state = 'done';

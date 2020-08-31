@@ -168,7 +168,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         var id = $scope.currentProfile.id;
         var profile = _.omit($scope.currentProfile, 'id');
         profile.columns = currentColumns();
-        inventory_service.update_settings_profile(id, profile).then(function (updatedProfile) {
+        inventory_service.update_column_list_profile(id, profile).then(function (updatedProfile) {
           var index = _.findIndex($scope.profiles, {id: updatedProfile.id});
           $scope.profiles[index] = updatedProfile;
           modified_service.resetModified();

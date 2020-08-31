@@ -753,10 +753,10 @@ class FakeColumnListProfileFactory(BaseFake):
         self.organization = organization
 
     def get_columnlistprofile(self, organization=None,
-                               inventory_type=VIEW_LIST_PROPERTY,
-                               location=VIEW_LIST,
-                               table_name='PropertyState',
-                               **kw):
+                              inventory_type=VIEW_LIST_PROPERTY,
+                              location=VIEW_LIST,
+                              table_name='PropertyState',
+                              **kw):
         """Get columnlistprofile instance."""
         if not organization:
             organization = self.organization

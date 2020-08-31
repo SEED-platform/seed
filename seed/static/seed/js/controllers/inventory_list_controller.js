@@ -875,13 +875,13 @@ angular.module('BE.seed.controller.inventory_list', [])
             var id = $scope.currentProfile.id;
             var profile = _.omit($scope.currentProfile, 'id');
             profile.columns = currentColumns();
-            inventory_service.update_settings_profile(id, profile);
+            inventory_service.update_column_list_profile(id, profile);
           });
         } else {
           var id = $scope.currentProfile.id;
           var profile = _.omit($scope.currentProfile, 'id');
           profile.columns = currentColumns();
-          inventory_service.update_settings_profile(id, profile);
+          inventory_service.update_column_list_profile(id, profile);
         }
       };
 
