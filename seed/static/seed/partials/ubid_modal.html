@@ -23,13 +23,13 @@
   <br>
 
   <!-- The summary of selected records is shown in any state. -->
-  <div class="alert alert-info" ng-if="pre_decode_ubid_not_decoded || pre_decode_ubid_not_decoded">
-    <li>{$ pre_decode_ubid_not_decoded|number:0 $} with UBID populated but not decoded </li>
-    <li>{$ pre_decode_ulid_not_decoded|number:0 $} with ULID populated but not decoded </li>
+  <div class="alert alert-info" ng-if="pre_decode_ubid_not_decoded">
+      <li>{$ pre_decode_ubid_not_decoded|number:0 $} with UBID populated but not decoded </li>
+      <li>{$ pre_decode_ulid_not_decoded|number:0 $} with ULID populated but not decoded </li>
   </div>
 
   <!-- The summary of selected records is shown in any state. -->
-  <div class="alert alert-info" ng-if="pre_decode_ulid_not_decoded || pre_decode_ulid_not_decoded">
+  <div class="alert alert-info" ng-if="pre_decode_ulid_not_decoded">
     <li>{$ pre_decode_ulid_not_decoded|number:0 $} with ULID populated but not decoded </li>
   </div>
 
