@@ -76,7 +76,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
-      // List Settings Profile
+      // Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 

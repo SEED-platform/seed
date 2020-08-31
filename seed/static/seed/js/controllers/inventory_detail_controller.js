@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -184,7 +184,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 

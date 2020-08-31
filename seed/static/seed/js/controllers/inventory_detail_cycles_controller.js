@@ -61,7 +61,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         return column;
       };
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
