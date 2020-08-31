@@ -61,7 +61,8 @@ angular.module('BE.seed.controller.inventory_map', [])
         scope: $scope
       });
 
-      if ($scope.inventory_type == "properties") var getInventoryFunc = inventory_service.get_properties;
+      var getInventoryFunc;
+      if ($scope.inventory_type == "properties") getInventoryFunc = inventory_service.get_properties;
       else getInventoryFunc = inventory_service.get_taxlots;
       return fetch(page, chunk, getInventoryFunc).then(function (data) {
         modalInstance.close();
