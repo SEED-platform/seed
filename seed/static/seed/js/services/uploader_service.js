@@ -28,7 +28,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      */
     uploader_factory.create_dataset = function (dataset_name) {
       // timeout here for testing
-      return $http.post('/api/v2/datasets/', {
+      return $http.post('/api/v3/datasets/', {
         name: dataset_name
       }, {
         params: {

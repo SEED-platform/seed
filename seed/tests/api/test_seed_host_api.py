@@ -140,7 +140,7 @@ print('\n\n|-------Create Dataset-------|')
 partmsg = 'create_dataset'
 params = {'organization_id': organization_id}
 payload = {'name': 'API Test'}
-result = requests.post(main_url + '/api/v2/datasets/',
+result = requests.post(main_url + '/api/v3/datasets/',
                        headers=header,
                        params=params,
                        data=payload)
