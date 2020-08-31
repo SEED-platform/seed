@@ -128,7 +128,7 @@ class PropertyViewSetV21(SEEDOrgReadOnlyModelViewSet):
         Return a property view based on the property id and cycle
         :param pk: ID of property (not property view)
         :param cycle_pk: ID of the cycle
-        :return: dict, propety view and status
+        :return: dict, property view and status
         """
         try:
             property_view = PropertyView.objects.select_related(
