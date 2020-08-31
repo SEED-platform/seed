@@ -98,14 +98,12 @@ urlpatterns = [
     ),
     url(
         r'projects/(?P<pk>\w+)/move/$',
-        ProjectViewSet.as_view({'put': 'transfer'}),
-        {'action': 'move'},
+        ProjectViewSet.as_view({'put': 'move'}),
         name='projects-move'
     ),
     url(
         r'projects/(?P<pk>\w+)/copy/$',
-        ProjectViewSet.as_view({'put': 'transfer'}),
-        {'action': 'copy'},
+        ProjectViewSet.as_view({'put': 'copy'}),
         name='projects-copy'
     ),
     url(

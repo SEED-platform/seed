@@ -1032,9 +1032,9 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
 
     @api_endpoint_class
     @has_perm_class('requires_member')
-    def transfer(self, request, pk, action):
+    def copy(self, request, pk):
         """
-        Move or copy inventory from one project to another
+        Copy inventory from one project to another
 
         :PUT: Expects organization_id in query string.
         ---
@@ -1050,12 +1050,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
               required: true
               type: string
               paramType: query
-            - name: copy or move
-              description: Whether to move or copy inventory
-              required: true
-              paramType: path
-              required: true
-            -name: target
+            - name: target
               type: string or int
               description: target project slug/id  to move/copy to.
               required: true
@@ -1063,6 +1058,43 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
               description: JSON array, list of property/taxlot views to be transferred
               paramType: array[int]
               required: true
+        """
+        return self.transfer(request, pk, 'copy')
+
+    @api_endpoint_class
+    @has_perm_class('requires_member')
+    def move(self, request, pk):
+        """
+        Move inventory from one project to another
+
+        :PUT: Expects organization_id in query string.
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              type: integer
+              paramType: query
+            - name: inventory_type
+              description: type of inventory to add: 'property' or 'taxlot'
+              required: true
+              type: string
+              paramType: query
+            - name: target
+              type: string or int
+              description: target project slug/id  to move/copy to.
+              required: true
+            - name: selected
+              description: JSON array, list of property/taxlot views to be transferred
+              paramType: array[int]
+              required: true
+        """
+        return self.transfer(request, pk, 'move')
+
+    def transfer(self, request, pk, transfer_action):
+        """
+        Move or copy inventory from one project to another
         """
         error = None
         status_code = status.HTTP_200_OK
@@ -1107,7 +1139,7 @@ class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
                 **filter_dict
             )
 
-            if action == 'copy':
+            if transfer_action == 'copy':
                 new_project_views = []
                 # set pk to None to create a copy of the django instance
                 for view in old_project_views:

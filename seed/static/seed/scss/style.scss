@@ -2716,7 +2716,7 @@ gs-input .tags .tag-item .remove-button {
 
   .nav-tabs {
     position: relative;
-    margin-bottom: -2px;
+    margin-bottom: 2px;
     z-index: 99;
 
     > li {
@@ -2742,6 +2742,14 @@ gs-input .tags .tag-item .remove-button {
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #F1F1F1;
+  }
+
+  .label-tabs {
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-left: -10px;
+    margin-bottom: -2px;
+    background-color: #F1F1F1;
   }
 }
 
