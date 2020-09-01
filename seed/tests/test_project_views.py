@@ -690,7 +690,7 @@ class ProjectViewTests(DeleteModelsTestCase):
             owner=other_user,
         )
         resp = self.client.get(
-            reverse_lazy("api:v2:datasets-count") + '?organization_id=' + str(self.org.id),
+            reverse_lazy("api:v3:datasets-count") + '?organization_id=' + str(self.org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -702,7 +702,7 @@ class ProjectViewTests(DeleteModelsTestCase):
         )
         # test case where user is not in org
         resp = self.client.get(
-            reverse_lazy("api:v2:datasets-count") + '?organization_id=' + str(other_org.id),
+            reverse_lazy("api:v3:datasets-count") + '?organization_id=' + str(other_org.id),
             content_type='application/json',
         )
         self.assertDictEqual(
@@ -714,7 +714,7 @@ class ProjectViewTests(DeleteModelsTestCase):
         )
         # test case where org does not exist
         resp = self.client.get(
-            reverse_lazy("api:v2:datasets-count") + '?organization_id=999',
+            reverse_lazy("api:v3:datasets-count") + '?organization_id=999',
             content_type='application/json',
         )
         self.assertDictEqual(

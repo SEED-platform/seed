@@ -330,7 +330,7 @@ class TestApi(TestCase):
         payload = {'name': 'API Test'}
 
         # create the data set
-        r = self.client.post('/api/v2/datasets/?organization_id=' + str(organization_id),
+        r = self.client.post('/api/v3/datasets/?organization_id=' + str(organization_id),
                              data=json.dumps(payload),
                              content_type='application/json',
                              **self.headers)
