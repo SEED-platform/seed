@@ -94,9 +94,9 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log)
 
     result = requests.get(
-        main_url + '/api/v2/data_quality_checks/results/',
+        main_url + '/api/v3/data_quality_checks/results/',
         headers=header,
-        params={"organization_id": organization_id, "data_quality_id": import_id}
+        params={"organization_id": organization_id, "run_id": import_id}
     )
     check_status(result, partmsg, log, piid_flag='data_quality')
 
@@ -465,75 +465,67 @@ def data_quality(header, main_url, organization_id, log):
     # get the data quality rules for the organization
     print('API Function: get_data_quality_rules\n')
     partmsg = 'get_data_quality_rules'
-    params = {
-        'organization_id': organization_id
-    }
-    result = requests.get(main_url + '/api/v2/data_quality_checks/data_quality_rules',
-                          headers=header,
-                          params=params)
+    result = requests.get(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/',
+        headers=header
+    )
     check_status(result, partmsg, log)
-    rules = result.json()['rules']
-    prop_rules = rules['properties']
-    tax_rules = rules['taxlots']
 
     # create a new rule
     print('API Function: create_data_quality_rule\n')
     partmsg = 'create_data_quality_rule'
-    params = {
-        'organization_id': organization_id
+    payload = {
+        'field': 'city',
+        'enabled': True,
+        'data_type': 1,
+        'condition': 'not_null',
+        'rule_type': 1,
+        'required': False,
+        'not_null': False,
+        'min': None,
+        'max': None,
+        'text_match': None,
+        'severity': 1,
+        'units': '',
+        'status_label': None,
+        'table_name': "PropertyState"
     }
-    new_rule = {'field': 'city',
-                'enabled': True,
-                'data_type': 'string',
-                'condition': '',
-                'rule_type': 1,
-                'required': False,
-                'not_null': True,
-                'min': None,
-                'max': None,
-                'text_match': None,
-                'severity': 'warning',
-                'units': '',
-                'label': None}
-    payload = {'data_quality_rules': {'properties': prop_rules + [new_rule], 'taxlots': tax_rules}}
-    result = requests.post(main_url + '/api/v2/data_quality_checks/save_data_quality_rules/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.post(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/',
+        headers=header,
+        json=payload
+    )
+    new_rule_id = result.json().get('id')
     check_status(result, partmsg, log)
 
     # delete the new rule
     print('API Function: delete_data_quality_rule\n')
     partmsg = 'delete_data_quality_rule'
-    params = {
-        'organization_id': organization_id
-    }
-    payload = {'data_quality_rules': {'properties': prop_rules, 'taxlots': tax_rules}}
-    result = requests.post(main_url + '/api/v2/data_quality_checks/save_data_quality_rules/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.delete(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/{new_rule_id}/',
+        headers=header
+    )
     check_status(result, partmsg, log)
 
-    # get some property state ids
-    result = requests.get(main_url + '/api/v2/property_states/',
-                          headers=header)
-    prop_state_ids = [prop['id'] for prop in result.json()['properties']]
+    # get some property view ids
+    result = requests.get(
+        main_url + '/api/v3/property_views/',
+        headers=header
+    )
+    prop_view_ids = [prop['id'] for prop in result.json()['property_views']]
 
     # create a new data quality check process
     print('API Function: create_data_quality_check\n')
     partmsg = 'create_data_quality_check'
-    params = {
-        'organization_id': organization_id
-    }
     payload = {
-        'property_state_ids': prop_state_ids,
-        'taxlot_state_ids': []
+        'property_view_ids': prop_view_ids,
+        'taxlot_view_ids': []
     }
-    result = requests.post(main_url + '/api/v2/data_quality_checks/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.post(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/start/',
+        headers=header,
+        json=payload
+    )
     check_status(result, partmsg, log)
     data_quality_id = result.json()['progress']['unique_id']
 
@@ -542,11 +534,13 @@ def data_quality(header, main_url, organization_id, log):
     partmsg = 'perform_data_quality_check'
     params = {
         'organization_id': organization_id,
-        'data_quality_id': data_quality_id
+        'run_id': data_quality_id
     }
-    result = requests.get(main_url + '/api/v2/data_quality_checks/results/',
-                          headers=header,
-                          params=params)
+    result = requests.get(
+        main_url + '/api/v3/data_quality_checks/results/',
+        headers=header,
+        params=params
+    )
     check_status(result, partmsg, log)
 
 
