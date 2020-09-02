@@ -387,6 +387,10 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
 
+#, fuzzy
+msgid "Column List Profiles"
+msgstr "Paramètres de la liste"
+
 msgid "Column Mapping Profile"
 msgstr "Profil de mappage de colonne"
 
@@ -1302,9 +1306,6 @@ msgstr "bleu clair"
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Les matchs en dehors de ce cycle seront liés."
 
-msgid "List Settings"
-msgstr "Paramètres de la liste"
-
 msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Sélectionnez des colonnes dans la liste ci-dessous pour les faire apparaître dans votre liste de propriétés. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent. Épinglez les lignes pour qu'elles soient épinglées dans la vue de liste."
 
@@ -1425,6 +1426,10 @@ msgstr "Lots d'impôts correspondants"
 msgid "Matched!"
 msgstr "Juméle!"
 
+#, fuzzy
+msgid "Matching Column List Profiles"
+msgstr "Paramètres de la Liste des Correspondances"
+
 msgid "Matching Criteria Preview"
 msgstr "Aperçu des critères d'appariement"
 
@@ -1436,9 +1441,6 @@ msgstr "Paramètres de détail sur la correspondance"
 
 msgid "Matching List"
 msgstr "Liste des Correspondances"
-
-msgid "Matching List Settings"
-msgstr "Paramètres de la Liste des Correspondances"
 
 msgid "Matching Results for file"
 msgstr "Résultats correspondants pour le fichier"
@@ -1902,7 +1904,8 @@ msgstr "Actions du projet"
 msgid "project building"
 msgstr "bâtiment dans le projet"
 
-msgid "Project Building List Settings"
+#, fuzzy
+msgid "Project Building Column List Profiles"
 msgstr "Paramètres de la liste de bâtiments de projet"
 
 #: seed/models/projects.py:116
@@ -1940,11 +1943,12 @@ msgstr "Projets"
 msgid "Properties"
 msgstr "Propriétés"
 
+#, fuzzy
+msgid "Properties Column List Profiles"
+msgstr "Paramètres de la Liste de Propriétés"
+
 msgid "Properties List"
 msgstr "Liste Des Propriétés"
-
-msgid "Properties List Settings"
-msgstr "Paramètres de la Liste de Propriétés"
 
 msgid "Properties with Data"
 msgstr "Propriétés avec données"
@@ -1958,6 +1962,10 @@ msgstr "propriété"
 msgid "Property Classification"
 msgstr "Classification de la propriété"
 
+#, fuzzy
+msgid "Property Column List Profiles"
+msgstr "Paramètres de la liste de propriétés"
+
 msgid "Property Count"
 msgstr "Nombre de propriétés"
 
@@ -1966,9 +1974,6 @@ msgstr "Détails de la propriété"
 
 msgid "Property Detail Settings"
 msgstr "Paramètres de détail de la propriété"
-
-msgid "Property List Settings"
-msgstr "Paramètres de la liste de propriétés"
 
 msgid "Property Name"
 msgstr "Nom de la propriété"
@@ -2420,11 +2425,12 @@ msgstr "Visibilité du lot d'impôt"
 msgid "Tax Lots"
 msgstr "Lots d'impôt"
 
+#, fuzzy
+msgid "Tax Lots Column List Profiles"
+msgstr "Paramètres de la Liste des Lots d'impôt"
+
 msgid "Tax Lots List"
 msgstr "Liste des lots d'impôt"
-
-msgid "Tax Lots List Settings"
-msgstr "Paramètres de la Liste des Lots d'impôt"
 
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
 msgstr "Au moins l'un des domaines fiscal Lot suivants est requis"
