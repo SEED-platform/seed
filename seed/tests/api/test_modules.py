@@ -333,7 +333,7 @@ def delete_set(header, main_url, organization_id, dataset_id, log):
     print('API Function: delete_dataset\n'),
     partmsg = 'delete_dataset'
     result = requests.delete(
-        main_url + '/api/v2/datasets/{}/'.format(dataset_id),
+        main_url + '/api/v3/datasets/{}/'.format(dataset_id),
         headers=header,
         params={'organization_id': organization_id},
     )

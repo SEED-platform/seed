@@ -98,13 +98,22 @@
             <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (geocoded_data.length | number: 0)}"></span>
         </span>
     </div>
-    <label class="pad-left-20 pad-right-20"> <input type="checkbox" name="hexbin" ng-model="layers.hexbin_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.hexbin_layer.zIndex)">&nbsp;&nbsp;Hexagonal Bins</label>
-    <label class="pad-right-20"> <input type="checkbox" name="points" ng-model="layers.points_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.points_layer.zIndex)">&nbsp;&nbsp;Building Points</label>
-    <label class="pad-right-20"> <input type="checkbox" name="building_bb" ng-model="layers.building_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_bb_layer.zIndex)">&nbsp;&nbsp;UBIDs</label>
-    <label class="pad-right-20"> <input type="checkbox" name="building_centroid" ng-model="layers.building_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_centroid_layer.zIndex)">&nbsp;&nbsp;UBID Centroids</label>
-    <label class="pad-right-20"> <input type="checkbox" name="taxlot_bb" ng-model="layers.taxlot_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_bb_layer.zIndex)">&nbsp;&nbsp;ULIDs</label>
-    <label class="pad-right-20"> <input type="checkbox" name="taxlot_centroid" ng-model="layers.taxlot_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_centroid_layer.zIndex)">&nbsp;&nbsp;ULID Centroids</label>
-
+    <ul class="nav nav-tabs" style="margin-bottom:0px;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
+            <a ui-sref="inventory_map(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
+            <a ui-sref="inventory_map(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
+    <div class="label-tabs">
+        <label class="pad-left-20 pad-right-20"> <input type="checkbox" name="hexbin" ng-model="layers.hexbin_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.hexbin_layer.zIndex)" ng-disabled="::inventory_type === 'taxlots'">&nbsp;&nbsp;Hexagonal Bins</label>
+        <label class="pad-right-20"> <input type="checkbox" name="points" ng-model="layers.points_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.points_layer.zIndex)">{$:: inventory_type === 'properties'?'  Building Points':'  Tax Lot Points' $}</label>
+        <label class="pad-right-20"> <input type="checkbox" name="building_bb" ng-model="layers.building_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_bb_layer.zIndex)">&nbsp;&nbsp;UBIDs</label>
+        <label class="pad-right-20"> <input type="checkbox" name="building_centroid" ng-model="layers.building_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.building_centroid_layer.zIndex)">&nbsp;&nbsp;UBID Centroids</label>
+        <label class="pad-right-20"> <input type="checkbox" name="taxlot_bb" ng-model="layers.taxlot_bb_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_bb_layer.zIndex)">&nbsp;&nbsp;ULIDs</label>
+        <label class="pad-right-20"> <input type="checkbox" name="taxlot_centroid" ng-model="layers.taxlot_centroid_layer.visible" ng-true-value=1 ng-false-value=0 ng-change="toggle_layer(layers.taxlot_centroid_layer.zIndex)">&nbsp;&nbsp;ULID Centroids</label>
+    </div>
 </div>
 <div id="map">
     <div id="popup-element"></div>
