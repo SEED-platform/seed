@@ -381,7 +381,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         self.client.login(**user_details)
 
         # create a dataset
-        dataset_name = 'test_name 1'
+        dataset_name = 'test_dataset'
         response = self.client.post(
             reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({'name': dataset_name}),
