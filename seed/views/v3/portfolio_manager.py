@@ -184,6 +184,8 @@ class PortfolioManagerViewSet(GenericViewSet):
                 possible_properties = content_object['report']['informationAndMetrics']['row']
                 if isinstance(possible_properties, list):
                     properties = possible_properties
+                elif isinstance(possible_properties, dict):
+                    properties = [possible_properties]
                 else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
                     return JsonResponse(
                         {

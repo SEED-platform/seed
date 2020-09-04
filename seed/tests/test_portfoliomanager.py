@@ -365,3 +365,66 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
         # in this case, we expect a meaningful error message
         self.assertIn('message', body)
         self.assertIn('empty', body['message'])
+
+
+class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
+
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        # create a dataset
+        dataset_name = 'test_name 1'
+        response = self.client.post(
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
+            data=json.dumps({'name': dataset_name}),
+            content_type='application/json',
+        )
+        dataset = response.json()
+        self.dataset_id = dataset['id']
+
+        self.pm_un = os.environ.get(PM_UN, False)
+        self.pm_pw = os.environ.get(PM_PW, False)
+        if not self.pm_un or not self.pm_pw:
+            self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
+
+    def test_single_property_template_for_upload(self):
+
+        # create a single property report with template
+        template = {
+            "children": [],
+            "display_name": "SEED_Test - Single Property",
+            "id": 2807325,
+            "name": "SEED_Test - Single Property",
+            "newReport": 0,
+            "z_seed_child_row": 0
+        }
+
+        report_response = self.client.post(
+            reverse_lazy('api:v3:portfolio_manager-report'),
+            json.dumps({"username": self.pm_un, "password": self.pm_pw, "template": template}),
+            content_type='application/json',
+        )
+        self.assertEquals(200, report_response.status_code)
+
+        property_info = json.loads(report_response.content)
+        self.assertEquals(1, len(property_info['properties']))
+        self.assertIsInstance(property_info['properties'], list)
+
+        # add report to dataset
+        response = self.client.post(
+            reverse_lazy('api:v3:upload-create-from-pm-import'),
+            json.dumps({
+                'properties': property_info['properties'],
+                'import_record_id': self.dataset_id,
+                'organization_id': self.org.pk}),
+            content_type='application/json',
+        )
+        self.assertEquals(200, response.status_code)
