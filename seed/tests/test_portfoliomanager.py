@@ -395,6 +395,7 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         if not self.pm_un or not self.pm_pw:
             self.fail('Somehow PM test was initiated without %s or %s in the environment' % (PM_UN, PM_PW))
 
+    @pm_skip_test_check
     def test_single_property_template_for_upload(self):
 
         # create a single property report with template
