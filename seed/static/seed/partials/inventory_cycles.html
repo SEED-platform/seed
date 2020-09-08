@@ -37,7 +37,7 @@
 
     <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-end;">
         <div class="btn-group" ng-show="profiles.length > 0">
-            <label>{$:: 'List Settings Profile' | translate $}:</label>
+            <label>{$:: 'Column List Profile' | translate $}:</label>
             <div style="display: inline-block;">
                 <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id" ng-change="profile_change()"></select>
             </div>

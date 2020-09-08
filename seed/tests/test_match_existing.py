@@ -42,7 +42,7 @@ from seed.utils.match import (
     whole_org_match_merge_link,
 )
 from seed.test_helpers.fake import (
-    FakeColumnListSettingsFactory,
+    FakeColumnListProfileFactory,
     FakeCycleFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
@@ -1506,9 +1506,9 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
     def test_properties_whole_org_match_merge_link_preview(self):
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(self.ps_11)
-        # get the columnlistsetting (default) for all columns
-        column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
-        columnlistsetting = column_list_factory.get_columnlistsettings(columns=['property_name', 'city'])
+        # get the columnlistprofile (default) for all columns
+        column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+        columnlistprofile = column_list_factory.get_columnlistprofile(columns=['property_name', 'city'])
 
         # Check all property sets were created without match merges
         self.assertEqual(12, Property.objects.count())
@@ -1517,8 +1517,8 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
 
         summary = whole_org_match_merge_link(self.org.id, 'PropertyState', ['property_name'])
 
-        property_name_key = 'property_name_' + str(columnlistsetting.columns.get(column_name='property_name').id)
-        city_key = 'city_' + str(columnlistsetting.columns.get(column_name='city').id)
+        property_name_key = 'property_name_' + str(columnlistprofile.columns.get(column_name='property_name').id)
+        city_key = 'city_' + str(columnlistprofile.columns.get(column_name='city').id)
 
         # Check all property sets were created without match merges
         self.assertEqual(12, Property.objects.count())
@@ -1805,9 +1805,9 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
     def test_taxlots_whole_org_match_merge_link_preview(self):
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(self.tls_11)
-        # get the columnlistsetting (default) for all columns
-        column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
-        columnlistsetting = column_list_factory.get_columnlistsettings(
+        # get the columnlistprofile (default) for all columns
+        column_list_factory = FakeColumnListProfileFactory(organization=self.org)
+        columnlistprofile = column_list_factory.get_columnlistprofile(
             inventory_type=VIEW_LIST_TAXLOT,
             columns=['district', 'city'],
             table_name='TaxLotState'
@@ -1820,8 +1820,8 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
 
         summary = whole_org_match_merge_link(self.org.id, 'TaxLotState', ['district'])
 
-        district_key = 'district_' + str(columnlistsetting.columns.get(column_name='district').id)
-        city_key = 'city_' + str(columnlistsetting.columns.get(column_name='city').id)
+        district_key = 'district_' + str(columnlistprofile.columns.get(column_name='district').id)
+        city_key = 'city_' + str(columnlistprofile.columns.get(column_name='city').id)
 
         # Check all property sets were created without match merges
         self.assertEqual(12, TaxLot.objects.count())

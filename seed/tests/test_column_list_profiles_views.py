@@ -39,7 +39,7 @@ class ColumnListProfilesView(DeleteModelsTestCase):
                                               column_name='extra data 1', is_extra_data=True)
         self.payload_data = {
             "name": "Test Column List Setting",
-            "settings_location": "List View Settings",
+            "profile_location": "List View Profile",
             "inventory_type": "Property",
             "columns": [
                 {"id": self.column_1.id, "pinned": False, "order": 1, "column_name": self.column_1.column_name,
@@ -62,7 +62,7 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(len(data['data']['columns']), 3)
         self.assertEqual(data['data']['inventory_type'], 'Property')
-        self.assertEqual(data['data']['settings_location'], 'List View Settings')
+        self.assertEqual(data['data']['profile_location'], 'List View Profile')
 
     def test_get_column_profile(self):
         # Create two list settings
@@ -129,7 +129,7 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         payload = {
             "name": "New Name",
             "inventory_type": "Tax Lot",
-            "settings_location": "List View Settings",
+            "profile_location": "List View Profile",
             "columns": []
         }
         url = reverse('api:v3:column_list_profiles-detail',

@@ -381,6 +381,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
+msgid "Column List Profiles"
+msgstr "Column List Profiles"
+
 msgid "Column Mapping Profile"
 msgstr "Column Mapping Profile"
 
@@ -1292,9 +1295,6 @@ msgstr "light blue"
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Matches outside of this cycle will be linked."
 
-msgid "List Settings"
-msgstr "List Settings"
-
 msgid "LIST_GUIDANCE_PROPERTIES"
 msgstr "Select columns from the list below to make them appear in your Property List table. Drag the rows to change the order in which they appear. Pin the rows for them to be left-pinned in the list view."
 
@@ -1415,6 +1415,9 @@ msgstr "Matched Tax Lots"
 msgid "Matched!"
 msgstr "Matched!"
 
+msgid "Matching Column List Profiles"
+msgstr "Matching Column List Profiles"
+
 msgid "Matching Criteria Preview"
 msgstr "Matching Criteria Preview"
 
@@ -1426,9 +1429,6 @@ msgstr "Matching Detail Settings"
 
 msgid "Matching List"
 msgstr "Matching List"
-
-msgid "Matching List Settings"
-msgstr "Matching List Settings"
 
 msgid "Matching Results for file"
 msgstr "Matching Results for file"
@@ -1892,8 +1892,8 @@ msgstr "Project Actions"
 msgid "project building"
 msgstr "project building"
 
-msgid "Project Building List Settings"
-msgstr "Project Building List Settings"
+msgid "Project Building Column List Profiles"
+msgstr "Project Building Column List Profiles"
 
 #: seed/models/projects.py:116
 msgid "project buildings"
@@ -1930,11 +1930,11 @@ msgstr "Projects"
 msgid "Properties"
 msgstr "Properties"
 
+msgid "Properties Column List Profiles"
+msgstr "Properties Column List Profiles"
+
 msgid "Properties List"
 msgstr "Properties List"
-
-msgid "Properties List Settings"
-msgstr "Properties List Settings"
 
 msgid "Properties with Data"
 msgstr "Properties with Data"
@@ -1948,6 +1948,9 @@ msgstr "property"
 msgid "Property Classification"
 msgstr "Property Classification"
 
+msgid "Property Column List Profiles"
+msgstr "Property Column List Profiles"
+
 msgid "Property Count"
 msgstr "Property Count"
 
@@ -1956,9 +1959,6 @@ msgstr "Property Detail"
 
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
-
-msgid "Property List Settings"
-msgstr "Property List Settings"
 
 msgid "Property Name"
 msgstr "Property Name"
@@ -2404,11 +2404,11 @@ msgstr "Tax Lot Visibility"
 msgid "Tax Lots"
 msgstr "Tax Lots"
 
+msgid "Tax Lots Column List Profiles"
+msgstr "Tax Lots Column List Profiles"
+
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
-
-msgid "Tax Lots List Settings"
-msgstr "Tax Lots List Settings"
 
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
 msgstr "At least one of the following Tax Lot fields is required"

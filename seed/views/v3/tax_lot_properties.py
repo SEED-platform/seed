@@ -28,7 +28,7 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     TaxLotView,
-    ColumnListSetting,
+    ColumnListProfile,
 )
 from seed.models.meters import (
     Meter,
@@ -107,7 +107,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(
             org_id,
             profile_id,
             view_klass_str)

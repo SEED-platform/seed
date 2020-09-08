@@ -9,7 +9,7 @@ from django.test import TestCase
 from seed.utils.address import normalize_address_str
 
 
-class TestColumnListSettings(TestCase):
+class TestColumnListProfile(TestCase):
 
     def test_adding_columns(self):
         cases = [

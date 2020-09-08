@@ -18,8 +18,8 @@ from seed.models import (
 VIEW_LIST = 0
 VIEW_DETAIL = 1
 VIEW_LOCATION_TYPES = [
-    (VIEW_LIST, 'List View Settings'),
-    (VIEW_DETAIL, 'Detail View Settings'),
+    (VIEW_LIST, 'List View Profile'),
+    (VIEW_DETAIL, 'Detail View Profile'),
 ]
 
 VIEW_LIST_PROPERTY = 0
@@ -30,16 +30,16 @@ VIEW_LIST_INVENTORY_TYPE = [
 ]
 
 
-class ColumnListSetting(models.Model):
+class ColumnListProfile(models.Model):
     """Ability to persist a list of views with different columns. The list of column views points to the columns that
     are contained in the list view."""
 
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     name = models.CharField(max_length=512, db_index=True)
-    settings_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
+    profile_location = models.IntegerField(choices=VIEW_LOCATION_TYPES, default=VIEW_LIST)
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
-    columns = models.ManyToManyField(Column, related_name='column_list_settings',
-                                     through='seed.ColumnListSettingColumn')
+    columns = models.ManyToManyField(Column, related_name='column_list_profiles',
+                                     through='seed.ColumnListProfileColumn')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
     COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}
@@ -56,15 +56,15 @@ class ColumnListSetting(models.Model):
         :return: list, column_ids, column_name_mappings, and selected_columns_from_database
         """
         try:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization=organization_id,
                 id=profile_id,
-                settings_location=VIEW_LIST,
+                profile_location=VIEW_LIST,
                 inventory_type=cls.PROFILE_TYPE[inventory_type]
             )
             profile_id = profile.id
 
-        except ColumnListSetting.DoesNotExist:
+        except ColumnListProfile.DoesNotExist:
             profile_id = False
 
         column_ids = []
@@ -73,8 +73,8 @@ class ColumnListSetting(models.Model):
         selected_columns_from_database = []
 
         if profile_id:
-            for c in apps.get_model('seed', 'ColumnListSettingColumn').objects.filter(
-                column_list_setting_id=profile_id
+            for c in apps.get_model('seed', 'ColumnListProfileColumn').objects.filter(
+                column_list_profile_id=profile_id
             ).order_by('order'):
                 # find the items from the columns_from_database object and return only the ones that are in the
                 # selected profile

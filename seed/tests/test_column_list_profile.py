@@ -10,14 +10,14 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
 )
 from seed.utils.organizations import create_organization
 from past.builtins import basestring
 
 
-class TestColumnListSettings(TestCase):
+class TestColumnListProfile(TestCase):
 
     def setUp(self):
         self.fake_user = User.objects.create(username='test')
@@ -39,21 +39,21 @@ class TestColumnListSettings(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListSetting.objects.create(name='example list setting')
-        ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
-        ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
+        new_list_profile = ColumnListProfile.objects.create(name='example list profile')
+        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_profile, order=1, pinned=False)
+        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_profile, order=2, pinned=True)
 
-        self.assertEqual(new_list_setting.columns.count(), 2)
-        self.assertEqual(new_list_setting.columns.first().column_name, 'New Column')
+        self.assertEqual(new_list_profile.columns.count(), 2)
+        self.assertEqual(new_list_profile.columns.first().column_name, 'New Column')
 
-        ColumnListSettingColumn.objects.filter(column=col1, column_list_setting=new_list_setting).delete()
-        self.assertEqual(new_list_setting.columns.count(), 1)
-        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.count(), 1)
-        self.assertEqual(new_list_setting.columnlistsettingcolumn_set.first().column.column_name, 'Second Column')
+        ColumnListProfileColumn.objects.filter(column=col1, column_list_profile=new_list_profile).delete()
+        self.assertEqual(new_list_profile.columns.count(), 1)
+        self.assertEqual(new_list_profile.columnlistprofilecolumn_set.count(), 1)
+        self.assertEqual(new_list_profile.columnlistprofilecolumn_set.first().column.column_name, 'Second Column')
 
     def test_returning_columns_no_profile(self):
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, None)
+        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, None)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
@@ -74,12 +74,12 @@ class TestColumnListSettings(TestCase):
             is_extra_data=True,
         )
 
-        new_list_setting = ColumnListSetting.objects.create(name='example list setting')
-        ColumnListSettingColumn.objects.create(column=col1, column_list_setting=new_list_setting, order=1, pinned=False)
-        ColumnListSettingColumn.objects.create(column=col2, column_list_setting=new_list_setting, order=2, pinned=True)
+        new_list_profile = ColumnListProfile.objects.create(name='example list profile')
+        ColumnListProfileColumn.objects.create(column=col1, column_list_profile=new_list_profile, order=1, pinned=False)
+        ColumnListProfileColumn.objects.create(column=col2, column_list_profile=new_list_profile, order=2, pinned=True)
 
         # do not set up a profile and return the columns, should be all columns
-        ids, name_mappings, objs = ColumnListSetting.return_columns(self.fake_org, new_list_setting.id)
+        ids, name_mappings, objs = ColumnListProfile.return_columns(self.fake_org, new_list_profile.id)
 
         # not the most robust tests, but they are least check for non-zero results
         self.assertIsInstance(ids[0], int)
