@@ -75,12 +75,10 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_and_get_building_sync(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
 
         response = self.client.post(url, fsysparams)
@@ -122,12 +120,10 @@ class InventoryViewTests(DeleteModelsTestCase):
         # import_record =
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures_bad_names.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
@@ -148,12 +144,10 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
         # upload the same file again
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
@@ -165,13 +159,11 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_and_get_building_sync_diff_ns(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
 
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
 
         response = self.client.post(url, fsysparams)
