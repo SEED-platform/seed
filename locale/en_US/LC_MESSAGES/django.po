@@ -2609,7 +2609,7 @@ msgid "UPLOADING_FILE_TITLE"
 msgstr "Uploading File"
 
 msgid "UPLOADING_PROGRESS"
-msgstr "Uploading <strong>{dataset_filename}</strong>"
+msgstr "Uploading <strong>{dataset_filename}</strong> to cycle <strong>{cycle_name}</strong>"
 
 msgid "Use Description"
 msgstr "Use Description"
