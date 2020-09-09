@@ -14,9 +14,9 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 
-from seed.filters import ColumnListSettingFilterBackend
+from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
-    ColumnListSetting,
+    ColumnListProfile,
     Organization,
     Column,
     VIEW_LIST,
@@ -50,7 +50,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
             {
                 "name": "some new name 3",
-                "settings_location": "List View Settings",
+                "profile_location": "List View Profile",
                 "inventory_type": "Tax Lot",
                 "columns": [
                     {"id": 1, "pinned": false, "order": 10},
@@ -61,8 +61,8 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
     """
     serializer_class = ColumnListProfileSerializer
-    model = ColumnListSetting
-    filter_backends = (ColumnListSettingFilterBackend,)
+    model = ColumnListProfile
+    filter_backends = (ColumnListProfileFilterBackend,)
     pagination_class = None
     # force_parent = True  # Ideally the column list profiles would inherit from the parent,
     # but not yet.
@@ -87,7 +87,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             'data': {
                 'id': None,
                 'name': 'ComStock',
-                'settings_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
+                'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
                 'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
                 'columns': self.list_comstock_columns(org_id)
             }
@@ -108,9 +108,9 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
                 description="'Property' or 'Tax Lot' for filtering."
             ),
             AutoSchemaHelper.query_string_field(
-                name='settings_location',
+                name='profile_location',
                 required=True,
-                description="'List View Settings' or 'Detail View Settings' for filtering."
+                description="'List View Profile' or 'Detail View Profile' for filtering."
             ),
         ]
     )
@@ -126,8 +126,8 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             }, status=status.HTTP_404_NOT_FOUND)
 
         inventory_type = request.query_params.get('inventory_type')
-        settings_location = request.query_params.get('settings_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
+        profile_location = request.query_params.get('profile_location')
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListProfileViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
@@ -141,7 +141,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         results.append({
             "id": None,
             "name": "ComStock",
-            "settings_location": 0,
+            "profile_location": 0,
             "inventory_type": 0
         })
 

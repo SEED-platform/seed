@@ -18,7 +18,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_TAXLOT, Column,
-                         ColumnListSetting, ColumnListSettingColumn, Cycle,
+                         ColumnListProfile, ColumnListProfileColumn, Cycle,
                          Note, PropertyView, StatusLabel, TaxLot,
                          TaxLotAuditLog, TaxLotProperty, TaxLotState,
                          TaxLotView)
@@ -135,16 +135,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             ).values_list('id', flat=True))
         else:
             try:
-                profile = ColumnListSetting.objects.get(
+                profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=VIEW_LIST,
+                    profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_TAXLOT
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
-                    column_list_setting_id=profile.id
+                show_columns = list(ColumnListProfileColumn.objects.filter(
+                    column_list_profile_id=profile.id
                 ).values_list('column_id', flat=True))
-            except ColumnListSetting.DoesNotExist:
+            except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
         related_results = TaxLotProperty.get_related(taxlot_views, show_columns,

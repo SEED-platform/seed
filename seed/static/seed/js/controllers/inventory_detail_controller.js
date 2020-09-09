@@ -55,7 +55,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           resolve: {
             action: _.constant('new'),
             data: profile_formatted_columns,
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -184,7 +184,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 

@@ -28,8 +28,8 @@ from seed.models import (
     Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
-    ColumnListSettingColumn,
+    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
+    ColumnListProfileColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
@@ -741,9 +741,9 @@ class FakeTaxLotViewFactory(BaseFake):
         return TaxLotView.objects.create(**property_view_details)
 
 
-class FakeColumnListSettingsFactory(BaseFake):
+class FakeColumnListProfileFactory(BaseFake):
     """
-    Factory Class for producing ColumnList Settings
+    Factory Class for producing ColumnList Profiles
 
     * This is faker, its predictable based on seed passed to fake factory.
     """
@@ -752,22 +752,22 @@ class FakeColumnListSettingsFactory(BaseFake):
         super().__init__()
         self.organization = organization
 
-    def get_columnlistsettings(self, organization=None,
-                               inventory_type=VIEW_LIST_PROPERTY,
-                               location=VIEW_LIST,
-                               table_name='PropertyState',
-                               **kw):
-        """Get columnlistsettings instance."""
+    def get_columnlistprofile(self, organization=None,
+                              inventory_type=VIEW_LIST_PROPERTY,
+                              location=VIEW_LIST,
+                              table_name='PropertyState',
+                              **kw):
+        """Get columnlistprofile instance."""
         if not organization:
             organization = self.organization
 
         cls_details = {
             'organization_id': organization.pk,
             'name': 'test column list setting',
-            'settings_location': location,
+            'profile_location': location,
             'inventory_type': inventory_type,
         }
-        cls = ColumnListSetting.objects.create(**cls_details)
+        cls = ColumnListProfile.objects.create(**cls_details)
 
         columns = []
         if 'columns' in kw:
@@ -781,7 +781,7 @@ class FakeColumnListSettingsFactory(BaseFake):
 
         # associate all the columns
         for idx, c in enumerate(columns):
-            ColumnListSettingColumn.objects.create(column=c, column_list_setting=cls, order=idx)
+            ColumnListProfileColumn.objects.create(column=c, column_list_profile=cls, order=idx)
 
         return cls
 

@@ -12,8 +12,8 @@ All rights reserved.  # NOQA
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
     TaxLotProperty,
     TaxLotView,
     VIEW_LIST,
@@ -32,16 +32,16 @@ def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
         ).values_list('id', flat=True))
     else:
         try:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=VIEW_LIST,
+                profile_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_TAXLOT
             )
-            show_columns = list(ColumnListSettingColumn.objects.filter(
-                column_list_setting_id=profile.id
+            show_columns = list(ColumnListProfileColumn.objects.filter(
+                column_list_profile_id=profile.id
             ).values_list('column_id', flat=True))
-        except ColumnListSetting.DoesNotExist:
+        except ColumnListProfile.DoesNotExist:
             show_columns = None
 
     results = {}

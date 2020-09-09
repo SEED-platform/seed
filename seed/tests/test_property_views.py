@@ -56,7 +56,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
     FakePropertyViewFactory,
-    FakeColumnListSettingsFactory,
+    FakeColumnListProfileFactory,
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
@@ -89,7 +89,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
-        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
 
     def test_get_and_edit_properties(self):
@@ -294,12 +294,12 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=['address_line_1', 'field_1'])
 
         params = {
             'organization_id': self.org.pk,
-            'profile_id': columnlistsetting.id,
+            'profile_id': columnlistprofile.id,
         }
         url = reverse('api:v3:properties-search') + '?cycle_id={}'.format(self.cycle.pk)
         response = self.client.get(url, params)
@@ -328,20 +328,20 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(columns=['address_line_1', 'field_1'])
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=['address_line_1', 'field_1'])
 
         post_params = json.dumps({
             'organization_id': self.org.pk,
-            'profile_id': columnlistsetting.id,
+            'profile_id': columnlistprofile.id,
             'cycle_ids': [self.cycle.id, cycle_2.id]
         })
         url = reverse('api:v3:properties-filter-by-cycle')
         response = self.client.post(url, post_params, content_type='application/json')
         data = response.json()
 
-        address_line_1_key = 'address_line_1_' + str(columnlistsetting.columns.get(column_name='address_line_1').id)
-        field_1_key = 'field_1_' + str(columnlistsetting.columns.get(column_name='field_1').id)
+        address_line_1_key = 'address_line_1_' + str(columnlistprofile.columns.get(column_name='address_line_1').id)
+        field_1_key = 'field_1_' + str(columnlistprofile.columns.get(column_name='field_1').id)
 
         self.assertEqual(len(data), 2)
 
@@ -1157,7 +1157,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(
             start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
-        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
 
     def test_export_bsync_works_with_default_profile(self):

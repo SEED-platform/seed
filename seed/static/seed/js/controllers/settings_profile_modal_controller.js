@@ -9,12 +9,12 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
     'inventory_service',
     'action',
     'data',
-    'settings_location',
+    'profile_location',
     'inventory_type',
-    function ($scope, $uibModalInstance, inventory_service, action, data, settings_location, inventory_type) {
+    function ($scope, $uibModalInstance, inventory_service, action, data, profile_location, inventory_type) {
       $scope.action = action;
       $scope.data = data;
-      $scope.settings_location = settings_location;
+      $scope.profile_location = profile_location;
       $scope.inventory_type = inventory_type;
 
       $scope.rename_profile = function () {
@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
           var id = $scope.data.id;
           var profile = _.omit($scope.data, 'id');
           profile.name = $scope.newName;
-          inventory_service.update_settings_profile(id, profile).then(function (result) {
+          inventory_service.update_column_list_profile(id, profile).then(function (result) {
             $uibModalInstance.close(result.name);
           }).catch(function () {
             $uibModalInstance.dismiss();
@@ -31,7 +31,7 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
       };
 
       $scope.remove_profile = function () {
-        inventory_service.remove_settings_profile($scope.data.id).then(function () {
+        inventory_service.remove_column_list_profile($scope.data.id).then(function () {
           $uibModalInstance.close();
         }).catch(function () {
           $uibModalInstance.dismiss();
@@ -40,9 +40,9 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
 
       $scope.new_profile = function () {
         if (!$scope.disabled()) {
-          inventory_service.new_settings_profile({
+          inventory_service.new_column_list_profile({
             name: $scope.newName,
-            settings_location: $scope.settings_location,
+            profile_location: $scope.profile_location,
             inventory_type: $scope.inventory_type,
             columns: $scope.data
           }).then(function (result) {

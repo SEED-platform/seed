@@ -76,7 +76,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       i18nService.setCurrentLang(stripRegion($translate.proposedLanguage() || $translate.use()));
 
-      // List Settings Profile
+      // Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -131,7 +131,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             action: _.constant('new'),
             data: currentColumns,
-            settings_location: _.constant('List View Settings'),
+            profile_location: _.constant('List View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -875,13 +875,13 @@ angular.module('BE.seed.controller.inventory_list', [])
             var id = $scope.currentProfile.id;
             var profile = _.omit($scope.currentProfile, 'id');
             profile.columns = currentColumns();
-            inventory_service.update_settings_profile(id, profile);
+            inventory_service.update_column_list_profile(id, profile);
           });
         } else {
           var id = $scope.currentProfile.id;
           var profile = _.omit($scope.currentProfile, 'id');
           profile.columns = currentColumns();
-          inventory_service.update_settings_profile(id, profile);
+          inventory_service.update_column_list_profile(id, profile);
         }
       };
 
