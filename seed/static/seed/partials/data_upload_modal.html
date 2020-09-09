@@ -163,6 +163,7 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
+                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -209,6 +210,7 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
+                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
