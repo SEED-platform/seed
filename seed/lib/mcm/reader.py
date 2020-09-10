@@ -37,6 +37,27 @@ from xlrd.xldate import XLDateAmbiguous
 
 ROW_DELIMITER = "|#*#|"
 
+def clean_fieldnames(fieldnames):
+    """
+    Fixes header fieldnames.
+
+    - turns unicode to ASCII
+    - replaces empty fieldnames with generated ones
+
+    :param fieldnames: iterable, sequence of headers
+    :return: tuple, (list, bool), first item is a list of cleaned headers, second item is a boolean indicating if any headers were generated
+    """
+    num_generated_headers = 0
+    new_fieldnames = []
+    for fieldname in fieldnames:
+        new_fieldname = unidecode(fieldname)
+        if fieldname == '':
+            num_generated_headers += 1
+            new_fieldname = f'SEED Generated Header {num_generated_headers}'
+            
+        new_fieldnames.append(new_fieldname)
+    return new_fieldnames, num_generated_headers > 0
+
 
 class GreenButtonParser(object):
     """
@@ -405,40 +426,23 @@ class CSVParser(object):
             # rows.next() will return the first row
     """
 
-    def __init__(self, csvfile, *args, **kwargs):
+    def __init__(self, csvfile):
         self.csvfile = csvfile
-        self.csvreader = self._get_csv_reader(csvfile, **kwargs)
 
-        # read the next line to get the field names
-        # cleaning the superscripts also assigns the headers to the csvreader.fieldnames
-        self.clean_super_scripts()
-
-    def _get_csv_reader(self, *args, **kwargs):
-        """Guess CSV dialect, and return CSV reader."""
         # Skip the first line, as csv headers are more likely to have weird
         # character distributions than the actual data.
         self.csvfile.readline()
-
         # Read a significant chunk of the data to improve the odds of
         # determining the dialect.  MCM is often run on very wide csv files.
         dialect = Sniffer().sniff(self.csvfile.read(16384))
         self.csvfile.seek(0)
 
-        if 'reader_type' not in kwargs:
-            return DictReader(self.csvfile)
-
-        else:
-            reader_type = kwargs.get('reader_type')
-            del kwargs['reader_type']
-            return reader_type(self.csvfile, dialect, **kwargs)
-
-    def clean_super_scripts(self):
-        """Replaces column names with clean ones."""
-        new_fields = []
-        for col in self.csvreader.fieldnames:
-            new_fields.append(unidecode(col))
-
-        self.csvreader.fieldnames = new_fields
+        fieldnames, generated_headers = clean_fieldnames(
+            DictReader(self.csvfile, dialect=dialect).fieldnames
+        )
+        self.generated_headers = generated_headers
+        self.csvfile.seek(0)  # not positive this is required, but adding it just in case
+        self.csvreader = DictReader(self.csvfile, dialect=dialect, fieldnames=fieldnames)
 
     def seek_to_beginning(self):
         """seeks to the beginning of the file"""
