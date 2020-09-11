@@ -36,6 +36,8 @@ from xlrd.xldate import XLDateAmbiguous
 ) = range(7)
 
 ROW_DELIMITER = "|#*#|"
+SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
+
 
 def clean_fieldnames(fieldnames):
     """
@@ -53,8 +55,8 @@ def clean_fieldnames(fieldnames):
         new_fieldname = unidecode(fieldname)
         if fieldname == '':
             num_generated_headers += 1
-            new_fieldname = f'SEED Generated Header {num_generated_headers}'
-            
+            new_fieldname = f'{SEED_GENERATED_HEADER_PREFIX} {num_generated_headers}'
+
         new_fieldnames.append(new_fieldname)
     return new_fieldnames, num_generated_headers > 0
 
@@ -440,7 +442,7 @@ class CSVParser(object):
         fieldnames, generated_headers = clean_fieldnames(
             DictReader(self.csvfile, dialect=dialect).fieldnames
         )
-        self.generated_headers = generated_headers
+        self.has_generated_headers = generated_headers
         self.csvfile.seek(0)  # not positive this is required, but adding it just in case
         self.csvreader = DictReader(self.csvfile, dialect=dialect, fieldnames=fieldnames)
 
@@ -574,3 +576,9 @@ class MCMParser(object):
         self.seek_to_beginning()
 
         return tmp
+
+    @property
+    def has_generated_headers(self):
+        if hasattr(self.reader, 'has_generated_headers'):
+            return self.reader.has_generated_headers
+        return False
