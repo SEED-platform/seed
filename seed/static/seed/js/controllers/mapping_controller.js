@@ -5,6 +5,7 @@
 angular.module('BE.seed.controller.mapping', [])
   .controller('mapping_controller', [
     '$scope',
+    '$state',
     '$log',
     '$q',
     '$filter',
@@ -26,6 +27,7 @@ angular.module('BE.seed.controller.mapping', [])
     'inventory_service',
     'geocode_service',
     'organization_service',
+    'dataset_service',
     '$translate',
     'i18nService', // from ui-grid
     'simple_modal_service',
@@ -37,6 +39,7 @@ angular.module('BE.seed.controller.mapping', [])
     'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
     function (
       $scope,
+      $state,
       $log,
       $q,
       $filter,
@@ -58,6 +61,7 @@ angular.module('BE.seed.controller.mapping', [])
       inventory_service,
       geocode_service,
       organization_service,
+      dataset_service,
       $translate,
       i18nService,
       simple_modal_service,
@@ -806,6 +810,31 @@ angular.module('BE.seed.controller.mapping', [])
           }
         });
       };
+
+      // If the imported file has generated headers, warn the user and give the
+      // option to delete the file
+      if ($scope.import_file.has_generated_headers && !$scope.import_file.matching_done) {
+        var modalOptions = {
+          type: 'default',
+          okButtonText: 'Continue',
+          cancelButtonText: 'Delete File',
+          headerText: 'Missing Headers',
+          bodyText: 'This file was missing one or more headers which have been replaced with auto-generated names. This will not affect your data import. If you prefer to use your own headers please select "Delete File", fix the headers and re-upload the file.'
+        };
+        simple_modal_service.showModal(modalOptions).then(function () {
+          // user chose to NOT delete file
+        }, function () {
+          // user chose to delete file
+          dataset_service.delete_file($scope.import_file.id).then(function() {
+            Notification.primary('File deleted')
+            $state.go('dataset_list');
+          }, function(message) {
+            $log.error('Error deleting file.', message);
+            $state.go('dataset_list');
+          })
+        });
+      }
+
       var init = function () {
         $scope.initialize_mappings();
 
