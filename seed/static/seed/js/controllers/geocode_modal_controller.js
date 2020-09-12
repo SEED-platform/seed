@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
 
         geocode_service.geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function (data) {
           if (_.includes(data.data, "MapQuestAPIKeyError")) {
-            $scope.error_message = "Invalid MapQuest API Key Error Detected!";
+            $scope.error_message = "Invalid MapQuest API Key Error Detected";
 
             $scope.geocode_state = 'fail';
           } else {
