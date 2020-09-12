@@ -15,6 +15,8 @@ angular.module('BE.seed.service.geocode', [])
           }
         }).then(function (response) {
           return response;
+        }).catch(function(e) {
+          return e;
         });
       };
 

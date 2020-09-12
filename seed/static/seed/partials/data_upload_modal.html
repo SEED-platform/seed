@@ -208,7 +208,7 @@
     <!-- Step 10: No matches -->
     <div class="data_upload_steps" ng-switch-when="10">
         <div class="row">
-            <div class="alert alert-success">
+            <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>

@@ -345,6 +345,7 @@
     "GEOCODING_COL_COUNT_REQUIREMENT": "At least 1 geocoding column is required for this building type in order to attempt geocoding.",
     "GEOCODING_FULL_ADDRESS_ADVICE": "Datafile fields mapped to these columns will have their corresponding values concatenated in the order listed to form a full address. This full address is made for each record and used for geocoding.",
     "GEOCODING_INVENTORY_COMPLETE": "Geocoding Complete",
+    "GEOCODING_INVENTORY_INCOMPLETE": "Geocoding Incomplete",
     "GEOCODING_NEEDS_THREE_COLS": "Note, geocoding requires at least 1 column is used and populated to construct full addresses.",
     "GEOCODING_NOW": "Geocoding now...",
     "Get a New API Key": "Get a New API Key",
