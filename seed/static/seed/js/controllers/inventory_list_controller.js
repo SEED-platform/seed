@@ -816,10 +816,11 @@ angular.module('BE.seed.controller.inventory_list', [])
               return $scope.cycle.selected_cycle.id;
             },
             ids: function () {
-              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
-                return row.entity.id;
+              var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
+              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function(row) {
+                return row.entity[viewId]
               });
-              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), 'id');
+              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), viewId);
               return _.filter(visibleRowIds, function (id) {
                 return _.includes(selectedRowIds, id);
               });
