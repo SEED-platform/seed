@@ -379,7 +379,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         spinner_utility.show();
         $q.all(promises).then(function () {
-          data_quality_service.data_quality_rules($scope.org.id).then(function (update_rules){
+          data_quality_service.data_quality_rules($scope.org.id).then(function (updated_rules){
             $scope.original_rules = angular.copy(updated_rules);
             loadRules(updated_rules);
           });
