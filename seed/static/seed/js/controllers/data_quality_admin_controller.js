@@ -293,7 +293,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
 
         return [rules, misconfigured_rules];
-      }
+      };
 
       // Capture misconfigured rule fields for UI indicators
       var init_misconfigured_fields_ref = function () {
@@ -362,10 +362,52 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           }
         });
 
+        // De-dup: based on inventory_type
+        $scope.is_duplicate = false;
+        let new_rules = [];
+        let dup_field;
+        let grouped = _.groupBy(rules, function(rule) {
+          return rule.table_name;
+        });
+        _.forEach(grouped, function(group) {
+          let field_groups = _.groupBy(group, function(field) {
+            return field.field;
+          });
+          _.forEach(field_groups, function(field) {
+            if (field.length > 1) {
+              let condition_groups = _.groupBy(field, function (condition) {
+                return condition.condition;
+              });
+              _.forEach(condition_groups, function(condition) {
+                if (condition.length > 1) {
+                  let severity_groups = _.groupBy(condition, function(severity) {
+                    return severity.severity;
+                  });
+                  var array = [];
+                  _.forEach(severity_groups, function(severity) {
+                    if (severity.length > 1) {
+                      $scope.is_duplicate = true;
+                      dup_field = severity[0].field;
+                      array.push(severity[0]);
+                    }
+                  });
+                  if (array.length > 0) condition = array;
+                }
+                if (!_.isUndefined(dup_field)) field = condition;
+              });
+            }
+            if (!_.isUndefined(dup_field)) field_groups[dup_field] = field;
+            dup_field = undefined;
+          });
+          _.forEach(field_groups, function(rule) {
+            new_rules.push(rule[0]);
+          })
+        });
+        rules = new_rules;
+
         // Find rules to update or create
         _.forEach(rules, function (rule) {
           var previous_copy = _.find($scope.original_rules, ['id', rule.id]);
-
           if (!previous_copy) {
             promises.push(data_quality_service.create_data_quality_rule($scope.org.id, rule));
           } else if (!_.isMatch(previous_copy, rule)) {
@@ -374,12 +416,13 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
 
         if (!promises.length) {
+          if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
           return Notification.error({message: "No changes made.", delay: 10000});
         }
 
         spinner_utility.show();
         $q.all(promises).then(function () {
-          data_quality_service.data_quality_rules($scope.org.id).then(function (update_rules){
+          data_quality_service.data_quality_rules($scope.org.id).then(function (updated_rules){
             $scope.original_rules = angular.copy(updated_rules);
             loadRules(updated_rules);
           });
