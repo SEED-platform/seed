@@ -352,6 +352,39 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           show_configuration_errors(misconfigured_rules);
         }
 
+        // Find duplicate rules
+        $scope.is_duplicate = false;
+        var find_duplicate = function(rules, criteria) {
+          let groups = _.groupBy(rules, function (rule) {
+            return rule[criteria];
+          });
+          var grouped = [];
+          _.forEach(groups, function(group) {
+            if (group.length > 1) grouped.push(group);
+          });
+          return grouped;
+        };
+        _.forEach(find_duplicate(rules, 'table_name'), function (by_table) {
+          _.forEach(find_duplicate(by_table, 'condition'), function (by_condition) {
+            _.forEach(find_duplicate(by_condition, 'field'), function (by_field) {
+              _.forEach(find_duplicate(by_field, 'data_type'), function (by_type) {
+                _.forEach(find_duplicate(by_type, 'min'), function (by_min) {
+                  _.forEach(find_duplicate(by_min, 'max'), function (by_max) {
+                    _.forEach(find_duplicate(by_max, 'units'), function (by_units) {
+                      _.forEach(find_duplicate(by_units, 'severity'), function (by_severity) {
+                        _.forEach(find_duplicate(by_severity, 'label'), function (by_label) {
+                          if (by_label) $scope.is_duplicate = true;
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+        if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
+
         // Find rules to delete
         _.forEach($scope.original_rules, function (or) {
           if (
@@ -361,49 +394,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             promises.push(data_quality_service.delete_data_quality_rule($scope.org.id, or.id));
           }
         });
-
-        // De-dup: based on inventory_type
-        $scope.is_duplicate = false;
-        let new_rules = [];
-        let dup_field;
-        let grouped = _.groupBy(rules, function(rule) {
-          return rule.table_name;
-        });
-        _.forEach(grouped, function(group) {
-          let field_groups = _.groupBy(group, function(field) {
-            return field.field;
-          });
-          _.forEach(field_groups, function(field) {
-            if (field.length > 1) {
-              let condition_groups = _.groupBy(field, function (condition) {
-                return condition.condition;
-              });
-              _.forEach(condition_groups, function(condition) {
-                if (condition.length > 1) {
-                  let severity_groups = _.groupBy(condition, function(severity) {
-                    return severity.severity;
-                  });
-                  var array = [];
-                  _.forEach(severity_groups, function(severity) {
-                    if (severity.length > 1) {
-                      $scope.is_duplicate = true;
-                      dup_field = severity[0].field;
-                      array.push(severity[0]);
-                    }
-                  });
-                  if (array.length > 0) condition = array;
-                }
-                if (!_.isUndefined(dup_field)) field = condition;
-              });
-            }
-            if (!_.isUndefined(dup_field)) field_groups[dup_field] = field;
-            dup_field = undefined;
-          });
-          _.forEach(field_groups, function(rule) {
-            new_rules.push(rule[0]);
-          })
-        });
-        rules = new_rules;
 
         // Find rules to update or create
         _.forEach(rules, function (rule) {
@@ -416,7 +406,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
 
         if (!promises.length) {
-          if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
           return Notification.error({message: "No changes made.", delay: 10000});
         }
 
