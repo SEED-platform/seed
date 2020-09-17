@@ -344,6 +344,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         // Clear notifications and misconfigured indicators in case there were any from previous save attempts.
         Notification.clearAll();
         init_misconfigured_fields_ref();
+        $scope.is_duplicate = false;
 
         var [rules, misconfigured_rules] = get_configured_rules();
         var promises = [];
@@ -352,9 +353,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           show_configuration_errors(misconfigured_rules);
         }
 
-        // Find duplicate rules
-        $scope.is_duplicate = false;
-        var find_duplicate = function(rules, criteria) {
+        // Find duplicate rules and trigger warnings
+        var group_by_criteria = function(rules, criteria) {
           let groups = _.groupBy(rules, function (rule) {
             return rule[criteria];
           });
@@ -364,25 +364,20 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
           return grouped;
         };
-        _.forEach(find_duplicate(rules, 'table_name'), function (by_table) {
-          _.forEach(find_duplicate(by_table, 'condition'), function (by_condition) {
-            _.forEach(find_duplicate(by_condition, 'field'), function (by_field) {
-              _.forEach(find_duplicate(by_field, 'data_type'), function (by_type) {
-                _.forEach(find_duplicate(by_type, 'min'), function (by_min) {
-                  _.forEach(find_duplicate(by_min, 'max'), function (by_max) {
-                    _.forEach(find_duplicate(by_max, 'units'), function (by_units) {
-                      _.forEach(find_duplicate(by_units, 'severity'), function (by_severity) {
-                        _.forEach(find_duplicate(by_severity, 'label'), function (by_label) {
-                          if (by_label) $scope.is_duplicate = true;
-                        });
-                      });
-                    });
-                  });
-                });
-              });
+        var last_rules = [];
+        var recurse = function(rules, criteria) {
+          if (criteria.length > 0) {
+            _.forEach(group_by_criteria(rules, criteria[0]), function(rule) {
+              last_rules = rule;
+              return recurse(rule, criteria.slice(1));
             });
-          });
-        });
+          } else {
+            if (last_rules.every(rule => rule.field === last_rules[0].field)) $scope.is_duplicate = true;
+          }
+        };
+
+        var criteria = ['table_name', 'condition', 'field', 'data_type', 'min', 'max', 'units', 'severity', 'label'];
+        recurse(rules, criteria);
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
         // Find rules to delete
