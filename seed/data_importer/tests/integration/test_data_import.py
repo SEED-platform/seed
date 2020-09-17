@@ -150,6 +150,43 @@ class TestDataImport(DataMappingBaseTestCase):
         )
 
 
+class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
+    """Tests for dealing with SEED related tasks for mapping data."""
+
+    def setUp(self):
+        # Make sure to delete the old mappings and properties because this
+        # tests expects very specific column names and properties in order
+        self.maxDiff = None
+
+        filename = getattr(self, 'filename', 'portfolio-manager-sample-missing-headers.csv')
+        import_file_source_type = PORTFOLIO_RAW
+        self.fake_mappings = FAKE_MAPPINGS['portfolio']
+        self.fake_extra_data = FAKE_EXTRA_DATA
+        self.fake_row = FAKE_ROW
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file, self.import_record, self.cycle = selfvars
+        filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
+        self.import_file.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read()
+        )
+        self.import_file.save()
+
+    def test_generates_headers_for_those_missing(self):
+        """Tests to make sure the first row is saved in the correct order and includes
+        generated names for missing headers"""
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            tasks.save_raw_data(self.import_file.pk)
+
+        expected_first_row = 'Property Id|#*#|Property Name|#*#|SEED Generated Header 1|#*#|SEED Generated Header 2|#*#|Address 1|#*#|SEED Generated Header 3|#*#|City|#*#|State/Province|#*#|Postal Code|#*#|Year Built|#*#|ENERGY STAR Score|#*#|Site EUI (kBtu/ft2)|#*#|Total GHG Emissions (MtCO2e)|#*#|Weather Normalized Site EUI (kBtu/ft2)|#*#|National Median Site EUI (kBtu/ft2)|#*#|Source EUI (kBtu/ft2)|#*#|Weather Normalized Source EUI (kBtu/ft2)|#*#|National Median Source EUI (kBtu/ft2)|#*#|Parking - Gross Floor Area (ft2)|#*#|Organization|#*#|Generation Date|#*#|Release Date'  # NOQA
+
+        import_file = ImportFile.objects.get(pk=self.import_file.pk)
+        first_row = import_file.cached_first_row
+        self.assertEqual(first_row, expected_first_row)
+
+        self.assertEqual(import_file.has_generated_headers, True)
+
+
 class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
     def setUp(self):
         self.maxDiff = None
