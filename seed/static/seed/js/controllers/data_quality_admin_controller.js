@@ -372,7 +372,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               return recurse(rule, criteria.slice(1));
             });
           } else {
-            if (last_rules.every(rule => rule.field === last_rules[0].field)) $scope.is_duplicate = true;
+            if (last_rules.length > 0) $scope.is_duplicate = true;
           }
         };
 
