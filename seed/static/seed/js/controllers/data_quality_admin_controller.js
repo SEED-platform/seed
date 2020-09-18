@@ -376,7 +376,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           }
         };
 
-        var criteria = ['table_name', 'condition', 'field', 'data_type', 'min', 'max', 'units', 'severity', 'label'];
+        var criteria = ['table_name', 'condition', 'field', 'data_type', 'min', 'max', 'units', 'severity', 'status_label'];
         recurse(rules, criteria);
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
