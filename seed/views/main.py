@@ -88,7 +88,7 @@ def version(request):
         manifest = json.load(package_json)
 
     sha = subprocess.check_output(
-        ['git', 'rev-parse', '--short', 'HEAD']).strip()
+        ['git', 'rev-parse', '--short=9', 'HEAD']).strip()
 
     return JsonResponse({
         'version': manifest['version'],
