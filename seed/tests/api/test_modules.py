@@ -557,7 +557,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
     result = requests.post(main_url + '/api/v3/properties/filter/',
                            headers=header,
                            params=params)
-    prop_ids = [prop['id'] for prop in result.json()['results']]
+    prop_ids = [prop['property_view_id'] for prop in result.json()['results']]
     prop_ids = prop_ids[:num_props]
 
     print('API Function: export_properties\n')
@@ -590,7 +590,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
     result = requests.post(main_url + '/api/v3/taxlots/filter/',
                            headers=header,
                            params=params)
-    lot_ids = [lot['id'] for lot in result.json()['results']]
+    lot_ids = [lot['taxlot_view_id'] for lot in result.json()['results']]
     lot_ids = lot_ids[:num_lots]
 
     print('API Function: export_taxlots\n')
