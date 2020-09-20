@@ -364,7 +364,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           });
           return grouped;
         };
-        var last_rules = [];
+/*        var last_rules = [];
         var recurse = function(rules, criteria) {
           if (criteria.length > 0) {
             _.forEach(group_by_criteria(rules, criteria[0]), function(rule) {
@@ -378,6 +378,26 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         var criteria = ['table_name', 'condition', 'field', 'data_type', 'min', 'max', 'units', 'severity', 'status_label'];
         recurse(rules, criteria);
+*/
+        _.forEach(_.groupBy(rules, 'table_name'), function(by_table) {
+          _.forEach(_.groupBy(by_table, 'condition'), function(by_condition) {
+            _.forEach(_.groupBy(by_condition, 'field'), function(by_field) {
+              _.forEach(_.groupBy(by_field, 'data_type'), function(by_type) {
+                _.forEach(_.groupBy(by_type, 'min'), function(by_min) {
+                  _.forEach(_.groupBy(by_min, 'max'), function(by_max) {
+                    _.forEach(_.groupBy(by_max, 'units'), function(by_units) {
+                      _.forEach(_.groupBy(by_units, 'severity'), function(by_severity) {
+                        _.forEach(_.groupBy(by_severity, 'status_label'), function(by_status) {
+                          if (by_status.length > 1) $scope.is_duplicate = true;
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
         // Find rules to delete
