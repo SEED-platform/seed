@@ -697,7 +697,7 @@ msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
 
 msgid "DATASET_FILENAME_UPLOADED_TO"
-msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>."
+msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>, under cycle <strong>{cycle_name}</strong>."
 
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "The data set <strong>name \"{dataset_name}\" already exists</strong>. Please select a new one."
@@ -1089,6 +1089,9 @@ msgstr "Datafile fields mapped to these columns will have their corresponding va
 
 msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Geocoding Complete"
+
+msgid "GEOCODING_INVENTORY_INCOMPLETE"
+msgstr "Geocoding Incomplete"
 
 msgid "GEOCODING_NEEDS_THREE_COLS"
 msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."

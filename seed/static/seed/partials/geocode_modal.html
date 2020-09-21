@@ -96,5 +96,6 @@
 <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="geocode_buildings()" ng-show="geocode_state === 'verify' && has_api_key && has_enough_geocoding_columns" translate>Geocode</button>
     <button type="button" class="btn btn-default" ng-show="geocode_state == 'verify'" ng-click="cancel()" translate>Cancel</button>
-    <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'||'fail'" ng-click="close()" translate>Close</button>
+    <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'" ng-click="close()" translate>Close</button>
+    <button type="button" class="btn btn-default" ng-show="geocode_state === 'fail'" ng-click="close()" translate>Close</button>
 </div>
