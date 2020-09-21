@@ -42,6 +42,17 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       });
     };
 
+	// Create new template
+    template_factory.new_template = function (data) {
+      return $http.post('/api/v3/postoffice/', data, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data.data;
+      });
+    };
+
     // Renaming the selected template in the available templates drop-down menu (Organization-->Email Templates)
     template_factory.update_template = function (id, data) {
       if (id === null) {

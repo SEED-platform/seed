@@ -81,6 +81,24 @@ angular.module('BE.seed.controller.email_templates', [])
                     Notification.primary('Removed ' + oldTemplate.name);
                 });
             };
+			
+	        $scope.newTemplate = function () {
+	          var modalInstance = $uibModal.open({
+	            templateUrl: urls.static_url + 'seed/partials/email_templates_modal.html',
+	            controller: 'email_templates_modal_controller',
+	            resolve: {
+	              action: _.constant('new'),
+	              data: _.constant($scope.dropdown_selected_template),
+	            }
+	          });
+
+	          modalInstance.result.then(function (newTemplate) {
+	            $scope.available_templates.push(newTemplate);
+	            modified_service.resetModified();
+	            $scope.dropdown_selected_template = _.last($scope.available_templates);
+	            Notification.primary('Created ' + newTemplate.name);
+	          });
+	        };
 
             //updating modified
             $scope.isModified = function () {

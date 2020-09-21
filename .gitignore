@@ -50,6 +50,7 @@ node_modules/
 
 # JetBrains tends to suggest a venv directory in the project root for virtual environments
 venv/
+beam-env/
 
 dump.rdb
 log/*.log

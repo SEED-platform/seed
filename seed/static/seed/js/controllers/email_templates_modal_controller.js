@@ -39,6 +39,16 @@ angular.module('BE.seed.controller.email_templates_modal', [])
                     $uibModalInstance.dismiss();
                 });
             };
+			
+	        $scope.new_template = function () {
+	          if (!$scope.disabled()) {
+	            postoffice_service.new_template({
+	              name: $scope.newName,
+	            }).then(function (result) {
+	              $uibModalInstance.close(result);
+	            });
+	          }
+	        };
 
             $scope.disabled = function () {
                 if ($scope.action === 'rename') {
