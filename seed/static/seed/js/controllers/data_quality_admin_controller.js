@@ -374,6 +374,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         // Find rules to update or create
         _.forEach(rules, function (rule) {
           var previous_copy = _.find($scope.original_rules, ['id', rule.id]);
+
           if (!previous_copy) {
             promises.push(data_quality_service.create_data_quality_rule($scope.org.id, rule));
           } else if (!_.isMatch(previous_copy, rule)) {
