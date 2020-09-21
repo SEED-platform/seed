@@ -354,20 +354,11 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         // Find duplicate rules and trigger warnings
-        var duplicate_rule;
-        var recurse = function (rules, criteria) {
-          if (criteria.length > 0) {
-            _.forEach(_.groupBy(rules, criteria[0]), function(group) {
-              duplicate_rule = group;
-              return recurse(group, criteria.slice(1));
-            });
-          } else {
-            if (duplicate_rule.length > 1) $scope.is_duplicate = true;
-          }
-        }
-
-        var criteria = ['table_name','condition','field','data_type','min','max','units','severity','status_label'];
-        recurse(rules, criteria);
+        $scope.is_duplicate = _.some(_.groupBy(rules, function(rule) {
+          return `${rule.table_name}-${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.units}-${rule.severity}-${rule.status_label}`;
+        }), function(group) {
+          return group.length > 1;
+        });
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
         // Find rules to delete
