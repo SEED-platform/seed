@@ -355,7 +355,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         // Find duplicate rules and trigger warnings
         $scope.is_duplicate = _.some(_.groupBy(rules, function(rule) {
-          return `${rule.table_name}-${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.units}-${rule.severity}-${rule.status_label}`;
+          return `${rule.table_name}-${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${rule.status_label}`;
         }), function(group) {
           return group.length > 1;
         });
