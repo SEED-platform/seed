@@ -827,6 +827,7 @@
     "UPLOAD_GB_DATA_BUTTON": "Importer des Données GreenButton",
     "UPLOAD_PM_READINGS_MODAL_TITLE": "Importer des lectures de compteur Portfolio Manager",
     "uploading file": "téléchargeant le fichier",
+    "Uploading your data": "Télécharger vos données",
     "UPLOADING_FILE_TITLE": "Téléchargement de Fichier",
     "UPLOADING_PROGRESS": "Importation de <strong> {dataset_filename} <\/strong> pour faire un cycle <strong> {cycle_name} <\/strong>",
     "Use Description": "Description de l’emploi",

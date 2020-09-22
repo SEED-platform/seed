@@ -2608,6 +2608,9 @@ msgstr "Upload Portfolio Manager Meter Readings"
 msgid "uploading file"
 msgstr "uploading file"
 
+msgid "Uploading your data"
+msgstr "Uploading your data"
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Uploading File"
 

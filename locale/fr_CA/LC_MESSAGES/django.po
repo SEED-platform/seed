@@ -2629,6 +2629,9 @@ msgstr "Importer des lectures de compteur Portfolio Manager"
 msgid "uploading file"
 msgstr "téléchargeant le fichier"
 
+msgid "Uploading your data"
+msgstr "Télécharger vos données"
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Téléchargement de Fichier"
 

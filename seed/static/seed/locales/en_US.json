@@ -827,6 +827,7 @@
     "UPLOAD_GB_DATA_BUTTON": "Upload GreenButton Data",
     "UPLOAD_PM_READINGS_MODAL_TITLE": "Upload Portfolio Manager Meter Readings",
     "uploading file": "uploading file",
+    "Uploading your data": "Uploading your data",
     "UPLOADING_FILE_TITLE": "Uploading File",
     "UPLOADING_PROGRESS": "Uploading <strong>{dataset_filename}<\/strong> to cycle <strong>{cycle_name}<\/strong>",
     "Use Description": "Use Description",
