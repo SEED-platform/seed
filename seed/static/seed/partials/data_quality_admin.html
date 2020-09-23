@@ -79,20 +79,20 @@
                                 <select class="form-control input-sm" ng-model="rule.condition"
                                         ng-options="condition.id as condition.label for condition in ::conditions"
                                         ng-change="rules_changed(rule); change_condition(rule, ruleGroups[inventory_type][field], field)"
-                                        ng-class="{'border-red red': invalid_conditions.includes(field) || (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label)),
+                                        ng-class="{'border-red red': invalid_conditions.includes(field) || (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label)),
                                                     'error-bg': misconfigured_fields_ref.condition.includes(rule.$$hashKey)}"
                                         ></select>
-                                <!--{$ (rule.condition == is_duplicate.condition && rule.field == is_duplicate.field && rule.data_type == is_duplicate.data_type &&
-                                rule.min == is_duplicate.min && rule.max == is_duplicate.max && rule.text_match == is_duplicate.text_match &&
-                                rule.units == is_duplicate.units && rule.severity == is_duplicate.severity && rule.label == is_duplicate.status_label) $}-->
+                                <!--{$ (rule.condition == duplicate_rule.condition && rule.field == duplicate_rule.field && rule.data_type == duplicate_rule.data_type &&
+                                rule.min == duplicate_rule.min && rule.max == duplicate_rule.max && rule.text_match == duplicate_rule.text_match &&
+                                rule.units == duplicate_rule.units && rule.severity == duplicate_rule.severity && rule.label == duplicate_rule.status_label) $}-->
                             </td>
                             <td>
                                 <select class="form-control input-sm"
@@ -101,30 +101,30 @@
                                         ng-change="rules_changed(rule); change_field(rule, '{$ rule.field $}', $index)"
                                         title="{$ rule.field $}"
                                         focus-if="{$ rule.autofocus || 'false' $}"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                             </td>
                             <td ng-if="rule.condition === 'range'">
                                 <select class="form-control input-sm"
                                         ng-model="rule.data_type"
                                         ng-options="type.id as type.label for type in ::data_types[1]"
                                         ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                             </td>
                             <td ng-if="rule.condition !== 'range'" >
                                 <select class="form-control input-sm"
@@ -132,144 +132,144 @@
                                         ng-if="_.includes(['include', 'exclude'], rule.condition)"
                                         ng-options="type.id as type.label for type in ::data_types[0]"
                                         ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                                 <select class="form-control input-sm"
                                         ng-model="rule.data_type"
                                         ng-if="_.includes(['required', 'not_null', '', null, 'None'], rule.condition)"
                                         ng-options="type.id as type.label for type in ::data_types[2]"
                                         ng-change="rules_changed(rule); change_data_type(rule, '{$ rule.data_type $}')"
-                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                        ng-class="{'border-red red': invalid_data_types.includes(field) || (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                             </td>
                             <td ng-if="rule.data_type === data_type_keys.string" colspan="2" ng-class="{'error-bg': misconfigured_fields_ref.text_match.includes(rule.$$hashKey)}">
                                 <input class="form-control input-sm" type="text" maxlength="200" ng-model="rule.text_match" ng-if="_.includes(['include', 'exclude', 'required', 'not_null', '', null, 'None'], rule.condition)" ng-change="rules_changed(rule)"
                                        placeholder="{$ rule.condition == 'include' && 'field must contain this text' || (rule.condition == 'exclude' && 'field must not contain this text' || '' | translate) $}"
                                        ng-disabled="filter_null(rule)",
-                                       ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                       ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                             </td>
                             <td ng-if="rule.data_type !== data_type_keys.string"
-                                ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                                 <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                             </td>
                             <td ng-if="rule.data_type !== data_type_keys.string">
                                 <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no maximum)' | translate $}" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-options="unit.id as unit.label for unit in units" ng-model="rule.units" ng-change="rules_changed(rule)" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                             </td>
-                            <td ng-class="{'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label)),
+                            <td ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label)),
                                             'error-bg': misconfigured_fields_ref.severity.includes(rule.$$hashKey)}">
                                 <select class="form-control input-sm"
                                         ng-model="rule.severity"
                                         ng-options="severity.id as severity.label for severity in ::severity_types"
                                         ng-change="rules_changed(rule)"
                                         ng-class="{'valid-bg': rule.severity === severity_type_keys.valid, 'error-bg': rule.severity === severity_type_keys.error, 'warning-bg': rule.severity === severity_type_keys.warning,
-                                                    'border-red red': (rule.condition == is_duplicate.condition &&
-                                                    rule.field == is_duplicate.field &&
-                                                    rule.data_type == is_duplicate.data_type &&
-                                                    rule.min == is_duplicate.min &&
-                                                    rule.max == is_duplicate.max &&
-                                                    rule.text_match == is_duplicate.text_match &&
-                                                    rule.units == is_duplicate.units &&
-                                                    rule.severity == is_duplicate.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}"></select>
+                                                    'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                    rule.field == duplicate_rule.field &&
+                                                    rule.data_type == duplicate_rule.data_type &&
+                                                    rule.min == duplicate_rule.min &&
+                                                    rule.max == duplicate_rule.max &&
+                                                    rule.text_match == duplicate_rule.text_match &&
+                                                    rule.units == duplicate_rule.units &&
+                                                    rule.severity == duplicate_rule.severity &&
+                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}"></select>
                             </td>
                             <td class="text-right" ng-class="{'error-bg': misconfigured_fields_ref.label.includes(rule.$$hashKey),
-                                                              'border-red red': (rule.condition == is_duplicate.condition &&
-                                                               rule.field == is_duplicate.field &&
-                                                               rule.data_type == is_duplicate.data_type &&
-                                                               rule.min == is_duplicate.min &&
-                                                               rule.max == is_duplicate.max &&
-                                                               rule.text_match == is_duplicate.text_match &&
-                                                               rule.units == is_duplicate.units &&
-                                                               rule.severity == is_duplicate.severity &&
-                                                               JSON.stringify(rule.label) == JSON.stringify(is_duplicate.status_label))}">
+                                                              'border-red red': (rule.condition == duplicate_rule.condition &&
+                                                               rule.field == duplicate_rule.field &&
+                                                               rule.data_type == duplicate_rule.data_type &&
+                                                               rule.min == duplicate_rule.min &&
+                                                               rule.max == duplicate_rule.max &&
+                                                               rule.text_match == duplicate_rule.text_match &&
+                                                               rule.units == duplicate_rule.units &&
+                                                               rule.severity == duplicate_rule.severity &&
+                                                               JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
                                 <div class="input-group input-group-sm" ng-if="rule.label">
                                     <span class="form-control label label-{$ rule.label.label $}" style="border: 0 none;">{$ rule.label.name | translate $}</span>
                                     <span class="input-group-btn">
