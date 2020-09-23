@@ -344,7 +344,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         // Clear notifications and misconfigured indicators in case there were any from previous save attempts.
         Notification.clearAll();
         init_misconfigured_fields_ref();
-        $scope.is_duplicate = false;
+        $scope.is_duplicate = [];
 
         var [rules, misconfigured_rules] = get_configured_rules();
         var promises = [];
@@ -354,10 +354,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         // Find duplicate rules and trigger warnings
-        $scope.is_duplicate = _.some(_.groupBy(rules, function(rule) {
+        _.some(_.groupBy(rules, function(rule) {
           return `${rule.table_name}-${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${rule.status_label}`;
         }), function(group) {
-          return group.length > 1;
+          if (group.length > 1) $scope.is_duplicate = group[0];
         });
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
