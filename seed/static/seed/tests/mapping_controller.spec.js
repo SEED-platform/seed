@@ -69,7 +69,8 @@ describe('controller: mapping_controller', function () {
         last_modified_by: 'demo@seed-platform.org',
         source_type: 'AssessorRaw',
         dataset: mock_datasets[0],
-        id: 1
+        id: 1,
+        cycle: 2015,
       }
     };
 
@@ -266,6 +267,7 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
+    expect(mapping_controller_scope.import_file.cycle).toEqual(2015);
     expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });
