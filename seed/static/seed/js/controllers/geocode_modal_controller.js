@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.geocode_modal', [])
       $scope.geocode_buildings = function () {
         $scope.geocode_state = 'geocoding';
 
-        geocode_service.geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function (data) {
+        geocode_service.geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function () {
           geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
             if (result.properties) {
               $scope.properties_geocoded_high_confidence = result.properties.high_confidence;
