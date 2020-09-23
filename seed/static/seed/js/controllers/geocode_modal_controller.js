@@ -69,7 +69,8 @@ angular.module('BE.seed.controller.geocode_modal', [])
           });
         }).catch(function(e) {
           $scope.geocode_state = 'fail';
-          $scope.error_message = "MapQuest API key may be invalid or at its limit.";
+          if (e.message == 'MapQuestAPIKeyError') $scope.error_message = "MapQuest API key may be invalid or at its limit.";
+          else $scope.error_message = e.statusText;
         });
       };
 

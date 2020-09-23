@@ -16,7 +16,8 @@ angular.module('BE.seed.service.geocode', [])
         }).then(function (response) {
           return response;
         }).catch(function(e) {
-          throw e;
+          if (_.includes(e.data, 'MapQuestAPIKeyError')) throw {'status': 403, 'message': 'MapQuestAPIKeyError'};
+          else throw e;
         });
       };
 
