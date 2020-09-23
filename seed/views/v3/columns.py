@@ -13,12 +13,17 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
+
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
 from seed.models import (
     Column,
+    ColumnMapping,
+    DATA_STATE_MATCHING,
     Organization,
+    PropertyState,
+    TaxLotState,
 )
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
@@ -149,6 +154,68 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 .update(comstock_mapping=None)
         return super(ColumnViewSet, self).update(request, pk)
 
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    def destroy(self, request, pk=None):
+        org_id = self.get_organization(request)
+        try:
+            column = Column.objects.get(id=pk, organization_id=org_id)
+        except Column.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot find column in org=%s with pk=%s' % (org_id, pk)
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if not column.is_extra_data:
+            return JsonResponse({
+                'success': False,
+                'message': 'Only extra_data columns can be deleted'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Delete key from jsonb data
+        if column.table_name == 'PropertyState':
+            states = PropertyState.objects.filter(organization_id=org_id, data_state=DATA_STATE_MATCHING,
+                                                  extra_data__has_key=column.column_name)
+            state_count = states.count()
+            # far faster than iterating states, popping the key, and saving, but doesn't update the hash
+            # with connection.cursor() as cursor:
+            #     cursor.execute("UPDATE seed_propertystate "
+            #                    "SET extra_data = extra_data - %s "
+            #                    "WHERE organization_id = %s AND data_state = %s",
+            #                    [column.column_name, org_id, DATA_STATE_MATCHING])
+
+        elif column.table_name == 'TaxLotState':
+            states = TaxLotState.objects.filter(organization_id=org_id, data_state=DATA_STATE_MATCHING,
+                                                extra_data__has_key=column.column_name)
+            state_count = states.count()
+            # far faster than iterating states, popping the key, and saving, but doesn't update the hash
+            # with connection.cursor() as cursor:
+            #     cursor.execute("UPDATE seed_taxlotstate "
+            #                    "SET extra_data = extra_data - %s "
+            #                    "WHERE organization_id = %s AND data_state = %s",
+            #                    [column.column_name, org_id, DATA_STATE_MATCHING])
+
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'Unexpected table_name \'%s\' for column with pk=%s' % (column.table_name, pk)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Pop the key and update the hash
+        for state in states:
+            state.extra_data.pop(column.column_name)
+            state.save()
+
+        # Delete all mappings from raw column names to the mapped column, then delete the mapped column
+        ColumnMapping.objects.filter(column_mapped=column).delete()
+        column.delete()
+
+        table_display_name = column.table_name if state_count == 1 else column.table_name + 's'
+        return JsonResponse({
+            'success': True,
+            'message': 'Removed \'%s\' from %s %s' % (column.column_name, state_count, table_display_name)
+        }, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({
             'new_column_name': 'string',
@@ -212,7 +279,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         organization_id = int(request.query_params.get('organization_id'))
         inventory_type = request.query_params.get('inventory_type')
         if inventory_type not in ['property', 'taxlot']:
-            return JsonResponse({'status': 'error', 'message': 'Query param `inventory_type` must be "property" or "taxlot"'})
+            return JsonResponse(
+                {'status': 'error', 'message': 'Query param `inventory_type` must be "property" or "taxlot"'})
         columns = Column.retrieve_mapping_columns(organization_id, inventory_type)
 
         return JsonResponse({'status': 'success', 'columns': columns})

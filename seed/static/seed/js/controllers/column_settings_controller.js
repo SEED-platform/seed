@@ -370,7 +370,7 @@ angular.module('BE.seed.controller.column_settings', [])
           _.forOwn(diff, function (delta, column_id) {
             column_id = Number(column_id);
             var col = angular.copy(_.find($scope.columns, {id: column_id}));
-            col.display_name = col.displayName;  // Add display_name for backend
+            col.display_name = col.displayName; // Add display_name for backend
             delete col.displayName;
             promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
           });
@@ -424,6 +424,22 @@ angular.module('BE.seed.controller.column_settings', [])
             },
             org_id: function () {
               return $scope.org.id;
+            }
+          }
+        });
+      };
+
+      $scope.delete_column = function (column) {
+        $uibModal.open({
+          backdrop: 'static',
+          templateUrl: urls.static_url + 'seed/partials/delete_column_modal.html',
+          controller: 'delete_column_modal_controller',
+          resolve: {
+            organization_id: function () {
+              return $scope.org.id;
+            },
+            column: function () {
+              return column;
             }
           }
         });

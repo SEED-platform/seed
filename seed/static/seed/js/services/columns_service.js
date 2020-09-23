@@ -44,6 +44,16 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
       });
     };
 
+    columns_service.delete_column = function (column_id) {
+      return columns_service.delete_column_for_org(user_service.get_organization().id, column_id);
+    };
+
+    columns_service.delete_column_for_org = function (org_id, column_id) {
+      return $http.delete('/api/v3/columns/' + column_id + '/', {
+        organization_id: org_id
+      });
+    };
+
     return columns_service;
 
   }]);
