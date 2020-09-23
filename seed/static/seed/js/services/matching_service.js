@@ -25,7 +25,7 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
       }).then(function (response) {
         return response.data;
       }).catch(function(e) {
-        if (e.data.message === 'MapQuest API key may be invalid or at its limit.') return e.data;
+        return e.data;
       });
     };
 
