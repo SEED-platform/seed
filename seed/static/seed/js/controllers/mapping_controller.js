@@ -250,7 +250,9 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.review_mappings = false;
       $scope.show_mapped_buildings = false;
 
-      $scope.isValidCycle = Boolean(_.find(cycles.cycles, {id: $scope.import_file.cycle}));
+      var validCycle = _.find(cycles.cycles, {id: $scope.import_file.cycle});
+      $scope.isValidCycle = Boolean(validCycle);
+      $scope.cycleName = validCycle.name;
 
       $scope.mappingBuildingSync = $scope.import_file.source_type === 'BuildingSync Raw';
 
