@@ -50,29 +50,26 @@ angular.module('BE.seed.controller.geocode_modal', [])
         $scope.geocode_state = 'geocoding';
 
         geocode_service.geocode_by_ids($scope.property_view_ids, $scope.taxlot_view_ids).then(function (data) {
-          if (_.includes(data.data, "MapQuestAPIKeyError")) {
-            $scope.error_message = "MapQuest API key may be invalid or at its limit.";
+          geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
+            if (result.properties) {
+              $scope.properties_geocoded_high_confidence = result.properties.high_confidence;
+              $scope.properties_geocoded_low_confidence = result.properties.low_confidence;
+              $scope.properties_geocoded_manually = result.properties.manual;
+              $scope.properties_geocode_not_possible = result.properties.missing_address_components;
+            }
 
-            $scope.geocode_state = 'fail';
-          } else {
-            geocode_service.confidence_summary($scope.property_view_ids, $scope.taxlot_view_ids).then(function (result) {
-              if (result.properties) {
-                $scope.properties_geocoded_high_confidence = result.properties.high_confidence;
-                $scope.properties_geocoded_low_confidence = result.properties.low_confidence;
-                $scope.properties_geocoded_manually = result.properties.manual;
-                $scope.properties_geocode_not_possible = result.properties.missing_address_components;
-              }
+            if (result.tax_lots) {
+              $scope.tax_lots_geocoded_high_confidence = result.tax_lots.high_confidence;
+              $scope.tax_lots_geocoded_low_confidence = result.tax_lots.low_confidence;
+              $scope.tax_lots_geocoded_manually = result.tax_lots.manual;
+              $scope.tax_lots_geocode_not_possible = result.tax_lots.missing_address_components;
+            }
 
-              if (result.tax_lots) {
-                $scope.tax_lots_geocoded_high_confidence = result.tax_lots.high_confidence;
-                $scope.tax_lots_geocoded_low_confidence = result.tax_lots.low_confidence;
-                $scope.tax_lots_geocoded_manually = result.tax_lots.manual;
-                $scope.tax_lots_geocode_not_possible = result.tax_lots.missing_address_components;
-              }
-
-              $scope.geocode_state = 'result';
-            });
-          }
+            $scope.geocode_state = 'result';
+          });
+        }).catch(function(e) {
+          $scope.geocode_state = 'fail';
+          $scope.error_message = "MapQuest API key may be invalid or at its limit.";
         });
       };
 
