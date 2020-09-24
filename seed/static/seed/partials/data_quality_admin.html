@@ -118,16 +118,7 @@
                             </td>
                             <td ng-if="rule.data_type !== data_type_keys.string">
                                 <input class="form-control input-sm" type="number" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no minimum)' | translate $}" ng-disabled="filter_null(rule)">
-                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)"
-                                        ng-class="{'border-red red': (rule.condition == duplicate_rule.condition &&
-                                                    rule.field == duplicate_rule.field &&
-                                                    rule.data_type == duplicate_rule.data_type &&
-                                                    rule.min == duplicate_rule.min &&
-                                                    rule.max == duplicate_rule.max &&
-                                                    rule.text_match == duplicate_rule.text_match &&
-                                                    rule.units == duplicate_rule.units &&
-                                                    rule.severity == duplicate_rule.severity &&
-                                                    JSON.stringify(rule.label) == JSON.stringify(duplicate_rule.status_label))}">
+                                <input class="form-control input-sm" type="date" ng-model="rule.min" ng-change="rules_changed(rule)" ng-if="rule.data_type === data_type_keys.date" ng-disabled="filter_null(rule)">
                             </td>
                             <td ng-if="rule.data_type !== data_type_keys.string">
                                 <input class="form-control input-sm" type="number" ng-model="rule.max" ng-change="rules_changed(rule)" ng-if="rule.data_type !== data_type_keys.date" placeholder="{$:: '(no maximum)' | translate $}" ng-disabled="filter_null(rule)">
