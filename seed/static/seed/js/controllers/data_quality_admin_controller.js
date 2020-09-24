@@ -222,8 +222,18 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var get_configured_rules = function () {
         var rules = [];
         var misconfigured_rules = [];
+        var duplicate_rule_group = [];
+        $scope.duplicate_rule_keys = [];
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
+            var duplicate_rules = _.groupBy(ruleGroup, function(rule) {
+              return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${(!_.isUndefined(rule.label)?rule.label:rule.status_label)}`;
+            });
+            if (!_.isUndefined(duplicate_rules[Object.keys(duplicate_rules)]) && duplicate_rules[Object.keys(duplicate_rules)].length > 1) {
+              _.forEach(duplicate_rules[Object.keys(duplicate_rules)], function(rule) {
+                $scope.duplicate_rule_keys.splice(0, 0, rule.$$hashKey);
+              })
+            }
             _.forEach(ruleGroup, function (rule) {
               // Skip rules that haven't been assigned to a field yet
               if (rule.field === null) return;
@@ -344,7 +354,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         // Clear notifications and misconfigured indicators in case there were any from previous save attempts.
         Notification.clearAll();
         init_misconfigured_fields_ref();
-        $scope.duplicate_rule = [];
         $scope.is_duplicate = false;
 
         var [rules, misconfigured_rules] = get_configured_rules();
@@ -355,12 +364,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
 
         // Find duplicate rules and trigger warnings
-        $scope.is_duplicate = _.some(_.groupBy(rules, function(rule) {
-          return `${rule.table_name}-${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${rule.status_label}`;
-        }), function(group) {
-          if (group.length > 1) $scope.duplicate_rule = group[0];
-          return group.length > 1;
-        });
+        $scope.is_duplicate = ($scope.duplicate_rule_keys.length > 1);
         if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
 
         // Find rules to delete
