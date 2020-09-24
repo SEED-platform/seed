@@ -227,12 +227,22 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
             var duplicate_rules = _.groupBy(ruleGroup, function(rule) {
-              return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${(!_.isUndefined(rule.label)?rule.label:rule.status_label)}`;
+              return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${!_.isUndefined(rule.label)?rule.label:rule.status_label}`;
             });
-            if (!_.isUndefined(duplicate_rules[Object.keys(duplicate_rules)]) && duplicate_rules[Object.keys(duplicate_rules)].length > 1) {
+            // 2 situation:
+            if (Object.keys(duplicate_rules).length > 1) {
+              _.forEach(duplicate_rules, function(group) {
+                if (group.length > 1) {
+                  _.forEach(group, function(rule) {
+                    $scope.duplicate_rule_keys.splice(0, 0, rule.$$hashKey);
+                  });
+                }
+              });
+            }
+            else if (!_.isUndefined(duplicate_rules[Object.keys(duplicate_rules)]) && duplicate_rules[Object.keys(duplicate_rules)].length > 1) {
               _.forEach(duplicate_rules[Object.keys(duplicate_rules)], function(rule) {
                 $scope.duplicate_rule_keys.splice(0, 0, rule.$$hashKey);
-              })
+              });
             }
             _.forEach(ruleGroup, function (rule) {
               // Skip rules that haven't been assigned to a field yet
