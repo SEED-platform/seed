@@ -229,7 +229,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             var duplicate_rules = _.groupBy(ruleGroup, function(rule) {
               return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${!_.isUndefined(rule.label)?rule.label:rule.status_label}`;
             });
-            // 2 situation:
+            // Case 1: multiple keys with duplicate rules;
             if (Object.keys(duplicate_rules).length > 1) {
               _.forEach(duplicate_rules, function(group) {
                 if (group.length > 1) {
@@ -238,7 +238,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                   });
                 }
               });
-            }
+            } // Case 2: one key with multiple rules;
             else if (!_.isUndefined(duplicate_rules[Object.keys(duplicate_rules)]) && duplicate_rules[Object.keys(duplicate_rules)].length > 1) {
               _.forEach(duplicate_rules[Object.keys(duplicate_rules)], function(rule) {
                 $scope.duplicate_rule_keys.splice(0, 0, rule.$$hashKey);
