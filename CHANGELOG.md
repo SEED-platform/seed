@@ -1,3 +1,44 @@
+# SEED Version 2.8.0
+
+SEED Version 2.8.0 includes an update to the SEED frontend that leverages the new API v3 on the backend. API V2.1 and
+prior are still available, but will be deprecated in the next 6 months (see the note in the SEED Version 2.7.2 section
+below).
+
+Date Range: 07/23/20 - 09/25/20
+
+Closed Issues and Features:
+- Fixed [#1985]( https://github.com/SEED-platform/seed/issues/1985 ), Reconcile SEED with BSync file for Audit Template Tool compatibility
+- Fixed [#2138]( https://github.com/SEED-platform/seed/issues/2138 ), BuildingSync and Audit Template Tool upload/download round trip
+- Fixed [#2164]( https://github.com/SEED-platform/seed/issues/2164 ), Update label get_is_applied to support OEP
+- Fixed [#2208]( https://github.com/SEED-platform/seed/issues/2208 ), Data Quality tests
+- Feature [#2242]( https://github.com/SEED-platform/seed/issues/2242 ), ComStock Support
+- Fixed [#2245]( https://github.com/SEED-platform/seed/issues/2245 ), Integrate BuildingSync Selection Tool's Use Case API
+- Feature [#2301]( https://github.com/SEED-platform/seed/issues/2301 ), Frontend uses API v3 - Properties v2
+- Feature [#2302]( https://github.com/SEED-platform/seed/issues/2302 ), Frontend uses API v3 - Organizations
+- Feature [#2303]( https://github.com/SEED-platform/seed/issues/2303 ), Frontend uses API v3 - TaxLots v2
+- Feature [#2304]( https://github.com/SEED-platform/seed/issues/2304 ), Frontend uses API v3 - ImportFiles
+- Feature [#2305]( https://github.com/SEED-platform/seed/issues/2305 ), Frontend uses API v3 - Users
+- Feature [#2306]( https://github.com/SEED-platform/seed/issues/2306 ), Frontend uses API v3 - Columns
+- Feature [#2307]( https://github.com/SEED-platform/seed/issues/2307 ), Frontend uses API v3 - Labels
+- Feature [#2309]( https://github.com/SEED-platform/seed/issues/2309 ), Frontend uses API v3 - ColumnMappings
+- Feature [#2310]( https://github.com/SEED-platform/seed/issues/2310 ), Frontend uses API v3 - Datasets
+- Feature [#2311]( https://github.com/SEED-platform/seed/issues/2311 ), Frontend uses API v3 - Cycles
+- Feature [#2312]( https://github.com/SEED-platform/seed/issues/2312 ), Frontend uses API v3 - ColumnListProfiles
+- Feature [#2313]( https://github.com/SEED-platform/seed/issues/2313 ), Frontend uses API v3 - Meters
+- Feature [#2314]( https://github.com/SEED-platform/seed/issues/2314 ), Frontend uses API v3 - ColumnMappingProfiles
+- Feature [#2315]( https://github.com/SEED-platform/seed/issues/2315 ), Frontend uses API v3 - Measures
+- Feature [#2316]( https://github.com/SEED-platform/seed/issues/2316 ), Frontend uses API v3 - Geocode
+- Feature [#2317]( https://github.com/SEED-platform/seed/issues/2317 ), Frontend uses API v3 - BuildingFiles
+- Feature [#2318]( https://github.com/SEED-platform/seed/issues/2318 ), Frontend uses API v3 - Upload and Progress
+- Feature [#2319]( https://github.com/SEED-platform/seed/issues/2319 ), Frontend uses API v3 - UBID and PM import
+- Feature [#2320]( https://github.com/SEED-platform/seed/issues/2320 ), Frontend uses API v3 - Version, Scenarios, TaxLotProperties export
+- Feature [#2321]( https://github.com/SEED-platform/seed/issues/2321 ), Frontend uses API v3 - Report Data
+- Feature [#2322]( https://github.com/SEED-platform/seed/issues/2322 ), Frontend uses API v3 - TaxLots Notes v2.1
+- Feature [#2323]( https://github.com/SEED-platform/seed/issues/2323 ), Frontend uses API v3 - Properties v2.1
+- Fixed [#2371]( https://github.com/SEED-platform/seed/issues/2371 ), Checking for duplicate fields is not working when only one Inventory Type is selected
+- Fixed [#2382]( https://github.com/SEED-platform/seed/issues/2382 ), Handle case where selection tool api is down for BuildingSync import
+- Fixed [#2392]( https://github.com/SEED-platform/seed/issues/2392 ), XLSX import of sample data hanging
+
 # SEED Version 2.7.2
 
 SEED Version 2.7.2 includes the introduction of API v3. This new API version will
