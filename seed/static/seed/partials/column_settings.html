@@ -109,6 +109,14 @@
                         </ul>
                     </td>
                 </tr>
+                <tr>
+                    <td translate>Delete</td>
+                    <td>
+                        <ul>
+                            <li translate>Permanently delete extra_data columns and all associated data</li>
+                        </ul>
+                    </td>
+                </tr>
             </table>
         </div>
         <div class="section_content with_padding" style="margin-bottom:15px;">
@@ -145,6 +153,7 @@
                                 <span>Match Criteria</span> <i class="glyphicon glyphicon-sort"></i>
                             </th>
                             <th class="text-center" style="min-width: 80px" ng-if="::org.comstock_enabled" translate>ComStock Mapping</th>
+                            <th class="text-center" style="min-width: 65px; width: 65px;" translate>Delete</th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -168,6 +177,7 @@
                             <th class="sub_head"></th>
                             <th class="sub_head"></th>
                             <th class="sub_head" ng-if="::org.comstock_enabled"></th>
+                            <th class="sub_head"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -206,11 +216,16 @@
                             <td class="text-center" ng-if="!column.is_extra_data" ng-click="change_is_matching_criteria(column)">
                                 <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click">
                             </td>
-                            <td class="text-center" ng-if="column.is_extra_data">
+                            <td class="text-center" ng-if="::column.is_extra_data">
                                 <span ng-if="column.is_extra_data" translate>Ineligible</span>
                             </td>
                             <td class="text-center" ng-if="::org.comstock_enabled">
                                 <select class="form-control input-sm" ng-model="column.comstock_mapping" ng-options="type.id as type.label for type in ::comstock_types" ng-change="comstockModified(column)"></select>
+                            </td>
+                            <td class="text-center">
+                                <button ng-if="::column.is_extra_data" class="btn btn-danger" type="button" ng-click="delete_column(column)">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
