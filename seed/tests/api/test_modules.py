@@ -26,7 +26,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     # Upload the covered-buildings-sample file
     print('API Function: upload_file\n'),
     partmsg = 'upload_file'
-    result = upload_file(header, filepath, main_url, dataset_id, filetype)
+    result = upload_file(header, organization_id, filepath, main_url, dataset_id, filetype)
     check_status(result, partmsg, log)
 
     # Get import ID
@@ -36,11 +36,11 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print('API Function: save_raw_data\n'),
     partmsg = 'save_raw_data'
     payload = {
-        'organization_id': organization_id,
         'cycle_id': cycle_id
     }
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/save_raw_data/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/start_save_data/'.format(import_id),
+        params={"organization_id": organization_id},
         headers=header,
         json=payload
     )
@@ -51,7 +51,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print('API Function: get_column_mapping_suggestions\n'),
     partmsg = 'get_column_mapping_suggestions'
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/mapping_suggestions/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/mapping_suggestions/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header)
     check_status(result, partmsg, log, piid_flag='mappings')
@@ -61,8 +61,8 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     partmsg = 'save_column_mappings'
     payload = {'mappings': read_map_file(mappingfilepath)}
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/save_column_mappings/'.format(import_id),
-        params={"organization_id": organization_id},
+        main_url + '/api/v3/organizations/{}/column_mappings/'.format(organization_id),
+        params={"import_file_id": import_id},
         headers=header,
         json=payload
     )
@@ -72,7 +72,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     print('API Function: perform_mapping\n'),
     partmsg = 'save_column_mappings'
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/perform_mapping/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/map/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header
     )
@@ -85,7 +85,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     partmsg = 'data_quality'
 
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/start_data_quality_checks/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/start_data_quality_checks/'.format(import_id),
         params={"organization_id": organization_id},
         headers=header
     )
@@ -94,9 +94,9 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     check_status(result, partmsg, log)
 
     result = requests.get(
-        main_url + '/api/v2/data_quality_checks/results/',
+        main_url + '/api/v3/data_quality_checks/results/',
         headers=header,
-        params={"organization_id": organization_id, "data_quality_id": import_id}
+        params={"organization_id": organization_id, "run_id": import_id}
     )
     check_status(result, partmsg, log, piid_flag='data_quality')
 
@@ -106,7 +106,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     payload = {'file_id': import_id, 'organization_id': organization_id}
 
     result = requests.post(
-        main_url + '/api/v2/import_files/{}/start_system_matching_and_geocoding/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/start_system_matching_and_geocoding/'.format(import_id),
         headers=header,
         params={"organization_id": organization_id},
         json=payload
@@ -119,9 +119,9 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
     partmsg = 'matching_and_geocoding_results'
 
     result = requests.get(
-        main_url + '/api/v2/import_files/{}/matching_and_geocoding_results/'.format(import_id),
+        main_url + '/api/v3/import_files/{}/matching_and_geocoding_results/'.format(import_id),
         headers=header,
-        params={})
+        params={"organization_id": organization_id})
     check_status(result, partmsg, log)
 
 
@@ -199,7 +199,7 @@ def account(header, main_url, username, log):
     # Retrieve the user id key for later retrievals
     print('API Function: current_user_id\n')
     result = requests.get(
-        main_url + '/api/v2/users/current_user_id/',
+        main_url + '/api/v3/users/current/',
         headers=header
     )
     user_pk = json.loads(result.content)['pk']
@@ -207,14 +207,14 @@ def account(header, main_url, username, log):
     # Retrieve the user profile
     print('API Function: get_user_profile\n')
     partmsg = 'get_user_profile'
-    result = requests.get(main_url + '/api/v2/users/%s/' % user_pk,
+    result = requests.get(main_url + '/api/v3/users/%s/' % user_pk,
                           headers=header)
     check_status(result, partmsg, log)
 
     # Retrieve the organizations
     print('API Function: get_organizations\n'),
     partmsg = 'get_organizations'
-    result = requests.get(main_url + '/api/v2/organizations/',
+    result = requests.get(main_url + '/api/v3/organizations/',
                           headers=header)
     check_status(result, partmsg, log, piid_flag='organizations')
 
@@ -235,7 +235,7 @@ def account(header, main_url, username, log):
 
     # Get the organization details
     partmsg = 'get_organization (2)'
-    mod_url = main_url + '/api/v2/organizations/%s' % str(organization_id)
+    mod_url = main_url + '/api/v3/organizations/%s' % str(organization_id)
     result = requests.get(mod_url, headers=header)
     check_status(result, partmsg, log)
 
@@ -248,7 +248,7 @@ def account(header, main_url, username, log):
         'last_name': 'Holmes',
         'email': username
     }
-    result = requests.put(main_url + '/api/v2/users/%s/' % user_pk,
+    result = requests.put(main_url + '/api/v3/users/%s/' % user_pk,
                           headers=header,
                           data=user_payload)
     check_status(result, partmsg, log)
@@ -256,21 +256,21 @@ def account(header, main_url, username, log):
     # Get organization users
     print('API Function: get_organizations_users\n'),
     partmsg = 'get_organizations_users'
-    result = requests.get(main_url + '/api/v2/organizations/%s/users/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/users/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log, piid_flag='users')
 
     # Get organizations settings
     print('API Function: get_query_treshold\n'),
     partmsg = 'get_query_threshold'
-    result = requests.get(main_url + '/api/v2/organizations/%s/query_threshold/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/query_threshold/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log)
 
     # Get shared fields
     print('API Function: get_shared_fields\n'),
     partmsg = 'get_shared_fields'
-    result = requests.get(main_url + '/api/v2/organizations/%s/shared_fields/' % organization_id,
+    result = requests.get(main_url + '/api/v3/organizations/%s/shared_fields/' % organization_id,
                           headers=header)
     check_status(result, partmsg, log)
 
@@ -282,7 +282,7 @@ def account(header, main_url, username, log):
         'user_id': user_pk,
         'organization_name': org_name  # hopefully ensuring a unique org name
     }
-    result = requests.post(main_url + '/api/v2/organizations/',
+    result = requests.post(main_url + '/api/v3/organizations/',
                            headers=header,
                            json=payload)
     check_status(result, partmsg, log)
@@ -291,7 +291,7 @@ def account(header, main_url, username, log):
     # Delete an organization
     print('API Function: delete_org\n'),
     partmsg = 'delete_org'
-    result = requests.delete(main_url + '/api/v2/organizations/%s/' % org_id,
+    result = requests.delete(main_url + '/api/v3/organizations/%s/' % org_id,
                              headers=header)
     check_status(result, partmsg, log)
 
@@ -302,7 +302,7 @@ def account(header, main_url, username, log):
         'sub_org_name': 'TestSuborg',
         'sub_org_owner_email': username
     }
-    result = requests.post(main_url + '/api/v2/organizations/%s/sub_org/' % organization_id,
+    result = requests.post(main_url + '/api/v3/organizations/%s/sub_org/' % organization_id,
                            headers=header,
                            data=payload)
     check_status(result, partmsg, log)
@@ -311,7 +311,7 @@ def account(header, main_url, username, log):
     # Delete a suborganization
     print('API Function: delete_sub_org\n'),
     partmsg = 'delete_sub_org'
-    result = requests.delete(main_url + '/api/v2/organizations/%s/' % suborg_id,
+    result = requests.delete(main_url + '/api/v3/organizations/%s/' % suborg_id,
                              headers=header)
     check_status(result, partmsg, log)
 
@@ -333,7 +333,7 @@ def delete_set(header, main_url, organization_id, dataset_id, log):
     print('API Function: delete_dataset\n'),
     partmsg = 'delete_dataset'
     result = requests.delete(
-        main_url + '/api/v2/datasets/{}/'.format(dataset_id),
+        main_url + '/api/v3/datasets/{}/'.format(dataset_id),
         headers=header,
         params={'organization_id': organization_id},
     )
@@ -354,7 +354,7 @@ def delete_set(header, main_url, organization_id, dataset_id, log):
 def cycles(header, main_url, organization_id, log):
     print('API Function: get_cycles\n')
     partmsg = 'get_cycles'
-    result = requests.get(main_url + '/api/v2/cycles/',
+    result = requests.get(main_url + '/api/v3/cycles/',
                           headers=header,
                           params={'organization_id': organization_id})
     check_status(result, partmsg, log, piid_flag='cycles')
@@ -374,7 +374,7 @@ def cycles(header, main_url, organization_id, log):
             'end': "2016-01-01T08:00",
             'name': "TestCycle"
         }
-        result = requests.post(main_url + '/api/v2/cycles/',
+        result = requests.post(main_url + '/api/v3/cycles/',
                                headers=header,
                                params={'organization_id': organization_id},
                                json=payload)
@@ -391,7 +391,7 @@ def cycles(header, main_url, organization_id, log):
         'name': "TestCycle",
         'id': cycle_id
     }
-    result = requests.put(main_url + '/api/v2/cycles/{}/'.format(cycle_id),
+    result = requests.put(main_url + '/api/v3/cycles/{}/'.format(cycle_id),
                           headers=header,
                           params={'organization_id': organization_id},
                           json=payload)
@@ -413,7 +413,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
         'name': 'TestLabel',
         'color': 'red'
     }
-    result = requests.post(main_url + '/api/v2/labels/',
+    result = requests.post(main_url + '/api/v3/labels/',
                            headers=header,
                            params=params,
                            json=payload)
@@ -427,7 +427,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
         'page': 1,
         'per_page': 999999999
     }
-    result = requests.post(main_url + '/api/v2/properties/filter/',
+    result = requests.post(main_url + '/api/v3/properties/filter/',
                            headers=header,
                            params=params)
     inventory_ids = [prop['property_view_id'] for prop in result.json()['results']]
@@ -442,7 +442,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
         'add_label_ids': [label_id],
         'inventory_ids': inventory_ids
     }
-    result = requests.put(main_url + '/api/v2/labels-property/',
+    result = requests.put(main_url + '/api/v3/labels_property/',
                           headers=header,
                           params=params,
                           json=payload)
@@ -454,7 +454,7 @@ def labels(header, main_url, organization_id, cycle_id, log):
     params = {
         'organization_id': organization_id
     }
-    result = requests.delete(main_url + '/api/v2/labels/%s/' % label_id,
+    result = requests.delete(main_url + '/api/v3/labels/%s/' % label_id,
                              headers=header,
                              params=params)
     check_status(result, partmsg, log)
@@ -465,75 +465,67 @@ def data_quality(header, main_url, organization_id, log):
     # get the data quality rules for the organization
     print('API Function: get_data_quality_rules\n')
     partmsg = 'get_data_quality_rules'
-    params = {
-        'organization_id': organization_id
-    }
-    result = requests.get(main_url + '/api/v2/data_quality_checks/data_quality_rules',
-                          headers=header,
-                          params=params)
+    result = requests.get(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/',
+        headers=header
+    )
     check_status(result, partmsg, log)
-    rules = result.json()['rules']
-    prop_rules = rules['properties']
-    tax_rules = rules['taxlots']
 
     # create a new rule
     print('API Function: create_data_quality_rule\n')
     partmsg = 'create_data_quality_rule'
-    params = {
-        'organization_id': organization_id
+    payload = {
+        'field': 'city',
+        'enabled': True,
+        'data_type': 1,
+        'condition': 'not_null',
+        'rule_type': 1,
+        'required': False,
+        'not_null': False,
+        'min': None,
+        'max': None,
+        'text_match': None,
+        'severity': 1,
+        'units': '',
+        'status_label': None,
+        'table_name': "PropertyState"
     }
-    new_rule = {'field': 'city',
-                'enabled': True,
-                'data_type': 'string',
-                'condition': '',
-                'rule_type': 1,
-                'required': False,
-                'not_null': True,
-                'min': None,
-                'max': None,
-                'text_match': None,
-                'severity': 'warning',
-                'units': '',
-                'label': None}
-    payload = {'data_quality_rules': {'properties': prop_rules + [new_rule], 'taxlots': tax_rules}}
-    result = requests.post(main_url + '/api/v2/data_quality_checks/save_data_quality_rules/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.post(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/',
+        headers=header,
+        json=payload
+    )
+    new_rule_id = result.json().get('id')
     check_status(result, partmsg, log)
 
     # delete the new rule
     print('API Function: delete_data_quality_rule\n')
     partmsg = 'delete_data_quality_rule'
-    params = {
-        'organization_id': organization_id
-    }
-    payload = {'data_quality_rules': {'properties': prop_rules, 'taxlots': tax_rules}}
-    result = requests.post(main_url + '/api/v2/data_quality_checks/save_data_quality_rules/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.delete(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/rules/{new_rule_id}/',
+        headers=header
+    )
     check_status(result, partmsg, log)
 
-    # get some property state ids
-    result = requests.get(main_url + '/api/v2/property_states/',
-                          headers=header)
-    prop_state_ids = [prop['id'] for prop in result.json()['properties']]
+    # get some property view ids
+    result = requests.get(
+        main_url + '/api/v3/property_views/',
+        headers=header
+    )
+    prop_view_ids = [prop['id'] for prop in result.json()['property_views']]
 
     # create a new data quality check process
     print('API Function: create_data_quality_check\n')
     partmsg = 'create_data_quality_check'
-    params = {
-        'organization_id': organization_id
-    }
     payload = {
-        'property_state_ids': prop_state_ids,
-        'taxlot_state_ids': []
+        'property_view_ids': prop_view_ids,
+        'taxlot_view_ids': []
     }
-    result = requests.post(main_url + '/api/v2/data_quality_checks/',
-                           headers=header,
-                           params=params,
-                           json=payload)
+    result = requests.post(
+        main_url + f'/api/v3/data_quality_checks/{organization_id}/start/',
+        headers=header,
+        json=payload
+    )
     check_status(result, partmsg, log)
     data_quality_id = result.json()['progress']['unique_id']
 
@@ -542,11 +534,13 @@ def data_quality(header, main_url, organization_id, log):
     partmsg = 'perform_data_quality_check'
     params = {
         'organization_id': organization_id,
-        'data_quality_id': data_quality_id
+        'run_id': data_quality_id
     }
-    result = requests.get(main_url + '/api/v2/data_quality_checks/results/',
-                          headers=header,
-                          params=params)
+    result = requests.get(
+        main_url + '/api/v3/data_quality_checks/results/',
+        headers=header,
+        params=params
+    )
     check_status(result, partmsg, log)
 
 
@@ -560,10 +554,10 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'page': 1,
         'per_page': 999999999
     }
-    result = requests.post(main_url + '/api/v2/properties/filter/',
+    result = requests.post(main_url + '/api/v3/properties/filter/',
                            headers=header,
                            params=params)
-    prop_ids = [prop['id'] for prop in result.json()['results']]
+    prop_ids = [prop['property_view_id'] for prop in result.json()['results']]
     prop_ids = prop_ids[:num_props]
 
     print('API Function: export_properties\n')
@@ -579,7 +573,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'profile_id': None,
         'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+    result = requests.post(main_url + '/api/v3/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)
@@ -593,10 +587,10 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'page': 1,
         'per_page': 999999999
     }
-    result = requests.post(main_url + '/api/v2/taxlots/filter/',
+    result = requests.post(main_url + '/api/v3/taxlots/filter/',
                            headers=header,
                            params=params)
-    lot_ids = [lot['id'] for lot in result.json()['results']]
+    lot_ids = [lot['taxlot_view_id'] for lot in result.json()['results']]
     lot_ids = lot_ids[:num_lots]
 
     print('API Function: export_taxlots\n')
@@ -612,7 +606,7 @@ def export_data(header, main_url, organization_id, cycle_id, log):
         'profile_id': None,
         'export_type': 'csv',
     }
-    result = requests.post(main_url + '/api/v2.1/tax_lot_properties/export/',
+    result = requests.post(main_url + '/api/v3/tax_lot_properties/export/',
                            headers=header,
                            params=params,
                            json=payload)

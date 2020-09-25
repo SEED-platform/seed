@@ -35,7 +35,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'dataset_service',
     'mapping_service',
     'matching_service',
-    'meters_service',
     'inventory_service',
     'spinner_utility',
     'step',
@@ -54,7 +53,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       dataset_service,
       mapping_service,
       matching_service,
-      meters_service,
       inventory_service,
       spinner_utility,
       step,
@@ -123,7 +121,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        */
       $scope.save_mappings = function () {
         // API request to tell backend that it is finished with the mappings
-        $http.put('/api/v2/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
+        $http.post('/api/v3/import_files/' + $scope.dataset.import_file_id + '/mapping_done/', {}, {
           params: {
             organization_id: $scope.organization.org_id
           }
@@ -337,8 +335,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               // Hardcoded as this is a 2 step process: upload & analyze
               $scope.uploader.progress = 50;
               $scope.uploader.status_message = 'analyzing file';
-              meters_service
-                .parsed_meters_confirmation(file.file_id, $scope.organization.org_id)
+              uploader_service
+                .pm_meters_preview(file.file_id, $scope.organization.org_id)
                 .then(present_parsed_meters_confirmation)
                 .catch(present_meter_import_error);
             } else {
@@ -640,7 +638,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report_template_names = function (pm_username, pm_password) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
-        $http.post('/api/v2_1/portfolio_manager/template_list/', {
+        $http.post('/api/v3/portfolio_manager/template_list/', {
           username: pm_username,
           password: pm_password
         }).then(function (response) {
@@ -659,14 +657,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.get_pm_report = function (pm_username, pm_password, pm_template) {
         spinner_utility.show();
         $scope.pm_buttons_enabled = false;
-        $http.post('/api/v2_1/portfolio_manager/report/', {
+        $http.post('/api/v3/portfolio_manager/report/', {
           username: pm_username,
           password: pm_password,
           template: pm_template
         }).then(function (response) {
-          response = $http.post('/api/v2/upload/create_from_pm_import/', {
+          response = $http.post('/api/v3/upload/create_from_pm_import/', {
             properties: response.data.properties,
-            import_record_id: $scope.dataset.id
+            import_record_id: $scope.dataset.id,
+            organization_id: $scope.organization.org_id
           });
           return response;
         }).then(function (response) {

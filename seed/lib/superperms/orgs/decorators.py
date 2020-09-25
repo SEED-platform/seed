@@ -160,6 +160,10 @@ def _get_org_id(request):
     if org_id is None:
         org_id = request.parser_context.get('kwargs', {}).get('organization_id')
 
+    # Handle cases where the Org ID is a path field that shows up in the kwargs as 'nested_organization_id'
+    if org_id is None:
+        org_id = request.parser_context.get('kwargs', {}).get('nested_organization_id')
+
     # if that does not work...
     if org_id is None:
         # try getting it from the request body itself

@@ -16,7 +16,7 @@ from seed.landing.models import SEEDUser as User
 from seed.models import (
     PropertyView,
     StatusLabel,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory, FakeColumnFactory,
@@ -51,7 +51,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone())
         )
 
-        self.default_bsync_preset = ColumnMappingPreset.objects.get(preset_type=ColumnMappingPreset.BUILDINGSYNC_DEFAULT)
+        self.default_bsync_profile = ColumnMappingProfile.objects.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
 
         self.client.login(**user_details)
 
@@ -65,9 +65,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         # go to buildingsync endpoint
         params = {
             'organization_id': self.org.pk,
-            'preset_id': self.default_bsync_preset.id
+            'profile_id': self.default_bsync_profile.id
         }
-        url = reverse('api:v2.1:properties-building-sync', args=[pv.id])
+        url = reverse('api:v3:properties-building-sync', args=[pv.id])
         response = self.client.get(url, params)
         self.assertIn('<auc:FloorAreaValue>%s.0</auc:FloorAreaValue>' % state.gross_floor_area,
                       response.content.decode("utf-8"))
@@ -75,12 +75,10 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_and_get_building_sync(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
 
         response = self.client.post(url, fsysparams)
@@ -93,8 +91,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
-        url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
+        url = reverse('api:v3:properties-building-sync', args=[property_id])
+        response = self.client.get(url, {'organization_id': self.org.pk, 'profile_id': self.default_bsync_profile.id})
         self.assertIn('<auc:YearOfConstruction>1967</auc:YearOfConstruction>',
                       response.content.decode("utf-8"))
 
@@ -103,19 +101,17 @@ class InventoryViewTests(DeleteModelsTestCase):
         # import_record =
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip')
 
-        url = '/api/v2/building_file/'
+        url = f'/api/v3/building_files/?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
 
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
 
-        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['success'], True, f'Unexpected result: {result}')
         self.assertEqual(result['message'], {'warnings': []})
         self.assertEqual(result['data']['property_view']['state']['year_built'], 1967)
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
@@ -124,12 +120,10 @@ class InventoryViewTests(DeleteModelsTestCase):
         # import_record =
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_ex01_measures_bad_names.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
@@ -150,12 +144,10 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result['data']['property_view']['state']['postal_code'], '94111')
 
         # upload the same file again
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
         response = self.client.post(url, fsysparams)
         self.assertEqual(response.status_code, 200)
@@ -167,13 +159,11 @@ class InventoryViewTests(DeleteModelsTestCase):
     def test_upload_and_get_building_sync_diff_ns(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
 
-        url = reverse('api:v2:building_file-list')
+        url = reverse('api:v3:building_files-list') + f'?organization_id={self.org.id}&cycle_id={self.cycle.id}'
 
         fsysparams = {
             'file': open(filename, 'rb'),
             'file_type': 'BuildingSync',
-            'organization_id': self.org.id,
-            'cycle_id': self.cycle.id
         }
 
         response = self.client.post(url, fsysparams)
@@ -185,7 +175,7 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # now get the building sync that was just uploaded
         property_id = result['data']['property_view']['id']
-        url = reverse('api:v2.1:properties-building-sync', args=[property_id])
-        response = self.client.get(url, {'organization_id': self.org.pk, 'preset_id': self.default_bsync_preset.id})
+        url = reverse('api:v3:properties-building-sync', args=[property_id])
+        response = self.client.get(url, {'organization_id': self.org.pk, 'profile_id': self.default_bsync_profile.id})
         self.assertIn('<auc:YearOfConstruction>1889</auc:YearOfConstruction>',
                       response.content.decode('utf-8'))

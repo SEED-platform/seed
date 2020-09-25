@@ -12,8 +12,8 @@ from rest_framework import serializers
 
 from seed.models import (
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
     VIEW_LOCATION_TYPES,
     VIEW_LIST_INVENTORY_TYPE
 )
@@ -29,28 +29,28 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
     table_name = serializers.CharField(source='column.table_name')
 
     class Meta:
-        model = ColumnListSettingColumn
+        model = ColumnListProfileColumn
         fields = ('id', 'pinned', 'order', 'column_name', 'table_name',)
 
 
 class ColumnListProfileSerializer(serializers.ModelSerializer):
-    columns = ColumnListProfileColumnSerializer(source='columnlistsettingcolumn_set', many=True)
-    settings_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
+    columns = ColumnListProfileColumnSerializer(source='columnlistprofilecolumn_set', many=True)
+    profile_location = ChoiceField(choices=VIEW_LOCATION_TYPES)
     inventory_type = ChoiceField(choices=VIEW_LIST_INVENTORY_TYPE)
 
     class Meta:
-        model = ColumnListSetting
-        fields = ('id', 'name', 'settings_location', 'inventory_type', 'columns')
+        model = ColumnListProfile
+        fields = ('id', 'name', 'profile_location', 'inventory_type', 'columns')
 
     def update(self, instance, validated_data):
         # remove the relationships -- to be added again in next step
-        ColumnListSettingColumn.objects.filter(column_list_setting_id=instance.id).delete()
+        ColumnListProfileColumn.objects.filter(column_list_profile_id=instance.id).delete()
         for column in self.initial_data.get('columns', []):
             column_id = column.get('id')
             order = column.get('order')
             pinned = column.get('pinned')
-            ColumnListSettingColumn(
-                column_list_setting=instance, column_id=column_id, pinned=pinned, order=order
+            ColumnListProfileColumn(
+                column_list_profile=instance, column_id=column_id, pinned=pinned, order=order
             ).save()
 
         instance.__dict__.update(**validated_data)
@@ -60,12 +60,12 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # Remove *reformatted* ColumnListSettingColumn data, use unformatted initial_data later.
-        del validated_data['columnlistsettingcolumn_set']
+        del validated_data['columnlistprofilecolumn_set']
 
         # Add the already-validated organization_id
         validated_data['organization_id'] = self.context.get('request', None).query_params['organization_id']
 
-        cls = ColumnListSetting.objects.create(**validated_data)
+        cls = ColumnListProfile.objects.create(**validated_data)
         if 'columns' in self.initial_data:
             for column in self.initial_data.get('columns', []):
                 # At this point the column will exist for the organization based on the validation
@@ -73,8 +73,8 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
                 column_id = column.get('id')
                 order = column.get('order')
                 pinned = column.get('pinned')
-                ColumnListSettingColumn(
-                    column_list_setting=cls, column_id=column_id, pinned=pinned, order=order
+                ColumnListProfileColumn(
+                    column_list_profile=cls, column_id=column_id, pinned=pinned, order=order
                 ).save()
         cls.save()
 

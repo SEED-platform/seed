@@ -168,7 +168,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
         var id = $scope.currentProfile.id;
         var profile = _.omit($scope.currentProfile, 'id');
         profile.columns = currentColumns();
-        inventory_service.update_settings_profile(id, profile).then(function (updatedProfile) {
+        inventory_service.update_column_list_profile(id, profile).then(function (updatedProfile) {
           var index = _.findIndex($scope.profiles, {id: updatedProfile.id});
           $scope.profiles[index] = updatedProfile;
           modified_service.resetModified();
@@ -185,7 +185,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           resolve: {
             action: _.constant('rename'),
             data: _.constant($scope.currentProfile),
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -208,7 +208,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           resolve: {
             action: _.constant('remove'),
             data: _.constant($scope.currentProfile),
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -230,7 +230,7 @@ angular.module('BE.seed.controller.inventory_detail_settings', [])
           resolve: {
             action: _.constant('new'),
             data: currentColumns,
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }

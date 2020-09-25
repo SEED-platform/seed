@@ -28,7 +28,7 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     TaxLotView,
-    ColumnListSetting,
+    ColumnListProfile,
 )
 from seed.models.meters import (
     Meter,
@@ -107,7 +107,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(
             org_id,
             profile_id,
             view_klass_str)
@@ -120,7 +120,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             prefetch_related = ['labels']
             filter_str = {'property__organization_id': org_id}
             if ids:
-                filter_str['property__id__in'] = ids
+                filter_str['id__in'] = ids
             # always export the labels and notes
             column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
@@ -130,7 +130,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             prefetch_related = ['labels']
             filter_str = {'taxlot__organization_id': org_id}
             if ids:
-                filter_str['taxlot__id__in'] = ids
+                filter_str['id__in'] = ids
             # always export the labels and notes
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
@@ -163,7 +163,11 @@ class TaxLotPropertyViewSet(GenericViewSet):
         # force the data into the same order as the IDs
         if ids:
             order_dict = {obj_id: index for index, obj_id in enumerate(ids)}
-            data.sort(key=lambda x: order_dict[x['id']])  # x is the property/taxlot object
+            if view_klass_str == 'properties':
+                view_id_str = 'property_view_id'
+            else:
+                view_id_str = 'taxlot_view_id'
+            data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
 
         export_type = request.data.get('export_type', 'csv')
 

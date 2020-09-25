@@ -87,7 +87,7 @@ class TestApi(TestCase):
     def test_user_profile(self):
         # test logging in with the password, the remaining versions will use the HTTP Authentication
         self.client.login(username='test_user@demo.com', password='test_pass')
-        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True)
+        r = self.client.get('/api/v3/users/' + str(self.user.pk) + '/', follow=True)
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
@@ -98,7 +98,7 @@ class TestApi(TestCase):
 
     def test_with_http_authorization(self):
         r = self.client.get(
-            '/api/v2/users/{}/'.format(str(self.user.pk)),
+            '/api/v3/users/{}/'.format(str(self.user.pk)),
             follow=True,
             data={},
             **self.headers
@@ -109,7 +109,7 @@ class TestApi(TestCase):
 
     def test_organization(self):
         self.client.login(username='test_user@demo.com', password='test_pass')
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
         # {
@@ -158,12 +158,12 @@ class TestApi(TestCase):
             }])
 
     def test_organization_details(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
         # get details on the organization
-        r = self.client.get('/api/v2/organizations/' + str(organization_id) + '/', follow=True,
+        r = self.client.get('/api/v3/organizations/' + str(organization_id) + '/', follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -202,11 +202,11 @@ class TestApi(TestCase):
             'last_name': 'Stark',
             'email': self.user.username
         }
-        r = self.client.put('/api/v2/users/%s/' % self.user.pk, data=json.dumps(user_payload),
+        r = self.client.put('/api/v3/users/{}/'.format(self.user.pk), data=json.dumps(user_payload),
                             content_type='application/json', **self.headers)
 
         # re-retrieve the user profile
-        r = self.client.get('/api/v2/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/users/' + str(self.user.pk) + '/', follow=True, **self.headers)
         r = json.loads(r.content)
 
         self.assertEqual(r['status'], 'success')
@@ -214,7 +214,7 @@ class TestApi(TestCase):
         self.assertEqual(r['last_name'], 'Stark')
 
     def test_adding_user(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
         new_user = {
@@ -225,20 +225,20 @@ class TestApi(TestCase):
             'role': 'member',
         }
 
-        r = self.client.post('/api/v2/users/?organization_id=' + str(organization_id),
+        r = self.client.post('/api/v3/users/?organization_id=' + str(organization_id),
                              data=json.dumps(new_user),
                              content_type='application/json',
                              **self.headers)
         self.assertEqual(r.status_code, 200)
 
-        r = self.client.get('/api/v2/organizations/%s/' % organization_id, follow=True,
+        r = self.client.get('/api/v3/organizations/%s/' % organization_id, follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
         self.assertEqual(r['organization']['number_of_users'], 2)
 
         # get org users
-        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
                             content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         # {
@@ -275,7 +275,7 @@ class TestApi(TestCase):
         }
 
         r = self.client.put(
-            '/api/v2/users/%s/update_role/?organization_id=%s' % (user_id, organization_id),
+            '/api/v3/users/{}/role/?organization_id={}'.format(user_id, organization_id),
             data=json.dumps(payload),
             content_type='application/json',
             **self.headers)
@@ -283,7 +283,7 @@ class TestApi(TestCase):
         r = json.loads(r.content)
         self.assertEqual(r['status'], 'success')
 
-        r = self.client.get('/api/v2/organizations/%s/users/' % organization_id,
+        r = self.client.get('/api/v3/organizations/%s/users/' % organization_id,
                             content_type='application/json', **self.headers)
         self.assertEqual(r.status_code, 200)
         r = json.loads(r.content)
@@ -291,11 +291,11 @@ class TestApi(TestCase):
         self.assertEqual(new_user['role'], 'owner')
 
     def test_get_query_threshold(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/query_threshold/" % organization_id,
+        r = self.client.get("/api/v3/organizations/%s/query_threshold/" % organization_id,
                             follow=True,
                             **self.headers)
         self.assertEqual(r.status_code, 200)
@@ -304,11 +304,11 @@ class TestApi(TestCase):
         self.assertEqual(r['query_threshold'], None)
 
     def test_shared_fields(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
-        r = self.client.get("/api/v2/organizations/%s/shared_fields/" % organization_id,
+        r = self.client.get("/api/v3/organizations/%s/shared_fields/" % organization_id,
                             follow=True,
                             **self.headers)
 
@@ -319,7 +319,7 @@ class TestApi(TestCase):
 
     @skip('appears to be broken by use of login_required')
     def test_upload_buildings_file(self):
-        r = self.client.get('/api/v2/organizations/', follow=True, **self.headers)
+        r = self.client.get('/api/v3/organizations/', follow=True, **self.headers)
         r = json.loads(r.content)
         organization_id = self.get_org_id(r, self.user.username)
 
@@ -330,7 +330,7 @@ class TestApi(TestCase):
         payload = {'name': 'API Test'}
 
         # create the data set
-        r = self.client.post('/api/v2/datasets/?organization_id=' + str(organization_id),
+        r = self.client.post('/api/v3/datasets/?organization_id=' + str(organization_id),
                              data=json.dumps(payload),
                              content_type='application/json',
                              **self.headers)
@@ -344,7 +344,7 @@ class TestApi(TestCase):
         upload_details = self.client.get('/api/v2/get_upload_details/', follow=True, **self.headers)
         self.assertEqual(upload_details.status_code, 200)
         upload_details = json.loads(upload_details.content)
-        self.assertEqual(upload_details['upload_path'], '/api/v2/upload/')
+        self.assertEqual(upload_details['upload_path'], '/api/v3/upload/')
 
         # create hash for /data/upload/
         fsysparams = {
@@ -364,10 +364,9 @@ class TestApi(TestCase):
 
         # Save the data to the Property / TaxLots
         payload = {
-            'organization_id': organization_id,
             'cycle_id': self.cycle.id,
         }
-        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/save_raw_data/',
+        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/start_save_data/?organization_id=' + organization_id,
                              data=json.dumps(payload),
                              content_type='application/json',
                              follow=True, **self.headers)
@@ -384,7 +383,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get(reverse_lazy('api:v2:progress-detail', args=[progress_key]),
+        r = self.client.get(reverse_lazy('api:v3:progress-detail', args=[progress_key]),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -399,7 +398,6 @@ class TestApi(TestCase):
 
         # Save the column mappings.
         payload = {
-            'organization_id': organization_id,
             'mappings': [
                 {
                     'from_field': 'City',  # raw field in import file
@@ -445,7 +443,7 @@ class TestApi(TestCase):
             ]
         }
         r = self.client.post(
-            '/api/v2/import_files/' + str(import_file_id) + '/save_column_mappings/',
+            '/api/v3/organizations/' + str(organization_id) + '/column_mappings/?import_file_id=' + str(import_file_id),
             data=json.dumps(payload),
             content_type='application/json',
             follow=True,
@@ -461,9 +459,8 @@ class TestApi(TestCase):
         # Map the buildings with new column mappings.
         payload = {
             'remap': True,
-            'organization_id': organization_id
         }
-        r = self.client.post('/api/v2/import_files/' + str(import_file_id) + '/perform_mapping/',
+        r = self.client.post('/api/v3/import_files/' + str(import_file_id) + '/map/?organization_id=' + str(organization_id),
                              data=json.dumps(payload), content_type='application/json', follow=True,
                              **self.headers)
         self.assertEqual(r.status_code, 200)
@@ -482,7 +479,7 @@ class TestApi(TestCase):
 
         # check the progress bar
         progress_key = r['progress_key']
-        r = self.client.get('/api/v2/progress/{}/'.format(progress_key),
+        r = self.client.get('/api/v3/progress/{}/'.format(progress_key),
                             content_type='application/json', follow=True, **self.headers)
         self.assertEqual(r.status_code, 200)
 
@@ -498,7 +495,7 @@ class TestApi(TestCase):
 
         # # Get the mapping suggestions
         r = self.client.post(
-            '/api/v2/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
+            '/api/v3/import_files/{}/mapping_suggestions/?organization_id={}'.format(import_file_id,
                                                                                      organization_id),
             content_type='application/json',
             follow=True,

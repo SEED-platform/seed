@@ -69,7 +69,8 @@ describe('controller: mapping_controller', function () {
         last_modified_by: 'demo@seed-platform.org',
         source_type: 'AssessorRaw',
         dataset: mock_datasets[0],
-        id: 1
+        id: 1,
+        cycle: 2015,
       }
     };
 
@@ -230,6 +231,15 @@ describe('controller: mapping_controller', function () {
       status: 'success',
       first_five_rows: mock_first_five_rows
     };
+
+    const fake_organization_payload = {
+      status: 'success',
+      organization: {
+        display_significant_figures: 2,
+        id: 1,
+      }
+    }
+
     controller('mapping_controller', {
       $scope: mapping_controller_scope,
       import_file_payload: fake_import_file_payload,
@@ -237,9 +247,10 @@ describe('controller: mapping_controller', function () {
       raw_columns_payload: raw_columns_payload,
       first_five_rows_payload: first_five_rows_payload,
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
-      column_mapping_presets_payload: [],
+      column_mapping_profiles_payload: [],
       cycles: mock_cycles,
-      inventory_service: mock_inventory_service
+      inventory_service: mock_inventory_service,
+      organization_payload: fake_organization_payload,
     });
   }
 
@@ -256,6 +267,7 @@ describe('controller: mapping_controller', function () {
 
     // assertions
     expect(mapping_controller_scope.import_file.dataset.name).toBe('DC 2013 data');
+    expect(mapping_controller_scope.import_file.cycle).toEqual(2015);
     expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
   });

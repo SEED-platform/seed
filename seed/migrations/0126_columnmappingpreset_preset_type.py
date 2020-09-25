@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 
-from seed.lib.xml_mapping.mapper import default_buildingsync_preset_mappings
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 
 def create_default_bsync_presets(apps, schema_editor):
@@ -13,7 +13,7 @@ def create_default_bsync_presets(apps, schema_editor):
         bsync_mapping_name = 'BuildingSync v2.0 Defaults'
         org.columnmappingpreset_set.create(
             name=bsync_mapping_name,
-            mappings=default_buildingsync_preset_mappings(),
+            mappings=default_buildingsync_profile_mappings(),
             preset_type=1
         )
 

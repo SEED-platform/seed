@@ -14,9 +14,9 @@ from .properties import *  # noqa
 from .tax_lots import *  # noqa
 from .columns import *  # noqa
 from .column_mappings import *  # noqa
-from .column_mapping_presets import *  # noqa
-from .column_list_settings import *  # noqa
-from .column_list_settings_columns import *  # noqa
+from .column_mapping_profiles import *  # noqa
+from .column_list_profiles import *  # noqa
+from .column_list_profile_columns import *  # noqa
 from .auditlog import *  # noqa
 from .measures import *  # noqa
 from .scenarios import *  # noqa

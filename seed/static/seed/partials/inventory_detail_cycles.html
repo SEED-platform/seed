@@ -31,7 +31,7 @@
         <div class="section_content">
             <div style="display: flex; justify-content: flex-end; padding: 20px 10px 20px">
                 <span ng-show="profiles.length > 0">
-                    <label>{$:: 'Detail Settings Profile' | translate $}:</label>
+                    <label>{$:: 'Detail Column List Profile' | translate $}:</label>
                     <div style="display: inline-block;">
                         <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
                     </div>
@@ -69,12 +69,10 @@
                         <!-- Column values for each record -->
                         <td ng-repeat="state in states" class="ellipsis" ng-class="{highlight: col.changed}">
                             <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state[col.column_name] $}">
-                                <span ng-if="col.data_type !== 'datetime'">{$:: state[col.column_name] $}</span>
-                                <span ng-if="col.data_type === 'datetime'">{$:: state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                <span>{$:: displayValue(col.data_type, state[col.column_name]) $}</span>
                             </span>
                             <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: state.extra_data[col.column_name] $}">
-                                <span ng-if="col.data_type !== 'datetime'">{$:: state.extra_data[col.column_name] $}</span>
-                                <span ng-if="col.data_type === 'datetime'">{$:: state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                <span>{$:: displayValue(col.data_type, state.extra_data[col.column_name]) $}</span>
                             </span>
                         </td>
                     </tr>

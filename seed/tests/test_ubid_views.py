@@ -12,7 +12,12 @@ from seed.landing.models import SEEDUser as User
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 
-from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory,
+    FakePropertyViewFactory,
+    FakeTaxLotViewFactory
+)
 
 from seed.utils.geocode import bounding_box_wkt
 from seed.utils.organizations import create_organization
@@ -33,6 +38,8 @@ class UbidViewTests(TestCase):
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
 
     def test_ubid_decode_by_id_endpoint_base(self):
         property_details = self.property_state_factory.get_details()
@@ -42,8 +49,10 @@ class UbidViewTests(TestCase):
         property = PropertyState(**property_details)
         property.save()
 
-        url = reverse('api:v2:ubid-decode-by-ids')
-        post_params = {'property_ids': [property.id]}
+        property_view = self.property_view_factory.get_property_view(state=property)
+
+        url = reverse('api:v3:ubid-decode-by-ids') + '?organization_id=%s' % self.org.pk
+        post_params = {'property_view_ids': [property_view.id]}
 
         self.client.post(url, post_params)
 
@@ -72,6 +81,8 @@ class UbidViewTests(TestCase):
         property_none = PropertyState(**property_none_details)
         property_none.save()
 
+        property_none_view = self.property_view_factory.get_property_view(state=property_none)
+
         property_correctly_populated_details = self.property_state_factory.get_details()
         property_correctly_populated_details["organization_id"] = self.org.id
         property_correctly_populated_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -92,6 +103,8 @@ class UbidViewTests(TestCase):
         property_correctly_populated = PropertyState(**property_correctly_populated_details)
         property_correctly_populated.save()
 
+        property_correctly_populated_view = self.property_view_factory.get_property_view(state=property_correctly_populated)
+
         property_not_decoded_details = self.property_state_factory.get_details()
         property_not_decoded_details["organization_id"] = self.org.id
         property_not_decoded_details['ubid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -106,12 +119,14 @@ class UbidViewTests(TestCase):
         property_not_decoded = PropertyState(**property_not_decoded_details)
         property_not_decoded.save()
 
-        url = reverse('api:v2:ubid-decode-results')
+        property_not_decoded_view = self.property_view_factory.get_property_view(state=property_not_decoded)
+
+        url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
         post_params = {
-            'property_ids': [
-                property_none.id,
-                property_correctly_populated.id,
-                property_not_decoded.id
+            'property_view_ids': [
+                property_none_view.id,
+                property_correctly_populated_view.id,
+                property_not_decoded_view.id
             ]
         }
 
@@ -135,6 +150,8 @@ class UbidViewTests(TestCase):
         taxlot_none = TaxLotState(**taxlot_none_details)
         taxlot_none.save()
 
+        taxlot_none_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_none)
+
         taxlot_correctly_populated_details = self.taxlot_state_factory.get_details()
         taxlot_correctly_populated_details["organization_id"] = self.org.id
         taxlot_correctly_populated_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -155,6 +172,8 @@ class UbidViewTests(TestCase):
         taxlot_correctly_populated = TaxLotState(**taxlot_correctly_populated_details)
         taxlot_correctly_populated.save()
 
+        taxlot_correctly_populated_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_correctly_populated)
+
         taxlot_not_decoded_details = self.taxlot_state_factory.get_details()
         taxlot_not_decoded_details["organization_id"] = self.org.id
         taxlot_not_decoded_details['ulid'] = '86HJPCWQ+2VV-1-3-2-3'
@@ -169,12 +188,14 @@ class UbidViewTests(TestCase):
         taxlot_not_decoded = TaxLotState(**taxlot_not_decoded_details)
         taxlot_not_decoded.save()
 
-        url = reverse('api:v2:ubid-decode-results')
+        taxlot_not_decoded_view = self.taxlot_view_factory.get_taxlot_view(state=taxlot_not_decoded)
+
+        url = reverse('api:v3:ubid-decode-results') + '?organization_id=%s' % self.org.pk
         post_params = {
-            'taxlot_ids': [
-                taxlot_none.id,
-                taxlot_correctly_populated.id,
-                taxlot_not_decoded.id
+            'taxlot_view_ids': [
+                taxlot_none_view.id,
+                taxlot_correctly_populated_view.id,
+                taxlot_not_decoded_view.id
             ]
         }
 

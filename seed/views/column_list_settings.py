@@ -10,9 +10,9 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 
-from seed.filters import ColumnListSettingFilterBackend
+from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
-    ColumnListSetting,
+    ColumnListProfile,
     Organization,
     Column,
     VIEW_LIST,
@@ -20,8 +20,8 @@ from seed.models import (
     VIEW_LIST_PROPERTY,
     VIEW_LOCATION_TYPES,
 )
-from seed.serializers.column_list_settings import (
-    ColumnListSettingSerializer,
+from seed.serializers.column_list_profiles import (
+    ColumnListProfileSerializer,
 )
 from seed.utils.api import OrgValidateMixin
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
@@ -39,7 +39,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
             {
                 "name": "some new name 3",
-                "settings_location": "List View Settings",
+                "profile_location": "List View Profile",
                 "inventory_type": "Tax Lot",
                 "columns": [
                     {"id": 1, "pinned": false, "order": 10},
@@ -49,9 +49,9 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             }
 
     """
-    serializer_class = ColumnListSettingSerializer
-    model = ColumnListSetting
-    filter_backends = (ColumnListSettingFilterBackend,)
+    serializer_class = ColumnListProfileSerializer
+    model = ColumnListProfile
+    filter_backends = (ColumnListProfileFilterBackend,)
     pagination_class = None
     # force_parent = True  # Ideally the column list settings would inherit from the parent,
     # but not yet.
@@ -69,9 +69,9 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         inventory_type = request.query_params.get('inventory_type')
-        settings_location = request.query_params.get('settings_location')
+        profile_location = request.query_params.get('profile_location')
         if not org.comstock_enabled or kwargs['pk'] != 'null' \
-                or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
+                or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListingViewSet, self).retrieve(request, args, kwargs)
 
         result = {
@@ -79,7 +79,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             'data': {
                 'id': None,
                 'name': 'ComStock',
-                'settings_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
+                'profile_location': VIEW_LOCATION_TYPES[VIEW_LIST][1],
                 'inventory_type': VIEW_LIST_INVENTORY_TYPE[VIEW_LIST_PROPERTY][1],
                 'columns': self.list_comstock_columns(org_id)
             }
@@ -100,8 +100,8 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
             }, status=status.HTTP_404_NOT_FOUND)
 
         inventory_type = request.query_params.get('inventory_type')
-        settings_location = request.query_params.get('settings_location')
-        if not org.comstock_enabled or inventory_type == 'Tax Lot' or settings_location == 'Detail View Settings':
+        profile_location = request.query_params.get('profile_location')
+        if not org.comstock_enabled or inventory_type == 'Tax Lot' or profile_location == 'Detail View Profile':
             return super(ColumnListingViewSet, self).list(request, args, kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
@@ -115,7 +115,7 @@ class ColumnListingViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
         results.append({
             "id": None,
             "name": "ComStock",
-            "settings_location": 0,
+            "profile_location": 0,
             "inventory_type": 0
         })
 

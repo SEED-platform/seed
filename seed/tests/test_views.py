@@ -33,7 +33,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
     FakeTaxLotFactory,
-    FakeColumnListSettingsFactory,
+    FakeColumnListProfileFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -86,7 +86,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-list'),
+        response = self.client.get(reverse('api:v3:datasets-list'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(1, len(response.json()['datasets']))
 
@@ -94,7 +94,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-count'),
+        response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': self.org.pk})
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -105,7 +105,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record = ImportRecord.objects.create(owner=self.user)
         import_record.super_organization = self.org
         import_record.save()
-        response = self.client.get(reverse('api:v2:datasets-count'),
+        response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': 666})
         self.assertEqual(200, response.status_code)
         j = response.json()
@@ -117,7 +117,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(
-            reverse('api:v2:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
+            reverse('api:v3:datasets-detail', args=[import_record.pk]) + '?organization_id=' + str(
                 self.org.pk)
         )
         self.assertEqual('success', response.json()['status'])
@@ -128,7 +128,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
 
         response = self.client.delete(
-            reverse_lazy('api:v2:datasets-detail',
+            reverse_lazy('api:v3:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -146,7 +146,7 @@ class GetDatasetsViewsTests(TestCase):
         }
 
         response = self.client.put(
-            reverse_lazy('api:v2:datasets-detail',
+            reverse_lazy('api:v3:datasets-detail',
                          args=[import_record.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
             data=json.dumps(post_data)
@@ -181,11 +181,11 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_import_file(self):
         response = self.client.get(
-            reverse('api:v2:import_files-detail', args=[self.import_file.pk]))
+            reverse('api:v3:import_files-detail', args=[self.import_file.pk]))
         self.assertEqual(self.import_file.pk, response.json()['import_file']['id'])
 
     def test_delete_file(self):
-        url = reverse("api:v2:import_files-detail", args=[self.import_file.pk])
+        url = reverse("api:v3:import_files-detail", args=[self.import_file.pk])
         response = self.client.delete(
             url + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
@@ -195,7 +195,7 @@ class ImportFileViewsTests(TestCase):
 
     def test_get_matching_and_geocoding_results(self):
         response = self.client.get(
-            '/api/v2/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/')
+            '/api/v3/import_files/' + str(self.import_file.pk) + '/matching_and_geocoding_results/?organization_id=' + str(self.org.pk))
         self.assertEqual('success', response.json()['status'])
 
 
@@ -254,7 +254,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions(self):
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
@@ -262,7 +262,7 @@ class TestMCMViews(TestCase):
 
     def test_get_column_mapping_suggestions_pm_file(self):
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -288,7 +288,7 @@ class TestMCMViews(TestCase):
         mapping.save()
 
         response = self.client.get(
-            reverse_lazy('api:v2:import_files-mapping-suggestions',
+            reverse_lazy('api:v3:import_files-mapping-suggestions',
                          args=[self.import_file.pk]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json',
         )
@@ -297,7 +297,8 @@ class TestMCMViews(TestCase):
     def test_get_raw_column_names(self):
         """Good case for ``get_raw_column_names``."""
         resp = self.client.get(
-            reverse_lazy('api:v2:import_files-raw-column-names', args=[self.import_file.id]),
+            reverse_lazy('api:v3:import_files-raw-column-names',
+                         args=[self.import_file.id]) + '?organization_id=' + str(self.org.pk),
             content_type='application/json'
         )
 
@@ -321,7 +322,8 @@ class TestMCMViews(TestCase):
             is_extra_data=True)
 
         resp = self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'mappings': [
                     {
@@ -362,7 +364,8 @@ class TestMCMViews(TestCase):
         # Save the first mapping, just like before
         self.assertEqual(ColumnMapping.objects.filter(super_organization=self.org).count(), 0)
         resp = self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'mappings': [
                     {
@@ -391,7 +394,8 @@ class TestMCMViews(TestCase):
         self.client.login(**user_2_details)
 
         self.client.post(
-            reverse_lazy('api:v2:import_files-save-column-mappings', args=[self.import_file.id]),
+            reverse_lazy('api:v3:organizations-column-mappings',
+                         args=[self.org.pk]) + f'?import_file_id={self.import_file.id}',
             data=json.dumps({
                 'import_file_id': self.import_file.id,
                 'mappings': [
@@ -416,7 +420,7 @@ class TestMCMViews(TestCase):
         progress_data.save()
         progress_data.step('Some Status Message')  # bump to 50%
 
-        resp = self.client.get(reverse('api:v2:progress-detail', args=[progress_data.key]),
+        resp = self.client.get(reverse('api:v3:progress-detail', args=[progress_data.key]),
                                content_type='application/json')
 
         self.assertEqual(resp.status_code, 200)
@@ -429,7 +433,7 @@ class TestMCMViews(TestCase):
         DATASET_NAME_1 = 'test_name 1'
         DATASET_NAME_2 = 'city compliance dataset 2014'
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
@@ -439,7 +443,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(data['name'], DATASET_NAME_1)
 
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_2,
             }),
@@ -459,7 +463,7 @@ class TestMCMViews(TestCase):
 
         # test duplicate name
         resp = self.client.post(
-            reverse_lazy('api:v2:datasets-list') + '?organization_id=' + str(self.org.pk),
+            reverse_lazy('api:v3:datasets-list') + '?organization_id=' + str(self.org.pk),
             data=json.dumps({
                 'name': DATASET_NAME_1,
             }),
@@ -499,7 +503,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.status_label = StatusLabel.objects.create(
             name='test', super_organization=self.org
         )
-        self.column_list_factory = FakeColumnListSettingsFactory(organization=self.org)
+        self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
 
         self.client.login(**user_details)
 
@@ -515,11 +519,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -534,19 +538,19 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings()
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile()
 
         column_name_mappings = {}
         for c in Column.retrieve_all(self.org.pk, 'property'):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': columnlistsetting.pk})
+        ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -554,12 +558,12 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # test with queryparam
 
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
-            'profile_id', columnlistsetting.pk,
-        ))
+            'profile_id', columnlistprofile.pk,
+        ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -577,11 +581,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -602,11 +606,11 @@ class InventoryViewTests(DeleteModelsTestCase):
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
 
@@ -633,18 +637,41 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
         params = {
             'organization_id': self.org.pk,
-            'cycle_id': self.cycle.id
         }
-        url = reverse('api:v2:properties-detail', args=[pv.id])
+        url = reverse('api:v3:properties-detail', args=[pv.id])
         response = self.client.get(url, params)
         result = response.json()
         self.assertEqual(result['state']['gross_floor_area'], 3.14)
 
         # test writing the field -- does not work for pint fields, but other fields should persist fine
-        # /api/v2/properties/4/?cycle_id=4&organization_id=3
         url = reverse(
-            'api:v2:properties-detail', args=[pv.id]
-        ) + '?cycle_id=%s&organization_id=%s' % (self.cycle.id, self.org.id)
+            'api:v3:properties-detail', args=[pv.id]
+        ) + '?organization_id=%s' % (self.org.id)
+        params = {
+            'state': {
+                'gross_floor_area': 11235,
+                'site_eui': 90.1,
+            }
+        }
+        response = self.client.put(url, data=json.dumps(params), content_type='application/json')
+        result = response.json()
+        self.assertEqual(result['state']['gross_floor_area'], 11235.00)
+        self.assertEqual(result['state']['site_eui'], 90.10)
+
+    def test_update_pint_fields_with_modified_display_settings(self):
+        self.org.display_units_area = 'm**2'
+        self.org.display_units_eui = 'kWh/m**2/year'
+        self.org.save()
+
+        state = self.property_state_factory.get_property_state(self.org)
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+
+        url = reverse(
+            'api:v3:properties-detail', args=[pv.id]
+        ) + '?organization_id=%s' % (self.org.id)
         params = {
             'state': {
                 'gross_floor_area': 11235,
@@ -674,11 +701,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -720,11 +747,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -770,11 +797,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         column_name_mappings_related = {}
@@ -799,11 +826,11 @@ class InventoryViewTests(DeleteModelsTestCase):
         PropertyView.objects.create(
             property=prprty, cycle=self.cycle, state=state
         )
-        response = self.client.post('/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 'one',
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -817,12 +844,12 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEquals(pagination['total'], 1)
 
     def test_get_properties_empty_page(self):
-        filter_properties_url = '/api/v2/properties/filter/?{}={}&{}={}&{}={}'.format(
+        filter_properties_url = '/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 10,
             'per_page', 999999999
         )
-        response = self.client.post(filter_properties_url, data={})
+        response = self.client.post(filter_properties_url, data={}, content_type='application/json')
         result = response.json()
         self.assertEquals(len(result['results']), 0)
         pagination = result['pagination']
@@ -857,7 +884,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id': self.org.pk
         }
         response = self.client.get(
-            '/api/v2/properties/' + str(property_view.id) + '/',
+            '/api/v3/properties/' + str(property_view.id) + '/',
             params
         )
         results = response.json()
@@ -937,7 +964,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         params = {
             'organization_id': self.org.pk
         }
-        response = self.client.get('/api/v2/properties/' + str(property_view.id) + '/', params)
+        response = self.client.get('/api/v3/properties/' + str(property_view.id) + '/', params)
         results = response.json()
 
         rcycle = results['cycle']
@@ -1011,12 +1038,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
             'cycle', self.cycle.pk
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1054,8 +1081,8 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # save all the columns in the state to the database so we can setup column list settings
         Column.save_column_names(state)
-        # get the columnlistsetting (default) for all columns
-        columnlistsetting = self.column_list_factory.get_columnlistsettings(
+        # get the columnlistprofile (default) for all columns
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(
             inventory_type=VIEW_LIST_TAXLOT
         )
 
@@ -1064,11 +1091,11 @@ class InventoryViewTests(DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={'profile_id': columnlistsetting.pk})
+        ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -1076,12 +1103,12 @@ class InventoryViewTests(DeleteModelsTestCase):
 
         # test with queryparam
 
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
-            'profile_id', columnlistsetting.pk,
-        ))
+            'profile_id', columnlistprofile.pk,
+        ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
         self.assertEquals(len(result['results']), 1)
@@ -1104,12 +1131,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        url = '/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999,
         )
-        response = self.client.post(url, data={})
+        response = self.client.post(url, data={}, content_type='application/json')
         results = response.json()['results']
 
         self.assertEquals(len(results), 1)
@@ -1123,13 +1150,13 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view_1, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        url = '/api/v2/taxlots/filter/?{}={}&{}={}&{}={}'.format(
+        url = '/api/v3/taxlots/filter/?{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
             'per_page', 999999999
         )
         data = {}
-        response = self.client.post(url, data=data)
+        response = self.client.post(url, data=data, content_type='application/json')
         result = response.json()
 
         column_name_mappings_related = {}
@@ -1180,12 +1207,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view_2,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
         self.assertEquals(len(results), 2)
 
@@ -1251,12 +1278,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         results = response.json()['results']
 
         column_name_mappings_related = {}
@@ -1290,12 +1317,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 'bad',
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -1326,12 +1353,12 @@ class InventoryViewTests(DeleteModelsTestCase):
             property_view=property_view, taxlot_view=taxlot_view,
             cycle=self.cycle
         )
-        response = self.client.post('/api/v2/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/taxlots/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'cycle', self.cycle.pk,
             'page', 1,
             'per_page', 999999999,
-        ), data={})
+        ), data={}, content_type='application/json')
         result = response.json()
 
         self.assertEquals(len(result['results']), 1)
@@ -1377,7 +1404,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         params = {
             'organization_id': self.org.pk,
         }
-        response = self.client.get('/api/v2/taxlots/' + str(taxlot_view.id) + '/', params)
+        response = self.client.get('/api/v3/taxlots/' + str(taxlot_view.id) + '/', params)
         result = response.json()
 
         labels = result['labels']
@@ -1426,7 +1453,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'per_page': 999999999,
         }
         response = self.client.get(
-            reverse('api:v2:cycles-list'), params
+            reverse('api:v3:cycles-list'), params
         )
         results = response.json()
         self.assertEqual(results['status'], 'success')
@@ -1451,8 +1478,9 @@ class InventoryViewTests(DeleteModelsTestCase):
             'organization_id': self.org.pk,
             'page': 1,
             'per_page': 999999999,
+            'inventory_type': 'property',
         }
-        response = self.client.get('/api/v2/properties/columns/', params)
+        response = self.client.get('/api/v3/columns/', params)
         results = response.json()['columns']
 
         self.assertTrue('id' in results[0])
@@ -1531,10 +1559,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
         params = {
             'organization_id': self.org.pk,
-            'page': 1,
-            'per_page': 999999999,
+            'inventory_type': 'taxlot',
         }
-        response = self.client.get('/api/v2/taxlots/columns/', params)
+        response = self.client.get('/api/v3/columns/', params)
         results = response.json()['columns']
 
         self.assertTrue('id' in results[0])

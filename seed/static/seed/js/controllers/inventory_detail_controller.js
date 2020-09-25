@@ -21,12 +21,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
-    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
     'current_profile',
     'labels_payload',
+    'organization_payload',
     function (
       $http,
       $state,
@@ -45,17 +45,17 @@ angular.module('BE.seed.controller.inventory_detail', [])
       inventory_service,
       matching_service,
       pairing_service,
-      user_service,
       inventory_payload,
       columns,
       profiles,
       current_profile,
-      labels_payload
+      labels_payload,
+      organization_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.organization = user_service.get_organization();
+      $scope.organization = organization_payload.organization;
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           resolve: {
             action: _.constant('new'),
             data: profile_formatted_columns,
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -184,7 +184,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -360,9 +360,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.diff = function () {
         if (_.isEmpty($scope.item_copy)) return {};
         // $scope.item_state, $scope.item_copy
+        const ignored_root_keys = ['extra_data', 'files', 'measures', 'scenarios']
         var result = {};
         _.forEach($scope.item_state, function (value, key) {
-          if (key === 'extra_data') return;
+          if (ignored_root_keys.includes(key)) return;
           if (value === $scope.item_copy[key]) return;
           if (_.isNull($scope.item_copy[key]) && _.isString(value) && _.isEmpty(value)) return;
           if (_.isNumber($scope.item_copy[key]) && _.isString(value) && $scope.item_copy[key] === _.toNumber(value)) return;
@@ -505,22 +506,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
             property_view_id: function () {
               return $stateParams.view_id;
             },
-            column_mapping_presets: [
+            column_mapping_profiles: [
               'column_mappings_service',
-              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT',
-              'COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
               function (
                 column_mappings_service,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
               ) {
-                var filter_preset_types = [
-                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_DEFAULT,
-                  COLUMN_MAPPING_PRESET_TYPE_BUILDINGSYNC_CUSTOM
+                var filter_profile_types = [
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
                 ];
-                return column_mappings_service.get_column_mapping_presets_for_org(
+                return column_mappings_service.get_column_mapping_profiles_for_org(
                   $scope.organization.id,
-                  filter_preset_types
+                  filter_profile_types
                 ).then(function (response) {
                   return response.data;
                 });
@@ -538,7 +539,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         //   profileId = $scope.currentProfile.id;
         // }
 
-        $http.post('/api/v2.1/tax_lot_properties/export/', {
+        $http.post('/api/v3/tax_lot_properties/export/', {
           ids: [$stateParams.view_id],
           filename: filename,
           profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
@@ -680,6 +681,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
           table_container.width() + table_container.scrollLeft()
         );
       });
+
+      $scope.displayValue = function(dataType, value) {
+        if (dataType === 'datetime') {
+          return $filter('date')(value, 'yyyy-MM-dd h:mm a')
+        } else if (dataType === 'eui' || dataType === 'area') {
+          return $filter('number')(value, $scope.organization.display_significant_figures)
+        }
+        return value
+      }
 
       /**
        *   init: sets default state of inventory detail page,

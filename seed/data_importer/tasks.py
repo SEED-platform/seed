@@ -1050,6 +1050,10 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     else:
         parser = reader.MCMParser(import_file.local_file)
 
+    import_file.has_generated_headers = False
+    if hasattr(parser, 'has_generated_headers'):
+        import_file.has_generated_headers = parser.has_generated_headers
+
     cache_first_rows(import_file, parser)
     import_file.num_rows = 0
     import_file.num_columns = parser.num_columns()

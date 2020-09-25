@@ -28,7 +28,7 @@ angular.module('BE.seed.service.auth', []).factory('auth_service', [
      */
     auth_factory.is_authorized = function (organization_id, actions) {
       return user_service.get_user_id().then(function (user_id) {
-        return $http.post('/api/v2/users/' + user_id + '/is_authorized/', {
+        return $http.post('/api/v3/users/' + user_id + '/is_authorized/', {
           actions: actions
         }, {
           params: {

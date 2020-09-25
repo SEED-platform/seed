@@ -7,8 +7,8 @@
             </a>
         </div>
         <div class="page_title">
-            <h1 ng-if="::inventory_type === 'taxlots'" translate>Tax Lot Detail Settings</h1>
-            <h1 ng-if="::inventory_type === 'properties'" translate>Property Detail Settings</h1>
+            <h1 ng-if="::inventory_type === 'taxlots'" translate>Tax Lot Detail Column List Profiles</h1>
+            <h1 ng-if="::inventory_type === 'properties'" translate>Property Detail Column List Profiles</h1>
         </div>
         <div class="right page_action_container page_action_btn"></div>
     </div>
@@ -25,7 +25,7 @@
         </div>
         <div class="section_action_container right_wide settings_profile">
             <div>
-                <span>Detail Settings Profile: </span>
+                <span>Detail Column List Profile:</span>
                 <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
 
                 <button class="btn btn-success" type="button" ng-click="saveProfile()" ng-disabled="!currentProfile || !isModified()" tooltip-placement="bottom" uib-tooltip="Save">

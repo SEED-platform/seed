@@ -10,15 +10,14 @@ from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.models import (
     Column,
-    ColumnMappingPreset,
+    ColumnMappingProfile,
 )
-from seed.serializers.column_mapping_presets import ColumnMappingPresetSerializer
+from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 from rest_framework.viewsets import ViewSet
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
-
 
 mappings_description = (
     "Each object in mappings must be in particular format:\n"
@@ -33,7 +32,7 @@ mappings_description = (
 class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     permission_classes = (SEEDOrgPermissions,)
     # req by SEEDOrgPermissions, but currently not used by any methods.
-    queryset = ColumnMappingPreset.objects.none()
+    queryset = ColumnMappingProfile.objects.none()
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(
@@ -41,7 +40,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             description="Optional org id which overrides the users (default) current org id"
         )],
         request_body=AutoSchemaHelper.schema_factory(
-            {'preset_type': ['string']},
+            {'profile_type': ['string']},
             description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
         )
     )
@@ -52,19 +51,20 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         Retrieves all profiles for an organization.
         """
         try:
-            preset_types = request.data.get('preset_type', [])
-            preset_types = [ColumnMappingPreset.get_preset_type(pt) for pt in preset_types]
+            profile_types = request.data.get('profile_type', [])
+            profile_types = [ColumnMappingProfile.get_profile_type(pt) for pt in profile_types]
             filter_params = {'organizations__pk': self.get_organization(request, True).id}
-            if preset_types:
-                filter_params['preset_type__in'] = preset_types
-            profiles = ColumnMappingPreset.objects.filter(**filter_params)
-            data = [ColumnMappingPresetSerializer(p).data for p in profiles]
+            if profile_types:
+                filter_params['profile_type__in'] = profile_types
+            profiles = ColumnMappingProfile.objects.filter(**filter_params)
+            data = [ColumnMappingProfileSerializer(p).data for p in profiles]
 
             return JsonResponse({
                 'status': 'success',
                 'data': data,
             })
         except Exception as e:
+            raise e
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
@@ -92,18 +92,18 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def update(self, request, pk=None):
         """
         Updates a profile given appropriate request data. The body should contain
-        only valid fields for ColumnMappingPreset objects.
+        only valid fields for ColumnMappingProfile objects.
         """
         org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
-        except ColumnMappingPreset.DoesNotExist:
+            profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'data': 'No profile with given id'
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Default BuildingSync profile are not editable'
@@ -117,7 +117,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
         # update the mappings according to the profile type
         if updated_mappings is not None:
-            if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_CUSTOM:
+            if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_CUSTOM:
                 # only allow these updates to the mappings
                 # - changing the to_field or from_units
                 # - removing mappings
@@ -140,7 +140,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         profile.save()
         return JsonResponse({
             'status': 'success',
-            'data': ColumnMappingPresetSerializer(profile).data,
+            'data': ColumnMappingProfileSerializer(profile).data,
         })
 
     @swagger_auto_schema(
@@ -166,17 +166,17 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     def create(self, request, pk=None):
         """
         Creates a new profile given appropriate request data. The body should
-        contain only valid fields for ColumnMappingPreset objects.
+        contain only valid fields for ColumnMappingProfile objects.
         """
         org_id = self.get_organization(request, True).id
         try:
             profile_data = request.data
             profile_data['organizations'] = [org_id]
-            ser_profile = ColumnMappingPresetSerializer(data=profile_data)
+            ser_profile = ColumnMappingProfileSerializer(data=profile_data)
             if ser_profile.is_valid():
                 profile = ser_profile.save()
                 response_status = 'success'
-                response_data = ColumnMappingPresetSerializer(profile).data
+                response_data = ColumnMappingProfileSerializer(profile).data
                 response_code = HTTP_200_OK
             else:
                 response_status = 'error'
@@ -206,14 +206,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         """
         org_id = self.get_organization(request, True).id
         try:
-            profile = ColumnMappingPreset.objects.get(organizations__pk=org_id, pk=pk)
+            profile = ColumnMappingProfile.objects.get(organizations__pk=org_id, pk=pk)
         except Exception as e:
             return JsonResponse({
                 'status': 'error',
                 'data': str(e),
             }, status=HTTP_400_BAD_REQUEST)
 
-        if profile.preset_type == ColumnMappingPreset.BUILDINGSYNC_DEFAULT:
+        if profile.profile_type == ColumnMappingProfile.BUILDINGSYNC_DEFAULT:
             return JsonResponse({
                 'status': 'error',
                 'data': 'Not allowed to edit default BuildingSync profiles'

@@ -24,8 +24,8 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
-                         BuildingFile, Column, ColumnListSetting,
-                         ColumnListSettingColumn, ColumnMappingPreset, Cycle,
+                         BuildingFile, Column, ColumnListProfile,
+                         ColumnListProfileColumn, ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
@@ -143,9 +143,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # this is the entrypoint to the filtering backend
         # https://www.django-rest-framework.org/api-guide/filtering/#custom-generic-filtering
         qs = self.filter_queryset(qs)
-        # using list-comprehension here instead of Serializer(qs, many=True) b/c
-        # it was not properly serializing the objects with that method. No idea why
-        return JsonResponse([PropertyViewAsStateSerializer(x).data for x in qs.all()], safe=False)
+        # converting QuerySet to list b/c serializer will only use column list profile this way
+        return JsonResponse(
+            PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
+            safe=False,
+        )
 
     def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
@@ -215,16 +217,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ).values_list('id', flat=True))
         else:
             try:
-                profile = ColumnListSetting.objects.get(
+                profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=VIEW_LIST,
+                    profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_PROPERTY
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
-                    column_list_setting_id=profile.id
+                show_columns = list(ColumnListProfileColumn.objects.filter(
+                    column_list_profile_id=profile.id
                 ).values_list('column_id', flat=True))
-            except ColumnListSetting.DoesNotExist:
+            except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
         related_results = TaxLotProperty.get_related(property_views, show_columns,
@@ -555,10 +557,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         organization_id = int(request.query_params.get('organization_id', None))
 
         property_view_ids = body.get('property_view_ids', [])
-        property_state_ids = PropertyView.objects.filter(
+        property_states = PropertyView.objects.filter(
             id__in=property_view_ids,
             cycle__organization_id=organization_id
-        ).values_list('state_id', flat=True)
+        ).values('id', 'state_id')
+        # get the state ids in order according to the given view ids
+        property_states_dict = {p['id']: p['state_id'] for p in property_states}
+        property_state_ids = [
+            property_states_dict[view_id]
+            for view_id in property_view_ids if view_id in property_states_dict
+        ]
 
         if len(property_state_ids) != len(property_view_ids):
             return {
@@ -886,11 +894,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         org_id = request.query_params.get('organization_id', None)
 
         property_view_ids = request.data.get('property_view_ids', [])
-        property_states = PropertyView.objects.filter(
+        property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
             cycle__organization_id=org_id
-        )
-        resp = PropertyState.objects.filter(pk__in=Subquery(property_states.values('id'))).delete()
+        ).values_list('state_id', flat=True)
+        resp = PropertyState.objects.filter(pk__in=Subquery(property_state_ids)).delete()
 
         if resp[0] == 0:
             return JsonResponse({'status': 'warning', 'message': 'No action was taken'})
@@ -1173,9 +1181,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
-                'preset_id',
+                'profile_id',
                 required=True,
-                description='ID of a BuildingSync ColumnMappingPreset'
+                description='ID of a BuildingSync ColumnMappingProfile'
             ),
         ]
     )
@@ -1185,22 +1193,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Return BuildingSync representation of the property
         """
-        preset_pk = request.GET.get('preset_id')
+        profile_pk = request.GET.get('profile_id')
         org_id = self.get_organization(self.request)
         try:
-            preset_pk = int(preset_pk)
-            column_mapping_preset = ColumnMappingPreset.objects.get(
-                pk=preset_pk,
-                preset_type__in=[ColumnMappingPreset.BUILDINGSYNC_DEFAULT, ColumnMappingPreset.BUILDINGSYNC_CUSTOM])
+            profile_pk = int(profile_pk)
+            column_mapping_profile = ColumnMappingProfile.objects.get(
+                pk=profile_pk,
+                profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM])
         except TypeError:
             return JsonResponse({
                 'success': False,
-                'message': 'Query param `preset_id` is either missing or invalid'
+                'message': 'Query param `profile_id` is either missing or invalid'
             }, status=status.HTTP_400_BAD_REQUEST)
-        except ColumnMappingPreset.DoesNotExist:
+        except ColumnMappingProfile.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'message': f'Cannot find a BuildingSync ColumnMappingPreset with pk={preset_pk}'
+                'message': f'Cannot find a BuildingSync ColumnMappingProfile with pk={profile_pk}'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -1219,7 +1227,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             bs.import_file(bs_file.file.path)
 
         try:
-            xml = bs.export_using_preset(property_view.state, column_mapping_preset.mappings)
+            xml = bs.export_using_profile(property_view.state, column_mapping_profile.mappings)
             return HttpResponse(xml, content_type='application/xml')
         except Exception as e:
             return JsonResponse({
