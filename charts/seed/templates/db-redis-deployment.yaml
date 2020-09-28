@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
@@ -9,8 +9,17 @@ metadata:
     io.kompose.service: db-redis
   name: db-redis
 spec:
+  progressDeadlineSeconds: 2147483647
   replicas: 1
-  strategy: {}
+  revisionHistoryLimit: 2147483647
+  selector:
+    matchLabels:
+      io.kompose.service: db-redis
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -22,7 +31,14 @@ spec:
     spec:
       containers:
       - image: redis:5.0.1
+        imagePullPolicy: IfNotPresent
         name: db-redis
         resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
 status: {}
