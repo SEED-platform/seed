@@ -1946,10 +1946,6 @@ msgstr "Projets"
 msgid "Properties"
 msgstr "Propriétés"
 
-#, fuzzy
-msgid "Properties Column List Profiles"
-msgstr "Paramètres de la Liste de Propriétés"
-
 msgid "Properties List"
 msgstr "Liste Des Propriétés"
 
@@ -2427,10 +2423,6 @@ msgstr "Visibilité du lot d'impôt"
 
 msgid "Tax Lots"
 msgstr "Lots d'impôt"
-
-#, fuzzy
-msgid "Tax Lots Column List Profiles"
-msgstr "Paramètres de la Liste des Lots d'impôt"
 
 msgid "Tax Lots List"
 msgstr "Liste des lots d'impôt"
