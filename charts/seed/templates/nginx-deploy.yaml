@@ -24,6 +24,8 @@ spec:
     spec:
       containers:
       - image: nginx:1.17.8
+#        command: ["tail"]
+#        args: ["-f", "/dev/null"]
         imagePullPolicy: IfNotPresent
         name: nginx-ingress
         resources:
@@ -36,9 +38,9 @@ spec:
         - mountPath: /etc/nginx/conf.d/seed-dev.conf
           name: nginx-ingress
           subPath: seed-dev.conf
-        - mountPath: /etc/nginx/conf.d/kibana.conf
-          name: nginx-ingress
-          subPath: kibana.conf
+#        - mountPath: /etc/nginx/conf.d/kibana.conf
+#          name: nginx-ingress
+#          subPath: kibana.conf
         - mountPath: /etc/nginx/nginx.conf
           name: nginx-ingress
           subPath: nginx.conf
