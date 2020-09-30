@@ -47,6 +47,10 @@ local_untracked.py file
         ),
     )
 
+Version 2.8.0
+-------------
+- The migrations should work without additional support. Simply run `./manage.py migrate`.
+
 Version 2.7.2
 -------------
 - The migrations should work without additional support. Simply run `./manage.py migrate`. There are no manual migrations needed.

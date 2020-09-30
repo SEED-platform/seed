@@ -705,7 +705,7 @@ msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Mappage des données et Validation ({filename})"
 
 msgid "DATASET_FILENAME_UPLOADED_TO"
-msgstr "<strong>{dataset_filename}</strong> a été importé dans <strong>{dataset_name}</strong>."
+msgstr "<strong> {dataset_filename} </strong> a été importé dans <strong> {dataset_name} </strong> , sous le cycle <strong> {cycle_name} </strong> ."
 
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "Le <strong>nom du fichier \"{dataset_name}\" existe déjà</strong> . Veuillez en sélectionner un nouveau"
@@ -1099,6 +1099,9 @@ msgstr "Les champs de fichier de données associés à ces colonnes auront leurs
 
 msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Géocodage terminé"
+
+msgid "GEOCODING_INVENTORY_INCOMPLETE"
+msgstr "Géocodage incomplet"
 
 msgid "GEOCODING_NEEDS_THREE_COLS"
 msgstr "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne et son remplissage pour construire des adresses complètes."
@@ -2626,11 +2629,14 @@ msgstr "Importer des lectures de compteur Portfolio Manager"
 msgid "uploading file"
 msgstr "téléchargeant le fichier"
 
+msgid "Uploading your data"
+msgstr "Télécharger vos données"
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Téléchargement de Fichier"
 
 msgid "UPLOADING_PROGRESS"
-msgstr "Téléchargeant <strong>{dataset_filename}</strong>"
+msgstr "Importation de <strong> {dataset_filename} </strong> pour faire un cycle <strong> {cycle_name} </strong>"
 
 msgid "Use Description"
 msgstr "Description de l’emploi"
