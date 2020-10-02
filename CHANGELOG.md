@@ -1,3 +1,7 @@
+# SEED Version 2.7.2.1
+
+- Fixed [#2371]( https://github.com/SEED-platform/seed/issues/2371 ), Checking for duplicate fields is not working when only one Inventory Type is selected
+
 # SEED Version 2.7.2
 
 SEED Version 2.7.2 includes the introduction of API v3. This new API version will
