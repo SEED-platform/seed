@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
@@ -9,7 +9,12 @@ metadata:
     io.kompose.service: db-postgres
   name: db-postgres
 spec:
+  progressDeadlineSeconds: 2147483647
   replicas: 1
+  revisionHistoryLimit: 2147483647
+  selector:
+    matchLabels:
+      io.kompose.service: db-postgres
   strategy:
     type: Recreate
   template:
@@ -36,17 +41,29 @@ spec:
 #        args: ['-f', '/dev/null']
         ports:
         - containerPort: 5432
+          protocol: TCP
         resources:
           limits:
-            cpu: "300m"
+            cpu: 300m
           requests:
-            cpu: "300m"
+            cpu: 300m
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: seed-pgdata
+        - mountPath: /seed-backups/backups
+          name: seed-backups
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
       volumes:
       - name: seed-pgdata
         persistentVolumeClaim:
           claimName: seed-pgdata
+      - name: seed-backups
+        hostPath:
+          path: /etc/seedbackups
 status: {}

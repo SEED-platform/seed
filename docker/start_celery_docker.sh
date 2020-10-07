@@ -9,7 +9,7 @@ echo "Waiting for redis to start"
 /usr/local/wait-for-it.sh --strict -t 0 db-redis:6379
 
 echo "Waiting for web to start"
-/usr/local/wait-for-it.sh --strict -t 0 web:80
+/usr/local/wait-for-it.sh --strict -t 0 web-stage:80
 
 # check if the number of workers is set in the env
 if [ -z ${NUMBER_OF_WORKERS} ]; then
