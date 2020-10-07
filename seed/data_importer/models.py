@@ -669,6 +669,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     cached_mapped_columns = models.TextField(blank=True, null=True)
     cached_second_to_fifth_row = models.TextField(blank=True, null=True)
     has_header_row = models.BooleanField(default=True)
+    has_generated_headers = models.BooleanField(default=False)
     mapping_completion = models.IntegerField(blank=True, null=True)
     mapping_done = models.BooleanField(default=False)
     mapping_error_messages = models.TextField(blank=True, null=True)

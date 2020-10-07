@@ -697,7 +697,7 @@ msgid "DATA_MAPPING_AND_VALIDATION"
 msgstr "Data Mapping and Validation ({filename})"
 
 msgid "DATASET_FILENAME_UPLOADED_TO"
-msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>."
+msgstr "<strong>{dataset_filename}</strong> has been uploaded to <strong>{dataset_name}</strong>, under cycle <strong>{cycle_name}</strong>."
 
 msgid "DATASET_NAME_ALREADY_EXISTS"
 msgstr "The data set <strong>name \"{dataset_name}\" already exists</strong>. Please select a new one."
@@ -1089,6 +1089,9 @@ msgstr "Datafile fields mapped to these columns will have their corresponding va
 
 msgid "GEOCODING_INVENTORY_COMPLETE"
 msgstr "Geocoding Complete"
+
+msgid "GEOCODING_INVENTORY_INCOMPLETE"
+msgstr "Geocoding Incomplete"
 
 msgid "GEOCODING_NEEDS_THREE_COLS"
 msgstr "Note, geocoding requires at least 1 column is used and populated to construct full addresses."
@@ -1930,9 +1933,6 @@ msgstr "Projects"
 msgid "Properties"
 msgstr "Properties"
 
-msgid "Properties Column List Profiles"
-msgstr "Properties Column List Profiles"
-
 msgid "Properties List"
 msgstr "Properties List"
 
@@ -2404,9 +2404,6 @@ msgstr "Tax Lot Visibility"
 msgid "Tax Lots"
 msgstr "Tax Lots"
 
-msgid "Tax Lots Column List Profiles"
-msgstr "Tax Lots Column List Profiles"
-
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
 
@@ -2605,11 +2602,14 @@ msgstr "Upload Portfolio Manager Meter Readings"
 msgid "uploading file"
 msgstr "uploading file"
 
+msgid "Uploading your data"
+msgstr "Uploading your data"
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Uploading File"
 
 msgid "UPLOADING_PROGRESS"
-msgstr "Uploading <strong>{dataset_filename}</strong>"
+msgstr "Uploading <strong>{dataset_filename}</strong> to cycle <strong>{cycle_name}</strong>"
 
 msgid "Use Description"
 msgstr "Use Description"

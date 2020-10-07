@@ -71,7 +71,7 @@
                         </tr>
                     </thead>
                     <tbody ng-repeat="field in sortedRuleGroups()">
-                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled }">
+                        <tr ng-repeat="rule in ruleGroups[inventory_type][field]" ng-class="{ 'warning' : rule.new, 'disabled' : !rule.enabled, 'danger' : duplicate_rule_keys.includes(rule.$$hashKey) }">
                             <td class="check is_aligned_center" ng-click="rules_changed(rule); rule.enabled = !rule.enabled">
                                 <input type="checkbox" ng-model="rule.enabled" class="no-click">
                             </td>
