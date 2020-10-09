@@ -1,4 +1,8 @@
-# SEED Version 2.7.2.1
+# SEED Version 2.7.4
+
+This is a patch to update the deployment scripts for SEED. These changes did not result in any closed tickets.
+
+# SEED Version 2.7.3
 
 - Fixed [#2371]( https://github.com/SEED-platform/seed/issues/2371 ), Checking for duplicate fields is not working when only one Inventory Type is selected
 
