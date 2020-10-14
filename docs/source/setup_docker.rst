@@ -10,18 +10,18 @@ install Docker.
 Docker Native (Ubuntu)
 ----------------------
 
-Follow instructions [here](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/).
+Follow instructions `here <https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/>`_.
 
-* [Install Docker Compose](https://docs.docker.com/compose/install/)
+* `Install Docker Compose <https://docs.docker.com/compose/install/>`_
 
 
 Docker Native (Windows/OSX)
 ---------------------------
 
-Following instructions (for Mac)[https://docs.docker.com/docker-for-mac/install/] or
-(for Windows)[https://docs.docker.com/docker-for-windows/install/].
+Following instructions `for Mac <https://docs.docker.com/docker-for-mac/install/>`_ or
+`for Windows <https://docs.docker.com/docker-for-windows/install/>`_.
 
-* [Install Docker Compose](https://docs.docker.com/compose/install/)
+* `Install Docker Compose <https://docs.docker.com/compose/install/>`_
 
 
 Building and Configuring Containers
