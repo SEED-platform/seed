@@ -1052,7 +1052,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
             parser = reader.MCMParser(import_file.local_file)
         except Exception as e:
             _log.debug(f'Error reading XLSX file: {str(e)}')
-            return progress_data.finish_with_error(f'Failed to parse XLSX file. Please verify your headers are non-numeric and your file is valid.')
+            return progress_data.finish_with_error('Failed to parse XLSX file. Please review your import file - all headers should be present and non-numeric.')
 
     import_file.has_generated_headers = False
     if hasattr(parser, 'has_generated_headers'):
