@@ -1,0 +1,41 @@
+# Docker-compose setup for local development
+#
+# Configurable Values:
+#   SEED_DB_VOLUME - name of docker volume to mount for Postgres
+#   SEED_MEDIA_VOLUME - name of docker volume to mount for the media directory
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+version: '3.4'
+services:
+  db-postgres:
+    volumes:
+      - ref_seed_pgdata:/var/lib/postgresql/data
+  web:
+    image: seedplatform/seed:dev
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    command: python3 manage.py runserver --settings=config.settings.docker_dev 0.0.0.0:80
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
+    volumes:
+      - ref_seed_media:/seed/media
+      - ./:/seed/
+  web-celery:
+    image: seedplatform/seed:dev
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
+    volumes:
+      - ref_seed_media:/seed/media
+      - ./seed:/seed/seed
+volumes:
+  ref_seed_pgdata:
+    external: true
+    name: ${SEED_DB_VOLUME:-seed_pgdata}
+  ref_seed_media:
+    external: true
+    name: ${SEED_MEDIA_VOLUME:-seed_media}
