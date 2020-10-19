@@ -138,19 +138,18 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
             return self.get_paginated_response(serializer.data)
 
         results = list(queryset)
-        results.append({
-            "id": None,
-            "name": "ComStock",
-            "profile_location": 0,
-            "inventory_type": 0
-        })
-
-        serializer = self.get_serializer(results, many=True)
+        base_profiles = self.get_serializer(results, many=True).data
 
         # Add ComStock columns
-        serializer.data[len(serializer.data) - 1]['columns'] = self.list_comstock_columns(org_id)
+        base_profiles.append({
+            "id": None,
+            "name": "ComStock",
+            "profile_location": profile_location,
+            "inventory_type": inventory_type,
+            "columns": self.list_comstock_columns(org_id)
+        })
 
-        return Response(serializer.data)
+        return Response(base_profiles)
 
     @staticmethod
     def list_comstock_columns(org_id):

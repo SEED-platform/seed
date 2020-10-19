@@ -1933,9 +1933,6 @@ msgstr "Projects"
 msgid "Properties"
 msgstr "Properties"
 
-msgid "Properties Column List Profiles"
-msgstr "Properties Column List Profiles"
-
 msgid "Properties List"
 msgstr "Properties List"
 
@@ -2406,9 +2403,6 @@ msgstr "Tax Lot Visibility"
 
 msgid "Tax Lots"
 msgstr "Tax Lots"
-
-msgid "Tax Lots Column List Profiles"
-msgstr "Tax Lots Column List Profiles"
 
 msgid "Tax Lots List"
 msgstr "Tax Lots List"

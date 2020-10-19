@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   annotations:
@@ -6,10 +6,15 @@ metadata:
     kompose.version: 1.20.0 ()
   creationTimestamp: null
   labels:
-    io.kompose.service: web-stage
-  name: web-stage
+    io.kompose.service: web
+  name: web
 spec:
+  progressDeadlineSeconds: 2147483647
   replicas: 1
+  revisionHistoryLimit: 2147483647
+  selector:
+    matchLabels:
+      io.kompose.service: web
   strategy:
     type: Recreate
   template:
@@ -19,10 +24,20 @@ spec:
         kompose.version: 1.20.0 ()
       creationTimestamp: null
       labels:
-        io.kompose.service: web-stage
+        io.kompose.service: web
     spec:
       containers:
       - env:
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIAJOAFWCAB5FZA5FBA
+        - name: AWS_SECRET_ACCESS_KEY
+          value: <secret_access_key>
+        - name: AWS_SES_REGION_NAME
+          value: us-west-2
+        - name: AWS_SES_REGION_ENDPOINT
+          value: email.us-west-2.amazonaws.com
+        - name: SERVER_EMAIL
+          value: info@seed-platform.org
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings.docker
         - name: POSTGRES_DB
@@ -34,23 +49,30 @@ spec:
         - name: POSTGRES_USER
           value: seeduser
         - name: SECRET_KEY
-          value: <secret> #To be implemented with crypto secrets
+          value: <secret>
         - name: SEED_ADMIN_ORG
           value: default
         - name: SEED_ADMIN_PASSWORD
           value: super-secret-password
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
-        image: seedplatform/seed:test
+        image: seedplatform/seed:develop
         imagePullPolicy: Always
-        name: web-stage
+        name: web
         ports:
         - containerPort: 80
+          protocol: TCP
         resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
         volumeMounts:
         - mountPath: /seed/media
           name: seed-media
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
       volumes:
       - name: seed-media
         persistentVolumeClaim:

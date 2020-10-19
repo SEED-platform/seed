@@ -1,0 +1,21 @@
+<div class="modal-header" ng-switch="state">
+    <h4 class="modal-title" ng-switch-default>Delete Column '{$ column_name $}'</h4>
+    <h4 class="modal-title" ng-switch-when="running">Deleting Column '{$ column_name $}'</h4>
+    <h4 class="modal-title" ng-switch-when="done" translate>Column Deleted</h4>
+</div>
+<div class="modal-body row" ng-switch="state">
+    <div class="col-sm-12">
+        <div ng-switch-default>
+            This will delete the extra_data column '{$ column_name $}' and all associated data. Are you sure you want to continue?
+        </div>
+        <div ng-switch-when="running">
+            <uib-progressbar class="progress-striped active" animate="false" value="100" type="success"></uib-progressbar>
+        </div>
+        <div ng-switch-when="done">{$ result $}</div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="delete()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Delete</button>
+    <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
+</div>
