@@ -81,6 +81,10 @@ Build
 Running the Server
 ^^^^^^^^^^^^^^^^^^
 
+NOTE: the server config is sourced from config.settings.docker_dev, which will include
+your local_untracked.py if it exists. If you have a local_untracked.py, make sure it doesn't
+overwrite the database or celery configuration!
+
 .. code-block:: bash
 
     docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
