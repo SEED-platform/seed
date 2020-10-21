@@ -21,7 +21,10 @@ COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
 RUN pip uninstall -y enum34
 RUN pip install -r requirements/local.txt
+# for remote debugging
 RUN pip install remote-pdb
+# for live reloading celery
+RUN pip install watchdog[watchmedo]
 
 
 ### Copy over the remaining part of the SEED application and some helpers

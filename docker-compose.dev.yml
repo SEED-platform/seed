@@ -27,6 +27,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
+    command: watchmedo auto-restart --directory=/seed/seed/ --pattern=*.py --recursive -- /seed/docker/start_celery_docker.sh
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
     volumes:
