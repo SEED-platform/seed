@@ -46,6 +46,7 @@ lin/migrations/disabled
 htmlcov/
 src/
 node_modules/
+npm-shrinkwrap.json
 
 # JetBrains tends to suggest a venv directory in the project root for virtual environments
 venv/
