@@ -5,11 +5,18 @@
 File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
+import os
+import sys
 
 from config.settings.common import *  # noqa
 
+from celery.utils import LOG_LEVELS
+
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD']
+
+# determine if running tests
+SEED_TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 for loc in ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -39,31 +46,41 @@ DATABASES = {
     }
 }
 
-# Redis / Celery config
-CACHES = {
-    'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': "db-redis:6379",
-        'OPTIONS': {
-            'DB': 1
-        },
-        'TIMEOUT': 300,
-    }
-}
-if 'REDIS_PASSWORD' in os.environ:
-    CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-    CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
-else:
-    CELERY_BROKER_URL = 'redis://{}/{}'.format(
-        CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
-    )
+if SEED_TESTING:
+    CELERY_BROKER_BACKEND = 'memory'
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+    # this celery log level is currently not overridden.
+    CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
-CELERY_BROKER_TRANSPORT = 'redis'
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
+else:
+    # Redis / Celery config
+    CACHES = {
+        'default': {
+            'BACKEND': 'redis_cache.cache.RedisCache',
+            'LOCATION': "db-redis:6379",
+            'OPTIONS': {
+                'DB': 1
+            },
+            'TIMEOUT': 300,
+        }
+    }
+    if 'REDIS_PASSWORD' in os.environ:
+        CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
+        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
+            CACHES['default']['OPTIONS']['PASSWORD'],
+            CACHES['default']['LOCATION'],
+            CACHES['default']['OPTIONS']['DB']
+        )
+    else:
+        CELERY_BROKER_URL = 'redis://{}/{}'.format(
+            CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
+        )
+
+    CELERY_BROKER_TRANSPORT = 'redis'
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py
 CELERY_TASK_QUEUES = (
