@@ -85,4 +85,3 @@ docker-compose.*.yml
 
 # generated files
 /auto*.csv
-
