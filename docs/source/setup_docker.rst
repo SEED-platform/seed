@@ -99,10 +99,10 @@ The development docker-compose file has some configurable parameters for specify
 - SEED_DB_VOLUME: the name of the docker volume to mount for postgres
 - SEED_MEDIA_VOLUME: the name of the docker volume to mount for the seed media folder
 
-Docker will use environment variables from the shell of from a .env file to set these values.
+Docker will use environment variables from the shell or from a .env file to set these values.
 
 This is useful if you want to switch between different databases for testing.
-For example, if you want to create a separate volume for storing a broduction backup, you could do the following
+For example, if you want to create a separate volume for storing a production backup, you could do the following
 
 .. code-block:: bash
 
@@ -119,7 +119,7 @@ While the containers are running (ie after running the docker-compose up command
 
 .. code-block:: bash
 
-    docker exec -it seed_web_1 python manage.py test
+    docker exec -it seed_web_1 python manage.py test --config.settings.docker_dev
 
 Debugging
 ^^^^^^^^^
