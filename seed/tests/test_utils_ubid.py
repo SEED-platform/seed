@@ -98,8 +98,8 @@ class UbidUtilMethods(TestCase):
         )
         self.assertEqual(property_bounding_box_wkt, bounding_box_wkt(refreshed_property))
         self.assertEqual(property_centroid_wkt, centroid_wkt(refreshed_property))
-        self.assertEqual(refreshed_property.latitude, 41.7451)
-        self.assertEqual(refreshed_property.longitude, -87.560328125)
+        self.assertAlmostEqual(refreshed_property.latitude, 41.7451)
+        self.assertAlmostEqual(refreshed_property.longitude, -87.560328125)
 
     def test_decode_ulids_is_successful_when_valid_ULID_provided(self):
         taxlot_details = self.taxlot_state_factory.get_details()
@@ -128,8 +128,8 @@ class UbidUtilMethods(TestCase):
         )
         self.assertEqual(taxlot_bounding_box_wkt, bounding_box_wkt(refreshed_taxlot))
         self.assertEqual(taxlot_centroid_wkt, centroid_wkt(refreshed_taxlot))
-        self.assertEqual(refreshed_taxlot.latitude, 41.7451)
-        self.assertEqual(refreshed_taxlot.longitude, -87.560328125)
+        self.assertAlmostEqual(refreshed_taxlot.latitude, 41.7451)
+        self.assertAlmostEqual(refreshed_taxlot.longitude, -87.560328125)
 
     def test_decode_ubids_does_nothing_if_no_UBID_provided(self):
         property_details = self.property_state_factory.get_details()
