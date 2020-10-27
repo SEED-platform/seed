@@ -1,0 +1,37 @@
+# Start with 2.6.0. note that the source code will be removed and re-copied to this container. The
+# version of SEED here is used to load in the core system packages and dependencies.
+FROM seedplatform/seed:2.6.0
+
+## Remove this line after updating the base image to support the new dependency versions. The line ensures that the
+# code is only this branch, not any remnants from the tagged container.
+RUN rm -rf /seed/
+
+### Install JavaScript requirements - do this first because they take awhile
+### and the dependencies will probably change slower than python packages.
+### README.md stops the no readme warning
+COPY ./package.json /seed/package.json
+COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./README.md /seed/README.md
+# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
+RUN npm install --unsafe-perm
+
+### Install python requirements
+WORKDIR /seed
+COPY ./requirements.txt /seed/requirements.txt
+COPY ./requirements/*.txt /seed/requirements/
+RUN pip uninstall -y enum34
+RUN pip install -r requirements/local.txt
+# for remote debugging
+RUN pip install remote-pdb
+# for live reloading celery
+RUN pip install watchdog[watchmedo]
+
+
+### Copy over the remaining part of the SEED application and some helpers
+WORKDIR /seed
+COPY . /seed/
+COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
+
+EXPOSE 80
+
+CMD ["python3", "manage.py", "runserver", "--settings=config.settings.docker_dev", "0.0.0.0:80"]
