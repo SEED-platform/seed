@@ -42,7 +42,7 @@
   ],
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS || (printf 'Also see SEEDs resources on commit messages:\nhttps://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst#git-naming-conventions\n\n'; false)"
     }
   }
 }
