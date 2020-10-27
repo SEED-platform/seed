@@ -1,5 +1,6 @@
 .DS_Store
 .cache
+.env
 .idea
 .project
 .pydevproject
@@ -80,8 +81,8 @@ lokalise.cfg
 docker-compose.*.yml
 !docker-compose.yml
 !docker-compose.local.yml
-!docker-compose.deploy.yml
 !docker-compose.build.yml
+!docker-compose.dev.yml
 
 # generated files
 /auto*.csv
