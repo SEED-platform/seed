@@ -24,6 +24,8 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
         params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
         return response.data;
+      }).catch(function(e) {
+        return e.data;
       });
     };
 

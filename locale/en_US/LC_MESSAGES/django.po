@@ -2596,6 +2596,10 @@ msgstr "Upload File"
 msgid "UPLOAD_GB_DATA_BUTTON"
 msgstr "Upload GreenButton Data"
 
+#. Upload file incomplete
+msgid "UPLOAD_INCOMPLETE_TITLE"
+msgstr "Upload Incomplete"
+
 msgid "UPLOAD_PM_READINGS_MODAL_TITLE"
 msgstr "Upload Portfolio Manager Meter Readings"
 
