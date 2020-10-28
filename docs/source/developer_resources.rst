@@ -346,7 +346,7 @@ Commit messages should follow the format of
 
 .. code-block:: console
 
-    <type>[( optional scope )]: <description>
+    <type>[( optional scope )]: <subject>
 
     [optional body]
 
@@ -361,11 +361,11 @@ Commit messages should follow the format of
 
 :code:`scope` is optional for commit messages, and should indicate the general area of the application affected.
 
-:code:`description` is a short description of the changes in imperative present tense (such as “add function to _”, not “added function”)
+:code:`subject` is a short description of the changes in imperative present tense (such as “add function to _”, not “added function”)
 
 Branches should be named as :code:`[<optional issue number> -]<type>/<scope>`, where :code:`scope` is the general scope affected, or if creating a feature branch, a shortened name of the feature being added. If :code:`scope` is more than one word, it should be separated by dashes.
 
-Pull Request titles should follow the format :code:`[# optional issue number] <type>[(optional scope)]: <description>`, following the same conventions as commit messages.
+Pull Request titles should follow the format :code:`[# optional issue number] <type>[(optional scope)]: <subject>`, following the same conventions as commit messages.
 
 Commit examples:
 
