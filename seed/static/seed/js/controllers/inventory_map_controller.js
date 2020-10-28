@@ -71,7 +71,7 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.geocoded_data = _.filter($scope.data, 'long_lat');
         $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
 
-        // buildings with UBID bounding boxesand gecoded data
+        // buildings with UBID bounding boxes and geocoded data
         var geocodedRelated = function(data, field) {
           var related = [];
           _.each(data, function(record) {

@@ -2,6 +2,7 @@
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'verify'" translate>GEOCODE_INVENTORY_BASE_TITLE</h4>
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'geocoding'" translate>GEOCODING_NOW</h4>
     <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'result'" translate>GEOCODING_INVENTORY_COMPLETE</h4>
+    <h4 class="modal-title" id="exportModalLabel" ng-show="geocode_state === 'fail'" translate>GEOCODING_INVENTORY_INCOMPLETE</h4>
 </div>
 <div class="modal-body">
 
@@ -85,10 +86,15 @@
             </div>
         </div>
     </div>
+    <div ng-show="geocode_state === 'fail'">
+        <div class="alert alert-danger"  ng-if="error_message">
+            <p>{$ error_message | translate $}</p>
+        </div>
+    </div>
 
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="geocode_buildings()" ng-show="geocode_state === 'verify' && has_api_key && has_enough_geocoding_columns" translate>Geocode</button>
     <button type="button" class="btn btn-default" ng-show="geocode_state == 'verify'" ng-click="cancel()" translate>Cancel</button>
-    <button type="button" class="btn btn-default" ng-show="geocode_state === 'result'" ng-click="close()" translate>Close</button>
+    <button type="button" class="btn btn-default" ng-show="geocode_state === 'result' || geocode_state === 'fail'" ng-click="close()" translate>Close</button>
 </div>

@@ -8,7 +8,7 @@
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
     <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
     <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
-    <h4 class="modal-title" ng-switch-when="10">{$:: 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
+    <h4 class="modal-title" ng-switch-when="10">{$:: step_10_mapquest_api_error ? 'UPLOAD_INCOMPLETE_TITLE' : 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
@@ -208,7 +208,7 @@
     <!-- Step 10: No matches -->
     <div class="data_upload_steps" ng-switch-when="10">
         <div class="row">
-            <div class="alert alert-success">
+            <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
                     <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
@@ -403,11 +403,14 @@
         </div>
     </div>
     <div ng-switch-when="10">
-        <div class="row text-center">
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
         </div>
-        <div class="row text-center">
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
             <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+        </div>
+        <div class="row text-center" ng-if="step_10_mapquest_api_error">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reset_mapquest_api_key()" translate>Update MapQuest API key</button>
         </div>
     </div>
     <div ng-switch-when="11">

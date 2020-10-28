@@ -116,7 +116,7 @@ the seeduser is a SUPERUSER.
     createdb `whoami`
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER ROLE seeduser SUPERUSER;
+    psql -c 'ALTER ROLE seeduser SUPERUSER;'
 
 
 
