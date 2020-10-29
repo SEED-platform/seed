@@ -9,7 +9,7 @@
 #   SEED_ADMIN_ORG
 #   SECRET_KEY
 
-version: '3'
+version: '3.4'
 services:
   db-postgres:
     image: 127.0.0.1:5000/postgres-seed
