@@ -1,7 +1,7 @@
 ## Deploy on Kubernetes
 ### Note: this deployment requires an existing Amazon EKS cluster
 
-Download and configure the AWS CLI with instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+Download and configure the AWS CLI with instructions [here](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 ```
 aws configure
 AWS Access Key ID [None]: <insert key> (from account)
@@ -11,20 +11,30 @@ Default output format [None]: json
 ```
 
 Download Kubectl:
-```
-brew install kubectl
-```
+
+- [Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows)
+- Mac
+    ```
+    brew install kubectl
+    ```
 
 Download Helm:
-```
-brew install helm
-```
+- [Windows](https://github.com/helm/helm/releases)
+- Mac
+    ```
+    brew install helm
+    ```
 
 ### For a new deployment
 From the charts directory:
 ```
 helm install --generate-name persistentvolumes
 helm install --generate-name seed
+```
+
+Configure kubeconfig
+```
+aws eks --region us-east-1 update-kubeconfig --name seed
 ```
 
 View the deployments and services
