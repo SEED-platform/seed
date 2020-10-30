@@ -21,7 +21,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
     volumes:
       - ref_seed_media:/seed/media
-      - ./:/seed/
+      - ./seed/:/seed/seed/
   web-celery:
     image: seedplatform/seed:dev
     build:
