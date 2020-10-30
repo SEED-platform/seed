@@ -1115,6 +1115,12 @@ msgstr "Getting Started Guide"
 msgid "GJ/m²/year"
 msgstr "GJ/m²/year"
 
+msgid "Go to Detail Page"
+msgstr "Go to Detail Page"
+
+msgid "Go to Notes"
+msgstr "Go to Notes"
+
 #: seed/models/models.py:183
 msgid "gray"
 msgstr "gray"
@@ -1504,6 +1510,9 @@ msgstr "Merged properties between existing records"
 
 msgid "Merged properties within import file"
 msgstr "Merged properties within import file"
+
+msgid "Merged Records"
+msgstr "Merged Records"
 
 msgid "Merged tax lots"
 msgstr "Merged tax lots"
@@ -2448,9 +2457,7 @@ msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
-msgstr ""
-"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
-"                            system will auto-match your records."
+msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our\n                            system will auto-match your records."
 
 msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
 msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
