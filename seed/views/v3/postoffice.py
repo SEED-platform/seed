@@ -7,6 +7,9 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 
 """
+from django.conf import settings
+from django.forms.models import model_to_dict
+
 from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 from seed.models import PropertyState, TaxLotState
@@ -36,7 +39,6 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
 
     def get_queryset(self):
         return PostOfficeEmail.objects.all()
-        
 
     def perform_create(self, serializer):
         name = self.request.data.get('name')
@@ -46,41 +48,47 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             State = PropertyState
         else :
             State = TaxLotState
-        # QuerySet is returned when calling values_list() function, so we flatten it out into a list 
-        email_list = list(State.objects.filter(id__in=inventory_id).values_list('owner_email', flat=True))
+        properties = State.objects.filter(id__in=inventory_id)
+
         email_sender = 'from@example.com'
-        ptr = mail.send(
-                email_list,
-                email_sender,
-                template = PostOfficeEmailTemplate.objects.get(name=name),
-                backend = 'post_office_backend')
-        org = self.get_organization(self.request)
-        user = self.request.user
+        for prop in properties: #loop to include details in template
+            context = {}
+            for key, value in model_to_dict(prop).items():
+                context[key] = value;
+            ptr = mail.send(
+                    prop.owner_email,
+                    email_sender,
+                    template = PostOfficeEmailTemplate.objects.get(name=name),
+                    context = context,
+                    backend = 'post_office_backend')
 
-        # Assigning all the fields inside of postoffice to seed_postoffice
-        email_data = {
-            'email_ptr_id': ptr.id, 
-            'from_email': ptr.from_email,
-            'to': ptr.to, 
-            'cc': ptr.cc, 
-            'bcc': ptr.bcc, 
-            'subject': ptr.subject, 
-            'message': ptr.message, 
-            'html_message': ptr.message,
-            'status': ptr.status, 
-            'priority': ptr.priority, 
-            'created': ptr.created, 
-            'last_updated': ptr.last_updated,
-            'scheduled_time': ptr.scheduled_time,
-            'headers': ptr.headers,
-            'context': ptr.context,  
-            'template_id': ptr.template_id,
-            'backend_alias': ptr.backend_alias,
-            'number_of_retries': ptr.number_of_retries,  
-            'expires_at': ptr.expires_at
-        }
+            org = self.get_organization(self.request)
+            user = self.request.user
 
-        serializer.save(**email_data, organization_id=org, user=user)
+            # Assigning all the fields inside of postoffice to seed_postoffice
+            email_data = {
+                'email_ptr_id': ptr.id,
+                'from_email': settings.SERVER_EMAIL,
+                'to': ptr.to,
+                'cc': ptr.cc,
+                'bcc': ptr.bcc,
+                'subject': ptr.subject,
+                'message': ptr.message,
+                'html_message': ptr.message,
+                'status': ptr.status,
+                'priority': ptr.priority,
+                'created': ptr.created,
+                'last_updated': ptr.last_updated,
+                'scheduled_time': ptr.scheduled_time,
+                'headers': ptr.headers,
+                'context': ptr.context,
+                'template_id': ptr.template_id,
+                'backend_alias': ptr.backend_alias,
+                'number_of_retries': ptr.number_of_retries,
+                'expires_at': ptr.expires_at
+            }
+
+            serializer.save(**email_data, organization_id=org, user=user)
         
 
 

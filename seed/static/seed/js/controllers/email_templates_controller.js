@@ -6,6 +6,7 @@
 angular.module('BE.seed.controller.email_templates', [])
     .controller('email_templates_controller', [
         '$scope',
+		'$filter',
         'organization_payload',
         'postoffice_service',
         '$uibModal',
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.email_templates', [])
 
         function (
             $scope,
+			$filter,
             organization_payload,
             postoffice_service,
             $uibModal,
@@ -34,14 +36,15 @@ angular.module('BE.seed.controller.email_templates', [])
                 $scope.available_templates = templates;
             });
 
-            $scope.saveTemplate = function (newSubject, newContent, newHtmlContent) {
+            $scope.saveTemplate = function () {
                 var id = $scope.dropdown_selected_template.id;
-                    var template = _.omit($scope.dropdown_selected_template, 'id');
-                    template.subject = newSubject;
-                    template.content = newContent;
-                    template.html_content = newHtmlContent;
-                    postoffice_service.update_template(id, template);
-                    Notification.primary("Template Saved")
+                var template = _.omit($scope.dropdown_selected_template, 'id');
+                template.subject = $scope.dropdown_selected_template.subject;
+                template.content = $scope.dropdown_selected_template.content;
+                template.html_content = $scope.dropdown_selected_template.html_content;
+                template.content = $filter('htmlToPlainText')(template.html_content);
+                postoffice_service.update_template(id, template);
+                Notification.primary("Template Saved")
             };
 
             $scope.renameTemplate = function () {

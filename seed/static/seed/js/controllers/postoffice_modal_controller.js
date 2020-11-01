@@ -31,7 +31,10 @@ angular.module('BE.seed.controller.postoffice_modal', [])
     // Method for passing selected template name, state ids, and inventory type into postoffice_service's 'send_templated_email()' 
     $scope.send_templated_email = function (template_name){
       var inventory_id = property_states.length > 0 ? property_states : taxlot_states;
-      postoffice_service.send_templated_email(template_name, inventory_id, inventory_type);
+      postoffice_service.send_templated_email(
+         template_name, inventory_id, inventory_type).then(function(result) {
+            $uibModalInstance.close(result);
+         });
     }
     }]);
 

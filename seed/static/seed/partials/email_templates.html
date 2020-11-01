@@ -32,7 +32,7 @@
                 ng-disabled="!available_templates.length"
                 ng-options="template.name for template in available_templates"></select>
 
-            <button class="btn btn-success" type="button" ng-click="saveTemplate(dropdown_selected_template.subject, dropdown_selected_template.content, dropdown_selected_template.html_content)" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+            <button class="btn btn-success" type="button" ng-click="saveTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Save">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
             </button>
             <button class="btn btn-info" type="button" ng-click="renameTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
@@ -52,7 +52,7 @@
         <h3 translate>Subject</h3>
         <form class="form-horizontal" role="form">
             <div class="form-group">
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                     <input type="text" class="form-control"
                         ng-model="dropdown_selected_template.subject">
                 </div>
@@ -65,27 +65,9 @@
         <h3 translate>Content</h3>
         <form class="form-horizontal" role="form">
             <div class="form-group">
-                <div class="col-sm-4">
-                    <textarea type="text" class="form-control"
-                        ng-model="dropdown_selected_template.content">
-                    </textarea> 
+                <ng-wig class="col-sm-8" ng-model="dropdown_selected_template.html_content"></ng-wig>
                 </div>
             </div>
         </form>
     </div>
 </div>
-<div class="section_content_container">
-    <div class="section_content with_padding">
-        <h3 translate>HTML Content</h3>
-        <form class="form-horizontal" role="form">
-            <div class="form-group">
-                <div class="col-sm-4">
-                    <textarea type="text" class="form-control"
-                        ng-model="dropdown_selected_template.html_content">
-                    </textarea> 
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-

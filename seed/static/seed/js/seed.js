@@ -31,7 +31,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'xeditable',
   angularDragula(angular),
   'pascalprecht.translate',
-  'ngSanitize'
+  'ngSanitize',
+  'ngWig',
 ]);
 angular.module('BE.seed.controllers', [
   'BE.docs.controller.faq',
@@ -107,12 +108,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
   'BE.seed.controller.update_item_labels_modal',
-  
+
 ]);
 angular.module('BE.seed.filters', [
   'district',
   'fromNow',
   'getAnalysisRunAuthor',
+  'htmlToPlainText',
   'ignoremap',
   'startFrom',
   'stripImportPrefix',
