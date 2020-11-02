@@ -12,22 +12,26 @@
 # Then, assuming msgfmt is installed, run the `msgfmt` command
 # with the -o option referencing each of these django.po files.
 
+if [[ ! -f lokalise.yml ]]; then
+  echo "Missing lokalise.yml. Copy from lokalise.yml.example"
+  exit 1
+fi
+
 tmp=tmp/python_locales
 dest=locale
 
 mkdir -p $tmp
 
-lokalise                \
-  --config lokalise.cfg \
-    export              \
-  --langs fr_CA,en_US   \
-  --type po             \
-  --include_comments 1  \
-  --export_sort a_z     \
-  --export_empty base   \
-  --dest $tmp
-
-unzip $tmp/SEED_Platform-locale.zip -d $tmp
+lokalise2                    \
+  --config=lokalise.yml      \
+    file download            \
+  --filter-langs=fr_CA,en_US \
+  --format=po              \
+  --include-comments=true    \
+  --export-sort=a_z          \
+  --export-empty-as=base     \
+  --unzip-to=$tmp            \
+  --original-filenames=false
 
 mv $tmp/locale/fr_CA.po $dest/fr_CA/LC_MESSAGES/django.po
 msgfmt -o $dest/fr_CA/LC_MESSAGES/django.{mo,po}

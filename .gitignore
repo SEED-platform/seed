@@ -76,6 +76,7 @@ docs/scripts/.python-version
 docs/scripts/seed_issues.csv
 
 lokalise.cfg
+lokalise.yml
 
 # Docker-based files
 docker-compose.*.yml
