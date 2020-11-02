@@ -278,6 +278,16 @@ Restoring a Database Dump
         --organization=testorg
 
 
+    # if restoring a seedv2 backup to a different deployment update the site settings for password reset emails
+    ./manage.py shell
+
+    from django.contrib.sites.models import Site
+    site = Site.objects.first()
+    site.domain = 'dev1.seed-platform.org'
+    site.name = 'SEED Dev1'
+    site.save()
+
+
 Migrating the Database
 ----------------------
 
