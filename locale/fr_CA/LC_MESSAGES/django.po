@@ -1125,6 +1125,12 @@ msgstr "Guide de Démarrage"
 msgid "GJ/m²/year"
 msgstr "GJ/m²/année"
 
+msgid "Go to Detail Page"
+msgstr "Accéder à la page Détail"
+
+msgid "Go to Notes"
+msgstr "Accéder aux Notes"
+
 #: seed/models/models.py:183
 msgid "gray"
 msgstr "gris"
@@ -1516,6 +1522,9 @@ msgstr "Propriétés fusionnées entre des enregistrements existants"
 
 msgid "Merged properties within import file"
 msgstr "Propriétés fusionnées dans le fichier d'importation"
+
+msgid "Merged Records"
+msgstr "Enregistrements Fusionnés"
 
 msgid "Merged tax lots"
 msgstr "Lots d'impôt fusionnés"
