@@ -111,6 +111,49 @@ angular.module('BE.seed.controller.column_mappings', [])
       // On load...
       analyze_chosen_inventory_types();
 
+      // change the sorting icon based on the state
+      $scope.get_sort_icon = function (which) {
+        if (which === 'seed' && $scope.column_sort == 'seed') {
+          return `glyphicon-sort-by-attributes${$scope.column_sort_direction === 'desc' ? '-alt' : ''}`;
+        }
+        if (which === 'file' && $scope.column_sort == 'file') {
+          return `glyphicon-sort-by-attributes${$scope.column_sort_direction === 'desc' ? '-alt' : ''}`;
+        }
+        return 'glyphicon-sort text-muted';
+      };
+
+      // which columns are sortable and which fields are they sorted on?
+      var sort_column_fields = {
+        'seed': 'to_field',
+        'file': 'from_field'
+      };
+
+      // sorts by a column
+      $scope.sort_by = function (column) {
+
+        // initialize column if necessary
+        if (!$scope.column_sort) $scope.column_sort = 'seed';
+
+        // determine direction
+        if (column !== $scope.column_sort) {
+          $scope.column_sort = column;
+          $scope.column_sort_direction = 'asc';
+        } else {
+          $scope.column_sort_direction = $scope.column_sort_direction === 'asc' ? 'desc' : 'asc';
+        }
+
+        // sort mappings by the appropriate column, using lower case to fix lodash's method of alphabetical sorting
+        $scope.current_profile.mappings = _.sortBy($scope.current_profile.mappings, [ map => map[sort_column_fields[column]].toLowerCase() ]);
+
+        // reverse the sort if descending
+        if ($scope.column_sort_direction === 'desc') {
+          $scope.current_profile.mappings.reverse();
+        }
+      };
+
+      // run once to initialize sorting
+      $scope.sort_by('seed');
+
       $scope.updateSingleInventoryTypeDropdown = function () {
         analyze_chosen_inventory_types();
 
