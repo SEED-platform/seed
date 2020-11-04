@@ -17,4 +17,5 @@ jobs:
       - name: Test
         run: |
           docker ps
+          docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
           docker exec seed_web_1 python manage.py test --settings=config.settings.docker_dev
