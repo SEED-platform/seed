@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack
+        run: docker volume create --name=seed_pgdata
+        run: docker volume create --name=seed_media
         run: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       - name: Test
         run: docker exec -it seed_web_1 python manage.py test --config.settings.docker_dev
