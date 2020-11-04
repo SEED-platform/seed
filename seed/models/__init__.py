@@ -7,6 +7,7 @@
 """
 
 # Import all the models in this folder
+from .analyses import *  # noqa
 from .cycles import *  # noqa
 from .models import *  # noqa
 from .tax_lot_properties import *  # noqa
