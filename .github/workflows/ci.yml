@@ -15,4 +15,6 @@ jobs:
           docker volume create --name=seed_media
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       - name: Test
-        run: docker exec -it seed_web_1 python manage.py test --config.settings.docker_dev
+        run: |
+          docker ps
+          docker exec seed_web_1 python manage.py test --config.settings.docker_dev
