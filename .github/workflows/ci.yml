@@ -5,7 +5,7 @@ on:
   push:
 
 jobs:
-  tests:
+  django_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,3 +19,16 @@ jobs:
           docker ps
           docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
           docker exec seed_web_1 python manage.py test --settings=config.settings.docker_dev
+  code_formatting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tox_env: [flake8, docs]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install tox==2.7.0
+      - name: Run tox
+        run: tox -e ${{ matrix.tox_env }}
