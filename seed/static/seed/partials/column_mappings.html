@@ -108,9 +108,13 @@
                   <thead>
                       <tr>
                           <th><translate>Inventory Type</translate></th>
-                          <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
+                          <th class="mapping_field ellipsis-resizable" ng-click="sort_by('seed')" sd-resizable>
+                            <span><translate>SEED Header</translate><i class="glyphicon {$ get_sort_icon('seed') $} pad-left-5"></i></span>
+                          </th>
                           <th><translate>Measurement Units</translate></th>
-                          <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
+                          <th class="import_column_name ellipsis-resizable" ng-click="sort_by('file')" sd-resizable>
+                            <span><translate>Data File Header</translate><i class="glyphicon {$ get_sort_icon('file') $} pad-left-5"></i></span>
+                          </th>
                           <th style="width: 120px">
                               <button type="button" class="btn btn-danger btn-sm" ng-click="remove_all_columns()" ng-disabled="!current_profile.mappings.length" ng-hide="!profile_action_ok('remove_all_columns')" translate>Delete All Mappings</button>
                           </th>
