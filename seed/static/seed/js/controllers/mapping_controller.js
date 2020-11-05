@@ -353,6 +353,7 @@ angular.module('BE.seed.controller.mapping', [])
             col.suggestion_column_name = match.column_name;
           } else {
             col.suggestion_column_name = null;
+            col.suggestion_table_name = 'Select';
           }
         } else {
           col.suggestion_column_name = null;
@@ -416,10 +417,9 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
           var col = get_col_from_suggestion(name);
-          console.log($scope.profiles)
-          if($scope.current_profile.id !== 0){
-            col.suggestion_table_name = 'PropertyState';
-          }
+          // if($scope.current_profile.id !== 0){
+          //   col.suggestion_table_name = 'PropertyState';
+          // }
           var match;
           if (col.suggestion_table_name === 'PropertyState') {
             match = _.find($scope.mappable_property_columns, {

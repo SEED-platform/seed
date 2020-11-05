@@ -153,6 +153,7 @@
                         <tr ng-repeat="col in mappings">
                             <td style="text-align: right;" ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-type-{$:: $index $}">
                                 <select ng-model="col.suggestion_table_name" ng-change="updateInventoryTypeDropdown(); change(col)" ng-disabled="import_file.matching_done">
+                                    <option disabled value="Select" translate>Select</option>
                                     <option value="PropertyState" translate>Property</option>
                                     <option value="TaxLotState" ng-if="!mappingBuildingSync" translate>Tax Lot</option>
                                 </select>
