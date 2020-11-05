@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  django_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build the stack
+        run: |
+          docker volume create --name=seed_pgdata
+          docker volume create --name=seed_media
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+      - name: Test
+        run: |
+          docker ps
+          docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
+          docker exec seed_web_1 python manage.py test --settings=config.settings.docker_dev
+  code_formatting:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tox_env: [flake8]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install tox==2.7.0
+      - name: Run tox
+        run: tox -e ${{ matrix.tox_env }}
