@@ -851,7 +851,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         ).filter(
             property__organization_id=organization_id,
             cycle_id__in=cycles
-        )
+        ).order_by('id')
         organization = Organization.objects.get(pk=organization_id)
         results = []
         for cycle in cycles:
