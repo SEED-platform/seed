@@ -24,7 +24,8 @@ mappings_description = (
     "to_field: [string of Display Name of target Column]\n"
     "from_field: [string EXACTLY matching a header from an import file]\n"
     "from_units: [one of the following:"
-    "'ft**2' 'm**2' 'kBtu/ft**2/year' 'kWh/m**2/year' 'GJ/m**2/year' 'MJ/m**2/year' 'kBtu/m**2/year']\n"
+    "'ft&#42;&#42;2' 'm&#42;&#42;2' 'kBtu/ft&#42;&#42;2/year' 'kWh/m&#42;&#42;2/year' 'GJ/m&#42;&#42;2/year' "
+    "'MJ/m&#42;&#42;2/year' 'kBtu/m&#42;&#42;2/year']\n "
     "to_table_name: [one of the following: 'TaxLotState' 'PropertyState']"
 )
 
