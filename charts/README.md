@@ -47,7 +47,6 @@ Update the web container
 ```
 kubectl delete pod/web-<assigned-hash>
 ```
-Note: the service will restart the pod an re-pull the image
+Note: the service will restart the pod and re-pull the image
 
 Common kubectl actions can be found [here](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
-
