@@ -119,7 +119,7 @@ While the containers are running (ie after running the docker-compose up command
 
 .. code-block:: bash
 
-    docker exec -it seed_web_1 python manage.py test --config.settings.docker_dev
+    docker exec -it seed_web_1 python manage.py test --settings config.settings.docker_dev
 
 Debugging
 ^^^^^^^^^
