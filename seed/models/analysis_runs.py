@@ -12,6 +12,7 @@ from seed.models import (
 
 class AnalysisRun(models.Model):
 
+    # For summarizing multiple AnalysisRun statuses, order matters for enums
     CREATING = 10
     READY = 20
     QUEUED = 30
