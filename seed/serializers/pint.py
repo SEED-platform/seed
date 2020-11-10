@@ -6,7 +6,6 @@ that's where the display preference lives.
 """
 
 import re
-import json
 
 from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
@@ -96,8 +95,10 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         return stripped_name + ' ({})'.format(display_units)
 
     # if the default (or provided) keys don't work, try out a common alternative
-    if data_key not in column: data_key = "dataType"
-    if display_key not in column: display_key = "displayName"
+    if data_key not in column:
+        data_key = "dataType"
+    if display_key not in column:
+        display_key = "displayName"
 
     # try to update the display field based on the data type field
     try:

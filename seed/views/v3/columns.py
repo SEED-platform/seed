@@ -30,6 +30,7 @@ from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin, api_endpoint_
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
+
 @method_decorator(
     name='create',
     decorator=swagger_auto_schema_org_query_param
