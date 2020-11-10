@@ -33,6 +33,6 @@ class AnalysisRun(models.Model):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
-    property_state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
+    property_state = models.OneToOneField(PropertyState, on_delete=models.CASCADE)
     output_json = JSONField(default=dict, blank=True)
     status = models.IntegerField(choices=RUN_STATUSES)
