@@ -14,10 +14,7 @@ from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
-from seed.data_importer.tasks import \
-    geocode_buildings_task as task_geocode_buildings
-from seed.data_importer.tasks import \
-    map_additional_models as task_map_additional_models
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.data_importer.tasks import map_data
 from seed.data_importer.tasks import match_buildings as task_match_buildings
 from seed.data_importer.tasks import save_raw_data as task_save_raw
@@ -440,21 +437,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            task_geocode_buildings(import_file.pk)
-        except MapQuestAPIKeyError:
-            result = JsonResponse({
-                'status': 'error',
-                'message': 'MapQuest API key may be invalid or at its limit.'
-            }, status=status.HTTP_403_FORBIDDEN)
-            return result
-
-        # if the file is BuildingSync, don't do the merging, but instead finish
-        # creating it's associated models (scenarios, meters, etc)
-        if import_file.from_buildingsync:
-            return task_map_additional_models(pk)
-
-        return task_match_buildings(pk)
+        return geocode_and_match_buildings_task(pk)
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
