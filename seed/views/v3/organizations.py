@@ -106,6 +106,7 @@ def _dict_org(request, organizations):
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
+            'geocoding_enabled': o.geocoding_enabled,
             'display_meter_units': o.display_meter_units,
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
             'comstock_enabled': o.comstock_enabled,
@@ -509,6 +510,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         mapquest_api_key = posted_org.get('mapquest_api_key', '')
         if mapquest_api_key != org.mapquest_api_key:
             org.mapquest_api_key = mapquest_api_key
+
+        # Update geocoding_enabled option
+        geocoding_enabled = posted_org.get('geocoding_enabled', True)
+        if geocoding_enabled != org.geocoding_enabled:
+            org.geocoding_enabled = geocoding_enabled
 
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:
@@ -1293,3 +1299,14 @@ class OrganizationViewSet(viewsets.ViewSet):
             return True
         else:
             return False
+
+    @has_perm_class('requires_member')
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def geocoding_enabled(self, request, pk=None):
+        """
+        Returns the organization's geocoding_enabled setting
+        """
+        org = Organization.objects.get(id=pk)
+
+        return org.geocoding_enabled

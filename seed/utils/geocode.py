@@ -67,6 +67,10 @@ def geocode_buildings(buildings):
     if not mapquest_api_key:
         return
 
+    # Don't continue if geocoding is disabled on this org
+    if not org.geocoding_enabled:
+        return
+
     id_addresses = _id_addresses(buildings_to_geocode, org)
 
     # Don't continue if there are no addresses to geocode, indiciating an insufficient

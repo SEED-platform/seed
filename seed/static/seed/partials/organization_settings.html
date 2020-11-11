@@ -126,6 +126,19 @@
 
     <div class="section_content_container">
         <div class="section_content with_padding">
+            <h3 translate>Enable Geocoding</h3>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <input type="checkbox" class="form-control" style="width: 34px;" ng-model="org.geocoding_enabled" ng-disabled="::!auth.requires_owner">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+        <div class="section_content with_padding">
             <h3 translate>Enable ComStock Functionality</h3>
             <form class="form-horizontal" role="form">
                 <div class="form-group">
