@@ -198,3 +198,27 @@ class GeocodeViewTests(TestCase):
         true_result = self.client.get(url, post_params_true)
 
         self.assertEqual(b'true', true_result.content)
+
+    def test_geocode_enabled_endpoint(self):
+
+        # try with geocoding turned on
+        org_with_key, _, _ = create_organization(self.user)
+        org_with_key.geocoding_enabled = True
+        org_with_key.save()
+
+        url = reverse("api:v3:organizations-geocoding-enabled", args=[org_with_key.id])
+        post_params_true = {'organization_id': org_with_key.id}
+        true_result = self.client.get(url, post_params_true)
+
+        self.assertEqual(b'true', true_result.content)
+
+        # try with geocoding turned off
+        org_without_key, _, _ = create_organization(self.user)
+        org_without_key.geocoding_enabled = False
+        org_without_key.save()
+
+        url = reverse("api:v3:organizations-geocoding-enabled", args=[org_without_key.id])
+        post_params_false = {'organization_id': org_without_key.id}
+        false_result = self.client.get(url, post_params_false)
+
+        self.assertEqual(b'false', false_result.content)
