@@ -94,7 +94,7 @@ class TestCaseA(DataMappingBaseTestCase):
         # verify that the lot_number has the tax_lot information. For this case it is one-to-one
         self.assertEqual(ps.lot_number, ts.jurisdiction_tax_lot_id)
 
-        tasks.match_buildings(self.import_file.id)
+        tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         self.assertEqual(TaxLot.objects.count(), 10)
 

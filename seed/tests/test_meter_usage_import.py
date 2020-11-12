@@ -19,7 +19,7 @@ from django.utils.timezone import (
 from pytz import timezone
 
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     ASSESSED_RAW,
@@ -840,7 +840,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         import_record_2, import_file_2 = self.create_import_file(
             self.user, self.org, self.cycle
@@ -853,7 +853,7 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         import_file_2.mapping_done = True
         import_file_2.save()
-        match_buildings(import_file_2.id)
+        geocode_and_match_buildings_task(import_file_2.id)
 
         # Import the PM Meters
         filename = "example-pm-monthly-meter-usage.xlsx"

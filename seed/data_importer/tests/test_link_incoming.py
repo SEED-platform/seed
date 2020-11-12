@@ -8,7 +8,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 
 from django.db.models.aggregates import Count
 
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
@@ -80,7 +80,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_state_details['import_file_id'] = self.import_file_2.id
@@ -103,7 +103,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_state_details['import_file_id'] = self.import_file_3.id
@@ -118,7 +118,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Verify merges and links happened
         self.assertEqual(6, PropertyView.objects.count())
@@ -178,7 +178,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_state_details['import_file_id'] = self.import_file_2.id
@@ -201,7 +201,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_state_details['import_file_id'] = self.import_file_3.id
@@ -216,7 +216,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Verify merges and links happened
         self.assertEqual(6, TaxLotView.objects.count())

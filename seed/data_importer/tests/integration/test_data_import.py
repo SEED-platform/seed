@@ -308,7 +308,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         self.assertEqual(ps.count(), 2)
 
         # -- Act
-        tasks.map_additional_models(self.import_file.pk)
+        tasks.geocode_and_match_buildings_task(self.import_file.pk)
 
         # -- Assert
         ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
@@ -377,7 +377,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 1)
 
         # -- Act
-        tasks.map_additional_models(self.import_file.pk)
+        tasks.geocode_and_match_buildings_task(self.import_file.pk)
 
         # -- Assert
         ps = PropertyState.objects.filter(address_line_1='123 MAIN BLVD', import_file=self.import_file)
@@ -436,7 +436,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.assertEqual(ps.count(), 1)
 
         # -- Act
-        progress_info = tasks.map_additional_models(self.import_file.pk)
+        progress_info = tasks.geocode_and_match_buildings_task(self.import_file.pk)
 
         # -- Assert
         ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
