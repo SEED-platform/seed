@@ -85,7 +85,6 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
     ft.)', using the organization's unit preferences.
     """
 
-    # add units to the end of the field
     def format_column_name(column_name, unit_spec):
         display_units = pretty_units_from_spec(unit_spec)
         # strip the suffix; shouldn't have to do this when we've swapped over
@@ -94,13 +93,11 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + ' ({})'.format(display_units)
 
-    # if the default (or provided) keys don't work, try out a common alternative
     if data_key not in column:
         data_key = "dataType"
     if display_key not in column:
         display_key = "displayName"
 
-    # try to update the display field based on the data type field
     try:
         if column[data_key] == 'area':
             column[display_key] = format_column_name(
@@ -111,7 +108,6 @@ def add_pint_unit_suffix(organization, column, data_key="data_type", display_key
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
 
-    # all done!
     return column
 
 
