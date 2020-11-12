@@ -348,6 +348,7 @@
     "GEOCODING_INVENTORY_INCOMPLETE": "Géocodage incomplet",
     "GEOCODING_NEEDS_THREE_COLS": "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne et son remplissage pour construire des adresses complètes.",
     "GEOCODING_NOW": "Géocodage maintenant ...",
+    "Geolocating has been disabled for this organization.": "La géolocalisation a été désactivée pour cette organisation.",
     "Get a New API Key": "Obtenir une nouvelle clé d'API",
     "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.": "Commencez à utiliser SEED Platform en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du EPA Portfolio Manager.",
     "Getting Started": "Prise En Main",
