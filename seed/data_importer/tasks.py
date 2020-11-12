@@ -1177,6 +1177,10 @@ def geocode_and_match_buildings_task(file_pk):
 
 
 def geocode_buildings_task(file_pk):
+    """
+    NOTE: This is an older entrypoint into geocoding buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+    """
     async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
     result = [r for r in async_result.collect()]
 
@@ -1208,6 +1212,9 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key):
 
 def map_additional_models(file_pk):
     """
+    NOTE: This is an older entrypoint into mapping buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+
     kicks off mapping models other than PropertyState, returns progress key within the JSON response
     E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
 
@@ -1289,6 +1296,9 @@ def finish_mapping_additional_models(result, import_file_id, progress_key):
 # @cprofile()
 def match_buildings(file_pk):
     """
+    NOTE: This is an older entrypoint into matching buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+
     kicks off system matching, returns progress key within the JSON response
 
     :param file_pk: ImportFile Primary Key
