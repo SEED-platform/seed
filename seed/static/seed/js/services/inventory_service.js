@@ -503,13 +503,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_property_columns_for_org = function (org_id, only_used) {
+    inventory_service.get_property_columns_for_org = function (org_id, only_used, display_units = true) {
       if (only_used === undefined) only_used = false;
       return $http.get('/api/v3/columns/', {
         params: {
           inventory_type: 'property',
           organization_id: org_id,
-          only_used: only_used
+          only_used: only_used,
+          display_units: display_units
         }
       }).then(function (response) {
         // Remove empty columns
@@ -585,13 +586,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_taxlot_columns_for_org = function (org_id, only_used) {
+    inventory_service.get_taxlot_columns_for_org = function (org_id, only_used, display_units = true) {
       if (only_used === undefined) only_used = false;
       return $http.get('/api/v3/columns/', {
         params: {
           inventory_type: 'taxlot',
           organization_id: org_id,
-          only_used: only_used
+          only_used: only_used,
+          display_units: display_units
         }
       }).then(function (response) {
         // Remove empty columns

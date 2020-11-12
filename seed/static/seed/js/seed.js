@@ -838,9 +838,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var organization_id = $stateParams.organization_id;
 
             if ($stateParams.inventory_type === 'properties') {
-              return inventory_service.get_property_columns_for_org(organization_id);
+              return inventory_service.get_property_columns_for_org(organization_id, false, false);
             } else if ($stateParams.inventory_type === 'taxlots') {
-              return inventory_service.get_taxlot_columns_for_org(organization_id);
+              return inventory_service.get_taxlot_columns_for_org(organization_id, false, false);
             }
           }],
           columns: ['all_columns', 'naturalSort', function (all_columns, naturalSort) {
