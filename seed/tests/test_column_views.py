@@ -152,27 +152,22 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # randomly check a column
         self.assertIn(expected, data)
 
-    # tests that units get added to columns
-    def test_column_units(self):
+    def test_column_units_added(self):
 
-        # get the columns list without units
         responseWithoutUnits = self.client.get(reverse('api:v3:columns-list'), {
             'organization_id': self.org.id,
             'display_units': 'false'
         })
+        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['id'] == 61), None)
+        print(columnWithoutUnits)
+        self.assertEqual(columnWithoutUnits['display_name'], 'Source EUI Modeled')
 
-        # get an entry with EUI units
-        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['data_type'] == 'eui'), None)
-
-        # get the columns list with units
         responseWithUnits = self.client.get(reverse('api:v3:columns-list'), {
             'organization_id': self.org.id,
             'display_units': 'true'
         })
-
-        # ensure the units have been added
-        columnWithUnits = next((x for x in json.loads(responseWithUnits.content)['columns'] if x['id'] == columnWithoutUnits['id']), None)
-        self.assertTrue(columnWithoutUnits['display_name'] != columnWithUnits['display_name'])
+        columnWithUnits = next((x for x in json.loads(responseWithUnits.content)['columns'] if x['id'] == 61), None)
+        self.assertEqual(columnWithUnits['display_name'], 'Source EUI Modeled (kBtu/ft²/year)')
 
     def test_rename_column_property(self):
         column = Column.objects.filter(
