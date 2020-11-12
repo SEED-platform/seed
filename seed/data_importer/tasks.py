@@ -1168,7 +1168,8 @@ def geocode_and_match_buildings_task(file_pk):
             body=finish_matching.s(file_pk, progress_data.key),
             interval=15)
 
-    progress_data.total = post_geocode_tasks_count
+    geocoding_tasks_count = 1
+    progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
     progress_data.save()
     celery_chain(_geocode_properties_or_tax_lots.s(file_pk, progress_data.key), post_geocode_tasks)()
 
@@ -1185,6 +1186,7 @@ def geocode_buildings_task(file_pk):
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
+    progress_data.step('Geocoding')
     property_state_qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
     if property_state_qs:
         decode_unique_ids(property_state_qs)
