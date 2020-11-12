@@ -1109,6 +1109,9 @@ msgstr "Remarque: le géocodage nécessite l'utilisation d'au moins une colonne 
 msgid "GEOCODING_NOW"
 msgstr "Géocodage maintenant ..."
 
+msgid "Geolocating has been disabled for this organization."
+msgstr "La géolocalisation a été désactivée pour cette organisation."
+
 msgid "Get a New API Key"
 msgstr "Obtenir une nouvelle clé d'API"
 

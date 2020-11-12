@@ -43,6 +43,15 @@ angular.module('BE.seed.service.geocode', [])
         });
       };
 
+      geocode_factory.check_org_has_geocoding_enabled = function (org_id) {
+        var params = {organization_id: org_id};
+        return $http.get('/api/v3/organizations/' + org_id + '/geocoding_enabled/', {
+          params: params
+        }).then(function (response) {
+          return response.data;
+        });
+      };
+
       return geocode_factory;
     }
   ]);
