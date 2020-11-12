@@ -16,7 +16,6 @@ from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.data_importer.tasks import map_data
-from seed.data_importer.tasks import match_buildings as task_match_buildings
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import \
     validate_use_cases as task_validate_use_cases
@@ -37,7 +36,6 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
-from seed.utils.geocode import MapQuestAPIKeyError
 
 _log = logging.getLogger(__name__)
 
@@ -428,7 +426,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         org_id = request.query_params.get('organization_id', None)
 
         try:
-            import_file = ImportFile.objects.get(
+            ImportFile.objects.get(
                 pk=pk,
                 import_record__super_organization_id=org_id
             )
