@@ -158,15 +158,14 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'organization_id': self.org.id,
             'display_units': 'false'
         })
-        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['id'] == 61), None)
-        print(columnWithoutUnits)
+        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['display_name'] == 'Source EUI Modeled'), None)
         self.assertEqual(columnWithoutUnits['display_name'], 'Source EUI Modeled')
 
         responseWithUnits = self.client.get(reverse('api:v3:columns-list'), {
             'organization_id': self.org.id,
             'display_units': 'true'
         })
-        columnWithUnits = next((x for x in json.loads(responseWithUnits.content)['columns'] if x['id'] == 61), None)
+        columnWithUnits = next((x for x in json.loads(responseWithUnits.content)['columns'] if x['id'] == columnWithoutUnits['id']), None)
         self.assertEqual(columnWithUnits['display_name'], 'Source EUI Modeled (kBtu/ft²/year)')
 
     def test_rename_column_property(self):
