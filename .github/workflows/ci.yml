@@ -105,6 +105,9 @@ jobs:
         name: debug docker build
         run: docker images
       -
+        name: Build Docker dev image
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --file Dockerfile-dev .
+      -
         name: Start the stack
         run: |
           docker volume create --name=seed_pgdata
