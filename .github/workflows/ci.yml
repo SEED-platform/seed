@@ -78,12 +78,6 @@ jobs:
       -
         uses: actions/checkout@v2
       -
-        name: Install deps
-        run: |
-          npm install
-          sudo apt-get update
-          sudo apt-get install -y xvfb
-      -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       -
@@ -94,6 +88,15 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+      -
+        name: Build Docker dev image
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
+      -
+        name: Install deps
+        run: |
+          npm install
+          sudo apt-get update
+          sudo apt-get install -y xvfb
       # -
       #   name: Build Docker dev image
       #   uses: docker/build-push-action@v2
@@ -103,9 +106,6 @@ jobs:
       #     tags: seedplatform/seed:dev
       #     cache-from: type=local,src=/tmp/.buildx-cache
       #     cache-to: type=local,dest=/tmp/.buildx-cache
-      -
-        name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
       -
         name: debug docker build
         run: docker images
@@ -117,12 +117,15 @@ jobs:
           COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       -
         name: Test
+        env:
+          DISPLAY: ":99"
         run: |
           docker ps
           docker exec seed_web_1 ./manage.py migrate
           docker exec seed_web_1 ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web_1 /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false --versions.chrome 2.37
+          Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
   formatting:
     runs-on: ubuntu-latest
