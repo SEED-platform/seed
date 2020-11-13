@@ -158,7 +158,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'organization_id': self.org.id,
             'display_units': 'false'
         })
-        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['display_name'] == 'Source EUI Modeled'), None)
+        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['column_name'] == 'source_eui_modeled'), None)
         self.assertEqual(columnWithoutUnits['display_name'], 'Source EUI Modeled')
 
         responseWithUnits = self.client.get(reverse('api:v3:columns-list'), {
