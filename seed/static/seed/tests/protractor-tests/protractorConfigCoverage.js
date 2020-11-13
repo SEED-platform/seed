@@ -17,7 +17,7 @@ exports.config = {
     // 'seed/static/seed/tests/protractor-tests/adminLogout.spec.js',
     '**/jasmineTests.spec.js'
   ],
-  baseUrl: 'http://localhost:8000/',
+  baseUrl: 'http://localhost:80/',
   rootElement: '.app',
   params: {
     login: {
