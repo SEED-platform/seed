@@ -90,7 +90,7 @@ jobs:
           docker ps
           docker exec seed_web_1 ./manage.py migrate
           docker exec seed_web_1 ./manage.py create_default_user --username=demo@example.com --password=demo123
-          docker exec seed_web_1 ./manage.py make_superuser --user demo@example.com
+          docker exec seed_web_1 echo "y" | ./manage.py make_superuser --user demo@example.com
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
   formatting:
@@ -110,6 +110,9 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install tox==2.7.0
+          sudo add-apt-repository ppa:ubuntugis/ppa
+          sudo apt-get update
+          sudo apt-get install gdal-bin
       -
         name: Run tox
         run: tox -e ${{ matrix.tox_env }}
