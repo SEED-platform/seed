@@ -33,7 +33,7 @@ jobs:
         with:
           tags: seedplatform/seed:dev
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
   # test_backend:
   #   runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.head_ref }}
+          key: ${{ runner.os }}-buildx-${{ github.ref }}
           restore-keys: |
             ${{ runner.os }}-buildx-
       -
