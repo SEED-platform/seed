@@ -32,7 +32,8 @@ exports.config = {
     }
   },
   jasmineNodeOpts: {
-    showColors: true
+    showColors: true,
+    verbose: true
   },
   capabilities: {
     browserName: 'chrome'
