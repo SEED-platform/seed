@@ -5,7 +5,6 @@
 :author
 """
 import json
-import logging
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -30,8 +29,6 @@ from seed.serializers.pint import add_pint_unit_suffix
 from seed.utils.api import OrgValidateMixin, OrgCreateUpdateMixin, api_endpoint_class
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-
-_log = logging.getLogger(__name__)
 
 
 @method_decorator(
@@ -106,7 +103,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, inventory_type, only_used)
         organization = Organization.objects.get(pk=organization_id)
-        if json.loads(request.query_params.get('display_units', 'false')):
+        if json.loads(request.query_params.get('display_units', 'true')):
             columns = [add_pint_unit_suffix(organization, x) for x in columns]
         return JsonResponse({
             'status': 'success',
