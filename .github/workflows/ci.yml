@@ -90,7 +90,7 @@ jobs:
       -
         name: debug repo
         run: ls -a
-        -
+      -
         uses: actions/setup-node@v1
       -
         name: Install deps
