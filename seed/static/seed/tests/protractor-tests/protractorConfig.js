@@ -18,7 +18,7 @@ exports.config = {
     // 'miscellaneous.spec.js',
     // 'adminLogout.spec.js'
   ],
-  baseUrl: 'http://localhost:8000/',
+  baseUrl: 'http://localhost/',
   rootElement: '.app',
   params: {
     login: {

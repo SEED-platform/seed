@@ -132,6 +132,7 @@ jobs:
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       -
         name: After Failure
+        if: ${{ failure() }}
         run: |
           docker-compose logs seed_web_1
   formatting:
