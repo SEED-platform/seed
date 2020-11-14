@@ -74,8 +74,6 @@ jobs:
     needs: build
     steps:
       -
-        uses: actions/setup-node@v1
-      -
         uses: actions/checkout@v2
       -
         name: Set up Docker Buildx
@@ -91,6 +89,8 @@ jobs:
       -
         name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
+      -
+        uses: actions/setup-node@v1
       -
         name: Install deps
         run: |
@@ -129,6 +129,10 @@ jobs:
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false
           Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
+      -
+        name: After Failure
+        run: |
+          docker-compose logs seed_web_1
   formatting:
     runs-on: ubuntu-latest
     strategy:
