@@ -129,7 +129,7 @@ jobs:
           docker exec seed_web_1 /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false
           Xvfb :99 &
-          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
+          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       -
         name: After Failure
         run: |
