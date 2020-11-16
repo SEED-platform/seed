@@ -353,7 +353,6 @@ angular.module('BE.seed.controller.mapping', [])
             col.suggestion_column_name = match.column_name;
           } else {
             col.suggestion_column_name = null;
-            col.suggestion_table_name = 'Select';
           }
         } else {
           col.suggestion_column_name = null;
