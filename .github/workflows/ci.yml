@@ -23,7 +23,7 @@ jobs:
             debug-${{ runner.os }}-buildx-
       -
         name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --progress plain --file Dockerfile-dev .
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
       -
         name: Start the stack
         run: |
@@ -35,10 +35,12 @@ jobs:
         env:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
+          COVERALLS_REPO_TOKEN: ${{ COVERALLS_REPO_TOKEN }}
         run: |
           docker ps
           docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web_1 python manage.py test --settings=config.settings.docker_dev
+          docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web_1 coverage run manage.py test seed --settings=config.settings.docker_dev
+          docker exec --env COVERALLS_REPO_TOKEN coveralls
   test_frontend:
     runs-on: ubuntu-latest
     steps:
@@ -117,7 +119,7 @@ jobs:
           docker exec seed_web_1 ./manage.py migrate
           docker exec seed_web_1 ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web_1 /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-          docker exec seed_web_1 ./manage.py create_test_user_json --username demo@example.com --file ./seed/tests/api/api_test_user.json
+          docker exec seed_web_1 ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
           docker exec seed_web_1 python seed/tests/api/test_seed_host_api.py --noinput --nofile
   formatting:
     runs-on: ubuntu-latest
