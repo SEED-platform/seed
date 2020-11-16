@@ -39,9 +39,7 @@ describe('controller: mapping_controller', function () {
 
       spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled')
         .andCallFake(function () {
-          return $q.resolve({
-            status: 'success'
-          });
+          return $q.resolve(true);
       });
 
       spyOn(mock_organization_service, 'geocoding_columns')
