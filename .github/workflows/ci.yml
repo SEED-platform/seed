@@ -5,6 +5,12 @@ on:
   push:
 
 jobs:
+  # Currently GH Actions provides no simple method for "sharing"
+  # our setup steps. Ideally this would be in an action, but we would need to use
+  # actions inside of our actions which you cannot currently do (see https://github.com/actions/runner/issues/438)
+  # 
+  # As a result, the DRYest method for now is to use a testing matrix and
+  # use conditional steps for actually running the tests.
   unittests:
     runs-on: ubuntu-latest
     strategy:
