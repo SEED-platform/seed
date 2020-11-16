@@ -2,7 +2,9 @@ name: Publish
 
 on:
   # Build daily at 8am
-  schedule: '0 8 * * *'
+  schedule:
+    -
+      cron: '0 8 * * *'
 
 jobs:
   publish:
