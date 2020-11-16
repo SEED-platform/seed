@@ -7,8 +7,9 @@ on:
 jobs:
   unittests:
     runs-on: ubuntu-latest
-    matrix:
-      test_env: [django, functional, api]
+    strategy:
+      matrix:
+        test_env: [django, functional, api]
     steps:
       -
         uses: actions/checkout@v2
