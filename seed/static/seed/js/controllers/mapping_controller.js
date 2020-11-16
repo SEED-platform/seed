@@ -500,16 +500,20 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       var get_geocoding_columns = function () {
-        organization_service.geocoding_columns(org_id).then(function (geocoding_columns) {
-          $scope.property_geocoding_columns_array = _.map(geocoding_columns.PropertyState, function (column_name) {
-            return _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
-          });
-          $scope.property_geocoding_columns = $scope.property_geocoding_columns_array.join(', ');
+        geocode_service.check_org_has_geocoding_enabled(org_id).then(function (result) {
+          if (result === true) {
+            organization_service.geocoding_columns(org_id).then(function (geocoding_columns) {
+              $scope.property_geocoding_columns_array = _.map(geocoding_columns.PropertyState, function (column_name) {
+                return _.find($scope.mappable_property_columns, {column_name: column_name}).display_name;
+              });
+              $scope.property_geocoding_columns = $scope.property_geocoding_columns_array.join(', ');
 
-          $scope.taxlot_geocoding_columns_array = _.map(geocoding_columns.TaxLotState, function (column_name) {
-            return _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
-          });
-          $scope.taxlot_geocoding_columns = $scope.taxlot_geocoding_columns_array.join(', ');
+              $scope.taxlot_geocoding_columns_array = _.map(geocoding_columns.TaxLotState, function (column_name) {
+                return _.find($scope.mappable_taxlot_columns, {column_name: column_name}).display_name;
+              });
+              $scope.taxlot_geocoding_columns = $scope.taxlot_geocoding_columns_array.join(', ');
+            });
+          }
         });
       };
 
