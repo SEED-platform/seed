@@ -74,7 +74,7 @@ jobs:
         run: |
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false
           Xvfb :99 &
-          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
+          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       -
         name: Test API
         if: ${{ matrix.test_env == 'api' }}
