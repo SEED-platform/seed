@@ -40,7 +40,7 @@ jobs:
           docker ps
           docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
           docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web_1 coverage run manage.py test seed --settings=config.settings.docker_dev
-          docker exec --env COVERALLS_REPO_TOKEN coveralls
+          docker exec --env COVERALLS_REPO_TOKEN seed_web_1 coveralls
   test_frontend:
     runs-on: ubuntu-latest
     steps:
@@ -106,7 +106,7 @@ jobs:
             debug-${{ runner.os }}-buildx-
       -
         name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --progress plain --file Dockerfile-dev .
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
       -
         name: Start the stack
         run: |
