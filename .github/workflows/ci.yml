@@ -5,7 +5,7 @@ on:
   push:
 
 jobs:
-  build:
+  test_backend:
     runs-on: ubuntu-latest
     steps:
       -
@@ -23,53 +23,24 @@ jobs:
             debug-${{ runner.os }}-buildx-
       -
         name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
+        run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --progress plain --file Dockerfile-dev .
       -
-        name: debug repo
-        run: ls -a
-        # uses: docker/build-push-action@v2
-        # with:
-        #   context: .
-        #   file: Dockerfile-dev
-        #   tags: seedplatform/seed:dev
-        #   cache-from: type=local,src=/tmp/.buildx-cache
-        #   cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-
-  # test_backend:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     -
-  #       uses: actions/checkout@v2
-  #     # -
-  #     #   name: Cache Docker layers
-  #     #   uses: actions/cache@v2
-  #     #   with:
-  #     #     path: /tmp/.buildx-cache
-  #     #     key: ${{ runner.os }}-buildx-${{ github.head_ref }}
-  #     #     restore-keys: |
-  #     #       ${{ runner.os }}-buildx-
-  #     # -
-  #     #   name: Build Docker image
-  #     #   uses: docker/build-push-action@v2
-  #     #   with:
-  #     #     tags: seedplatform/seed:dev
-  #     #     cache-from: type=local,src=/tmp/.buildx-cache
-  #     #     cache-to: type=local,dest=/tmp/.buildx-cache
-  #     -
-  #       name: Start the stack
-  #       run: |
-  #         docker volume create --name=seed_pgdata
-  #         docker volume create --name=seed_media
-  #         docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-  #     -
-  #       name: Test
-  #       run: |
-  #         docker ps
-  #         docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
-  #         docker exec seed_web_1 python manage.py test --settings=config.settings.docker_dev
+        name: Start the stack
+        run: |
+          docker volume create --name=seed_pgdata
+          docker volume create --name=seed_media
+          docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+      -
+        name: Test
+        env:
+          SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
+          SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
+        run: |
+          docker ps
+          docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
+          docker exec --env SEED_PM_PW --env SEED_PM_PW seed_web_1 python manage.py test --settings=config.settings.docker_dev
   test_frontend:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       -
         uses: actions/checkout@v2
@@ -87,9 +58,6 @@ jobs:
       -
         name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
-      -
-        name: debug repo
-        run: ls -a
       -
         uses: actions/setup-node@v1
       -
@@ -100,18 +68,6 @@ jobs:
           sudo apt-get install -y xvfb
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install ./google-chrome-stable_current_amd64.deb
-      # -
-      #   name: Build Docker dev image
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     context: .
-      #     file: Dockerfile-dev
-      #     tags: seedplatform/seed:dev
-      #     cache-from: type=local,src=/tmp/.buildx-cache
-      #     cache-to: type=local,dest=/tmp/.buildx-cache
-      -
-        name: debug docker build
-        run: docker images
       -
         name: Start the stack
         run: |
@@ -129,12 +85,7 @@ jobs:
           docker exec seed_web_1 /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
           ./node_modules/protractor/bin/webdriver-manager update --gecko=false
           Xvfb :99 &
-          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
-      -
-        name: After Failure
-        if: ${{ failure() }}
-        run: |
-          docker-compose logs seed_web_1
+          ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfigCoverage.js
   formatting:
     runs-on: ubuntu-latest
     strategy:
