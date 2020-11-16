@@ -35,7 +35,7 @@ jobs:
         env:
           SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
-          COVERALLS_REPO_TOKEN: ${{ COVERALLS_REPO_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
           docker ps
           docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
