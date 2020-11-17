@@ -1180,6 +1180,7 @@ def geocode_buildings_task(file_pk):
     """
     NOTE: This is an older entrypoint into geocoding buildings and should no longer
     be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
     """
     progress_data = ProgressData(func_name='geocode_buildings', unique_id=file_pk)
     progress_data.delete()
@@ -1217,6 +1218,7 @@ def map_additional_models(file_pk):
     """
     NOTE: This is an older entrypoint into mapping buildings and should no longer
     be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
 
     kicks off mapping models other than PropertyState, returns progress key within the JSON response
     E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
@@ -1301,6 +1303,7 @@ def match_buildings(file_pk):
     """
     NOTE: This is an older entrypoint into matching buildings and should no longer
     be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
 
     kicks off system matching, returns progress key within the JSON response
 
