@@ -1135,11 +1135,11 @@ def geocode_and_match_buildings_task(file_pk):
         return progress_data.finish_with_error(
             'Import file is not complete. Retry after mapping is complete', )
 
+    if import_file.cycle is None:
+            _log.warn("Import file cycle is None; This should never happen in production")
+
     post_geocode_tasks = None
     if import_file.from_buildingsync:
-        if import_file.cycle is None:
-            _log.warn("This should never happen in production")
-
         source_type_dict = {
             'Portfolio Raw': PORTFOLIO_RAW,
             'Assessed Raw': ASSESSED_RAW,
