@@ -1,10 +1,10 @@
 name: Publish
 
 on:
-  # Build daily at 8am
-  schedule:
-    -
-      cron: '0 8 * * *'
+  push:
+    # branches:
+    #   - develop
+    #   - master
 
 jobs:
   publish:
@@ -32,9 +32,27 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
+        name: Parse tag
+        id: parse_tag
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          PACKAGE_VERSION=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
+          echo "BRANCH_NAME: ${BRANCH_NAME}"
+          echo "PACKAGE_VERSION: ${PACKAGE_VERSION}"
+          if [[ ${BRANCH_NAME} == "master" ]]; then
+            SEED_TAG=${PACKAGE_VERSION}
+          elif [[ ${BRANCH_NAME} == "develop" ]]; then
+            SEED_TAG=develop
+          else
+            echo "Branch ${BRANCH_NAME} is not master or develop (this should not happen), exiting"
+            exit 1
+          fi
+          echo ::set-output name=seed_tag::${SEED_TAG}
+          exit 1
+      -
         name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: seedplatform/seed:develop
+          tags: seedplatform/seed:${{ steps.parse_tag.outputs.seed_tag }}
