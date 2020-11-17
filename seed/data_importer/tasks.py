@@ -1181,7 +1181,10 @@ def geocode_buildings_task(file_pk):
     NOTE: This is an older entrypoint into geocoding buildings and should no longer
     be used. Use geocode_and_match_buildings_task instead.
     """
-    async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+    progress_data = ProgressData(func_name='geocode_buildings', unique_id=file_pk)
+    progress_data.delete()
+    progress_data.save()
+    async_result = _geocode_properties_or_tax_lots.s(file_pk, progress_data.key).apply_async()
     result = [r for r in async_result.collect()]
 
     return result
