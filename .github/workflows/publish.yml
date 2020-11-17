@@ -2,9 +2,9 @@ name: Publish
 
 on:
   push:
-    # branches:
-    #   - develop
-    #   - master
+    branches:
+      - develop
+      - master
 
 jobs:
   publish:
@@ -48,7 +48,6 @@ jobs:
             exit 1
           fi
           echo ::set-output name=seed_tag::${SEED_TAG}
-          exit 1
       -
         name: Build and push
         id: docker_build
