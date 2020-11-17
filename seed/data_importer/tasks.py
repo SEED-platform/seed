@@ -1136,7 +1136,7 @@ def geocode_and_match_buildings_task(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-            _log.warn("Import file cycle is None; This should never happen in production")
+        _log.warn("Import file cycle is None; This should never happen in production")
 
     post_geocode_tasks = None
     if import_file.from_buildingsync:
