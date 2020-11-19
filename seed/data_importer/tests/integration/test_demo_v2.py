@@ -131,7 +131,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(len(ps), 0)
         self.assertEqual(len(ts), 9)
 
-        tasks.match_buildings(self.import_file_tax_lot.id)
+        tasks.geocode_and_match_buildings_task(self.import_file_tax_lot.id)
 
         # Check a single case of the taxlotstate
         self.assertEqual(TaxLotState.objects.filter(address_line_1='2655 Welstone Ave NE').count(), 1)
@@ -160,7 +160,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         self.assertEqual(len(ts), 9)
         self.assertEqual(len(ps), 14)
 
-        tasks.match_buildings(self.import_file_property.id)
+        tasks.geocode_and_match_buildings_task(self.import_file_property.id)
 
         ps = PropertyState.objects.filter(
             data_state=DATA_STATE_MAPPING,

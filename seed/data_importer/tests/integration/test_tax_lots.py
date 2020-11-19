@@ -43,7 +43,7 @@ class TestProperties(DataMappingBaseTestCase):
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
-        tasks.match_buildings(self.import_file.id)
+        tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         # import second file with tax lot information
         filename_2 = getattr(self, 'filename', 'example-data-taxlots.xlsx')
@@ -59,7 +59,7 @@ class TestProperties(DataMappingBaseTestCase):
         tasks.save_raw_data(self.import_file_2.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file_2.pk)
-        tasks.match_buildings(self.import_file_2.id)
+        tasks.geocode_and_match_buildings_task(self.import_file_2.id)
 
         # import third file with updated tax lot information
         # filename_3 = getattr(self, 'filename', 'example-data-taxlots-small-changes.xlsx')
@@ -74,7 +74,7 @@ class TestProperties(DataMappingBaseTestCase):
         #
         # tasks.save_raw_data(self.import_file_3.pk')
         # tasks.map_data(self.import_file_3.pk)
-        # tasks.match_buildings(self.import_file_3.id)
+        # tasks.geocode_and_match_buildings_task(self.import_file_3.id)
 
     def test_coparent(self):
         # get the main taxlot state
