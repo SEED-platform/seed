@@ -3,7 +3,7 @@
 IMAGETAG=skip
 if [ "${TRAVIS_BRANCH}" == "develop" ]; then
     IMAGETAG=develop
-elif [ "${TRAVIS_BRANCH}" == "master" ]; then
+elif [ "${TRAVIS_BRANCH}" == "main" ]; then
     # Retrieve the version number from package.json
     IMAGETAG=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
 fi
