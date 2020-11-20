@@ -22,6 +22,7 @@ from math import ceil
 import zipfile
 
 from celery import chord, shared_task
+from celery import chain as celery_chain
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -79,7 +80,7 @@ from seed.models.data_quality import (
     Rule,
 )
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import geocode_buildings
+from seed.utils.geocode import geocode_buildings, MapQuestAPIKeyError
 from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
@@ -1119,30 +1120,106 @@ def save_raw_data(file_pk):
     return progress_data.result()
 
 
+def geocode_and_match_buildings_task(file_pk):
+    import_file = ImportFile.objects.get(pk=file_pk)
+
+    progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
+    progress_data.delete()
+
+    if import_file.matching_done:
+        _log.debug('Matching is already done')
+        return progress_data.finish_with_warning('matching already complete')
+
+    if not import_file.mapping_done:
+        _log.debug('Mapping is not done yet')
+        return progress_data.finish_with_error(
+            'Import file is not complete. Retry after mapping is complete', )
+
+    if import_file.cycle is None:
+        _log.warn("Import file cycle is None; This should never happen in production")
+
+    post_geocode_tasks = None
+    if import_file.from_buildingsync:
+        source_type_dict = {
+            'Portfolio Raw': PORTFOLIO_RAW,
+            'Assessed Raw': ASSESSED_RAW,
+            'BuildingSync Raw': BUILDINGSYNC_RAW
+        }
+        source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+
+        # get the properties and chunk them into tasks
+        qs = PropertyState.objects.filter(
+            import_file=import_file,
+            source_type=source_type,
+            data_state=DATA_STATE_MAPPING,
+        ).only('id').iterator()
+
+        id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+
+        post_geocode_tasks_count = len(id_chunks)
+        post_geocode_tasks = chord(
+            header=(_map_additional_models.si(ids, import_file.id, progress_data.key) for ids in id_chunks),
+            body=finish_mapping_additional_models.s(file_pk, progress_data.key))
+    else:
+        # Start, match, pair
+        post_geocode_tasks_count = 3
+        post_geocode_tasks = chord(
+            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
+            body=finish_matching.s(file_pk, progress_data.key),
+            interval=15)
+
+    geocoding_tasks_count = 1
+    progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
+    progress_data.save()
+    celery_chain(_geocode_properties_or_tax_lots.s(file_pk, progress_data.key), post_geocode_tasks)()
+
+    return progress_data.result()
+
+
 def geocode_buildings_task(file_pk):
-    async_result = _geocode_properties_or_tax_lots.s(file_pk).apply_async()
+    """
+    NOTE: This is an older entrypoint into geocoding buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
+    """
+    progress_data = ProgressData(func_name='geocode_buildings', unique_id=file_pk)
+    progress_data.delete()
+    progress_data.save()
+    async_result = _geocode_properties_or_tax_lots.s(file_pk, progress_data.key).apply_async()
     result = [r for r in async_result.collect()]
 
     return result
 
 
 @shared_task
-def _geocode_properties_or_tax_lots(file_pk):
-    if PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
-        qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(
-            data_state=DATA_STATE_IMPORT)
-        decode_unique_ids(qs)
-        geocode_buildings(qs)
+def _geocode_properties_or_tax_lots(file_pk, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.step('Geocoding')
+    property_state_qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
+    if property_state_qs:
+        decode_unique_ids(property_state_qs)
+        try:
+            geocode_buildings(property_state_qs)
+        except MapQuestAPIKeyError as e:
+            progress_data.finish_with_error(str(e), traceback.format_exc())
+            raise e
 
-    if TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT):
-        qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(
-            data_state=DATA_STATE_IMPORT)
-        decode_unique_ids(qs)
-        geocode_buildings(qs)
+    tax_lot_state_qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
+    if tax_lot_state_qs:
+        decode_unique_ids(tax_lot_state_qs)
+        try:
+            geocode_buildings(tax_lot_state_qs)
+        except MapQuestAPIKeyError as e:
+            progress_data.finish_with_error(str(e), traceback.format_exc())
+            raise e
 
 
 def map_additional_models(file_pk):
     """
+    NOTE: This is an older entrypoint into mapping buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
+
     kicks off mapping models other than PropertyState, returns progress key within the JSON response
     E.g. It creates the PropertyView, Property, Scenario, Meters, etc for BuildingSync files
 
@@ -1224,6 +1301,10 @@ def finish_mapping_additional_models(result, import_file_id, progress_key):
 # @cprofile()
 def match_buildings(file_pk):
     """
+    NOTE: This is an older entrypoint into matching buildings and should no longer
+    be used. Use geocode_and_match_buildings_task instead.
+    TODO: remove this task once api v2 is removed
+
     kicks off system matching, returns progress key within the JSON response
 
     :param file_pk: ImportFile Primary Key

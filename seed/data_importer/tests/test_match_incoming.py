@@ -7,7 +7,7 @@
 
 from seed.data_importer.models import ImportFile
 
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.data_importer.match import (
     filter_duplicate_states,
     save_state_match,
@@ -64,7 +64,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 2 Property, 2 PropertyViews, 3 PropertyState (1 flagged to be ignored)
         self.assertEqual(Property.objects.count(), 2)
@@ -95,7 +95,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 2 TaxLot, 2 TaxLotViews, 3 TaxLotState (1 flagged to be ignored)
         self.assertEqual(TaxLot.objects.count(), 2)
@@ -132,7 +132,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 3 Property, 3 PropertyViews, 7 PropertyStates (5 imported, 2 merge results)
         self.assertEqual(Property.objects.count(), 3)
@@ -208,7 +208,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 3 TaxLot, 3 TaxLotViews, 7 TaxLotStates (5 imported, 2 merge results)
         self.assertEqual(TaxLot.objects.count(), 3)
@@ -274,7 +274,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 1 Property, 1 PropertyView, 3 PropertyStates (2 imported, 1 merge result)
         self.assertEqual(Property.objects.count(), 1)
@@ -297,7 +297,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 1 Property, 1 PropertyView, 3 PropertyStates (2 imported, 1 merge result)
         self.assertEqual(Property.objects.count(), 1)
@@ -320,7 +320,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 1 TaxLot, 1 TaxLotView, 3 TaxLotStates (2 imported, 1 merge result)
         self.assertEqual(TaxLot.objects.count(), 1)
@@ -350,7 +350,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 2 Property, 2 PropertyView, 2 PropertyStates - No merges
         self.assertEqual(Property.objects.count(), 2)
@@ -384,7 +384,7 @@ class TestMatchingInImportFile(DataMappingBaseTestCase):
         # set import_file mapping done so that matching can occur.
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # 1 Property, 1 PropertyViews, 7 PropertyStates (4 imported, 3 merge results)
         self.assertEqual(Property.objects.count(), 1)
@@ -418,7 +418,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Create duplicate property coming from second ImportFile
         base_details['import_file_id'] = self.import_file_2.id
@@ -426,7 +426,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # 1 Property, 1 PropertyViews, 2 PropertyStates
         self.assertEqual(Property.objects.count(), 1)
@@ -449,7 +449,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Create properties from second ImportFile, one matching existing PropertyState
         base_details['import_file_id'] = self.import_file_2.id
@@ -463,7 +463,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # 2 Property, 2 PropertyViews, 4 PropertyStates (3 imported, 1 merge result)
         self.assertEqual(Property.objects.count(), 2)
@@ -528,7 +528,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Update -States to make the roll up order be 1, 3, 2
         refreshed_ps_3 = PropertyState.objects.get(id=ps_3.id)
@@ -552,7 +552,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # There should only be one PropertyView which is associated to new, merged -State
         self.assertEqual(PropertyView.objects.count(), 1)
@@ -578,7 +578,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Create properties from second ImportFile, one matching existing PropertyState
         base_details['import_file_id'] = self.import_file_2.id
@@ -592,7 +592,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # 2 TaxLot, 2 TaxLotViews, 4 TaxLotStates (3 imported, 1 merge result)
         self.assertEqual(TaxLot.objects.count(), 2)
@@ -657,7 +657,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Make all those states match
         TaxLotState.objects.filter(pk__in=[tls_2.id, tls_3.id]).update(
@@ -677,7 +677,7 @@ class TestMatchingOutsideImportFile(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # There should only be one TaxLotView which is associated to new, merged -State
         self.assertEqual(TaxLotView.objects.count(), 1)
@@ -733,7 +733,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Verify no duplicates/matched-merges yet
         counts = [
@@ -795,7 +795,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         self.assertEqual(9, Property.objects.count())
         self.assertEqual(9, PropertyView.objects.count())
@@ -875,7 +875,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Verify no duplicates/matched-merges yet
         counts = [
@@ -933,7 +933,7 @@ class TestMatchingImportIntegration(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         self.assertEqual(8, TaxLot.objects.count())
         self.assertEqual(8, TaxLotView.objects.count())

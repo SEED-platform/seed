@@ -27,7 +27,7 @@ from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
 )
-from seed.data_importer.tasks import match_buildings, save_raw_data
+from seed.data_importer.tasks import geocode_and_match_buildings_task, save_raw_data
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 from seed.models import (
@@ -234,7 +234,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # set import_file_1 mapping done so that record is "created for users to view".
         import_file_1.mapping_done = True
         import_file_1.save()
-        match_buildings(import_file_1.id)
+        geocode_and_match_buildings_task(import_file_1.id)
 
         _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
@@ -252,7 +252,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # set import_file_2 mapping done so that match merging can occur.
         import_file_2.mapping_done = True
         import_file_2.save()
-        match_buildings(import_file_2.id)
+        geocode_and_match_buildings_task(import_file_2.id)
 
         url = reverse('api:v3:properties-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
         response = self.client.post(url, content_type='application/json')

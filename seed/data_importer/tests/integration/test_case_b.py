@@ -76,7 +76,7 @@ class TestCaseB(DataMappingBaseTestCase):
         ).first()
         self.assertEqual(p_test.lot_number, "333/66555;333/66125;333/66148")
 
-        tasks.match_buildings(self.import_file.id)
+        tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         # make sure the the property only has one tax lot and vice versa
         tlv = TaxLotView.objects.filter(state__jurisdiction_tax_lot_id='11160509', cycle=self.cycle)

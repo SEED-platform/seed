@@ -609,7 +609,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.id)
         tasks.map_data(self.import_file.pk)
-        tasks.match_buildings(self.import_file.id)
+        tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         # import second file that is currently the same, but should be slightly different
         filename_2 = getattr(self, 'filename', 'example-data-properties-small-changes.xlsx')
@@ -624,7 +624,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         tasks.save_raw_data(self.import_file_2.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file_2.id)
         tasks.map_data(self.import_file_2.pk)
-        tasks.match_buildings(self.import_file_2.id)
+        tasks.geocode_and_match_buildings_task(self.import_file_2.id)
 
         # for api tests
         user_details = {
