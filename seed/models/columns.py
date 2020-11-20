@@ -985,11 +985,12 @@ class Column(models.Model):
             try:
                 # the from column is the field in the import file, thus the table_name needs to be
                 # blank. Eventually need to handle passing in import_file_id
-                from_org_col, _ = Column.objects.get_or_create(
+                from_org_col, _ = Column.objects.update_or_create(
                     organization=organization,
-                    table_name__in=[None, ''],
+                    table_name='',
                     column_name=field['from_field'],
-                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
+                    is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
+                    defaults={'units_pint': field.get('from_units', None)}
                 )
             except Column.MultipleObjectsReturned:
                 # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
@@ -1000,7 +1001,7 @@ class Column(models.Model):
 
                 all_from_cols = Column.objects.filter(
                     organization=organization,
-                    table_name__in=[None, ''],
+                    table_name='',
                     column_name=field['from_field'],
                     is_extra_data=False
                 )
@@ -1010,7 +1011,8 @@ class Column(models.Model):
 
                 from_org_col = Column.objects.create(
                     organization=organization,
-                    table_name__in=[None, ''],
+                    table_name='',
+                    units_pint=field.get('from_units', None),
                     column_name=field['from_field'],
                     is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
                 )
