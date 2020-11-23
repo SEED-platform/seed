@@ -13,6 +13,6 @@ class Analysis(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(choices=AnalysisTypes.STATUS)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    organization_id = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     configuration = JSONField(default=dict, blank=True)
     parsed_results = JSONField(default=dict, blank=True)
