@@ -1,8 +1,8 @@
 from django.db import models
 
 from seed.models import (
-	Analysis,
-	AnalysisTypes
+    Analysis,
+    AnalysisTypes
 )
 
 
