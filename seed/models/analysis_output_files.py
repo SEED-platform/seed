@@ -12,7 +12,7 @@ class AnalysisOutputFile(models.Model):
     CONTENT_TYPES = (
         (DEFAULT, 'default'),
     )
- 
+
     file = models.FileField(upload_to="analysis_files", max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
 
