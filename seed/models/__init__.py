@@ -7,7 +7,6 @@
 """
 
 # Import all the models in this folder
-from .analysis_types import *  # noqa
 from .analyses import *  # noqa
 from .cycles import *  # noqa
 from .models import *  # noqa
