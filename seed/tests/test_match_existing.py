@@ -19,7 +19,7 @@ from django.utils.timezone import make_aware  # make_aware is used because incon
 
 from pytz import timezone
 
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 
 from seed.models import (
     ASSESSED_RAW,
@@ -86,7 +86,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # Edit the first property to match the second
         new_data = {
@@ -160,7 +160,7 @@ class TestMatchingPostEdit(DataMappingBaseTestCase):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # Edit the first taxlot to match the second
         new_data = {
@@ -258,7 +258,7 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # Make sure all 4 are separate
         self.assertEqual(Property.objects.count(), 4)
@@ -324,7 +324,7 @@ class TestMatchingPostMerge(DataMappingBaseTestCase):
 
         self.import_file.mapping_done = True
         self.import_file.save()
-        match_buildings(self.import_file.id)
+        geocode_and_match_buildings_task(self.import_file.id)
 
         # Make sure all 4 are separate
         self.assertEqual(TaxLot.objects.count(), 4)
@@ -414,7 +414,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Create (ED) 'state_order' column and update merge protection column for 'city'
         self.org.column_set.create(
@@ -500,7 +500,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Verify no match merges happen
         ps_1_view = PropertyView.objects.get(state_id=ps_1.id)
@@ -557,7 +557,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Create (ED) 'state_order' column and update merge protection column for 'city'
         self.org.column_set.create(
@@ -639,7 +639,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Verify no match merges happen
         tls_1_view = TaxLotView.objects.get(state_id=tls_1.id)
@@ -710,7 +710,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details['import_file_id'] = self.import_file_2.id
@@ -733,7 +733,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_property_details['import_file_id'] = self.import_file_3.id
@@ -748,7 +748,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Verify no matches or links
         self.assertEqual(9, PropertyView.objects.count())
@@ -870,7 +870,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_state_details['import_file_id'] = self.import_file_2.id
@@ -893,7 +893,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_state_details['import_file_id'] = self.import_file_3.id
@@ -908,7 +908,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Verify no matches or links
         self.assertEqual(9, TaxLotView.objects.count())
@@ -1007,7 +1007,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details['import_file_id'] = self.import_file_2.id
@@ -1016,7 +1016,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_property_details['import_file_id'] = self.import_file_3.id
@@ -1025,7 +1025,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         self.assertEqual(3, PropertyView.objects.count())
         self.assertEqual(3, PropertyState.objects.count())
@@ -1070,7 +1070,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_state_details['import_file_id'] = self.import_file_2.id
@@ -1079,7 +1079,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_state_details['import_file_id'] = self.import_file_3.id
@@ -1088,7 +1088,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         self.assertEqual(3, TaxLotView.objects.count())
         self.assertEqual(3, TaxLotState.objects.count())
@@ -1132,7 +1132,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details['import_file_id'] = self.import_file_2.id
@@ -1140,7 +1140,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_property_details['import_file_id'] = self.import_file_3.id
@@ -1148,7 +1148,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Once updates are made to import process, these will correctly fail and be removed
         self.assertEqual(3, PropertyView.objects.count())
@@ -1192,7 +1192,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_state_details['import_file_id'] = self.import_file_2.id
@@ -1200,7 +1200,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_state_details['import_file_id'] = self.import_file_3.id
@@ -1208,7 +1208,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         # Once updates are made to import process, these will correctly fail and be removed
         self.assertEqual(3, TaxLotView.objects.count())
@@ -1256,7 +1256,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details['import_file_id'] = self.import_file_2.id
@@ -1265,7 +1265,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Cycle 3 / ImportFile 3
         base_property_details['import_file_id'] = self.import_file_3.id
@@ -1274,7 +1274,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         self.import_file_3.mapping_done = True
         self.import_file_3.save()
-        match_buildings(self.import_file_3.id)
+        geocode_and_match_buildings_task(self.import_file_3.id)
 
         self.assertEqual(3, PropertyView.objects.count())
         self.assertEqual(3, PropertyState.objects.count())
@@ -1461,7 +1461,7 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details = {
@@ -1501,7 +1501,7 @@ class TestMatchingExistingViewFullOrgMatchingProperties(DataMappingBaseTestCase)
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
     def test_properties_whole_org_match_merge_link_preview(self):
         # save all the columns in the state to the database so we can setup column list settings
@@ -1755,7 +1755,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Check all property and taxlot sets were created without match merges
         self.assertEqual(6, TaxLot.objects.count())
@@ -1800,7 +1800,7 @@ class TestMatchingExistingViewFullOrgMatchingTaxLots(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
     def test_taxlots_whole_org_match_merge_link_preview(self):
         # save all the columns in the state to the database so we can setup column list settings
@@ -2018,7 +2018,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_property_details = {
@@ -2035,7 +2035,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Propose different `property_name` matching - populated
         summary_1 = whole_org_match_merge_link(self.org.id, 'PropertyState', ['property_name'])
@@ -2067,7 +2067,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2
         base_taxlot_details = {
@@ -2084,7 +2084,7 @@ class TestMatchingExistingViewFullOrgMatchingUnlinking(DataMappingBaseTestCase):
         # Import file and create -Views and canonical records.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Propose different `district` matching - populated
         summary_1 = whole_org_match_merge_link(self.org.id, 'TaxLotState', ['district'])

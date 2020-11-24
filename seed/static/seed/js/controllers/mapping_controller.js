@@ -416,7 +416,6 @@ angular.module('BE.seed.controller.mapping', [])
         $scope.mappings = [];
         _.forEach($scope.raw_columns, function (name) {
           var col = get_col_from_suggestion(name);
-
           var match;
           if (col.suggestion_table_name === 'PropertyState') {
             match = _.find($scope.mappable_property_columns, {
@@ -438,7 +437,6 @@ angular.module('BE.seed.controller.mapping', [])
           $scope.mappings.push(col);
         });
       };
-
       /**
        * reset_mappings
        * Ignore suggestions and set all seed data headers to the headers from the original import file on PropertyState

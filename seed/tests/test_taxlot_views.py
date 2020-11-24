@@ -11,7 +11,7 @@ from datetime import datetime
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Column,
@@ -197,7 +197,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         # set import_file_1 mapping done so that record is "created for users to view".
         import_file_1.mapping_done = True
         import_file_1.save()
-        match_buildings(import_file_1.id)
+        geocode_and_match_buildings_task(import_file_1.id)
 
         _import_record_2, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
@@ -215,7 +215,7 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         # set import_file_2 mapping done so that match merging can occur.
         import_file_2.mapping_done = True
         import_file_2.save()
-        match_buildings(import_file_2.id)
+        geocode_and_match_buildings_task(import_file_2.id)
 
         url = reverse('api:v3:taxlots-filter') + '?cycle_id={}&organization_id={}&page=1&per_page=999999999'.format(self.cycle.pk, self.org.pk)
         response = self.client.post(url, content_type='application/json')
