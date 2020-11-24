@@ -1,3 +1,9 @@
+# SEED Version 2.7.5
+
+- Fixed [#2469]( https://github.com/SEED-platform/seed/issues/2469 ), Error deduplicating raw col objs
+- Fixed [#2470]( https://github.com/SEED-platform/seed/issues/2470 ), Add nginx/uwsgi protections for oserrors and ioerrors
+- Fixed [#2471]( https://github.com/SEED-platform/seed/issues/2471 ), During label application, require non-empty list for inventory_ids
+
 # SEED Version 2.7.4
 
 This is a patch to update the deployment scripts for SEED. These changes did not result in any closed tickets.
