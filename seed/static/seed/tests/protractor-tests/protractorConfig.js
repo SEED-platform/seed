@@ -6,19 +6,9 @@
 // config for protractor tests
 exports.config = {
   specs: [
-    // 'adminLogin.spec.js',
-    'jasmineTests.spec.js',
-    // 'adminCreateOrgs.spec.js',
-    // 'orgPages.spec.js',
-    // 'datasetPages.spec.js',
-    // 'propPages.spec.js',
-    // 'taxlotPages.spec.js',
-    // 'datasetMapping.spec.js',
-    // 'datasetPairing.spec.js',
-    // 'miscellaneous.spec.js',
-    // 'adminLogout.spec.js'
+    '**/jasmineTests.spec.js'
   ],
-  baseUrl: 'http://localhost:8000/',
+  baseUrl: 'http://localhost:80/',
   rootElement: '.app',
   params: {
     login: {
@@ -33,20 +23,6 @@ exports.config = {
     }
   },
   capabilities: {
-    browserName: 'chrome',
-    chromeOptions: {
-      args: [
-        '--headless',
-        '--disable-gpu',
-        '--no-sandbox',
-        '--window-size=800,600',
-        '--disable-extensions',
-        '--disable-dev-shm-usage'
-      ]
-    }
+    browserName: 'chrome'
   }
 };
-if (process.env.TRAVIS) {
-  exports.config.capabilities['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
-  exports.config.capabilities.build = process.env.TRAVIS_BUILD_NUMBER;
-}
