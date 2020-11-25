@@ -1,3 +1,7 @@
+# SEED Version 2.8.1
+
+This is a patch to bring the 2.7.5 hotfix into 2.8.0
+
 # SEED Version 2.8.0
 
 SEED Version 2.8.0 includes an update to the SEED frontend that leverages the new API v3 on the backend. API V2.1 and
