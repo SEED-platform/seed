@@ -1,3 +1,7 @@
+# SEED Version 2.8.1
+
+This is a patch to bring the 2.7.5 hotfix into 2.8.0
+
 # SEED Version 2.8.0
 
 SEED Version 2.8.0 includes an update to the SEED frontend that leverages the new API v3 on the backend. API V2.1 and
@@ -56,6 +60,20 @@ Closed Issues and Features:
 - Fixed [#2392]( https://github.com/SEED-platform/seed/issues/2392 ), XLSX import of sample data hanging
 - Fixed [#2397]( https://github.com/SEED-platform/seed/issues/2397 ), DQ - failed to update/save rules after deleting duplicate rules
 
+# SEED Version 2.7.5
+
+- Fixed [#2469]( https://github.com/SEED-platform/seed/issues/2469 ), Error deduplicating raw col objs
+- Fixed [#2470]( https://github.com/SEED-platform/seed/issues/2470 ), Add nginx/uwsgi protections for oserrors and ioerrors
+- Fixed [#2471]( https://github.com/SEED-platform/seed/issues/2471 ), During label application, require non-empty list for inventory_ids
+
+# SEED Version 2.7.4
+
+This is a patch to update the deployment scripts for SEED. These changes did not result in any closed tickets.
+
+# SEED Version 2.7.3
+
+- Fixed [#2371]( https://github.com/SEED-platform/seed/issues/2371 ), Checking for duplicate fields is not working when only one Inventory Type is selected
+
 # SEED Version 2.7.2
 
 SEED Version 2.7.2 includes the introduction of API v3. This new API version will
@@ -107,6 +125,7 @@ Closed Issues and Features:
 - Improved [#2127]( https://github.com/SEED-platform/seed/issues/2127 ), Add functionality to see entire SEED HEADER field name in Mapping
 - Improved [#2131]( https://github.com/SEED-platform/seed/issues/2131 ), Bricr-dev testing for potential merge into develop
 - Feature [#2134]( https://github.com/SEED-platform/seed/issues/2134 ), Add new column setting to allow blank/'Not Available' values to overwrite other values
+- Feature [#2137]( https://github.com/SEED-platform/seed/issues/2137 ), BuildingSync to handle v1.1 and v2.0
 - Fixed [#2139]( https://github.com/SEED-platform/seed/issues/2139 ), Missing reverse match for password reset
 - Fixed [#2164]( https://github.com/SEED-platform/seed/issues/2164 ), Update label get_is_applied to support OEP
 - Improved [#2169]( https://github.com/SEED-platform/seed/issues/2169 ), Use Docker Compose instead of Swarm
