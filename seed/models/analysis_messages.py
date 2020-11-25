@@ -28,4 +28,4 @@ class AnalysisMessage(models.Model):
     # human-readable message which is presented on the frontend
     user_message = models.CharField(max_length=255, blank=False, default=None)
     # message for debugging purposes, not intended to be displayed on frontend
-    debug_message = models.CharField(max_length=255, blank=False, default=None)
+    debug_message = models.CharField(max_length=255, blank=True)
