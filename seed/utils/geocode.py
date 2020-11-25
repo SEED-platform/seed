@@ -193,7 +193,7 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
             results += response.json().get('results')
         except Exception as e:
             if response.status_code == 403:
-                raise MapQuestAPIKeyError
+                raise MapQuestAPIKeyError('Failed geocoding property states due to MapQuest error. Your MapQuest API Key is either invalid or at its limit.')
             else:
                 raise e
 

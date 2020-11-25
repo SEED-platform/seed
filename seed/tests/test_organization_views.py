@@ -8,7 +8,7 @@ import json
 
 from django.urls import reverse
 
-from seed.data_importer.tasks import match_buildings
+from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
@@ -213,7 +213,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2 - Create 1 unlinked property
         base_property_details['pm_property_id'] = '2nd Non-Match Set'
@@ -223,7 +223,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Check there doesn't exist links
         self.assertNotEqual(ps_1.propertyview_set.first().property_id, ps_2.propertyview_set.first().property_id)
@@ -283,7 +283,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.import_file_1.mapping_done = True
         self.import_file_1.save()
-        match_buildings(self.import_file_1.id)
+        geocode_and_match_buildings_task(self.import_file_1.id)
 
         # Cycle 2 / ImportFile 2 - Create 1 unlinked taxlot
         base_taxlot_details['jurisdiction_tax_lot_id'] = '2nd Non-Match Set'
@@ -293,7 +293,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
 
         self.import_file_2.mapping_done = True
         self.import_file_2.save()
-        match_buildings(self.import_file_2.id)
+        geocode_and_match_buildings_task(self.import_file_2.id)
 
         # Check there doesn't exist links
         self.assertNotEqual(tls_1.taxlotview_set.first().taxlot_id, tls_2.taxlotview_set.first().taxlot_id)
