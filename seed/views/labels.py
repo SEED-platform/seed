@@ -220,7 +220,6 @@ class UpdateInventoryLabelsAPIView(APIView):
         added = []
         if add_label_ids:
             model = self.models[inventory_type]
-            inventory_model = self.inventory_models[inventory_type]
             exclude = self.exclude(qs, inventory_type, add_label_ids)
             new_inventory_labels = [
                 self.label_factory(inventory_type, label_id, pk)
