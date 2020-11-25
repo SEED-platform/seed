@@ -10,10 +10,10 @@ class AnalysisInputFile(models.Model):
     For example, if running an analysis on multiple properties, it might be a
     CSV containing data collected from each property.
     """
-    DEFAULT = 1
+    BUILDINGSYNC = 1
 
     CONTENT_TYPES = (
-        (DEFAULT, 'default'),
+        (BUILDINGSYNC, 'BuildingSync'),
     )
 
     file = models.FileField(upload_to="analysis_input_files", max_length=500)

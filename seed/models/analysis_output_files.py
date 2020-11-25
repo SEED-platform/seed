@@ -7,13 +7,13 @@ class AnalysisOutputFile(models.Model):
     """
     The AnalysisOutputFile is a file returned as output from an analysis.
     """
-    DEFAULT = 1
+    BUILDINGSYNC = 1
 
     CONTENT_TYPES = (
-        (DEFAULT, 'default'),
+        (BUILDINGSYNC, 'BuildingSync'),
     )
 
-    file = models.FileField(upload_to="analysis_files", max_length=500)
+    file = models.FileField(upload_to="analysis_output_files", max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
 
     # An output file can be linked to one or more properties

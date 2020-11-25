@@ -39,6 +39,7 @@ class Analysis(models.Model):
         (COMPLETED, 'Completed'),
     )
 
+    name = models.CharField(max_length=255, blank=False, default=None)
     service = models.IntegerField(choices=SERVICE_TYPES)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
