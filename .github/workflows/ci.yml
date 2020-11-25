@@ -51,8 +51,8 @@ jobs:
         name: Install dependencies
         run: |
           npm install
-          sudo apt-get update
-          sudo apt-get install -y xvfb
+          sudo apt update
+          sudo apt install -y xvfb
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install ./google-chrome-stable_current_amd64.deb
       -
@@ -99,8 +99,8 @@ jobs:
           pip install --upgrade pip
           pip install tox==2.7.0
           sudo add-apt-repository ppa:ubuntugis/ppa
-          sudo apt-get update
-          sudo apt-get install gdal-bin
+          sudo apt update
+          sudo apt install gdal-bin
       -
         name: Run tox
         run: tox -e ${{ matrix.tox_env }}
