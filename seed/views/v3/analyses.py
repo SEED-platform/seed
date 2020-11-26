@@ -5,20 +5,16 @@
 :author
 """
 from drf_yasg.utils import swagger_auto_schema
-from django.db.models import Min
 from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework.decorators import api_view
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import Analysis, AnalysisPropertyView
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
-from seed.models import Cycle, Property, PropertyState
 
 class AnalysisViewSet(viewsets.ViewSet):
     serializer_class = AnalysisSerializer

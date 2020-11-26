@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from seed.models import AnalysisInputFile
 
+
 class AnalysisInputFileSerializer(serializers.ModelSerializer):
     content_type = serializers.SerializerMethodField('get_readable_content_type')
 

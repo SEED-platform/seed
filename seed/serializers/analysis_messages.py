@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from seed.models import AnalysisMessage
 
+
 class AnalysisMessageSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField('get_readable_type')
 

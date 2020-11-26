@@ -8,6 +8,7 @@ from rest_framework import serializers
 
 from seed.models import Analysis
 
+
 class AnalysisSerializer(serializers.ModelSerializer):
     service = serializers.SerializerMethodField('get_readable_service')
     status = serializers.SerializerMethodField('get_readable_status')
