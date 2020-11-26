@@ -9,11 +9,15 @@ from rest_framework import serializers
 from seed.models import Analysis
 
 class AnalysisSerializer(serializers.ModelSerializer):
-    type = serializers.SerializerMethodField('get_readable_type')
+    service = serializers.SerializerMethodField('get_readable_service')
+    status = serializers.SerializerMethodField('get_readable_status')
 
     class Meta:
         model = Analysis
         fields = '__all__'
 
-    def get_readable_type(self, obj):
-        return Analysis.ANALYSIS_TYPES[next((i for i, v in enumerate(Analysis.ANALYSIS_TYPES) if v[0] == obj.type), None)][1]
+    def get_readable_service(self, obj):
+        return Analysis.SERVICE_TYPES[next((i for i, v in enumerate(Analysis.SERVICE_TYPES) if v[0] == obj.service), None)][1]
+
+    def get_readable_status(self, obj):
+        return Analysis.STATUS_TYPES[next((i for i, v in enumerate(Analysis.STATUS_TYPES) if v[0] == obj.status), None)][1]
