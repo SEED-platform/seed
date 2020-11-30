@@ -7,6 +7,7 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
 from rest_framework import viewsets
+from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -19,12 +20,6 @@ from seed.utils.api_schema import AutoSchemaHelper
 class AnalysisViewSet(viewsets.ViewSet):
     serializer_class = AnalysisSerializer
     model = Analysis
-
-    def add_property_view_info(self, serialized_analysis, analysis_id):
-        analysis_property_views = AnalysisPropertyView.objects.filter(analysis=analysis_id)
-        serialized_analysis['number_of_analysis_property_views'] = analysis_property_views.count()
-        serialized_analysis['cycles'] = list(analysis_property_views.values_list('cycle', flat=True).distinct())
-        return serialized_analysis
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -44,7 +39,8 @@ class AnalysisViewSet(viewsets.ViewSet):
             if property_id is not None and AnalysisPropertyView.objects.filter(analysis=analysis.id, property=property_id).count() < 1:
                 continue
             serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis = self.add_property_view_info(serialized_analysis, analysis.id)
+            property_view_info = analysis.getPropertyViewInfo()
+            serialized_analysis.update(property_view_info)
             analyses.append(serialized_analysis)
 
         return JsonResponse({
@@ -52,13 +48,24 @@ class AnalysisViewSet(viewsets.ViewSet):
             'analyses': analyses
         })
 
+    @swagger_auto_schema(manual_parameters=[ AutoSchemaHelper.query_org_id_field(True) ])
+    @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     def retrieve(self, request, pk):
-        analysis = AnalysisSerializer(Analysis.objects.get(id=pk)).data
-        analysis = self.add_property_view_info(analysis, pk)
+        organization_id = int(request.query_params.get('organization_id', 0))
+        analysis = Analysis.objects.get(id=pk)
+        if (analysis.organization_id != organization_id):
+
+            return JsonResponse({
+                'status': 'error',
+                'message': "Requested analysis doesn't exist in this organization."
+            }, status=HTTP_409_CONFLICT)
+        serialized_analysis = AnalysisSerializer(analysis).data
+        property_view_info = analysis.getPropertyViewInfo()
+        serialized_analysis.update(property_view_info)
 
         return JsonResponse({
             'status': 'success',
-            'analysis': analysis
+            'analysis': serialized_analysis
         })
