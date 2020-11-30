@@ -52,8 +52,12 @@ class Analysis(models.Model):
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = JSONField(default=dict, blank=True)
 
-    def getPropertyViewInfo(self):
-        analysis_property_views = self.analysispropertyview_set.filter(analysis=self.id)
+    def getPropertyViewInfo(self, property_id=None):
+        if property_id is None:
+            analysis_property_views = self.analysispropertyview_set.filter(analysis=self.id)
+        else:
+            analysis_property_views = self.analysispropertyview_set.filter(analysis=self.id, property=property_id)
+
         return {
             'number_of_analysis_property_views': analysis_property_views.count(),
             'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())

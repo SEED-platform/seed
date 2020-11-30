@@ -36,10 +36,10 @@ class AnalysisViewSet(viewsets.ViewSet):
         property_id = request.query_params.get('property_id', None)
         analyses = []
         for analysis in Analysis.objects.filter(organization=organization_id):
-            if property_id is not None and AnalysisPropertyView.objects.filter(analysis=analysis.id, property=property_id).count() < 1:
+            property_view_info = analysis.getPropertyViewInfo(property_id)
+            if property_id is not None and property_view_info["number_of_analysis_property_views"] < 1:
                 continue
             serialized_analysis = AnalysisSerializer(analysis).data
-            property_view_info = analysis.getPropertyViewInfo()
             serialized_analysis.update(property_view_info)
             analyses.append(serialized_analysis)
 
@@ -55,7 +55,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk):
         organization_id = int(request.query_params.get('organization_id', 0))
         analysis = Analysis.objects.get(id=pk)
-        if (analysis.organization_id != organization_id):
+        if analysis.organization_id != organization_id:
 
             return JsonResponse({
                 'status': 'error',
