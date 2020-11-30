@@ -48,7 +48,7 @@ class AnalysisViewSet(viewsets.ViewSet):
             'analyses': analyses
         })
 
-    @swagger_auto_schema(manual_parameters=[ AutoSchemaHelper.query_org_id_field(True) ])
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
