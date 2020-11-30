@@ -28,7 +28,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and runserver terminal)
 * `pip install -r requirements/local.txt`
     * for condas python, you way need to run this command to get pip install to succeed: `conda install -c conda-forge python-crfsuite`
-* bin/install_javascript_dependencies.sh
+* npm install
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
