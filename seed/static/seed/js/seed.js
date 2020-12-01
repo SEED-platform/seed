@@ -1117,6 +1117,31 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'organization_analyses',
+        url: '/accounts/{organization_id:int}/analyses',
+        templateUrl: static_url + 'seed/partials/analyses.html',
+        controller: 'analyses_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
         name: 'inventory_list',
         url: '/{inventory_type:properties|taxlots}',
         templateUrl: static_url + 'seed/partials/inventory_list.html',
