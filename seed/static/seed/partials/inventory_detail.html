@@ -68,6 +68,10 @@
                         <a ng-click="open_update_labels_modal()" ng-disabled="selectedCount === 0">{$:: 'Add/Remove Labels' | translate $}</a>
                     </li>
 
+                    <li role="menuitem">
+                        <a ng-disabled="selectedCount === 0">{$:: 'Run Analysis' $}</a>
+                    </li>
+
                     <li role="menuitem" ng-if="::historical_items.length > 1">
                         <a ng-click="unmerge()" class="yellow-bg">{$:: 'Unmerge Last' | translate $}</a>
                     </li>

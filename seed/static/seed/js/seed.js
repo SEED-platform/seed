@@ -1345,6 +1345,11 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'inventory_detail_analysis',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/analysis',
+        templateUrl: static_url + 'seed/partials/inventory_detail_analysis.html'
+      })
+      .state({
         name: 'inventory_detail_meters',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/meters',
         templateUrl: static_url + 'seed/partials/inventory_detail_meters.html',
