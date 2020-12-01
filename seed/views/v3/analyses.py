@@ -35,10 +35,12 @@ class AnalysisViewSet(viewsets.ViewSet):
         organization_id = request.query_params.get('organization_id', None)
         property_id = request.query_params.get('property_id', None)
         analyses = []
-        for analysis in Analysis.objects.filter(organization=organization_id):
-            property_view_info = analysis.getPropertyViewInfo(property_id)
-            if property_id is not None and property_view_info["number_of_analysis_property_views"] < 1:
-                continue
+        if property_id is not None:
+            analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
+        else:
+            analyses_queryset = Analysis.objects.filter(organization=organization_id)
+        for analysis in analyses_queryset:
+            property_view_info = analysis.getPropertyViewInfo()
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(property_view_info)
             analyses.append(serialized_analysis)
