@@ -473,6 +473,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_analysis_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analysis_modal.html',
+          controller: 'inventory_detail_analysis_modal_controller',
+          resolve: {
+            inventory_ids: function () {
+              return [$scope.inventory.view_id];
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+      };
+
       $scope.unmerge = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',

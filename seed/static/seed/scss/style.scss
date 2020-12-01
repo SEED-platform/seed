@@ -2369,6 +2369,15 @@ select {
   background-color: #F1F1F1;
 }
 
+/* Holds inline form for creating new labels */
+.newAnalysisInput {
+  margin: 20px;
+  border: 1px solid #EEE;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+  background-color: #F1F1F1;
+}
+
 #label_admin {
   .sectionLabel {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;

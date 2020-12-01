@@ -1,0 +1,24 @@
+<div>
+    <div class="modal-header">
+        <h4 class="modal-title" id="manageLabelsModalLabel">Run Analysis</h4>
+    </div>
+    <div class="modal-body">
+        <div class="newAnalysisInput" style="margin-top:0;">
+            <form name="" class="form-inline" role="form" ng-submit="" novalidate>
+                <div class="form-group">
+                    <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create Analysis</label>
+                    <div class="input-group" style="padding-right:20px;">
+                        <input id="AnalysisName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="{$:: 'Analysis Name' | translate $}" sd-check-label-exists="labels" required>
+                    </div>
+                    <button type="submit"
+                            class="btn btn-primary"
+                            ng-disabled="newLabelForm.$invalid || disabled" translate>Create Analysis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" style="min-width:90px;" ng-disabled="!modified()" ng-click="done()" translate>Done</button>
+        <button type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()" translate>Cancel</button>
+    </div>
+</div>
