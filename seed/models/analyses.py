@@ -54,9 +54,9 @@ class Analysis(models.Model):
 
     def getPropertyViewInfo(self, property_id=None):
         if property_id is None:
-            analysis_property_views = self.analysispropertyview_set.filter(analysis=self.id)
+            analysis_property_views = self.analysispropertyview_set
         else:
-            analysis_property_views = self.analysispropertyview_set.filter(analysis=self.id, property=property_id)
+            analysis_property_views = self.analysispropertyview_set.filter(property=property_id)
 
         return {
             'number_of_analysis_property_views': analysis_property_views.count(),
