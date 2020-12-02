@@ -1292,7 +1292,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         """
         # Apply the same meter and an overlapping meter reading to each Property
         tz_obj = timezone(TIME_ZONE)
-        for i, property in enumerate(Property.objects.all()):
+        for i, property in enumerate(Property.objects.order_by('id').all()):
             meter = Meter.objects.create(
                 property=property,
                 source=Meter.PORTFOLIO_MANAGER,
