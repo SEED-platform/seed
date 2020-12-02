@@ -52,7 +52,7 @@ class Analysis(models.Model):
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = JSONField(default=dict, blank=True)
 
-    def getPropertyViewInfo(self, property_id=None):
+    def get_property_view_info(self, property_id=None):
         if property_id is not None:
             analysis_property_views = self.analysispropertyview_set.filter(property=property_id)
         else:
