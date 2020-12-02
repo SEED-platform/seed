@@ -10,15 +10,9 @@ from seed.models import Analysis
 
 
 class AnalysisSerializer(serializers.ModelSerializer):
-    service = serializers.SerializerMethodField('get_readable_service')
-    status = serializers.SerializerMethodField('get_readable_status')
+    service = serializers.CharField(source='get_service_display')
+    status = serializers.CharField(source='get_status_display')
 
     class Meta:
         model = Analysis
         fields = '__all__'
-
-    def get_readable_service(self, obj):
-        return Analysis.SERVICE_TYPES[next((i for i, v in enumerate(Analysis.SERVICE_TYPES) if v[0] == obj.service), None)][1]
-
-    def get_readable_status(self, obj):
-        return Analysis.STATUS_TYPES[next((i for i, v in enumerate(Analysis.STATUS_TYPES) if v[0] == obj.status), None)][1]

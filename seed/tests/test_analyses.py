@@ -52,8 +52,8 @@ class TestAnalyses(TestCase):
         # create an analysis with two property views, each with the same property but a different cycle
         self.analysis_a = Analysis.objects.create(
             name='test a',
-            service=1,
-            status=10,
+            service=Analysis.BSYNCR,
+            status=Analysis.CREATING,
             user=self.user,
             organization=self.org
         )
@@ -73,8 +73,8 @@ class TestAnalyses(TestCase):
         # create an analysis with two property views, each with the same cycle but a different property
         self.analysis_b = Analysis.objects.create(
             name='test b',
-            service=1,
-            status=20,
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
             user=self.user,
             organization=self.org
         )
@@ -94,8 +94,8 @@ class TestAnalyses(TestCase):
         # create an analysis with no property views
         self.analysis_c = Analysis.objects.create(
             name='test c',
-            service=1,
-            status=10,
+            service=Analysis.BSYNCR,
+            status=Analysis.QUEUED,
             user=self.user,
             organization=self.org
         )
@@ -103,8 +103,8 @@ class TestAnalyses(TestCase):
         # create an analysis with a different organization
         self.analysis_d = Analysis.objects.create(
             name='test d',
-            service=1,
-            status=10,
+            service=Analysis.BSYNCR,
+            status=Analysis.RUNNING,
             user=self.user,
             organization=self.org_b
         )

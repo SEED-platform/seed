@@ -24,7 +24,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(True),
-            AutoSchemaHelper.query_integer_field('property_id', True, 'Property ID')
+            AutoSchemaHelper.query_integer_field('property_id', False, 'Property ID')
         ]
     )
     @require_organization_id_class
@@ -57,9 +57,9 @@ class AnalysisViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     def retrieve(self, request, pk):
         organization_id = int(request.query_params.get('organization_id', 0))
-        analysis = Analysis.objects.get(id=pk)
-        if analysis.organization_id != organization_id:
-
+        try:
+            analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+        except Analysis.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
                 'message': "Requested analysis doesn't exist in this organization."

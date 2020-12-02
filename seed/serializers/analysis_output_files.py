@@ -10,11 +10,8 @@ from seed.models import AnalysisOutputFile
 
 
 class AnalysisOutputFileSerializer(serializers.ModelSerializer):
-    content_type = serializers.SerializerMethodField('get_readable_content_type')
+    content_type = CharField(source='get_content_type_display')
 
     class Meta:
         model = AnalysisOutputFile
         fields = '__all__'
-
-    def get_readable_content_type(self, obj):
-        return AnalysisOutputFile.CONTENT_TYPES[next((i for i, v in enumerate(AnalysisOutputFile.CONTENT_TYPES) if v[0] == obj.content_type), None)][1]
