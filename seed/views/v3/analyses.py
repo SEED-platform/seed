@@ -38,7 +38,7 @@ class AnalysisViewSet(viewsets.ViewSet):
         if property_id is not None:
             analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id).distinct()
         else:
-            analyses_queryset = Analysis.objects.filter(organization=organization_id).distinct()
+            analyses_queryset = Analysis.objects.filter(organization=organization_id)
         for analysis in analyses_queryset:
             property_view_info = analysis.get_property_view_info(property_id)
             serialized_analysis = AnalysisSerializer(analysis).data
