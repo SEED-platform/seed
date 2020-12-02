@@ -10,7 +10,7 @@ from seed.models import AnalysisInputFile
 
 
 class AnalysisInputFileSerializer(serializers.ModelSerializer):
-    content_type = CharField(source='get_content_type_display')
+    content_type = serializers.CharField(source='get_content_type_display')
 
     class Meta:
         model = AnalysisInputFile

@@ -10,7 +10,7 @@ from seed.models import AnalysisMessage
 
 
 class AnalysisMessageSerializer(serializers.ModelSerializer):
-    type = CharField(source='get_type_display')
+    type = serializers.CharField(source='get_type_display')
 
     class Meta:
         model = AnalysisMessage
