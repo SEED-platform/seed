@@ -51,62 +51,62 @@ class TestAnalyses(TestCase):
 
         # create an analysis with two property views, each with the same property but a different cycle
         self.analysis_a = Analysis.objects.create(
-            name = 'test a',
-            service = 1,
-            status = 10,
-            user = self.user,
-            organization = self.org
+            name='test a',
+            service=1,
+            status=10,
+            user=self.user,
+            organization=self.org
         )
-        property_view_a = AnalysisPropertyView.objects.create(
-            analysis = self.analysis_a,
-            property = self.property_a,
-            cycle = cycle_a,
+        AnalysisPropertyView.objects.create(
+            analysis=self.analysis_a,
+            property=self.property_a,
+            cycle=cycle_a,
             property_state=property_state_a
         )
-        property_view_b = AnalysisPropertyView.objects.create(
-            analysis = self.analysis_a,
-            property = self.property_a,
-            cycle = cycle_b,
+        AnalysisPropertyView.objects.create(
+            analysis=self.analysis_a,
+            property=self.property_a,
+            cycle=cycle_b,
             property_state=property_state_b
         )
 
         # create an analysis with two property views, each with the same cycle but a different property
         self.analysis_b = Analysis.objects.create(
-            name = 'test b',
-            service = 1,
-            status = 20,
-            user = self.user,
-            organization = self.org
+            name='test b',
+            service=1,
+            status=20,
+            user=self.user,
+            organization=self.org
         )
-        property_view_c = AnalysisPropertyView.objects.create(
-            analysis = self.analysis_b,
-            property = self.property_a,
-            cycle = cycle_a,
+        AnalysisPropertyView.objects.create(
+            analysis=self.analysis_b,
+            property=self.property_a,
+            cycle=cycle_a,
             property_state=property_state_c
         )
-        property_view_d = AnalysisPropertyView.objects.create(
-            analysis = self.analysis_b,
-            property = property_b,
-            cycle = cycle_a,
+        AnalysisPropertyView.objects.create(
+            analysis=self.analysis_b,
+            property=property_b,
+            cycle=cycle_a,
             property_state=property_state_d
         )
 
         # create an analysis with no property views
         self.analysis_c = Analysis.objects.create(
-            name = 'test c',
-            service = 1,
-            status = 10,
-            user = self.user,
-            organization = self.org
+            name='test c',
+            service=1,
+            status=10,
+            user=self.user,
+            organization=self.org
         )
 
         # create an analysis with a different organization
         self.analysis_d = Analysis.objects.create(
-            name = 'test d',
-            service = 1,
-            status = 10,
-            user = self.user,
-            organization = self.org_b
+            name='test d',
+            service=1,
+            status=10,
+            user=self.user,
+            organization=self.org_b
         )
 
     def test_list_with_organization(self):
