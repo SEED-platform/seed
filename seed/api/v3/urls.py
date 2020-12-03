@@ -6,6 +6,7 @@ from rest_framework import routers
 
 from rest_framework_nested import routers as nested_routers
 
+from seed.views.v3.analyses import AnalysisViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
@@ -40,6 +41,7 @@ from seed.views.v3.uploads import UploadViewSet
 from seed.views.v3.users import UserViewSet
 
 api_v3_router = routers.DefaultRouter()
+api_v3_router.register(r'analyses', AnalysisViewSet, base_name='analyses')
 api_v3_router.register(r'building_files', BuildingFileViewSet, base_name="building_files")
 api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, base_name="column_list_profiles")
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, base_name='column_mapping_profiles')
