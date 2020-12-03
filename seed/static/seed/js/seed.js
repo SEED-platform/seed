@@ -37,6 +37,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
+  'BE.seed.controller.analyses',
   'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
@@ -116,6 +117,7 @@ angular.module('BE.seed.directives', [
   'sdUploader'
 ]);
 angular.module('BE.seed.services', [
+  'BE.seed.service.analyses',
   'BE.seed.service.auth',
   'BE.seed.service.data_quality',
   'BE.seed.service.column_mappings',
@@ -1122,13 +1124,15 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
+          analyses_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
+            return analyses_service.get_analyses_for_org($stateParams.organization_id);
+          }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_organization(organization_id);
+            return organization_service.get_organization($stateParams.organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_member'])
+            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;

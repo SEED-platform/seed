@@ -6,14 +6,19 @@
 angular.module('BE.seed.controller.analyses', [])
   .controller('analyses_controller', [
     '$scope',
+    'analyses_payload',
     'organization_payload',
     'auth_payload',
+    'urls',
     function (
-      $scope, 
+      $scope,
+      analyses_payload,
       organization_payload,
-      auth_payload
+      auth_payload,
+      urls
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
+      $scope.analyses = analyses_payload.analyses;
     }
   ]);
