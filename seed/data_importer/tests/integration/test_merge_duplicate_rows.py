@@ -201,7 +201,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         unique_property_states, _ = match.filter_duplicate_states(ps)
         self.assertEqual(len(unique_property_states), 4)
 
-        tasks.match_buildings(self.import_file.id)
+        tasks.geocode_and_match_buildings_task(self.import_file.id)
 
         self.assertEqual(Property.objects.count(), 3)
         self.assertEqual(PropertyView.objects.count(), 3)

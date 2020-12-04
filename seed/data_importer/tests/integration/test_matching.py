@@ -193,7 +193,7 @@ class TestMatching(DataMappingBaseTestCase):
         new_import_file = ImportFile.objects.create(import_record=self.import_record,
                                                     mapping_done=True)
 
-        tasks.match_buildings(new_import_file.pk)
+        tasks.geocode_and_match_buildings_task(new_import_file.pk)
 
         duplicate_import_file = ImportFile.objects.create(
             import_record=self.import_record,
