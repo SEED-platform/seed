@@ -1,4 +1,5 @@
 # .git  # For now add in the .git repo so that the version is parsed on the page correctly
+.github
 .gitignore
 .dockerignore
 .idea
