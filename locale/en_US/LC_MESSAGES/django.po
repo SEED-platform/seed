@@ -1099,6 +1099,9 @@ msgstr "Note, geocoding requires at least 1 column is used and populated to cons
 msgid "GEOCODING_NOW"
 msgstr "Geocoding now..."
 
+msgid "Geolocating has been disabled for this organization."
+msgstr "Geolocating has been disabled for this organization."
+
 msgid "Get a New API Key"
 msgstr "Get a New API Key"
 

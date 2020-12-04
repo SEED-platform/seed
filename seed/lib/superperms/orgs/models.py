@@ -191,6 +191,8 @@ class Organization(models.Model):
 
     mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
 
+    geocoding_enabled = models.BooleanField(default=True)
+
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     comstock_enabled = models.BooleanField(default=False)

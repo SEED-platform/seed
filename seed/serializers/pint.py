@@ -78,7 +78,7 @@ def pretty_units_from_spec(unit_spec):
     return pretty_units(quantity)
 
 
-def add_pint_unit_suffix(organization, column):
+def add_pint_unit_suffix(organization, column, data_key="data_type", display_key="display_name"):
     """
     transforms the displayName coming from `Column.retrieve_all` to add known
     units where applicable,  eg. 'Gross Floor Area' to 'Gross Floor Area (sq.
@@ -93,15 +93,21 @@ def add_pint_unit_suffix(organization, column):
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + ' ({})'.format(display_units)
 
+    if data_key not in column:
+        data_key = "dataType"
+    if display_key not in column:
+        display_key = "displayName"
+
     try:
-        if column['dataType'] == 'area':
-            column['displayName'] = format_column_name(
-                column['displayName'], organization.display_units_area)
-        elif column['dataType'] == 'eui':
-            column['displayName'] = format_column_name(
-                column['displayName'], organization.display_units_eui)
+        if column[data_key] == 'area':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_area)
+        elif column[data_key] == 'eui':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_eui)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
+
     return column
 
 

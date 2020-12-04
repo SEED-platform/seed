@@ -348,6 +348,7 @@
     "GEOCODING_INVENTORY_INCOMPLETE": "Geocoding Incomplete",
     "GEOCODING_NEEDS_THREE_COLS": "Note, geocoding requires at least 1 column is used and populated to construct full addresses.",
     "GEOCODING_NOW": "Geocoding now...",
+    "Geolocating has been disabled for this organization.": "Geolocating has been disabled for this organization.",
     "Get a New API Key": "Get a New API Key",
     "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.": "Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.",
     "Getting Started": "Getting Started",
