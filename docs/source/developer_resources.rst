@@ -409,7 +409,7 @@ To make a release do the following:
 
 4. Paste the results (remove unneeded Accepted Pull Requests) into the CHANGELOG.md. Make sure to cleanup the formatting.
 5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
-6. Once develop passes, then create a new PR from develop to master.
+6. Once develop passes, then create a new PR from develop to main.
 7. Draft new Release from Github (https://github.com/SEED-platform/seed/releases).
 8. Include list of changes since previous release (i.e. the content in the CHANGELOG.md)
 9. Verify that the Docker versions are built and pushed to Docker hub (https://hub.docker.com/r/seedplatform/seed/tags/).
