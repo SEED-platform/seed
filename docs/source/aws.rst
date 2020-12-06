@@ -62,7 +62,7 @@ Clone the **SEED** repository from **github**
 
 enter the repo and install the python dependencies from `requirements`_
 
-.. _requirements: https://github.com/SEED-platform/seed/blob/master/requirements/aws.txt
+.. _requirements: https://github.com/SEED-platform/seed/blob/main/requirements/aws.txt
 
 .. code-block:: console
 
