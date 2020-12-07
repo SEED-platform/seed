@@ -40,12 +40,15 @@
                     <tbody>
                         <tr ng-repeat="analysis in analyses  | filter:filter_params:strict">
                             <td>{$:: analysis.name $}</td>
-                            <td></td>
+                            <td>
+                            	<i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>
+                            	<i class="glyphicon glyphicon-trash" aria-hidden="true"></i>
+                            </td>
                             <td>{$:: analysis.number_of_analysis_property_views $}</td>
                             <td>{$:: analysis.service $}</td>
-                            <td>{$:: analysis.status $}</td>
-                            <td>{$:: analysis.start_time $}</td>
-                            <td>{$:: analysis.end_time - analysis.start_time $}</td>
+                            <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
+                            <td>{$:: analysis.start_time | date : 'MM-dd-yyyy' $}</td>
+                            <td>{$:: (analysis.end_time - analysis.start_time < 1 ? '' : analysis.end_time - analysis.start_time) | date : 'MM-dd-yyyy' $}</td>
                             <td>{$:: analysis.user $}</td>
                         </tr>
                         </tr>
