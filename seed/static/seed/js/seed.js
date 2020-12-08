@@ -1130,6 +1130,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             return organization_service.get_organization($stateParams.organization_id);
           }],
+          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_users({org_id: organization_id});
+          }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
             return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])

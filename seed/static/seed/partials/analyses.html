@@ -47,9 +47,9 @@
                             <td>{$:: analysis.number_of_analysis_property_views $}</td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
-                            <td>{$:: analysis.start_time | date : 'MM-dd-yyyy' $}</td>
-                            <td>{$:: (analysis.end_time - analysis.start_time < 1 ? '' : analysis.end_time - analysis.start_time) | date : 'MM-dd-yyyy' $}</td>
-                            <td>{$:: analysis.user $}</td>
+                            <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
+                            <td>{$:: analysis | get_run_duration $}</td>
+                            <td>{$:: users | filter : {'user_id':analysis.user} | get_run_author $}</td>
                         </tr>
                         </tr>
                     </tbody>
