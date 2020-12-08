@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - master
+      - main
 
 jobs:
   publish:
@@ -39,12 +39,12 @@ jobs:
           PACKAGE_VERSION=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
           echo "BRANCH_NAME: ${BRANCH_NAME}"
           echo "PACKAGE_VERSION: ${PACKAGE_VERSION}"
-          if [[ ${BRANCH_NAME} == "master" ]]; then
+          if [[ ${BRANCH_NAME} == "main" ]]; then
             SEED_TAG=${PACKAGE_VERSION}
           elif [[ ${BRANCH_NAME} == "develop" ]]; then
             SEED_TAG=develop
           else
-            echo "Branch ${BRANCH_NAME} is not master or develop (this should not happen), exiting"
+            echo "Branch ${BRANCH_NAME} is not main or develop (this should not happen), exiting"
             exit 1
           fi
           echo ::set-output name=seed_tag::${SEED_TAG}

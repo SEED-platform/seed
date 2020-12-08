@@ -2628,6 +2628,27 @@ gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
 
+/* ANALYSIS STATUS COLORS */
+
+.analysis-status {
+
+  &.creating, &.warning {
+    background: $warningBackground !important;
+  }
+
+  &.stopped, &.failed, &.error {
+    background: $errorBackground !important;
+  }
+
+  &.ready, &.completed, &.success {
+    background: $successBackground !important;
+  }
+
+  &.queued, &.running, &.info {
+    background: $infoBackground !important;
+  }
+}
+
 /* NOTIFICATIONS */
 
 .ui-notification {
