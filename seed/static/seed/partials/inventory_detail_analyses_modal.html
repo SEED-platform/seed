@@ -4,21 +4,30 @@
     </div>
     <div class="modal-body">
         <div class="newAnalysisInput" style="margin-top:0;">
-            <form name="" class="form-inline" role="form" ng-submit="" novalidate>
+            <form role="form" ng-submit="" novalidate>
                 <div class="form-group">
-                    <label class="control-label sectionLabel" style="padding-right:20px;" translate>Create Analysis</label>
-                    <div class="input-group" style="padding-right:20px;">
-                        <input id="AnalysisName" type="text" name="name" class="form-control" ng-model="new_label.name" placeholder="{$:: 'Analysis Name' | translate $}" sd-check-label-exists="labels" required>
-                    </div>
-                    <button type="submit"
-                            class="btn btn-primary"
-                            ng-disabled="newLabelForm.$invalid || disabled" translate>Create Analysis</button>
+                    <label class="control-label sectionLabel" translate>Name</label>
+                    <input id="AnalysisName" type="text" name="name" class="form-control"
+                           placeholder="{$:: 'Analysis Name' | translate $}" required>
+                </div>
+                <div class="form-group">
+                    <label class="control-label sectionLabel">Type</label>
+                    <select class="form-control" ng-model="analysis.service" ng-dropdown required>
+                        <option ng-option value="Bsyncr" selected="selected">BSyncr</option>
+                    </select>
+                </div>
+                <div class="form-group" ng-if="analysis.service == 'Bsyncr'">
+                    <label class="control-label sectionLabel">BSyncr Meter Selection</label>
+                    <select class="form-control" ng-model="analysis.service" ng-dropdown required>
+                        <option ng-repeat="meter in meters" selected="selected">{$:: meter.name $}</option>
+                    </select>
                 </div>
             </form>
+            <button type="submit" class="btn btn-primary" translate>Create Analysis</button>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" style="min-width:90px;" ng-disabled="!modified()" ng-click="done()" translate>Done</button>
-        <button type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()" translate>Cancel</button>
+        <button type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()" translate>Cancel
+        </button>
     </div>
 </div>

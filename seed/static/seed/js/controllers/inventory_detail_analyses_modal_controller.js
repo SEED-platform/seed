@@ -15,8 +15,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     '$uibModalInstance',
     'inventory_ids',
     'inventory_type',
+    'meters',
     'Notification',
-    function ($scope, $log, $uibModalInstance, inventory_ids, inventory_type, notification) {
+    function ($scope, $log, $uibModalInstance, inventory_ids, inventory_type, meters, notification) {
+      $scope.meters = meters;
       $scope.inventory_ids = inventory_ids;
       $scope.inventory_type = inventory_type;
       //keep track of status of service call
