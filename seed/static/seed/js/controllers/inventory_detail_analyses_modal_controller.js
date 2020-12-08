@@ -8,8 +8,8 @@
  *
  *
  */
-angular.module('BE.seed.controller.inventory_detail_analysis_modal', [])
-  .controller('inventory_detail_analysis_modal_controller', [
+angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
+  .controller('inventory_detail_analyses_modal_controller', [
     '$scope',
     '$log',
     '$uibModalInstance',

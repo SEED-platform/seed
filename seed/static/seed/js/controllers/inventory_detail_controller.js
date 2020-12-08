@@ -473,9 +473,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
-      $scope.open_analysis_modal = function () {
+      $scope.open_analyses_modal = function () {
         var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analysis_modal.html',
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analysis_modal_controller',
           resolve: {
             inventory_ids: function () {

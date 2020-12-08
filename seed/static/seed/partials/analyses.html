@@ -14,44 +14,5 @@
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header fixed_height_short">
-            <div class="left section_action_container">
-            	<h2><i class="fa fa-user"></i> {$:: 'Analyses' | translate $}</h2>
-           	</div>
-        </div>
-    </div>
-        <div class="section_content_container">
-        <div class="section_content">
-            <div class="table_list_container">
-                <table id="analyses-table" class="table table-striped table_highlight_first">
-                    <thead>
-                        <tr>
-                            <th translate>Analysis Name (User Defined)</th>
-                            <th translate>Actions</th>
-                            <th translate>Number of Properties</th>
-                            <th translate>Type</th>
-                            <th translate>Run Status</th>
-                            <th translate>Run Date</th>
-                            <th translate>Run Duration</th>
-                            <th translate>Run Author</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="analysis in analyses  | filter:filter_params:strict">
-                            <td>{$:: analysis.name $}</td>
-                            <td></td>
-                            <td>{$:: analysis.number_of_analysis_property_views $}</td>
-                            <td>{$:: analysis.service $}</td>
-                            <td>{$:: analysis.status $}</td>
-                            <td>{$:: analysis.start_time $}</td>
-                            <td>{$:: analysis.end_time - analysis.start_time $}</td>
-                            <td>{$:: analysis.user $}</td>
-                        </tr>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <div ng-include="::urls.static_url + 'seed/partials/analyses_table.html'"></div>
 </div>

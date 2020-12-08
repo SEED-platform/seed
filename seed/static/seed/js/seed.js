@@ -64,8 +64,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
-  'BE.seed.controller.inventory_detail_analysis',
-  'BE.seed.controller.inventory_detail_analysis_modal',
+  'BE.seed.controller.inventory_detail_analyses',
+  'BE.seed.controller.inventory_detail_analyses_modal',
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
@@ -1375,10 +1375,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
-        name: 'inventory_detail_analysis',
-        url: '/{inventory_type:properties|taxlots}/{view_id:int}/analysis',
-        templateUrl: static_url + 'seed/partials/inventory_detail_analysis.html',
-        controller: 'inventory_detail_analysis_controller',
+        name: 'inventory_detail_analyses',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/analyses',
+        templateUrl: static_url + 'seed/partials/inventory_detail_analyses.html',
+        controller: 'inventory_detail_analyses_controller',
         resolve: {
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
@@ -1392,17 +1392,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
-          property_meter_usage: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-            var organization_id = user_service.get_organization().id;
-            return meter_service.property_meter_usage($stateParams.view_id, organization_id, 'Exact');
-          }],
-          meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-            var organization_id = user_service.get_organization().id;
-            return meter_service.get_meters($stateParams.view_id, organization_id);
-          }],
-          cycles: ['cycle_service', function (cycle_service) {
-            return cycle_service.get_cycles();
-          }]
+          // analyses_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
+          //   return analyses_service.get_analyses_for_org();
+          // }],
         }
       })
       .state({
