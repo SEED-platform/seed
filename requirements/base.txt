@@ -68,7 +68,11 @@ oauthlib==2.0.2
 # cffi & cryptography dependencies needs to be installed via bitbucket/github due to a pip segfault with Python 3.6.7
 # -e hg+https://bitbucket.org/cffi/cffi@v1.11.5#egg=cffi
 # -e git+https://github.com/pyca/cryptography@2.5#egg=cryptography
+
+# Used by jwt-oauth2
+django-braces==1.14.0
+
 jwt-oauth2>=0.1.1
-django-oauth-toolkit==0.12.0
+django-oauth-toolkit==1.0.0
 
 future==0.18.2
