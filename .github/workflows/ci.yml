@@ -65,7 +65,11 @@ jobs:
         run: |
           docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
           docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web_1 coverage run manage.py test seed --settings=config.settings.docker_dev
-          docker exec --env COVERALLS_REPO_TOKEN seed_web_1 coveralls
+          if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
+            docker exec --env COVERALLS_REPO_TOKEN seed_web_1 coveralls
+          else
+            echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
+          fi
       -
         name: Test Frontend
         if: ${{ matrix.test_env == 'functional' }}
