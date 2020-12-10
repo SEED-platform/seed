@@ -158,6 +158,12 @@ msgstr "Admin"
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
+msgid "Analyses"
+msgstr "Analyses"
+
+msgid "Analysis Name (User Defined)"
+msgstr "Nom de l'analyse (défini par l'utilisateur)"
+
 msgid "and"
 msgstr "et"
 
@@ -1666,7 +1672,7 @@ msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
 msgstr "{num_properties,plural,=0{aucune propriété} one{<strong>1</strong> propriété} other{<strong>#</strong> propriétés}} et {num_taxlots,plural,=0{aucun lot d'impôt} one{<strong>1</strong>lot d'impôt} other{<strong>#</strong> lots d'impôt}} ont été supprimé"
 
 msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
-msgstr "Il existe {num_property_columns} colonnes de propriétés et {num_taxlot_colums} colonnes de lot d'impôt qui vous sont accessibles."
+msgstr "Il existe {num_property_columns} colonnes de propriétés et {num_taxlot_columns} colonnes de lot d'impôt qui vous sont accessibles."
 
 msgid "Number"
 msgstr "Nombre"
@@ -2142,6 +2148,18 @@ msgstr "Rangée 4"
 msgid "Row 5"
 msgstr "Rangée 5"
 
+msgid "Run Author"
+msgstr "Exécuter l'auteur"
+
+msgid "Run Date"
+msgstr "Date d'exécution"
+
+msgid "Run Duration"
+msgstr "Durée de l'exécution"
+
+msgid "Run Status"
+msgstr "État de l'exécution"
+
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -2554,6 +2572,9 @@ msgstr "Nombre total de lignes dans le fichier d'importation"
 
 msgid "true"
 msgstr "vrai"
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Type of Submittal"
 msgstr "Type de soumission"
