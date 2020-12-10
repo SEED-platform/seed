@@ -8,7 +8,7 @@ from collections import namedtuple
 
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 
 from seed.data_importer.tasks import hash_state_object
 from seed.models import (
@@ -55,39 +55,40 @@ class AnalysisPropertyView(models.Model):
         :param org_id: int
         :returns: tuple(list[int], list[BatchCreateError])
         """
-        property_view_ids = set(property_view_ids)
-        property_views = PropertyView.objects.filter(
-            id__in=property_view_ids,
-            property__organization_id=org_id
-        )
+        with transaction.atomic():
+            property_view_ids = set(property_view_ids)
+            property_views = PropertyView.objects.filter(
+                id__in=property_view_ids,
+                property__organization_id=org_id
+            )
 
-        missing_property_views = property_view_ids - set(property_views.values_list('id', flat=True))
-        failures = [
-            BatchCreateError(view_id, 'No such PropertyView')
-            for view_id in missing_property_views
-        ]
+            missing_property_views = property_view_ids - set(property_views.values_list('id', flat=True))
+            failures = [
+                BatchCreateError(view_id, 'No such PropertyView')
+                for view_id in missing_property_views
+            ]
 
-        analysis_property_view_ids = []
-        for property_view in property_views:
-            try:
-                # clone the property state
-                property_state = property_view.state
-                property_state.pk = None
-                property_state.save()
+            analysis_property_view_ids = []
+            for property_view in property_views:
+                try:
+                    # clone the property state
+                    property_state = property_view.state
+                    property_state.pk = None
+                    property_state.save()
 
-                analysis_property_view = AnalysisPropertyView(
-                    analysis_id=analysis_id,
-                    property=property_view.property,
-                    cycle=property_view.cycle,
-                    property_state=property_state
-                )
-                analysis_property_view.full_clean()
-                analysis_property_view.save()
-                analysis_property_view_ids.append(analysis_property_view.id)
-            except ValidationError as e:
-                failures.append(BatchCreateError(
-                    property_view.id,
-                    f'Validation of new AnalysisPropertyView failed:\n{e}'
-                ))
+                    analysis_property_view = AnalysisPropertyView(
+                        analysis_id=analysis_id,
+                        property=property_view.property,
+                        cycle=property_view.cycle,
+                        property_state=property_state
+                    )
+                    analysis_property_view.full_clean()
+                    analysis_property_view.save()
+                    analysis_property_view_ids.append(analysis_property_view.id)
+                except ValidationError as e:
+                    failures.append(BatchCreateError(
+                        property_view.id,
+                        f'Validation of new AnalysisPropertyView failed:\n{e}'
+                    ))
 
         return analysis_property_view_ids, failures
