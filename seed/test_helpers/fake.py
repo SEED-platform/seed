@@ -804,7 +804,6 @@ class FakeAnalysisFactory(BaseFake):
             'user': user if user is not None else user,
             'service': service if service is not None else Analysis.BSYNCR,
             'start_time': datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
-            'status': Analysis.CREATING,
             'configuration': configuration if configuration is not None else {},
         }
 

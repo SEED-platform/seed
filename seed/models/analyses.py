@@ -45,7 +45,7 @@ class Analysis(models.Model):
     service = models.IntegerField(choices=SERVICE_TYPES)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    status = models.IntegerField(choices=STATUS_TYPES)
+    status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     configuration = JSONField(default=dict, blank=True)
