@@ -13,6 +13,7 @@ from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
+    FakeAnalysisFactory,
 )
 from seed.utils.organizations import create_organization
 
@@ -33,12 +34,12 @@ class TestAnalysisPropertyViews(TestCase):
         cycle_a = FakeCycleFactory(organization=self.org_a, user=self.user).get_cycle(name="Cycle Org A")
         cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
-        self.analysis_a = Analysis.objects.create(
-            name='Quite neat',
-            service=Analysis.BSYNCR,
-            status=Analysis.CREATING,
-            user=self.user,
-            organization=self.org_a
+        self.analysis_a = (
+            FakeAnalysisFactory(organization=self.org_a, user=self.user)
+                .get_analysis(
+                    name='Quite neat',
+                    service=Analysis.BSYNCR,
+                )
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)

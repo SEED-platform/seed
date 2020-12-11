@@ -20,7 +20,9 @@ from config.settings.common import TIME_ZONE
 from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Analysis, AnalysisPropertyView
 from seed.test_helpers.fake import (
-    FakePropertyViewFactory
+    FakePropertyViewFactory,
+    FakeAnalysisPropertyView,
+    FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input
@@ -40,13 +42,26 @@ class TestBsyncrPipeline(TestCase):
         self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
 
-        self.property_view = FakePropertyViewFactory(organization=self.org).get_property_view(
-            latitude=39.76550841416409,
-            longitude=-104.97855661401148
+        property_state = (
+            FakePropertyStateFactory(organization=self.org)
+                .get_property_state(
+                    # fields required for analysis
+                    latitude=39.76550841416409,
+                    longitude=-104.97855661401148
+                )
+        )
+        self.analysis_property_view = (
+            FakeAnalysisPropertyView(organization=self.org, user=self.user)
+                .get_analysis_property_view(
+                    property_state=property_state,
+                    # analysis args
+                    name='Quite neat',
+                    service=Analysis.BSYNCR,
+                )
         )
 
         self.meter = Meter.objects.create(
-            property=self.property_view.property,
+            property=self.analysis_property_view.property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
@@ -60,17 +75,6 @@ class TestBsyncrPipeline(TestCase):
             source_unit='kWh',
             conversion_factor=1.00
         )
-
-        self.analysis = Analysis.objects.create(
-            name='Quite neat',
-            service=Analysis.BSYNCR,
-            status=Analysis.CREATING,
-            user=self.user,
-            organization=self.org
-        )
-
-        analysis_view_ids, _ = AnalysisPropertyView.batch_create(self.analysis.id, [self.property_view.id])
-        self.analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_view_ids[0])
 
     def test_build_bsyncr_input_returns_valid_bsync_document(self):
         # Act
