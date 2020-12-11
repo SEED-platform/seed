@@ -41,25 +41,23 @@ class AnalysisPropertyView(models.Model):
     parsed_results = JSONField(default=dict, blank=True)
 
     @classmethod
-    def batch_create(cls, analysis_id, property_view_ids, org_id):
+    def batch_create(cls, analysis_id, property_view_ids):
         """Creates AnalysisPropertyViews from provided PropertyView IDs.
-        The org_id is used to verify each PropertyView is a part of the
-        intended organization. The method returns a tuple, the first value being
-        a list of the created AnalysisPropertyView IDs, the second value being
-        a list of BatchCreateErrors.
+        The method returns a tuple, the first value being a list of the created
+        AnalysisPropertyView IDs, the second value being a list of BatchCreateErrors.
 
         Intended to be used when initializing an analysis.
 
         :param analysis_id: int
         :param property_view_ids: list[int]
-        :param org_id: int
         :returns: tuple(list[int], list[BatchCreateError])
         """
+        analysis = Analysis.objects.get(id=analysis_id)
         with transaction.atomic():
             property_view_ids = set(property_view_ids)
             property_views = PropertyView.objects.filter(
                 id__in=property_view_ids,
-                property__organization_id=org_id
+                property__organization_id=analysis.organization_id,
             )
 
             missing_property_views = property_view_ids - set(property_views.values_list('id', flat=True))

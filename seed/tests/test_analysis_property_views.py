@@ -58,7 +58,6 @@ class TestAnalysisPropertyViews(TestCase):
         analysis_view_ids, failures = AnalysisPropertyView.batch_create(
             analysis_id=self.analysis_a.id,
             property_view_ids=[p.id for p in self.property_views_a],
-            org_id=self.org_a.id
         )
 
         # Assert
@@ -95,7 +94,6 @@ class TestAnalysisPropertyViews(TestCase):
         analysis_view_ids, failures = AnalysisPropertyView.batch_create(
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
-            org_id=self.org_a.id
         )
 
         # Assert
@@ -114,7 +112,6 @@ class TestAnalysisPropertyViews(TestCase):
         analysis_view_ids, failures = AnalysisPropertyView.batch_create(
             analysis_id=self.analysis_a.id,
             property_view_ids=bad_property_view_ids,
-            org_id=self.org_a.id
         )
 
         # Assert
@@ -133,7 +130,6 @@ class TestAnalysisPropertyViews(TestCase):
         analysis_view_ids, failures = AnalysisPropertyView.batch_create(
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
-            org_id=self.org_a.id
         )
 
         # Assert
