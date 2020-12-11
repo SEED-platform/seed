@@ -9,6 +9,12 @@ from django.db import models
 from seed.models import Analysis
 
 
+def analysis_input_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/analysis_input_files/<analysis id>/<filename>
+    if instance.analysis_id is None:
+        raise Exception('Unable to save analysis input file. Linked Analysis must have an ID (ie already saved in db)')
+    return f'analysis_input_files/{instance.analysis_id}/{filename}'
+
 class AnalysisInputFile(models.Model):
     """
     The AnalysisInputFile is a file used as input for an analysis.
@@ -22,6 +28,6 @@ class AnalysisInputFile(models.Model):
         (BUILDINGSYNC, 'BuildingSync'),
     )
 
-    file = models.FileField(upload_to="analysis_input_files", max_length=500)
+    file = models.FileField(upload_to=analysis_input_path, max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
