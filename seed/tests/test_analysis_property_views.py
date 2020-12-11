@@ -7,11 +7,9 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import PropertyView, AnalysisPropertyView, Analysis, PropertyState
+from seed.models import AnalysisPropertyView, Analysis, PropertyState
 from seed.test_helpers.fake import (
     FakeCycleFactory,
-    FakePropertyFactory,
-    FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeAnalysisFactory,
 )
@@ -35,11 +33,10 @@ class TestAnalysisPropertyViews(TestCase):
         cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
         self.analysis_a = (
-            FakeAnalysisFactory(organization=self.org_a, user=self.user)
-                .get_analysis(
-                    name='Quite neat',
-                    service=Analysis.BSYNCR,
-                )
+            FakeAnalysisFactory(organization=self.org_a, user=self.user).get_analysis(
+                name='Quite neat',
+                service=Analysis.BSYNCR,
+            )
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)

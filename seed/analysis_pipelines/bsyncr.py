@@ -5,12 +5,8 @@
 :author
 """
 
-from seed.models import Analysis, AnalysisPropertyView, AnalysisInputFile, Meter
-from seed.analysis_pipelines.pipeline import AnalysisPipeline, task_create_analysis_property_views
-from seed.lib.mcm.utils import batch
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 
-from celery import shared_task, chain, group
 from lxml import etree
 from lxml.builder import ElementMaker
 

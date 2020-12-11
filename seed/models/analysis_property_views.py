@@ -10,7 +10,6 @@ from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 
-from seed.data_importer.tasks import hash_state_object
 from seed.models import (
     Analysis,
     Cycle,

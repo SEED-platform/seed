@@ -8,7 +8,6 @@ from datetime import datetime
 from io import BytesIO
 
 from lxml import etree
-from xmlschema.validators.exceptions import XMLSchemaValidationError
 
 from pytz import timezone
 
@@ -18,9 +17,8 @@ from django.utils.timezone import make_aware
 from config.settings.common import TIME_ZONE
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter, MeterReading, Analysis, AnalysisPropertyView
+from seed.models import Meter, MeterReading, Analysis
 from seed.test_helpers.fake import (
-    FakePropertyViewFactory,
     FakeAnalysisPropertyView,
     FakePropertyStateFactory,
 )
@@ -43,21 +41,19 @@ class TestBsyncrPipeline(TestCase):
         self.org, _, _ = create_organization(self.user)
 
         property_state = (
-            FakePropertyStateFactory(organization=self.org)
-                .get_property_state(
-                    # fields required for analysis
-                    latitude=39.76550841416409,
-                    longitude=-104.97855661401148
-                )
+            FakePropertyStateFactory(organization=self.org).get_property_state(
+                # fields required for analysis
+                latitude=39.76550841416409,
+                longitude=-104.97855661401148
+            )
         )
         self.analysis_property_view = (
-            FakeAnalysisPropertyView(organization=self.org, user=self.user)
-                .get_analysis_property_view(
-                    property_state=property_state,
-                    # analysis args
-                    name='Quite neat',
-                    service=Analysis.BSYNCR,
-                )
+            FakeAnalysisPropertyView(organization=self.org, user=self.user).get_analysis_property_view(
+                property_state=property_state,
+                # analysis args
+                name='Quite neat',
+                service=Analysis.BSYNCR,
+            )
         )
 
         self.meter = Meter.objects.create(

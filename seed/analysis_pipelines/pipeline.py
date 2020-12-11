@@ -12,8 +12,10 @@ def task_create_analysis_property_views(analysis_id, property_view_ids):
     # TODO: create analysis messages based on failures
     return analysis_view_ids
 
+
 class AnalysisPipelineException(Exception):
     pass
+
 
 class AnalysisPipeline(abc.ABC):
     def __init__(self, analysis_id):
@@ -22,7 +24,7 @@ class AnalysisPipeline(abc.ABC):
     def prepare_analysis(self, property_view_ids):
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(self._analysis_id)
-            if locked_analysis.status == None:
+            if locked_analysis.status is None:
                 locked_analysis.status = Analysis.CREATING
                 locked_analysis.save()
             else:

@@ -795,9 +795,8 @@ class FakeAnalysisFactory(BaseFake):
         self.organization = organization
         self.user = user
 
-    def get_analysis(
-        self, name=None, service=None, start_time=None,
-        organization=None, user=None, configuration=None):
+    def get_analysis(self, name=None, service=None, start_time=None,
+                     organization=None, user=None, configuration=None):
 
         config = {
             'name': name if name is None else self.fake.text(),
@@ -822,9 +821,9 @@ class FakeAnalysisPropertyView(BaseFake):
         self.user = user
         self.analysis = analysis
 
-    def get_analysis_property_view(
-        self, analysis=None, property=None, cycle=None, property_state=None,
-        organization=None, user=None, **kwargs):
+    def get_analysis_property_view(self, analysis=None, property=None, cycle=None,
+                                   property_state=None, organization=None, user=None,
+                                   **kwargs):
 
         organization = organization if organization is not None else self.organization
         user = user if user is not None else user
