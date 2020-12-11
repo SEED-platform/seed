@@ -1397,7 +1397,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return promise;
           }],
           analyses_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analyses_for_property($stateParams.view_id);
+            return analyses_service.get_analyses_for_canonical_property($stateParams.view_id);
           }],
           organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id)

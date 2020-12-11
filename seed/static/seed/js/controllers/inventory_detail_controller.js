@@ -484,10 +484,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
             inventory_type: function () {
               return $scope.inventory_type;
             },
-            meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-            var organization_id = user_service.get_organization().id;
-            return meter_service.get_meters($stateParams.view_id, organization_id);
-          }],
+            // meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            // var organization_id = user_service.get_organization().id;
+            // return meter_service.get_meters($stateParams.view_id, organization_id);
+          // }],
           }
         });
       };
