@@ -21,6 +21,7 @@ class Analysis(models.Model):
         (BSYNCR, 'BSyncr'),
     )
 
+    PENDING_CREATION = 8
     CREATING = 10
     READY = 20
     QUEUED = 30
@@ -30,6 +31,7 @@ class Analysis(models.Model):
     COMPLETED = 70
 
     STATUS_TYPES = (
+        (PENDING_CREATION, 'Pending Creation'),
         (CREATING, 'Creating'),
         (READY, 'Ready'),
         (QUEUED, 'Queued'),
