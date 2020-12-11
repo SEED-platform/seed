@@ -6,4 +6,5 @@
      --><a ui-sref="organization_cycles(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Cycles</a><!--
      --><a ui-sref="organization_labels(::{organization_id: org.id})" ui-sref-active="active" translate>Labels</a><!--
      --><a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sub-Organizations</a><!--
-     --><a ui-sref="organization_members(::{organization_id: org.id})" ui-sref-active="active" translate>Members</a>
+     --><a ui-sref="organization_members(::{organization_id: org.id})" ui-sref-active="active" translate>Members</a><!--
+     --><a ui-sref="organization_analyses(::{organization_id: org.id})" ui-sref-active="active" translate>Analyses</a>

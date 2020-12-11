@@ -157,6 +157,12 @@ msgstr "Admin"
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
+msgid "Analyses"
+msgstr "Analyses"
+
+msgid "Analysis Name (User Defined)"
+msgstr "Analysis Name (User Defined)"
+
 msgid "and"
 msgstr "and"
 
@@ -1654,7 +1660,7 @@ msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
 msgstr "{num_properties,plural,=0{no properties} one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,=0{no tax lots} one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}} have been deleted"
 
 msgid "NUM_PROPERTY_TAXLOT_COLUMNS_AVAILABLE"
-msgstr "There are {num_property_columns} property columns and { num_taxlot_colums } tax lot columns of data available to you."
+msgstr "There are {num_property_columns} property columns and { num_taxlot_columns } tax lot columns of data available to you."
 
 msgid "Number"
 msgstr "Number"
@@ -2125,6 +2131,18 @@ msgstr "Row 4"
 msgid "Row 5"
 msgstr "Row 5"
 
+msgid "Run Author"
+msgstr "Run Author"
+
+msgid "Run Date"
+msgstr "Run Date"
+
+msgid "Run Duration"
+msgstr "Run Duration"
+
+msgid "Run Status"
+msgstr "Run Status"
+
 msgid "Save"
 msgstr "Save"
 
@@ -2534,6 +2552,9 @@ msgstr "Total rows in the import file"
 
 msgid "true"
 msgstr "true"
+
+msgid "Type"
+msgstr "Type"
 
 msgid "Type of Submittal"
 msgstr "Type of Submittal"
