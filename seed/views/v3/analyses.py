@@ -7,7 +7,6 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request_class, require_organization_id_class
@@ -75,9 +74,10 @@ class AnalysisViewSet(viewsets.ViewSet):
             'analysis': serialized_analysis
         })
 
+
 class AnalysisPropertyViewViewSet(viewsets.ViewSet):
-    serializer_class = AnalysisSerializer
-    model = Analysis
+    serializer_class = AnalysisPropertyViewSerializer
+    model = AnalysisPropertyView
 
     @swagger_auto_schema(
         manual_parameters=[
