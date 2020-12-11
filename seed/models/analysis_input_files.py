@@ -15,6 +15,7 @@ def analysis_input_path(instance, filename):
         raise Exception('Unable to save analysis input file. Linked Analysis must have an ID (ie already saved in db)')
     return f'analysis_input_files/{instance.analysis_id}/{filename}'
 
+
 class AnalysisInputFile(models.Model):
     """
     The AnalysisInputFile is a file used as input for an analysis.

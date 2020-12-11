@@ -64,3 +64,11 @@ class Analysis(models.Model):
             'number_of_analysis_property_views': analysis_property_views.count(),
             'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())
         }
+
+    def in_terminal_state(self):
+        """Returns True if the analysis has finished, e.g. stopped, failed,
+        completed, etc
+
+        :returns: bool
+        """
+        return self.status in [self.FAILED, self.STOPPED, self.COMPLETED]
