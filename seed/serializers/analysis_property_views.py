@@ -13,7 +13,6 @@ from seed.serializers.analysis_output_files import AnalysisOutputFileSerializer
 class AnalysisPropertyViewSerializer(serializers.ModelSerializer):
     output_files = AnalysisOutputFileSerializer(source='get_output_files', many=True)
 
-
     class Meta:
         model = AnalysisPropertyView
         fields = '__all__'
