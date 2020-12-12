@@ -5,12 +5,14 @@
 :author
 """
 from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 import json
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     Analysis,
-    AnalysisPropertyView
+    AnalysisPropertyView,
+    AnalysisOutputFile
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -57,13 +59,13 @@ class TestAnalyses(TestCase):
             user=self.user,
             organization=self.org
         )
-        AnalysisPropertyView.objects.create(
+        self.analysis_property_view_a = AnalysisPropertyView.objects.create(
             analysis=self.analysis_a,
             property=self.property_a,
             cycle=cycle_a,
             property_state=property_state_a
         )
-        AnalysisPropertyView.objects.create(
+        self.analysis_property_view_b = AnalysisPropertyView.objects.create(
             analysis=self.analysis_a,
             property=self.property_a,
             cycle=cycle_b,
@@ -78,13 +80,13 @@ class TestAnalyses(TestCase):
             user=self.user,
             organization=self.org
         )
-        AnalysisPropertyView.objects.create(
+        self.analysis_property_view_c = AnalysisPropertyView.objects.create(
             analysis=self.analysis_b,
             property=self.property_a,
             cycle=cycle_a,
             property_state=property_state_c
         )
-        AnalysisPropertyView.objects.create(
+        self.analysis_property_view_d = AnalysisPropertyView.objects.create(
             analysis=self.analysis_b,
             property=property_b,
             cycle=cycle_a,
@@ -108,6 +110,22 @@ class TestAnalyses(TestCase):
             user=self.user,
             organization=self.org_b
         )
+
+        # create an output file and add to 3 analysis property views
+        self.analysis_output_file_a = AnalysisOutputFile.objects.create(
+            file=SimpleUploadedFile('test file a', b'test file a contents'),
+            content_type=AnalysisOutputFile.BUILDINGSYNC
+        )
+        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_a)
+        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_b)
+        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_c)
+
+        # create an output file and add to 1 analysis property view
+        self.analysis_output_file_b = AnalysisOutputFile.objects.create(
+            file=SimpleUploadedFile('test file b', b'test file b contents'),
+            content_type=AnalysisOutputFile.BUILDINGSYNC
+        )
+        self.analysis_output_file_b.analysis_property_views.add(self.analysis_property_view_a)
 
     def test_list_with_organization(self):
         response = self.client.get('/api/v3/analyses/?organization_id=' + str(self.org.pk))
@@ -174,3 +192,53 @@ class TestAnalyses(TestCase):
     def test_retrieve_organization_missing(self):
         response = self.client.get('/api/v3/analyses/' + str(self.analysis_a.pk) + '/')
         self.assertEqual(response.status_code, 400)
+
+    def test_list_views(self):
+        response = self.client.get("".join([
+            '/api/v3/analyses/',
+            str(self.analysis_a.pk),
+            '/views/?organization_id=',
+            str(self.org.pk)
+        ]))
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(len(result['views']), 2)
+
+        view_a = next((x for x in result['views'] if x['id'] == self.analysis_property_view_a.id), None)
+        self.assertIsNotNone(view_a)
+        self.assertEqual(len(view_a['output_files']), 2)
+
+        view_b = next((x for x in result['views'] if x['id'] == self.analysis_property_view_b.id), None)
+        self.assertIsNotNone(view_b)
+        self.assertEqual(len(view_b['output_files']), 1)
+
+    def test_retrieve_view_with_output_file(self):
+        response = self.client.get("".join([
+            '/api/v3/analyses/',
+            str(self.analysis_b.pk),
+            '/views/',
+            str(self.analysis_property_view_c.pk),
+            '/?organization_id=',
+            str(self.org.pk)
+        ]))
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['view']['id'], self.analysis_property_view_c.id)
+        self.assertEqual(len(result['view']['output_files']), 1)
+
+    def test_retrieve_view_with_no_output_file(self):
+        response = self.client.get("".join([
+            '/api/v3/analyses/',
+            str(self.analysis_b.pk),
+            '/views/',
+            str(self.analysis_property_view_d.pk),
+            '/?organization_id=',
+            str(self.org.pk)
+        ]))
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result['status'], 'success')
+        self.assertEqual(result['view']['id'], self.analysis_property_view_d.id)
+        self.assertEqual(len(result['view']['output_files']), 0)
