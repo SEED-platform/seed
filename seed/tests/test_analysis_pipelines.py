@@ -34,10 +34,116 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException
+from seed.analysis_pipelines.pipeline import AnalysisPipelineException, AnalysisPipeline, task_create_analysis_property_views
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
+
+
+class MockPipeline(AnalysisPipeline):
+
+    def _prepare_analysis(self, analysis_id, property_view_ids):
+        analysis = Analysis.objects.get(id=analysis_id)
+        analysis.status = Analysis.READY
+        analysis.save()
+
+
+class TestAnalysisPipeline(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.analysis = (
+            FakeAnalysisFactory(organization=self.org, user=self.user)
+            .get_analysis()
+        )
+
+    def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
+        # Setup
+        # set status as already running, which should prevent the analysis from
+        # starting preparation (this could be any status that's not PENDING_CREATION)
+        self.analysis.status = Analysis.RUNNING
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act / Assert
+        # shouldn't matter what values are passed for property_view_ids
+        with self.assertRaises(AnalysisPipelineException) as context:
+            pipeline.prepare_analysis([1, 2, 3])
+
+        self.assertTrue('Analysis has already been prepared or is currently being prepared' in str(context.exception))
+
+        # the status should not have changed
+        self.analysis.refresh_from_db()
+        self.assertTrue(Analysis.RUNNING, self.analysis.status)
+
+    def test_prepare_analysis_is_successful_when_analysis_status_is_valid(self):
+        # Setup
+        self.assertEqual(self.analysis.status, Analysis.PENDING_CREATION)
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        # shouldn't matter what values are passed for property_view_ids
+        # The MockPipeline should just set the status to READY
+        pipeline.prepare_analysis([1, 2, 3])
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.READY, self.analysis.status)
+
+    def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
+        # Setup
+        pipeline = MockPipeline(self.analysis.id)
+        failure_message = 'Bad'
+
+        # Act
+        pipeline.fail(failure_message)
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+        # a message linked to the analysis should have been created as well
+        message = AnalysisMessage.objects.get(analysis=self.analysis)
+        self.assertTrue(failure_message in message.user_message)
+
+    def test_fail_raises_exception_when_analysis_is_already_in_terminal_state(self):
+        # Setup
+        self.analysis.status = Analysis.COMPLETED
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        with self.assertRaises(AnalysisPipelineException) as context:
+            pipeline.fail('Double plus ungood')
+
+        # Assert
+        self.assertTrue('Analysis is already in a terminal state' in str(context.exception))
+        # the status should not have changed
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.COMPLETED, self.analysis.status)
+
+    def test_task_create_analysis_property_views_creates_messages_for_failed_property_views(self):
+        # Setup
+        property_view = (
+            FakePropertyViewFactory(organization=self.org, user=self.user)
+            .get_property_view()
+        )
+        bogus_property_view_id = -1
+        property_view_ids = [bogus_property_view_id, property_view.id]
+
+        # Act
+        task_create_analysis_property_views(self.analysis.id, property_view_ids)
+
+        # Assert
+        # a message for the bad property view should have been created
+        message = AnalysisMessage.objects.get(analysis=self.analysis)
+        self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
 
 class TestBsyncrPipeline(TestCase):
