@@ -8,11 +8,26 @@ from celery import shared_task
 
 
 @shared_task
-def task_create_analysis_property_views(analysis_id, property_view_ids, progress_data_key):
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.step('Copying property data')
+def task_create_analysis_property_views(analysis_id, property_view_ids, progress_data_key=None):
+    """A celery task which batch creates the AnalysisPropertyViews for the analysis.
+    It will create AnalysisMessages for any property view IDs that couldn't be
+    used to create an AnalysisPropertyView.
+
+    :param analysis_id: int
+    :param property_view_ids: list[int]
+    :param progress_data_key: str, optional
+    :returns: list[int], IDs of the successfully created AnalysisPropertyViews
+    """
+    if progress_data_key is not None:
+        progress_data = ProgressData.from_key(progress_data_key)
+        progress_data.step('Copying property data')
     analysis_view_ids, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
-    # TODO: create analysis messages based on failures
+    for failure in failures:
+        AnalysisMessage.objects.create(
+            analysis_id=analysis_id,
+            type=AnalysisMessage.DEFAULT,
+            user_message=f'Failed to copy property data for PropertyView ID {failure.property_view_id}: {failure.message}',
+        )
     return analysis_view_ids
 
 
@@ -21,6 +36,10 @@ class AnalysisPipelineException(Exception):
 
 
 class AnalysisPipeline(abc.ABC):
+    """
+    AnalysisPipeline is an abstract class for defining workflows for preparing,
+    running, and post processing analyses.
+    """
     def __init__(self, analysis_id):
         self._analysis_id = analysis_id
 
@@ -41,7 +60,7 @@ class AnalysisPipeline(abc.ABC):
         return self._prepare_analysis(self._analysis_id, property_view_ids)
 
     def fail(self, message, progress_data_key=None):
-        """Fails the pipeline.
+        """Fails the analysis.
 
         :param message: str, message to create an AnalysisMessage with
         :param progress_data_key: str, fails the progress data if this key is provided
