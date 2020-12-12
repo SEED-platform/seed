@@ -34,7 +34,7 @@ class BsyncrPipeline(AnalysisPipeline):
 
     def _prepare_analysis(self, analysis_id, property_view_ids):
         """Internal implementation for preparing bsyncr analysis"""
-    
+
         progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
 
         # Steps:
