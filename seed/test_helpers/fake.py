@@ -799,7 +799,7 @@ class FakeAnalysisFactory(BaseFake):
                      organization=None, user=None, configuration=None):
 
         config = {
-            'name': name if name is None else self.fake.text(),
+            'name': name if name is not None else self.fake.text(),
             'organization': organization if organization is not None else self.organization,
             'user': user if user is not None else user,
             'service': service if service is not None else Analysis.BSYNCR,
