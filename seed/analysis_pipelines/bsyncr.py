@@ -26,8 +26,15 @@ from lxml.builder import ElementMaker
 
 
 class BsyncrPipeline(AnalysisPipeline):
+    """
+    BsyncrPipeline is a class for preparing, running, and post
+    processing the bsyncr analysis by implementing the AnalysisPipeline's abstract
+    methods.
+    """
 
     def _prepare_analysis(self, analysis_id, property_view_ids):
+        """Internal implementation for preparing bsyncr analysis"""
+    
         progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
 
         # Steps:
@@ -40,7 +47,7 @@ class BsyncrPipeline(AnalysisPipeline):
         chain(
             task_create_analysis_property_views.si(analysis_id, property_view_ids, progress_data.key),
             _prepare_all_properties.s(analysis_id, progress_data.key),
-            _finish_preparartion.si(analysis_id, progress_data.key)
+            _finish_preparation.si(analysis_id, progress_data.key)
         ).apply_async()
 
         return progress_data.key
@@ -48,6 +55,13 @@ class BsyncrPipeline(AnalysisPipeline):
 
 @shared_task
 def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_data_key):
+    """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
+
+    :param analysis_property_view_ids: list[int]
+    :param analysis_id: int
+    :param progress_data_key: str
+    :returns: void
+    """
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Creating files for analysis')
 
@@ -115,7 +129,12 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
 
 
 @shared_task
-def _finish_preparartion(analysis_id, progress_data_key):
+def _finish_preparation(analysis_id, progress_data_key):
+    """A Celery task which finishes the preparation for bsyncr analysis
+
+    :param analysis_id: int
+    :param progress_data_key: str
+    """
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.READY
     analysis.save()
