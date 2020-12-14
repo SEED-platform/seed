@@ -7,7 +7,7 @@ from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.v3.analyses import AnalysisViewSet
-from seed.views.v3.analyses import AnalysisPropertyViewViewSet
+from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
