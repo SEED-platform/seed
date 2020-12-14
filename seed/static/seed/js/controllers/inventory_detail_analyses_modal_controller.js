@@ -13,13 +13,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     '$scope',
     '$log',
     '$uibModalInstance',
-    'inventory_ids',
-    'inventory_type',
     'Notification',
-    function ($scope, $log, $uibModalInstance, meters, notification) {
+    function ($scope, $log, $uibModalInstance) {
       // $scope.meters = meters;
-      //keep track of status of service call
-      $scope.loading = false;
       /* Create a new analysis based on user input */
       $scope.submitNewAnalysisForm = function (form) {
         //create new analysis here

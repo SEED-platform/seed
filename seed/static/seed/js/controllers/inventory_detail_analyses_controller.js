@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
     'inventory_service',
     'inventory_payload',
     'analyses_payload',
+    'users_payload',
     'organization_payload',
     'urls',
     '$log',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       inventory_service,
       inventory_payload,
       analyses_payload,
+      users_payload,
       organization_payload,
       urls,
       $log
@@ -31,6 +33,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.org = organization_payload.organization;
+      $scope.users = users_payload.users;
       $scope.analyses = analyses_payload.analyses;
 
       $scope.inventory = {
@@ -44,9 +47,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
           resolve: {
             inventory_ids: function () {
               return [$scope.inventory.view_id];
-            },
-            inventory_type: function () {
-              return $scope.inventory_type;
             },
           //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
           //   var organization_id = user_service.get_organization().id;

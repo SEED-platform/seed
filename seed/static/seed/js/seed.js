@@ -1380,7 +1380,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'inventory_detail_analyses',
-        url: '/{inventory_type:properties|taxlots}/{view_id:int}/analyses',
+        url: '/{inventory_type:properties}/{view_id:int}/analyses',
         templateUrl: static_url + 'seed/partials/inventory_detail_analyses.html',
         controller: 'inventory_detail_analyses_controller',
         resolve: {
@@ -1401,6 +1401,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id)
+          }],
+          users_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
         }
       })
