@@ -10,7 +10,13 @@ from seed.models import Analysis
 
 
 def analysis_input_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/analysis_input_files/<analysis id>/<filename>
+    """Returns the path to where an AnalysisInputFile's file is stored.
+    Ie only modify this function if you want to change that location.
+
+    :param instance: AnalysisFile
+    :param filename: str
+    :returns: str
+    """
     if instance.analysis_id is None:
         raise Exception('Unable to save analysis input file. Linked Analysis must have an ID (ie already saved in db)')
     return f'analysis_input_files/{instance.analysis_id}/{filename}'
