@@ -22,7 +22,7 @@ from seed.test_helpers.fake import (
 from seed.utils.organizations import create_organization
 
 
-class TestAnalyses(TestCase):
+class TestAnalysesView(TestCase):
 
     def setUp(self):
         user_details = {

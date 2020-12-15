@@ -473,6 +473,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_analyses_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
+          controller: 'inventory_detail_analyses_modal_controller',
+          resolve: {
+            inventory_ids: function () {
+              return [$scope.inventory.view_id];
+            }
+            // meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            // var organization_id = user_service.get_organization().id;
+            // return meter_service.get_meters($stateParams.view_id, organization_id);
+          // }],
+          }
+        });
+      };
+
       $scope.unmerge = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',
