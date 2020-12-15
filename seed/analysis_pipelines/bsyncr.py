@@ -24,6 +24,8 @@ from celery import chain, shared_task
 from lxml import etree
 from lxml.builder import ElementMaker
 
+import requests
+
 
 class BsyncrPipeline(AnalysisPipeline):
     """
@@ -255,3 +257,31 @@ def _build_bsyncr_input(analysis_property_view, meter):
     )
 
     return etree.tostring(doc, pretty_print=True), []
+
+def _bsyncr_service_request(file_):
+    pass
+
+def _run_bsyncr_analysis(file_):
+    """Runs the bsyncr analysis by making a request to a bsyncr server with the
+    provided file. Returns a tuple, the returned XML file as a string followed by
+    a list of error messages.
+
+    :param file_: File
+    :returns: str, list[str]
+    """
+    try:
+        response = _bsyncr_service_request(file_)
+    except requests.exceptions.Timeout:
+        return None, ['Request to bsyncr server timed out.']
+    except Exception as e:
+        return None, [f'Failed to make request to bsyncr server: {e}']
+
+    if response.status_code != 200:
+        try:
+            response_body = response.json()
+            flattened_errors = [error['description'] for error in response_body['errors']]
+            return None, flattened_errors
+        except (ValueError, KeyError):
+            return None, [f'Expected JSON response with "errors" from bsyncr server but got the following: {response.text}']
+
+    return response.text, []
