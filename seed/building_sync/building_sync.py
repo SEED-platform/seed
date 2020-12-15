@@ -42,6 +42,7 @@ class ParsingError(Exception):
 
 class BuildingSync(object):
     BUILDINGSYNC_V2_0 = '2.0'
+    BUILDINGSYNC_V2_2_0 = '2.2.0'
     VERSION_MAPPINGS_DICT = {
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2_0,
     }
@@ -178,8 +179,12 @@ class BuildingSync(object):
     @classmethod
     def get_schema(cls, version):
         schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
-        if version == cls.BUILDINGSYNC_V2_0:
-            schema_path = os.path.join(schema_dir, 'BuildingSync_v2_0.xsd')
+        schema_files = {
+            cls.BUILDINGSYNC_V2_0: 'BuildingSync_v2_0.xsd',
+            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd'
+        }
+        if version in schema_files:
+            schema_path = os.path.join(schema_dir, schema_files[version])
         else:
             raise ParsingError(f'Unknown file version "{version}"')
 
