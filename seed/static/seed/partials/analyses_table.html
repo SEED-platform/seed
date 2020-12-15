@@ -33,7 +33,7 @@
                         <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
                         <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
                         <td>{$:: analysis | get_run_duration $}</td>
-                        <td>{$:: users | filter : {'user_id':analysis.user} | get_run_author $}</td>
+                        <td>{$:: users | filter : {'user_id':analysis.user} | get_analysis_run_author $}</td>
                     </tr>
                     </tr>
                 </tbody>
