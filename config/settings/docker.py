@@ -11,10 +11,15 @@ from config.settings.common import *  # noqa
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
 
+# See the django docs for more info on these env vars:
+# https://docs.djangoproject.com/en/3.0/topics/email/#smtp-backend
+SMTP_ENV_VARS = ['EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
+                 'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL']
+
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD']
+                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND'] + SMTP_ENV_VARS
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -37,7 +42,7 @@ ALLOWED_HOSTS = ['*']
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
-EMAIL_BACKEND = 'django_ses.SESBackend'
+EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
 
 # PostgreSQL DB config
