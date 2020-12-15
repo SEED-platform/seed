@@ -21,11 +21,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='analysis',
             name='status',
-            field=models.IntegerField(choices=[(8, 'Pending Creation'), (10, 'Creating'), (20, 'Ready'), (30, 'Queued'), (40, 'Running'), (50, 'Failed'), (60, 'Stopped'), (70, 'Completed')]),
-        ),
-        migrations.AlterField(
-            model_name='analysis',
-            name='status',
             field=models.IntegerField(choices=[(8, 'Pending Creation'), (10, 'Creating'), (20, 'Ready'), (30, 'Queued'), (40, 'Running'), (50, 'Failed'), (60, 'Stopped'), (70, 'Completed')], default=8),
         ),
     ]
