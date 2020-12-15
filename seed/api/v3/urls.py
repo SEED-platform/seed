@@ -7,6 +7,7 @@ from rest_framework import routers
 from rest_framework_nested import routers as nested_routers
 
 from seed.views.v3.analyses import AnalysisViewSet
+from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
@@ -76,6 +77,9 @@ data_quality_checks_router.register(r'rules', DataQualityCheckRuleViewSet, base_
 organizations_router = nested_routers.NestedSimpleRouter(api_v3_router, r'organizations', lookup='organization')
 organizations_router.register(r'users', OrganizationUserViewSet, base_name='organization-users')
 
+analyses_router = nested_routers.NestedSimpleRouter(api_v3_router, r'analyses', lookup='analysis')
+analyses_router.register(r'views', AnalysisPropertyViewViewSet, base_name='analysis-views')
+
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
 properties_router.register(r'notes', NoteViewSet, base_name='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, base_name='property-scenarios')
@@ -98,6 +102,7 @@ urlpatterns = [
         {'inventory_type': 'taxlot'},
     ),
     url(r'^', include(organizations_router.urls)),
+    url(r'^', include(analyses_router.urls)),
     url(r'^', include(properties_router.urls)),
     url(r'^', include(taxlots_router.urls)),
 ]
