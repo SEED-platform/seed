@@ -47,6 +47,11 @@ class MockPipeline(AnalysisPipeline):
         analysis.status = Analysis.READY
         analysis.save()
 
+    def _start_analysis(self, analysis_id):
+        analysis = Analysis.objects.get(id=analysis_id)
+        analysis.status = Analysis.RUNNING
+        analysis.save()
+
 
 class TestAnalysisPipeline(TestCase):
     def setUp(self):
@@ -96,6 +101,35 @@ class TestAnalysisPipeline(TestCase):
         # Assert
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.READY, self.analysis.status)
+
+    def test_start_analysis_is_successful_when_analysis_status_is_ready(self):
+        # Setup
+        self.analysis.status = Analysis.READY
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        pipeline.start_analysis()
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.RUNNING, self.analysis.status)
+
+    def test_start_analysis_raises_exception_when_analysis_status_isnt_ready(self):
+        # Setup
+        self.analysis.status = Analysis.CREATING
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        with self.assertRaises(AnalysisPipelineException) as context:
+            pipeline.start_analysis()
+
+        # Assert
+        self.assertTrue('Analysis cannot be started' in str(context.exception))
+        # the status should not have changed
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.CREATING, self.analysis.status)
 
     def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
         # Setup

@@ -59,6 +59,21 @@ class AnalysisPipeline(abc.ABC):
 
         return self._prepare_analysis(self._analysis_id, property_view_ids)
 
+    def start_analysis(self):
+        """Entrypoint for starting an analysis.
+
+        :returns: str, A ProgressData key
+        """
+        with transaction.atomic():
+            locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
+            if locked_analysis.status is Analysis.READY:
+                locked_analysis.status = Analysis.QUEUED
+                locked_analysis.save()
+            else:
+                raise AnalysisPipelineException('Analysis cannot be started')
+
+        return self._start_analysis(self._analysis_id)
+
     def fail(self, message, progress_data_key=None):
         """Fails the analysis.
 
@@ -91,6 +106,16 @@ class AnalysisPipeline(abc.ABC):
 
         :param analysis_id: int
         :param property_view_ids: list[int]
+        :returns: str, A ProgressData key
+        """
+        pass
+
+    @abc.abstractmethod
+    def _start_analysis(self, analysis_id):
+        """Abstract method which should start the analysis, e.g. make HTTP requests
+        to the analysis service.
+
+        :param analysis_id: int
         :returns: str, A ProgressData key
         """
         pass

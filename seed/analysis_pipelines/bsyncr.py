@@ -52,6 +52,9 @@ class BsyncrPipeline(AnalysisPipeline):
 
         return progress_data.key
 
+    def _start_analysis(self):
+        pass
+
 
 @shared_task
 def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_data_key):
