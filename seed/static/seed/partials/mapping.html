@@ -161,7 +161,7 @@
                             <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
                                 <input type="text" uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20" typeahead-template-url="typeahead.html" ng-model="col.suggestion" class="form-control input-sm tcm_field" ng-disabled="import_file.matching_done" ng-change="change(col)" typeahead-on-select='change(col)' ng-attr-id="mapped-row-input-box-{$ $index $}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                             </td>
-                            <td>
+                            <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col))}">
                                 <select ng-model="col.from_units" ng-if="is_area_column(col)" ng-change="flag_mappings_change()">
                                     <option value="ft**2" translate>square feet</option>
                                     <option value="m**2" translate>square metres</option>
