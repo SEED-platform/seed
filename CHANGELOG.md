@@ -1,3 +1,7 @@
+# SEED Version 2.7.6
+
+- Fixed [#2496]( https://github.com/SEED-platform/seed/issues/2496 ), Duplicate states can be created if the unit selection is empty
+
 # SEED Version 2.7.5
 
 - Fixed [#2469]( https://github.com/SEED-platform/seed/issues/2469 ), Error deduplicating raw col objs

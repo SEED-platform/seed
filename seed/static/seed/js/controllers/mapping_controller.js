@@ -592,6 +592,15 @@ angular.module('BE.seed.controller.mapping', [])
       };
 
       /**
+       * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
+       */
+      $scope.empty_units_present = function () {
+        return Boolean(_.find($scope.mappings, function (field) {
+          return field.suggestion_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field));
+        }));
+      }
+
+      /**
        * empty_fields_present: used to disable or enable the 'show & review
        *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
        */
@@ -605,7 +614,12 @@ angular.module('BE.seed.controller.mapping', [])
        * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
        */
       $scope.check_fields = function () {
-        return $scope.duplicates_present || $scope.empty_fields_present() || !$scope.required_property_fields_present() || !$scope.required_taxlot_fields_present() || suggestions_not_provided_yet();
+        return $scope.duplicates_present ||
+          $scope.empty_fields_present() ||
+          $scope.empty_units_present() ||
+          !$scope.required_property_fields_present() ||
+          !$scope.required_taxlot_fields_present() ||
+          suggestions_not_provided_yet();
       };
 
       /**
