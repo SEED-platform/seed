@@ -31,6 +31,3 @@ class AnalysisPropertyView(models.Model):
     # that are applicable to this specific property.
     # For results not specific to the property, use the Analysis's parsed_results
     parsed_results = JSONField(default=dict, blank=True)
-
-    def get_output_files(self):
-        return self.analysisoutputfile_set
