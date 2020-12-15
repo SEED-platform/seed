@@ -2,4 +2,5 @@
      --><a id="meters" ui-sref="inventory_detail_meters(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active" ng-if="inventory_type === 'properties'" translate>Meters</a><!--
      --><a id="inventory-detail-notes" ui-sref="inventory_detail_notes(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active" translate>Notes</a><!--
      --><a id="settings" ui-sref="detail_column_list_profiles(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active" translate>Column List Profiles</a><!--
-     --><a id="settings" ui-sref="inventory_detail_cycles(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active" translate>Cross-Cycles</a>
+     --><a id="settings" ui-sref="inventory_detail_cycles(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active" translate>Cross-Cycles</a><!--
+     --><a id="inventory-detail" ng-if="::inventory_type==='properties'" ui-sref="inventory_detail_analyses(::{inventory_type: inventory_type, view_id: inventory.view_id})" ui-sref-active="active">Analyses</a>

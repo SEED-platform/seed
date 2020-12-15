@@ -64,6 +64,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
+  'BE.seed.controller.inventory_detail_analyses',
+  'BE.seed.controller.inventory_detail_analyses_modal',
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes',
@@ -99,6 +101,7 @@ angular.module('BE.seed.controllers', [
 angular.module('BE.seed.filters', [
   'district',
   'fromNow',
+  'getAnalysisRunAuthor',
   'ignoremap',
   'startFrom',
   'stripImportPrefix',
@@ -254,7 +257,6 @@ SEED_app.run([
     $state.defaultErrorHandler(function (error) {
       $log.log(error);
     });
-
   }
 ]);
 
@@ -1374,6 +1376,35 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id)
+          }],
+        }
+      })
+      .state({
+        name: 'inventory_detail_analyses',
+        url: '/{inventory_type:properties}/{view_id:int}/analyses',
+        templateUrl: static_url + 'seed/partials/inventory_detail_analyses.html',
+        controller: 'inventory_detail_analyses_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise = inventory_service.get_property(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
+            });
+            return promise;
+          }],
+          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
+          users_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
         }
       })
