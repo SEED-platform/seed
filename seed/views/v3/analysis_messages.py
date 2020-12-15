@@ -1,0 +1,79 @@
+# !/usr/bin/env python
+# encoding: utf-8
+"""
+:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+from drf_yasg.utils import swagger_auto_schema
+from django.http import JsonResponse
+from rest_framework import viewsets
+from rest_framework.status import HTTP_409_CONFLICT
+
+from seed.decorators import ajax_request_class, require_organization_id_class
+from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import AnalysisMessage
+from seed.serializers.analysis_messages import AnalysisMessageSerializer
+from seed.utils.api import api_endpoint_class
+from seed.utils.api_schema import AutoSchemaHelper
+
+
+class AnalysisMessageViewSet(viewsets.ViewSet):
+    serializer_class = AnalysisMessageSerializer
+    model = AnalysisMessage
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    def list(self, request, analysis_pk, views_pk=None):
+        organization_id = request.query_params.get('organization_id', None)
+        if views_pk is None:
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk)
+        else:
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=views_pk)
+
+
+        from seed.models import Analysis, AnalysisPropertyView
+        AnalysisMessage.objects.create(
+            analysis=Analysis.objects.get(id=2),
+            analysis_property_view=AnalysisPropertyView.objects.get(id=1),
+            type=AnalysisMessage.DEFAULT,
+            user_message="User message.",
+            debug_message="Debug message."
+        )
+        AnalysisMessage.objects.create(
+            analysis=Analysis.objects.get(id=1),
+            analysis_property_view=None,
+            type=AnalysisMessage.DEFAULT,
+            user_message="User message.",
+            debug_message="Debug message."
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'messages': AnalysisMessageSerializer(messages_queryset, many=True).data
+        })
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    def retrieve(self, request, pk, analysis_pk, views_pk=None):
+        organization_id = int(request.query_params.get('organization_id', 0))
+        try:
+            if views_pk is None:
+                message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk)
+            else:
+                message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk, analysis_property_view=views_pk)
+        except AnalysisMessage.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': "Requested analysis message doesn't exist in this organization and/or analysis."
+            }, status=HTTP_409_CONFLICT)
+
+        return JsonResponse({
+            'status': 'success',
+            'message': AnalysisMessageSerializer(message_queryset).data
+        })
