@@ -101,6 +101,7 @@ angular.module('BE.seed.controllers', [
 angular.module('BE.seed.filters', [
   'district',
   'fromNow',
+  'getAnalysisRunAuthor',
   'ignoremap',
   'startFrom',
   'stripImportPrefix',
@@ -1396,8 +1397,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
-          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', function (inventory_service, analyses_service, $stateParams) {
-            return analyses_service.get_analyses_for_canonical_property(inventory_service.get_property($stateParams.view_id));
+          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
           }],
           organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id)

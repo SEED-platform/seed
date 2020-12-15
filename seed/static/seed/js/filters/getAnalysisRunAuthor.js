@@ -3,7 +3,7 @@
  * :author
  */
 
-angular.module('get_analysis_run_author', []).filter('get_analysis_run_author', function () {
+angular.module('getAnalysisRunAuthor', []).filter('getAnalysisRunAuthor', function () {
   return function(users) {
       if (users.length < 1) {
         return ''; // no user, display nothing

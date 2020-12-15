@@ -37,17 +37,17 @@ angular.module('BE.seed.controller.analyses', [])
       var oneHour = oneMinute * 60;
       var oneDay = oneHour * 24;
 
-      let millseconds = (new Date(analysis['end_time'])).getTime() - (new Date(analysis['start_time'])).getTime();
-      let seconds = Math.floor((millseconds % oneMinute) / oneSecond);
-      let minutes = Math.floor((millseconds % oneHour) / oneMinute);
-      let hours = Math.floor((millseconds % oneDay) / oneHour);
-      let days = Math.floor(millseconds / oneDay);
+      let milliseconds = (new Date(analysis['end_time'])).getTime() - (new Date(analysis['start_time'])).getTime();
+      let seconds = Math.floor((milliseconds % oneMinute) / oneSecond);
+      let minutes = Math.floor((milliseconds % oneHour) / oneMinute);
+      let hours = Math.floor((milliseconds % oneDay) / oneHour);
+      let days = Math.floor(milliseconds / oneDay);
 
       let time = [];
       if (days !== 0) time.push((days !== 1) ? (days + ' days') : (days + ' day'));
       if (hours !== 0) time.push((hours !== 1) ? (hours + ' hours') : (hours + ' hour'));
       if (minutes !== 0) time.push((minutes !== 1) ? (minutes + ' minutes') : (minutes + ' minute'));
-      if (seconds !== 0 || millseconds < 1000) time.push((seconds !== 1) ? (seconds + ' seconds') : (seconds + ' second'));
+      if (seconds !== 0 || milliseconds < 1000) time.push((seconds !== 1) ? (seconds + ' seconds') : (seconds + ' second'));
       return time.join(', ');
     };
   })
