@@ -22,9 +22,30 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      let get_analysis_for_org = function (analysis_id, org_id) {
+        return $http.get('/api/v3/analyses/' + analysis_id + '?organization_id=' + org_id).then(function (response) {
+          return response.data;
+        });
+      };
+
+      let get_analysis_messages_for_org = function (analysis_id, org_id) {
+        return $http.get('/api/v3/analyses/' + analysis_id + '/messages/?organization_id=' + org_id).then(function (response) {
+          return response.data;
+        });
+      };
+
+      let get_analysis_views_for_org = function (analysis_id, org_id) {
+        return $http.get('/api/v3/analyses/' + analysis_id + '/views/?organization_id=' + org_id).then(function (response) {
+          return response.data;
+        });
+      };
+
       let analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
-        get_analyses_for_canonical_property: get_analyses_for_canonical_property
+        get_analyses_for_canonical_property: get_analyses_for_canonical_property,
+        get_analysis_for_org: get_analysis_for_org,
+        get_analysis_messages_for_org: get_analysis_messages_for_org,
+        get_analysis_views_for_org: get_analysis_views_for_org
       };
 
       return analyses_factory;
