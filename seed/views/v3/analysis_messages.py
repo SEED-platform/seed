@@ -29,26 +29,9 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
     def list(self, request, analysis_pk, views_pk=None):
         organization_id = request.query_params.get('organization_id', None)
         if views_pk is None:
-            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk)
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by('-id')
         else:
-            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=views_pk)
-
-
-        from seed.models import Analysis, AnalysisPropertyView
-        AnalysisMessage.objects.create(
-            analysis=Analysis.objects.get(id=2),
-            analysis_property_view=AnalysisPropertyView.objects.get(id=1),
-            type=AnalysisMessage.DEFAULT,
-            user_message="User message.",
-            debug_message="Debug message."
-        )
-        AnalysisMessage.objects.create(
-            analysis=Analysis.objects.get(id=1),
-            analysis_property_view=None,
-            type=AnalysisMessage.DEFAULT,
-            user_message="User message.",
-            debug_message="Debug message."
-        )
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=views_pk).order_by('-id')
 
         return JsonResponse({
             'status': 'success',
