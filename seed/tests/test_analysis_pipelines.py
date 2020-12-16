@@ -47,8 +47,8 @@ class MockPipeline(AnalysisPipeline):
         analysis.status = Analysis.READY
         analysis.save()
 
-    def _start_analysis(self, analysis_id):
-        analysis = Analysis.objects.get(id=analysis_id)
+    def _start_analysis(self):
+        analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.RUNNING
         analysis.save()
 

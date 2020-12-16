@@ -72,7 +72,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 raise AnalysisPipelineException('Analysis cannot be started')
 
-        return self._start_analysis(self._analysis_id)
+        return self._start_analysis()
 
     def fail(self, message, progress_data_key=None):
         """Fails the analysis.
@@ -111,7 +111,7 @@ class AnalysisPipeline(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def _start_analysis(self, analysis_id):
+    def _start_analysis(self):
         """Abstract method which should start the analysis, e.g. make HTTP requests
         to the analysis service.
 
