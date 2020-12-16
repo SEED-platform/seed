@@ -7,9 +7,11 @@
 from rest_framework import serializers
 
 from seed.models import AnalysisPropertyView
+from seed.serializers.analysis_output_files import AnalysisOutputFileSerializer
 
 
 class AnalysisPropertyViewSerializer(serializers.ModelSerializer):
+    output_files = AnalysisOutputFileSerializer(source='analysisoutputfile_set', many=True)
 
     class Meta:
         model = AnalysisPropertyView
