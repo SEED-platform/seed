@@ -34,7 +34,7 @@ from seed.models import (
 )
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
-    FakeAnalysisPropertyView,
+    FakeAnalysisPropertyViewFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
@@ -205,7 +205,7 @@ class TestBsyncrPipeline(TestCase):
             )
         )
         self.analysis_property_view = (
-            FakeAnalysisPropertyView(organization=self.org, user=self.user).get_analysis_property_view(
+            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
                 property_state=property_state,
                 # analysis args
                 name='Quite neat',
