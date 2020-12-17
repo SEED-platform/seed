@@ -7,8 +7,10 @@
 from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
+from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Analysis
@@ -72,3 +74,31 @@ class AnalysisViewSet(viewsets.ViewSet):
             'status': 'success',
             'analysis': serialized_analysis
         })
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['post'])
+    def start(self, request, pk):
+        organization_id = int(request.query_params.get('organization_id', 0))
+        try:
+            analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+            pipeline = AnalysisPipeline.factory(analysis)
+            progress_data = pipeline.start_analysis()
+            return JsonResponse({
+                'status': 'success',
+                'progress_key': progress_data['progress_key'],
+                'progress': progress_data,
+            })
+        except Analysis.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Requested analysis doesn\'t exist in this organization.'
+            }, status=HTTP_409_CONFLICT)
+        except AnalysisPipelineException as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=HTTP_409_CONFLICT)

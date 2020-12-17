@@ -43,6 +43,21 @@ class AnalysisPipeline(abc.ABC):
     def __init__(self, analysis_id):
         self._analysis_id = analysis_id
 
+    @classmethod
+    def factory(cls, analysis):
+        """Factory method for constructing pipelines for a given analysis.
+
+        :param analysis: Analysis
+        :returns: An implementation of AnalysisPipeline, e.g. BsyncrPipeline
+        """
+        # import here to avoid circular dependencies
+        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
+
+        if analysis.service == Analysis.BSYNCR:
+            return BsyncrPipeline(analysis.id)
+        else:
+            raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
+
     def prepare_analysis(self, property_view_ids):
         """Entrypoint for preparing an analysis.
 
@@ -70,7 +85,8 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.status = Analysis.QUEUED
                 locked_analysis.save()
             else:
-                raise AnalysisPipelineException('Analysis cannot be started')
+                statuses = dict(Analysis.STATUS_TYPES)
+                raise AnalysisPipelineException(f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"')
 
         return self._start_analysis()
 
