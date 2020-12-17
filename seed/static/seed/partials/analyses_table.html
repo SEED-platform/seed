@@ -12,7 +12,6 @@
                 <thead>
                     <tr>
                         <th translate>Analysis Name (User Defined)</th>
-                        <th translate>Actions</th>
                         <th translate>Number of Properties</th>
                         <th translate>Type</th>
                         <th translate>Run Status</th>
@@ -23,11 +22,7 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                        <td>{$:: analysis.name $}</td>
-                        <td>
-                           <a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active"><i class="glyphicon glyphicon-pencil" aria-hidden="true"></i></a>
-                            <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>
-                        </td>
+                        <td><a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
                         <td>{$:: analysis.number_of_analysis_property_views $}</td>
                         <td>{$:: analysis.service $}</td>
                         <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
