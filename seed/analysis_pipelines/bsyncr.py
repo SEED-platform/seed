@@ -54,7 +54,7 @@ class BsyncrPipeline(AnalysisPipeline):
             _finish_preparation.si(analysis_id, progress_data.key)
         ).apply_async()
 
-        return progress_data.key
+        return progress_data.result()
 
     def _start_analysis(self):
         """Internal implementation for starting the bsyncr analysis"""
@@ -74,7 +74,7 @@ class BsyncrPipeline(AnalysisPipeline):
             _finish_analysis.si(self._analysis_id, progress_data.key),
         ).apply_async()
 
-        return progress_data.key
+        return progress_data.result()
 
 
 @shared_task

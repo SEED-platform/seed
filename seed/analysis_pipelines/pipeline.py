@@ -47,7 +47,7 @@ class AnalysisPipeline(abc.ABC):
         """Entrypoint for preparing an analysis.
 
         :param property_view_ids: list[int]
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -62,7 +62,7 @@ class AnalysisPipeline(abc.ABC):
     def start_analysis(self):
         """Entrypoint for starting an analysis.
 
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -106,7 +106,7 @@ class AnalysisPipeline(abc.ABC):
 
         :param analysis_id: int
         :param property_view_ids: list[int]
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
         """
         pass
 
@@ -116,6 +116,6 @@ class AnalysisPipeline(abc.ABC):
         to the analysis service.
 
         :param analysis_id: int
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
         """
         pass
