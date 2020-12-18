@@ -90,11 +90,13 @@ class AnalysisPipeline(abc.ABC):
 
         return self._start_analysis()
 
-    def fail(self, message, progress_data_key=None):
-        """Fails the analysis.
+    def fail(self, message, progress_data_key=None, logger=None):
+        """Fails the analysis. Creates an AnalysisMessage and optionally logs it
+        if a logger is provided.
 
         :param message: str, message to create an AnalysisMessage with
         :param progress_data_key: str, fails the progress data if this key is provided
+        :param logger: logging.Logger
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -109,11 +111,20 @@ class AnalysisPipeline(abc.ABC):
             locked_analysis.status = Analysis.FAILED
             locked_analysis.save()
 
-            AnalysisMessage.objects.create(
-                analysis_id=self._analysis_id,
-                type=AnalysisMessage.DEFAULT,
-                user_message=message,
-            )
+            if logger is not None:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    user_message=message,
+                    debug_message='',
+                    analysis_id=self._analysis_id,
+                )
+            else:
+                AnalysisMessage.objects.create(
+                    analysis_id=self._analysis_id,
+                    type=AnalysisMessage.ERROR,
+                    user_message=message,
+                )
 
     @abc.abstractmethod
     def _prepare_analysis(self, analysis_id, property_view_ids):
