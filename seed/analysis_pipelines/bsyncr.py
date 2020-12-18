@@ -320,7 +320,7 @@ def _start_analysis(analysis_id, progress_data_key):
                     AnalysisMessage.log_and_create(
                         logger=logger,
                         type_=AnalysisMessage.ERROR,
-                        analysis_id=analysis,
+                        analysis_id=analysis.id,
                         analysis_property_view_id=analysis_property_view_id,
                         user_message='Unexpected error from bsyncr service',
                         debug_message=error,
