@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import logging
 
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException, task_create_analysis_property_views
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
@@ -27,6 +28,9 @@ from lxml import etree
 from lxml.builder import ElementMaker
 
 import requests
+
+
+logger = logging.getLogger(__name__)
 
 
 class BsyncrPipeline(AnalysisPipeline):
@@ -104,11 +108,13 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
                 )
             )
             if meters.count() == 0:
-                AnalysisMessage.objects.create(
-                    analysis=analysis,
-                    analysis_property_view=analysis_property_view,
-                    type=AnalysisMessage.DEFAULT,
-                    user_message='Property has no linked electricity meters with 12 or more readings'
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.INFO,
+                    analysis_id=analysis.id,
+                    analysis_property_view_id=analysis_property_view.id,
+                    user_message='Property not used in analysis: Property has no linked electricity meters with 12 or more readings',
+                    debug_message=''
                 )
                 continue
 
@@ -118,11 +124,13 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
             bsync_doc, errors = _build_bsyncr_input(analysis_property_view, meter)
             if errors:
                 for error in errors:
-                    AnalysisMessage.objects.create(
-                        analysis=analysis,
-                        analysis_property_view=analysis_property_view,
-                        type=AnalysisMessage.DEFAULT,
-                        user_message=error
+                    AnalysisMessage.log_and_create(
+                        logger=logger,
+                        type_=AnalysisMessage.ERROR,
+                        analysis_id=analysis.id,
+                        analysis_property_view_id=analysis_property_view.id,
+                        user_message=f'Error preparing bsyncr input: {error}',
+                        debug_message='',
                     )
                 continue
 
@@ -135,12 +143,14 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
             analysis_input_file.save()
             input_file_paths.append(analysis_input_file.file.path)
         except Exception as e:
-            AnalysisMessage.objects.create(
-                analysis=analysis,
-                analysis_property_view=analysis_property_view,
-                type=AnalysisMessage.DEFAULT,
-                user_message='Unexpected error',
-                debug_message=str(e),
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis.id,
+                analysis_property_view_id=analysis_property_view.id,
+                user_message='Unexpected error occurred while preparing input for property',
+                debug_message='',
+                exception=e,
             )
             pass
 
@@ -307,11 +317,13 @@ def _start_analysis(analysis_id, progress_data_key):
             result, errors = _run_bsyncr_analysis(input_file.file)
             if errors:
                 for error in errors:
-                    AnalysisMessage.objects.create(
-                        analysis=analysis,
+                    AnalysisMessage.log_and_create(
+                        logger=logger,
+                        type_=AnalysisMessage.ERROR,
+                        analysis_id=analysis,
                         analysis_property_view_id=analysis_property_view_id,
-                        type=AnalysisMessage.DEFAULT,
-                        user_message=f'Error from bsyncr service: {error}'
+                        user_message=f'Unexpected error from bsyncr service',
+                        debug_message=error,
                     )
                 continue
 
@@ -326,10 +338,11 @@ def _start_analysis(analysis_id, progress_data_key):
             output_file_ids.append(analysis_output_file.id)
         except Exception as e:
             AnalysisMessage.objects.create(
-                analysis=analysis,
-                type=AnalysisMessage.DEFAULT,
-                user_message='Unexpected error',
-                debug_message=str(e),
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis.id,
+                user_message='Unexpected error while running analysis',
+                debug_message='',
+                exception=e,
             )
             continue
 
@@ -361,11 +374,13 @@ def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
             analysis_property_view.parsed_results = parsed_results
             analysis_property_view.save()
         except Exception as e:
-            AnalysisMessage.objects.create(
-                analysis=analysis,
-                type=AnalysisMessage.DEFAULT,
-                user_message='Unexpected error',
-                debug_message=str(e),
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis.id,
+                user_message='Unexpected while processing bsyncr results',
+                debug_message='',
+                exception=e,
             )
             continue
 
