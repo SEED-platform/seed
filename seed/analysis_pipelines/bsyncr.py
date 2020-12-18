@@ -337,7 +337,7 @@ def _start_analysis(analysis_id, progress_data_key):
             analysis_output_file.analysis_property_views.set([analysis_property_view_id])
             output_file_ids.append(analysis_output_file.id)
         except Exception as e:
-            AnalysisMessage.objects.create(
+            AnalysisMessage.log_and_create(
                 type_=AnalysisMessage.ERROR,
                 analysis_id=analysis.id,
                 user_message='Unexpected error while running analysis',
