@@ -1,3 +1,7 @@
+# SEED Version 2.8.2
+
+This is a patch to bring the 2.7.6 hotfix into 2.8.1
+
 # SEED Version 2.8.1
 
 This is a patch to bring the 2.7.5 hotfix into 2.8.0
