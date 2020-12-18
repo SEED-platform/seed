@@ -17,7 +17,7 @@ from pytz import timezone
 from requests import Response
 
 from django.db.models import Q
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
 
 from config.settings.common import TIME_ZONE, BASE_DIR
@@ -185,6 +185,8 @@ class TestAnalysisPipeline(TestCase):
         self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
 
+# override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
+@override_settings(BSYNCR_SERVER_HOST='bogus.host.com')
 class TestBsyncrPipeline(TestCase):
     def setUp(self):
         user_details = {
