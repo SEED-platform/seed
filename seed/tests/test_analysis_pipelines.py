@@ -46,10 +46,6 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 
 
-# disable logging to stdout to keep console clean
-logging.disable(logging.CRITICAL)
-
-
 class MockPipeline(AnalysisPipeline):
 
     def _prepare_analysis(self, analysis_id, property_view_ids):
