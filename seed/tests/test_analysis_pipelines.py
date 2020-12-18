@@ -7,7 +7,6 @@
 from datetime import datetime
 from io import BytesIO
 import json
-import logging
 from os import path
 from unittest.mock import patch
 
