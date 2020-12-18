@@ -7,6 +7,7 @@
 from datetime import datetime
 from io import BytesIO
 import json
+import logging
 from os import path
 from unittest.mock import patch
 
@@ -43,6 +44,10 @@ from seed.analysis_pipelines.pipeline import AnalysisPipelineException, Analysis
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
+
+
+# disable logging to stdout to keep console clean
+logging.disable(logging.CRITICAL)
 
 
 class MockPipeline(AnalysisPipeline):
@@ -513,8 +518,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(Analysis.READY, self.analysis_b.status)
 
         # Act
-        bsyncr_error_message = 'Something is Bad'
-        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=[bsyncr_error_message])
+        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=['Something is Bad'])
         with self.assertRaises(AnalysisPipelineException) as context:
             with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
                 pipeline.start_analysis()
@@ -532,4 +536,4 @@ class TestBsyncrPipeline(TestCase):
         analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b, analysis_property_view__isnull=False)
         self.assertEqual(len(property_view_ids), analysis_messages.count())
         for analysis_message in analysis_messages:
-            self.assertTrue(bsyncr_error_message in analysis_message.user_message)
+            self.assertTrue('Unexpected error from bsyncr service' in analysis_message.user_message)

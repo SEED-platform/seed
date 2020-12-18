@@ -338,6 +338,7 @@ def _start_analysis(analysis_id, progress_data_key):
             output_file_ids.append(analysis_output_file.id)
         except Exception as e:
             AnalysisMessage.log_and_create(
+                logger=logger,
                 type_=AnalysisMessage.ERROR,
                 analysis_id=analysis.id,
                 user_message='Unexpected error while running analysis',
