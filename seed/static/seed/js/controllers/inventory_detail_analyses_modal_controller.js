@@ -14,11 +14,41 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
     '$log',
     '$uibModalInstance',
     'Notification',
-    function ($scope, $log, $uibModalInstance) {
+    'analyses_service',
+    'inventory_ids',
+    function (
+      $scope,
+      $log,
+      $uibModalInstance,
+      Notification,
+      analyses_service,
+      inventory_ids,
+    ) {
       // $scope.meters = meters;
+
+      function initialize_new_analysis () {
+        $scope.new_analysis = {name: null, service: null, configuration: null};
+      }
+
       /* Create a new analysis based on user input */
       $scope.submitNewAnalysisForm = function (form) {
-        //create new analysis here
+        if (form.$invalid) {
+          return;
+        }
+        analyses_service.create_analysis(
+          $scope.new_analysis.name,
+          $scope.new_analysis.service,
+          $scope.new_analysis.configuration,
+          inventory_ids,
+        ).then(function (data) {
+          debugger;
+          Notification.primary('Created Analysis');
+          initialize_new_analysis();
+          form.$setPristine();
+        }, function (response) {
+          $log.error('Error creating new analysis.', response);
+          Notification.error('Failed to create Analysis: ' + response.data.message)
+        });
       };
 
       /* User has cancelled dialog */
