@@ -30,7 +30,7 @@ class CreateAnalysisSerializer(AnalysisSerializer):
         return Analysis.objects.create(
             name=validated_data['name'],
             service=validated_data['service'],
-            configuration=validated_data['configuration'],
+            configuration=validated_data.get('configuration', {}),
             user_id=validated_data['user_id'],
             organization_id=validated_data['organization_id']
         )
