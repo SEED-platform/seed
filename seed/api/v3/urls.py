@@ -85,7 +85,7 @@ analysis_messages_router = nested_routers.NestedSimpleRouter(api_v3_router, r'an
 analysis_messages_router.register(r'messages', AnalysisMessageViewSet, base_name='analysis-messages')
 
 analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views_router, r'views', lookup='views')
-analysis_view_messages_router.register(r'messages', AnalysisMessageViewSet, base_name='analysis-messages')
+analysis_view_messages_router.register(r'views_messages', AnalysisMessageViewSet, base_name='analysis-messages')
 
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'properties', lookup='property')
 properties_router.register(r'notes', NoteViewSet, base_name='property-notes')
