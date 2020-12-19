@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.status import HTTP_409_CONFLICT
@@ -14,7 +13,6 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AnalysisMessage
 from seed.serializers.analysis_messages import AnalysisMessageSerializer
 from seed.utils.api import api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper
 
 
 class AnalysisMessageViewSet(viewsets.ViewSet):
