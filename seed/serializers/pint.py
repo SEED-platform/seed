@@ -137,7 +137,10 @@ class PintQuantitySerializerField(serializers.Field):
             try:
                 org = state.organization
             except AttributeError:
-                org = state.state.organization
+                try:
+                    org = state.state.organization
+                except AttributeError:
+                    org = state.property_state.organization
             value = collapse_unit(org, obj)
             return value
         else:
