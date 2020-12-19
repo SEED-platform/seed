@@ -21,13 +21,11 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
     serializer_class = AnalysisMessageSerializer
     model = AnalysisMessage
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     def list(self, request, analysis_pk, views_pk=None):
-        organization_id = request.query_params.get('organization_id', None)
         if views_pk is None:
             messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by('-id')
         else:
@@ -38,13 +36,11 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
             'messages': AnalysisMessageSerializer(messages_queryset, many=True).data
         })
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     def retrieve(self, request, pk, analysis_pk, views_pk=None):
-        organization_id = int(request.query_params.get('organization_id', 0))
         try:
             if views_pk is None:
                 message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk)
