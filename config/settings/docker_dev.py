@@ -56,7 +56,7 @@ if SEED_TESTING:
     ]
     NOSE_ARGS = [
         '--nocapture',
-        '--nologcapture',
+        # '--nologcapture',
     ]
 
     CELERY_BROKER_BACKEND = 'memory'

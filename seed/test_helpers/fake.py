@@ -810,7 +810,7 @@ class FakeAnalysisFactory(BaseFake):
         return Analysis.objects.create(**config)
 
 
-class FakeAnalysisPropertyView(BaseFake):
+class FakeAnalysisPropertyViewFactory(BaseFake):
     """
     Factory Class for producing AnalysisPropertyView instances.
     """
