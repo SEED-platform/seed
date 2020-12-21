@@ -6,7 +6,7 @@
 """
 from drf_yasg.utils import swagger_auto_schema
 from django.http import JsonResponse
-from rest_framework import viewsets
+from rest_framework import viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
@@ -19,9 +19,63 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
 
+class CreateAnalysisSerializer(AnalysisSerializer):
+    property_view_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+
+    class Meta:
+        model = Analysis
+        fields = ['name', 'service', 'configuration', 'property_view_ids']
+
+    def create(self, validated_data):
+        return Analysis.objects.create(
+            name=validated_data['name'],
+            service=validated_data['service'],
+            configuration=validated_data.get('configuration', {}),
+            user_id=validated_data['user_id'],
+            organization_id=validated_data['organization_id']
+        )
+
+
 class AnalysisViewSet(viewsets.ViewSet):
     serializer_class = AnalysisSerializer
     model = Analysis
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=CreateAnalysisSerializer,
+    )
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    def create(self, request):
+        serializer = CreateAnalysisSerializer(data=request.data)
+        if not serializer.is_valid():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Bad request',
+                'errors': serializer.errors
+            })
+
+        analysis = serializer.save(
+            user_id=request.user.id,
+            organization_id=request.query_params['organization_id']
+        )
+        pipeline = AnalysisPipeline.factory(analysis)
+        try:
+            progress_data = pipeline.prepare_analysis(serializer.validated_data['property_view_ids'])
+            return JsonResponse({
+                'status': 'success',
+                'progress_key': progress_data['progress_key'],
+                'progress': progress_data,
+            })
+        except AnalysisPipelineException as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=HTTP_409_CONFLICT)
 
     @swagger_auto_schema(
         manual_parameters=[

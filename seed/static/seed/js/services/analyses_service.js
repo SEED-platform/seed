@@ -22,9 +22,27 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      let create_analysis = function(name, service, configuration, property_view_ids) {
+        let organization_id = user_service.get_organization().id;
+        return $http({
+          url: '/api/v3/analyses/',
+          method: 'POST',
+          params: { organization_id: organization_id },
+          data: {
+            name: name,
+            service: service,
+            configuration: configuration,
+            property_view_ids: property_view_ids,
+          }
+        }).then(function (response) {
+          return response.data
+        })
+      }
+
       let analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
-        get_analyses_for_canonical_property: get_analyses_for_canonical_property
+        get_analyses_for_canonical_property: get_analyses_for_canonical_property,
+        create_analysis: create_analysis,
       };
 
       return analyses_factory;
