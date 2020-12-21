@@ -23,11 +23,11 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    def list(self, request, analysis_pk, views_pk=None):
-        if views_pk is None:
+    def list(self, request, analysis_pk, view_pk=None):
+        if view_pk is None:
             messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by('-id')
         else:
-            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=views_pk).order_by('-id')
+            messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=view_pk).order_by('-id')
 
         return JsonResponse({
             'status': 'success',
@@ -38,12 +38,12 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    def retrieve(self, request, pk, analysis_pk, views_pk=None):
+    def retrieve(self, request, pk, analysis_pk, view_pk=None):
         try:
-            if views_pk is None:
+            if view_pk is None:
                 message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk)
             else:
-                message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk, analysis_property_view=views_pk)
+                message_queryset = AnalysisMessage.objects.get(id=pk, analysis=analysis_pk, analysis_property_view=view_pk)
         except AnalysisMessage.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
