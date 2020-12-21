@@ -6,16 +6,21 @@
 """
 from datetime import datetime
 from io import BytesIO
+import json
+from os import path
+from unittest.mock import patch
 
 from lxml import etree
 
 from pytz import timezone
 
+from requests import Response
+
 from django.db.models import Q
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
 
-from config.settings.common import TIME_ZONE
+from config.settings.common import TIME_ZONE, BASE_DIR
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -29,13 +34,13 @@ from seed.models import (
 )
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
-    FakeAnalysisPropertyView,
+    FakeAnalysisPropertyViewFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
 from seed.analysis_pipelines.pipeline import AnalysisPipelineException, AnalysisPipeline, task_create_analysis_property_views
-from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline
+from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 
@@ -45,6 +50,11 @@ class MockPipeline(AnalysisPipeline):
     def _prepare_analysis(self, analysis_id, property_view_ids):
         analysis = Analysis.objects.get(id=analysis_id)
         analysis.status = Analysis.READY
+        analysis.save()
+
+    def _start_analysis(self):
+        analysis = Analysis.objects.get(id=self._analysis_id)
+        analysis.status = Analysis.RUNNING
         analysis.save()
 
 
@@ -97,6 +107,35 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.READY, self.analysis.status)
 
+    def test_start_analysis_is_successful_when_analysis_status_is_ready(self):
+        # Setup
+        self.analysis.status = Analysis.READY
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        pipeline.start_analysis()
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.RUNNING, self.analysis.status)
+
+    def test_start_analysis_raises_exception_when_analysis_status_isnt_ready(self):
+        # Setup
+        self.analysis.status = Analysis.CREATING
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        with self.assertRaises(AnalysisPipelineException) as context:
+            pipeline.start_analysis()
+
+        # Assert
+        self.assertTrue('Analysis cannot be started' in str(context.exception))
+        # the status should not have changed
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.CREATING, self.analysis.status)
+
     def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
         # Setup
         pipeline = MockPipeline(self.analysis.id)
@@ -146,6 +185,8 @@ class TestAnalysisPipeline(TestCase):
         self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
 
+# override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
+@override_settings(BSYNCR_SERVER_HOST='bogus.host.com')
 class TestBsyncrPipeline(TestCase):
     def setUp(self):
         user_details = {
@@ -166,7 +207,7 @@ class TestBsyncrPipeline(TestCase):
             )
         )
         self.analysis_property_view = (
-            FakeAnalysisPropertyView(organization=self.org, user=self.user).get_analysis_property_view(
+            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
                 property_state=property_state,
                 # analysis args
                 name='Quite neat',
@@ -237,6 +278,42 @@ class TestBsyncrPipeline(TestCase):
                     conversion_factor=1.00
                 )
 
+    def _mock_bsyncr_service_request_factory(self, error_messages=None):
+        """Factory for returning a patched _bsyncr_service_request.
+        If error_messages is None, it will construct a bsyncr output file for the
+        response.
+
+        :param error_messages: list[str], list of error messages to return in response
+        """
+        def _build_bsyncr_output(file_):
+            # copy the example bsyncr output file then update the ID within it
+            bsyncr_output_example_file = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-output.xml')
+            bsyncr_output_tree = etree.parse(bsyncr_output_example_file)
+            id_value_elem = bsyncr_output_tree.xpath(
+                f'//auc:PremisesIdentifier[auc:IdentifierCustomName = "{PREMISES_ID_NAME}"]/auc:IdentifierValue',
+                namespaces=NAMESPACES
+            )
+            analysis_property_view_id = _parse_analysis_property_view_id(file_.path)
+            id_value_elem[0].text = str(analysis_property_view_id)
+            return etree.tostring(bsyncr_output_tree, pretty_print=True)
+
+        def _mock_request(file_):
+            # mock the call to _bsyncr_service_request by returning a constructed Response
+            the_response = Response()
+            if error_messages is not None:
+                the_response.status_code = 400
+                body_dict = {
+                    'errors': [{'detail': msg, 'code': '400'} for msg in error_messages]
+                }
+                the_response._content = json.dumps(body_dict).encode()
+            else:
+                the_response.status_code = 200
+                the_response._content = _build_bsyncr_output(file_)
+
+            return the_response
+
+        return _mock_request
+
     def test_build_bsyncr_input_returns_valid_bsync_document(self):
         # Act
         doc, errors = _build_bsyncr_input(self.analysis_property_view, self.meter)
@@ -283,7 +360,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(1, len(errors))
         self.assertTrue('has no reading value' in errors[0])
 
-    def test_pipeline_is_successful_when_properly_setup(self):
+    def test_prepare_analysis_is_successful_when_properly_setup(self):
         # Act
         pipeline = BsyncrPipeline(self.analysis_b.id)
         pipeline.prepare_analysis([pv.id for pv in self.good_property_views])
@@ -302,7 +379,7 @@ class TestBsyncrPipeline(TestCase):
         )
         self.assertEqual(0, messages.count())
 
-    def test_pipeline_creates_message_for_view_when_no_meter(self):
+    def test_prepare_analysis_creates_message_for_view_when_no_meter(self):
         # Setup
         # unlink a meter from its property to make the property view Bad
         target_meter = self.good_meters[0]
@@ -327,7 +404,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(1, messages.count())
         self.assertTrue('Property has no linked electricity meters with 12 or more readings' in messages[0].user_message)
 
-    def test_pipeline_fails_when_it_fails_to_make_at_least_one_input_file(self):
+    def test_prepare_analysis_fails_when_it_fails_to_make_at_least_one_input_file(self):
         # Setup
         # unlink _all_ meters to the properties, making them all Bad
         for meter in self.good_meters:
@@ -362,3 +439,98 @@ class TestBsyncrPipeline(TestCase):
             analysis_property_view=None,
         )
         self.assertTrue('No files were able to be prepared for the analysis', analysis_message.user_message)
+
+    def test_start_analysis_is_successful_when_inputs_are_valid(self):
+        # Setup
+        # prepare the analysis
+        pipeline = BsyncrPipeline(self.analysis_b.id)
+        property_view_ids = [pv.id for pv in self.good_property_views]
+        pipeline.prepare_analysis(property_view_ids)
+
+        self.analysis_b.refresh_from_db()
+        self.assertEqual(Analysis.READY, self.analysis_b.status)
+
+        # Act
+        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=None)
+        with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+            pipeline.start_analysis()
+
+        # Assert
+        self.analysis_b.refresh_from_db()
+        self.assertEqual(Analysis.COMPLETED, self.analysis_b.status)
+
+        # there should be no messages
+        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b)
+        self.assertEqual(0, analysis_messages.count())
+
+        # each property view should have parsed results stored
+        # NOTE: these results won't change because they come from the example bsyncr output file
+        expected_parsed_results = {
+            'models': [
+                {
+                    "EndTimestamp": "2013-02-13T00:00:00",
+                    "StartTimestamp": "2012-03-13T00:00:00",
+                    "DerivedModelInputs": {
+                        "ResponseVariable": {
+                            "ResponseVariableName": "Electricity",
+                            "ResponseVariableUnits": "kWh",
+                            "ResponseVariableEndUse": "All end uses",
+                        },
+                        "IntervalFrequency": "Month",
+                        "ExplanatoryVariables": {
+                            "ExplanatoryVariable": {
+                                "ExplanatoryVariableName": "Drybulb Temperature",
+                                "ExplanatoryVariableUnits": "Fahrenheit, F",
+                            }
+                        },
+                    },
+                    "DerivedModelPerformance": {
+                        "NDBE": "0.00",
+                        "NMBE": "0.00",
+                        "CVRMSE": "54.48",
+                        "RSquared": "0.2",
+                    },
+                    "DerivedModelCoefficients": {
+                        "Guideline14Model": {
+                            "Beta1": "0.0730836792337458",
+                            "Intercept": "2.62426286471561",
+                            "ModelType": "2 parameter simple linear regression",
+                        }
+                    },
+                }
+            ]
+        }
+        analysis_property_views = AnalysisPropertyView.objects.filter(analysis=self.analysis_b)
+        for analysis_property_view in analysis_property_views:
+            self.assertDictEqual(expected_parsed_results, analysis_property_view.parsed_results)
+
+    def test_start_analysis_fails_when_bsyncr_returns_errors(self):
+        # Setup
+        # prepare the analysis
+        pipeline = BsyncrPipeline(self.analysis_b.id)
+        property_view_ids = [pv.id for pv in self.good_property_views]
+        pipeline.prepare_analysis(property_view_ids)
+
+        self.analysis_b.refresh_from_db()
+        self.assertEqual(Analysis.READY, self.analysis_b.status)
+
+        # Act
+        mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=['Something is Bad'])
+        with self.assertRaises(AnalysisPipelineException) as context:
+            with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+                pipeline.start_analysis()
+
+        # Assert
+        self.assertTrue('Failed to get results for all properties' in str(context.exception))
+        self.analysis_b.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis_b.status)
+
+        # there should be a generic analysis message indicating all properties failed
+        analysis_generic_message = AnalysisMessage.objects.get(analysis=self.analysis_b, analysis_property_view__isnull=True)
+        self.assertEqual('Failed to get results for all properties', analysis_generic_message.user_message)
+
+        # every property should have a linked message with the bsyncr error
+        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b, analysis_property_view__isnull=False)
+        self.assertEqual(len(property_view_ids), analysis_messages.count())
+        for analysis_message in analysis_messages:
+            self.assertTrue('Unexpected error from bsyncr service' in analysis_message.user_message)

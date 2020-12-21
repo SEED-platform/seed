@@ -4,22 +4,23 @@
     </div>
     <div class="modal-body">
         <div class="newAnalysisInput" style="margin-top:0;">
-            <form role="form" ng-submit="" novalidate>
+            <form name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
                 <div class="form-group">
                     <label class="control-label sectionLabel" translate>Name</label>
                     <input id="AnalysisName" type="text" name="name" class="form-control"
+                           ng-minlength="1" ng-maxlength="100" ng-model="new_analysis.name"
                            placeholder="{$:: 'Analysis Name' | translate $}" required>
                 </div>
                 <div class="form-group">
                     <label class="control-label sectionLabel">Type</label>
-                    <select class="form-control" ng-model="analysis.service" required>
-                        <option ng-option value="Bsyncr" selected="selected">BSyncr</option>
+                    <select class="form-control" ng-model="new_analysis.service" required>
+                        <option ng-option value="BSyncr" selected="selected">BSyncr</option>
                     </select>
                     <small class="form-text text-muted">Note: BSyncr will use the first meter of type 'electricity' for
                         analysis</small>
                 </div>
+                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create Analysis</button>
             </form>
-            <button type="submit" class="btn btn-primary" translate>Create Analysis</button>
         </div>
     </div>
     <div class="modal-footer">

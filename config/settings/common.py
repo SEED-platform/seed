@@ -301,6 +301,9 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': '/accounts/logout',
 }
 
+BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
+BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
+
 # Certification
 # set this for a default validity_duration
 # should be a integer representing a number of days

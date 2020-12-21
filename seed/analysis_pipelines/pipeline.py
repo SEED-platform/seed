@@ -43,11 +43,26 @@ class AnalysisPipeline(abc.ABC):
     def __init__(self, analysis_id):
         self._analysis_id = analysis_id
 
+    @classmethod
+    def factory(cls, analysis):
+        """Factory method for constructing pipelines for a given analysis.
+
+        :param analysis: Analysis
+        :returns: An implementation of AnalysisPipeline, e.g. BsyncrPipeline
+        """
+        # import here to avoid circular dependencies
+        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
+
+        if analysis.service == Analysis.BSYNCR:
+            return BsyncrPipeline(analysis.id)
+        else:
+            raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
+
     def prepare_analysis(self, property_view_ids):
         """Entrypoint for preparing an analysis.
 
         :param property_view_ids: list[int]
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -59,11 +74,29 @@ class AnalysisPipeline(abc.ABC):
 
         return self._prepare_analysis(self._analysis_id, property_view_ids)
 
-    def fail(self, message, progress_data_key=None):
-        """Fails the analysis.
+    def start_analysis(self):
+        """Entrypoint for starting an analysis.
+
+        :returns: str, ProgressData.result
+        """
+        with transaction.atomic():
+            locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
+            if locked_analysis.status is Analysis.READY:
+                locked_analysis.status = Analysis.QUEUED
+                locked_analysis.save()
+            else:
+                statuses = dict(Analysis.STATUS_TYPES)
+                raise AnalysisPipelineException(f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"')
+
+        return self._start_analysis()
+
+    def fail(self, message, progress_data_key=None, logger=None):
+        """Fails the analysis. Creates an AnalysisMessage and optionally logs it
+        if a logger is provided.
 
         :param message: str, message to create an AnalysisMessage with
         :param progress_data_key: str, fails the progress data if this key is provided
+        :param logger: logging.Logger
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -78,11 +111,20 @@ class AnalysisPipeline(abc.ABC):
             locked_analysis.status = Analysis.FAILED
             locked_analysis.save()
 
-            AnalysisMessage.objects.create(
-                analysis_id=self._analysis_id,
-                type=AnalysisMessage.DEFAULT,
-                user_message=message,
-            )
+            if logger is not None:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    user_message=message,
+                    debug_message='',
+                    analysis_id=self._analysis_id,
+                )
+            else:
+                AnalysisMessage.objects.create(
+                    analysis_id=self._analysis_id,
+                    type=AnalysisMessage.ERROR,
+                    user_message=message,
+                )
 
     @abc.abstractmethod
     def _prepare_analysis(self, analysis_id, property_view_ids):
@@ -91,6 +133,16 @@ class AnalysisPipeline(abc.ABC):
 
         :param analysis_id: int
         :param property_view_ids: list[int]
-        :returns: str, A ProgressData key
+        :returns: str, ProgressData.result
+        """
+        pass
+
+    @abc.abstractmethod
+    def _start_analysis(self):
+        """Abstract method which should start the analysis, e.g. make HTTP requests
+        to the analysis service.
+
+        :param analysis_id: int
+        :returns: str, ProgressData.result
         """
         pass

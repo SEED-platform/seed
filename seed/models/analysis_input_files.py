@@ -37,4 +37,4 @@ class AnalysisInputFile(models.Model):
 
     file = models.FileField(upload_to=analysis_input_path, max_length=500)
     content_type = models.IntegerField(choices=CONTENT_TYPES)
-    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    analysis = models.ForeignKey(Analysis, related_name='input_files', on_delete=models.CASCADE)

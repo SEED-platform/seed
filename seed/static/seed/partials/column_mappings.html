@@ -26,12 +26,12 @@
             <h2><i class="fa fa-sitemap"></i> <span translate>Column Mappings</span></h2>
         </div>
 
-        <!-- possibly generlize settings_profile? -->
+        <!-- possibly generalize settings_profile? -->
         <div class="section_action_container right_wide settings_profile">
           <span>{$:: 'Column Mapping Profile' | translate $}: </span>
           <select class="form-control input-sm" ng-model="dropdown_selected_profile" ng-change="check_for_changes()" ng-disabled="!profiles.length" ng-options="profile as profile.name for profile in profiles track by profile.id"></select>
 
-          <button class="btn btn-success" type="button" ng-click="save_profile()" ng-disabled="!changes_possible || header_duplicates_present() || !profile_action_ok('update')" tooltip-placement="bottom" uib-tooltip="Save">
+          <button class="btn btn-success" type="button" ng-click="save_profile()" ng-disabled="!changes_possible || header_duplicates_present() || empty_units_present() || !profile_action_ok('update')" tooltip-placement="bottom" uib-tooltip="Save">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
           </button>
           <button class="btn btn-primary" type="button" ng-click="rename_profile()" ng-disabled="!profiles.length || !profile_action_ok('rename')" tooltip-placement="bottom" uib-tooltip="Rename">
@@ -132,6 +132,7 @@
                               <input type="text"
                                   uib-typeahead="column.displayName for column in (col.to_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20"
                                   typeahead-template-url="typeahead.html"
+                                  typeahead-on-select="flag_change(col)"
                                   ng-model="col.to_field"
                                   class="form-control input-sm tcm_field"
                                   ng-change="flag_change(col)"
@@ -139,7 +140,7 @@
                                   ng-attr-id="mapped-row-input-box-{$ $index $}"
                                   ng-disabled="!profile_action_ok('change_to_field')">
                           </td>
-                          <td>
+                          <td ng-class="{'danger': col.from_units === null && (is_area_column(col) || is_eui_column(col))}">
                               <select ng-model="col.from_units" ng-change="flag_change()" ng-if="is_area_column(col)" ng-disabled="!profile_action_ok('change_from_units')">
                                   <option value="ft**2" translate>square feet</option>
                                   <option value="m**2" translate>square metres</option>

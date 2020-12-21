@@ -258,7 +258,12 @@ angular.module('BE.seed.controller.column_mappings', [])
       // Track changes to warn users about losing changes when data could be lost
       $scope.changes_possible = false;
 
-      $scope.flag_change = function () {
+      $scope.flag_change = function (col) {
+        if (col) {
+          // Reevaluate units
+          col.from_units = get_default_quantity_units(col);
+        }
+
         $scope.changes_possible = true;
       };
 
@@ -289,6 +294,16 @@ angular.module('BE.seed.controller.column_mappings', [])
       $scope.is_area_column = function (mapping) {
         // All of these are on the PropertyState table
         return mapping.to_table_name === 'PropertyState' && Boolean(_.find(area_columns, {displayName: mapping.to_field}));
+      };
+
+      var get_default_quantity_units = function (col) {
+        // TODO - hook up to org preferences / last mapping in DB
+        if ($scope.is_eui_column(col)) {
+          return 'kBtu/ft**2/year';
+        } else if ($scope.is_area_column(col)) {
+          return 'ft**2';
+        }
+        return null;
       };
 
       // Add and remove column methods
@@ -376,6 +391,12 @@ angular.module('BE.seed.controller.column_mappings', [])
           })
         );
       };
+
+      $scope.empty_units_present = function () {
+        return Boolean(_.find($scope.current_profile.mappings, function (field) {
+          return field.to_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field));
+        }));
+      }
 
       $scope.profile_action_ok = function (action) {
         if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_NORMAL) {
