@@ -41,7 +41,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           $scope.new_analysis.configuration,
           inventory_ids,
         ).then(function (data) {
-          debugger;
           Notification.primary('Created Analysis');
           initialize_new_analysis();
           form.$setPristine();
