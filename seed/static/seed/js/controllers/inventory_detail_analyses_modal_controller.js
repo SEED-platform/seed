@@ -44,6 +44,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           Notification.primary('Created Analysis');
           initialize_new_analysis();
           form.$setPristine();
+          $scope.$close(data);
         }, function (response) {
           $log.error('Error creating new analysis.', response);
           Notification.error('Failed to create Analysis: ' + response.data.message)

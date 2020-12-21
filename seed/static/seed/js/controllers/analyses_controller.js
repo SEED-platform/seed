@@ -11,18 +11,49 @@ angular.module('BE.seed.controller.analyses', [])
     'users_payload',
     'auth_payload',
     'urls',
+    'analyses_service',
+    'Notification',
+    'uploader_service',
     function (
       $scope,
       analyses_payload,
       organization_payload,
       users_payload,
       auth_payload,
-      urls
+      urls,
+      analyses_service,
+      Notification,
+      uploader_service,
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.analyses = analyses_payload.analyses;
       $scope.users = users_payload.users;
+
+      refresh_analyses = function() {
+        analyses_service.get_analyses_for_org($scope.org.id)
+        .then(function(data) {
+          $scope.analyses = data.analyses
+        })
+      }
+
+      $scope.start_analysis = function(analysis_id) {
+        analyses_service.start_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis started')
+            refresh_analyses()
+            uploader_service.check_progress_loop(result.progress_key, 0, 1, function() {
+              refresh_analyses()
+            }, function() {
+              refresh_analyses()
+            }, {})
+          } else {
+            Notification.error('Failed to start analysis: ' + result.message)
+          }
+        })
+      }
+
     }
   ])
   .filter('get_run_duration', function() {

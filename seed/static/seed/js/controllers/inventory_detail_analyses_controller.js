@@ -16,6 +16,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
     'organization_payload',
     'urls',
     '$log',
+    'analyses_service',
+    'Notification',
+    'uploader_service',
     function (
       $state,
       $scope,
@@ -28,7 +31,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       users_payload,
       organization_payload,
       urls,
-      $log
+      $log,
+      analyses_service,
+      Notification,
+      uploader_service,
     ) {
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
@@ -40,8 +46,32 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         view_id: $stateParams.view_id
       };
 
+      refresh_analyses = function() {
+        analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
+        .then(function(data) {
+          $scope.analyses = data.analyses
+        })
+      }
+
+      $scope.start_analysis = function(analysis_id) {
+        analyses_service.start_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis started')
+            refresh_analyses()
+            uploader_service.check_progress_loop(result.progress_key, 0, 1, function() {
+              refresh_analyses()
+            }, function() {
+              refresh_analyses()
+            }, {})
+          } else {
+            Notification.error('Failed to start analysis: ' + result.message)
+          }
+        })
+      }
+
       $scope.open_analysis_modal = function () {
-        var modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
@@ -52,6 +82,15 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
           //   var organization_id = user_service.get_organization().id;
           //   return meter_service.get_meters($stateParams.view_id, organization_id);
           // }],
+          }
+        }).result.then(function(data) {
+          if (data) {
+            refresh_analyses()
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function() {
+              refresh_analyses()
+            }, function() {
+              refresh_analyses()
+            }, {})
           }
         });
       };

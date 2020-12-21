@@ -25,8 +25,10 @@
                     <tr ng-repeat="analysis in analyses  | filter:filter_params:strict">
                         <td>{$:: analysis.name $}</td>
                         <td>
+                            <!-- These glyphicons are temporarily disabled until we implement their functionality
                             <i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>
-                            <i class="glyphicon glyphicon-trash" aria-hidden="true"></i>
+                            <i class="glyphicon glyphicon-trash" aria-hidden="true"></i> -->
+                            <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
                         </td>
                         <td>{$:: analysis.number_of_analysis_property_views $}</td>
                         <td>{$:: analysis.service $}</td>
