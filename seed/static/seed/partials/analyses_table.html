@@ -12,6 +12,7 @@
                 <thead>
                     <tr>
                         <th translate>Analysis Name (User Defined)</th>
+                        <th translate></th>
                         <th translate>Number of Properties</th>
                         <th translate>Type</th>
                         <th translate>Run Status</th>
@@ -21,8 +22,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
+                    <tr ng-repeat="analysis in analyses  | filter:filter_params:strict">
                         <td><a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
+                        <td>
+                            <!-- These glyphicons are temporarily disabled until we implement their functionality
+                            <i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>
+                            <i class="glyphicon glyphicon-trash" aria-hidden="true"></i> -->
+                            <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
+                        </td>
                         <td>{$:: analysis.number_of_analysis_property_views $}</td>
                         <td>{$:: analysis.service $}</td>
                         <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>

@@ -4,6 +4,8 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import Analysis, AnalysisPropertyView, AnalysisMessage
 
 from django.db import transaction
+from django.utils import timezone as tz
+
 from celery import shared_task
 
 
@@ -109,6 +111,7 @@ class AnalysisPipeline(abc.ABC):
                 raise AnalysisPipelineException(f'Analysis is already in a terminal state: status {locked_analysis.status}')
 
             locked_analysis.status = Analysis.FAILED
+            locked_analysis.end_time = tz.now()
             locked_analysis.save()
 
             if logger is not None:
