@@ -60,8 +60,8 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td><a ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">{$:: analysis.name $}</a></td>
-                            <td>{$:: analysis.views[0] $}</td>
+                            <td>{$:: analysis.name $}</td>
+                            <td><a ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">{$:: analysis.views[0] $}</a></td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
                             <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
