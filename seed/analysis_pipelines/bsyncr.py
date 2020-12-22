@@ -21,6 +21,7 @@ from seed.models import (
 from django.core.files.base import ContentFile
 from django.db.models import Count
 from django.conf import settings
+from django.utils import timezone as tz
 
 from celery import chain, shared_task
 
@@ -309,6 +310,7 @@ def _start_analysis(analysis_id, progress_data_key):
     """
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.RUNNING
+    analysis.start_time = tz.now()
     analysis.save()
 
     progress_data = ProgressData.from_key(progress_data_key)
@@ -399,6 +401,7 @@ def _finish_analysis(analysis_id, progress_data_key):
     """
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.COMPLETED
+    analysis.end_time = tz.now()
     analysis.save()
 
     progress_data = ProgressData.from_key(progress_data_key)

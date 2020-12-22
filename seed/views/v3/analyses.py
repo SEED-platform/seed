@@ -92,9 +92,16 @@ class AnalysisViewSet(viewsets.ViewSet):
         property_id = request.query_params.get('property_id', None)
         analyses = []
         if property_id is not None:
-            analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id).distinct()
+            analyses_queryset = (
+                Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
+                .distinct()
+                .order_by('id')
+            )
         else:
-            analyses_queryset = Analysis.objects.filter(organization=organization_id)
+            analyses_queryset = (
+                Analysis.objects.filter(organization=organization_id)
+                .order_by('id')
+            )
         for analysis in analyses_queryset:
             property_view_info = analysis.get_property_view_info(property_id)
             serialized_analysis = AnalysisSerializer(analysis).data

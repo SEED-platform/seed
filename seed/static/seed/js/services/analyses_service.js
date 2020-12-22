@@ -63,6 +63,19 @@ angular.module('BE.seed.service.analyses', [])
         })
       }
 
+      let start_analysis = function(analysis_id) {
+        let organization_id = user_service.get_organization().id;
+        return $http({
+          url: '/api/v3/analyses/' + analysis_id + '/start/',
+          method: 'POST',
+          params: { organization_id: organization_id },
+        }).then(function (response) {
+          return response.data
+        }).catch(function (response) {
+          return response.data
+        })
+      }
+
       let analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
         get_analyses_for_canonical_property: get_analyses_for_canonical_property,
@@ -70,7 +83,8 @@ angular.module('BE.seed.service.analyses', [])
         get_analysis_messages_for_org: get_analysis_messages_for_org,
         get_analysis_views_for_org: get_analysis_views_for_org,
         get_analysis_view_for_org: get_analysis_view_for_org,
-        create_analysis: create_analysis
+        create_analysis: create_analysis,
+        start_analysis: start_analysis
       };
 
       return analyses_factory;
