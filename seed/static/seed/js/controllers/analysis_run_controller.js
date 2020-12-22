@@ -28,11 +28,11 @@ angular.module('BE.seed.controller.analysis_run', [])
       urls
     ) {
       $scope.org = organization_payload.organization;
-      $scope.inventory_type = $stateParams.inventory_type;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
       $scope.messages = messages_payload.messages;
       $scope.users = users_payload.users;
+      // Forces analysis_runs.html to only show one view/run - the selected run
       $scope.views = [view_payload.view];
       $scope.view = view_payload.view;
       $scope.view_id = $stateParams.view_id;

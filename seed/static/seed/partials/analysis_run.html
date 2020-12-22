@@ -3,7 +3,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
-            <div class="left section_action_container">
+            <div class="left section_action_container" style="width:100%;">
                 <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $} - Run #{$:: view.id $}</h2>
             </div>
         </div>
@@ -21,7 +21,7 @@
         <div class="section_action_container left" style="width: 50%;">
             <span>
                 <h2 translate>Results</h2>
-                <pre>{$:: view.parsed_results $}</pre>
+                <pre>{$:: view.parsed_results | json $}</pre>
             </span>
         </div>
     </div>

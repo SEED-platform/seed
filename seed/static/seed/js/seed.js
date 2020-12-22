@@ -458,23 +458,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
-          analysis_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          analysis_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+            return analyses_service.get_analysis_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          messages_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          messages_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          view_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, $stateParams.organization_id);
+          view_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+            return analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, user_service.get_organization().id);
           }],
-          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization($stateParams.organization_id);
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
           }],
-          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization_users({org_id: $stateParams.organization_id});
+          users_payload: ['organization_service', '$stateParams', 'user_service', function (organization_service, $stateParams, user_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-            var organization_id = $stateParams.organization_id;
+          auth_payload: ['auth_service', '$stateParams', '$q', 'user_service', function (auth_service, $stateParams, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
             return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
