@@ -1,4 +1,33 @@
-<div ng-include="::urls.static_url + 'seed/partials/inventory_detail_analyses_header.html'"></div>
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+                <i class="fa fa-chevron-left"></i>
+                {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+            </a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+        </div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+</div>
+
+<div class="section_header_container">
+    <div class="section_header fixed_height_short has_no_padding">
+        <div class="section_action_container left" style="width: 50%;">
+            <span>
+                <h2>
+                    <span ng-if="::inventory_type==='properties'"><i class="fa fa-building-o"></i><span translate>Property</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                    <span ng-if="::inventory_type==='taxlots'"><i class="fa fa-map-o"></i><span translate>Tax Lot</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                </h2>
+            </span>
+        </div>
+    </div>
+</div>
 
 <div class="section_header_container">
     <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="margin: 15px;">
@@ -21,7 +50,7 @@
                     <thead>
                         <tr>
                             <th translate>Analysis Name (User Defined)</th>
-                            <th translate>Number of Runs</th>
+                            <th translate>Run Id</th>
                             <th translate>Type</th>
                             <th translate>Run Status</th>
                             <th translate>Run Date</th>
@@ -31,8 +60,8 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td><a ui-sref="inventory_detail_analysis(::{inventory_type: inventory_type, view_id: view_id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
-                            <td>{$:: analysis.number_of_analysis_property_views $}</td>
+                            <td><a ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">{$:: analysis.name $}</a></td>
+                            <td>{$:: analysis.views[0] $}</td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
                             <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>

@@ -1,4 +1,4 @@
-<div ng-include="::urls.static_url + 'seed/partials/organization_analyses_header.html'"></div>
+<div ng-include="::urls.static_url + 'seed/partials/analyses_header.html'"></div>
 
 <div class="section">
     <div class="section_header_container">
@@ -25,7 +25,7 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td><a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
+                            <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
                             <td>{$:: analysis.number_of_analysis_property_views $}</td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>

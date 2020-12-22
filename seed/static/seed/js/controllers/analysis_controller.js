@@ -35,5 +35,4 @@ angular.module('BE.seed.controller.analysis', [])
       $scope.users = users_payload.users;
       $scope.views = views_payload.views;
       $scope.view_id = $stateParams.view_id;
-      $scope.run_route = 'organization_analysis_run';
 }]);

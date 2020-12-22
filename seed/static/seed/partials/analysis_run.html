@@ -1,4 +1,4 @@
-<div ng-include="::urls.static_url + 'seed/partials/inventory_detail_analyses_header.html'"></div>
+<div ng-include="::urls.static_url + 'seed/partials/analyses_header.html'"></div>
 
 <div class="section">
     <div class="section_header_container">
@@ -21,6 +21,7 @@
         <div class="section_action_container left" style="width: 50%;">
             <span>
                 <h2 translate>Results</h2>
+                <pre>{$:: view.parsed_results $}</pre>
             </span>
         </div>
     </div>

@@ -10,7 +10,7 @@
         </thead>
         <tbody>
             <tr ng-repeat="view in views | filter:filter_params:strict">
-                <td><a ui-sref="{$:: run_route $}(::{inventory_type: inventory_type, view_id: view_id, run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
+                <td><a ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
                 <td>{$:: view.property_state.extra_data['Address'] $}</td>
                 <td>{$:: (messages | filter : {'analysis_property_view':view.id})[0]['user_message'] $}</td>
                 <td>
