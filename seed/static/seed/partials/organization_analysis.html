@@ -1,0 +1,17 @@
+<div ng-include="::urls.static_url + 'seed/partials/organization_analyses_header.html'"></div>
+
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header fixed_height_short">
+            <div class="left section_action_container">
+                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $} - {$:: analysis.name $}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content">
+            <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+            <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
+        </div>
+    </div>
+</div>

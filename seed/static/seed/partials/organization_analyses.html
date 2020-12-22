@@ -1,10 +1,4 @@
-<div ng-include="::urls.static_url + 'seed/partials/inventory_detail_analyses_header.html'"></div>
-
-<div class="section_header_container">
-    <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="margin: 15px;">
-        <i class="fa fa-area-chart"></i> <span translate>New Analysis</span>
-    </button>
-</div>
+<div ng-include="::urls.static_url + 'seed/partials/organization_analyses_header.html'"></div>
 
 <div class="section">
     <div class="section_header_container">
@@ -21,7 +15,7 @@
                     <thead>
                         <tr>
                             <th translate>Analysis Name (User Defined)</th>
-                            <th translate>Number of Runs</th>
+                            <th translate>Number of Properties</th>
                             <th translate>Type</th>
                             <th translate>Run Status</th>
                             <th translate>Run Date</th>
@@ -31,7 +25,7 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td><a ui-sref="inventory_detail_analysis(::{inventory_type: inventory_type, view_id: view_id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
+                            <td><a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
                             <td>{$:: analysis.number_of_analysis_property_views $}</td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>

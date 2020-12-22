@@ -3,12 +3,13 @@
  * :author
  */
 
-angular.module('BE.seed.controller.analysis', [])
-  .controller('analysis_controller', [
+angular.module('BE.seed.controller.inventory_detail_analysis', [])
+  .controller('inventory_detail_analysis_controller', [
     '$scope',
     '$stateParams',
     '$state',
     'analysis_payload',
+    'inventory_payload',
     'organization_payload',
     'messages_payload',
     'users_payload',
@@ -20,6 +21,7 @@ angular.module('BE.seed.controller.analysis', [])
       $stateParams,
       $state,
       analysis_payload,
+      inventory_payload,
       organization_payload,
       messages_payload,
       users_payload,
@@ -29,11 +31,15 @@ angular.module('BE.seed.controller.analysis', [])
     ) {
       $scope.org = organization_payload.organization;
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.item_state = inventory_payload.state;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
       $scope.messages = messages_payload.messages;
       $scope.users = users_payload.users;
       $scope.views = views_payload.views;
       $scope.view_id = $stateParams.view_id;
-      $scope.run_route = 'organization_analysis_run';
+      $scope.inventory = {
+        view_id: $stateParams.view_id
+      };
+      $scope.run_route = 'inventory_detail_analysis_run';
 }]);

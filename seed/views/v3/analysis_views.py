@@ -21,12 +21,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet):
     serializer_class = AnalysisPropertyViewSerializer
     model = AnalysisPropertyView
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(True),
-            AutoSchemaHelper.query_integer_field('property_id', False, 'Property ID')
-        ]
-    )
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
     @require_organization_id_class
     @api_endpoint_class
     @ajax_request_class

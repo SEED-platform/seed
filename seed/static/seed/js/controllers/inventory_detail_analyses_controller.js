@@ -32,10 +32,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
     ) {
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
+      $scope.view_id = $stateParams.view_id;
       $scope.org = organization_payload.organization;
       $scope.users = users_payload.users;
       $scope.analyses = analyses_payload.analyses;
-
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
