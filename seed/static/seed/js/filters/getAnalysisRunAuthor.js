@@ -5,7 +5,7 @@
 
 angular.module('getAnalysisRunAuthor', []).filter('getAnalysisRunAuthor', function () {
   return function(users) {
-      if (users.length < 1) {
+      if (!users || users.length < 1) {
         return ''; // no user, display nothing
       }
       user = users[0];

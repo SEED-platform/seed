@@ -4,7 +4,7 @@
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
             <div class="left section_action_container" style="width:100%;">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $}</h2>
+                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $} - Run #{$:: view.id $}</h2>
             </div>
         </div>
     </div>
@@ -12,6 +12,17 @@
         <div class="section_content">
             <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
             <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
+        </div>
+    </div>
+</div>
+
+<div class="section_header_container">
+    <div class="section_header fixed_height_short has_no_padding">
+        <div class="section_action_container left" style="width: 50%;">
+            <span>
+                <h2 translate>Results</h2>
+                <pre>{$:: view.parsed_results | json $}</pre>
+            </span>
         </div>
     </div>
 </div>

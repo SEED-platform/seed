@@ -59,7 +59,7 @@ angular.module('BE.seed.controller.analyses', [])
   .filter('get_run_duration', function() {
 
     return function(analysis) {
-      if (!analysis['start_time'] || !analysis['end_time']) {
+      if (!analysis || !analysis['start_time'] || !analysis['end_time']) {
         return ''; // no start and/or stop time, display nothing
       }
 

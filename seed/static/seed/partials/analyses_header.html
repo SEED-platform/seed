@@ -1,0 +1,16 @@
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>

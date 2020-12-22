@@ -62,6 +62,7 @@ class Analysis(models.Model):
 
         return {
             'number_of_analysis_property_views': analysis_property_views.count(),
+            'views': list(analysis_property_views.values_list('id', flat=True).distinct()),
             'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())
         }
 

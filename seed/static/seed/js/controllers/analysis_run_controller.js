@@ -3,8 +3,8 @@
  * :author
  */
 
-angular.module('BE.seed.controller.analysis', [])
-  .controller('analysis_controller', [
+angular.module('BE.seed.controller.analysis_run', [])
+  .controller('analysis_run_controller', [
     '$scope',
     '$stateParams',
     '$state',
@@ -12,7 +12,7 @@ angular.module('BE.seed.controller.analysis', [])
     'organization_payload',
     'messages_payload',
     'users_payload',
-    'views_payload',
+    'view_payload',
     'auth_payload',
     'urls',
     function (
@@ -23,16 +23,17 @@ angular.module('BE.seed.controller.analysis', [])
       organization_payload,
       messages_payload,
       users_payload,
-      views_payload,
+      view_payload,
       auth_payload,
       urls
     ) {
       $scope.org = organization_payload.organization;
-      $scope.inventory_type = $stateParams.inventory_type;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
       $scope.messages = messages_payload.messages;
       $scope.users = users_payload.users;
-      $scope.views = views_payload.views;
+      // Forces analysis_runs.html to only show one view/run - the selected run
+      $scope.views = [view_payload.view];
+      $scope.view = view_payload.view;
       $scope.view_id = $stateParams.view_id;
 }]);

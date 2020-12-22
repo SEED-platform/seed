@@ -40,6 +40,12 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      let get_analysis_view_for_org = function (analysis_id, view_id, org_id) {
+        return $http.get('/api/v3/analyses/' + analysis_id + '/views/' + view_id + '/?organization_id=' + org_id).then(function (response) {
+          return response.data;
+        });
+      };
+
       let create_analysis = function(name, service, configuration, property_view_ids) {
         let organization_id = user_service.get_organization().id;
         return $http({
@@ -76,6 +82,7 @@ angular.module('BE.seed.service.analyses', [])
         get_analysis_for_org: get_analysis_for_org,
         get_analysis_messages_for_org: get_analysis_messages_for_org,
         get_analysis_views_for_org: get_analysis_views_for_org,
+        get_analysis_view_for_org: get_analysis_view_for_org,
         create_analysis: create_analysis,
         start_analysis: start_analysis
       };
