@@ -38,6 +38,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
   'BE.seed.controller.analyses',
+  'BE.seed.controller.analysis',
   'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
   'BE.seed.controller.column_mappings',
@@ -1135,6 +1136,44 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization_users({org_id: organization_id});
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+              .then(function (data) {
+                if (data.auth.requires_member) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_analysis',
+        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}',
+        templateUrl: static_url + 'seed/partials/analysis.html',
+        controller: 'analysis_controller',
+        resolve: {
+          analysis_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
+            return analyses_service.get_analysis_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          }],
+          messages_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
+            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          }],
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            return organization_service.get_organization($stateParams.organization_id);
+          }],
+          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization_users({org_id: organization_id});
+          }],
+          views_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return analyses_service.get_analysis_views_for_org($stateParams.analysis_id, $stateParams.organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;

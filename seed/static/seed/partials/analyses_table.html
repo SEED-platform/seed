@@ -1,18 +1,18 @@
 <div class="section_header_container">
     <div class="section_header fixed_height_short">
         <div class="left section_action_container">
-            <h2><i class="fa fa-user"></i> {$:: 'Analyses' | translate $}</h2>
+            <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}</h2>
         </div>
     </div>
 </div>
-    <div class="section_content_container">
+<div class="section_content_container">
     <div class="section_content">
         <div class="table_list_container">
             <table id="analyses-table" class="table table-striped table_highlight_first">
                 <thead>
                     <tr>
                         <th translate>Analysis Name (User Defined)</th>
-                        <th translate>Actions</th>
+                        <th translate></th>
                         <th translate>Number of Properties</th>
                         <th translate>Type</th>
                         <th translate>Run Status</th>
@@ -23,7 +23,7 @@
                 </thead>
                 <tbody>
                     <tr ng-repeat="analysis in analyses  | filter:filter_params:strict">
-                        <td>{$:: analysis.name $}</td>
+                        <td><a ui-sref="organization_analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
                         <td>
                             <!-- These glyphicons are temporarily disabled until we implement their functionality
                             <i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>
@@ -36,7 +36,6 @@
                         <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
                         <td>{$:: analysis | get_run_duration $}</td>
                         <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
-                    </tr>
                     </tr>
                 </tbody>
             </table>

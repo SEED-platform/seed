@@ -40,10 +40,13 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': "Requested analysis doesn't exist in this organization."
             }, status=HTTP_409_CONFLICT)
-
+        serialized_views = []
+        for view in views_queryset:
+            serialized_view = AnalysisPropertyViewSerializer(view).data
+            serialized_views.append(serialized_view)
         return JsonResponse({
             'status': 'success',
-            'views': AnalysisPropertyViewSerializer(views_queryset, many=True).data
+            'views': serialized_views
         })
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
@@ -60,9 +63,8 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."
             }, status=HTTP_409_CONFLICT)
-        serialized_view = AnalysisPropertyViewSerializer(view).data
 
         return JsonResponse({
             'status': 'success',
-            'view': serialized_view
+            'view': AnalysisPropertyViewSerializer(view).data
         })
