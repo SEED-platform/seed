@@ -54,6 +54,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       }
 
       $scope.start_analysis = function(analysis_id) {
+        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
+        analysis.status = 'Starting...'
+
         analyses_service.start_analysis(analysis_id)
         .then(function (result) {
           if (result.status === 'success') {

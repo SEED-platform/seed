@@ -60,7 +60,7 @@
                                <!-- These glyphicons are temporarily disabled until we implement their functionality
                                <i class="glyphicon glyphicon-pencil" aria-hidden="true"></i>
                                <i class="glyphicon glyphicon-trash" aria-hidden="true"></i> -->
-                               <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
+                               <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="['Pending Creation', 'Creating', 'Ready'].indexOf(analysis.status) >= 0" ng-disabled="analysis.status !== 'Ready'" ng-click="start_analysis(analysis.id)"></i>
                             </td>
                             <td>{$:: analysis.service $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
