@@ -28,17 +28,17 @@
         </div>
         <div class="section_action_container right_wide settings_profile">
             <span>{$:: 'Available Templates' | translate $}: </span>
-            <select class="form-control input-sm" ng-model="dropdown_selected_template"
+            <select class="form-control input-sm" ng-model="selected_template"
                 ng-disabled="!available_templates.length"
                 ng-options="template.name for template in available_templates"></select>
 
-            <button class="btn btn-success" type="button" ng-click="saveTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Save">
+            <button class="btn btn-success" type="button" ng-click="saveTemplate()" ng-disabled="!isModified()" tooltip-placement="bottom" uib-tooltip="Save">
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
             </button>
-            <button class="btn btn-info" type="button" ng-click="renameTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
+            <button class="btn btn-info" type="button" ng-click="renameTemplate()" ng-disabled="!selected_template || selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Rename">
                 <span class="glyphicon glyphicon-erase" aria-hidden="true"></span>
             </button>
-            <button class="btn btn-danger" type="button" ng-click="removeTemplate()" ng-disabled="!dropdown_selected_template || dropdown_selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
+            <button class="btn btn-danger" type="button" ng-click="removeTemplate()" ng-disabled="!selected_template || selected_template.id === null" tooltip-placement="bottom" uib-tooltip="Delete">
                 <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </button>
             <button class="btn btn-info" type="button" ng-click="newTemplate()" tooltip-placement="bottom" uib-tooltip="New">
@@ -53,8 +53,7 @@
         <form class="form-horizontal" role="form">
             <div class="form-group">
                 <div class="col-sm-6">
-                    <input type="text" class="form-control"
-                        ng-model="dropdown_selected_template.subject">
+                    <input type="text" class="form-control" ng-model="temp.subject" ng-change="set_modified()">
                 </div>
             </div>
         </form>
@@ -65,7 +64,7 @@
         <h3 translate>Content</h3>
         <form class="form-horizontal" role="form">
             <div class="form-group">
-                <ng-wig class="col-sm-8" ng-model="dropdown_selected_template.html_content"></ng-wig>
+                <ng-wig class="col-sm-8" ng-model="temp.html_content" ng-change="set_modified()"></ng-wig>
                 </div>
             </div>
         </form>

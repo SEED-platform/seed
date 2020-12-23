@@ -3,50 +3,53 @@
  * :author
  */
 
-/** Post_office Service:
- --------------------------------------------------
- Provides methods to access email templates and to send emails on the server 
-*/
+/* Provides methods to access email templates and to send emails on the server */
 angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
   '$http',
   'user_service',
-  function ($http, user_service) {
-
+  'naturalSort',
+  function ($http, user_service, naturalSort) {
     var template_factory = {};
 
+    template_factory.sort_templates = function (response) {
+      return response.data.data.sort(function (a, b) {
+        return naturalSort(a.name, b.name);
+      });
+    };
+
     /** Returns an array of templates.
- 
-     Returned EmailTemplate objects should have the following properties,
- 
-     id {integer}            
-     name {string}           
+     Returned EmailTemplate objects should have the following properties:
+     id {integer}
+     name {string}
      description {string}
      subject {string}
      content {string}
      html_content {string}
      created {string}
      last_updated {string}
-     default_template_id {integer}   
+     default_template_id {integer}
      language {string}
- 
-    */
-
-    // Extracting EmailTemplate objects by running a get request on postoffice 
+    **/
     template_factory.get_templates = function () {
+      return get_templates_for_org(user_service.get_organization().id);
+    };
+
+    // Extracting EmailTemplate objects by running a get request on postoffice
+    template_factory.get_templates_for_org = function (organization_id) {
       return $http.get('/api/v3/postoffice/', {
         params: {
-          organization_id: user_service.get_organization().id,
+          organization_id: organization_id,
         }
       }).then(function (response) {
-        return response.data.data;
+        return template_factory.sort_templates(response);
       });
     };
 
 	// Create new template
-    template_factory.new_template = function (data) {
+    template_factory.new_template = function (data, organization_id) {
       return $http.post('/api/v3/postoffice/', data, {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: organization_id
         }
       }).then(function (response) {
         return response.data.data;
@@ -54,14 +57,14 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
     };
 
     // Renaming the selected template in the available templates drop-down menu (Organization-->Email Templates)
-    template_factory.update_template = function (id, data) {
+    template_factory.update_template = function (id, data, organization_id) {
       if (id === null) {
-        Notification.error('This group is protected from modifications');
+        Notification.error('This template is protected from modifications');
         return $q.reject();
       }
       return $http.put('/api/v3/postoffice/' + id + '/', data, {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: organization_id
         }
       }).then(function (response) {
         return response.data.data;
@@ -69,33 +72,47 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
     };
 
     // Removing the selected template in the available templates drop-down menu (Organization-->Email Templates)
-    template_factory.remove_template = function (id) {
+    template_factory.remove_template = function (id, organization_id) {
       if (id === null) {
         Notification.error('This template is protected from modifications');
         return $q.reject();
       }
       return $http.delete('/api/v3/postoffice/' + id + '/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: organization_id
         }
       });
     };
 
-    // Passing data from the Front End to the View
     template_factory.send_templated_email = function (template_name, inventory_id, inventory_type) {
+      return send_templated_email_for_org(template_name, inventory_id, inventory_type, user_service.get_organization().id);
+    };
+
+    // Passing data from the Front End to the View
+    template_factory.send_templated_email_for_org = function (template_name, inventory_id, inventory_type, organization_id) {
       return $http.post('/api/v3/postoffice_email/', {
-        // The from email_field has to be passed to the view, can put a dummy email in place. 
-        from_email: "dummy_email@example.com",
+        // The from email_field has to be passed to the view, can put a dummy email in place.
+        from_email: "dummy_email@example.com", //TODO replace with real variable
         name: template_name,
         inventory_id: inventory_id,
         inventory_type: inventory_type
       }, {
         params: {
-          organization_id: user_service.get_organization().id,
+          organization_id: organization_id,
         }
       }).then(function (response) {
         return response.data;
       }).catch(_.constant('Error fetching templates'));
+    };
+
+    template_factory.get_last_template = function (organization_id) {
+      return (JSON.parse(localStorage.getItem('template')) || {})[organization_id];
+    };
+
+    template_factory.save_last_template = function (pk, organization_id) {
+      var template = JSON.parse(localStorage.getItem('template')) || {};
+      template[organization_id] = _.toInteger(pk);
+      localStorage.setItem('template', JSON.stringify(template));
     };
 
     return template_factory;

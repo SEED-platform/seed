@@ -14,16 +14,18 @@ from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 from seed.models import PropertyState, TaxLotState
 from seed.models import PostOfficeEmail, PostOfficeEmailTemplate
-from post_office import mail                      
+from post_office import mail
+
 
 class PostOfficeViewSet(SEEDOrgModelViewSet):
     model = PostOfficeEmailTemplate
     serializer_class = PostOfficeSerializer
     pagination_class = None
 
-
     def get_queryset(self):
-        return PostOfficeEmailTemplate.objects.filter(organization_id=self.get_organization(self.request)).order_by('name')
+        return PostOfficeEmailTemplate.objects.filter(
+            organization_id=self.get_organization(self.request)
+        ).order_by('name')
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
@@ -36,31 +38,29 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
     serializer_class = PostOfficeEmailSerializer
     pagination_class = None
 
-
     def get_queryset(self):
         return PostOfficeEmail.objects.all()
 
     def perform_create(self, serializer):
         name = self.request.data.get('name')
         inventory_id = self.request.data.get('inventory_id', [])
-        email_list = []
-        if self.request.data.get('inventory_type') == "properties" :
-            State = PropertyState
-        else :
-            State = TaxLotState
-        properties = State.objects.filter(id__in=inventory_id)
+        if self.request.data.get('inventory_type') == "properties":
+            state = PropertyState
+        else:
+            state = TaxLotState
+        properties = state.objects.filter(id__in=inventory_id)
 
-        email_sender = 'from@example.com'
-        for prop in properties: #loop to include details in template
+        email_sender = 'from@example.com'  # TODO remove hard-coding
+        for prop in properties:  # loop to include details in template
             context = {}
             for key, value in model_to_dict(prop).items():
-                context[key] = value;
+                context[key] = value
             ptr = mail.send(
                     prop.owner_email,
                     email_sender,
-                    template = PostOfficeEmailTemplate.objects.get(name=name),
-                    context = context,
-                    backend = 'post_office_backend')
+                    template=PostOfficeEmailTemplate.objects.get(name=name),
+                    context=context,
+                    backend='post_office_backend')
 
             org = self.get_organization(self.request)
             user = self.request.user
@@ -89,9 +89,3 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             }
 
             serializer.save(**email_data, organization_id=org, user=user)
-        
-
-
-
-
-    

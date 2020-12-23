@@ -13,6 +13,7 @@ from post_office.models import EmailTemplate, Email
 # We create our own models replicating EmailTemplate and Email from post_office
 # and adding columns for organization id and user id
 
+
 class PostOfficeEmail(Email):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -24,6 +25,6 @@ class PostOfficeEmail(Email):
 class PostOfficeEmailTemplate(EmailTemplate):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, blank=True, null=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    
+
     def __str__(self):
         return 'PostOfficeEmailTemplate - %s' % self.pk

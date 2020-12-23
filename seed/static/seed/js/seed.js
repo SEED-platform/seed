@@ -1270,6 +1270,19 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 return $q.reject(data.message);
               });
           }],
+          templates_payload: ['postoffice_service', '$stateParams', function (postoffice_service, $stateParams) {
+            return postoffice_service.get_templates_for_org($stateParams.organization_id);
+          }],
+          current_template: ['postoffice_service', 'templates_payload', '$stateParams', function (postoffice_service, templates_payload, $stateParams) {
+            var validTemplateIds = _.map(templates_payload, 'id');
+            var lastTemplateId = postoffice_service.get_last_template($stateParams.organization_id);
+            if (_.includes(validTemplateIds, lastTemplateId)) {
+              return _.find(templates_payload, {id: lastTemplateId});
+            }
+            var currentTemplate = _.first(templates_payload);
+            if (currentTemplate) postoffice_service.save_last_template(currentTemplate.id, $stateParams.organization_id);
+            return currentTemplate;
+          }]
         }
       })
       .state({
