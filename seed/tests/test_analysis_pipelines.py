@@ -27,7 +27,6 @@ from seed.models import (
     Meter,
     MeterReading,
     Analysis,
-    PropertyState,
     AnalysisInputFile,
     AnalysisMessage,
     AnalysisPropertyView,
@@ -244,9 +243,6 @@ class TestBsyncrPipeline(TestCase):
                 latitude=39.76550841416409,
                 longitude=-104.97855661401148
             )
-            # TODO: remove these lines saving the state once fixed, see issue #2493
-            PropertyState.objects.get(id=pv.state.id).save()
-            pv.refresh_from_db()
             self.good_property_views.append(pv)
 
         self.analysis_b = (

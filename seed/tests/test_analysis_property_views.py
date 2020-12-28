@@ -7,7 +7,7 @@
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisPropertyView, Analysis, PropertyState
+from seed.models import AnalysisPropertyView, Analysis
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyViewFactory,
@@ -44,12 +44,6 @@ class TestAnalysisPropertyViews(TestCase):
 
         view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=self.org_b, user=self.user)
         self.property_views_b = [view_factory_b.get_property_view() for i in range(2)]
-
-        # TODO: remove this section, it's necessary to make sure the state objects'
-        # hashes are correct, see issue #2493
-        for view in self.property_views_a + self.property_views_b:
-            PropertyState.objects.get(id=view.state.id).save()
-            view.refresh_from_db()
 
     def test_batch_create_is_successful_with_valid_inputs(self):
         # Act
