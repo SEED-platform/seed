@@ -5,6 +5,7 @@
 :author
 """
 from django.test import TestCase
+from quantityfield import ureg
 
 from seed.landing.models import SEEDUser as User
 from seed.models import AnalysisPropertyView, Analysis
@@ -40,10 +41,34 @@ class TestAnalysisPropertyViews(TestCase):
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)
-        self.property_views_a = [view_factory_a.get_property_view() for i in range(2)]
+        self.property_views_a = [
+            view_factory_a.get_property_view(
+                # override unitted fields so that hashes are correct
+                site_eui=ureg.Quantity(
+                    float(view_factory_a.fake.random_int(min=50, max=600)),
+                    "kilobtu / foot ** 2 / year"
+                ),
+                gross_floor_area=ureg.Quantity(
+                    float(view_factory_a.fake.random_number(digits=6)),
+                    "foot ** 2"
+                ),
+            )
+            for i in range(2)]
 
         view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=self.org_b, user=self.user)
-        self.property_views_b = [view_factory_b.get_property_view() for i in range(2)]
+        self.property_views_b = [
+            view_factory_b.get_property_view(
+                # override unitted fields so that hashes are correct
+                site_eui=ureg.Quantity(
+                    float(view_factory_b.fake.random_int(min=50, max=600)),
+                    "kilobtu / foot ** 2 / year"
+                ),
+                gross_floor_area=ureg.Quantity(
+                    float(view_factory_b.fake.random_number(digits=6)),
+                    "foot ** 2"
+                ),
+            )
+            for i in range(2)]
 
     def test_batch_create_is_successful_with_valid_inputs(self):
         # Act

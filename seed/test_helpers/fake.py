@@ -23,7 +23,6 @@ import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
-from quantityfield import ureg
 
 from seed.models import (
     Analysis, AnalysisPropertyView, Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
@@ -232,14 +231,8 @@ class FakePropertyStateFactory(BaseFake):
             'state': 'Oregon',
             'postal_code': "970{}".format(self.fake.numerify(text='##')),
             'year_built': self.fake.random_int(min=1880, max=2015),
-            'site_eui': ureg.Quantity(
-                float(self.fake.random_int(min=50, max=600)),
-                "kilobtu / foot ** 2 / year"
-            ),
-            'gross_floor_area': ureg.Quantity(
-                float(self.fake.random_number(digits=6)),
-                "foot ** 2"
-            ),
+            'site_eui': self.fake.random_int(min=50, max=600),
+            'gross_floor_area': self.fake.random_number(digits=6),
             'owner': owner.name,
             'owner_email': owner.email,
             'owner_telephone': owner.telephone,
