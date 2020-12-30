@@ -41,7 +41,7 @@ jobs:
           if [[ ${GITHUB_EVENT_NAME} == "push" ]]; then
             SEED_TAG=develop
           elif [[ ${GITHUB_EVENT_NAME} == "release" ]]; then
-            SEED_TAG=${GITHUB_REF#v}
+            SEED_TAG=${GITHUB_REF#refs/tags/v}
           else
             echo "Unhandled event type (this shouldn't happen), exiting"
             exit 1
