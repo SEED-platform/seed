@@ -73,6 +73,21 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         })
       }
 
+      $scope.stop_analysis = function(analysis_id) {
+        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
+        analysis.status = 'Stopping...'
+
+        analyses_service.stop_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis stopped')
+            refresh_analyses()
+          } else {
+            Notification.error('Failed to stop analysis: ' + result.message)
+          }
+        })
+      }
+
       $scope.open_analysis_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
