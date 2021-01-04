@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - develop
-      - main
+  release:
+    types: [published]
 
 jobs:
   publish:
@@ -35,16 +36,14 @@ jobs:
         name: Parse tag
         id: parse_tag
         run: |
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          PACKAGE_VERSION=$( sed -n 's/.*"version": "\(.*\)",/\1/p' package.json )
-          echo "BRANCH_NAME: ${BRANCH_NAME}"
-          echo "PACKAGE_VERSION: ${PACKAGE_VERSION}"
-          if [[ ${BRANCH_NAME} == "main" ]]; then
-            SEED_TAG=${PACKAGE_VERSION}
-          elif [[ ${BRANCH_NAME} == "develop" ]]; then
+          echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
+          echo "GITHUB_REF: ${GITHUB_REF}"
+          if [[ ${GITHUB_EVENT_NAME} == "push" ]]; then
             SEED_TAG=develop
+          elif [[ ${GITHUB_EVENT_NAME} == "release" ]]; then
+            SEED_TAG=${GITHUB_REF#refs/tags/v}
           else
-            echo "Branch ${BRANCH_NAME} is not main or develop (this should not happen), exiting"
+            echo "Unhandled event type (this shouldn't happen), exiting"
             exit 1
           fi
           echo ::set-output name=seed_tag::${SEED_TAG}
