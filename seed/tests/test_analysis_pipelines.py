@@ -43,7 +43,7 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipelineException,
     AnalysisPipeline,
     task_create_analysis_property_views,
-    check_analysis_status
+    analysis_pipeline_task
 )
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
@@ -61,6 +61,16 @@ class MockPipeline(AnalysisPipeline):
         analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.RUNNING
         analysis.save()
+
+
+class MockCeleryTask:
+    def __init__(self):
+        self.request = self.Request()
+
+    class Request:
+        def __init__(self):
+            self.chain = [1, 2, 3]
+            self.callbacks = [1, 2, 3]
 
 
 class TestAnalysisPipeline(TestCase):
@@ -215,57 +225,57 @@ class TestAnalysisPipeline(TestCase):
         message = AnalysisMessage.objects.get(analysis=self.analysis)
         self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
-    def test_check_analysis_status_calls_decorated_function_when_status_is_as_expected(self):
+    def test_analysis_pipeline_task_calls_decorated_function_when_status_is_as_expected(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(self.analysis.id)
+        res = my_func(MockCeleryTask(), self.analysis.id)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_works_when_decorated_func_called_with_kwargs(self):
+    def test_analysis_pipeline_task_works_when_decorated_func_called_with_kwargs(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(analysis_id=self.analysis.id)
+        res = my_func(MockCeleryTask(), analysis_id=self.analysis.id)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_works_when_decorated_func_has_multiple_args(self):
+    def test_analysis_pipeline_task_works_when_decorated_func_has_multiple_args(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(my_param_1, my_param_2, analysis_id, my_param_3):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, my_param_1, my_param_2, analysis_id, my_param_3):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(-1, -1, self.analysis.id, -1)
+        res = my_func(MockCeleryTask(), -1, -1, self.analysis.id, -1)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_raises_exception_when_analysis_status_is_not_as_expected(self):
+    def test_analysis_pipeline_task_raises_exception_when_analysis_status_is_not_as_expected(self):
         # Setup
         expected_status = Analysis.RUNNING
 
-        @check_analysis_status(expected_status)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(expected_status)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         # set status to something unexpected
@@ -274,9 +284,87 @@ class TestAnalysisPipeline(TestCase):
 
         # Act/Assert
         with self.assertRaises(AnalysisPipelineException) as context:
-            my_func(self.analysis.id)
+            my_func(MockCeleryTask(), self.analysis.id)
 
         self.assertIn(f'Expected analysis status to be {expected_status}', str(context.exception))
+
+    def test_analysis_pipeline_task_drops_exceptions_when_analysis_doesnt_exist(self):
+        """tests that it swallows exceptions caused by someone else deleting the analysis"""
+        # Setup
+        analysis_status = Analysis.RUNNING
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            # pretend like someone else deleted the analysis... ok? it would function the same way, async is hard
+            Analysis.objects.get(id=analysis_id).delete()
+
+            # .get raises an exception when the object doesn't exist
+            return Analysis.objects.get(id=analysis_id)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # no exception should be raised b/c the analysis doesn't exist
+        result = my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should have returned None b/c the task failed
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
+
+    def test_analysis_pipeline_task_skips_task_when_analysis_doesnt_exist(self):
+        """tests that it doesn't run the task and stops the chain when the analysis doesn't exist before starting the task"""
+        # Setup
+        # delete the analysis before running the task
+        analysis_id = self.analysis.id
+        self.analysis.delete()
+
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
+            return 'I did work'
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # no exception should be raised b/c the analysis doesn't exist
+        result = my_func(my_task, analysis_id)
+
+        # Assert
+        # it should have returned None b/c the task wasn't run
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
+
+    def test_analysis_pipeline_task_raises_uncaught_exceptions_when_analysis_exists(self):
+        """tests that it raises exceptions that weren't caught and the analysis still exists
+
+        This would be the case for unhandled/unexpected errors
+        """
+        # Setup
+        exception_message = 'Something Very Bad'
+        analysis_status = Analysis.RUNNING
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        # this func will raise some unexpected error
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            raise Exception(exception_message)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        with self.assertRaises(Exception) as context:
+            my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should have re-raised the exception
+        self.assertIn(exception_message, str(context.exception))
 
 
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)

@@ -10,7 +10,7 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
     task_create_analysis_property_views,
-    check_analysis_status,
+    analysis_pipeline_task,
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
@@ -91,9 +91,9 @@ class BsyncrPipeline(AnalysisPipeline):
         return progress_data.result()
 
 
-@shared_task
-@check_analysis_status(Analysis.CREATING)
-def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.CREATING)
+def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progress_data_key):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
     :param analysis_property_view_ids: list[int]
@@ -173,9 +173,9 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
         raise AnalysisPipelineException(message)
 
 
-@shared_task
-@check_analysis_status(Analysis.CREATING)
-def _finish_preparation(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.CREATING)
+def _finish_preparation(self, analysis_id, progress_data_key):
     """A Celery task which finishes the preparation for bsyncr analysis
 
     :param analysis_id: int
@@ -310,9 +310,9 @@ def _parse_analysis_property_view_id(filepath):
     return int(analysis_property_view_id_elem[0].text)
 
 
-@shared_task
-@check_analysis_status(Analysis.QUEUED)
-def _start_analysis(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.QUEUED)
+def _start_analysis(self, analysis_id, progress_data_key):
     """Start bsyncr analysis by making requests to the service
 
     """
@@ -371,9 +371,9 @@ def _start_analysis(analysis_id, progress_data_key):
     return output_file_ids
 
 
-@shared_task
-@check_analysis_status(Analysis.RUNNING)
-def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.RUNNING)
+def _process_results(self, analysis_output_file_ids, analysis_id, progress_data_key):
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.RUNNING
     analysis.save()
@@ -401,9 +401,9 @@ def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
             continue
 
 
-@shared_task
-@check_analysis_status(Analysis.RUNNING)
-def _finish_analysis(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.RUNNING)
+def _finish_analysis(self, analysis_id, progress_data_key):
     """A Celery task which finishes the analysis run
 
     :param analysis_id: int

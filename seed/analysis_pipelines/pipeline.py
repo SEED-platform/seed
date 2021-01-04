@@ -39,38 +39,104 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
     return analysis_view_ids
 
 
-def check_analysis_status(status):
-    """Decorator factory for checking the status of the analysis, and raise an
-    exception if the status isn't what was expected
+def analysis_pipeline_task(expected_status):
+    """Decorator factory for analysis pipeline celery tasks. In other words, this
+    function _returns_ a decorator for wrapping tasks used in analysis pipelines.
+    This wrapper **MUST** be added to all pipeline tasks to avoid unexpected errors.
+    The function and its decorators must look something like this:
+    ```
+    @shared_task(bind=True)
+    @analysis_pipeline_task(Analysis.SOME_STATUS)
+    def my_task(self, analysis_id, ...):
+        ...
+    ```
+    Note:
+    - `bind=True` is provided for the shared_task decorator (necessary for stopping the celery chain, ie when we don't want to run the remaining tasks)
+    - `self` is the first argument of the function (the celery task instance is passed as first argument when `bind=True`)
+    - `analysis_id` is some argument (it can be in any position)
 
-    This can be used as a guard to avoid running a task when an analysis has been
-    stopped or failed elsewhere.
+    The decorator provides the following functionality:
+    - Checks if the analysis exists before running the task
+    - Checks if the analysis status is the expected status before running the task
+    - Catches any uncaught exceptions from the task, and handles them as we see fit
 
-    :param status: int, one of Analysis.STATUS_TYPES
+    The benefit of this functionality is to
+    1. guard tasks from starting when an analysis has already been stopped, deleted, etc.
+    2. handling some unhandled exceptions gracefully (e.g. a database error when someone else deletes the analysis)
+
+    :param expected_status: int, one of Analysis.STATUS_TYPES
     :returns: function, a decorator
     """
 
-    def decorator_check_analysis_status(func):
+    def decorator_analysis_pipeline_task(func):
+        params = inspect.getfullargspec(func)
+
+        self_error_message = 'Decorated task function must have `self` as first argument, and @shared_task decorator must have `bind=True`'
         try:
-            params = inspect.getfullargspec(func)
+            if params.args.index('self') != 0:
+                raise Exception(self_error_message)
+        except ValueError:
+            raise Exception(self_error_message)
+
+        try:
             analysis_id_param_idx = params.args.index('analysis_id')
         except ValueError:
-            raise Exception('Decorated function must include an argument named "analysis_id"')
+            raise Exception('Decorated task function must include an argument named "analysis_id"')
 
         @functools.wraps(func)
-        def _check(*args, **kwargs):
+        def _run_task(*args, **kwargs):
+            # self is first arg, the celery.Task instance, b/c the celery task was decorated with `bind=True`
+            _self = args[0]
+
             # try to get the analysis_id from args, then from kwargs
             try:
                 _analysis_id = args[analysis_id_param_idx]
             except IndexError:
                 _analysis_id = kwargs['analysis_id']
-            analysis = Analysis.objects.get(id=_analysis_id)
-            if analysis.status != status:
-                raise AnalysisPipelineException(f'Expected analysis status to be {status} but it was {analysis.status}')
 
-            return func(*args, **kwargs)
-        return _check
-    return decorator_check_analysis_status
+            # Before running the task, make sure the analysis exists and has the expected status
+            try:
+                analysis = Analysis.objects.get(id=_analysis_id)
+                if analysis.status != expected_status:
+                    raise AnalysisPipelineException(f'Expected analysis status to be {expected_status} but it was {analysis.status}')
+            except Analysis.DoesNotExist:
+                log_message = {
+                    'analysis_id': _analysis_id,
+                    'debug_message': 'Analysis no longer exists before starting the task. '
+                                     'Assuming the analysis was deleted and stopping the celery task chain.'
+                }
+                logger.info(json.dumps(log_message))
+
+                # stop the chain!
+                # see: https://github.com/celery/celery/issues/3550
+                _self.request.chain = _self.request.callbacks = None
+                return
+
+            # Catch all exceptions raised by the task
+            # If the analysis no longer exists, ignore the exception (the analysis was deleted by someone else)
+            # If the analysis _does_ still exist, raise the exception (something unexpected happened)
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                try:
+                    Analysis.objects.get(id=_analysis_id)
+                    raise e
+                except Analysis.DoesNotExist:
+                    log_message = {
+                        'analysis_id': _analysis_id,
+                        'debug_message': 'Task raised unhandled exception, but the analysis no longer exists. '
+                                         'Assuming the analysis was deleted and stopping the celery task chain.',
+                        'exception': str(e)
+                    }
+                    logger.info(json.dumps(log_message))
+
+                    # stop the chain!
+                    # see: https://github.com/celery/celery/issues/3550
+                    _self.request.chain = _self.request.callbacks = None
+                    return
+
+        return _run_task
+    return decorator_analysis_pipeline_task
 
 
 class AnalysisPipelineException(Exception):
