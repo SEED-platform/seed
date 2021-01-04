@@ -6,7 +6,12 @@
 """
 import logging
 
-from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException, task_create_analysis_property_views
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipeline,
+    AnalysisPipelineException,
+    task_create_analysis_property_views,
+    check_analysis_status,
+)
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
@@ -87,6 +92,7 @@ class BsyncrPipeline(AnalysisPipeline):
 
 
 @shared_task
+@check_analysis_status(Analysis.CREATING)
 def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_data_key):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
@@ -168,6 +174,7 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
 
 
 @shared_task
+@check_analysis_status(Analysis.CREATING)
 def _finish_preparation(analysis_id, progress_data_key):
     """A Celery task which finishes the preparation for bsyncr analysis
 
@@ -304,6 +311,7 @@ def _parse_analysis_property_view_id(filepath):
 
 
 @shared_task
+@check_analysis_status(Analysis.QUEUED)
 def _start_analysis(analysis_id, progress_data_key):
     """Start bsyncr analysis by making requests to the service
 
@@ -364,6 +372,7 @@ def _start_analysis(analysis_id, progress_data_key):
 
 
 @shared_task
+@check_analysis_status(Analysis.RUNNING)
 def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.RUNNING
@@ -393,6 +402,7 @@ def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
 
 
 @shared_task
+@check_analysis_status(Analysis.RUNNING)
 def _finish_analysis(analysis_id, progress_data_key):
     """A Celery task which finishes the analysis run
 
