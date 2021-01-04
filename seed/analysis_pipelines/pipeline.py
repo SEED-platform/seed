@@ -59,9 +59,10 @@ def check_analysis_status(status):
 
         @functools.wraps(func)
         def _check(*args, **kwargs):
+            # try to get the analysis_id from args, then from kwargs
             try:
                 _analysis_id = args[analysis_id_param_idx]
-            except:
+            except IndexError:
                 _analysis_id = kwargs['analysis_id']
             analysis = Analysis.objects.get(id=_analysis_id)
             if analysis.status != status:

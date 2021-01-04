@@ -263,6 +263,7 @@ class TestAnalysisPipeline(TestCase):
     def test_check_analysis_status_raises_exception_when_analysis_status_is_not_as_expected(self):
         # Setup
         expected_status = Analysis.RUNNING
+
         @check_analysis_status(expected_status)
         def my_func(analysis_id):
             return 'I did work'
