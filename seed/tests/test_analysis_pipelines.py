@@ -89,6 +89,21 @@ class TestAnalysisPipeline(TestCase):
             .get_analysis()
         )
 
+    def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
+        from inspect import getmembers
+        from celery import Task
+        from seed.analysis_pipelines import tasks
+
+        def is_celery_task(v):
+            return isinstance(v, Task)
+
+        celery_tasks = getmembers(tasks, is_celery_task)
+        for _, celery_task in celery_tasks:
+            try:
+                celery_task.__wrapped__._analysis_pipeline_task
+            except AttributeError:
+                self.assertTrue(False, f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
+
     def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
         # Setup
         # set status as already running, which should prevent the analysis from

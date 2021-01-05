@@ -69,6 +69,10 @@ def analysis_pipeline_task(expected_status):
     """
 
     def decorator_analysis_pipeline_task(func):
+        # add a property to indicate this function was wrapped
+        # the only purpose of this is so we can test that all tasks have been properly wrapped
+        func._analysis_pipeline_task = True
+
         params = inspect.getfullargspec(func)
 
         self_error_message = 'Decorated task function must have `self` as first argument, and @shared_task decorator must have `bind=True`'
