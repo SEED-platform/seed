@@ -302,6 +302,15 @@ class AnalysisPipeline(abc.ABC):
             locked_analysis.end_time = tz.now()
             locked_analysis.save()
 
+    def delete(self):
+        """Deletes the analysis.
+
+        Deleting an analysis can cause issues if it has tasks running, but
+        we are currently requiring the tasks to deal with it instead of doing
+        something more complex here.
+        """
+        Analysis.objects.get(id=self._analysis_id).delete()
+
     @abc.abstractmethod
     def _prepare_analysis(self, analysis_id, property_view_ids):
         """Abstract method which should do the work necessary for preparing
