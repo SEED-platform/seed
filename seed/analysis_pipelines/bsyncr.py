@@ -51,7 +51,7 @@ class BsyncrPipeline(AnalysisPipeline):
         """Internal implementation for preparing bsyncr analysis"""
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
-            self.fail(message, logger=logger)
+            self.fail(message, logger)
             raise AnalysisPipelineException(message)
 
         progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
@@ -157,7 +157,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     if len(input_file_paths) == 0:
         pipeline = BsyncrPipeline(analysis.id)
         message = 'No files were able to be prepared for the analysis'
-        pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 
@@ -342,7 +342,7 @@ def _start_analysis(self, analysis_id, progress_data_key):
     if len(output_file_ids) == 0:
         pipeline = BsyncrPipeline(analysis.id)
         message = 'Failed to get results for all properties'
-        pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 

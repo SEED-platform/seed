@@ -7,6 +7,7 @@
 from datetime import datetime
 from io import BytesIO
 import json
+import logging
 from os import path
 from unittest.mock import patch
 
@@ -171,8 +172,10 @@ class TestAnalysisPipeline(TestCase):
         pipeline = MockPipeline(self.analysis.id)
         failure_message = 'Bad'
 
+        logger = logging.getLogger('test-logger')
+
         # Act
-        pipeline.fail(failure_message)
+        pipeline.fail(failure_message, logger)
 
         # Assert
         self.analysis.refresh_from_db()
@@ -187,9 +190,11 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.save()
         pipeline = MockPipeline(self.analysis.id)
 
+        logger = logging.getLogger('test-logger')
+
         # Act
         with self.assertRaises(AnalysisPipelineException) as context:
-            pipeline.fail('Double plus ungood')
+            pipeline.fail('Double plus ungood', logger)
 
         # Assert
         self.assertTrue('Analysis is already in a terminal state' in str(context.exception))
