@@ -31,10 +31,13 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
         progress_data.step('Copying property data')
     analysis_view_ids, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
     for failure in failures:
+        truncated_user_message = f'Failed to copy property data for PropertyView ID {failure.property_view_id}: {failure.message}'
+        if len(truncated_user_message) > 255:
+            truncated_user_message = truncated_user_message[:252] + '...'
         AnalysisMessage.objects.create(
             analysis_id=analysis_id,
             type=AnalysisMessage.DEFAULT,
-            user_message=f'Failed to copy property data for PropertyView ID {failure.property_view_id}: {failure.message}',
+            user_message=truncated_user_message,
         )
     return analysis_view_ids
 
@@ -246,13 +249,12 @@ class AnalysisPipeline(abc.ABC):
 
         return self._start_analysis()
 
-    def fail(self, message, progress_data_key=None, logger=None):
-        """Fails the analysis. Creates an AnalysisMessage and optionally logs it
-        if a logger is provided.
+    def fail(self, message, logger, progress_data_key=None):
+        """Fails the analysis. Creates an AnalysisMessage and logs it
 
         :param message: str, message to create an AnalysisMessage with
-        :param progress_data_key: str, fails the progress data if this key is provided
         :param logger: logging.Logger
+        :param progress_data_key: str, fails the progress data if this key is provided
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
@@ -268,20 +270,13 @@ class AnalysisPipeline(abc.ABC):
             locked_analysis.end_time = tz.now()
             locked_analysis.save()
 
-            if logger is not None:
-                AnalysisMessage.log_and_create(
-                    logger=logger,
-                    type_=AnalysisMessage.ERROR,
-                    user_message=message,
-                    debug_message='',
-                    analysis_id=self._analysis_id,
-                )
-            else:
-                AnalysisMessage.objects.create(
-                    analysis_id=self._analysis_id,
-                    type=AnalysisMessage.ERROR,
-                    user_message=message,
-                )
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                user_message=message,
+                debug_message='',
+                analysis_id=self._analysis_id,
+            )
 
     def stop(self):
         """Stops the analysis. If analysis is already in a terminal state it does
