@@ -11,6 +11,7 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipelineException,
     task_create_analysis_property_views,
     analysis_pipeline_task,
+    StopAnalysisTaskChain
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
@@ -158,7 +159,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
         message = 'No files were able to be prepared for the analysis'
         pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
         # stop the task chain
-        raise AnalysisPipelineException(message)
+        raise StopAnalysisTaskChain(message)
 
 
 @shared_task(bind=True)
@@ -343,7 +344,7 @@ def _start_analysis(self, analysis_id, progress_data_key):
         message = 'Failed to get results for all properties'
         pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
         # stop the task chain
-        raise AnalysisPipelineException(message)
+        raise StopAnalysisTaskChain(message)
 
     return output_file_ids
 

@@ -270,7 +270,7 @@ class TestAnalysisPipeline(TestCase):
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_analysis_pipeline_task_raises_exception_when_analysis_status_is_not_as_expected(self):
+    def test_analysis_pipeline_task_raises_exception_when_analysis_status_is_not_as_expected_and_was_not_stopped(self):
         # Setup
         expected_status = Analysis.RUNNING
 
@@ -279,14 +279,38 @@ class TestAnalysisPipeline(TestCase):
             return 'I did work'
 
         # set status to something unexpected
-        self.analysis.status = Analysis.STOPPED
+        self.analysis.status = Analysis.QUEUED
         self.analysis.save()
 
         # Act/Assert
         with self.assertRaises(AnalysisPipelineException) as context:
             my_func(MockCeleryTask(), self.analysis.id)
 
-        self.assertIn(f'Expected analysis status to be {expected_status}', str(context.exception))
+        self.assertIn(f'expected analysis status to be {expected_status}', str(context.exception))
+
+    def test_analysis_pipeline_task_stops_task_chain_when_analysis_status_is_stopped(self):
+        # Setup
+        expected_status = Analysis.RUNNING
+
+        @analysis_pipeline_task(expected_status)
+        def my_func(self, analysis_id):
+            return 'I did work'
+
+        # set status to stopped
+        self.analysis.status = Analysis.STOPPED
+        self.analysis.save()
+
+        my_task = MockCeleryTask()
+
+        # Act
+        result = my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should not run the task
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
 
     def test_analysis_pipeline_task_drops_exceptions_when_analysis_doesnt_exist(self):
         """tests that it swallows exceptions caused by someone else deleting the analysis"""
@@ -597,9 +621,7 @@ class TestBsyncrPipeline(TestCase):
         pipeline = BsyncrPipeline(self.analysis_b.id)
         property_view_ids = [pv.id for pv in self.good_property_views]
 
-        # it should raise an exception b/c no input files were created
-        with self.assertRaises(AnalysisPipelineException):
-            pipeline.prepare_analysis(property_view_ids)
+        pipeline.prepare_analysis(property_view_ids)
 
         # Assert
         self.analysis_b.refresh_from_db()
@@ -698,12 +720,10 @@ class TestBsyncrPipeline(TestCase):
 
         # Act
         mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=['Something is Bad'])
-        with self.assertRaises(AnalysisPipelineException) as context:
-            with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
-                pipeline.start_analysis()
+        with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+            pipeline.start_analysis()
 
         # Assert
-        self.assertTrue('Failed to get results for all properties' in str(context.exception))
         self.analysis_b.refresh_from_db()
         self.assertEqual(Analysis.FAILED, self.analysis_b.status)
 
