@@ -8,6 +8,7 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import Analysis, AnalysisPropertyView, AnalysisMessage
 
 from django.db import transaction
+from django.db.utils import OperationalError
 from django.utils import timezone as tz
 
 from celery import shared_task
@@ -74,7 +75,7 @@ def analysis_pipeline_task(expected_status):
     def decorator_analysis_pipeline_task(func):
         # add a property to indicate this function was wrapped
         # the only purpose of this is so we can test that all tasks have been properly wrapped
-        func._analysis_pipeline_task = True
+        func._is_analysis_pipeline_task = True
 
         params = inspect.getfullargspec(func)
 
@@ -106,31 +107,16 @@ def analysis_pipeline_task(expected_status):
             except IndexError:
                 _analysis_id = kwargs['analysis_id']
 
+            #
             # Check the analysis before running the task
-            # If the analysis exists and has the expected status, run the task
-            # If the analysis exists but the status isn't what we expected, and...
-            #   - It WAS stopped or failed, stop the task chain (someone somewhere else stopped/failed the task)
-            #   - It WAS NOT stopped or failed, raise an exception! (something unexpected has happened)
-            # If the analysis no longer exists, stop the task chain (someone somewhere deleted the analysis)
+            # 
+            # NOTE: this does not avoid time-of-check to time-of-use (TOCTOU) race conditions
+            #   but should be generally sufficient as a guard
+            #
             try:
                 analysis = Analysis.objects.get(id=_analysis_id)
-                if analysis.status == expected_status:
-                    pass
-                elif analysis.status in [Analysis.STOPPED, Analysis.FAILED]:
-                    # assume someone else stopped or failed the analysis and that we shouldn't run the task
-                    log_message = {
-                        'analysis_id': _analysis_id,
-                        'debug_message': 'Analysis has already been stopped or failed before starting the task. '
-                                         'Not running the task and stopping the task chain.'
-                    }
-                    logger.info(json.dumps(log_message))
-                    _stop_task_chain(_self)
-                    return
-                else:
-                    # something Bad has happened
-                    raise AnalysisPipelineException(f'When preparing to run the task {func}, expected analysis status to be {expected_status} but it was {analysis.status}')
             except Analysis.DoesNotExist:
-                # someone deleted the analysis
+                # someone deleted the analysis, stop the chain
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'Analysis no longer exists before starting the task. '
@@ -140,13 +126,31 @@ def analysis_pipeline_task(expected_status):
                 _stop_task_chain(_self)
                 return
 
-            # Catch all exceptions raised by the task
-            # If the exception was to stop the task chain, stop the task chain
-            # If the analysis no longer exists, ignore the exception (the analysis was deleted by someone else)
-            # If the analysis _does_ still exist, raise the exception (something unexpected happened)
+            if analysis.status == expected_status:
+                # everything is as expected, continue to run the task
+                pass
+            elif analysis.status in [Analysis.STOPPED, Analysis.FAILED]:
+                # assume someone else stopped or failed the analysis and that we shouldn't run the task
+                log_message = {
+                    'analysis_id': _analysis_id,
+                    'debug_message': 'Analysis has already been stopped or failed before starting the task. '
+                                        'Not running the task and stopping the task chain.'
+                }
+                logger.info(json.dumps(log_message))
+                _stop_task_chain(_self)
+                return
+            else:
+                # something Bad has happened
+                # TODO: we should probably try to fail the analysis at this point, but putting it off for now
+                raise AnalysisPipelineException(f'When preparing to run the task {func}, expected analysis status to be {expected_status} but it was {analysis.status}')
+
+            #
+            # Run the task and catch all exceptions
+            #
             try:
                 return func(*args, **kwargs)
             except StopAnalysisTaskChain as e:
+                # the task requested to stop the chain
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'StopAnalysisTaskChain exception raised, stopping the celery task chain.',
@@ -156,27 +160,77 @@ def analysis_pipeline_task(expected_status):
                 _stop_task_chain(_self)
                 return
             except Exception as e:
+                # yikes, we didn't account for this. Try to bow out as gracefully as possible
+                reraise_exception = False
                 try:
-                    Analysis.objects.get(id=_analysis_id)
+                    with transaction.atomic():
+                        # don't wait for lock to avoid deadlock
+                        locked_analysis = (
+                            Analysis.objects
+                            .select_for_update(nowait=True)
+                            .get(id=_analysis_id)
+                        )
 
+                        # analysis still exists, and we were able to get a lock on it
+                        # something unexpected happened during the task
+                        if locked_analysis.in_terminal_state():
+                            # someone else has already finished the task off, just log and exit gracefully
+                            log_message = {
+                                'analysis_id': _analysis_id,
+                                'debug_message': 'Task raised unhandled exception, but the analysis was already in a terminal state. '
+                                                 'Ignoring the exception and stopping the celery task chain.',
+                                'exception': repr(e)
+                            }
+                            logger.info(json.dumps(log_message))
+                            _stop_task_chain(_self)
+                            return
+                        else:
+                            # *force* the analysis to the failed status, log messages, and raise the exception
+                            locked_analysis.status = Analysis.FAILED
+                            locked_analysis.save()
+                            AnalysisMessage.log_and_create(
+                                logger=logger,
+                                type_=AnalysisMessage.ERROR,
+                                user_message='Unexpected error occurred.',
+                                debug_message='Caught unexpected exception occurred during analysis task and the analysis still exists. '
+                                              'Failing the analysis and re-raising the exception.',
+                                analysis_id=_analysis_id,
+                                analysis_property_view_id=None,
+                                exception=e,
+                            )
+                            # NOTE: we must raise the exception once we exit the try/except
+                            # we can't do it here b/c it would rollback the transaction
+                            reraise_exception = True
+
+                except OperationalError:
+                    # the analysis still exists, but we failed to grab lock (worse case scenario)
+                    # just log the error and raise the original exception (don't touch the analysis to avoid causing any more issues)
                     log_message = {
                         'analysis_id': _analysis_id,
-                        'debug_message': 'Caught unexpected exception occurred during analysis task (and analysis still exists). Re-raising exception and continuing.',
+                        'debug_message': 'Caught unexpected exception occurred during analysis task (and analysis still exists). '
+                                         'Unable to acquire lock on analysis so it will likely be in an invalid state. '
+                                         'Re-raising the exception.',
                         'exception': repr(e)
                     }
                     logger.error(json.dumps(log_message))
+                    # no need to stop the task chain b/c raising the exception should do that
                     raise e
                 except Analysis.DoesNotExist:
-                    # someone deleted the analysis, and the error was probably due to that
+                    # someone deleted the analysis, and the original exception was probably due to that
+                    # just log the error and forget
                     log_message = {
                         'analysis_id': _analysis_id,
                         'debug_message': 'Task raised unhandled exception, but the analysis no longer exists. '
-                                         'Assuming the analysis was deleted and stopping the celery task chain.',
+                                         'Assuming the analysis was deleted. '
+                                         'Ignoring the exception and stopping the celery task chain.',
                         'exception': repr(e)
                     }
                     logger.info(json.dumps(log_message))
                     _stop_task_chain(_self)
                     return
+
+                if reraise_exception:
+                    raise e
 
         return _run_task
     return decorator_analysis_pipeline_task

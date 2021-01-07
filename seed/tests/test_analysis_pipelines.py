@@ -101,7 +101,7 @@ class TestAnalysisPipeline(TestCase):
         celery_tasks = getmembers(tasks, is_celery_task)
         for _, celery_task in celery_tasks:
             try:
-                celery_task.__wrapped__._analysis_pipeline_task
+                celery_task.__wrapped__._is_analysis_pipeline_task
             except AttributeError:
                 self.assertTrue(False, f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
 
@@ -384,14 +384,14 @@ class TestAnalysisPipeline(TestCase):
         self.assertEqual(None, my_task.request.chain)
         self.assertEqual(None, my_task.request.callbacks)
 
-    def test_analysis_pipeline_task_raises_uncaught_exceptions_when_analysis_exists(self):
-        """tests that it raises exceptions that weren't caught and the analysis still exists
+    def test_analysis_pipeline_task_raises_uncaught_exceptions_when_analysis_exists_and_not_in_terminal_state(self):
+        """tests that it raises exceptions when the analysis still exists and it's NOT already in a terminal state
 
         This would be the case for unhandled/unexpected errors
         """
         # Setup
         exception_message = 'Something Very Bad'
-        analysis_status = Analysis.RUNNING
+        analysis_status = Analysis.RUNNING  # set status to a non-terminal state
         self.analysis.status = analysis_status
         self.analysis.save()
 
@@ -409,6 +409,38 @@ class TestAnalysisPipeline(TestCase):
         # Assert
         # it should have re-raised the exception
         self.assertIn(exception_message, str(context.exception))
+        self.analysis.refresh_from_db()
+        # it should have failed the analysis and created a message
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+        messages = AnalysisMessage.objects.filter(analysis=self.analysis)
+        self.assertTrue(messages.exists())
+
+    def test_analysis_pipeline_task_does_not_raise_uncaught_exceptions_when_analysis_exists_and_in_terminal_state(self):
+        """tests that it does _not_ raise exceptions when the analysis still exists and it's already in a terminal state
+        """
+        # Setup
+        exception_message = 'Something Very Bad'
+        analysis_status = Analysis.STOPPED  # set status to a terminal state!
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        # this func will raise some unexpected error
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            raise Exception(exception_message)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # it will not raise an exception
+        my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should not change the analysis status
+        self.assertEqual(analysis_status, self.analysis.status)
+        # it should not create new messages
+        messages = AnalysisMessage.objects.filter(analysis=self.analysis)
+        self.assertEqual(0, messages.count())
 
 
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
