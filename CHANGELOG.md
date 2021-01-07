@@ -1,10 +1,92 @@
+# SEED Version 2.9.0
+
+Date Range: 09/25/20 - 12/28/20
+
+Closed Issues and Features (Total: 70):
+- Feature [#1647]( https://github.com/SEED-platform/seed/issues/1647 ), Add Cycle to various views to help user remember what cycle the file was imported under
+- Improved [#1869]( https://github.com/SEED-platform/seed/issues/1869 ), Geocoding -- allow user to "uncheck" geocoding without deleting API key
+- Feature [#1904]( https://github.com/SEED-platform/seed/issues/1904 ), Add ability to delete extra data columns in Column Settings
+- Feature [#1966]( https://github.com/SEED-platform/seed/issues/1966 ), Create docker container to store all log data
+- Fixed [#1978]( https://github.com/SEED-platform/seed/issues/1978 ), MapQuest API key error UX
+- Feature [#2047]( https://github.com/SEED-platform/seed/issues/2047 ), Provide dedicated Tax Lot Map page
+- Fixed [#2079]( https://github.com/SEED-platform/seed/issues/2079 ), Gateway timeout (504) importing a file with 120,000+ records
+- Fixed [#2092]( https://github.com/SEED-platform/seed/issues/2092 ), Extra label showing up in Tax Lot export
+- Fixed [#2203]( https://github.com/SEED-platform/seed/issues/2203 ), Dq admin page does not prevent duplicate rules
+- Fixed [#2206]( https://github.com/SEED-platform/seed/issues/2206 ), Minimum value box not populated if data type is not defined by DATA_TYPES in data quality model
+- Fixed [#2207]( https://github.com/SEED-platform/seed/issues/2207 ), Data Quality admin page only reports the first error message when multiple errors are detected
+- Fixed [#2215]( https://github.com/SEED-platform/seed/issues/2215 ), Blank option for Inventory Type when SEED HEADER is "blank"
+- Fixed [#2237]( https://github.com/SEED-platform/seed/issues/2237 ), Geocoding broken pipe error
+- Feature [#2301]( https://github.com/SEED-platform/seed/issues/2301 ), Frontend uses API v3 - Properties v2
+- Feature [#2302]( https://github.com/SEED-platform/seed/issues/2302 ), Frontend uses API v3 - Organizations
+- Feature [#2303]( https://github.com/SEED-platform/seed/issues/2303 ), Frontend uses API v3 - TaxLots v2
+- Feature [#2304]( https://github.com/SEED-platform/seed/issues/2304 ), Frontend uses API v3 - ImportFiles
+- Feature [#2305]( https://github.com/SEED-platform/seed/issues/2305 ), Frontend uses API v3 - Users
+- Feature [#2306]( https://github.com/SEED-platform/seed/issues/2306 ), Frontend uses API v3 - Columns
+- Feature [#2307]( https://github.com/SEED-platform/seed/issues/2307 ), Frontend uses API v3 - Labels
+- Feature [#2308]( https://github.com/SEED-platform/seed/issues/2308 ), Frontend uses API v3 - Data Quality
+- Feature [#2309]( https://github.com/SEED-platform/seed/issues/2309 ), Frontend uses API v3 - ColumnMappings
+- Feature [#2310]( https://github.com/SEED-platform/seed/issues/2310 ), Frontend uses API v3 - Datasets
+- Feature [#2311]( https://github.com/SEED-platform/seed/issues/2311 ), Frontend uses API v3 - Cycles
+- Feature [#2312]( https://github.com/SEED-platform/seed/issues/2312 ), Frontend uses API v3 - ColumnListProfiles
+- Feature [#2313]( https://github.com/SEED-platform/seed/issues/2313 ), Frontend uses API v3 - Meters
+- Feature [#2314]( https://github.com/SEED-platform/seed/issues/2314 ), Frontend uses API v3 - ColumnMappingProfiles
+- Feature [#2316]( https://github.com/SEED-platform/seed/issues/2316 ), Frontend uses API v3 - Geocode
+- Feature [#2317]( https://github.com/SEED-platform/seed/issues/2317 ), Frontend uses API v3 - BuildingFiles
+- Feature [#2318]( https://github.com/SEED-platform/seed/issues/2318 ), Frontend uses API v3 - Upload and Progress
+- Feature [#2319]( https://github.com/SEED-platform/seed/issues/2319 ), Frontend uses API v3 - UBID and PM import
+- Feature [#2320]( https://github.com/SEED-platform/seed/issues/2320 ), Frontend uses API v3 - Version, Scenarios, TaxLotProperties export
+- Feature [#2321]( https://github.com/SEED-platform/seed/issues/2321 ), Frontend uses API v3 - Report Data
+- Feature [#2322]( https://github.com/SEED-platform/seed/issues/2322 ), Frontend uses API v3 - TaxLots Notes v2.1
+- Feature [#2323]( https://github.com/SEED-platform/seed/issues/2323 ), Frontend uses API v3 - Properties v2.1
+- Fixed [#2327]( https://github.com/SEED-platform/seed/issues/2327 ), Unit-aware columns had display names appended with display units
+- Fixed [#2330]( https://github.com/SEED-platform/seed/issues/2330 ), Mapping: Decimal points and sorting should work the same for units "aware" vs "non-aware" fields
+- Fixed [#2331]( https://github.com/SEED-platform/seed/issues/2331 ), Rename column mapping presets to column mapping profile
+- Fixed [#2333]( https://github.com/SEED-platform/seed/issues/2333 ), Value changes for area or EUI fields on hand-edits if org has non-default display settings
+- Fixed [#2335]( https://github.com/SEED-platform/seed/issues/2335 ), Rename column list settings to column list profiles
+- Fixed [#2344]( https://github.com/SEED-platform/seed/issues/2344 ), Non-default measurement units for unit-aware columns are ignored during mapping.
+- Fixed [#2345]( https://github.com/SEED-platform/seed/issues/2345 ), Hand-edit saves without changes results in a 500 being thrown
+- Fixed [#2370]( https://github.com/SEED-platform/seed/issues/2370 ), Fix property detail page export as BuildingSync Excel
+- Fixed [#2384]( https://github.com/SEED-platform/seed/issues/2384 ), PM import record of one property returns 400 status
+- Feature [#2395]( https://github.com/SEED-platform/seed/issues/2395 ), Add tooltips to Inventory List icons
+- Fixed [#2397]( https://github.com/SEED-platform/seed/issues/2397 ), DQ - failed to update/save rules after deleting duplicate rules
+- Feature [#2414]( https://github.com/SEED-platform/seed/issues/2414 ), Organizations: Column Mapping: Add sort and filter functionality
+- Fixed [#2418]( https://github.com/SEED-platform/seed/issues/2418 ), Swagger page typos in descriptions because text is taken as HTML vs plain text.
+- Fixed [#2434]( https://github.com/SEED-platform/seed/issues/2434 ), Ensure Sentry is working on all of our instances
+- Feature [#2437]( https://github.com/SEED-platform/seed/issues/2437 ), Build Analysis Model and Migration
+- Feature [#2438]( https://github.com/SEED-platform/seed/issues/2438 ), Build AnalysisRun Model and Migration
+- Feature [#2439]( https://github.com/SEED-platform/seed/issues/2439 ), Build AnalysisFile Model and Migration
+- Feature [#2440]( https://github.com/SEED-platform/seed/issues/2440 ), Add API v3 endpoints /analyses GET and /analyses/{id}/ GET
+- Feature [#2442]( https://github.com/SEED-platform/seed/issues/2442 ), Add API v3 endpoints /analyses/{analysis_id}/views GET and /analyses/{analysis_id}/views/{analysis_property_view_id} - GET
+- Feature [#2451]( https://github.com/SEED-platform/seed/issues/2451 ), Define background task for creating Analysis, AnalysisPropertyView, etc.
+- Feature [#2455]( https://github.com/SEED-platform/seed/issues/2455 ), Implement front-end for Analyses summary page for Property
+- Feature [#2456]( https://github.com/SEED-platform/seed/issues/2456 ), Implement front-end for Analyses summary page for Organization
+- Improved [#2461]( https://github.com/SEED-platform/seed/issues/2461 ), Upgrade OEP to Version 1.6
+- Feature [#2466]( https://github.com/SEED-platform/seed/issues/2466 ), Update Analysis-related models
+- Feature [#2474]( https://github.com/SEED-platform/seed/issues/2474 ), Implement UI/UX for taking the "Run Analysis" action on the property detail page
+- Feature [#2475]( https://github.com/SEED-platform/seed/issues/2475 ), Add API v3 endpoint /analyses - POST
+- Feature [#2477]( https://github.com/SEED-platform/seed/issues/2477 ), Add API v3 endpoint /analyses/{analysis_id}/start - POST and create BSyncr start analysis task
+- Feature [#2479]( https://github.com/SEED-platform/seed/issues/2479 ), Implement front-end for an individual Analysis Property View record (aka results page)
+- Feature [#2480]( https://github.com/SEED-platform/seed/issues/2480 ), Implement front-end for an individual Analysis page
+- Fixed [#2496]( https://github.com/SEED-platform/seed/issues/2496 ), Duplicate states can be created if the unit selection is empty
+- Feature [#2499]( https://github.com/SEED-platform/seed/issues/2499 ), User can create and kick off an Analysis for an individual property
+- Feature [#2500]( https://github.com/SEED-platform/seed/issues/2500 ), User can view a list of all analyses created for an individual property
+- Feature [#2501]( https://github.com/SEED-platform/seed/issues/2501 ), User can view an individual property's single analysis results
+- Feature [#2502]( https://github.com/SEED-platform/seed/issues/2502 ), User can view a list of all analyses created for an organization
+- Feature [#2503]( https://github.com/SEED-platform/seed/issues/2503 ), User views an Analysis detail page (not property specific)
+
 # SEED Version 2.8.2
 
-This is a patch to bring the 2.7.6 hotfix into 2.8.1
+This is a patch to bring the 2.7.6 hotfix into 2.8.1, repeated below.
+
+- Fixed [#2496]( https://github.com/SEED-platform/seed/issues/2496 ), Duplicate states can be created if the unit selection is empty
 
 # SEED Version 2.8.1
 
-This is a patch to bring the 2.7.5 hotfix into 2.8.0
+This is a patch to bring the 2.7.5 hotfix into 2.8.0, repeated below.
+
+- Fixed [#2469]( https://github.com/SEED-platform/seed/issues/2469 ), Error deduplicating raw col objs
+- Fixed [#2470]( https://github.com/SEED-platform/seed/issues/2470 ), Add nginx/uwsgi protections for oserrors and ioerrors
+- Fixed [#2471]( https://github.com/SEED-platform/seed/issues/2471 ), During label application, require non-empty list for inventory_ids
 
 # SEED Version 2.8.0
 

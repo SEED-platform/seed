@@ -37,7 +37,12 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException, AnalysisPipeline, task_create_analysis_property_views
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipelineException,
+    AnalysisPipeline,
+    task_create_analysis_property_views,
+    check_analysis_status
+)
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
@@ -165,6 +170,32 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.COMPLETED, self.analysis.status)
 
+    def test_stop_sets_status_to_stopped_when_not_in_terminal_state(self):
+        # Setup
+        self.analysis.status = Analysis.RUNNING
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        pipeline.stop()
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.STOPPED, self.analysis.status)
+
+    def test_stop_does_not_change_status_if_already_in_terminal_state(self):
+        # Setup
+        self.analysis.status = Analysis.FAILED
+        self.analysis.save()
+        pipeline = MockPipeline(self.analysis.id)
+
+        # Act
+        pipeline.stop()
+
+        # Assert
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+
     def test_task_create_analysis_property_views_creates_messages_for_failed_property_views(self):
         # Setup
         property_view = (
@@ -181,6 +212,69 @@ class TestAnalysisPipeline(TestCase):
         # a message for the bad property view should have been created
         message = AnalysisMessage.objects.get(analysis=self.analysis)
         self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
+
+    def test_check_analysis_status_calls_decorated_function_when_status_is_as_expected(self):
+        # Setup
+        @check_analysis_status(Analysis.RUNNING)
+        def my_func(analysis_id):
+            return 'I did work'
+
+        self.analysis.status = Analysis.RUNNING
+        self.analysis.save()
+
+        # Act
+        res = my_func(self.analysis.id)
+
+        # Assert
+        self.assertEqual('I did work', res)
+
+    def test_check_analysis_status_works_when_decorated_func_called_with_kwargs(self):
+        # Setup
+        @check_analysis_status(Analysis.RUNNING)
+        def my_func(analysis_id):
+            return 'I did work'
+
+        self.analysis.status = Analysis.RUNNING
+        self.analysis.save()
+
+        # Act
+        res = my_func(analysis_id=self.analysis.id)
+
+        # Assert
+        self.assertEqual('I did work', res)
+
+    def test_check_analysis_status_works_when_decorated_func_has_multiple_args(self):
+        # Setup
+        @check_analysis_status(Analysis.RUNNING)
+        def my_func(my_param_1, my_param_2, analysis_id, my_param_3):
+            return 'I did work'
+
+        self.analysis.status = Analysis.RUNNING
+        self.analysis.save()
+
+        # Act
+        res = my_func(-1, -1, self.analysis.id, -1)
+
+        # Assert
+        self.assertEqual('I did work', res)
+
+    def test_check_analysis_status_raises_exception_when_analysis_status_is_not_as_expected(self):
+        # Setup
+        expected_status = Analysis.RUNNING
+
+        @check_analysis_status(expected_status)
+        def my_func(analysis_id):
+            return 'I did work'
+
+        # set status to something unexpected
+        self.analysis.status = Analysis.STOPPED
+        self.analysis.save()
+
+        # Act/Assert
+        with self.assertRaises(AnalysisPipelineException) as context:
+            my_func(self.analysis.id)
+
+        self.assertIn(f'Expected analysis status to be {expected_status}', str(context.exception))
 
 
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
