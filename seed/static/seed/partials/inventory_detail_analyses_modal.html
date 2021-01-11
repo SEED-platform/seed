@@ -13,11 +13,15 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label sectionLabel">Type</label>
-                    <select class="form-control" ng-model="new_analysis.service" required>
-                        <option ng-option value="BSyncr" selected="selected">BSyncr</option>
+                    <select class="form-control" ng-model="new_analysis.service" ng-dropdown required>
+                        <option ng-option value='BSyncr' selected="selected">BSyncr</option>
                     </select>
-                    <small class="form-text text-muted">Note: BSyncr will use the first meter of type 'electricity' for
-                        analysis</small>
+                </div>
+                <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
+                    <label class="control-label sectionLabel">BSyncr Model Selection</label>
+                    <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
+                         <option ng-repeat="item in bsyncr_models" selected="selected">{$:: item $}</option>
+                    </select>
                 </div>
                 <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create Analysis</button>
             </form>
