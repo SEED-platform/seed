@@ -24,11 +24,11 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       analyses_service,
       inventory_ids,
     ) {
-      $scope.bsyncr_models = ['Simple linear Regression with outside air temperature',
-                              'Three Parameter Linear Model Cooling',
-                              'Three Parameter Linear Model Heating',
-                              'Four Parameter Linear Model',
-                              'Five Parameter Linear Model'];
+      $scope.bsyncr_models = [{name:'Simple linear Regression with outside air temperature'},
+        {name:'Three Parameter Linear Model Cooling'},
+        {name:'Three Parameter Linear Model Heating'},
+        {name:'Four Parameter Linear Model'},
+        {name:'Five Parameter Linear Model'}];
 
       function initialize_new_analysis () {
         $scope.new_analysis = {name: null, service: null, configuration: null};
