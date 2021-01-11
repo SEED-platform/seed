@@ -11,10 +11,9 @@ from os import path
 from unittest.mock import patch
 
 from lxml import etree
-
 from pytz import timezone
-
 from requests import Response
+from quantityfield import ureg
 
 from django.db.models import Q
 from django.test import TestCase, override_settings
@@ -27,7 +26,6 @@ from seed.models import (
     Meter,
     MeterReading,
     Analysis,
-    PropertyState,
     AnalysisInputFile,
     AnalysisMessage,
     AnalysisPropertyView,
@@ -336,11 +334,17 @@ class TestBsyncrPipeline(TestCase):
             pv = property_view_factory.get_property_view(
                 # fields required for analysis
                 latitude=39.76550841416409,
-                longitude=-104.97855661401148
+                longitude=-104.97855661401148,
+                # override unitted fields so that hashes are correct
+                site_eui=ureg.Quantity(
+                    float(property_view_factory.fake.random_int(min=50, max=600)),
+                    "kilobtu / foot ** 2 / year"
+                ),
+                gross_floor_area=ureg.Quantity(
+                    float(property_view_factory.fake.random_number(digits=6)),
+                    "foot ** 2"
+                ),
             )
-            # TODO: remove these lines saving the state once fixed, see issue #2493
-            PropertyState.objects.get(id=pv.state.id).save()
-            pv.refresh_from_db()
             self.good_property_views.append(pv)
 
         self.analysis_b = (
