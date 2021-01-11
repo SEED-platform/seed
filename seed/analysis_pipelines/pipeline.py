@@ -109,7 +109,7 @@ def analysis_pipeline_task(expected_status):
 
             #
             # Check the analysis before running the task
-            # 
+            #
             # NOTE: this does not avoid time-of-check to time-of-use (TOCTOU) race conditions
             #   but should be generally sufficient as a guard
             #
@@ -134,7 +134,7 @@ def analysis_pipeline_task(expected_status):
                 log_message = {
                     'analysis_id': _analysis_id,
                     'debug_message': 'Analysis has already been stopped or failed before starting the task. '
-                                        'Not running the task and stopping the task chain.'
+                                     'Not running the task and stopping the task chain.'
                 }
                 logger.info(json.dumps(log_message))
                 _stop_task_chain(_self)
