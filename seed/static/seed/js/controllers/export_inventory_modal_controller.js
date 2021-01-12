@@ -12,13 +12,13 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'columns',
   'inventory_type',
   'profile_id',
-  function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id) {
+  'filter_header_string',
+  function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id, filter_header_string) {
     $scope.export_name = '';
     $scope.inventory_type = inventory_type;
 
     $scope.export_selected = function (export_type) {
       var filename = $scope.export_name;
-
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
 
@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         } else if (blob_type === 'application/json') {
           data = JSON.stringify(response.data, null, '    ');
         } else if (blob_type === 'text/csv') {
-          data = response.data;
+          data = [filter_header_string, response.data].join('\r\n'); 
         }
 
         var blob = new Blob([data], {type: blob_type});
