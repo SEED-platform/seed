@@ -54,7 +54,7 @@ xlrd==1.2.0
 xlsxwriter==1.2.7
 xmltodict==0.12.0
 requests==2.22.0
-lxml==4.4.2
+lxml==4.6.2
 probablepeople==0.5.4
 xmlschema==1.1.1
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
