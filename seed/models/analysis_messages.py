@@ -82,6 +82,14 @@ class AnalysisMessage(models.Model):
         }
         logger.log(logger_level, json.dumps(log_message_dict))
 
+        # truncate the messages to make sure they meet our db constraints
+        MAX_MESSAGE_LENGTH = 255
+        ELIPSIS = '...'
+        if len(user_message) > MAX_MESSAGE_LENGTH:
+            user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
+        if len(debug_message) > MAX_MESSAGE_LENGTH:
+            debug_message = debug_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
+
         return AnalysisMessage.objects.create(
             type=type_,
             analysis_id=analysis_id,

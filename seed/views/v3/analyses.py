@@ -184,3 +184,23 @@ class AnalysisViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'Requested analysis doesn\'t exist in this organization.'
             }, status=HTTP_409_CONFLICT)
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    def destroy(self, request, pk):
+        organization_id = int(request.query_params.get('organization_id', 0))
+        try:
+            analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+            pipeline = AnalysisPipeline.factory(analysis)
+            pipeline.delete()
+            return JsonResponse({
+                'status': 'success',
+            })
+        except Analysis.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Requested analysis doesn\'t exist in this organization.'
+            }, status=HTTP_409_CONFLICT)
