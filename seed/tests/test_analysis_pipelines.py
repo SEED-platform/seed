@@ -517,7 +517,8 @@ class TestBsyncrPipeline(TestCase):
             FakeAnalysisFactory(organization=self.org, user=self.user)
             .get_analysis(
                 name='Good Analysis',
-                service=Analysis.BSYNCR
+                service=Analysis.BSYNCR,
+                configuration={'model_type': 'Simple Linear Regression'}
             )
         )
 
@@ -573,8 +574,12 @@ class TestBsyncrPipeline(TestCase):
             result.seek(0)
             return result
 
-        def _mock_request(file_):
+        def _mock_request(file_, model_type):
             # mock the call to _bsyncr_service_request by returning a constructed Response
+
+            # ignore model_type
+            _ = model_type
+
             the_response = Response()
             if error_messages is not None:
                 the_response.status_code = 400

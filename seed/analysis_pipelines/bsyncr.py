@@ -43,6 +43,36 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# map for translating SEED's model names into bsyncr's model names
+# used for communicating with bsyncr service
+BSYNCR_MODEL_TYPE_MAP = {
+    'Simple Linear Regression': 'SLR',
+    'Three Parameter Linear Model Cooling': '3PC',
+    'Three Parameter Linear Model Heating': '3PH',
+    'Four Parameter Linear Model': '4P',
+}
+
+
+def _validate_bsyncr_config(analysis):
+    """Performs basic validation of the analysis for running bsyncr. Returns any
+    errors
+
+    :param analysis: Analysis
+    :returns: list[str], list of validation error messages
+    """
+    config = analysis.configuration
+    if not isinstance(config, dict):
+        return ['Analysis configuration must be a dictionary/JSON']
+
+    if 'model_type' not in config:
+        return ['Analysis configuration missing required property "model_type"']
+
+    model_type = config['model_type']
+    if model_type not in BSYNCR_MODEL_TYPE_MAP:
+        return [f'Analysis configuration.model_type "{model_type}" is invalid. '
+                f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}']
+
+    return []
 
 class BsyncrPipeline(AnalysisPipeline):
     """
@@ -57,6 +87,10 @@ class BsyncrPipeline(AnalysisPipeline):
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
             self.fail(message, logger)
             raise AnalysisPipelineException(message)
+
+        validation_errors = _validate_bsyncr_config(Analysis.objects.get(id=self._analysis_id))
+        if validation_errors:
+            raise AnalysisPipelineException(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
 
         progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
 
@@ -317,10 +351,11 @@ def _start_analysis(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Sending requests to bsyncr service')
 
+    bsyncr_model_type = BSYNCR_MODEL_TYPE_MAP[analysis.configuration['model_type']]
     output_xml_file_ids = []
     for input_file in analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        results_dir, errors = _run_bsyncr_analysis(input_file.file)
+        results_dir, errors = _run_bsyncr_analysis(input_file.file, bsyncr_model_type)
 
         if errors:
             for error in errors:
@@ -435,10 +470,11 @@ def _parse_bsyncr_results(filepath):
     return {'models': parsed_models}
 
 
-def _bsyncr_service_request(file_):
+def _bsyncr_service_request(file_, model_type):
     """Makes request to bsyncr service using the provided file
 
     :param file_: File
+    :param model_type: str
     :returns: requests.Response
     """
     files = [
@@ -449,22 +485,23 @@ def _bsyncr_service_request(file_):
         method='POST',
         url=f'http://{settings.BSYNCR_SERVER_HOST}:{settings.BSYNCR_SERVER_PORT}/',
         files=files,
-        params={'model_type': 'SLR'},
+        params={'model_type': model_type},
         timeout=60 * 2,  # timeout after two minutes
     )
 
 
-def _run_bsyncr_analysis(file_):
+def _run_bsyncr_analysis(file_, model_type):
     """Runs the bsyncr analysis by making a request to a bsyncr server with the
     provided file. Returns a tuple, an object representing a temporary directory
     created with tempfile.TemporaryDirectory which contains the files returned by bsyncr
     followed by a list of error messages.
 
     :param file_: File
+    :param model_type: str
     :returns: tuple, (object, list[str])
     """
     try:
-        response = _bsyncr_service_request(file_)
+        response = _bsyncr_service_request(file_, model_type)
     except requests.exceptions.Timeout:
         return None, ['Request to bsyncr server timed out.']
     except Exception as e:
