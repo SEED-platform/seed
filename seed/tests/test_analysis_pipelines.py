@@ -10,6 +10,7 @@ import json
 import logging
 from os import path
 from unittest.mock import patch
+from zipfile import ZipFile
 
 from lxml import etree
 from pytz import timezone
@@ -29,6 +30,7 @@ from seed.models import (
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
+    AnalysisOutputFile,
     AnalysisPropertyView,
 )
 from seed.test_helpers.fake import (
@@ -557,7 +559,19 @@ class TestBsyncrPipeline(TestCase):
             )
             analysis_property_view_id = _parse_analysis_property_view_id(file_.path)
             id_value_elem[0].text = str(analysis_property_view_id)
-            return etree.tostring(bsyncr_output_tree, pretty_print=True)
+
+            # zip up the xml and image
+            result = BytesIO()
+            with ZipFile(result, 'w') as zf:
+                zf.writestr(
+                    zinfo_or_arcname='result.xml',
+                    data=etree.tostring(bsyncr_output_tree, pretty_print=True)
+                )
+                bsyncr_image_path = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-plot.png')
+                zf.write(bsyncr_image_path, arcname='plot.png')
+
+            result.seek(0)
+            return result
 
         def _mock_request(file_):
             # mock the call to _bsyncr_service_request by returning a constructed Response
@@ -570,7 +584,7 @@ class TestBsyncrPipeline(TestCase):
                 the_response._content = json.dumps(body_dict).encode()
             else:
                 the_response.status_code = 200
-                the_response._content = _build_bsyncr_output(file_)
+                the_response.raw = _build_bsyncr_output(file_)
 
             return the_response
 
@@ -718,6 +732,16 @@ class TestBsyncrPipeline(TestCase):
         # Assert
         self.analysis_b.refresh_from_db()
         self.assertEqual(Analysis.COMPLETED, self.analysis_b.status)
+
+        # there should be output files
+        analysis_property_view = AnalysisPropertyView.objects.filter(
+            analysis=self.analysis_b
+        ).first()
+        output_files = AnalysisOutputFile.objects.filter(
+            analysis_property_views__id=analysis_property_view.id
+        )
+        self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.BUILDINGSYNC).count())
+        self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.IMAGE_PNG).count())
 
         # there should be no messages
         analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b)
