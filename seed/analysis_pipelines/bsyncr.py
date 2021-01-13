@@ -74,6 +74,7 @@ def _validate_bsyncr_config(analysis):
 
     return []
 
+
 class BsyncrPipeline(AnalysisPipeline):
     """
     BsyncrPipeline is a class for preparing, running, and post
