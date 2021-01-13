@@ -20,7 +20,7 @@
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
-                         <option ng-repeat="model in bsyncr_models" selected="selected">{$:: model.name $}</option>
+                         <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$:: model.model_type $}</option>
                     </select>
                 </div>
                 <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create Analysis</button>
