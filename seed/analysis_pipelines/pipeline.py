@@ -285,7 +285,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 raise AnalysisPipelineException('Analysis has already been prepared or is currently being prepared')
 
-        return self._prepare_analysis(self._analysis_id, property_view_ids)
+        return self._prepare_analysis(property_view_ids)
 
     def start_analysis(self):
         """Entrypoint for starting an analysis.
@@ -361,11 +361,10 @@ class AnalysisPipeline(abc.ABC):
         Analysis.objects.get(id=self._analysis_id).delete()
 
     @abc.abstractmethod
-    def _prepare_analysis(self, analysis_id, property_view_ids):
+    def _prepare_analysis(self, property_view_ids):
         """Abstract method which should do the work necessary for preparing
         an analysis, e.g. creating input file(s)
 
-        :param analysis_id: int
         :param property_view_ids: list[int]
         :returns: str, ProgressData.result
         """

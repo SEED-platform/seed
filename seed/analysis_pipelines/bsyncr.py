@@ -81,7 +81,7 @@ class BsyncrPipeline(AnalysisPipeline):
     methods.
     """
 
-    def _prepare_analysis(self, analysis_id, property_view_ids):
+    def _prepare_analysis(self, property_view_ids):
         """Internal implementation for preparing bsyncr analysis"""
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
@@ -92,7 +92,7 @@ class BsyncrPipeline(AnalysisPipeline):
         if validation_errors:
             raise AnalysisPipelineException(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
 
-        progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
+        progress_data = ProgressData('prepare-analysis-bsyncr', self._analysis_id)
 
         # Steps:
         # 1) ...starting
@@ -102,9 +102,9 @@ class BsyncrPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            task_create_analysis_property_views.si(analysis_id, property_view_ids, progress_data.key),
-            _prepare_all_properties.s(analysis_id, progress_data.key),
-            _finish_preparation.si(analysis_id, progress_data.key)
+            task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
+            _prepare_all_properties.s(self._analysis_id, progress_data.key),
+            _finish_preparation.si(self._analysis_id, progress_data.key)
         ).apply_async()
 
         return progress_data.result()

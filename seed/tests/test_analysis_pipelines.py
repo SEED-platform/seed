@@ -53,8 +53,8 @@ from seed.building_sync.mappings import NAMESPACES
 
 class MockPipeline(AnalysisPipeline):
 
-    def _prepare_analysis(self, analysis_id, property_view_ids):
-        analysis = Analysis.objects.get(id=analysis_id)
+    def _prepare_analysis(self, property_view_ids):
+        analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.READY
         analysis.save()
 
