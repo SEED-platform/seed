@@ -46,6 +46,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         }
 
         var blob = new Blob([data], {type: blob_type});
+
         saveAs(blob, filename);
 
         $scope.close();

@@ -828,10 +828,11 @@ angular.module('BE.seed.controller.inventory_list', [])
             filter_header_string: function () {
               if ($scope.selected_labels.length) {
                 return [
-                  'Filter Method: "',
+                  'Filter Method: ""',
                   $scope.labelLogic,
-                  '", Filter Labels: ',
-                  $scope.selected_labels.map(label => label.name).join(', ')
+                  '"", Filter Labels: "',
+                  $scope.selected_labels.map(label => label.name).join(', '),
+                  '"'
                  ].join('');
               }
               return 'Filter Method: none';
