@@ -12,6 +12,7 @@
 version: '3.4'
 services:
   db-postgres:
+    container_name: seed_postgres
     image: 127.0.0.1:5000/postgres-seed
     environment:
       - POSTGRES_DB
@@ -34,6 +35,7 @@ services:
         max_attempts: 3
         window: 120s
   db-redis:
+    container_name: seed_redis
     image: 127.0.0.1:5000/redis
     logging:
       options:
@@ -47,6 +49,7 @@ services:
         max_attempts: 3
         window: 120s
   web:
+    container_name: seed_web
     image: 127.0.0.1:5000/seed
     environment:
       - AWS_ACCESS_KEY_ID
@@ -85,6 +88,7 @@ services:
         max_attempts: 3
         window: 120s
   web-celery:
+    container_name: seed_celery
     image: 127.0.0.1:5000/seed
     environment:
       - POSTGRES_DB
@@ -116,6 +120,7 @@ services:
         window: 120s
   #oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+    #container_name: seed_oep
     #image: 127.0.0.1:5000/oep
     #environment:
     #  - OEP_DISABLED=true

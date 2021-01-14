@@ -3,6 +3,7 @@
 version: '3.4'
 services:
   db-postgres:
+    container_name: seed_postgres
     image: timescale/timescaledb-postgis:latest-pg12
     environment:
       - POSTGRES_DB=seed
@@ -17,8 +18,10 @@ services:
         max-size: 50m
         max-file: '5'
   db-redis:
+    container_name: seed_redis
     image: redis:5.0.1
   web:
+    container_name: seed_web
     image: seedplatform/seed:latest
     build: .
     environment:
@@ -51,6 +54,7 @@ services:
         max-size: 50m
         max-file: '5'
   web-celery:
+    container_name: seed_celery
     image: seedplatform/seed:latest
     build: .
     command: /seed/docker/start_celery_docker.sh
@@ -77,6 +81,7 @@ services:
         max-file: '5'
   #oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
+  #  container_name: seed_oep
   #  image: seedplatform/oep:1.6
   #  depends_on:
   #    - web

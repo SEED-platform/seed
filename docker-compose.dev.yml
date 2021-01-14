@@ -9,9 +9,11 @@
 version: '3.4'
 services:
   db-postgres:
+    container_name: seed_postgres
     volumes:
       - ref_seed_pgdata:/var/lib/postgresql/data
   web:
+    container_name: seed_web
     image: seedplatform/seed:dev
     build:
       context: .
@@ -24,6 +26,7 @@ services:
       - ./seed/:/seed/seed/
       - ./config:/seed/config/
   web-celery:
+    container_name: seed_celery
     image: seedplatform/seed:dev
     build:
       context: .
