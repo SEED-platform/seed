@@ -10,7 +10,8 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
     task_create_analysis_property_views,
-    check_analysis_status,
+    analysis_pipeline_task,
+    StopAnalysisTaskChain
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.lib.progress_data.progress_data import ProgressData
@@ -50,7 +51,7 @@ class BsyncrPipeline(AnalysisPipeline):
         """Internal implementation for preparing bsyncr analysis"""
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
-            self.fail(message, logger=logger)
+            self.fail(message, logger)
             raise AnalysisPipelineException(message)
 
         progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
@@ -91,9 +92,9 @@ class BsyncrPipeline(AnalysisPipeline):
         return progress_data.result()
 
 
-@shared_task
-@check_analysis_status(Analysis.CREATING)
-def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.CREATING)
+def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progress_data_key):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
     :param analysis_property_view_ids: list[int]
@@ -108,74 +109,62 @@ def _prepare_all_properties(analysis_property_view_ids, analysis_id, progress_da
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
-        try:
-            meters = (
-                Meter.objects
-                .annotate(readings_count=Count('meter_readings'))
-                .filter(
-                    property=analysis_property_view.property,
-                    type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
-                    readings_count__gte=12,
-                )
+        meters = (
+            Meter.objects
+            .annotate(readings_count=Count('meter_readings'))
+            .filter(
+                property=analysis_property_view.property,
+                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
+                readings_count__gte=12,
             )
-            if meters.count() == 0:
-                AnalysisMessage.log_and_create(
-                    logger=logger,
-                    type_=AnalysisMessage.INFO,
-                    analysis_id=analysis.id,
-                    analysis_property_view_id=analysis_property_view.id,
-                    user_message='Property not used in analysis: Property has no linked electricity meters with 12 or more readings',
-                    debug_message=''
-                )
-                continue
-
-            # arbitrarily choosing the first meter for now
-            meter = meters[0]
-
-            bsync_doc, errors = _build_bsyncr_input(analysis_property_view, meter)
-            if errors:
-                for error in errors:
-                    AnalysisMessage.log_and_create(
-                        logger=logger,
-                        type_=AnalysisMessage.ERROR,
-                        analysis_id=analysis.id,
-                        analysis_property_view_id=analysis_property_view.id,
-                        user_message=f'Error preparing bsyncr input: {error}',
-                        debug_message='',
-                    )
-                continue
-
-            analysis_input_file = AnalysisInputFile(
-                content_type=AnalysisInputFile.BUILDINGSYNC,
-                analysis=analysis
-            )
-            analysis_input_file.file.save(f'{analysis_property_view.id}.xml', ContentFile(bsync_doc))
-            analysis_input_file.clean()
-            analysis_input_file.save()
-            input_file_paths.append(analysis_input_file.file.path)
-        except Exception as e:
+        )
+        if meters.count() == 0:
             AnalysisMessage.log_and_create(
                 logger=logger,
-                type_=AnalysisMessage.ERROR,
+                type_=AnalysisMessage.INFO,
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
-                user_message='Unexpected error occurred while preparing input for property',
-                debug_message='',
-                exception=e,
+                user_message='Property not used in analysis: Property has no linked electricity meters with 12 or more readings',
+                debug_message=''
             )
-            pass
+            continue
+
+        # arbitrarily choosing the first meter for now
+        meter = meters[0]
+
+        bsync_doc, errors = _build_bsyncr_input(analysis_property_view, meter)
+        if errors:
+            for error in errors:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    analysis_id=analysis.id,
+                    analysis_property_view_id=analysis_property_view.id,
+                    user_message=f'Error preparing bsyncr input: {error}',
+                    debug_message='',
+                )
+            continue
+
+        analysis_input_file = AnalysisInputFile(
+            content_type=AnalysisInputFile.BUILDINGSYNC,
+            analysis=analysis
+        )
+        analysis_input_file.file.save(f'{analysis_property_view.id}.xml', ContentFile(bsync_doc))
+        analysis_input_file.clean()
+        analysis_input_file.save()
+        input_file_paths.append(analysis_input_file.file.path)
 
     if len(input_file_paths) == 0:
         pipeline = BsyncrPipeline(analysis.id)
         message = 'No files were able to be prepared for the analysis'
-        pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
         # stop the task chain
-        raise AnalysisPipelineException(message)
+        raise StopAnalysisTaskChain(message)
 
 
-@shared_task
-@check_analysis_status(Analysis.CREATING)
-def _finish_preparation(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.CREATING)
+def _finish_preparation(self, analysis_id, progress_data_key):
     """A Celery task which finishes the preparation for bsyncr analysis
 
     :param analysis_id: int
@@ -310,9 +299,9 @@ def _parse_analysis_property_view_id(filepath):
     return int(analysis_property_view_id_elem[0].text)
 
 
-@shared_task
-@check_analysis_status(Analysis.QUEUED)
-def _start_analysis(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.QUEUED)
+def _start_analysis(self, analysis_id, progress_data_key):
     """Start bsyncr analysis by making requests to the service
 
     """
@@ -326,54 +315,43 @@ def _start_analysis(analysis_id, progress_data_key):
 
     output_file_ids = []
     for input_file in analysis.input_files.all():
-        try:
-            analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-            result, errors = _run_bsyncr_analysis(input_file.file)
-            if errors:
-                for error in errors:
-                    AnalysisMessage.log_and_create(
-                        logger=logger,
-                        type_=AnalysisMessage.ERROR,
-                        analysis_id=analysis.id,
-                        analysis_property_view_id=analysis_property_view_id,
-                        user_message='Unexpected error from bsyncr service',
-                        debug_message=error,
-                    )
-                continue
-
-            analysis_output_file = AnalysisOutputFile(
-                content_type=AnalysisOutputFile.BUILDINGSYNC,
-            )
-            padded_id = f'{analysis_property_view_id:06d}'
-            analysis_output_file.file.save(f'bsyncr_output_{padded_id}.xml', ContentFile(result))
-            analysis_output_file.clean()
-            analysis_output_file.save()
-            analysis_output_file.analysis_property_views.set([analysis_property_view_id])
-            output_file_ids.append(analysis_output_file.id)
-        except Exception as e:
-            AnalysisMessage.log_and_create(
-                logger=logger,
-                type_=AnalysisMessage.ERROR,
-                analysis_id=analysis.id,
-                user_message='Unexpected error while running analysis',
-                debug_message='',
-                exception=e,
-            )
+        analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
+        result, errors = _run_bsyncr_analysis(input_file.file)
+        if errors:
+            for error in errors:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    analysis_id=analysis.id,
+                    analysis_property_view_id=analysis_property_view_id,
+                    user_message='Unexpected error from bsyncr service',
+                    debug_message=error,
+                )
             continue
+
+        analysis_output_file = AnalysisOutputFile(
+            content_type=AnalysisOutputFile.BUILDINGSYNC,
+        )
+        padded_id = f'{analysis_property_view_id:06d}'
+        analysis_output_file.file.save(f'bsyncr_output_{padded_id}.xml', ContentFile(result))
+        analysis_output_file.clean()
+        analysis_output_file.save()
+        analysis_output_file.analysis_property_views.set([analysis_property_view_id])
+        output_file_ids.append(analysis_output_file.id)
 
     if len(output_file_ids) == 0:
         pipeline = BsyncrPipeline(analysis.id)
         message = 'Failed to get results for all properties'
-        pipeline.fail(message, progress_data_key=progress_data.key, logger=logger)
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
         # stop the task chain
-        raise AnalysisPipelineException(message)
+        raise StopAnalysisTaskChain(message)
 
     return output_file_ids
 
 
-@shared_task
-@check_analysis_status(Analysis.RUNNING)
-def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.RUNNING)
+def _process_results(self, analysis_output_file_ids, analysis_id, progress_data_key):
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.RUNNING
     analysis.save()
@@ -383,27 +361,16 @@ def _process_results(analysis_output_file_ids, analysis_id, progress_data_key):
 
     analysis_output_files = AnalysisOutputFile.objects.filter(id__in=analysis_output_file_ids)
     for analysis_output_file in analysis_output_files.all():
-        try:
-            parsed_results = _parse_bsyncr_results(analysis_output_file.file.path)
-            # assuming each output file is linked to only one analysis property view
-            analysis_property_view = analysis_output_file.analysis_property_views.first()
-            analysis_property_view.parsed_results = parsed_results
-            analysis_property_view.save()
-        except Exception as e:
-            AnalysisMessage.log_and_create(
-                logger=logger,
-                type_=AnalysisMessage.ERROR,
-                analysis_id=analysis.id,
-                user_message='Unexpected while processing bsyncr results',
-                debug_message='',
-                exception=e,
-            )
-            continue
+        parsed_results = _parse_bsyncr_results(analysis_output_file.file.path)
+        # assuming each output file is linked to only one analysis property view
+        analysis_property_view = analysis_output_file.analysis_property_views.first()
+        analysis_property_view.parsed_results = parsed_results
+        analysis_property_view.save()
 
 
-@shared_task
-@check_analysis_status(Analysis.RUNNING)
-def _finish_analysis(analysis_id, progress_data_key):
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.RUNNING)
+def _finish_analysis(self, analysis_id, progress_data_key):
     """A Celery task which finishes the analysis run
 
     :param analysis_id: int
