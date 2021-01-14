@@ -4,7 +4,10 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from tempfile import TemporaryFile, TemporaryDirectory
 import logging
+import pathlib
+from zipfile import ZipFile
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -24,7 +27,8 @@ from seed.models import (
     Meter
 )
 
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File as BaseFile
+from django.core.files.images import ImageFile
 from django.db.models import Count
 from django.conf import settings
 from django.utils import timezone as tz
@@ -39,6 +43,37 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# map for translating SEED's model names into bsyncr's model names
+# used for communicating with bsyncr service
+BSYNCR_MODEL_TYPE_MAP = {
+    'Simple Linear Regression': 'SLR',
+    'Three Parameter Linear Model Cooling': '3PC',
+    'Three Parameter Linear Model Heating': '3PH',
+    'Four Parameter Linear Model': '4P',
+}
+
+
+def _validate_bsyncr_config(analysis):
+    """Performs basic validation of the analysis for running bsyncr. Returns any
+    errors
+
+    :param analysis: Analysis
+    :returns: list[str], list of validation error messages
+    """
+    config = analysis.configuration
+    if not isinstance(config, dict):
+        return ['Analysis configuration must be a dictionary/JSON']
+
+    if 'model_type' not in config:
+        return ['Analysis configuration missing required property "model_type"']
+
+    model_type = config['model_type']
+    if model_type not in BSYNCR_MODEL_TYPE_MAP:
+        return [f'Analysis configuration.model_type "{model_type}" is invalid. '
+                f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}']
+
+    return []
+
 
 class BsyncrPipeline(AnalysisPipeline):
     """
@@ -47,14 +82,18 @@ class BsyncrPipeline(AnalysisPipeline):
     methods.
     """
 
-    def _prepare_analysis(self, analysis_id, property_view_ids):
+    def _prepare_analysis(self, property_view_ids):
         """Internal implementation for preparing bsyncr analysis"""
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
             self.fail(message, logger)
             raise AnalysisPipelineException(message)
 
-        progress_data = ProgressData('prepare-analysis-bsyncr', analysis_id)
+        validation_errors = _validate_bsyncr_config(Analysis.objects.get(id=self._analysis_id))
+        if validation_errors:
+            raise AnalysisPipelineException(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
+
+        progress_data = ProgressData('prepare-analysis-bsyncr', self._analysis_id)
 
         # Steps:
         # 1) ...starting
@@ -64,9 +103,9 @@ class BsyncrPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            task_create_analysis_property_views.si(analysis_id, property_view_ids, progress_data.key),
-            _prepare_all_properties.s(analysis_id, progress_data.key),
-            _finish_preparation.si(analysis_id, progress_data.key)
+            task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
+            _prepare_all_properties.s(self._analysis_id, progress_data.key),
+            _finish_preparation.si(self._analysis_id, progress_data.key)
         ).apply_async()
 
         return progress_data.result()
@@ -313,10 +352,12 @@ def _start_analysis(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Sending requests to bsyncr service')
 
-    output_file_ids = []
+    bsyncr_model_type = BSYNCR_MODEL_TYPE_MAP[analysis.configuration['model_type']]
+    output_xml_file_ids = []
     for input_file in analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        result, errors = _run_bsyncr_analysis(input_file.file)
+        results_dir, errors = _run_bsyncr_analysis(input_file.file, bsyncr_model_type)
+
         if errors:
             for error in errors:
                 AnalysisMessage.log_and_create(
@@ -329,29 +370,42 @@ def _start_analysis(self, analysis_id, progress_data_key):
                 )
             continue
 
-        analysis_output_file = AnalysisOutputFile(
-            content_type=AnalysisOutputFile.BUILDINGSYNC,
-        )
-        padded_id = f'{analysis_property_view_id:06d}'
-        analysis_output_file.file.save(f'bsyncr_output_{padded_id}.xml', ContentFile(result))
-        analysis_output_file.clean()
-        analysis_output_file.save()
-        analysis_output_file.analysis_property_views.set([analysis_property_view_id])
-        output_file_ids.append(analysis_output_file.id)
+        for result_file_path in pathlib.Path(results_dir.name).iterdir():
+            with open(result_file_path, 'rb') as f:
+                if result_file_path.suffix == '.xml':
+                    content_type = AnalysisOutputFile.BUILDINGSYNC
+                    file_ = BaseFile(f)
+                elif result_file_path.suffix == '.png':
+                    content_type = AnalysisOutputFile.IMAGE_PNG
+                    file_ = ImageFile(f)
+                else:
+                    raise AnalysisPipelineException(f'Received unhandled file type from bsyncr: {result_file_path.name}')
 
-    if len(output_file_ids) == 0:
+                analysis_output_file = AnalysisOutputFile(
+                    content_type=content_type,
+                )
+                padded_id = f'{analysis_property_view_id:06d}'
+                analysis_output_file.file.save(f'bsyncr_output_{padded_id}_{result_file_path.name}', file_)
+                analysis_output_file.clean()
+                analysis_output_file.save()
+                analysis_output_file.analysis_property_views.set([analysis_property_view_id])
+
+                if content_type == AnalysisOutputFile.BUILDINGSYNC:
+                    output_xml_file_ids.append(analysis_output_file.id)
+
+    if len(output_xml_file_ids) == 0:
         pipeline = BsyncrPipeline(analysis.id)
         message = 'Failed to get results for all properties'
         pipeline.fail(message, logger, progress_data_key=progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 
-    return output_file_ids
+    return output_xml_file_ids
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
-def _process_results(self, analysis_output_file_ids, analysis_id, progress_data_key):
+def _process_results(self, analysis_output_xml_file_ids, analysis_id, progress_data_key):
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.RUNNING
     analysis.save()
@@ -359,7 +413,7 @@ def _process_results(self, analysis_output_file_ids, analysis_id, progress_data_
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Processing results')
 
-    analysis_output_files = AnalysisOutputFile.objects.filter(id__in=analysis_output_file_ids)
+    analysis_output_files = AnalysisOutputFile.objects.filter(id__in=analysis_output_xml_file_ids)
     for analysis_output_file in analysis_output_files.all():
         parsed_results = _parse_bsyncr_results(analysis_output_file.file.path)
         # assuming each output file is linked to only one analysis property view
@@ -417,10 +471,11 @@ def _parse_bsyncr_results(filepath):
     return {'models': parsed_models}
 
 
-def _bsyncr_service_request(file_):
+def _bsyncr_service_request(file_, model_type):
     """Makes request to bsyncr service using the provided file
 
     :param file_: File
+    :param model_type: str
     :returns: requests.Response
     """
     files = [
@@ -429,22 +484,25 @@ def _bsyncr_service_request(file_):
 
     return requests.request(
         method='POST',
-        url=f'http://{settings.BSYNCR_SERVER_HOST}:{settings.BSYNCR_SERVER_PORT}',
+        url=f'http://{settings.BSYNCR_SERVER_HOST}:{settings.BSYNCR_SERVER_PORT}/',
         files=files,
+        params={'model_type': model_type},
         timeout=60 * 2,  # timeout after two minutes
     )
 
 
-def _run_bsyncr_analysis(file_):
+def _run_bsyncr_analysis(file_, model_type):
     """Runs the bsyncr analysis by making a request to a bsyncr server with the
-    provided file. Returns a tuple, the returned XML file as a string followed by
-    a list of error messages.
+    provided file. Returns a tuple, an object representing a temporary directory
+    created with tempfile.TemporaryDirectory which contains the files returned by bsyncr
+    followed by a list of error messages.
 
     :param file_: File
-    :returns: str, list[str]
+    :param model_type: str
+    :returns: tuple, (object, list[str])
     """
     try:
-        response = _bsyncr_service_request(file_)
+        response = _bsyncr_service_request(file_, model_type)
     except requests.exceptions.Timeout:
         return None, ['Request to bsyncr server timed out.']
     except Exception as e:
@@ -458,4 +516,14 @@ def _run_bsyncr_analysis(file_):
         except (ValueError, KeyError):
             return None, [f'Expected JSON response with "errors" from bsyncr server but got the following: {response.text}']
 
-    return response.text, []
+    # get the files out of the returned zip
+    temporary_results_dir = TemporaryDirectory()
+    with TemporaryFile() as zip_fp:
+        for chunk in response.iter_content(chunk_size=128):
+            zip_fp.write(chunk)
+
+        zip_fp.seek(0)
+        with ZipFile(zip_fp) as zip_file:
+            zip_file.extractall(path=temporary_results_dir.name)
+
+    return temporary_results_dir, []
