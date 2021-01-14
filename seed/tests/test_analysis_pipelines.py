@@ -7,8 +7,10 @@
 from datetime import datetime
 from io import BytesIO
 import json
+import logging
 from os import path
 from unittest.mock import patch
+from zipfile import ZipFile
 
 from lxml import etree
 from pytz import timezone
@@ -28,6 +30,7 @@ from seed.models import (
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
+    AnalysisOutputFile,
     AnalysisPropertyView,
 )
 from seed.test_helpers.fake import (
@@ -41,7 +44,7 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipelineException,
     AnalysisPipeline,
     task_create_analysis_property_views,
-    check_analysis_status
+    analysis_pipeline_task
 )
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
@@ -50,8 +53,8 @@ from seed.building_sync.mappings import NAMESPACES
 
 class MockPipeline(AnalysisPipeline):
 
-    def _prepare_analysis(self, analysis_id, property_view_ids):
-        analysis = Analysis.objects.get(id=analysis_id)
+    def _prepare_analysis(self, property_view_ids):
+        analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.READY
         analysis.save()
 
@@ -59,6 +62,16 @@ class MockPipeline(AnalysisPipeline):
         analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.RUNNING
         analysis.save()
+
+
+class MockCeleryTask:
+    def __init__(self):
+        self.request = self.Request()
+
+    class Request:
+        def __init__(self):
+            self.chain = [1, 2, 3]
+            self.callbacks = [1, 2, 3]
 
 
 class TestAnalysisPipeline(TestCase):
@@ -76,6 +89,21 @@ class TestAnalysisPipeline(TestCase):
             FakeAnalysisFactory(organization=self.org, user=self.user)
             .get_analysis()
         )
+
+    def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
+        from inspect import getmembers
+        from celery import Task
+        from seed.analysis_pipelines import tasks
+
+        def is_celery_task(v):
+            return isinstance(v, Task)
+
+        celery_tasks = getmembers(tasks, is_celery_task)
+        for _, celery_task in celery_tasks:
+            try:
+                celery_task.__wrapped__._is_analysis_pipeline_task
+            except AttributeError:
+                self.assertTrue(False, f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
 
     def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
         # Setup
@@ -144,8 +172,10 @@ class TestAnalysisPipeline(TestCase):
         pipeline = MockPipeline(self.analysis.id)
         failure_message = 'Bad'
 
+        logger = logging.getLogger('test-logger')
+
         # Act
-        pipeline.fail(failure_message)
+        pipeline.fail(failure_message, logger)
 
         # Assert
         self.analysis.refresh_from_db()
@@ -160,9 +190,11 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.save()
         pipeline = MockPipeline(self.analysis.id)
 
+        logger = logging.getLogger('test-logger')
+
         # Act
         with self.assertRaises(AnalysisPipelineException) as context:
-            pipeline.fail('Double plus ungood')
+            pipeline.fail('Double plus ungood', logger)
 
         # Assert
         self.assertTrue('Analysis is already in a terminal state' in str(context.exception))
@@ -213,68 +245,202 @@ class TestAnalysisPipeline(TestCase):
         message = AnalysisMessage.objects.get(analysis=self.analysis)
         self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
-    def test_check_analysis_status_calls_decorated_function_when_status_is_as_expected(self):
+    def test_analysis_pipeline_task_calls_decorated_function_when_status_is_as_expected(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(self.analysis.id)
+        res = my_func(MockCeleryTask(), self.analysis.id)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_works_when_decorated_func_called_with_kwargs(self):
+    def test_analysis_pipeline_task_works_when_decorated_func_called_with_kwargs(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(analysis_id=self.analysis.id)
+        res = my_func(MockCeleryTask(), analysis_id=self.analysis.id)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_works_when_decorated_func_has_multiple_args(self):
+    def test_analysis_pipeline_task_works_when_decorated_func_has_multiple_args(self):
         # Setup
-        @check_analysis_status(Analysis.RUNNING)
-        def my_func(my_param_1, my_param_2, analysis_id, my_param_3):
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, my_param_1, my_param_2, analysis_id, my_param_3):
             return 'I did work'
 
         self.analysis.status = Analysis.RUNNING
         self.analysis.save()
 
         # Act
-        res = my_func(-1, -1, self.analysis.id, -1)
+        res = my_func(MockCeleryTask(), -1, -1, self.analysis.id, -1)
 
         # Assert
         self.assertEqual('I did work', res)
 
-    def test_check_analysis_status_raises_exception_when_analysis_status_is_not_as_expected(self):
+    def test_analysis_pipeline_task_raises_exception_when_analysis_status_is_not_as_expected_and_was_not_stopped(self):
         # Setup
         expected_status = Analysis.RUNNING
 
-        @check_analysis_status(expected_status)
-        def my_func(analysis_id):
+        @analysis_pipeline_task(expected_status)
+        def my_func(self, analysis_id):
             return 'I did work'
 
         # set status to something unexpected
-        self.analysis.status = Analysis.STOPPED
+        self.analysis.status = Analysis.QUEUED
         self.analysis.save()
 
         # Act/Assert
         with self.assertRaises(AnalysisPipelineException) as context:
-            my_func(self.analysis.id)
+            my_func(MockCeleryTask(), self.analysis.id)
 
-        self.assertIn(f'Expected analysis status to be {expected_status}', str(context.exception))
+        self.assertIn(f'expected analysis status to be {expected_status}', str(context.exception))
+
+    def test_analysis_pipeline_task_stops_task_chain_when_analysis_status_is_stopped(self):
+        # Setup
+        expected_status = Analysis.RUNNING
+
+        @analysis_pipeline_task(expected_status)
+        def my_func(self, analysis_id):
+            return 'I did work'
+
+        # set status to stopped
+        self.analysis.status = Analysis.STOPPED
+        self.analysis.save()
+
+        my_task = MockCeleryTask()
+
+        # Act
+        result = my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should not run the task
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
+
+    def test_analysis_pipeline_task_drops_exceptions_when_analysis_doesnt_exist(self):
+        """tests that it swallows exceptions caused by someone else deleting the analysis"""
+        # Setup
+        analysis_status = Analysis.RUNNING
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            # pretend like someone else deleted the analysis... ok? it would function the same way, async is hard
+            Analysis.objects.get(id=analysis_id).delete()
+
+            # .get raises an exception when the object doesn't exist
+            return Analysis.objects.get(id=analysis_id)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # no exception should be raised b/c the analysis doesn't exist
+        result = my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should have returned None b/c the task failed
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
+
+    def test_analysis_pipeline_task_skips_task_when_analysis_doesnt_exist(self):
+        """tests that it doesn't run the task and stops the chain when the analysis doesn't exist before starting the task"""
+        # Setup
+        # delete the analysis before running the task
+        analysis_id = self.analysis.id
+        self.analysis.delete()
+
+        @analysis_pipeline_task(Analysis.RUNNING)
+        def my_func(self, analysis_id):
+            return 'I did work'
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # no exception should be raised b/c the analysis doesn't exist
+        result = my_func(my_task, analysis_id)
+
+        # Assert
+        # it should have returned None b/c the task wasn't run
+        self.assertEqual(None, result)
+        # it should have updated the celery task to stop the chain
+        self.assertEqual(None, my_task.request.chain)
+        self.assertEqual(None, my_task.request.callbacks)
+
+    def test_analysis_pipeline_task_raises_uncaught_exceptions_when_analysis_exists_and_not_in_terminal_state(self):
+        """tests that it raises exceptions when the analysis still exists and it's NOT already in a terminal state
+
+        This would be the case for unhandled/unexpected errors
+        """
+        # Setup
+        exception_message = 'Something Very Bad'
+        analysis_status = Analysis.RUNNING  # set status to a non-terminal state
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        # this func will raise some unexpected error
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            raise Exception(exception_message)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        with self.assertRaises(Exception) as context:
+            my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should have re-raised the exception
+        self.assertIn(exception_message, str(context.exception))
+        self.analysis.refresh_from_db()
+        # it should have failed the analysis and created a message
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+        messages = AnalysisMessage.objects.filter(analysis=self.analysis)
+        self.assertTrue(messages.exists())
+
+    def test_analysis_pipeline_task_does_not_raise_uncaught_exceptions_when_analysis_exists_and_in_terminal_state(self):
+        """tests that it does _not_ raise exceptions when the analysis still exists and it's already in a terminal state
+        """
+        # Setup
+        exception_message = 'Something Very Bad'
+        analysis_status = Analysis.STOPPED  # set status to a terminal state!
+        self.analysis.status = analysis_status
+        self.analysis.save()
+
+        # this func will raise some unexpected error
+        @analysis_pipeline_task(analysis_status)
+        def my_func(self, analysis_id):
+            raise Exception(exception_message)
+
+        my_task = MockCeleryTask()
+
+        # Act
+        # it will not raise an exception
+        my_func(my_task, self.analysis.id)
+
+        # Assert
+        # it should not change the analysis status
+        self.assertEqual(analysis_status, self.analysis.status)
+        # it should not create new messages
+        messages = AnalysisMessage.objects.filter(analysis=self.analysis)
+        self.assertEqual(0, messages.count())
 
 
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
@@ -351,7 +517,8 @@ class TestBsyncrPipeline(TestCase):
             FakeAnalysisFactory(organization=self.org, user=self.user)
             .get_analysis(
                 name='Good Analysis',
-                service=Analysis.BSYNCR
+                service=Analysis.BSYNCR,
+                configuration={'model_type': 'Simple Linear Regression'}
             )
         )
 
@@ -393,10 +560,26 @@ class TestBsyncrPipeline(TestCase):
             )
             analysis_property_view_id = _parse_analysis_property_view_id(file_.path)
             id_value_elem[0].text = str(analysis_property_view_id)
-            return etree.tostring(bsyncr_output_tree, pretty_print=True)
 
-        def _mock_request(file_):
+            # zip up the xml and image
+            result = BytesIO()
+            with ZipFile(result, 'w') as zf:
+                zf.writestr(
+                    zinfo_or_arcname='result.xml',
+                    data=etree.tostring(bsyncr_output_tree, pretty_print=True)
+                )
+                bsyncr_image_path = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-plot.png')
+                zf.write(bsyncr_image_path, arcname='plot.png')
+
+            result.seek(0)
+            return result
+
+        def _mock_request(file_, model_type):
             # mock the call to _bsyncr_service_request by returning a constructed Response
+
+            # ignore model_type
+            _ = model_type
+
             the_response = Response()
             if error_messages is not None:
                 the_response.status_code = 400
@@ -406,7 +589,7 @@ class TestBsyncrPipeline(TestCase):
                 the_response._content = json.dumps(body_dict).encode()
             else:
                 the_response.status_code = 200
-                the_response._content = _build_bsyncr_output(file_)
+                the_response.raw = _build_bsyncr_output(file_)
 
             return the_response
 
@@ -513,9 +696,7 @@ class TestBsyncrPipeline(TestCase):
         pipeline = BsyncrPipeline(self.analysis_b.id)
         property_view_ids = [pv.id for pv in self.good_property_views]
 
-        # it should raise an exception b/c no input files were created
-        with self.assertRaises(AnalysisPipelineException):
-            pipeline.prepare_analysis(property_view_ids)
+        pipeline.prepare_analysis(property_view_ids)
 
         # Assert
         self.analysis_b.refresh_from_db()
@@ -556,6 +737,16 @@ class TestBsyncrPipeline(TestCase):
         # Assert
         self.analysis_b.refresh_from_db()
         self.assertEqual(Analysis.COMPLETED, self.analysis_b.status)
+
+        # there should be output files
+        analysis_property_view = AnalysisPropertyView.objects.filter(
+            analysis=self.analysis_b
+        ).first()
+        output_files = AnalysisOutputFile.objects.filter(
+            analysis_property_views__id=analysis_property_view.id
+        )
+        self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.BUILDINGSYNC).count())
+        self.assertEqual(1, output_files.filter(content_type=AnalysisOutputFile.IMAGE_PNG).count())
 
         # there should be no messages
         analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b)
@@ -614,12 +805,10 @@ class TestBsyncrPipeline(TestCase):
 
         # Act
         mock_bsyncr_service_request = self._mock_bsyncr_service_request_factory(error_messages=['Something is Bad'])
-        with self.assertRaises(AnalysisPipelineException) as context:
-            with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
-                pipeline.start_analysis()
+        with patch('seed.analysis_pipelines.bsyncr._bsyncr_service_request', side_effect=mock_bsyncr_service_request):
+            pipeline.start_analysis()
 
         # Assert
-        self.assertTrue('Failed to get results for all properties' in str(context.exception))
         self.analysis_b.refresh_from_db()
         self.assertEqual(Analysis.FAILED, self.analysis_b.status)
 

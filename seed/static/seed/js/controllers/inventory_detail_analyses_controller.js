@@ -88,6 +88,21 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         })
       }
 
+      $scope.delete_analysis = function(analysis_id) {
+        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
+        analysis.status = 'Deleting...'
+
+        analyses_service.delete_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis deleted')
+            refresh_analyses()
+          } else {
+            Notification.error('Failed to delete analysis: ' + result.message)
+          }
+        })
+      }
+
       $scope.open_analysis_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
