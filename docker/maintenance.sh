@@ -6,6 +6,6 @@ then
   echo '...maintenance is on...';
 elif [ "$1" == 'off' ]
 then
-  rm /seed/collected_static/maintenance.html
+  rm -f /seed/collected_static/maintenance.html
   echo '...maintenance is off...';
 fi
