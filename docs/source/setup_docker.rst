@@ -119,7 +119,7 @@ While the containers are running (ie after running the docker-compose up command
 
 .. code-block:: bash
 
-    docker exec -it seed_web_1 python manage.py test --settings config.settings.docker_dev
+    docker exec -it seed_web ./manage.py test --settings config.settings.docker_dev
 
 Add the setting  :code:`--nocapture` in order to see :code:`stdout` while running tests.  You will need to do this in order to make use of debugging as described below or the output to your debug commands will not display until after the break point has passed and the tests are finished.
 
@@ -140,7 +140,7 @@ To connect to the remote session, run netcat from inside the container (using th
 
 .. code-block:: bash
 
-    docker exec -it seed_web_1 nc 127.0.0.1:41653
+    docker exec -it seed_web nc 127.0.0.1:41653
 
 .. _MacPorts: https://www.macports.org/
 .. _Homebrew: http://brew.sh/

@@ -3,16 +3,21 @@
 version: '3.4'
 services:
   db-postgres:
+    container_name: seed_postgres
     image: timescale/timescaledb-postgis:latest-pg12
   db-redis:
+    container_name: seed_redis
     image: redis:5.0.1
   web:
+    container_name: seed_web
     image: seedplatform/seed:latest
     build: .
   web-celery:
+    container_name: seed_celery
     image: seedplatform/seed:latest
     build: .
-  oep-city-1:
+  oep-city:
+    container_name: seed_oep
     image: seedplatform/oep:1.6
     depends_on:
       - web
