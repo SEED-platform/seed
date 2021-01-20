@@ -56,6 +56,14 @@ spec:
           value: super-secret-password
         - name: SEED_ADMIN_USER
           value: user@seed-platform.org
+        - name: BSYNCR_SERVER_PORT
+          value: "5000"
+        - name: BSYNCR_SERVER_HOST
+          value: bsyncr
+        - name: SENTRY_JS_DSN
+          value: <enter-dsn>
+        - name: SENTRY_RAVEN_DSN
+          value: <enter-dsn>
         image: seedplatform/seed:develop
         imagePullPolicy: Always
         name: web
