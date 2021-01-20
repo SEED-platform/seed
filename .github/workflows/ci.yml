@@ -8,7 +8,7 @@ jobs:
   # Currently GH Actions provides no simple method for "sharing"
   # our setup steps. Ideally this would be in an action, but we would need to use
   # actions inside of our actions which you cannot currently do (see https://github.com/actions/runner/issues/438)
-  # 
+  #
   # As a result, the DRYest method for now is to use a testing matrix and
   # use conditional steps for actually running the tests.
   unittests:
@@ -42,9 +42,9 @@ jobs:
       -
         name: Setup SEED
         run: |
-          docker exec seed_web_1 ./manage.py migrate
-          docker exec seed_web_1 ./manage.py create_default_user --username=demo@example.com --password=demo123
-          docker exec seed_web_1 /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
+          docker exec seed_web ./manage.py migrate
+          docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
+          docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       -
         uses: actions/setup-node@v1
       -
@@ -63,10 +63,10 @@ jobs:
           SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: |
-          docker exec seed_web_1 touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web_1 coverage run manage.py test seed --settings=config.settings.docker_dev
+          docker exec seed_web touch /seed/config/settings/local_untracked.py
+          docker exec --env SEED_PM_UN --env SEED_PM_PW seed_web coverage run manage.py test seed --settings=config.settings.docker_dev
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
-            docker exec --env COVERALLS_REPO_TOKEN seed_web_1 coveralls
+            docker exec --env COVERALLS_REPO_TOKEN seed_web coveralls
           else
             echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
           fi
@@ -83,8 +83,8 @@ jobs:
         name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |
-          docker exec seed_web_1 ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
-          docker exec seed_web_1 python seed/tests/api/test_seed_host_api.py --noinput --nofile
+          docker exec seed_web ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
+          docker exec seed_web python seed/tests/api/test_seed_host_api.py --noinput --nofile
   formatting:
     runs-on: ubuntu-latest
     strategy:

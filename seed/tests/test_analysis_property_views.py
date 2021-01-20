@@ -34,9 +34,11 @@ class TestAnalysisPropertyViews(TestCase):
         cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
         self.analysis_a = (
-            FakeAnalysisFactory(organization=self.org_a, user=self.user).get_analysis(
+            FakeAnalysisFactory(organization=self.org_a, user=self.user)
+            .get_analysis(
                 name='Quite neat',
                 service=Analysis.BSYNCR,
+                configuration={'model_type': 'Simple Linear Regression'}
             )
         )
 
