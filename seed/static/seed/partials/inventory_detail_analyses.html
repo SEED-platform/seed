@@ -46,6 +46,7 @@
                             <th translate>Analysis Name (User Defined)</th>
                             <th translate>Actions</th>
                             <th translate>Type</th>
+                            <th translate>Configuration</th>
                             <th translate>Run Status</th>
                             <th translate>Run Date</th>
                             <th translate>Run Duration</th>
@@ -62,6 +63,7 @@
                                 <i class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true" ng-click="delete_analysis(analysis.id)"></i>
                             </td>
                             <td>{$:: analysis.service $}</td>
+                            <td>{$:: analysis.configuration $}</td>
                             <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
                             <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
                             <td>{$:: analysis | get_run_duration $}</td>

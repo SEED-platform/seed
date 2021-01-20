@@ -4,6 +4,7 @@
             <tr>
                 <th translate>Number of Runs</th>
                 <th translate>Type</th>
+                <th translate>Configuration</th>
                 <th translate>Run Status</th>
                 <th translate>Latest Message</th>
                 <th translate>Run Date</th>
@@ -15,6 +16,7 @@
             <tr>
                 <td>{$:: analysis.number_of_analysis_property_views $}</td>
                 <td>{$:: analysis.service $}</td>
+                <td>{$:: analysis.configuration $}</td>
                 <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
                 <td>{$:: (messages | filter : {'analysis_property_view':''})[0]['user_message'] $}</td>
                 <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>

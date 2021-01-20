@@ -42,6 +42,10 @@ spec:
           value: seeduser
         - name: SECRET_KEY
           value: <secret>
+        - name: BSYNCR_SERVER_PORT
+          value: "5000"
+        - name: BSYNCR_SERVER_HOST
+          value: bsyncr
         image: seedplatform/seed:develop
         imagePullPolicy: Always
         name: web-celery

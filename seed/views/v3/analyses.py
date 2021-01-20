@@ -95,12 +95,12 @@ class AnalysisViewSet(viewsets.ViewSet):
             analyses_queryset = (
                 Analysis.objects.filter(organization=organization_id, analysispropertyview__property=property_id)
                 .distinct()
-                .order_by('id')
+                .order_by('-id')
             )
         else:
             analyses_queryset = (
                 Analysis.objects.filter(organization=organization_id)
-                .order_by('id')
+                .order_by('-id')
             )
         for analysis in analyses_queryset:
             property_view_info = analysis.get_property_view_info(property_id)
