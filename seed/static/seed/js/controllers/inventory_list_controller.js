@@ -831,7 +831,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   'Filter Method: ""',
                   $scope.labelLogic,
                   '"", Filter Labels: "',
-                  $scope.selected_labels.map(label => label.name).join(', '),
+                  $scope.selected_labels.map(label => label.name).join(' - '),
                   '"'
                  ].join('');
               }
