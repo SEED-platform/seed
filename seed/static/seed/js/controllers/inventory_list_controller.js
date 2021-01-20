@@ -835,7 +835,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   '"'
                  ].join('');
               }
-              return 'Filter Method: none';
+              return 'Filter Method: ""none""';
             },
             columns: function () {
               return _.map($scope.columns, 'name');
