@@ -146,6 +146,10 @@ Closed Issues and Features:
 - Fixed [#2392]( https://github.com/SEED-platform/seed/issues/2392 ), XLSX import of sample data hanging
 - Fixed [#2397]( https://github.com/SEED-platform/seed/issues/2397 ), DQ - failed to update/save rules after deleting duplicate rules
 
+# SEED Version 2.7.7
+
+- Fixed [#2553]( https://github.com/SEED-platform/seed/issues/2553 ), DataError for input over 255 chars
+
 # SEED Version 2.7.6
 
 - Fixed [#2496]( https://github.com/SEED-platform/seed/issues/2496 ), Duplicate states can be created if the unit selection is empty
