@@ -104,6 +104,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        *  button.
        * progress: int or float - the progress bar value, i.e. percentage complete
        * complete: bool - true when the upload has finished
+       * status_message: str - status of the task
+       * progress_last_updated: null | int - when not null it indicates the last time the progress bar changed (UNIX Epoch in ms)
+       * progress_last_checked: null | int - when not null it indicates the last time the progress was checked (UNIX Epoch in ms)
        */
       $scope.uploader = {
         invalid_extension_alert: false,
@@ -113,7 +116,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         in_progress: false,
         progress: 0,
         complete: false,
-        status_message: ''
+        status_message: '',
+        progress_last_updated: null,
+        progress_last_checked: null,
       };
 
       /**
