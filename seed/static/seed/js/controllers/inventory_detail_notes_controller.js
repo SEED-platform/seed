@@ -15,11 +15,13 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
     'note_service',
     '$translate',
     'i18nService', // from ui-grid
+    'organization_payload',
     'notes',
-    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, inventory_payload, user_service, note_service, $translate, i18nService, notes) {
+    function ($scope, $window, $uibModal, $stateParams, urls, inventory_service, inventory_payload, user_service, note_service, $translate, i18nService, organization_payload, notes) {
       $scope.item_state = inventory_payload.state;
       $scope.notes = notes;
       $scope.translations = {};
+      $scope.organization = organization_payload.organization
 
       var needed_translations = [
         'Reset Defaults'
@@ -105,6 +107,14 @@ angular.module('BE.seed.controller.inventory_detail_notes', [])
           refreshNotes();
         });
       };
+
+      $scope.inventory_display_name = function() {
+        let field = $scope.organization.property_display_field;
+        if (!$scope.item_state[field]) {
+          field = 'address_line_1';
+        }
+        return $scope.item_state[field] ? $scope.item_state[field] : '(invalid display field)';
+      }
 
       $scope.open_delete_note_modal = function (note) {
         var noteModalInstance = $uibModal.open({

@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
     'spinner_utility',
     'urls',
     'user_service',
+    'organization_payload',
     '$log',
     function (
       $state,
@@ -32,12 +33,13 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       spinner_utility,
       urls,
       user_service,
+      organization_payload,
       $log
     ) {
       spinner_utility.show();
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.organization = user_service.get_organization();
+      $scope.organization = organization_payload.organization
       $scope.filler_cycle = cycles.cycles[0].id;
       $scope.scenarios = _.uniqBy(_.map(meters, function (meter) {
         return {
@@ -273,6 +275,14 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           }
         });
       };
+
+      $scope.inventory_display_name = function() {
+        let field = $scope.organization.property_display_field;
+        if (!$scope.item_state[field]) {
+          field = 'address_line_1';
+        }
+        return $scope.item_state[field] ? $scope.item_state[field] : '(invalid display field)';
+      }
 
       $scope.updateHeight = function () {
         var height = 0;

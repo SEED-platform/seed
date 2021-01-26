@@ -99,6 +99,14 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         );
       });
 
+      $scope.inventory_display_name = function() {
+        let field = $scope.organization.property_display_field;
+        if (!$scope.base_state[field]) {
+          field = 'address_line_1';
+        }
+        return $scope.base_state[field] ? $scope.base_state[field] : '(invalid display field)';
+      }
+
       $scope.displayValue = function(dataType, value) {
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a')

@@ -628,6 +628,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
           notes: ['$stateParams', 'note_service', 'user_service', function ($stateParams, note_service, user_service) {
             var organization_id = user_service.get_organization().id;
             return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
@@ -884,6 +887,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);
+          }],
+          column_names: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            var organization_id = $stateParams.organization_id;
+            return inventory_service.get_property_column_names_for_org(organization_id);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
@@ -1510,7 +1517,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
-          }]
+          }],
+          organization_payload: ['user_service', 'organization_service', function(user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id)
+          }],
         }
       });
   }]);

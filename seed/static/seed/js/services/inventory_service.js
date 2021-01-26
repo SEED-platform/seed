@@ -498,6 +498,21 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('detailProfiles.' + key, JSON.stringify(profiles));
     };
 
+    inventory_service.get_property_column_names_for_org = function (org_id) {
+      return $http.get('/api/v3/columns/', {
+        params: {
+          inventory_type: 'property',
+          organization_id: org_id,
+          only_used: false,
+          display_units: true
+        }
+      }).then(function (response) {
+        let names = Array.from(new Set(response.data.columns.map(a => a.column_name)));
+        return names.map(a => {
+          return { 'column_name': a, 'display_name': response.data.columns.find(x => x.column_name == a).display_name };
+        });
+      });
+    }
 
     inventory_service.get_property_columns = function () {
       return inventory_service.get_property_columns_for_org(user_service.get_organization().id);

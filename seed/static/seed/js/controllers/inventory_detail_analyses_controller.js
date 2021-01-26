@@ -103,6 +103,14 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         })
       }
 
+      $scope.inventory_display_name = function() {
+        let field = $scope.org.property_display_field;
+        if (!$scope.item_state[field]) {
+          field = 'address_line_1';
+        }
+        return $scope.item_state[field] ? $scope.item_state[field] : '(invalid display field)';
+      }
+
       $scope.open_analysis_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',

@@ -707,6 +707,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
         return value
       }
 
+      $scope.inventory_display_name = function() {
+        let field = $scope.organization.property_display_field;
+        if (!$scope.item_state[field]) {
+          field = 'address_line_1';
+        }
+        return $scope.item_state[field] ? $scope.item_state[field] : '(invalid display field)';
+      }
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs
