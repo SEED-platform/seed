@@ -154,6 +154,12 @@
                         <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+                    <!-- Show a hint that SEED is still working when the progress data hasn't been updated in 1 minute -->
+                    <div ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
+                         class="progress_bar_copy_bottom">
+                        <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
+                        SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
+                    </div>
                 </div>
             </div>
         </div>
