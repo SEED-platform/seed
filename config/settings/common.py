@@ -265,13 +265,17 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'seed.authentication.SEEDAuthentication',
     ),
-    'DEFAULT_FILTER_BACKENDS':
-        ('django_filters.rest_framework.DjangoFilterBackend',),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_PAGINATION_CLASS':
         'seed.utils.pagination.ResultsListPagination',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'PAGE_SIZE': 25,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
