@@ -103,12 +103,17 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         })
       }
 
-      $scope.inventory_display_name = function() {
-        let field = $scope.org.property_display_field;
-        if (!$scope.item_state[field]) {
+      $scope.inventory_display_name = function(property_type) {
+        let error = '';
+        let field = property_type == "property" ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
+        if (!(field in $scope.item_state)) {
+          error = field + ' does not exist';
           field = 'address_line_1';
         }
-        return $scope.item_state[field] ? $scope.item_state[field] : '(invalid display field)';
+        if (!$scope.item_state[field]) {
+          error += field + ' is blank';
+        }
+        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
       }
 
       $scope.open_analysis_modal = function () {
