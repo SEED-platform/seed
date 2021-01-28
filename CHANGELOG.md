@@ -1,3 +1,7 @@
+# SEED Version 2.9.1
+
+This is a patch to update deployments with a 255 character data error and progress bar fix.
+
 # SEED Version 2.9.0
 
 Date Range: 09/25/20 - 12/28/20
