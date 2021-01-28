@@ -108,6 +108,7 @@ def _dict_org(request, organizations):
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
             'property_display_field': o.property_display_field,
+            'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
             'comstock_enabled': o.comstock_enabled,
@@ -521,6 +522,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         property_display_field = posted_org.get('property_display_field', True)
         if property_display_field != org.property_display_field:
             org.property_display_field = property_display_field
+
+        # Update taxlot_display_field option
+        taxlot_display_field = posted_org.get('taxlot_display_field', True)
+        if taxlot_display_field != org.taxlot_display_field:
+            org.taxlot_display_field = taxlot_display_field
 
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:
@@ -1327,3 +1333,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
 
         return org.property_display_field
+
+    @has_perm_class('requires_member')
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def taxlot_display_field(self, request, pk=None):
+        """
+        Returns the organization's taxlot_display_field setting
+        """
+        org = Organization.objects.get(id=pk)
+
+        return org.taxlot_display_field
