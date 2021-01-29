@@ -157,7 +157,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
             if hasattr(record, 'property'):
                 data[i]['property_labels'] = ','.join(label_string)
-                data[i]['property_notes'] =  '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
+                data[i]['property_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
             elif hasattr(record, 'taxlot'):
                 data[i]['taxlot_labels'] = ','.join(label_string)
                 data[i]['taxlot_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
