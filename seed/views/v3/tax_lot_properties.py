@@ -142,23 +142,25 @@ class TaxLotPropertyViewSet(GenericViewSet):
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
         # add labels and notes
+        include_notes = request.data.get('include_notes', True)
         for i, record in enumerate(model_views):
             label_string = []
             note_string = []
             for label in list(record.labels.all().order_by('name')):
                 label_string.append(label.name)
-            for note in list(record.notes.all().order_by('created')):
-                note_string.append(
-                    note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
-                    note.text
-                )
+            if include_notes:
+                for note in list(record.notes.all().order_by('created')):
+                    note_string.append(
+                        note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" +
+                        note.text
+                    )
 
             if hasattr(record, 'property'):
                 data[i]['property_labels'] = ','.join(label_string)
-                data[i]['property_notes'] = '\n----------\n'.join(note_string)
+                data[i]['property_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
             elif hasattr(record, 'taxlot'):
                 data[i]['taxlot_labels'] = ','.join(label_string)
-                data[i]['taxlot_notes'] = '\n----------\n'.join(note_string)
+                data[i]['taxlot_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
 
         # force the data into the same order as the IDs
         if ids:
