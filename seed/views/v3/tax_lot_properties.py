@@ -142,9 +142,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
         # add labels and notes
-        include_notes = True
-        if 'include_notes' in request.data.keys():
-            include_notes = request.data.get('include_notes')
+        include_notes = request.data.get('include_notes', True)
         for i, record in enumerate(model_views):
             label_string = []
             note_string = []
