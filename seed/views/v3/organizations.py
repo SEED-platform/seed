@@ -519,12 +519,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.geocoding_enabled = geocoding_enabled
 
         # Update property_display_field option
-        property_display_field = posted_org.get('property_display_field', True)
+        property_display_field = posted_org.get('property_display_field', 'address_line_1')
         if property_display_field != org.property_display_field:
             org.property_display_field = property_display_field
 
         # Update taxlot_display_field option
-        taxlot_display_field = posted_org.get('taxlot_display_field', True)
+        taxlot_display_field = posted_org.get('taxlot_display_field', 'address_line_1')
         if taxlot_display_field != org.taxlot_display_field:
             org.taxlot_display_field = taxlot_display_field
 
@@ -1322,25 +1322,3 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
 
         return org.geocoding_enabled
-
-    @has_perm_class('requires_member')
-    @ajax_request_class
-    @action(detail=True, methods=['GET'])
-    def property_display_field(self, request, pk=None):
-        """
-        Returns the organization's property_display_field setting
-        """
-        org = Organization.objects.get(id=pk)
-
-        return org.property_display_field
-
-    @has_perm_class('requires_member')
-    @ajax_request_class
-    @action(detail=True, methods=['GET'])
-    def taxlot_display_field(self, request, pk=None):
-        """
-        Returns the organization's taxlot_display_field setting
-        """
-        org = Organization.objects.get(id=pk)
-
-        return org.taxlot_display_field
