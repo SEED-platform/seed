@@ -707,6 +707,19 @@ angular.module('BE.seed.controller.inventory_detail', [])
         return value
       }
 
+      $scope.inventory_display_name = function(property_type) {
+        let error = '';
+        let field = property_type == "property" ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+        if (!(field in $scope.item_state)) {
+          error = field + ' does not exist';
+          field = 'address_line_1';
+        }
+        if (!$scope.item_state[field]) {
+          error += (error == '' ? '' : ' and default ') + field + ' is blank';
+        }
+        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+      }
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs

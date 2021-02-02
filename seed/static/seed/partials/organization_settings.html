@@ -126,6 +126,36 @@
 
     <div class="section_content_container">
         <div class="section_content with_padding">
+            <h3 translate>Property Detail View Display Field</h3>
+            <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
+            <small>{$ all_columns $}</small>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+        <div class="section_content with_padding">
+            <h3 translate>Taxlot Detail View Display Field</h3>
+            <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
+            <small>{$ all_columns $}</small>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+        <div class="section_content with_padding">
             <h3 translate>Enable Geocoding</h3>
             <form class="form-horizontal" role="form">
                 <div class="form-group">

@@ -7,6 +7,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   'organization_payload',
   'auth_payload',
   'organization_service',
+  'property_column_names',
+  'taxlot_column_names',
   'meters_service',
   '$translate',
   function (
@@ -14,12 +16,15 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
     organization_payload,
     auth_payload,
     organization_service,
+    property_column_names,
+    taxlot_column_names,
     meters_service,
     $translate
   ) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
-
+    $scope.property_column_names = property_column_names;
+    $scope.taxlot_column_names = taxlot_column_names;
     $scope.org_static = angular.copy($scope.org);
 
     $scope.unit_options_eui = [{
