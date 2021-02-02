@@ -107,7 +107,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
           field = 'address_line_1';
         }
         if (!$scope.base_state[field]) {
-          error += field + ' is blank';
+          error += (error == '' ? '' : ' and default ') + field + ' is blank';
         }
         $scope.inventory_name = $scope.base_state[field] ? $scope.base_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
       }

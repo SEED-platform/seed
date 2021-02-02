@@ -509,7 +509,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).then(function (response) {
         let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
         return property_columns.map(a => {
-          return { 'column_name': a.column_name, 'display_name': property_columns.find(x => x.column_name == a.column_name).display_name };
+          return { 'column_name': a.column_name, 'display_name': a.display_name };
         });
       });
     };
