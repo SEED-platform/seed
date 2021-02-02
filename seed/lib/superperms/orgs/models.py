@@ -193,6 +193,9 @@ class Organization(models.Model):
 
     geocoding_enabled = models.BooleanField(default=True)
 
+    property_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
+    taxlot_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
+
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     comstock_enabled = models.BooleanField(default=False)

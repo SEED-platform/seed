@@ -75,7 +75,9 @@ describe('controller: organization_settings_controller', function () {
           is_owner: true,
           is_parent_org_owner: false
         }
-      }
+      },
+      property_column_names: { 'column_name': 'test', 'display_name': 'test' },
+      taxlot_column_names: { 'column_name': 'test', 'display_name': 'test' }
     });
   }
 
