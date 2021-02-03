@@ -23,6 +23,8 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
     mapquest_api_key = serializers.CharField()
     geocoding_enabled = serializers.BooleanField()
+    property_display_field = serializers.CharField()
+    taxlot_display_field = serializers.CharField()
 
 
 class SaveSettingsSerializer(serializers.Serializer):
