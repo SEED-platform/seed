@@ -99,6 +99,14 @@ class UploadViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
+        extension = the_file.name.split(".")[1]
+        if extension == "xlsx" or extension == "xls":
+            if the_file.size < 8500:
+                return JsonResponse({
+                    'success': False,
+                    'message': "Import %s was empty" % the_file.name
+                })
+
         # save the file
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
