@@ -20,7 +20,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle=true) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -34,7 +34,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var lastCycleId = inventory_service.get_last_cycle();
         if (_.has(cycle, 'id')) {
           params.cycle = cycle.id;
-          inventory_service.save_last_cycle(cycle.id);
+          if (save_last_cycle === true) {
+            inventory_service.save_last_cycle(cycle.id);
+          }
         } else if (_.includes(validCycleIds, lastCycleId)) {
           params.cycle = lastCycleId;
         }
@@ -249,7 +251,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle=true) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -262,7 +264,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var lastCycleId = inventory_service.get_last_cycle();
         if (cycle) {
           params.cycle = cycle.id;
-          inventory_service.save_last_cycle(cycle.id);
+          if (save_last_cycle === true) {
+            inventory_service.save_last_cycle(cycle.id);
+          }
         } else if (_.includes(validCycleIds, lastCycleId)) {
           params.cycle = lastCycleId;
         }
