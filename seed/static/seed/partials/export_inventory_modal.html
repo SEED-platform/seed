@@ -19,11 +19,24 @@
 
         <div class="section_content_container">
             <div class="section_content with_padding">
-                <label class="control-label col-sm-4" for="fileName" translate>Include Notes</label>
+                <label class="control-label col-sm-4" for="include-notes" translate>Include Notes</label>
                 <form class="form-horizontal" role="form">
                     <div class="form-group">
                         <div class="col-sm-6">
                             <input type="checkbox" checked class="checkbox" id="include-notes" ng-model="include_notes">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <label class="control-label col-sm-4" for="include-label-header" translate>Include CSV Label Header</label>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="checkbox" class="checkbox" id="include-label-header" ng-model="include_label_header">
                         </div>
                     </div>
                 </form>
