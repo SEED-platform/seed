@@ -9,6 +9,7 @@ import pint
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+import pandas as pd
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -101,7 +102,8 @@ class UploadViewSet(viewsets.ViewSet):
 
         extension = the_file.name.split(".")[1]
         if extension == "xlsx" or extension == "xls":
-            if the_file.size < 8500:
+            check = pd.read_excel(the_file)
+            if check.empty:
                 return JsonResponse({
                     'success': False,
                     'message': "Import %s was empty" % the_file.name
