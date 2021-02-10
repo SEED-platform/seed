@@ -79,10 +79,12 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
         taxlot_view_ids = body['taxlot_view_ids']
 
         property_state_ids = PropertyView.objects.filter(
-            id__in=property_view_ids
+            id__in=property_view_ids,
+            property__organization_id=organization_id
         ).values_list('state_id', flat=True)
         taxlot_state_ids = TaxLotView.objects.filter(
-            id__in=taxlot_view_ids
+            id__in=taxlot_view_ids,
+            taxlot__organization_id=organization_id
         ).values_list('state_id', flat=True)
 
         # For now, organization_id is the only key currently used to identify DataQualityChecks
