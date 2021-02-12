@@ -157,9 +157,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def first_five_rows(self, request, pk=None):
         """
@@ -194,9 +194,9 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def raw_column_names(self, request, pk=None):
         """
