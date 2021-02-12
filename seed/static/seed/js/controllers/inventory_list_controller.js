@@ -471,7 +471,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else if (col.data_type === 'date') {
           options.filter = inventory_service.dateFilter();
         } else if (col.data_type === 'eui' || col.data_type === 'area') {
-          options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+          options.filter = inventory_service.combinedFilter();
+          options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
           options.sortingAlgorithm = naturalSort;
         } else {
           options.filter = inventory_service.combinedFilter();
