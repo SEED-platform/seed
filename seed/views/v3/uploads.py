@@ -70,9 +70,9 @@ class UploadViewSet(viewsets.ViewSet):
             ),
         ]
     )
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
@@ -190,9 +190,9 @@ class UploadViewSet(viewsets.ViewSet):
             description='An object containing meta data for a property'
         )
     )
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """
