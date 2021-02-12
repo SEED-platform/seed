@@ -1,3 +1,7 @@
+# SEED Version 2.9.2
+
+This is a patch to update deployments with a filter functionality fix.
+
 # SEED Version 2.9.1
 
 This is a patch to update deployments with a 255 character data error and progress bar fix.
