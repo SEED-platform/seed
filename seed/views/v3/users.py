@@ -30,7 +30,7 @@ from seed.models.data_quality import Rule
 from seed.tasks import (
     invite_to_seed,
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -121,7 +121,7 @@ user_response_schema = AutoSchemaHelper.schema_factory({
 })
 
 
-class UserViewSet(viewsets.ViewSet):
+class UserViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
     def validate_request_user(self, pk, request):
@@ -183,7 +183,7 @@ class UserViewSet(viewsets.ViewSet):
         """
         body = request.data
         org_name = body.get('org_name')
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         if (org_name and org_id) or (not org_name and not org_id):
             return JsonResponse({
                 'status': 'error',
@@ -302,7 +302,7 @@ class UserViewSet(viewsets.ViewSet):
         role = _get_role_from_js(body['role'])
 
         user_id = pk
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
 
         is_last_member = not OrganizationUser.objects.filter(
             organization_id=organization_id,
@@ -546,7 +546,7 @@ class UserViewSet(viewsets.ViewSet):
             message = 'no actions to check'
             error = True
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         if org_id == '':
             message = 'organization id is undefined'
             error = True
@@ -619,7 +619,7 @@ class UserViewSet(viewsets.ViewSet):
             user = content
         else:
             return content
-        user.default_organization_id = request.query_params.get('organization_id', None)
+        user.default_organization_id = self.get_organization(request)
         user.save()
         return {'status': 'success'}
 
