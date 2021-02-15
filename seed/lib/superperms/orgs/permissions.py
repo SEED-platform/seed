@@ -56,15 +56,16 @@ def get_org_or_id(dictlike):
 
 def get_org_id(request):
     """Extract the ``organization_id`` regardless of HTTP method type."""
-    # first check the url path for recognized org IDs
-    # e.g. /api/v3/organizations/{organization_id}
-    ORG_PATH_IDS = ['organization_id', 'nested_organization_id']
-    request_parser_ctx = request.parser_context.get('kwargs', {})
-    for org_path_id in ORG_PATH_IDS:
-        if request_parser_ctx.get(org_path_id) is not None:
-            return request_parser_ctx.get(org_path_id)
+    # first check if the view is configured to get the org id from a path parameter
+    request_view = request.parser_context.get('view', None)
+    if request_view is not None and hasattr(request_view, 'authz_org_id_kwarg'):
+        kwarg_name = request_view.authz_org_id_kwarg
+        if kwarg_name:
+            request_kwargs = request.parser_context.get('kwargs', {})
+            return request_kwargs.get(kwarg_name, None)
 
-    # if the view doesn't explicitly use organization_id as param, check the path string
+    # if the view doesn't explicitly provide a kwarg for organization id in the path,
+    # check the path string.
     # this is required for backwards compatibility of older APIs
     if hasattr(request, '_request') and 'organizations' in request._request.path:
         request_path = request._request.path.split('/')

@@ -20,6 +20,8 @@ from seed.views.v3.organizations import _get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
+    # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
+    authz_org_id_kwarg = 'organization_pk'
 
     @api_endpoint_class
     @ajax_request_class
