@@ -82,10 +82,13 @@ def get_org_id(request):
         return query_params_org_id
 
     # try getting it from the request body itself
-    if hasattr(request, 'data'):
-        data_org_id = get_org_or_id(request.data)
-        if data_org_id is not None:
-            return data_org_id
+    try:
+        if hasattr(request, 'data'):
+            data_org_id = get_org_or_id(request.data)
+            if data_org_id is not None:
+                return data_org_id
+    except ValueError:
+        return None
 
     return None
 

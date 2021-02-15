@@ -29,6 +29,16 @@ from seed.lib.superperms.orgs.permissions import (
 from seed.utils.organizations import create_organization
 
 
+def mock_request_factory(parser_context=None, path='/api/v3/no/org/here/', query_params=None, data=None):
+    mock_request = mock.MagicMock()
+    # parser context stores the parsed kwargs from the path
+    mock_request.parser_context = parser_context if parser_context is not None else {}
+    mock_request._request = type('MockRequest', (object,), {'path': path})
+    mock_request.query_params = query_params if query_params is not None else {}
+    mock_request.data = data if data is not None else {}
+
+    return mock_request
+
 class PermissionsFunctionsTests(TestCase):
     """Tests for Custom DRF Permissions util functions"""
 
@@ -46,20 +56,73 @@ class PermissionsFunctionsTests(TestCase):
 
     def test_get_org_id(self):
         """Test getting org id from request."""
-        mock_request = mock.MagicMock()
-        mock_request.query_params = {'organization': 1}
-        result = get_org_id(mock_request)
-        self.assertEqual(1, result)
+        # Priority of id sources should be, in order:
+        # - request parser context (ie view kwarg matches an organization id keyword)
+        # - path (under `organizations` resource)
+        # - query_params
+        # - data
 
-        mock_request = mock.MagicMock()
-        mock_request.query_params = {'organization': None}
-        mock_request.data = {'organization': 2}
+        # Should return None if not found in any of these sources
+        mock_request = mock_request_factory(
+            parser_context={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'not_org_id': 3},
+            data={'not_org_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(None, result)
+
+        # get from request context
+        mock_request = mock_request_factory(
+            parser_context={'organization_id': 1},
+            # technically not possible to have different id in path since parser_context
+            # comes from path but useful in demonstrating source priorities
+            path='/api/v3/organizations/2',
+            query_params={'organization_id': 3},
+            data={'organization_id': 4}
+        )
         result = get_org_id(mock_request)
         self.assertEqual(2, result)
 
-        mock_request = mock.MagicMock()
-        mock_request.query_params = {'organization': None}
-        mock_request.parser_context = {}
+        # get from path
+        mock_request = mock_request_factory(
+            parser_context={'not_org_id': 1},
+            path='/api/v2/organizations/2',
+            query_params={'organization_id': 3},
+            data={'organization_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(2, result)
+
+        # get from query params
+        mock_request = mock_request_factory(
+            parser_context={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'organization_id': 3},
+            data={'organization_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(3, result)
+
+        # get from data
+        mock_request = mock_request_factory(
+            parser_context={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'not_org_id': 3},
+            data={'organization_id': 4}
+        )
+        result = get_org_id(mock_request)
+        self.assertEqual(4, result)
+
+        # get from nowhere, and has no data attr
+        # not sure why request wouldn't have data, but this is an older test
+        # so keeping it here.
+        mock_request = mock_request_factory(
+            parser_context={'not_org_id': 1},
+            path='/api/v3/nope/2/',
+            query_params={'not_org_id': 3},
+            data={}
+        )
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_request).data = mock_value_error
         result = get_org_id(mock_request)
