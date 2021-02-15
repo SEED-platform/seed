@@ -319,7 +319,7 @@ class TaxLotProperty(models.Model):
                     lookups['related_view_id']: getattr(join, lookups['related_view_id'])
                 })
 
-            join_dict['notes_count'] = join_note_counts.get(join.id, 0)
+            join_dict['notes_count'] = join_note_counts.get(getattr(join, lookups['related_view_id']), 0)
             join_dict['merged_indicator'] = getattr(join, lookups['related_view']).state_id in join_merged_state_ids
 
             # remove the measures from this view for now
