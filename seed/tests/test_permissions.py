@@ -43,6 +43,7 @@ def mock_request_factory(view_authz_org_id_kwarg=None, parser_kwargs=None, path=
 
     return mock_request
 
+
 class PermissionsFunctionsTests(TestCase):
     """Tests for Custom DRF Permissions util functions"""
 

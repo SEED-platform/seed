@@ -918,7 +918,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'property', 'cycle', 'state'
             ).get(
                 id=pk,
-                property__organization_id=self.get_organization(request)
+                property__organization_id=self.get_organization(self.request)
             )
             result = {
                 'status': 'success',
