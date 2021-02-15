@@ -23,13 +23,13 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
 
 
-class UploadViewSet(viewsets.ViewSet):
+class UploadViewSet(viewsets.ViewSet, OrgMixin):
     """
     Endpoint to upload data files to, if uploading to local file storage.
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
@@ -113,7 +113,7 @@ class UploadViewSet(viewsets.ViewSet):
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(
