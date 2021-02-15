@@ -17,7 +17,7 @@ from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
-class AnalysisPropertyViewViewSet(viewsets.ViewSet):
+class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisPropertyViewSerializer
     model = AnalysisPropertyView
 

@@ -36,7 +36,7 @@ class CreateAnalysisSerializer(AnalysisSerializer):
         )
 
 
-class AnalysisViewSet(viewsets.ViewSet):
+class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisSerializer
     model = Analysis
 
