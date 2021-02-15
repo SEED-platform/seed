@@ -87,11 +87,6 @@ def get_org_id(request):
         if data_org_id is not None:
             return data_org_id
 
-    if hasattr(request, 'body'):
-        body_org_id = get_org_or_id(request.body)
-        if body_org_id is not None:
-            return body_org_id
-
     return None
 
 
