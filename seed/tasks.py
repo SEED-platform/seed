@@ -47,10 +47,10 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     sign_up_url = Template("https://{{domain}}{{sign_up_url}}").render(Context({
         'domain': domain,
-        'sign_up_url': reverse_lazy('landing:signup', kwargs = {
-        'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-        'token': token
-    })
+        'sign_up_url': reverse_lazy('landing:signup', kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
+            'token': token
+        })
     }))
 
     content = Template(organization.new_user_email_content).render(Context({
@@ -62,7 +62,7 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
         'content': content,
         'signature': organization.new_user_email_signature
     }))
-    
+
     send_mail(organization.new_user_email_subject, body, organization.new_user_email_from, [email_address])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
