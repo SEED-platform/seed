@@ -57,6 +57,7 @@ RUN rm -rf /seed/
 WORKDIR /seed
 COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
+RUN pip uninstall -y enum34
 RUN pip install -r requirements/aws.txt
 
 ### Install JavaScript requirements - do this first because they take awhile
