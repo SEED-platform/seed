@@ -542,24 +542,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         pinnedLeft: true,
         visible: true,
         width: 30
-      }, {
-        name: 'color',
-        displayName: '',
-        cellTemplate: [
-          '<div ng-style="{\'height\':\'100%\', \'background-color\':row.entity.id}">',
-          '  <input type="color" style="opacity:0;height:100%;border:none;" />',
-          '</div>'
-        ].join(''),
-        enableColumnMenu: false,
-        enableColumnMoving: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: false,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        visible: true,
-        width: 10
       });
 
       var findColumn = _.memoize(function (name) {
@@ -570,7 +552,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'merged_indicator', 'id', 'color', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
@@ -993,12 +975,6 @@ angular.module('BE.seed.controller.inventory_list', [])
               col = $scope.gridApi.grid.columns[staticColIndex];
               $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(4, 0, col);
-            }
-            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'color'});
-            if (staticColIndex !== 5) {
-              col = $scope.gridApi.grid.columns[staticColIndex];
-              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
-              $scope.gridApi.grid.columns.splice(5, 0, col);
             }
             saveSettings();
           });
