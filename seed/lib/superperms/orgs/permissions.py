@@ -62,7 +62,10 @@ def get_org_id(request):
         kwarg_name = request_view.authz_org_id_kwarg
         if kwarg_name:
             request_kwargs = request.parser_context.get('kwargs', {})
-            return request_kwargs.get(kwarg_name, None)
+            # some views might not include the ID in the path so we have to check (e.g. data quality)
+            kwarg_org_id = request_kwargs.get(kwarg_name, None)
+            if kwarg_org_id is not None:
+                return kwarg_org_id
 
     # if the view doesn't explicitly provide a kwarg for organization id in the path,
     # check the path string.

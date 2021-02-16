@@ -19,14 +19,14 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.data_quality import DataQualityCheck
 from seed.models import PropertyView, TaxLotView
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
 
 
-class DataQualityCheckViewSet(viewsets.ViewSet):
+class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
     """
     Handles Data Quality API operations within Inventory backend.
     (1) Post, wait, get…
@@ -35,6 +35,8 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
 
     # Remove lookup_field once data_quality_check_id is used and "pk" can be used
     lookup_field = 'organization_id'
+    # allow organization_id path id to be used for authorization (ie has_perm_class)
+    authz_org_id_kwarg = 'organization_id'
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -123,7 +125,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
                 'message': 'must include Import file ID or cache key as run_id'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(run_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(run_id, self.get_organization(request)))
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
@@ -174,7 +176,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet):
         are stored in redis!
         """
         data_quality_id = request.query_params['run_id']
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id, self.get_organization(request)))
         return JsonResponse({
             'data': data_quality_results
         })
