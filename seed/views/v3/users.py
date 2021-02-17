@@ -181,9 +181,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
         Sends invitation email to the new user.
         """
+        # WARNING: we aren't using the OrgMixin here to validate the organization
+        # It is assumed the org authorization logic implemented in this view is
+        # consistent with our permissions checking (has_perm_class decorator)
         body = request.data
         org_name = body.get('org_name')
-        org_id = self.get_organization(request)
+        org_id = request.query_params.get('organization_id', None)
         if (org_name and org_id) or (not org_name and not org_id):
             return JsonResponse({
                 'status': 'error',
@@ -546,7 +549,9 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             message = 'no actions to check'
             error = True
 
-        org_id = self.get_organization(request)
+        # WARNING: we aren't using the OrgMixin here to validate the organization
+        # It is assumed the org authorization logic implemented here is sufficient
+        org_id = request.query_params.get('organization_id', None)
         if org_id == '':
             message = 'organization id is undefined'
             error = True
@@ -609,6 +614,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['PUT'])
     def default_organization(self, request, pk=None):
         """
