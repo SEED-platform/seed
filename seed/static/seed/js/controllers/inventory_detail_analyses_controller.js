@@ -88,6 +88,34 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         })
       }
 
+      $scope.delete_analysis = function(analysis_id) {
+        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
+        analysis.status = 'Deleting...'
+
+        analyses_service.delete_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis deleted')
+            refresh_analyses()
+          } else {
+            Notification.error('Failed to delete analysis: ' + result.message)
+          }
+        })
+      }
+
+      $scope.inventory_display_name = function(property_type) {
+        let error = '';
+        let field = property_type == "property" ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
+        if (!(field in $scope.item_state)) {
+          error = field + ' does not exist';
+          field = 'address_line_1';
+        }
+        if (!$scope.item_state[field]) {
+          error += (error == '' ? '' : ' and default ') + field + ' is blank';
+        }
+        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+      }
+
       $scope.open_analysis_modal = function () {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',

@@ -14,9 +14,11 @@ class AnalysisOutputFile(models.Model):
     The AnalysisOutputFile is a file returned as output from an analysis.
     """
     BUILDINGSYNC = 1
+    IMAGE_PNG = 100
 
     CONTENT_TYPES = (
         (BUILDINGSYNC, 'BuildingSync'),
+        (IMAGE_PNG, 'PNG'),
     )
 
     file = models.FileField(upload_to="analysis_output_files", max_length=500)

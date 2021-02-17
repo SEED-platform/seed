@@ -89,13 +89,8 @@ angular.module('BE.seed.service.cycle', []).factory('cycle_service', [
       });
     };
 
-    cycle_factory.delete_cycle = function (cycle) {
-      return cycle_factory.delete_cycle_for_org(cycle, user_service.get_organization().id);
-    };
-
-    cycle_factory.delete_cycle_for_org = function (cycle, org_id) {
-      return $http.delete('/api/v3/cycles/' + cycle.id + '/', {
-        data: cycle,
+    cycle_factory.delete_cycle = function (cycle_id, org_id) {
+      return $http.delete('/api/v3/cycles/' + cycle_id + '/', {
         params: {
           organization_id: org_id
         }

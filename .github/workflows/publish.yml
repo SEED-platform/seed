@@ -4,8 +4,13 @@ on:
   push:
     branches:
       - develop
-  release:
-    types: [published]
+    tags:
+      - '*'
+  workflow_dispatch:
+    inputs:
+      docker_tag:
+        description: 'Tag suffix; will be used as seedplatform/seed:{docker_tag}'
+        required: true
 
 jobs:
   publish:
@@ -39,9 +44,16 @@ jobs:
           echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
           echo "GITHUB_REF: ${GITHUB_REF}"
           if [[ ${GITHUB_EVENT_NAME} == "push" ]]; then
-            SEED_TAG=develop
-          elif [[ ${GITHUB_EVENT_NAME} == "release" ]]; then
-            SEED_TAG=${GITHUB_REF#refs/tags/v}
+            if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+              SEED_TAG=develop
+            elif [[ "${GITHUB_REF}" =~ "refs/tags/v" ]]; then
+              SEED_TAG=${GITHUB_REF#refs/tags/v}
+            else
+              echo "Unhandled GITHUB_REF (this shouldn't happen), exiting"
+              exit 1
+            fi
+          elif [[ ${GITHUB_EVENT_NAME} == "workflow_dispatch" ]]; then
+            SEED_TAG=${{ github.event.inputs.docker_tag }}
           else
             echo "Unhandled event type (this shouldn't happen), exiting"
             exit 1

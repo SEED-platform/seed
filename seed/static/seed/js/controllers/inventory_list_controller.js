@@ -471,7 +471,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else if (col.data_type === 'date') {
           options.filter = inventory_service.dateFilter();
         } else if (col.data_type === 'eui' || col.data_type === 'area') {
-          options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+          options.filter = inventory_service.combinedFilter();
+          options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
           options.sortingAlgorithm = naturalSort;
         } else {
           options.filter = inventory_service.combinedFilter();
@@ -824,6 +825,18 @@ angular.module('BE.seed.controller.inventory_list', [])
               return _.filter(visibleRowIds, function (id) {
                 return _.includes(selectedRowIds, id);
               });
+            },
+            filter_header_string: function () {
+              if ($scope.selected_labels.length) {
+                return [
+                  'Filter Method: ""',
+                  $scope.labelLogic,
+                  '"", Filter Labels: "',
+                  $scope.selected_labels.map(label => label.name).join(' - '),
+                  '"'
+                 ].join('');
+              }
+              return 'Filter Method: ""none""';
             },
             columns: function () {
               return _.map($scope.columns, 'name');

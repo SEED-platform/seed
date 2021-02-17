@@ -107,6 +107,8 @@ def _dict_org(request, organizations):
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
+            'property_display_field': o.property_display_field,
+            'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
             'comstock_enabled': o.comstock_enabled,
@@ -515,6 +517,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get('geocoding_enabled', True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update property_display_field option
+        property_display_field = posted_org.get('property_display_field', 'address_line_1')
+        if property_display_field != org.property_display_field:
+            org.property_display_field = property_display_field
+
+        # Update taxlot_display_field option
+        taxlot_display_field = posted_org.get('taxlot_display_field', 'address_line_1')
+        if taxlot_display_field != org.taxlot_display_field:
+            org.taxlot_display_field = taxlot_display_field
 
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:

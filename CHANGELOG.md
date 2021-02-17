@@ -1,3 +1,11 @@
+# SEED Version 2.9.2
+
+This is a patch to update deployments with a filter functionality fix.
+
+# SEED Version 2.9.1
+
+This is a patch to update deployments with a 255 character data error and progress bar fix.
+
 # SEED Version 2.9.0
 
 Date Range: 09/25/20 - 12/28/20
@@ -145,6 +153,10 @@ Closed Issues and Features:
 - Fixed [#2384]( https://github.com/SEED-platform/seed/issues/2384 ), PM import record of one property returns 400 status
 - Fixed [#2392]( https://github.com/SEED-platform/seed/issues/2392 ), XLSX import of sample data hanging
 - Fixed [#2397]( https://github.com/SEED-platform/seed/issues/2397 ), DQ - failed to update/save rules after deleting duplicate rules
+
+# SEED Version 2.7.7
+
+- Fixed [#2553]( https://github.com/SEED-platform/seed/issues/2553 ), DataError for input over 255 chars
 
 # SEED Version 2.7.6
 

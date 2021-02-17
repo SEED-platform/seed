@@ -72,6 +72,21 @@ angular.module('BE.seed.controller.analyses', [])
         })
       }
 
+      $scope.delete_analysis = function(analysis_id) {
+        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
+        analysis.status = 'Deleting...'
+
+        analyses_service.delete_analysis(analysis_id)
+        .then(function (result) {
+          if (result.status === 'success') {
+            Notification.primary('Analysis deleted')
+            refresh_analyses()
+          } else {
+            Notification.error('Failed to delete analysis: ' + result.message)
+          }
+        })
+      }
+
     }
   ])
   .filter('get_run_duration', function() {

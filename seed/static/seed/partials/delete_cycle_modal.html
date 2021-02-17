@@ -1,0 +1,54 @@
+<div class="modal-header">
+    <h4 class="modal-title" translate>Delete Cycle?</h4>
+</div>
+<div class="modal-body">
+    <div ng-if="cycle_has_inventory == null" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>Searching for Properties and Tax Lots in this Cycle...
+            </div>
+        </div>
+    </div>
+    <div ng-if="cycle_has_inventory == true" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                Unable to delete cycle <em>{$ cycle_name $}</em>. You must delete all existing Properties and Tax Lots in <em>{$ cycle_name $}</em> before you can delete this cycle.
+            </div>
+        </div>
+        <div ng-if="cycle_has_properties == true" class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-top: 5px; padding-bottom: 5px;">
+                <button type="button" class="btn btn-info" ng-click="goToInventoryList('properties')">View Properties in this cycle</a>
+            </div>
+        </div>
+        <div ng-if="cycle_has_taxlots == true" class="row">
+            <div class="col-sm-8 col-sm-offset-2" style="padding-top: 5px;">
+                <button type="button" class="btn btn-info" ng-click="goToInventoryList('taxlots')">View Tax Lots in this cycle</a>
+            </div>
+        </div>
+    </div>
+    <div ng-if="cycle_has_inventory == false && delete_cycle_success == null" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                Are you sure you want to delete cycle <em>{$ cycle_name $}</em>? It has no Property or Tax Lot data.
+            </div>
+        </div>
+    </div>
+    <div ng-if="delete_cycle_success == true" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                Successfully deleted <em>{$ cycle_name $}</em>.
+            </div>
+        </div>
+    </div>
+    <div ng-if="delete_cycle_success == false" class="container-fluid">
+        <div class="row">
+            <div class="col-sm-12">
+                Sorry, something unexpected happened. Please refresh the page and try again. If the problem persists please contact the SEED Platform management team.
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()">{$delete_cycle_success == null ? 'Cancel' : 'Close'$}</button>
+    <button ng-if="cycle_has_inventory == false && delete_cycle_success == null" type="button" class="btn btn-danger" ng-click="confirmDelete()" autofocus translate>Yes, Delete Cycle</button>
+</div>

@@ -101,7 +101,16 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       debug = !_.isUndefined(debug);
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
-          progress_bar_obj.progress = _.clamp((data.progress * multiplier) + offset, 0, 100);
+          right_now = Date.now();
+          progress_bar_obj.progress_last_checked = right_now;
+
+          new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+          updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+          if (updating_progress) {
+            progress_bar_obj.progress_last_updated = right_now;
+          }
+
+          progress_bar_obj.progress = new_progress_value;
           progress_bar_obj.status_message = data.status_message;
           if (data.progress < 100) {
             uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);

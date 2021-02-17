@@ -12,21 +12,23 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'columns',
   'inventory_type',
   'profile_id',
-  function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id) {
+  'filter_header_string',
+  function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id, filter_header_string) {
     $scope.export_name = '';
+    $scope.include_notes = true;
+    $scope.include_label_header = false;
     $scope.inventory_type = inventory_type;
 
     $scope.export_selected = function (export_type) {
       var filename = $scope.export_name;
-
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
-
       return $http.post('/api/v3/tax_lot_properties/export/', {
         ids: ids,
         filename: filename,
         profile_id: profile_id,
-        export_type: export_type
+        export_type: export_type,
+        include_notes: $scope.include_notes
       }, {
         params: {
           organization_id: user_service.get_organization().id,
@@ -42,10 +44,15 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         } else if (blob_type === 'application/json') {
           data = JSON.stringify(response.data, null, '    ');
         } else if (blob_type === 'text/csv') {
-          data = response.data;
+          if ($scope.include_label_header) {
+            data = [filter_header_string, response.data].join('\r\n');
+          } else {
+            data = response.data;
+          }
         }
 
         var blob = new Blob([data], {type: blob_type});
+
         saveAs(blob, filename);
 
         $scope.close();

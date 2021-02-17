@@ -2,18 +2,53 @@
     <h4 class="modal-title" id="exportModalLabel" translate>Export your Properties and Tax Lots</h4>
 </div>
 <div class="modal-body form-horizontal" style="padding-bottom: 0;">
-    <div class="form-group">
-        <label class="control-label col-sm-3" for="fileName" translate>Export Name</label>
-        <div class="col-sm-8">
-          <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required>
+    <div class="section">
+
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <label class="control-label col-sm-4" for="fileName" translate>Export Name</label>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="fileName" ng-model="export_name" placeholder="{$:: 'File Name' | translate $}" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
+
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <label class="control-label col-sm-4" for="include-notes" translate>Include Notes</label>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="checkbox" checked class="checkbox" id="include-notes" ng-model="include_notes">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <label class="control-label col-sm-4" for="include-label-header" translate>Include CSV Label Header</label>
+                <form class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-6">
+                            <input type="checkbox" class="checkbox" id="include-label-header" ng-model="include_label_header">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-primary" ng-click="export_selected('csv')" ng-disabled="!export_name.length" translate>Export CSV</button>
     <button type="button" class="btn btn-primary" ng-click="export_selected('xlsx')" ng-disabled="!export_name.length" ng-if="inventory_type === 'properties'" translate>Export BuildingSync in Excel format</button>
     <button type="button" class="btn btn-primary" ng-click="export_selected('geojson')" ng-disabled="!export_name.length" translate>Export GeoJSON</button>
-
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
