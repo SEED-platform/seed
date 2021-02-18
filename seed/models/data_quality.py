@@ -1022,7 +1022,9 @@ class DataQualityCheck(models.Model):
 
         :param label_class: statuslabel object, either propertyview label or taxlotview label
         :param rule: rule object
-        :param linked_id: id of propertystate or taxlotstate object
+        :param linked_id: id of propertyview or taxlotview object
+        :param row_id:
+        :param add_to_results: bool
         :return: boolean, if labeled was applied
         """
         if rule.status_label_id is not None and linked_id is not None:
