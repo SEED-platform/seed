@@ -30,24 +30,4 @@ class Migration(migrations.Migration):
             name='new_user_email_subject',
             field=models.CharField(default='New SEED account', max_length=128),
         ),
-        migrations.AddField(
-            model_name='organization',
-            name='user_added_email_content',
-            field=models.CharField(default='Hello {{first_name}},\nYou are receiving this e-mail because you have been added to the {{organization_name }} organization by {{requested_by}}. Please disregard this message if you are not expecting access to SEED.\nYou can view your new organization by logging into the SEED instance here:\n{{link}}', max_length=1024),
-        ),
-        migrations.AddField(
-            model_name='organization',
-            name='user_added_email_from',
-            field=models.CharField(default='info@seed-platform.org', max_length=128),
-        ),
-        migrations.AddField(
-            model_name='organization',
-            name='user_added_email_signature',
-            field=models.CharField(default='The SEED Team', max_length=128),
-        ),
-        migrations.AddField(
-            model_name='organization',
-            name='user_added_email_subject',
-            field=models.CharField(default='Your SEED account has been added to an organization', max_length=128),
-        ),
     ]

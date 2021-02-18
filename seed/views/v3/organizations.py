@@ -115,11 +115,7 @@ def _dict_org(request, organizations):
             'new_user_email_from': o.new_user_email_from,
             'new_user_email_subject': o.new_user_email_subject,
             'new_user_email_content': o.new_user_email_content,
-            'new_user_email_signature': o.new_user_email_signature,
-            'user_added_email_from': o.user_added_email_from,
-            'user_added_email_subject': o.user_added_email_subject,
-            'user_added_email_content': o.user_added_email_content,
-            'user_added_email_signature': o.user_added_email_signature
+            'new_user_email_signature': o.new_user_email_signature
         }
         orgs.append(org)
 
@@ -563,34 +559,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.new_user_email_signature = new_user_email_signature
         if not org.new_user_email_signature:
             org.new_user_email_signature = "The SEED Team"
-
-        # update user added email from option
-        user_added_email_from = posted_org.get('user_added_email_from')
-        if user_added_email_from != org.user_added_email_from:
-            org.user_added_email_from = user_added_email_from
-        if not org.user_added_email_from:
-            org.user_added_email_from = "info@seed-platform.org"
-
-        # update user added email subject option
-        user_added_email_subject = posted_org.get('user_added_email_subject')
-        if user_added_email_subject != org.user_added_email_subject:
-            org.user_added_email_subject = user_added_email_subject
-        if not org.user_added_email_subject:
-            org.user_added_email_subject = "New SEED account"
-
-        # update user added email content option
-        user_added_email_content = posted_org.get('user_added_email_content')
-        if user_added_email_content != org.user_added_email_content:
-            org.user_added_email_content = user_added_email_content
-        if not org.user_added_email_content:
-            org.user_added_email_content = "Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}"
-
-        # update user added email signature option
-        user_added_email_signature = posted_org.get('user_added_email_signature')
-        if user_added_email_signature != org.user_added_email_signature:
-            org.user_added_email_signature = user_added_email_signature
-        if not org.user_added_email_signature:
-            org.user_added_email_signature = "The SEED Team"
 
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:

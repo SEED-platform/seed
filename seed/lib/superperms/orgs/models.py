@@ -199,12 +199,6 @@ class Organization(models.Model):
     new_user_email_content = models.CharField(max_length=1024, blank=False, default="Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}")
     new_user_email_signature = models.CharField(max_length=128, blank=False, default="The SEED Team")
 
-    # user added to org email fields
-    user_added_email_from = models.CharField(max_length=128, blank=False, default="info@seed-platform.org")
-    user_added_email_subject = models.CharField(max_length=128, blank=False, default="Your SEED account has been added to an organization")
-    user_added_email_content = models.CharField(max_length=1024, blank=False, default="Hello {{first_name}},\nYou are receiving this e-mail because you have been added to the {{organization_name }} organization by {{requested_by}}. Please disregard this message if you are not expecting access to SEED.\nYou can view your new organization by logging into the SEED instance here:\n{{link}}")
-    user_added_email_signature = models.CharField(max_length=128, blank=False, default="The SEED Team")
-
     # display settings
     property_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
     taxlot_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")

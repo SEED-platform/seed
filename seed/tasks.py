@@ -14,7 +14,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
-from django.template import Template, Context
+from django.template import Template, Context, loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -44,6 +44,7 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     Returns: nothing
     """
+
     sign_up_url = Template("https://{{domain}}{{sign_up_url}}").render(Context({
         'domain': domain,
         'sign_up_url': reverse_lazy('landing:signup', kwargs={
@@ -83,23 +84,25 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
 
     Returns: nothing
     """
-    content = Template(new_org.user_added_email_content).render(Context({
+    context = {
+        'new_user': new_user,
         'first_name': new_user.first_name,
-        'organization_name': new_org.name,
+        'domain': domain,
+        'protocol': 'https',
+        'new_org': new_org,
         'requested_by': requested_by,
-        'link': Template("https://{{domain}}").render(Context({'domain': domain}))
-    }))
+    }
 
-    body = Template("{{content}}\n\n{{signature}}").render(Context({
-        'content': content,
-        'signature': new_org.user_added_email_signature
-    }))
-
-    send_mail(new_org.user_added_email_subject, body, new_org.user_added_email_from, [new_user.email])
+    subject = 'Your SEED account has been added to an organization'
+    email_body = loader.render_to_string(
+        'seed/account_org_added.html',
+        context
+    )
+    send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(new_org.user_added_email_subject, new_user.email)
-        send_mail(new_subject, body, settings.SERVER_EMAIL, [bcc_address])
+        new_subject = "{} ({})".format(subject, new_user.email)
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
 

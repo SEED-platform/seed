@@ -29,10 +29,6 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     new_user_email_subject = serializers.CharField(max_length=128)
     new_user_email_content = serializers.CharField(max_length=1024)
     new_user_email_signature = serializers.CharField(max_length=128)
-    user_added_email_from = serializers.CharField(max_length=128)
-    user_added_email_subject = serializers.CharField(max_length=128)
-    user_added_email_content = serializers.CharField(max_length=1024)
-    user_added_email_signature = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):
