@@ -552,6 +552,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.new_user_email_content = new_user_email_content
         if not org.new_user_email_content:
             org.new_user_email_content = Organization._meta.get_field('new_user_email_content').get_default()
+        if '{{sign_up_link}}' not in org.new_user_email_content:
+            org.new_user_email_content += '\n\nSign up here: {{sign_up_link}}'
 
         # update new user email signature option
         new_user_email_signature = posted_org.get('new_user_email_signature')
