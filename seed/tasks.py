@@ -44,7 +44,6 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
 
     Returns: nothing
     """
-
     sign_up_url = Template("https://{{domain}}{{sign_up_url}}").render(Context({
         'domain': domain,
         'sign_up_url': reverse_lazy('landing:signup', kwargs={
@@ -84,24 +83,22 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
 
     Returns: nothing
     """
-    context = {
-        'new_user': new_user,
+    content = Template(organization.user_added_email_content).render(Context({
         'first_name': new_user.first_name,
-        'domain': domain,
-        'protocol': 'https',
-        'new_org': new_org,
+        'organization_name': new_org,
         'requested_by': requested_by,
-    }
+        'link': Template("https://{{domain}}").render(Context({'domain': domain}))
+    }))
 
-    subject = 'Your SEED account has been added to an organization'
-    email_body = loader.render_to_string(
-        'seed/account_org_added.html',
-        context
-    )
-    send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email])
+    body = Template("{{content}}\n\n{{signature}}").render(Context({
+        'content': content,
+        'signature': organization.user_added_email_signature
+    }))
+
+    send_mail(organization.user_added_email_subject, body, organization.user_added_email_from, [new_user.email])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(subject, new_user.email)
+        new_subject = "{} ({})".format(organization.user_added_email_subject, new_user.email)
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
