@@ -313,3 +313,6 @@ BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 # should be a integer representing a number of days
 # GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
 GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
+
+# Config to include v2 APIs
+INCLUDE_SEED_V2_APIS = True
