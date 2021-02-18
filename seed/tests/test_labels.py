@@ -108,7 +108,6 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
                 self.api_view.add_labels(
                     qs=self.api_view.models['taxlot'].objects.none(),
                     inventory_type='taxlot',
-                    # THIS IS THE FIX! Use taxlot view rather than canonical ID
                     inventory_ids=[org_1_taxlotview.id],
                     add_label_ids=[self.org_2_status_label.id]
                 )
