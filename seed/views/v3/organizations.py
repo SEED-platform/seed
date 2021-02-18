@@ -537,28 +537,28 @@ class OrganizationViewSet(viewsets.ViewSet):
         if new_user_email_from != org.new_user_email_from:
             org.new_user_email_from = new_user_email_from
         if not org.new_user_email_from:
-            org.new_user_email_from = "info@seed-platform.org"
+            org.new_user_email_from = Organization._meta.get_field('new_user_email_from').get_default()
 
         # update new user email subject option
         new_user_email_subject = posted_org.get('new_user_email_subject')
         if new_user_email_subject != org.new_user_email_subject:
             org.new_user_email_subject = new_user_email_subject
         if not org.new_user_email_subject:
-            org.new_user_email_subject = "New SEED account"
+            org.new_user_email_subject = Organization._meta.get_field('new_user_email_subject').get_default()
 
         # update new user email content option
         new_user_email_content = posted_org.get('new_user_email_content')
         if new_user_email_content != org.new_user_email_content:
             org.new_user_email_content = new_user_email_content
         if not org.new_user_email_content:
-            org.new_user_email_content = "Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}"
+            org.new_user_email_content = Organization._meta.get_field('new_user_email_content').get_default()
 
         # update new user email signature option
         new_user_email_signature = posted_org.get('new_user_email_signature')
         if new_user_email_signature != org.new_user_email_signature:
             org.new_user_email_signature = new_user_email_signature
         if not org.new_user_email_signature:
-            org.new_user_email_signature = "The SEED Team"
+            org.new_user_email_signature = Organization._meta.get_field('new_user_email_signature').get_default()
 
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:
