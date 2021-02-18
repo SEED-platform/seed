@@ -99,7 +99,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(new_org.user_added_email_subject, new_user.email)
-        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
+        send_mail(new_subject, body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass
 
