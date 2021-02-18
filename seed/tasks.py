@@ -14,7 +14,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.urls import reverse_lazy
-from django.template import Template, Context, loader
+from django.template import Template, Context
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
@@ -83,22 +83,22 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
 
     Returns: nothing
     """
-    content = Template(organization.user_added_email_content).render(Context({
+    content = Template(new_org.user_added_email_content).render(Context({
         'first_name': new_user.first_name,
-        'organization_name': new_org,
+        'organization_name': new_org.name,
         'requested_by': requested_by,
         'link': Template("https://{{domain}}").render(Context({'domain': domain}))
     }))
 
     body = Template("{{content}}\n\n{{signature}}").render(Context({
         'content': content,
-        'signature': organization.user_added_email_signature
+        'signature': new_org.user_added_email_signature
     }))
 
-    send_mail(organization.user_added_email_subject, body, organization.user_added_email_from, [new_user.email])
+    send_mail(new_org.user_added_email_subject, body, new_org.user_added_email_from, [new_user.email])
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
-        new_subject = "{} ({})".format(organization.user_added_email_subject, new_user.email)
+        new_subject = "{} ({})".format(new_org.user_added_email_subject, new_user.email)
         send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
     except AttributeError:
         pass

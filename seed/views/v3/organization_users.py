@@ -71,7 +71,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             except Exception:
                 domain = 'seed-platform.org'
             invite_to_organization(
-                domain, user, request.user.username, org.name
+                domain, user, request.user.username, org
             )
 
         return JsonResponse({'status': 'success'})
