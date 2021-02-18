@@ -613,7 +613,7 @@ class DataQualityCheck(models.Model):
         :param identifier: Import file primary key
         :return:
         """
-        return f"data_quality_results__{organization_id}__{identifier}" 
+        return f"data_quality_results__{organization_id}__{identifier}"
 
     def check_data(self, record_type, rows):
         """

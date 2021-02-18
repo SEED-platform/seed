@@ -138,13 +138,12 @@ class LabelInventoryViewSet(APIView):
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
         """Add labels in the add_label_ids list to inventory
-        
+
         :param qs: QuerySet of inventory labels to exclude
         :param inventory_type: string
         :param inventory_ids: list
         :param add_label_ids: list
         """
-        import pdb; pdb.set_trace()
         added = []
         if add_label_ids:
             model = self.models[inventory_type]
