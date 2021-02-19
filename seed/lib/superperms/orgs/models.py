@@ -189,10 +189,17 @@ class Organization(models.Model):
     # in exported views of its data.
     query_threshold = models.IntegerField(blank=True, null=True)
 
+    # geolocation
     mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
-
     geocoding_enabled = models.BooleanField(default=True)
 
+    # new user email fields
+    new_user_email_from = models.CharField(max_length=128, blank=False, default="info@seed-platform.org")
+    new_user_email_subject = models.CharField(max_length=128, blank=False, default="New SEED account")
+    new_user_email_content = models.CharField(max_length=1024, blank=False, default="Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}")
+    new_user_email_signature = models.CharField(max_length=128, blank=False, default="The SEED Team")
+
+    # display settings
     property_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
     taxlot_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
 
