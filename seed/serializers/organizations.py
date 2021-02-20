@@ -25,6 +25,10 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     geocoding_enabled = serializers.BooleanField()
     property_display_field = serializers.CharField()
     taxlot_display_field = serializers.CharField()
+    new_user_email_from = serializers.CharField(max_length=128)
+    new_user_email_subject = serializers.CharField(max_length=128)
+    new_user_email_content = serializers.CharField(max_length=1024)
+    new_user_email_signature = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):
