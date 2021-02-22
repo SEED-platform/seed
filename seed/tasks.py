@@ -32,7 +32,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task
-def invite_to_seed(domain, email_address, token, user_pk, first_name):
+def invite_to_seed(domain, email_address, token, user_pk, first_name, new_user=False):
     """Send invitation email to newly created user.
 
     domain -- The domain name of the running seed instance
@@ -43,10 +43,16 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
 
     Returns: nothing
     """
-    signup_url = reverse_lazy('landing:signup', kwargs={
-        'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-        'token': token
-    })
+    if new_user:
+        signup_url = reverse_lazy('landing:activate', kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
+            'token': token
+        })
+    else:
+        signup_url = reverse_lazy('landing:signup', kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
+            'token': token
+        })
     context = {
         'email': email_address,
         'domain': domain,

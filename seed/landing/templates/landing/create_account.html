@@ -24,15 +24,15 @@
                         <table class="signup_table">
                             {{ form.as_table }}
                         </table>
-                        <div style="padding-top: 1em; padding-left: 4.5em" class="g-recaptcha" data-sitekey="6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV"></div>
-                        <div>
+                    {% include "landing/_password_note.html" %}
+                        <div  style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV"></div>
+                        <div style="padding-bottom: 2em">
                             <input class="btn btn-primary" type="submit"
                                    value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">
                             <a href="{% url "landing:landing_page" %}" type="submit"
                                class="btn btn-cancel">{% trans "Cancel" %}</a>
                         </div>
                     </form>
-                    {% include "landing/_password_note.html" %}
                 </div>
             </div>
             <!-- END .section_forms -->

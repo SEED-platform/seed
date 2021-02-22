@@ -11,13 +11,19 @@ import logging
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.forms import SetPasswordForm
 from django.urls import reverse
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
-
+from django.shortcuts import render, redirect
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from seed.landing.models import SEEDUser
+from seed.tasks import (
+    invite_to_seed,
+)
 
 from .forms import LoginForm, CustomCreateUserForm
 
@@ -149,15 +155,19 @@ def create_account(request):
             response = urllib.request.urlopen(req)
             result = json.loads(response.read().decode())
             ''' End reCAPTCHA validation '''
-            print(result)
             if result['success']:
-                form.save()
-                new_user = authenticate(
-                    username=form.cleaned_data['username'].lower(),
-                    password=form.cleaned_data['password1']
+                user = form.save(commit=False)
+                user.is_active = False
+                user.save()
+                try:
+                    domain = request.get_host()
+                except Exception:
+                    domain = 'seed-platform.org'
+                invite_to_seed(
+                    domain, user.email, default_token_generator.make_token(user),
+                    user.pk, user.email, new_user=True
                 )
-                login(request, new_user)
-                return HttpResponseRedirect(redirect_to)
+                return redirect('landing:account_activation_sent')
             else:
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Invalid reCAPTCHA, please try again')
@@ -168,3 +178,23 @@ def create_account(request):
     else:
         form = CustomCreateUserForm()
     return render(request, 'landing/create_account.html', locals())
+
+
+def account_activation_sent(request):
+    return render(request, 'landing/account_activation_sent.html', {})
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = SEEDUser.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, SEEDUser.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        return HttpResponseRedirect(reverse('seed:home'))
+    else:
+        return render(request, 'account_activation_invalid.html')
