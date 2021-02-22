@@ -34,16 +34,16 @@ class PropertyStateViewSet(SEEDOrgCreateUpdateModelViewSet):
         Return all PropertyStates available to user through specified org.
 
     create:
-        Create a new PropertyState within user`s specified org.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Create a new PropertyState within user`s specified org.
 
     delete:
-        Remove an existing PropertyState.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Remove an existing PropertyState.
 
     update:
-        Update a PropertyState record.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update a PropertyState record.
 
     partial_update:
-        Update one or more fields on an existing PropertyState."""
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update one or more fields on an existing PropertyState."""
     serializer_class = PropertyStateSerializer
     model = PropertyState
     filter_class = PropertyStateFilterSet
