@@ -12,11 +12,12 @@ from django.contrib.auth.views import (
 
 from seed.landing.views import (
     landing_page, login_view, password_reset, password_reset_done,
-    password_reset_complete, signup
+    password_reset_complete, signup, create_account
 )
 
 urlpatterns = [
     url(r'^$', landing_page, name='landing_page'),
+    url(r'accounts/create/$', create_account, name='create_account'),
     url(r'^accounts/login/$', login_view, name='login'),
     url(
         r'^accounts/logout/$',

@@ -5,7 +5,9 @@
 :author
 """
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
+from seed.landing.models import SEEDUser
 
 
 class LoginForm(forms.Form):
@@ -23,3 +25,9 @@ class LoginForm(forms.Form):
         ),
         required=True
     )
+
+
+class CustomCreateUserForm(UserCreationForm):
+    class Meta:
+        model = SEEDUser
+        fields = ['username', 'password1']

@@ -16,6 +16,7 @@
                         {{form.as_table}}
                     </table>
                     <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
+                    <a class="forgot_password" href="{% url "landing:create_account" %}">{% trans "Create an Account" %}</a>
                     <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
                 </form>
                 {% include "landing/_password_note.html" %}

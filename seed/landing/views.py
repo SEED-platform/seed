@@ -16,7 +16,8 @@ from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
-from .forms import LoginForm
+
+from .forms import LoginForm, CustomCreateUserForm
 
 logger = logging.getLogger(__name__)
 
@@ -124,3 +125,27 @@ def signup(request, uidb64=None, token=None):
         set_password_form=SetPasswordForm,
         post_reset_redirect=reverse('landing:landing_page') + "?setup_complete"
     )
+
+
+def create_account(request):
+    if request.method == "POST":
+        redirect_to = request.POST.get('next', request.GET.get('next', False))
+        if not redirect_to:
+            redirect_to = reverse('seed:home')
+        form = CustomCreateUserForm(request.POST)
+        if form.is_valid():
+            form.save()
+            new_user = authenticate(
+                username=form.cleaned_data['username'].lower(),
+                password=form.cleaned_data['password1']
+            )
+            login(request, new_user)
+            return HttpResponseRedirect(redirect_to)
+
+        else:
+            errors = ErrorList()
+            errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
+            errors.append('Username and/or password were invalid.')
+    else:
+        form = CustomCreateUserForm()
+    return render(request, 'landing/create_account.html', locals())
