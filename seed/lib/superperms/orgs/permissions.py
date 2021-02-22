@@ -55,7 +55,16 @@ def get_org_or_id(dictlike):
 
 
 def get_org_id(request):
-    """Extract the ``organization_id`` regardless of HTTP method type."""
+    """Extract the organization ID from a request. Returns None if not found
+
+    This function attempts to find the organization id by checking (in order):
+    - Path of the request (e.g. /organizations/<id>/...)
+    - Query parameters
+    - Request body
+
+    :param request:
+    :return: str | None
+    """
     # first check if the view is configured to get the org id from a path parameter
     request_view = request.parser_context.get('view', None)
     if request_view is not None and hasattr(request_view, 'authz_org_id_kwarg'):
