@@ -34,7 +34,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
@@ -346,12 +346,13 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_user(email='test_user@demo.com', **user_details)
+        self.org, _, _ = create_organization(self.user, "my org")
         self.client.login(**user_details)
 
     def test_get_raw_column_names(self):
         """Make sure we get column names back in a format we expect."""
-        import_record = ImportRecord.objects.create()
+        import_record = ImportRecord.objects.create(super_organization=self.org)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_saved_format = ROW_DELIMITER.join(expected_raw_columns)
         import_file = ImportFile.objects.create(
@@ -364,7 +365,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         url = reverse_lazy("api:v3:import_files-raw-column-names", args=[import_file.pk])
         resp = self.client.get(
-            url, content_type='application/json'
+            url, {'organization_id': self.org.id}, content_type='application/json'
         )
 
         body = json.loads(resp.content)
@@ -373,7 +374,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_first_five_rows(self):
         """Make sure we get our first five rows back correctly."""
-        import_record = ImportRecord.objects.create()
+        import_record = ImportRecord.objects.create(super_organization=self.org)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_raw_rows = [
             ['02023', '12 Jefferson St.', 'etc.'],
@@ -401,7 +402,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         url = reverse_lazy("api:v3:import_files-first-five-rows", args=[import_file.pk])
         resp = self.client.get(
-            url, content_type='application/json'
+            url, {'organization_id': self.org.id}, content_type='application/json'
         )
 
         body = json.loads(resp.content)

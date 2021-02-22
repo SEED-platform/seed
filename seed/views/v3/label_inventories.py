@@ -89,6 +89,14 @@ class LabelInventoryViewSet(APIView):
         return getattr(q, "{}view_id".format(inventory_type))
 
     def exclude(self, qs, inventory_type, label_ids):
+        """Returns a mapping of label IDs to inventories which already have that
+        label applied
+
+        :param qs: QuerySet of inventory labels
+        :param inventory_type: string
+        :param label_ids: list
+        :return: dict
+        """
         exclude = {label: [] for label in label_ids}
         for q in qs:
             if q.statuslabel_id in label_ids:
@@ -108,7 +116,8 @@ class LabelInventoryViewSet(APIView):
         Model = self.models[inventory_type]
 
         # Ensure the the label org and inventory org are the same
-        inventory_parent_org_id = getattr(Model, "{}view".format(inventory_type)).get_queryset().get(pk=inventory_id)\
+        inventory_views = getattr(Model, "{}view".format(inventory_type)).get_queryset()
+        inventory_parent_org_id = inventory_views.get(pk=inventory_id)\
             .cycle.organization.get_parent().id
         label_super_org_id = Model.statuslabel.get_queryset().get(pk=label_id).super_organization_id
         if inventory_parent_org_id == label_super_org_id:
@@ -128,15 +137,23 @@ class LabelInventoryViewSet(APIView):
             )
 
     def add_labels(self, qs, inventory_type, inventory_ids, add_label_ids):
+        """Add labels in the add_label_ids list to inventory
+
+        :param qs: QuerySet of inventory labels to exclude
+        :param inventory_type: string
+        :param inventory_ids: list
+        :param add_label_ids: list
+        """
         added = []
         if add_label_ids:
             model = self.models[inventory_type]
             exclude = self.exclude(qs, inventory_type, add_label_ids)
-            new_inventory_labels = [
-                self.label_factory(inventory_type, label_id, pk)
-                for label_id in add_label_ids for pk in inventory_ids
-                if pk not in exclude[label_id]
-            ]
+            new_inventory_labels = []
+            for label_id in add_label_ids:
+                for pk in inventory_ids:
+                    if pk not in exclude[label_id]:
+                        new_inventory_label = self.label_factory(inventory_type, label_id, pk)
+                        new_inventory_labels.append(new_inventory_label)
             model.objects.bulk_create(new_inventory_labels)
             added = [
                 self.get_inventory_id(m, inventory_type)

@@ -71,7 +71,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         cycle_id = request.query_params.get('cycle')
         # check if there is a query paramater for the profile_id. If so, then use that one
         profile_id = request.query_params.get('profile_id', profile_id)
@@ -313,7 +313,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         new record through a match and merge round within it's current Cycle.
         """
         body = request.data
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(self.get_organization(request))
 
         taxlot_view_ids = body.get('taxlot_view_ids', [])
         taxlot_states = TaxLotView.objects.filter(
@@ -371,7 +371,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'taxlot', 'cycle', 'state'
             ).get(
                 id=pk,
-                taxlot__organization_id=self.request.GET['organization_id']
+                taxlot__organization_id=self.get_organization(request)
             )
         except TaxLotView.DoesNotExist:
             return {
@@ -515,7 +515,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Get taxlot details for each linked taxlot across org cycles
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         base_view = TaxLotView.objects.select_related('cycle').filter(
             pk=pk,
             cycle__organization_id=organization_id
@@ -557,7 +557,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         taxlot_view = TaxLotView.objects.get(
             pk=pk,
@@ -591,7 +591,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Pair a property to this taxlot
         """
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(self.get_organization(request))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
@@ -614,7 +614,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Unpair a property from this taxlot
         """
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(self.get_organization(request))
         property_id = int(request.query_params.get('property_id'))
         taxlot_id = int(pk)
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
@@ -637,7 +637,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Batch delete several tax lots
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         taxlot_view_ids = request.data.get('taxlot_view_ids', [])
         taxlot_state_ids = TaxLotView.objects.filter(
@@ -657,7 +657,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'taxlot', 'cycle', 'state'
             ).get(
                 id=taxlot_pk,
-                taxlot__organization_id=self.request.GET['organization_id']
+                taxlot__organization_id=self.get_organization(self.request)
             )
             result = {
                 'status': 'success',
