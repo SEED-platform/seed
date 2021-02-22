@@ -4,6 +4,8 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import urllib
+import json
 import logging
 
 from django.conf import settings
@@ -133,19 +135,36 @@ def create_account(request):
         if not redirect_to:
             redirect_to = reverse('seed:home')
         form = CustomCreateUserForm(request.POST)
+        errors = ErrorList()
         if form.is_valid():
-            form.save()
-            new_user = authenticate(
-                username=form.cleaned_data['username'].lower(),
-                password=form.cleaned_data['password1']
-            )
-            login(request, new_user)
-            return HttpResponseRedirect(redirect_to)
-
+            ''' Begin reCAPTCHA validation '''
+            recaptcha_response = request.POST.get('g-recaptcha-response')
+            url = 'https://www.google.com/recaptcha/api/siteverify'
+            values = {
+                'secret': settings.GOOGLE_RECAPTCHA_SECRET_KEY,
+                'response': recaptcha_response
+            }
+            data = urllib.parse.urlencode(values).encode()
+            req = urllib.request.Request(url, data=data)
+            response = urllib.request.urlopen(req)
+            result = json.loads(response.read().decode())
+            ''' End reCAPTCHA validation '''
+            print(result)
+            if result['success']:
+                form.save()
+                new_user = authenticate(
+                    username=form.cleaned_data['username'].lower(),
+                    password=form.cleaned_data['password1']
+                )
+                login(request, new_user)
+                return HttpResponseRedirect(redirect_to)
+            else:
+                errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
+                errors.append('Invalid reCAPTCHA, please try again')
         else:
-            errors = ErrorList()
             errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
             errors.append('Username and/or password were invalid.')
+
     else:
         form = CustomCreateUserForm()
     return render(request, 'landing/create_account.html', locals())
