@@ -20,9 +20,11 @@
                         <table class="signup_table">
                             {{ login_form.as_table }}
                         </table>
-                        <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
+                        <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}"><br>
+                    <div>
                         <a class="create_account" href="{% url "landing:create_account" %}">{% trans "Create an Account" %}</a>
                         <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
+                    </div>
                     </form>
                     {% include "landing/_password_note.html" %}
                 </div>

@@ -304,7 +304,7 @@ body {
 
           input {
             display: inline-block;
-            width: 94%;
+            width: 88%;
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 2px;
@@ -379,9 +379,10 @@ body {
         }
 
         .forgot_password, .create_account {
-          display: block;
-          margin-top: 20px;
+          display: inline-block;
+          margin-top: 5px;
           margin-bottom: 20px;
+          padding: 20px;
         }
 
         .already_signed_up {

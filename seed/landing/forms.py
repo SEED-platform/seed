@@ -30,4 +30,14 @@ class LoginForm(forms.Form):
 class CustomCreateUserForm(UserCreationForm):
     class Meta:
         model = SEEDUser
-        fields = ['username', 'password1']
+        fields = ['username']
+        widgets = {
+            'username': forms.fields.TextInput(attrs={'placeholder': 'Email Address'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CustomCreateUserForm, self).__init__(*args, **kwargs)
+        self.fields['password1'].widget = forms.PasswordInput(
+            attrs={'class': 'field', 'placeholder': 'Password'})
+        self.fields['password2'].widget = forms.PasswordInput(
+            attrs={'class': 'field', 'placeholder': 'Confirm Password'})

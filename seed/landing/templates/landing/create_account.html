@@ -19,13 +19,10 @@
                 <div class="form_title">
                     <h2>{% trans "Create Your Account" %}</h2>
                     <form id="AuthNewPassword" class="signup_form" action="" method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                            <p>
-                                {{ field.label_tag }}<br>
-                                {{ field }}
-                            </p>
-                        {% endfor %}
+                    {% csrf_token %}
+                        <table class="signup_table">
+                            {{ form.as_table }}
+                        </table>
                         <div>
                             <input class="btn btn-primary" type="submit"
                                    value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">
