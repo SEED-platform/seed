@@ -58,7 +58,7 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         """
         Reset all the measures back to the defaults (as provided by BuildingSync)
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         if not organization_id:
             return JsonResponse({
                 'status': 'error', 'message': 'organization_id not provided'},

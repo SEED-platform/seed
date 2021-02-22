@@ -60,7 +60,7 @@ class MainViewTests(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(self.user)
@@ -78,7 +78,7 @@ class GetDatasetsViewsTests(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
@@ -107,10 +107,10 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': 666})
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(403, response.status_code)
         j = response.json()
-        self.assertEqual(j['status'], 'success')
-        self.assertEqual(j['datasets_count'], 0)
+        self.assertEqual(j['status'], 'error')
+        self.assertEqual(j['message'], 'Organization does not exist')
 
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
@@ -163,7 +163,7 @@ class ImportFileViewsTests(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = self.cycle_factory.get_cycle(
@@ -236,7 +236,7 @@ class TestMCMViews(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com',
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
 
         self.client.login(**user_details)
@@ -387,7 +387,7 @@ class TestMCMViews(TestCase):
             'password': 'test_pass',
             'email': 'test_2_user@demo.com',
         }
-        user_2 = User.objects.create_superuser(**user_2_details)
+        user_2 = User.objects.create_user(**user_2_details)
         OrganizationUser.objects.create(
             user=user_2, organization=self.org
         )
@@ -490,7 +490,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
