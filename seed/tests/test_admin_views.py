@@ -35,6 +35,8 @@ class AdminViewsTest(TestCase):
                         'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
+        # for some reason we can't reverse api:v3:organizations-create
+        # so we use -list b/c it's the same url but with different HTTP method
         self.add_org_url = reverse_lazy('api:v3:organizations-list')
         self.add_user_url = reverse_lazy('api:v3:user-list')
 

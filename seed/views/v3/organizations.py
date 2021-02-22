@@ -181,6 +181,8 @@ def cache_match_merge_link_result(summary, identifier, progress_key):
 
 
 class OrganizationViewSet(viewsets.ViewSet):
+    # allow using `pk` in url path for authorization (ie for has_perm_class)
+    authz_org_id_kwarg = 'pk'
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -588,9 +590,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success'})
 
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def query_threshold(self, request, pk=None):
         """
@@ -610,9 +612,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             200: SharedFieldsReturnSerializer
         }
     )
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
@@ -649,9 +651,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                         '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
         )
     )
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['POST'])
     def sub_org(self, request, pk=None):
         """

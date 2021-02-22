@@ -98,11 +98,11 @@ def check_data_chunk(model, ids, dq_id):
         qs = TaxLotState.objects.filter(id__in=ids)
     else:
         qs = None
-    super_org = qs.first().organization
-
-    d = DataQualityCheck.retrieve(super_org.get_parent().id)
+    organization = qs.first().organization
+    super_organization = organization.get_parent()
+    d = DataQualityCheck.retrieve(super_organization.id)
     d.check_data(model, qs.iterator())
-    d.save_to_cache(dq_id)
+    d.save_to_cache(dq_id, organization.id)
 
 
 @shared_task(ignore_result=True)
@@ -130,7 +130,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
     """
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
-    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id)
+    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
 
     progress_data = ProgressData(func_name='check_data', unique_id=dq_id)
     progress_data.delete()
@@ -598,10 +598,10 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
-    # Clear out the previously mapped data
-    DataQualityCheck.initialize_cache(import_file_id)
-
     import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # Clear out the previously mapped data
+    DataQualityCheck.initialize_cache(import_file_id, import_file.import_record.super_organization.id)
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
