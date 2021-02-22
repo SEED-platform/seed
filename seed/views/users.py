@@ -235,7 +235,7 @@ class UserViewSet(viewsets.ViewSet):
         except Exception:
             domain = 'seed-platform.org'
         invite_to_seed(
-            domain, user.email, default_token_generator.make_token(user), user.pk, first_name
+            domain, user.email, default_token_generator.make_token(user), org, user.pk, first_name
         )
 
         return JsonResponse({
