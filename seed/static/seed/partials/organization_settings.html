@@ -156,6 +156,40 @@
 
     <div class="section_content_container">
         <div class="section_content with_padding">
+            <h3 translate>New User Email</h3>
+            <small>Customizes the email sent when a new user is invited to SEED.  The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
+                    <div class="col-sm-3">
+                        <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
+                    <div class="col-sm-3">
+                        <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
+                    <div class="col-sm-3">
+                        <textarea id="new-user-email-content" rows="10" style="resize:vertical;" class="form-control" ng-model="org.new_user_email_content" ng-disabled="::!auth.requires_owner" onfocus="resize_textarea()" onkeyup="resize_textarea()">
+                        </textarea>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
+                    <div class="col-sm-3">
+                        <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="section_content_container">
+        <div class="section_content with_padding">
             <h3 translate>Enable Geocoding</h3>
             <form class="form-horizontal" role="form">
                 <div class="form-group">

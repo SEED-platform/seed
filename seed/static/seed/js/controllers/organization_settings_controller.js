@@ -119,6 +119,12 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
+    resize_textarea = function () {
+      input = document.getElementById("new-user-email-content");
+      input.style.height = '34px';
+      input.style.height = (input.scrollHeight) + "px";
+    };
+
     /**
      * saves the updates settings
      */

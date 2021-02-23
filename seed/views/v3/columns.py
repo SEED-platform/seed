@@ -140,7 +140,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
     @ajax_request_class
     @has_perm_class('can_modify_data')
     def update(self, request, pk=None):
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
 
         request.data['shared_field_type'] = request.data['sharedFieldType']
         del request.data['sharedFieldType']
@@ -273,7 +273,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         """
         List only inventory columns that are mappable
         """
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(self.get_organization(request))
         inventory_type = request.query_params.get('inventory_type')
         if inventory_type not in ['property', 'taxlot']:
             return JsonResponse(

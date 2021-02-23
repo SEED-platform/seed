@@ -587,7 +587,7 @@ class DataQualityCheck(models.Model):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def initialize_cache(identifier=None):
+    def initialize_cache(identifier, organization_id):
         """
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
@@ -601,19 +601,19 @@ class DataQualityCheck(models.Model):
         """
         if identifier is None:
             identifier = randint(100, 100000)
-        cache_key = DataQualityCheck.cache_key(identifier)
+        cache_key = DataQualityCheck.cache_key(identifier, organization_id)
         set_cache_raw(cache_key, [])
         return cache_key, identifier
 
     @staticmethod
-    def cache_key(identifier):
+    def cache_key(identifier, organization_id):
         """
         Static method to return the location of the data_quality results from redis.
 
         :param identifier: Import file primary key
         :return:
         """
-        return "data_quality_results__%s" % identifier
+        return f"data_quality_results__{organization_id}__{identifier}"
 
     def check_data(self, record_type, rows):
         """
@@ -785,7 +785,7 @@ class DataQualityCheck(models.Model):
             if not label_applied and rule.status_label_id in model_labels['label_ids']:
                 self.remove_status_label(label, rule, linked_id)
 
-    def save_to_cache(self, identifier):
+    def save_to_cache(self, identifier, organization_id):
         """
         Save the results to the cache database. The data in the cache are
         stored as a list of dictionaries. The data in this class are stored as
@@ -795,10 +795,9 @@ class DataQualityCheck(models.Model):
         :param identifier: Import file primary key
         :return: None
         """
-
         # change the format of the data in the cache. Make this a list of
         # objects instead of object of objects.
-        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier)) or []
+        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier, organization_id)) or []
 
         results = []
         for key, value in self.results.items():
@@ -807,7 +806,7 @@ class DataQualityCheck(models.Model):
         existing_results += results
 
         z = sorted(existing_results, key=lambda k: k['id'])
-        set_cache_raw(DataQualityCheck.cache_key(identifier), z, 86400)  # 24 hours
+        set_cache_raw(DataQualityCheck.cache_key(identifier, organization_id), z, 86400)  # 24 hours
 
     def initialize_rules(self):
         """
@@ -1023,7 +1022,9 @@ class DataQualityCheck(models.Model):
 
         :param label_class: statuslabel object, either propertyview label or taxlotview label
         :param rule: rule object
-        :param linked_id: id of propertystate or taxlotstate object
+        :param linked_id: id of propertyview or taxlotview object
+        :param row_id:
+        :param add_to_results: bool
         :return: boolean, if labeled was applied
         """
         if rule.status_label_id is not None and linked_id is not None:

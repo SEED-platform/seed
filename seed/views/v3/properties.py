@@ -152,7 +152,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def _get_filtered_results(self, request, profile_id):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         cycle_id = request.query_params.get('cycle')
         # check if there is a query paramater for the profile_id. If so, then use that one
         profile_id = request.query_params.get('profile_id', profile_id)
@@ -327,7 +327,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         body = dict(request.data)
         interval = body['interval']
         excluded_meter_ids = body['excluded_meter_ids']
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         property_view = PropertyView.objects.get(
             pk=pk,
@@ -348,7 +348,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Retrieves meters for the property
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         property_view = PropertyView.objects.get(
             pk=pk,
@@ -435,7 +435,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         # NOTE: we are using a POST http method b/c swagger and django handle
         # arrays differently in query parameters. ie this is just simpler
-        org_id = request.data.get('organization_id', None)
+        org_id = self.get_organization(request)
         profile_id = request.data.get('profile_id', -1)
         cycle_ids = request.data.get('cycle_ids', [])
 
@@ -519,7 +519,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Check to see if the given Properties (given by ID) have Meters.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         property_view_ids = request.data.get('property_view_ids', [])
         property_views = PropertyView.objects.filter(
             id__in=property_view_ids,
@@ -554,7 +554,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         new record through a match and merge round within it's current Cycle.
         """
         body = request.data
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(self.get_organization(request))
 
         property_view_ids = body.get('property_view_ids', [])
         property_states = PropertyView.objects.filter(
@@ -613,7 +613,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'property', 'cycle', 'state'
             ).get(
                 id=pk,
-                property__organization_id=self.request.GET['organization_id']
+                property__organization_id=self.get_organization(request)
             )
         except PropertyView.DoesNotExist:
             return {
@@ -757,7 +757,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Get property details for each linked property across org cycles
         """
-        organization_id = request.GET.get('organization_id', None)
+        organization_id = self.get_organization(request)
         base_view = PropertyView.objects.select_related('cycle').filter(
             pk=pk,
             cycle__organization_id=organization_id
@@ -810,7 +810,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Note that this method can return a view_id of None if the given -View
         was not involved in a merge.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         property_view = PropertyView.objects.get(
             pk=pk,
@@ -845,7 +845,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Pair a taxlot to this property
         """
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(self.get_organization(request))
         property_id = int(pk)
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
@@ -869,7 +869,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Unpair a taxlot from this property
         """
-        organization_id = int(request.query_params.get('organization_id'))
+        organization_id = int(self.get_organization(request))
         property_id = int(pk)
         taxlot_id = int(request.query_params.get('taxlot_id'))
         return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
@@ -891,7 +891,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Batch delete several properties
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         property_view_ids = request.data.get('property_view_ids', [])
         property_state_ids = PropertyView.objects.filter(
@@ -918,7 +918,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'property', 'cycle', 'state'
             ).get(
                 id=pk,
-                property__organization_id=self.request.GET['organization_id']
+                property__organization_id=self.get_organization(self.request)
             )
             result = {
                 'status': 'success',
@@ -975,7 +975,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             result.pop('id')
 
             # Grab extra_data columns to be shown in the result
-            organization_id = request.query_params['organization_id']
+            organization_id = self.get_organization(request)
             all_extra_data_columns = Column.objects.filter(
                 organization_id=organization_id,
                 is_extra_data=True,
@@ -1159,7 +1159,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ).get(
                 property_id=pk,
                 cycle_id=cycle_pk,
-                property__organization_id=self.request.GET['organization_id']
+                property__organization_id=self.get_organization(self.request)
             )
             result = {
                 'status': 'success',
@@ -1307,7 +1307,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         the_file = request.data['file']
         file_type = BuildingFile.str_to_file_type(request.data.get('file_type', 'Unknown'))
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         cycle_pk = request.query_params.get('cycle_id', None)
         org_id = self.get_organization(self.request)
 

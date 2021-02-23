@@ -43,13 +43,13 @@ from seed.models.scenarios import (
 from seed.serializers.tax_lot_properties import (
     TaxLotPropertySerializer
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
 
-class TaxLotPropertyViewSet(GenericViewSet):
+class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     """
     The TaxLotProperty field is used to return the properties and tax lots from the join table.
     This method presently only works with the CSV, but should eventually be extended to be the
@@ -92,7 +92,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
         if not cycle_pk:
             return JsonResponse(
                 {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-        org_id = request.query_params['organization_id']
+        org_id = self.get_organization(request)
         if 'profile_id' not in request.data:
             profile_id = None
         else:
