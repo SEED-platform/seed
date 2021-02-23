@@ -79,8 +79,10 @@ html, body {
 }
 
 body {
+  align-items: center;
   background: #808080 url("../images/landing/landing-bg.png") no-repeat;
   background-size: cover;
+  display: flex;
   font-family: $font-family-base;
   font-size: 16px;
   font-weight: normal;
