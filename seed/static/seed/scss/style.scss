@@ -837,38 +837,6 @@ a:not([href]) {
       }
     }
 
-    .home_jump_nav_container {
-      position: relative;
-
-      .home_jump_nav {
-        margin: 0 auto;
-        padding: 0 10%;
-        position: relative;
-        overflow: auto;
-        text-align: center;
-
-        a {
-          width: 25%;
-          position: relative;
-          overflow: auto;
-          float: left;
-          display: block;
-          padding: 20px;
-          font-size: 18px;
-          text-decoration: none;
-
-          i {
-            padding-right: 12px;
-          }
-
-          &:hover {
-            background-color: $gray_lightest;
-            text-decoration: none;
-          }
-        }
-      }
-    }
-
     .jumbotron {
       background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
       background-size: cover;

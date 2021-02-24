@@ -1,13 +1,6 @@
 <div class="section">
   <div class="section_content_container">
     <div class="section_content">
-      <div class="home_jump_nav_container">
-        <div class="home_jump_nav">
-          <a id="nav-inventory" ui-sref="inventory_list(::{inventory_type: 'properties'})"><span ng-include="'/static/seed/images/icon-city.svg'"></span>{$:: 'Inventory' | translate $}</a>
-          <a id="nav-data" ui-sref="dataset_list" ng-show="::menu.user.organization.user_role !== 'viewer'"><i class="fa fa-sitemap"></i>{$:: 'Data' | translate $}</a>
-          <a ui-sref="contact"><i class="fa fa-question-circle"></i>{$:: 'Contact' | translate $}</a>
-        </div>
-      </div>
       <div class="jumbotron">
         <div class="home_hero_content_container">
           <h1 translate>Getting Started</h1>
