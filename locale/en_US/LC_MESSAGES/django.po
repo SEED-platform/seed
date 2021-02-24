@@ -2478,7 +2478,9 @@ msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
-msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our\n                            system will auto-match your records."
+msgstr ""
+"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+"                            system will auto-match your records."
 
 msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
 msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our system will auto-match your records."
@@ -2516,6 +2518,9 @@ msgstr "This action replaces any of your current columns with the comma-delmited
 
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
+
+msgid "This email link is invalid."
+msgstr "This email link is invalid."
 
 msgid "This label name is already taken."
 msgstr "This label name is already taken."
@@ -2726,6 +2731,9 @@ msgstr "We've detected an outdated browser."
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "We've e-mailed instructions for resetting your password."
 msgstr "We've e-mailed instructions for resetting your password."
+
+msgid "We've sent a sign in link to your email to access your account."
+msgstr "We've sent a sign in link to your email to access your account."
 
 msgid "Weather Norm. Site EUI"
 msgstr "Weather Norm. Site EUI"
