@@ -362,6 +362,7 @@ a:not([href]) {
 
         .logo {
           display: block;
+          color: black;
 
           .logo_text {
             width: 234px;
@@ -377,6 +378,11 @@ a:not([href]) {
               font-weight: bold;
             }
           }
+        }
+
+        .logo:hover {
+          text-decoration: none;
+          color: #23527c;
         }
       }
 
