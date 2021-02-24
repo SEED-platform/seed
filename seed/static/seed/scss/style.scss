@@ -235,6 +235,14 @@ a:not([href]) {
       text-overflow: ellipsis;
     }
 
+    #sidebar-menu-open,
+    #sidebar-menu-close {
+      font-size: 1em;
+      position: absolute;
+      top: .3em;
+      left: 1.5em;
+    }
+
     .item {
       position: relative;
       overflow: hidden;
@@ -349,31 +357,6 @@ a:not([href]) {
       width: 100%;
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
-
-      .menu_toggle_container,
-      .logo_container,
-      .add_menu_container {
-        position: relative;
-        float: left;
-      }
-
-      .menu_toggle_container {
-
-        .menu_toggle {
-          display: block;
-          cursor: pointer;
-          padding: 18px 20px 15px 20px;
-          border-right: 1px solid $gray_lighter;
-
-          i {
-            font-size: 18px;
-          }
-
-          &:hover {
-            background-color: $gray_lightest;
-          }
-        }
-      }
 
       .logo_container {
 

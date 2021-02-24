@@ -1,6 +1,14 @@
 {% load compress %}{# requires menu_controller angularjs controller and menu_controller.js #}
 <div ng-class="{expanded: expanded_controller, collapsed: collapsed_controller, sidebar: true, hide_transition:is_initial_state}">
     <div class="menu">
+<!--         <div class="menu_toggle_container">
+            <a class="menu_toggle" ng-click="toggle_menu()">
+                <i class="fa fa-bars"></i>
+            </a>
+        </div> -->
+        <a id="sidebar-menu" class="item" ng-click="toggle_menu()">
+            <div class="icon"><i class="fa fa-bars"></i><i ng-show="!expanded_controller" id="sidebar-menu-open" class="fa fa-chevron-right"></i><i ng-show="expanded_controller" id="sidebar-menu-close" class="fa fa-chevron-left"></i></div>
+        </a>
         <a id="sidebar-profile" class="item" ui-sref="profile" ui-sref-active="active">
             <div class="icon"><i class="fa fa-cog"></i></div>
             <div ng-show="!is_initial_state" class="item_name">{$ username $}</div>
