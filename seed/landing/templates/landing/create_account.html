@@ -20,11 +20,11 @@
                 <div class="form_title">
                     <h2>{% trans "Create Your Account" %}</h2>
                     <form id="AuthNewPassword" class="signup_form" action="" method="post">
-                    {% csrf_token %}
+                        {% csrf_token %}
                         <table class="signup_table">
                             {{ form.as_table }}
                         </table>
-                    {% include "landing/_password_note.html" %}
+                        {% include "landing/_password_note.html" %}
                         <div  style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV"></div>
                         <div style="padding-bottom: 2em">
                             <input class="btn btn-primary" type="submit"
