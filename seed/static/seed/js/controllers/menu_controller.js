@@ -18,6 +18,7 @@ angular.module('BE.seed.controller.menu', [])
     '$timeout',
     '$state',
     '$cookies',
+    '$window',
     function (
       $rootScope,
       $scope,
@@ -32,7 +33,8 @@ angular.module('BE.seed.controller.menu', [])
       modified_service,
       $timeout,
       $state,
-      $cookies
+      $cookies,
+      $window
     ) {
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -88,9 +90,12 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
+      const STORAGE_KEY = "seed_nav_is_expanded";
       function init_menu () {
-        //Default to false but use cookie value if one has been set
-        var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
+        if ($window.localStorage.getItem(STORAGE_KEY) === null) {
+          $window.localStorage.setItem(STORAGE_KEY, 'true');
+        }
+        var isNavExpanded = $window.localStorage.getItem(STORAGE_KEY) === 'true';
         $scope.expanded_controller = isNavExpanded;
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
@@ -115,7 +120,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.wide_controller = !$scope.wide_controller;
         try {
           //TODO : refactor to put() when we move to Angular 1.3 or greater
-          $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString();
+          $window.localStorage.setItem(STORAGE_KEY, $scope.expanded_controller.toString());
         } catch (err) {
           //it's ok if the cookie can't be written, so just report in the log and move along.
           $log.error('Couldn\'t write cookie for nav state. Error: ', err);
