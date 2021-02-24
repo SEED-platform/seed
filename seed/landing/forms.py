@@ -32,7 +32,7 @@ class CustomCreateUserForm(UserCreationForm):
         model = SEEDUser
         fields = ['username']
         widgets = {
-            'username': forms.fields.TextInput(attrs={'placeholder': 'Email Address'})
+            'username': forms.fields.EmailInput(attrs={'placeholder': 'Email Address'})
         }
 
     def __init__(self, *args, **kwargs):
