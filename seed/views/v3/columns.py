@@ -6,6 +6,7 @@
 """
 import json
 
+from django.db import transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -13,12 +14,13 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 
+from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
+from seed.data_importer.tasks import hash_state_object
 from seed.models import (
     Column,
-    ColumnMapping,
     DATA_STATE_MATCHING,
     Organization,
     PropertyState,
@@ -169,49 +171,19 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 'message': 'Only extra_data columns can be deleted'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Delete key from jsonb data
-        if column.table_name == 'PropertyState':
-            states = PropertyState.objects.filter(organization_id=org_id, data_state=DATA_STATE_MATCHING,
-                                                  extra_data__has_key=column.column_name)
-            state_count = states.count()
-            # far faster than iterating states, popping the key, and saving, but doesn't update the hash
-            # with connection.cursor() as cursor:
-            #     cursor.execute("UPDATE seed_propertystate "
-            #                    "SET extra_data = extra_data - %s "
-            #                    "WHERE organization_id = %s AND data_state = %s",
-            #                    [column.column_name, org_id, DATA_STATE_MATCHING])
-
-        elif column.table_name == 'TaxLotState':
-            states = TaxLotState.objects.filter(organization_id=org_id, data_state=DATA_STATE_MATCHING,
-                                                extra_data__has_key=column.column_name)
-            state_count = states.count()
-            # far faster than iterating states, popping the key, and saving, but doesn't update the hash
-            # with connection.cursor() as cursor:
-            #     cursor.execute("UPDATE seed_taxlotstate "
-            #                    "SET extra_data = extra_data - %s "
-            #                    "WHERE organization_id = %s AND data_state = %s",
-            #                    [column.column_name, org_id, DATA_STATE_MATCHING])
-
-        else:
+        if column.table_name != 'PropertyState' and column.table_name != 'TaxLotState':
             return JsonResponse({
                 'success': False,
                 'message': 'Unexpected table_name \'%s\' for column with pk=%s' % (column.table_name, pk)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        # Pop the key and update the hash
-        for state in states:
-            state.extra_data.pop(column.column_name)
-            state.save()
+        return JsonResponse(tasks.delete_organization_column(org_id, column))
 
-        # Delete all mappings from raw column names to the mapped column, then delete the mapped column
-        ColumnMapping.objects.filter(column_mapped=column).delete()
-        column.delete()
-
-        table_display_name = column.table_name if state_count == 1 else column.table_name + 's'
-        return JsonResponse({
-            'success': True,
-            'message': 'Removed \'%s\' from %s %s' % (column.column_name, state_count, table_display_name)
-        }, status=status.HTTP_200_OK)
+        # table_display_name = column.table_name if state_count == 1 else column.table_name + 's'
+        # return JsonResponse({
+        #     'success': True,
+        #     'message': 'Removed \'%s\' from %s %s' % (column.column_name, state_count, table_display_name)
+        # }, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({

@@ -6,10 +6,11 @@
 <div class="modal-body row" ng-switch="state">
     <div class="col-sm-12">
         <div ng-switch-default>
-            This will delete the extra_data column '{$ column_name $}' and all associated data. Are you sure you want to continue?
+            <p>This will delete the extra_data column '{$ column_name $}' and all associated data.</p>
+            <p>This operation may take a long time to complete, are you sure you want to continue?</p>
         </div>
         <div ng-switch-when="running">
-            <uib-progressbar class="progress-striped active" animate="false" value="100" type="success"></uib-progressbar>
+            <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success">{$ progressBar.status_message | translate $}</uib-progressbar>
         </div>
         <div ng-switch-when="done">{$ result $}</div>
     </div>

@@ -18,6 +18,7 @@ from django.template import Template, Context, loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
+from seed.data_importer.tasks import hash_state_object
 from seed.decorators import lock_and_track
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
@@ -25,7 +26,7 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
     Property, PropertyState,
-    TaxLot, TaxLotState
+    TaxLot, TaxLotState, DATA_STATE_MATCHING, ColumnMapping
 )
 
 logger = get_task_logger(__name__)
@@ -150,6 +151,16 @@ def _finish_delete(results, org_pk, prog_key):
 
 
 @shared_task
+def _finish_delete_column(results, column, prog_key):
+    # Delete all mappings from raw column names to the mapped column, then delete the mapped column
+    ColumnMapping.objects.filter(column_mapped=column).delete()
+    column.delete()
+
+    progress_data = ProgressData.from_key(prog_key)
+    return progress_data.finish_with_success()
+
+
+@shared_task
 @lock_and_track
 def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes all properties & taxlots within an organization."""
@@ -209,6 +220,70 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
 
     return progress_data.result()
+
+
+@shared_task
+@lock_and_track
+def delete_organization_column(org_pk, column, prog_key=None, chunk_size=100, *args, **kwargs):
+    """Deletes an extra_data column from all merged property/taxlot states."""
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
+        func_name='delete_organization_column', unique_id=column.id)
+
+    ids = []
+
+    if column.table_name == 'PropertyState':
+        ids = list(
+            PropertyState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
+                                         extra_data__has_key=column.column_name).values_list('id', flat=True)
+        )
+    elif column.table_name == 'TaxLotState':
+        ids = list(
+            TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
+                                       extra_data__has_key=column.column_name).values_list('id', flat=True)
+        )
+
+    total = len(ids)
+
+    if total == 0:
+        return progress_data.finish_with_success('No affected records')
+
+    # total steps is the total number of properties divided by the chunk size
+    progress_data.total = total / float(chunk_size)
+    progress_data.save()
+
+    tasks = []
+    # we could also use .s instead of .subtask and not wrap the *args
+    for chunk_ids in batch(ids, chunk_size):
+        tasks.append(
+            _delete_organization_column_chunk.subtask(
+                (chunk_ids, column, progress_data.key)
+            )
+        )
+    chord(tasks, interval=15)(_finish_delete_column.subtask([column, progress_data.key]))
+
+    return progress_data.result()
+
+
+@shared_task
+def _delete_organization_column_chunk(chunk_ids, column, prog_key, *args, **kwargs):
+    """updates a list of ``chunk_ids`` and increments the cache"""
+    print('Working on chunk:' + str(len(chunk_ids)))
+    if column.table_name == 'PropertyState':
+        states = PropertyState.objects.filter(id__in=chunk_ids)
+    else:
+        states = TaxLotState.objects.filter(id__in=chunk_ids)
+
+    for state in states:
+        del state.extra_data[column.column_name]
+
+        # Bypass .save(), this is 80% faster since we only need to update extra_data and hash_object
+        states.filter(id=state.id).update(extra_data=state.extra_data,
+                                          hash_object=hash_state_object(state))
+        # Alternate method
+        # state.save(update_fields=['extra_data', 'hash_object'])
+
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step()
 
 
 @shared_task
