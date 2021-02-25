@@ -262,6 +262,15 @@ a:not([href]) {
         background-color: $gray_dark;
       }
 
+      &:hover .fa-bars,
+      & #expand-collapse-icon {
+        display: none;
+      }
+
+      &:hover #expand-collapse-icon {
+        display: inline;
+      }
+
       .icon {
         position: relative;
         float: left;
@@ -392,6 +401,11 @@ a:not([href]) {
             .logo_text_seed {
               font-family: $font-family-base;
               font-weight: bold;
+            }
+
+            a, a:visited, a:hover, a:active {
+              color: inherit;
+              text-decoration: none;
             }
           }
         }
