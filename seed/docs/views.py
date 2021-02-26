@@ -4,18 +4,9 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.conf import settings
-from django.contrib import auth
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import SetPasswordForm
-from django.urls import reverse
-from django.forms.forms import NON_FIELD_ERRORS
-from django.forms.utils import ErrorList
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from collections import namedtuple
-from json import dumps
 import os
 import re
 
@@ -28,7 +19,19 @@ FaqItem = namedtuple('FaqItem', ['question', 'answer', 'tags'])
 
 
 def parse_faq_file(faq_file):
-    """Turns an faq file into a dict
+    """Turns an faq file into an FaqItem, containing the question, the answer as
+    HTML, and any included tags.
+
+    The file is expected to have a yaml frontmatter, followed by a markdown body.
+    For example:
+    ```
+    ---
+    question: What is your name?
+    tags: [foo, bar]
+    ---
+    # Title!
+    This is markdown, so links, images, lists, etc are valid
+    ```
 
     :param faq_file: str | DirEntry
     :return: FaqItem
@@ -45,6 +48,9 @@ def parse_faq_file(faq_file):
 
 
 def faq_page(request):
+    """Shows the FAQ Page"""
+    # Each directory under faq is a question "category", and every markdown
+    # file is a question/answer item.
     faq_dir = os.path.join(os.path.dirname(__file__), 'faq')
     faq_data = {}
     for category_dir in os.scandir(faq_dir):
