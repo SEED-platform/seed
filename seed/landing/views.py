@@ -159,6 +159,7 @@ def create_account(request):
                 user = form.save(commit=False)
                 user.username = user.username.lower()
                 user.is_active = False
+                user.save()
                 try:
                     domain = request.get_host()
                 except Exception:
