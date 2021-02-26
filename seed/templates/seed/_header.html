@@ -9,7 +9,7 @@
             </div>
         </div>
     </div>
-    <div class="add_menu_container">
+    <div class="add_menu_container" ng-if="logged_in">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
             <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
                 {$ menu.user.organization.name $} <span class="caret"></span>

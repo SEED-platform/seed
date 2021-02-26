@@ -40,6 +40,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.narrow_controller = false;
       $scope.wide_controller = false;
       $scope.username = window.BE.username;
+      $scope.logged_in = $scope.username.length > 0;
       $scope.urls = urls;
       $scope.datasets_count = 0;
       $scope.organizations_count = 0;
@@ -181,6 +182,10 @@ angular.module('BE.seed.controller.menu', [])
       }, true);
 
       var init = function () {
+        if (!$scope.logged_in) {
+          return;
+        }
+
         organization_service.get_organizations_brief().then(function (data) {
           $scope.organizations_count = data.organizations.length;
           $scope.menu.user.organizations = data.organizations;

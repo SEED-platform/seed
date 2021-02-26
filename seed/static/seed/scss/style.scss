@@ -271,6 +271,13 @@ a:not([href]) {
         display: inline;
       }
 
+      &.disabled-item,
+      &.disabled-item path {
+        pointer-events: none;
+        color: lighten($gray, 5%);
+        fill: lighten($gray, 5%);
+      }
+
       .icon {
         position: relative;
         float: left;
@@ -3701,4 +3708,44 @@ $pairedCellWidth: 60px;
 .glyphicon[disabled] {
   pointer-events: none;
   opacity: 0.3;
+}
+
+/*
+FAQ page
+*/
+.faq-container {
+  padding: 0px 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.faq-search-input {
+  width: 100%;
+  padding: 10px 15px;
+  font-size: 16px;
+}
+
+.faq-category-title {
+  text-transform: capitalize;
+  border-bottom: 1px solid $grayLight;
+  padding: 10px;
+  margin-bottom: 5px;
+
+  &:hover {
+    background-color: $gray_lightest;
+  }
+
+  h3 {
+    margin: 0px;
+  }
+}
+
+.faq-answer {
+
+  img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 100%;
+  }
 }
