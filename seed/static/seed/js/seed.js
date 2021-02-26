@@ -99,7 +99,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
-  'BE.seed.controller.update_item_labels_modal'
+  'BE.seed.controller.update_item_labels_modal',
+  'BE.docs.controller.faq'
 ]);
 angular.module('BE.seed.filters', [
   'district',

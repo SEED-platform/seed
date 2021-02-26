@@ -49,6 +49,7 @@ urlpatterns = [
     # Application
     url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
+    url(r'^documentation/', include(('seed.docs.urls', 'seed.docs'), namespace='docs')),
 
     # root configuration items
     url(r'^i18n/', include('django.conf.urls.i18n')),

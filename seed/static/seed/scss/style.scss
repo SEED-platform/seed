@@ -3729,7 +3729,6 @@ FAQ page
   text-transform: capitalize;
   border-bottom: 1px solid $grayLight;
   padding: 10px;
-  margin-bottom: 5px;
 
   &:hover {
     background-color: $gray_lightest;
@@ -3738,6 +3737,10 @@ FAQ page
   h3 {
     margin: 0px;
   }
+}
+
+.faq-category-content {
+  padding-top: 5px;
 }
 
 .faq-answer {
