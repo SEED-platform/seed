@@ -159,16 +159,20 @@ def create_account(request):
                 user = form.save(commit=False)
                 user.username = user.username.lower()
                 user.is_active = False
-                user.save()
                 try:
-                    domain = request.get_host()
+                    user.save()
+                    try:
+                        domain = request.get_host()
+                    except Exception:
+                        domain = 'seed-platform.org'
+                    invite_new_user_to_seed(
+                        domain, user.email, default_token_generator.make_token(user),
+                        user.pk, user.email
+                    )
+                    return redirect('landing:account_activation_sent')
                 except Exception:
-                    domain = 'seed-platform.org'
-                invite_new_user_to_seed(
-                    domain, user.email, default_token_generator.make_token(user),
-                    user.pk, user.email
-                )
-                return redirect('landing:account_activation_sent')
+                    errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
+                    errors.append('Username and/or password already exist.')
             else:
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Invalid reCAPTCHA, please try again')
