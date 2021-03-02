@@ -840,16 +840,18 @@ a:not([href]) {
     .jumbotron {
       background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
       background-size: cover;
-      height: 402px;
+      min-height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;
       color: $white;
 
       .home_hero_content_container {
         background-color: rgba(20, 20, 50, 0.3);
-        margin: 0 18% 0 0;
+        margin: 0;
         padding: 30px;
         border-radius: 10px;
+        text-shadow: 1px 1px 1px black;
+        box-shadow: 0px 0px 20px rgba(255, 255, 255, .25);
 
         h1 {
           font-weight: bold;
@@ -865,65 +867,66 @@ a:not([href]) {
       p {
         margin-bottom: 0;
       }
+
+      .content_col {
+
+        .content_col_header {
+          position: relative;
+          overflow: auto;
+
+          .content_col_header_left {
+            position: relative;
+            float: left;
+
+            i {
+              padding-top: 7px;
+              padding-right: 10px;
+              font-size: 48px;
+
+              &.fa-cloud-upload {
+                color: $lightBlue;
+              }
+
+              &.fa-exchange {
+                color: lighten($purple, 25%);
+              }
+
+              &.fa-check-square {
+                color: lighten($green, 20%);
+              }
+            }
+          }
+
+          .content_col_header_right {
+            h3 {
+              font-size: 20px;
+              font-weight: bold;
+            }
+          }
+        }
+
+        .copy {
+          clear: both;
+          padding: 5px 30px 0 0;
+          font-size: 16px;
+        }
+      }
     }
 
-    .whats_new_container {
+    .getting_started_container {
       padding: 0 10%;
 
-      .whats_new {
+      .getting_started {
 
         h2 {
           font-weight: bold;
           margin: 0;
           padding: 20px 0;
           text-align: center;
-          border-bottom: 1px solid $gray_lightest;
-
         }
 
-        .content_col {
-          margin-top: 10px;
-
-          .content_col_header {
-            position: relative;
-            overflow: auto;
-
-            .content_col_header_left {
-              position: relative;
-              float: left;
-
-              i {
-                padding-top: 7px;
-                padding-right: 10px;
-                font-size: 48px;
-
-                &.fa-cloud-upload {
-                  color: $lightBlue;
-                }
-
-                &.fa-exchange {
-                  color: lighten($purple, 25%);
-                }
-
-                &.fa-check-square {
-                  color: lighten($green, 20%);
-                }
-              }
-            }
-
-            .content_col_header_right {
-              h3 {
-                font-size: 20px;
-                font-weight: bold;
-              }
-            }
-          }
-
-          .copy {
-            clear: both;
-            padding: 5px 30px 0 0;
-            font-size: 16px;
-          }
+        a {
+          width: 100%;
         }
       }
     }
