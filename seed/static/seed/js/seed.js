@@ -34,6 +34,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ngSanitize'
 ]);
 angular.module('BE.seed.controllers', [
+  'BE.docs.controller.faq',
   'BE.seed.controller.about',
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
@@ -99,8 +100,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
-  'BE.seed.controller.update_item_labels_modal',
-  'BE.docs.controller.faq'
+  'BE.seed.controller.update_item_labels_modal'
 ]);
 angular.module('BE.seed.filters', [
   'district',
