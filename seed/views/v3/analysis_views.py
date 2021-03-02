@@ -13,11 +13,11 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AnalysisPropertyView
 from seed.serializers.analysis_property_views import AnalysisPropertyViewSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
-class AnalysisPropertyViewViewSet(viewsets.ViewSet):
+class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisPropertyViewSerializer
     model = AnalysisPropertyView
 
@@ -27,7 +27,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def list(self, request, analysis_pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             views_queryset = AnalysisPropertyView.objects.filter(analysis=analysis_pk, analysis__organization_id=organization_id)
         except AnalysisPropertyView.DoesNotExist:
@@ -50,7 +50,7 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def retrieve(self, request, analysis_pk, pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             view = AnalysisPropertyView.objects.get(id=pk, analysis=analysis_pk, analysis__organization_id=organization_id)
         except AnalysisPropertyView.DoesNotExist:

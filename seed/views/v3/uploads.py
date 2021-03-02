@@ -9,6 +9,7 @@ import pint
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+import pandas as pd
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -22,13 +23,13 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     SEED_DATA_SOURCES,
     PORTFOLIO_RAW)
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
 
 
-class UploadViewSet(viewsets.ViewSet):
+class UploadViewSet(viewsets.ViewSet, OrgMixin):
     """
     Endpoint to upload data files to, if uploading to local file storage.
     Valid source_type values are found in ``seed.models.SEED_DATA_SOURCES``
@@ -69,9 +70,9 @@ class UploadViewSet(viewsets.ViewSet):
             ),
         ]
     )
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
@@ -99,11 +100,20 @@ class UploadViewSet(viewsets.ViewSet):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
+        extension = the_file.name.split(".")[1]
+        if extension == "xlsx" or extension == "xls":
+            check = pd.read_excel(the_file)
+            if check.empty:
+                return JsonResponse({
+                    'success': False,
+                    'message': "Import %s was empty" % the_file.name
+                })
+
         # save the file
         with open(path, 'wb+') as temp_file:
             for chunk in the_file.chunks():
                 temp_file.write(chunk)
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         import_record_pk = request.POST.get('import_record', request.GET.get('import_record'))
         try:
             record = ImportRecord.objects.get(
@@ -180,9 +190,9 @@ class UploadViewSet(viewsets.ViewSet):
             description='An object containing meta data for a property'
         )
     )
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """

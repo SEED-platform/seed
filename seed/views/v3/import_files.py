@@ -33,7 +33,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
                          TaxLotProperty, TaxLotState, get_column_mapping,
                          obj_to_dict)
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
 
@@ -113,7 +113,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     return [dict(zip(header, row)) for row in rows]
 
 
-class ImportFileViewSet(viewsets.ViewSet):
+class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
     queryset = ImportFile.objects.all()
 
@@ -157,15 +157,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def first_five_rows(self, request, pk=None):
         """
         Retrieves the first five rows of an ImportFile.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         try:
             import_file = ImportFile.objects.get(
                 pk=pk,
@@ -194,15 +194,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def raw_column_names(self, request, pk=None):
         """
         Retrieves a list of all column names from an ImportFile.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -236,7 +236,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         """
         import_file_id = pk
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
 
         try:
@@ -399,7 +399,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         remap = body.get('remap', False)
         mark_as_done = body.get('mark_as_done', True)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         import_file = ImportFile.objects.filter(
             pk=pk,
             import_record__super_organization_id=org_id
@@ -423,7 +423,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             ImportFile.objects.get(
@@ -447,7 +447,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -476,7 +476,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to call BuildingSync's use case validation
         tool.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -515,7 +515,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass file_id of file to save'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -570,7 +570,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass import_file_id'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -603,7 +603,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -758,7 +758,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Returns suggested mappings from an uploaded file's headers to known
         data fields.
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
 
         result = {'status': 'success'}
 
@@ -847,7 +847,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Deletes an import file
         """
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(self.get_organization(request))
         try:
             import_file = ImportFile.objects.get(
                 pk=pk,
@@ -891,7 +891,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Returns validated type units and proposed imports
         """
-        org_id = request.query_params.get('organization_id')
+        org_id = self.get_organization(request)
         view_id = request.query_params.get('view_id')
 
         try:
@@ -936,7 +936,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Returns validated type units, proposed imports and unlinkable PM ids
         """
-        org_id = request.query_params.get('organization_id')
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(

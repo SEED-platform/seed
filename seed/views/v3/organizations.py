@@ -107,9 +107,15 @@ def _dict_org(request, organizations):
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
+            'property_display_field': o.property_display_field,
+            'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
             'thermal_conversion_assumption': o.thermal_conversion_assumption,
             'comstock_enabled': o.comstock_enabled,
+            'new_user_email_from': o.new_user_email_from,
+            'new_user_email_subject': o.new_user_email_subject,
+            'new_user_email_content': o.new_user_email_content,
+            'new_user_email_signature': o.new_user_email_signature
         }
         orgs.append(org)
 
@@ -175,6 +181,8 @@ def cache_match_merge_link_result(summary, identifier, progress_key):
 
 
 class OrganizationViewSet(viewsets.ViewSet):
+    # allow using `pk` in url path for authorization (ie for has_perm_class)
+    authz_org_id_kwarg = 'pk'
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
@@ -516,6 +524,46 @@ class OrganizationViewSet(viewsets.ViewSet):
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
 
+        # Update property_display_field option
+        property_display_field = posted_org.get('property_display_field', 'address_line_1')
+        if property_display_field != org.property_display_field:
+            org.property_display_field = property_display_field
+
+        # Update taxlot_display_field option
+        taxlot_display_field = posted_org.get('taxlot_display_field', 'address_line_1')
+        if taxlot_display_field != org.taxlot_display_field:
+            org.taxlot_display_field = taxlot_display_field
+
+        # update new user email from option
+        new_user_email_from = posted_org.get('new_user_email_from')
+        if new_user_email_from != org.new_user_email_from:
+            org.new_user_email_from = new_user_email_from
+        if not org.new_user_email_from:
+            org.new_user_email_from = Organization._meta.get_field('new_user_email_from').get_default()
+
+        # update new user email subject option
+        new_user_email_subject = posted_org.get('new_user_email_subject')
+        if new_user_email_subject != org.new_user_email_subject:
+            org.new_user_email_subject = new_user_email_subject
+        if not org.new_user_email_subject:
+            org.new_user_email_subject = Organization._meta.get_field('new_user_email_subject').get_default()
+
+        # update new user email content option
+        new_user_email_content = posted_org.get('new_user_email_content')
+        if new_user_email_content != org.new_user_email_content:
+            org.new_user_email_content = new_user_email_content
+        if not org.new_user_email_content:
+            org.new_user_email_content = Organization._meta.get_field('new_user_email_content').get_default()
+        if '{{sign_up_link}}' not in org.new_user_email_content:
+            org.new_user_email_content += '\n\nSign up here: {{sign_up_link}}'
+
+        # update new user email signature option
+        new_user_email_signature = posted_org.get('new_user_email_signature')
+        if new_user_email_signature != org.new_user_email_signature:
+            org.new_user_email_signature = new_user_email_signature
+        if not org.new_user_email_signature:
+            org.new_user_email_signature = Organization._meta.get_field('new_user_email_signature').get_default()
+
         comstock_enabled = posted_org.get('comstock_enabled', False)
         if comstock_enabled != org.comstock_enabled:
             org.comstock_enabled = comstock_enabled
@@ -542,9 +590,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({'status': 'success'})
 
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def query_threshold(self, request, pk=None):
         """
@@ -564,9 +612,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             200: SharedFieldsReturnSerializer
         }
     )
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['GET'])
     def shared_fields(self, request, pk=None):
         """
@@ -603,9 +651,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                         '- sub_org_owner_email: Email of the owner of the sub organization, which must already exist',
         )
     )
-    @has_perm_class('requires_member')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['POST'])
     def sub_org(self, request, pk=None):
         """
