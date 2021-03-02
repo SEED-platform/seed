@@ -1,3 +1,10 @@
+# SEED Version 2.9.3
+
+Minor patch that adds an option to exclude notes when exporting a list of properties.
+
+Closed:
+- Feature [#2518]( https://github.com/SEED-platform/seed/issues/2518 ), Inventory List export includes Notes on multiple lines in between records
+
 # SEED Version 2.9.2
 
 This is a patch to update deployments with a filter functionality fix.
