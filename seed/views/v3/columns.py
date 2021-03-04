@@ -6,7 +6,6 @@
 """
 import json
 
-from django.db import transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -18,13 +17,9 @@ from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from rest_framework.decorators import action
-from seed.data_importer.tasks import hash_state_object
 from seed.models import (
     Column,
-    DATA_STATE_MATCHING,
     Organization,
-    PropertyState,
-    TaxLotState,
 )
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
