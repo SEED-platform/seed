@@ -177,13 +177,8 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 'message': 'Unexpected table_name \'%s\' for column with pk=%s' % (column.table_name, pk)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return JsonResponse(tasks.delete_organization_column(org_id, column))
-
-        # table_display_name = column.table_name if state_count == 1 else column.table_name + 's'
-        # return JsonResponse({
-        #     'success': True,
-        #     'message': 'Removed \'%s\' from %s %s' % (column.column_name, state_count, table_display_name)
-        # }, status=status.HTTP_200_OK)
+        result = tasks.delete_organization_column(column.id, org_id)
+        return JsonResponse(result)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({
