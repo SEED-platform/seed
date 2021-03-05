@@ -2537,6 +2537,9 @@ msgstr "Cette action remplace n'importe laquelle de vos colonnes actuelles par l
 msgid "This cycle name is already taken."
 msgstr "Ce nom de cycle est déjà pris."
 
+msgid "This email link is invalid."
+msgstr "Cette opération est irréversible."
+
 msgid "This label name is already taken."
 msgstr "Ce nom d'étiquette est déjà pris."
 
@@ -2748,6 +2751,9 @@ msgstr "Nous avons détecté un navigateur obsolète."
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "We've e-mailed instructions for resetting your password."
 msgstr "Nous avons envoyé des instructions par e-mail pour réinitialiser votre mot de passe."
+
+msgid "We've sent a sign in link to your email to access your account."
+msgstr "Nous avons envoyé un lien de connexion à votre adresse e-mail pour accéder à votre compte."
 
 msgid "Weather Norm. Site EUI"
 msgstr "IUE site météo norm."

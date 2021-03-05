@@ -79,8 +79,10 @@ html, body {
 }
 
 body {
+  align-items: center;
   background: #808080 url("../images/landing/landing-bg.png") no-repeat;
   background-size: cover;
+  display: flex;
   font-family: $font-family-base;
   font-size: 16px;
   font-weight: normal;
@@ -197,9 +199,9 @@ body {
         }
 
         p.password_note {
+          font-size: 14px;
           color: $red;
-          text-align: left;
-          padding: 0 32px;
+          text-align: center;
         }
       }
 
@@ -304,7 +306,7 @@ body {
 
           input {
             display: inline-block;
-            width: 94%;
+            width: 88%;
             padding: 10px;
             margin-top: 8px;
             margin-bottom: 2px;
@@ -378,10 +380,11 @@ body {
           font-size: 16px;
         }
 
-        .forgot_password {
-          display: block;
-          margin-top: 20px;
+        .forgot_password, .create_account {
+          display: inline-block;
+          margin-top: 5px;
           margin-bottom: 20px;
+          padding: 20px;
         }
 
         .already_signed_up {
