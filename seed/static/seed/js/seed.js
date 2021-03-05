@@ -34,6 +34,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ngSanitize'
 ]);
 angular.module('BE.seed.controllers', [
+  'BE.docs.controller.faq',
   'BE.seed.controller.about',
   'BE.seed.controller.accounts',
   'BE.seed.controller.admin',
