@@ -12,7 +12,6 @@ angular.module('BE.docs.controller.faq', [])
       // Autofocus on the input
       angular.element('.faq-search-input')[0].focus();
 
-      // $scope.faqData = JSON.parse(faqScript[0].textContent);
       $scope.faqData = JSON.parse(faqScript.textContent);
 
       $scope.updateFilter = search => {
