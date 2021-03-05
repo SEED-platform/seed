@@ -8,39 +8,26 @@
             </div>
         </a>
         <div class="divider"></div>
-        <a id="sidebar-profile" class="item" ng-class="{'disabled-item': !logged_in}" ui-sref="profile" ui-sref-active="active">
+        <a id="sidebar-profile" class="item" ng-class="{active: is_active('/profile'), 'disabled-item': !logged_in}" href="{% url "seed:home" %}#/profile">
             <div class="icon"><i class="fa fa-cog"></i></div>
             <div ng-show="!is_initial_state" class="item_name">{$ username $}</div>
         </a>
         <div class="divider"></div>
         <a id="sidebar-inventory" ng-class="{item: true, active: is_active('/properties') || is_active('/taxlots'), 'disabled-item': !logged_in}" href="{% url "seed:home" %}#/properties">
             <div class="icon">
-                <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-                viewBox="0 0 128 128" style="enable-background:new 0 0 128 128;" xml:space="preserve">
-                    <g>
-                        <g>
-                            <path fill="#FFFFFF" d="M20,48h8v-8h-8V48z M52,40h8v-8h-8V40z M68,40h8v-8h-8V40z M84,40h8v-8h-8V40z M52,24h8v-8h-8V24z M68,24h8
-                                v-8h-8V24z M84,24h8v-8h-8V24z M52,72h8v-8h-8V72z M68,72h8v-8h-8V72z M84,72h8v-8h-8V72z M52,88h8v-8h-8V88z M84,88h8v-8h-8V88z
-                                    M52,104h8v-8h-8V104z M84,104h8v-8h-8V104z M108,96h8v-8h-8V96z M108,72v8h8v-8H108z M108,112h8v-8h-8V112z M52,56h8v-8h-8V56z
-                                    M68,56h8v-8h-8V56z M84,56h8v-8h-8V56z M20,64h8v-8h-8V64z M20,80h8v-8h-8V80z M20,96h8v-8h-8V96z M20,112h8v-8h-8V112z M68,88h8
-                                v-8h-8V88z"/>
-                        </g>
-                    </g>
-                    <path fill="#FFFFFF" d="M124,120c0,4.4-3.6,8-8,8H12c-4.4,0-8-3.6-8-8V32c0-4.4,3.6-8,8-8h24V8c0-4.4,3.6-8,8-8h56c4.4,0,8,3.6,8,8v48
-                        h8c4.4,0,8,3.6,8,8V120z M36,32H12v88h24V32z M100,8H44v112h24V96h8v24h24V8z M116,64h-8v56h8V64z"/>
-                </svg>
+                <img src="{{ STATIC_URL }}seed/images/icon-city.svg" title="{$:: 'Inventory' | translate $}">
             </div>
             <div ng-show="!is_initial_state" class="item_name" translate>Inventory</div>
         </a>
         <a id="sidebar-data" ng-class="{item: true, active: is_active('/data'), 'disabled-item': !logged_in}" title="{$:: 'Data' | translate $}" href="{% url "seed:home" %}#/data" ng-show="menu.user.organization.user_role !== 'viewer'">
             <div class="icon"><i class="fa fa-sitemap"></i></div>
             <div ng-show="!is_initial_state" class="item_name" translate>Data</div>
-            <div ng-show="!is_initial_state" class="badge badge_menu">{$ datasets_count | number:0 $}</div>
+            <div ng-show="!is_initial_state && logged_in" class="badge badge_menu">{$ datasets_count | number:0 $}</div>
         </a>
         <a id="sidebar-accounts" ng-class="{item: true, active: is_active('/accounts'), 'disabled-item': !logged_in}" title="{$:: 'Organizations' | translate $}" href="{% url "seed:home" %}#/accounts">
             <div class="icon"><i class="fa fa-users"></i></div>
             <div ng-show="!is_initial_state" class="item_name" translate>Organizations</div>
-            <div ng-show="!is_initial_state" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
+            <div ng-show="!is_initial_state && logged_in" class="badge badge_menu">{$ organizations_count | number:0 $}</div>
         </a>
 
         <div class="divider"></div>
@@ -57,7 +44,7 @@
             <div class="icon"><i class="fa fa-info-circle"></i></div>
             <div ng-show="!is_initial_state" class="item_name" translate>About</div>
         </a>
-        <a id="sidebar-docs" ng-class="{item: true, active: is_active('/documentation')}" title="{$:: 'Documentation' | translate $}" href="/documentation">
+        <a id="sidebar-docs" ng-class="{item: true, active: is_active('/documentation/', true)}" title="{$:: 'Documentation' | translate $}" href="{% url "docs:documentation" %}#/">
             <div class="icon"><i class="fa fa-book"></i></div>
             <div ng-show="!is_initial_state" class="item_name" translate>Documentation</div>
         </a>

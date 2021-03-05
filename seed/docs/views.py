@@ -13,6 +13,7 @@ import re
 import markdown
 import yaml
 
+from seed.views.main import _get_default_org
 
 YAML_DOC_BOUNDARY = re.compile(r"^-{3,}\s*$", re.MULTILINE)
 FaqItem = namedtuple('FaqItem', ['question', 'answer', 'tags'])
@@ -62,4 +63,9 @@ def faq_page(request):
                 # convert to dict so json conversion works when templating
                 faq_data[category_name].append(parsed_faq._asdict())
 
-    return render(request, 'docs/faq.html', {'faq_data': faq_data})
+    if not request.user.is_anonymous:
+        initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
+            request.user
+        )
+
+    return render(request, 'docs/faq.html', locals())

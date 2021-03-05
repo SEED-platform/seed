@@ -271,11 +271,9 @@ a:not([href]) {
         display: inline;
       }
 
-      &.disabled-item,
-      &.disabled-item path {
+      &.disabled-item {
+        opacity: 0.07;
         pointer-events: none;
-        color: lighten($gray, 5%);
-        fill: lighten($gray, 5%);
       }
 
       .icon {
@@ -3714,9 +3712,13 @@ $pairedCellWidth: 60px;
 FAQ page
 */
 .faq-container {
-  padding: 0px 20px;
+  padding: 0 20px;
   max-width: 700px;
   margin: auto;
+
+  a:focus, a:hover {
+    text-decoration: none;
+  }
 }
 
 .faq-search-input {
@@ -3735,7 +3737,7 @@ FAQ page
   }
 
   h3 {
-    margin: 0px;
+    margin: 0;
   }
 }
 
@@ -3744,6 +3746,9 @@ FAQ page
 }
 
 .faq-answer {
+  a:hover {
+    text-decoration: underline;
+  }
 
   img {
     display: block;
