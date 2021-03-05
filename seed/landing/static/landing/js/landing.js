@@ -3,11 +3,6 @@ BEHome.actions = BEHome.actions || {};
 BEHome.handlers = BEHome.handlers || {};
 BEHome.util = BEHome.util || {};
 
-BEHome.actions.vertically_center_page = function () {
-  var top_and_bottom_margin = $(window).height() - $('.page').height();
-  top_and_bottom_margin = (top_and_bottom_margin > 0) ? top_and_bottom_margin / 2 : 0;
-  $('body').css({'padding-top': top_and_bottom_margin});
-};
 BEHome.actions.hide_choose_your_path = function () {
   $('.choose_your_path').hide();
 };
@@ -64,7 +59,6 @@ BEHome.handlers.handle_cancel_button = function () {
   return false;
 };
 BEHome.util.bind_all_handlers = function () {
-  $(window).resize(BEHome.actions.vertically_center_page);
   $('.btn_landing_landing.invite').on('click', BEHome.handlers.handle_signup_choice_button);
   $('.btn_landing_landing.request').on('click', BEHome.handlers.handle_request_invite_button);
   $('.btn_landing_landing.login').on('click', BEHome.handlers.handle_login_button);
@@ -72,7 +66,6 @@ BEHome.util.bind_all_handlers = function () {
   $('.cancel_btn').on('click', BEHome.handlers.handle_cancel_button);
 };
 $(function () {
-  setTimeout(BEHome.actions.vertically_center_page, 200);
   BEHome.actions.hide_all_forms();
   BEHome.util.bind_all_handlers();
 });
