@@ -5,7 +5,7 @@
       <div class="jumbotron">
         <div class="home_hero_content_container">
           <h1 translate>The SEED Platform™</h1>
-          <div class="row" translate>The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios.
+          <div translate>The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios.
           </div>
           <div class="row">
 
@@ -54,15 +54,15 @@
           <h2 translate>Getting Started</h2>
 
           <div class="col-md-4">
-            <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" rel="noopener noreferrer" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a>
+            <a ng-href="{$ urls.static_url $}seed/pdf/SEED_Platform_V1_3_Getting_Started_Guide.pdf" target="_blank" rel="noopener noreferrer" title="SEED_v1.3_User_Guide" class="btn btn-warning btn-lg" role="button" style="white-space:normal !important;"><i class="fa fa-file-text"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a>
           </div>
 
           <div class="col-md-4">
-            <a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info btn-lg" role="button"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a>
+            <a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info btn-lg" role="button" style="white-space:normal !important;"><i class="fa fa-cloud-download"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a>
           </div>
 
           <div class="col-md-4">
-            <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$:: 'Upload your buildings list' | translate $}</a>
+            <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" class="btn btn-primary btn-lg" role="button" ng-hide="menu.user.organization.user_role === 'viewer'" style="white-space:normal !important;"><i class="fa fa-cloud-upload"></i>&nbsp;&nbsp;{$:: 'Upload your Buildings List' | translate $}</a>
           </div>
 
           <!-- <p translate="XSS_TEST" -->
