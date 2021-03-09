@@ -40,6 +40,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.narrow_controller = false;
       $scope.wide_controller = false;
       $scope.username = window.BE.username;
+      $scope.logged_in = $scope.username.length > 0;
       $scope.urls = urls;
       $scope.datasets_count = 0;
       $scope.organizations_count = 0;
@@ -65,21 +66,16 @@ angular.module('BE.seed.controller.menu', [])
       $scope.$on('organization_list_updated', function () {
         init();
       });
-      $scope.is_active = function (menu_item) {
-        if (menu_item === $location.path()) {
+      $scope.is_active = function (menu_item, use_pathname) {
+        var current_path = $location.path();
+        if (use_pathname) {
+          current_path = $window.location.pathname;
+        }
+
+        if (menu_item === current_path) {
           return true;
-        } else if (menu_item !== '/' && _.startsWith($location.path(), menu_item)) {
-          return true;
-        } else if (menu_item === '/seed/data' && !_.includes($location.absUrl(), '#')) {
-          if (_.includes($location.absUrl(), menu_item)) return true;
-          if (_.includes($location.absUrl(), 'worksheet')) return true;
-          if (_.includes($location.absUrl(), 'mapping')) return true;
-          if (_.includes($location.absUrl(), 'cleaning')) return true;
-          if (_.includes($location.absUrl(), 'merge')) return true;
-          if (_.includes($location.absUrl(), 'import')) return true;
-          return false;
         } else {
-          return false;
+          return menu_item !== '/' && _.startsWith(current_path, menu_item);
         }
       };
 
@@ -181,6 +177,10 @@ angular.module('BE.seed.controller.menu', [])
       }, true);
 
       var init = function () {
+        if (!$scope.logged_in) {
+          return;
+        }
+
         organization_service.get_organizations_brief().then(function (data) {
           $scope.organizations_count = data.organizations.length;
           $scope.menu.user.organizations = data.organizations;

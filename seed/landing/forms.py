@@ -5,7 +5,9 @@
 :author
 """
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 from django.utils.translation import ugettext_lazy as _
+from seed.landing.models import SEEDUser
 
 
 class LoginForm(forms.Form):
@@ -23,3 +25,19 @@ class LoginForm(forms.Form):
         ),
         required=True
     )
+
+
+class CustomCreateUserForm(UserCreationForm):
+    class Meta:
+        model = SEEDUser
+        fields = ['username']
+        widgets = {
+            'username': forms.fields.EmailInput(attrs={'placeholder': 'Email Address'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CustomCreateUserForm, self).__init__(*args, **kwargs)
+        self.fields['password1'].widget = forms.PasswordInput(
+            attrs={'class': 'field', 'placeholder': 'Password'})
+        self.fields['password2'].widget = forms.PasswordInput(
+            attrs={'class': 'field', 'placeholder': 'Confirm Password'})
