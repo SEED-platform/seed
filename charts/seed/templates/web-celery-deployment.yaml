@@ -46,7 +46,7 @@ spec:
           value: "5000"
         - name: BSYNCR_SERVER_HOST
           value: bsyncr
-        image: seedplatform/seed:develop
+        image: seedplatform/seed:<verison>
         imagePullPolicy: Always
         name: web-celery
         resources: {}
