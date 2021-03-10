@@ -97,8 +97,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param {obj} progress_bar_obj: progress bar object, attr 'progress'
      *   is set with the progress
      */
-    uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug) {
-      debug = !_.isUndefined(debug);
+    uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
           right_now = Date.now();
@@ -110,10 +109,16 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
             progress_bar_obj.progress_last_updated = right_now;
           }
 
+          if (data.total_records) {
+            progress_bar_obj.total_records = data.total_records;
+          }
+          if (data.completed_records) {
+            progress_bar_obj.completed_records = data.completed_records;
+          }
           progress_bar_obj.progress = new_progress_value;
           progress_bar_obj.status_message = data.status_message;
           if (data.progress < 100) {
-            uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj, debug);
+            uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj);
           } else {
             success_fn(data);
           }
