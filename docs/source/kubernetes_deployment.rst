@@ -134,7 +134,7 @@ This chart contains the deployment specification for the Celery container to con
 
 bsyncr-deployment.yaml
 **************************
-This chart contains the deployment specification for the bsyncr analysis server.  Request a noaa token from `this website`_.
+This chart contains the deployment specification for the bsyncr analysis server.  Request a NOAA token from `this website`_.
 
 .. _this website: https://www.ncdc.noaa.gov/cdo-web/token
 
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
