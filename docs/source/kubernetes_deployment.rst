@@ -153,7 +153,7 @@ This will be done using helm commands in the root of the charts directory.
 * :code:`helm install --generate-name persistentvolumes`
 * :code:`helm install --generate-name seed`
 
-You will be able to see SEED coming online with statues like conatiner createing, and runnning with:
+You will be able to see SEED coming online with statuses like container creating, and running with:
 
 * :code:`kubectl get all`
 
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
