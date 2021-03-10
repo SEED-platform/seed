@@ -9,7 +9,7 @@ Setup
 Cluster
 ^^^^^^^
 
-In order to deploy the SEED platform on a kubernetes you will need "cluster" which will be configured by your cloud service of choice.  Each installation will be slightly different depending on the service.
+In order to deploy the SEED platform on a Kubernetes you will need "cluster" which will be configured by your cloud service of choice.  Each installation will be slightly different depending on the service.
 Bellow are links to quick-start guides for provisioning a cluster and connecting.
 
 * Amazon Web Services (`AWS`_)
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
