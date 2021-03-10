@@ -432,6 +432,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.delete_column = function (column) {
         $uibModal.open({
           backdrop: 'static',
+          keyboard: false,
           templateUrl: urls.static_url + 'seed/partials/delete_column_modal.html',
           controller: 'delete_column_modal_controller',
           resolve: {

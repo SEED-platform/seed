@@ -578,7 +578,6 @@ class TestBsyncrPipeline(TestCase):
             # mock the call to _bsyncr_service_request by returning a constructed Response
 
             # ignore model_type
-            _ = model_type
 
             the_response = Response()
             if error_messages is not None:
