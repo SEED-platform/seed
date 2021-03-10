@@ -125,7 +125,7 @@ This chart contains the deployment specification for the SEED web container.  Re
 
 web-celery-deployment.yaml
 **************************
-This chart contains the deployment specification for the Celery container to connect to postgres.  Replace the postgres password to match web-deployment.
+This chart contains the deployment specification for the Celery container to connect to Postgres.  Replace the Postgres password to match web-deployment.
 
 .. code-block:: yaml
 
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
