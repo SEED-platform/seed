@@ -57,7 +57,7 @@ To install Helm:
 
 Charts
 ^^^^^^
-SEED stores its charts in the `charts directory`_ of the Github Repo.  There are two main charts that are deployed when starting SEED on kubernetes.
+SEED stores its charts in the `charts directory`_ of the Github Repo.  There are two main charts that are deployed when starting SEED on Kubernetes.
 
 * persistentvolumes - these are the volumes to store SEED media data and SEED postgres data
 * seed - this stores all of the other deployemnt and service files for the application
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
