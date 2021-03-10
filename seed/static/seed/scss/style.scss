@@ -3708,6 +3708,23 @@ $pairedCellWidth: 60px;
   opacity: 0.3;
 }
 
+.delete-column {
+  .status-text {
+    color: black;
+    margin: 0 6px;
+    white-space: nowrap;
+  }
+  .time-table {
+    tr:first-child td {
+      padding-bottom: 6px;
+    }
+
+    tr td:first-child {
+      padding-right: 6px;
+    }
+  }
+}
+
 /*
 FAQ page
 */

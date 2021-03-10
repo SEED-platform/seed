@@ -260,7 +260,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'Query param `import_file_id` is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         try:
-            _ = ImportFile.objects.get(pk=import_file_id)
+            ImportFile.objects.get(pk=import_file_id)
             organization = Organization.objects.get(pk=pk)
         except ImportFile.DoesNotExist:
             return JsonResponse({
