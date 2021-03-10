@@ -39,7 +39,7 @@ All of the common kubectl commands can be found in these `docs`_
 
 .. _docs: https://kubernetes.io/docs/reference/kubectl/cheatsheet/
 
-.. note:: Those unfamiliar with CLI's have a number of GUI applications that you are able to deploy on your stack to abstract this away.  One of which is kubernetes native called `Dashboard UI`_
+.. note:: For those unfamiliar with CLIs, there are a number of GUI applications that are able to deploy on your stack with ease.  One of which is Kubernetes native application called `Dashboard UI`_
 
 .. _here: https://kubernetes.io/docs/tasks/tools/
 .. _Dashboard UI: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
