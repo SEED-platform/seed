@@ -157,7 +157,7 @@ You will be able to see SEED coming online with statuses like container creating
 
 * :code:`kubectl get all`
 
-Once all of the pods are running you will be able to hit the external ingress through the url listed in the web service information.  It should look something like
+Once all of the pods are running you will be able to hit the external ingress through the URL listed in the web service information. It should look something like
 :code:`service/web           LoadBalancer   10.100.154.227   <my-unique-url>   80:32291/TCP`
 
 Logging In
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
