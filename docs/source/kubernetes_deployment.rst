@@ -46,7 +46,7 @@ All of the common kubectl commands can be found in these `docs`_
 
 Helm
 ^^^^
-Helm organizes all of your kubernetes deployement, service, and volume yml files into "charts" that can be deployed, managed, and published with simple commands.
+Helm organizes all of your Kubernetes deployment, service, and volume yml files into "charts" that can be deployed, managed, and published with simple commands.
 To install Helm:
 
 * `Windows`_
@@ -172,7 +172,6 @@ Now that we are in the container, we can make a user.
     ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
 
 You can now use these credentials to log in to the SEED website.
-
 
 
 
