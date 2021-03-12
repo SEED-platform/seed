@@ -3774,3 +3774,8 @@ FAQ page
     max-width: 100%;
   }
 }
+
+// always-visible notes_count icon
+.ui-grid-icon-up-dir.translucent {
+  opacity: 0.1;
+}
