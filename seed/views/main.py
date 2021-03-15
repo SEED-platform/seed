@@ -10,6 +10,7 @@ import logging
 import os
 import subprocess
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -71,6 +72,7 @@ def home(request):
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
+    debug = settings.DEBUG
 
     return render(request, 'seed/index.html', locals())
 

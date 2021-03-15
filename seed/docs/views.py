@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from django.conf import settings
 from django.shortcuts import render
 
 from collections import namedtuple
@@ -67,5 +68,6 @@ def faq_page(request):
         initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
             request.user
         )
+    debug = settings.DEBUG
 
     return render(request, 'docs/faq.html', locals())

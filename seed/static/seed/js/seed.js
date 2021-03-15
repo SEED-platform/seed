@@ -1546,6 +1546,11 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
 }]);
 
 SEED_app.config(['$translateProvider', function ($translateProvider) {
+  if (window.BE.debug) {
+    // Log un-translated strings when running in debug mode
+    $translateProvider.useMissingTranslationHandlerLog();
+  }
+
   $translateProvider
     .useStaticFilesLoader({
       prefix: '/static/seed/locales/',
