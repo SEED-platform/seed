@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.new_member_modal', [])
@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.new_member_modal', [])
        * adds a user to the org
        */
       $scope.submit_form = function () {
-        // make `role` a string 
+        // make `role` a string
         const u = _.cloneDeep($scope.user)
         u.role = u.role.value
 
