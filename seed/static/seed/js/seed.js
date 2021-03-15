@@ -1546,10 +1546,10 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
 }]);
 
 SEED_app.config(['$translateProvider', function ($translateProvider) {
-  if (window.BE.debug) {
-    // Log un-translated strings when running in debug mode
-    $translateProvider.useMissingTranslationHandlerLog();
-  }
+  // Log un-translated strings when running in debug mode
+  // if (window.BE.debug) {
+  //   $translateProvider.useMissingTranslationHandlerLog();
+  // }
 
   $translateProvider
     .useStaticFilesLoader({
