@@ -2,7 +2,7 @@
 
 if [ "$1" == 'on' ]
 then
-  cp /seed/docker/maintenance.html /seed/collected_static
+  sed -e 's|<small></small>|<small>'"$(date '+%-m/%-d %H:%M')"'</small>|g' /seed/docker/maintenance.html > /seed/collected_static/maintenance.html
   echo '...maintenance is on...';
 elif [ "$1" == 'off' ]
 then
