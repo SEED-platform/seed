@@ -77,8 +77,8 @@ COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 # nginx configurations - alpine doesn't use the sites-available directory. Put seed
 # configuration file into the /etc/nginx/conf.d/ folder.
 COPY /docker/nginx-seed.conf /etc/nginx/conf.d/seed.conf
-# copy the maint file that nginx will look to serve in the case of a 503
-COPY /docker/maintenance.html /var/lib/nginx/html
+# symlink maintenance.html that nginx will serve in the case of a 503
+RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
 # set execute permissions on the maint script to toggle on and off
 RUN chmod +x ./docker/maintenance.sh
 
