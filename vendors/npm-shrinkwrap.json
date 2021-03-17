@@ -119,6 +119,24 @@
         "angular": "^1.7.9"
       }
     },
+    "angular-translate-handler-log": {
+      "version": "2.18.4",
+      "resolved": "https://registry.npmjs.org/angular-translate-handler-log/-/angular-translate-handler-log-2.18.4.tgz",
+      "integrity": "sha512-hWIJogLuW58Uv2mg+T7gbzhxpwA8eG6f0kexzBBpogoHd1GK3qXLW73RcOhZ0kWsj8OvJZ0wRVM9wkS3iybXzg==",
+      "requires": {
+        "angular-translate": "~2.18.4"
+      },
+      "dependencies": {
+        "angular-translate": {
+          "version": "2.18.4",
+          "resolved": "https://registry.npmjs.org/angular-translate/-/angular-translate-2.18.4.tgz",
+          "integrity": "sha512-KohNrkH6J9PK+VW0L/nsRTcg5Fw70Ajwwe3Jbfm54Pf9u9Fd+wuingoKv+h45mKf38eT+Ouu51FPua8VmZNoCw==",
+          "requires": {
+            "angular": "^1.8.0"
+          }
+        }
+      }
+    },
     "angular-translate-interpolation-messageformat": {
       "version": "2.18.2",
       "resolved": "https://registry.npmjs.org/angular-translate-interpolation-messageformat/-/angular-translate-interpolation-messageformat-2.18.2.tgz",

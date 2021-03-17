@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.service.columns', []).factory('columns_service', [
@@ -50,7 +50,7 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
 
     columns_service.delete_column_for_org = function (org_id, column_id) {
       return $http.delete('/api/v3/columns/' + column_id + '/', {
-        params: {organization_id: org_id},
+        params: {organization_id: org_id}
       });
     };
 

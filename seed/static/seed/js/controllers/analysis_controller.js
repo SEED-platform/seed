@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -14,7 +14,6 @@ angular.module('BE.seed.controller.analysis', [])
     'users_payload',
     'views_payload',
     'auth_payload',
-    'urls',
     function (
       $scope,
       $stateParams,
@@ -24,8 +23,7 @@ angular.module('BE.seed.controller.analysis', [])
       messages_payload,
       users_payload,
       views_payload,
-      auth_payload,
-      urls
+      auth_payload
     ) {
       $scope.org = organization_payload.organization;
       $scope.inventory_type = $stateParams.inventory_type;
@@ -35,4 +33,4 @@ angular.module('BE.seed.controller.analysis', [])
       $scope.users = users_payload.users;
       $scope.views = views_payload.views;
       $scope.view_id = $stateParams.view_id;
-}]);
+    }]);

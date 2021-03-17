@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // user services
@@ -60,9 +60,9 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         role: user.role
       };
 
-      const params = {}
+      const params = {};
       if (!_.isUndefined(user.organization)) {
-        params.organization_id = user.organization.org_id
+        params.organization_id = user.organization.org_id;
       }
 
       return $http.post('/api/v3/users/', new_user_details, { params }).then(function (response) {
