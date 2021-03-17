@@ -37,8 +37,8 @@ angular.module('BE.seed.controller.new_member_modal', [])
        */
       $scope.submit_form = function () {
         // make `role` a string
-        const u = _.cloneDeep($scope.user)
-        u.role = u.role.value
+        const u = _.cloneDeep($scope.user);
+        u.role = u.role.value;
 
         user_service.add(u).then(function () {
           $uibModalInstance.close();

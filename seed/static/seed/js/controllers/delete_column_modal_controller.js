@@ -19,14 +19,14 @@ angular.module('BE.seed.controller.delete_column_modal', [])
 
       $scope.progressBar = {
         progress: 0
-      }
+      };
 
       $scope.delete = function () {
         $scope.state = 'pending';
         columns_service.delete_column_for_org(organization_id, column.id).then(function (result) {
           $scope.state = 'running';
           $scope.startTime = moment();
-          $scope.interval = $interval(function() {
+          $scope.interval = $interval(function () {
             $scope.updateTime();
           }, 1000);
           $scope.updateTime();
@@ -48,7 +48,7 @@ angular.module('BE.seed.controller.delete_column_modal', [])
       $scope.elapsedFn = function () {
         var diff = moment().diff(this.startTime);
         return $scope.formatTime(moment.duration(diff));
-      }
+      };
 
       $scope.etaFn = function () {
         if ($scope.progressBar.completed_records) {
@@ -61,12 +61,12 @@ angular.module('BE.seed.controller.delete_column_modal', [])
             return $scope.formatTime(moment.duration(diff / progress - diff));
           }
         }
-      }
+      };
 
       $scope.updateTime = function () {
         $scope.elapsed = $scope.elapsedFn();
         $scope.eta = $scope.etaFn();
-      }
+      };
 
       $scope.formatTime = function (duration) {
         var h = Math.floor(duration.asHours());
@@ -82,7 +82,7 @@ angular.module('BE.seed.controller.delete_column_modal', [])
           return `${m}:${sPadded}`;
         }
         return `${s}s`;
-      }
+      };
 
       $scope.refresh = function () {
         spinner_utility.show();

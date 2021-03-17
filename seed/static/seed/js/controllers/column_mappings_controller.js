@@ -124,8 +124,8 @@ angular.module('BE.seed.controller.column_mappings', [])
 
       // which columns are sortable and which fields are they sorted on?
       var sort_column_fields = {
-        'seed': 'to_field',
-        'file': 'from_field'
+        seed: 'to_field',
+        file: 'from_field'
       };
 
       // sorts by a column
@@ -143,7 +143,7 @@ angular.module('BE.seed.controller.column_mappings', [])
         }
 
         // sort mappings by the appropriate column, using lower case to fix lodash's method of alphabetical sorting
-        $scope.current_profile.mappings = _.sortBy($scope.current_profile.mappings, [ map => map[sort_column_fields[column]].toLowerCase() ]);
+        $scope.current_profile.mappings = _.sortBy($scope.current_profile.mappings, [map => map[sort_column_fields[column]].toLowerCase()]);
 
         // reverse the sort if descending
         if ($scope.column_sort_direction === 'desc') {
@@ -396,7 +396,7 @@ angular.module('BE.seed.controller.column_mappings', [])
         return Boolean(_.find($scope.current_profile.mappings, function (field) {
           return field.to_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field));
         }));
-      }
+      };
 
       $scope.profile_action_ok = function (action) {
         if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_NORMAL) {

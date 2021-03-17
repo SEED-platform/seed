@@ -14,7 +14,6 @@ angular.module('BE.seed.controller.analysis_run', [])
     'users_payload',
     'view_payload',
     'auth_payload',
-    'urls',
     function (
       $scope,
       $stateParams,
@@ -24,8 +23,7 @@ angular.module('BE.seed.controller.analysis_run', [])
       messages_payload,
       users_payload,
       view_payload,
-      auth_payload,
-      urls
+      auth_payload
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -36,4 +34,4 @@ angular.module('BE.seed.controller.analysis_run', [])
       $scope.views = [view_payload.view];
       $scope.view = view_payload.view;
       $scope.view_id = $stateParams.view_id;
-}]);
+    }]);

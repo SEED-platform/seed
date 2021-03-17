@@ -68,18 +68,18 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       $scope.original_rules = angular.copy(data_quality_rules_payload);
 
       $scope.data_type_keys = {
-        'number': 0,
-        'string': 1,
-        'date': 2,
-        'year': 3,
-        'area': 4,
-        'eui': 5,
+        number: 0,
+        string: 1,
+        date: 2,
+        year: 3,
+        area: 4,
+        eui: 5
       };
 
       $scope.data_types = [
         [
           {id: null, label: ''},
-          {id: $scope.data_type_keys.string, label: $translate.instant('Text')},
+          {id: $scope.data_type_keys.string, label: $translate.instant('Text')}
         ],
         [
           {id: null, label: ''},
@@ -87,7 +87,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           {id: $scope.data_type_keys.date, label: $translate.instant('Date')},
           {id: $scope.data_type_keys.year, label: $translate.instant('Year')},
           {id: $scope.data_type_keys.area, label: $translate.instant('Area')},
-          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')},
+          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')}
         ],
         [
           {id: null, label: ''},
@@ -96,14 +96,14 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           {id: $scope.data_type_keys.date, label: $translate.instant('Date')},
           {id: $scope.data_type_keys.year, label: $translate.instant('Year')},
           {id: $scope.data_type_keys.area, label: $translate.instant('Area')},
-          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')},
+          {id: $scope.data_type_keys.eui, label: $translate.instant('EUI')}
         ]
       ];
 
       $scope.severity_type_keys = {
-        'error': 0,
-        'warning': 1,
-        'valid': 2,
+        error: 0,
+        warning: 1,
+        valid: 2
       };
 
       $scope.severity_types = [
@@ -222,16 +222,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       var get_configured_rules = function () {
         var rules = [];
         var misconfigured_rules = [];
-        var duplicate_rule_group = [];
         $scope.duplicate_rule_keys = [];
         _.forEach($scope.ruleGroups, function (ruleGroups, inventory_type) {
           _.forEach(ruleGroups, function (ruleGroup) {
-            var duplicate_rules = _.groupBy(ruleGroup, function(rule) {
-              return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${!_.isUndefined(rule.label)?rule.label:rule.status_label}`;
+            var duplicate_rules = _.groupBy(ruleGroup, function (rule) {
+              return `${rule.condition}-${rule.field}-${rule.data_type}-${rule.min}-${rule.max}-${rule.text_match}-${rule.units}-${rule.severity}-${!_.isUndefined(rule.label) ? rule.label : rule.status_label}`;
             });
-            _.forEach(Object.keys(duplicate_rules), function(key) {
+            _.forEach(Object.keys(duplicate_rules), function (key) {
               if (duplicate_rules[key].length > 1) {
-                _.forEach(duplicate_rules[key], function(rule) {
+                _.forEach(duplicate_rules[key], function (rule) {
                   $scope.duplicate_rule_keys.splice(0, 0, rule.$$hashKey);
                 });
               }
@@ -293,10 +292,10 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               var valid_severity_without_label = (r.severity === $scope.severity_type_keys.valid) && !r.status_label;
               if (include_or_exclude_without_text || valid_severity_without_label) {
                 misconfigured_rules.push({
-                  'rule': rule,
-                  'include_or_exclude_without_text': include_or_exclude_without_text,
-                  'valid_severity_without_label': valid_severity_without_label,
-                })
+                  rule: rule,
+                  include_or_exclude_without_text: include_or_exclude_without_text,
+                  valid_severity_without_label: valid_severity_without_label
+                });
               } else {
                 rules.push(r);
               }
@@ -310,15 +309,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       // Capture misconfigured rule fields for UI indicators
       var init_misconfigured_fields_ref = function () {
         $scope.misconfigured_fields_ref = {
-          'condition': [],
-          'text_match': [],
-          'severity': [],
-          'label': [],
-        }
+          condition: [],
+          text_match: [],
+          severity: [],
+          label: []
+        };
       };
       init_misconfigured_fields_ref();
 
-      var show_configuration_errors = function(misconfigured_rules) {
+      var show_configuration_errors = function (misconfigured_rules) {
         var include_or_exclude_without_text_count = 0;
         var valid_severity_without_label_count = 0;
 
@@ -339,15 +338,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         if (include_or_exclude_without_text_count) {
           Notification.error({
-            message: "Must Contain and Must Not Contain rules cannot have empty text. Count: " + include_or_exclude_without_text_count,
-            delay: 60000,
+            message: 'Must Contain and Must Not Contain rules cannot have empty text. Count: ' + include_or_exclude_without_text_count,
+            delay: 60000
           });
         }
 
         if (valid_severity_without_label_count) {
           Notification.error({
-            message: "Rules with valid severity must have a label. Count: " + valid_severity_without_label_count,
-            delay: 60000,
+            message: 'Rules with valid severity must have a label. Count: ' + valid_severity_without_label_count,
+            delay: 60000
           });
         }
       };
@@ -367,13 +366,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
 
         // Find duplicate rules and trigger warnings
         $scope.is_duplicate = ($scope.duplicate_rule_keys.length > 1);
-        if ($scope.is_duplicate) return Notification.error({message: "Duplicate rules detected.", delay: 10000});
+        if ($scope.is_duplicate) return Notification.error({message: 'Duplicate rules detected.', delay: 10000});
 
         // Find rules to delete
         _.forEach($scope.original_rules, function (or) {
           if (
             !_.find(rules, ['id', or.id]) &&
-            !_.find(misconfigured_rules, function(m_rule) { return m_rule.rule.id === or.id; })
+            !_.find(misconfigured_rules, function (m_rule) {
+              return m_rule.rule.id === or.id;
+            })
           ) {
             promises.push(data_quality_service.delete_data_quality_rule($scope.org.id, or.id));
           }
@@ -391,12 +392,12 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         });
 
         if (!promises.length) {
-          return Notification.error({message: "No changes made.", delay: 10000});
+          return Notification.error({message: 'No changes made.', delay: 10000});
         }
 
         spinner_utility.show();
         $q.all(promises).then(function () {
-          data_quality_service.data_quality_rules($scope.org.id).then(function (updated_rules){
+          data_quality_service.data_quality_rules($scope.org.id).then(function (updated_rules) {
             $scope.original_rules = angular.copy(updated_rules);
             loadRules(updated_rules);
           });

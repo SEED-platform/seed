@@ -23,76 +23,82 @@ angular.module('BE.seed.controller.analyses', [])
       urls,
       analyses_service,
       Notification,
-      uploader_service,
+      uploader_service
     ) {
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.analyses = analyses_payload.analyses;
       $scope.users = users_payload.users;
 
-      refresh_analyses = function() {
+      const refresh_analyses = function () {
         analyses_service.get_analyses_for_org($scope.org.id)
-        .then(function(data) {
-          $scope.analyses = data.analyses
-        })
-      }
+          .then(function (data) {
+            $scope.analyses = data.analyses;
+          });
+      };
 
-      $scope.start_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Starting...'
+      $scope.start_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Starting...';
 
         analyses_service.start_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis started')
-            refresh_analyses()
-            uploader_service.check_progress_loop(result.progress_key, 0, 1, function() {
-              refresh_analyses()
-            }, function() {
-              refresh_analyses()
-            }, {})
-          } else {
-            Notification.error('Failed to start analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis started');
+              refresh_analyses();
+              uploader_service.check_progress_loop(result.progress_key, 0, 1, function () {
+                refresh_analyses();
+              }, function () {
+                refresh_analyses();
+              }, {});
+            } else {
+              Notification.error('Failed to start analysis: ' + result.message);
+            }
+          });
+      };
 
-      $scope.stop_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Stopping...'
+      $scope.stop_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Stopping...';
 
         analyses_service.stop_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis stopped')
-            refresh_analyses()
-          } else {
-            Notification.error('Failed to stop analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis stopped');
+              refresh_analyses();
+            } else {
+              Notification.error('Failed to stop analysis: ' + result.message);
+            }
+          });
+      };
 
-      $scope.delete_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Deleting...'
+      $scope.delete_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Deleting...';
 
         analyses_service.delete_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis deleted')
-            refresh_analyses()
-          } else {
-            Notification.error('Failed to delete analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis deleted');
+              refresh_analyses();
+            } else {
+              Notification.error('Failed to delete analysis: ' + result.message);
+            }
+          });
+      };
 
     }
   ])
-  .filter('get_run_duration', function() {
+  .filter('get_run_duration', function () {
 
-    return function(analysis) {
-      if (!analysis || !analysis['start_time'] || !analysis['end_time']) {
+    return function (analysis) {
+      if (!analysis || !analysis.start_time || !analysis.end_time) {
         return ''; // no start and/or stop time, display nothing
       }
 
@@ -101,7 +107,7 @@ angular.module('BE.seed.controller.analyses', [])
       var oneHour = oneMinute * 60;
       var oneDay = oneHour * 24;
 
-      let milliseconds = (new Date(analysis['end_time'])).getTime() - (new Date(analysis['start_time'])).getTime();
+      let milliseconds = (new Date(analysis.end_time)).getTime() - (new Date(analysis.start_time)).getTime();
       let seconds = Math.floor((milliseconds % oneMinute) / oneSecond);
       let minutes = Math.floor((milliseconds % oneHour) / oneMinute);
       let hours = Math.floor((milliseconds % oneDay) / oneHour);
@@ -114,4 +120,4 @@ angular.module('BE.seed.controller.analyses', [])
       if (seconds !== 0 || milliseconds < 1000) time.push((seconds !== 1) ? (seconds + ' seconds') : (seconds + ' second'));
       return time.join(', ');
     };
-  })
+  });

@@ -20,7 +20,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle=true) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -235,7 +235,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           'Content-Type': 'application/json;charset=utf-8'
         },
         data: { property_view_ids },
-        params: { organization_id: user_service.get_organization().id },
+        params: { organization_id: user_service.get_organization().id }
       });
     };
 
@@ -251,7 +251,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle=true) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true) {
       var params = {
         organization_id: user_service.get_organization().id,
         page: page,
@@ -513,7 +513,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).then(function (response) {
         let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
         return property_columns.map(a => {
-          return { 'column_name': a.column_name, 'display_name': a.display_name };
+          return { column_name: a.column_name, display_name: a.display_name };
         });
       });
     };
@@ -529,7 +529,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }).then(function (response) {
         let taxlot_columns = response.data.columns.filter(column => column.table_name == 'TaxLotState');
         return taxlot_columns.map(a => {
-          return { 'column_name': a.column_name, 'display_name': taxlot_columns.find(x => x.column_name == a.column_name).display_name };
+          return { column_name: a.column_name, display_name: taxlot_columns.find(x => x.column_name == a.column_name).display_name };
         });
       });
     };
@@ -583,7 +583,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.get('/api/v3/columns/mappable/', {
         params: {
           organization_id: user_service.get_organization().id,
-          inventory_type: 'property',
+          inventory_type: 'property'
         }
       }).then(function (response) {
         // Remove empty columns
@@ -666,7 +666,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.get('/api/v3/columns/mappable/', {
         params: {
           organization_id: user_service.get_organization().id,
-          inventory_type: 'taxlot',
+          inventory_type: 'taxlot'
         }
       }).then(function (response) {
         // Remove empty columns

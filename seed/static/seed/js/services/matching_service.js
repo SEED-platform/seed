@@ -20,11 +20,11 @@ angular.module('BE.seed.service.matching', []).factory('matching_service', [
      */
     matching_service.start_system_matching = function (import_file_id) {
       return $http.post('/api/v3/import_files/' + import_file_id + '/start_system_matching_and_geocoding/', {},
-      {
-        params: { organization_id: user_service.get_organization().id }
-      }).then(function (response) {
+        {
+          params: { organization_id: user_service.get_organization().id }
+        }).then(function (response) {
         return response.data;
-      }).catch(function(e) {
+      }).catch(function (e) {
         return e.data;
       });
     };

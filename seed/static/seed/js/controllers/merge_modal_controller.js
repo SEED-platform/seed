@@ -150,7 +150,6 @@ angular.module('BE.seed.controller.merge_modal', [])
 
       $scope.merge = function () {
         $scope.processing = true;
-        var state_ids;
         if ($scope.inventory_type === 'properties') {
           const property_view_ids = _.map($scope.data, 'property_view_id').reverse();
           return matching_service.mergeProperties(property_view_ids).then(function (data) {

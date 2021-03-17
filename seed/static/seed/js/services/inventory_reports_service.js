@@ -49,7 +49,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report/', {
         params: {
           x_var: xVar,
@@ -102,7 +102,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report_aggregated/', {
         params: {
           x_var: xVar,
@@ -129,7 +129,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report_export/', {
         params: {
           x_var: xVar,

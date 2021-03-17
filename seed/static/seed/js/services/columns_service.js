@@ -50,7 +50,7 @@ angular.module('BE.seed.service.columns', []).factory('columns_service', [
 
     columns_service.delete_column_for_org = function (org_id, column_id) {
       return $http.delete('/api/v3/columns/' + column_id + '/', {
-        params: {organization_id: org_id},
+        params: {organization_id: org_id}
       });
     };
 

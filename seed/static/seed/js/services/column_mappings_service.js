@@ -10,11 +10,12 @@ angular.module('BE.seed.service.column_mappings', []).factory('column_mappings_s
     var column_mappings_factory = {};
 
     column_mappings_factory.get_column_mapping_profiles_for_org = function (org_id, filter_profile_types) {
+      var data;
       var params = {
         organization_id: org_id
       };
       if (filter_profile_types != null) {
-        var data = {
+        data = {
           profile_type: filter_profile_types
         };
       }

@@ -20,7 +20,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
-      endpoint: '/api/v3/upload/?organization_id='+scope.organizationId+"",
+      endpoint: '/api/v3/upload/?organization_id=' + scope.organizationId + '',
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {

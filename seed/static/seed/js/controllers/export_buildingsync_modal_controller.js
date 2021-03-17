@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', [])
       $uibModalInstance,
       property_view_id,
       column_mapping_profiles,
-      user_service,
+      user_service
     ) {
       $scope.column_mapping_profiles = column_mapping_profiles;
       $scope.current_column_mapping_profile = column_mapping_profiles[0];
@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', [])
           {
             params: {
               profile_id: $scope.current_column_mapping_profile.id,
-              organization_id: user_service.get_organization().id,
+              organization_id: user_service.get_organization().id
             }
           }
         ).then(function (response) {

@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         complete: false,
         status_message: '',
         progress_last_updated: null,
-        progress_last_checked: null,
+        progress_last_checked: null
       };
 
       /**
@@ -165,8 +165,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.reset_mapquest_api_key = function () {
         $uibModalInstance.close();
-        $state.go('organization_settings', {organization_id: $scope.organization.org_id})
-      }
+        $state.go('organization_settings', {organization_id: $scope.organization.org_id});
+      };
       /**
        * cancel: dismissed the modal, routes to the dismiss function of the parent
        *  scope
@@ -583,7 +583,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           $scope.step_10_mapquest_api_error = false;
 
           // helper function to set scope parameters for when the task fails
-          handleSystemMatchingError = function(data) {
+          const handleSystemMatchingError = function (data) {
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 0;
@@ -591,10 +591,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_style = 'danger';
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
-          }
+          };
 
           if (_.includes(['error', 'warning'], data.status)) {
-            handleSystemMatchingError(data)
+            handleSystemMatchingError(data);
           } else {
             uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
@@ -645,7 +645,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 }
               });
             }, function (response) {
-              handleSystemMatchingError(response.data)
+              handleSystemMatchingError(response.data);
               if ($scope.step_10_error_message.includes('MapQuest')) {
                 $scope.step_10_mapquest_api_error = true;
               }

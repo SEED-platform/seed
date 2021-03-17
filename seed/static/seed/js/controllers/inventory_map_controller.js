@@ -62,7 +62,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       });
 
       var getInventoryFunc;
-      if ($scope.inventory_type == "properties") getInventoryFunc = inventory_service.get_properties;
+      if ($scope.inventory_type == 'properties') getInventoryFunc = inventory_service.get_properties;
       else getInventoryFunc = inventory_service.get_taxlots;
       return fetch(page, chunk, getInventoryFunc).then(function (data) {
         modalInstance.close();
@@ -72,9 +72,9 @@ angular.module('BE.seed.controller.inventory_map', [])
         $scope.ungeocoded_data = _.reject($scope.data, 'long_lat');
 
         // buildings with UBID bounding boxes and geocoded data
-        var geocodedRelated = function(data, field) {
+        var geocodedRelated = function (data, field) {
           var related = [];
-          _.each(data, function(record) {
+          _.each(data, function (record) {
             if (!_.isUndefined(record.related) && !_.isEmpty(record.related)) {
               related = _.concat(related, _.filter(record.related, field));
             }

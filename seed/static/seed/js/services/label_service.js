@@ -67,17 +67,17 @@ angular.module('BE.seed.service.label', [])
         };
 
         if (inventory_type == null) {
-          return $http.get('/api/v3/labels/', { params }).then(map_labels)
+          return $http.get('/api/v3/labels/', { params }).then(map_labels);
         }
 
         let endpoint = null;
         var body = {selected: filter_ids};
         if (inventory_type === 'properties') {
-          endpoint = 'properties/labels'
+          endpoint = 'properties/labels';
         } else if (inventory_type === 'taxlots') {
-          endpoint = 'taxlots/labels'
+          endpoint = 'taxlots/labels';
         } else {
-          throw Error(`Invalid inventory_type "${inventory_type}". Expecting properties or taxlots`)
+          throw Error(`Invalid inventory_type "${inventory_type}". Expecting properties or taxlots`);
         }
 
         return $http.post(`/api/v3/${endpoint}/`, body, {

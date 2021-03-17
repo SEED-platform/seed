@@ -37,7 +37,7 @@ angular.module('BE.seed.controller.data_quality_modal', [])
         data_quality_service.get_data_quality_results_csv($scope.orgId, $scope.run_id).then(function (data) {
           var blob = new Blob([data], {type: 'text/csv'});
           saveAs(blob, 'Data Quality Check Results.csv');
-        })
+        });
       };
 
       $scope.close = function () {
