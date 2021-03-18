@@ -194,6 +194,12 @@ msgstr "Appliquer le profil"
 msgid "approved_date"
 msgstr "date approuvée"
 
+msgid "Are you absolutely sure you want to delete the organization"
+msgstr "Êtes-vous absolument sûr de vouloir supprimer l'organisation"
+
+msgid "Are you absolutely sure you want to delete the sub-organization"
+msgstr "Êtes-vous absolument sûr de vouloir supprimer la sous-organisation"
+
 msgid "Are you sure you want to delete"
 msgstr "Etes-vous sûr de vouloir supprimer"
 
@@ -769,6 +775,9 @@ msgstr "date limite"
 msgid "Deadline:"
 msgstr "Date limite:"
 
+msgid "Default Display Fields"
+msgstr "Champs d'affichage par défaut"
+
 msgid "Delete"
 msgstr "Supprimer"
 
@@ -780,6 +789,9 @@ msgstr "Supprimer l'organisation"
 
 msgid "Delete Selected"
 msgstr "Supprimer la sélection"
+
+msgid "Delete Sub-Organization"
+msgstr "Supprimer la sous-organisation"
 
 msgid "Delete User?"
 msgstr "Supprimer l'utilisateur?"
@@ -799,8 +811,17 @@ msgstr "Supprimer votre profil"
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
 
+msgid "DELETE_ORG_WARNING"
+msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement cette organisation et toutes les sous-organisations, les téléchargements associés, les propriétés, les lots fiscaux, les cycles, les règles de qualité des données et supprimera toutes les associations membres."
+
+msgid "DELETE_SUB_ORG_WARNING"
+msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement cette organisation et tous les téléchargements, propriétés, taxlots, cycles, règles de qualité des données, sous-organisations associés, et supprimera toutes les associations membres."
+
 msgid "DELETED_LABEL_NAMED"
 msgstr "Supprimée étiquette {label_name}"
+
+msgid "Deleting in progress..."
+msgstr "Suppression en cours ..."
 
 #: seed/models/projects.py:47
 msgid "description"
@@ -1061,7 +1082,8 @@ msgstr "Source du fichier:"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
 
-msgid "Files (Master State Only)"
+#, fuzzy
+msgid "Files (Main State Only)"
 msgstr "Fichiers (état principal uniquement)"
 
 msgid "Filter by label"
@@ -1460,6 +1482,15 @@ msgstr "Cette opération peut prendre un certain temps."
 msgid "Longitude"
 msgstr "Longitude"
 
+msgid "Main"
+msgstr "Principale"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Maintenance Actions"
+msgstr "Actions de maintenance"
+
 msgid "Make this a snapshot project."
 msgstr "Faire un projet de capture instantanée."
 
@@ -1511,9 +1542,6 @@ msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio M
 #: seed/landing/templates/landing/_marketing_bullets.html:23
 msgid "MARKETING_BULLET_3"
 msgstr "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les regroupements d'inventaire pour suivre l'état de la soumission, de l'examen et de la conformité des données."
-
-msgid "Master"
-msgstr "Maître"
 
 msgid "Match"
 msgstr "Faire correspondre"
@@ -1775,14 +1803,11 @@ msgstr "Pas nul"
 msgid "NOT_GEOCODED_PREVIOUSLY"
 msgstr "Non géocodé auparavant"
 
-msgid "Note 1: Sub-organizations cannot be deleted."
-msgstr "Remarque 1: Les sous-organisations ne peuvent pas être supprimées."
-
-msgid "Note 2: Parent organization members are not automatically made members of sub-organizations."
-msgstr "Remarque 2: Les membres de l'organisation mère ne sont pas automatiquement membres des sous-organisations."
-
 msgid "Note:"
 msgstr "Remarque:"
+
+msgid "Note: Parent organization members are not automatically made members of sub-organizations."
+msgstr "Remarque: les membres de l'organisation parente ne sont pas automatiquement devenus membres de sous-organisations."
 
 #: seed/landing/templates/landing/_password_note.html:1
 msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
@@ -1833,6 +1858,9 @@ msgstr "Un seul des termes du service est autorisé à être actif"
 
 msgid "Only Show Populated Columns"
 msgstr "Afficher uniquement les colonnes remplies"
+
+msgid "Options"
+msgstr "Options"
 
 msgid "OR"
 msgstr "OU"
@@ -2672,6 +2700,9 @@ msgstr "La Spécification d'Échange de Données Energétiques du Bâtiment (BED
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "Le DOE a développé la Plate-forme SEED™ (Standard Energy Efficiency Data) en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, le stockage et l'analyse des informations sur la performance énergétique des bâtiments concernant les grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
 
+msgid "The following actions have destructive effects, please read all warnings after clicking an option."
+msgstr "Les actions suivantes ont des effets destructeurs, veuillez lire tous les avertissements après avoir cliqué sur une option."
+
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
@@ -2767,6 +2798,9 @@ msgstr "Type de soumission"
 
 msgid "Type of Submittal:"
 msgstr "Type de soumission:"
+
+msgid "TYPE_TO_CONFIRM"
+msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 
 msgid ""
 "U.S."
@@ -3031,6 +3065,12 @@ msgstr "Oui, supprimer le jeu de données"
 
 msgid "Yes, Delete Inventory"
 msgstr "Oui, supprimer l'inventaire"
+
+msgid "Yes, Delete Organization"
+msgstr "Oui, supprimer l'organisation"
+
+msgid "Yes, Delete Sub-Organization"
+msgstr "Oui, supprimer la sous-organisation"
 
 msgid "Yes, Delete User"
 msgstr "Oui, Supprimer l'utilisateur"
