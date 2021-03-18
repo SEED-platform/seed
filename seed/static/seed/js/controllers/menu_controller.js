@@ -188,8 +188,20 @@ angular.module('BE.seed.controller.menu', [])
           // get the default org for the user
           $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
         }).catch(function (error) {
-          $rootScope.route_load_error = true;
-          $rootScope.load_error_message = error.data.message;
+          // user does not have an org
+          var orgModalInstance = $uibModal.open({
+            templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
+            controller: 'create_organization_modal_controller',
+            resolve: {
+              user_id: user_service.get_user_id()
+            }
+          });
+          orgModalInstance.result.finally(function () {
+            $scope.$broadcast('organization_updated');
+            init();
+          });
+          // $rootScope.route_load_error = true;
+          // $rootScope.load_error_message = error.data.message;
         });
 
         dataset_service.get_datasets_count().then(function (data) {

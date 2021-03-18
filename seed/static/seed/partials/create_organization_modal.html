@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="newMemberLabel" translate>Welcome to SEED, to continue create an organization for yourself</h4>
+</div>
+<form name="add_org_form" class="form-horizontal" role="form" ng-submit="submit_form(add_org_form.$valid)" novalidate>
+    <div class="modal-body">
+        <div class="form-group" ng-class="{ 'has-error' : add_org_form.org_name.$invalid && !add_org_form.org_name.$pristine }">
+            <label class="control-label col-sm-3" for="newMemberFirstName" translate>Organization Name:</label>
+            <div class="col-sm-8">
+                <input type="text" class="form-control" name="first_name" id="newMemberFirstName" placeholder="{$:: 'Enter Organization name' | translate $}" ng-model="org.name" required>
+                 <p ng-show="add_org_form.org_name.$invalid && !add_org_form.org_name.$pristine" class="help-block" translate>Organization name is required.</p>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+        <button type="submit" class="btn btn-primary" ng-disabled="add_org_form.$invalid" translate>Create</button>
+    </div>
+</form>
