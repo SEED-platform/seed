@@ -180,15 +180,8 @@ angular.module('BE.seed.controller.menu', [])
         if (!$scope.logged_in) {
           return;
         }
-
-        organization_service.get_organizations_brief().then(function (data) {
-          $scope.organizations_count = data.organizations.length;
-          $scope.menu.user.organizations = data.organizations;
-
-          // get the default org for the user
-          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
-        }).catch(function (error) {
-          // user does not have an org
+        if( !user_service.get_organization().id ){
+          console.log("none");
           var orgModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
             controller: 'create_organization_modal_controller',
@@ -197,16 +190,24 @@ angular.module('BE.seed.controller.menu', [])
             }
           });
           orgModalInstance.result.finally(function () {
-            $scope.$broadcast('organization_updated');
-            init();
+            $scope.$broadcast('org_updated');
+            location.reload();
           });
-          // $rootScope.route_load_error = true;
-          // $rootScope.load_error_message = error.data.message;
-        });
-
-        dataset_service.get_datasets_count().then(function (data) {
-          $scope.datasets_count = data.datasets_count;
-        });
+        } else {
+          organization_service.get_organizations_brief().then(function (data) {
+            $scope.organizations_count = data.organizations.length;
+            $scope.menu.user.organizations = data.organizations;
+            // get the default org for the user
+            $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+          }).catch(function (error) {
+            // user does not have an org
+            $rootScope.route_load_error = true;
+            $rootScope.load_error_message = error.data.message;
+          });
+          dataset_service.get_datasets_count().then(function (data) {
+            $scope.datasets_count = data.datasets_count;
+          });
+        }
       };
       init();
       init_menu();
