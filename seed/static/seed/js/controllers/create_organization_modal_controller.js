@@ -17,9 +17,14 @@ angular.module('BE.seed.controller.create_organization_modal', [])
       organization_service
     ) {
 
+      user_service.get_user_profile().then (function (data) {
+        $scope.email = data.email;
+      });
+
+      //This in the pattern that the organization service understands
       $scope.org = {
         "email": {
-          "email": "test",
+          "email": $scope.email,
           "user_id": user_id
         }
       };
@@ -39,6 +44,5 @@ angular.module('BE.seed.controller.create_organization_modal', [])
       $scope.close = function () {
         $uibModalInstance.close();
       };
-
 
     }]);
