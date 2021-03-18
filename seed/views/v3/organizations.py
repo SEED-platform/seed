@@ -413,7 +413,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
     def create(self, request):
         """
         Creates a new organization.
