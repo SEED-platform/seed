@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       spinner_utility.show();
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.organization = organization_payload.organization
+      $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
       $scope.scenarios = _.uniqBy(_.map(meters, function (meter) {
         return {
@@ -276,9 +276,9 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         });
       };
 
-      $scope.inventory_display_name = function(property_type) {
+      $scope.inventory_display_name = function (property_type) {
         let error = '';
-        let field = property_type == "property" ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+        let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
         if (!(field in $scope.item_state)) {
           error = field + ' does not exist';
           field = 'address_line_1';
@@ -287,7 +287,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
           error += (error == '' ? '' : ' and default ') + field + ' is blank';
         }
         $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
-      }
+      };
 
       $scope.updateHeight = function () {
         var height = 0;

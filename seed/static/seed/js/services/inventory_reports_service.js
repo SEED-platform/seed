@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.service.inventory_reports',
@@ -49,7 +49,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report/', {
         params: {
           x_var: xVar,
@@ -102,7 +102,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report_aggregated/', {
         params: {
           x_var: xVar,
@@ -129,7 +129,7 @@ angular.module('BE.seed.service.inventory_reports',
         throw new Error('Invalid Parameter');
       }
 
-      const organization_id = user_service.get_organization().id
+      const organization_id = user_service.get_organization().id;
       return $http.get('/api/v3/organizations/' + organization_id + '/report_export/', {
         params: {
           x_var: xVar,

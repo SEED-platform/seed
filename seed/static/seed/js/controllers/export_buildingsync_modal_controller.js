@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.export_buildingsync_modal', [])
@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', [])
       $uibModalInstance,
       property_view_id,
       column_mapping_profiles,
-      user_service,
+      user_service
     ) {
       $scope.column_mapping_profiles = column_mapping_profiles;
       $scope.current_column_mapping_profile = column_mapping_profiles[0];
@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.export_buildingsync_modal', [])
           {
             params: {
               profile_id: $scope.current_column_mapping_profile.id,
-              organization_id: user_service.get_organization().id,
+              organization_id: user_service.get_organization().id
             }
           }
         ).then(function (response) {

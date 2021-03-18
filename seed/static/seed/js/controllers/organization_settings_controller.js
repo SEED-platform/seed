@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
@@ -119,10 +119,10 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
-    resize_textarea = function () {
-      input = document.getElementById("new-user-email-content");
+    const resize_textarea = function () {
+      const input = document.getElementById('new-user-email-content');
       input.style.height = '34px';
-      input.style.height = (input.scrollHeight) + "px";
+      input.style.height = (input.scrollHeight) + 'px';
     };
 
     /**

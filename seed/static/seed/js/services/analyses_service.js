@@ -46,7 +46,7 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      let create_analysis = function(name, service, configuration, property_view_ids) {
+      let create_analysis = function (name, service, configuration, property_view_ids) {
         let organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/',
@@ -56,51 +56,51 @@ angular.module('BE.seed.service.analyses', [])
             name: name,
             service: service,
             configuration: configuration,
-            property_view_ids: property_view_ids,
+            property_view_ids: property_view_ids
           }
         }).then(function (response) {
-          return response.data
-        })
-      }
+          return response.data;
+        });
+      };
 
-      let start_analysis = function(analysis_id) {
+      let start_analysis = function (analysis_id) {
         let organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/start/',
           method: 'POST',
-          params: { organization_id: organization_id },
+          params: { organization_id: organization_id }
         }).then(function (response) {
-          return response.data
+          return response.data;
         }).catch(function (response) {
-          return response.data
-        })
-      }
+          return response.data;
+        });
+      };
 
-      let stop_analysis = function(analysis_id) {
+      let stop_analysis = function (analysis_id) {
         let organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/stop/',
           method: 'POST',
-          params: { organization_id: organization_id },
+          params: { organization_id: organization_id }
         }).then(function (response) {
-          return response.data
+          return response.data;
         }).catch(function (response) {
-          return response.data
-        })
-      }
+          return response.data;
+        });
+      };
 
-      let delete_analysis = function(analysis_id) {
+      let delete_analysis = function (analysis_id) {
         let organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/',
           method: 'DELETE',
-          params: { organization_id: organization_id },
+          params: { organization_id: organization_id }
         }).then(function (response) {
-          return response.data
+          return response.data;
         }).catch(function (response) {
-          return response.data
-        })
-      }
+          return response.data;
+        });
+      };
 
       let analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
