@@ -35,7 +35,8 @@ angular.module('BE.seed.controller.create_organization_modal', [])
       $scope.submit_form = function () {
         const org = _.cloneDeep($scope.org);
         organization_service.add(org).then(function () {
-          $uibModalInstance.close();
+          window.location.href = '/app';
+          // $uibModalInstance.close();
         }, function (data) {
           $scope.$emit('app_error', data);
         });

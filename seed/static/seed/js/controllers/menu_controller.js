@@ -181,7 +181,6 @@ angular.module('BE.seed.controller.menu', [])
           return;
         }
         if( !user_service.get_organization().id ){
-          console.log("none");
           var orgModalInstance = $uibModal.open({
             templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
             controller: 'create_organization_modal_controller',
@@ -191,7 +190,7 @@ angular.module('BE.seed.controller.menu', [])
           });
           orgModalInstance.result.finally(function () {
             $scope.$broadcast('org_updated');
-            location.reload();
+            init();
           });
         } else {
           organization_service.get_organizations_brief().then(function (data) {
