@@ -4,7 +4,7 @@ version: '3.4'
 services:
   db-postgres:
     container_name: seed_postgres
-    image: timescale/timescaledb-postgis:latest-pg12
+    image: timescale/timescaledb-postgis:latest-pg13
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed

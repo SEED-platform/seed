@@ -34,7 +34,7 @@ spec:
           value: super-secret-password
         - name: POSTGRES_USER
           value: seeduser
-        image: timescale/timescaledb-postgis:latest-pg12
+        image: timescale/timescaledb-postgis:latest-pg13
         imagePullPolicy: Always
         name: db-postrgres
 #        command: ["tail"]
