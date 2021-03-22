@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_cycles', [])
@@ -43,7 +43,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         return cycles_by_id;
       }, {});
 
-      $scope.organization = organization_payload.organization
+      $scope.organization = organization_payload.organization;
 
       // Flag columns whose values have changed between cycles.
       var changes_check = function (column) {
@@ -99,9 +99,9 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         );
       });
 
-      $scope.inventory_display_name = function(property_type) {
+      $scope.inventory_display_name = function (property_type) {
         let error = '';
-        let field = property_type == "property" ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
+        let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
         if (!(field in $scope.base_state)) {
           error = field + ' does not exist';
           field = 'address_line_1';
@@ -110,15 +110,15 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
           error += (error == '' ? '' : ' and default ') + field + ' is blank';
         }
         $scope.inventory_name = $scope.base_state[field] ? $scope.base_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
-      }
+      };
 
-      $scope.displayValue = function(dataType, value) {
+      $scope.displayValue = function (dataType, value) {
         if (dataType === 'datetime') {
-          return $filter('date')(value, 'yyyy-MM-dd h:mm a')
+          return $filter('date')(value, 'yyyy-MM-dd h:mm a');
         } else if (dataType === 'eui' || dataType === 'area') {
-          return $filter('number')(value, $scope.organization.display_significant_figures)
+          return $filter('number')(value, $scope.organization.display_significant_figures);
         }
-        return value
-      }
+        return value;
+      };
 
     }]);

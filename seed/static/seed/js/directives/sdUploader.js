@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -20,7 +20,7 @@ var makeFileSystemUploader = function (scope, element, allowed_extensions) {
   var uploader = new qq.FineUploaderBasic({
     button: element[0],
     request: {
-      endpoint: '/api/v3/upload/?organization_id='+scope.organizationId+"",
+      endpoint: '/api/v3/upload/?organization_id=' + scope.organizationId + '',
       paramsInBody: true,
       forceMultipart: true,
       customHeaders: {

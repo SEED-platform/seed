@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.mapping', [])
@@ -599,7 +599,7 @@ angular.module('BE.seed.controller.mapping', [])
         return Boolean(_.find($scope.mappings, function (field) {
           return field.suggestion_table_name === 'PropertyState' && field.from_units === null && ($scope.is_area_column(field) || $scope.is_eui_column(field));
         }));
-      }
+      };
 
       /**
        * empty_fields_present: used to disable or enable the 'show & review
@@ -717,7 +717,7 @@ angular.module('BE.seed.controller.mapping', [])
                 options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                 options.filter = inventory_service.dateFilter();
               } else if (col.data_type === 'area' || col.data_type === 'eui') {
-                options.cellFilter = 'number: ' + $scope.organization.display_significant_figures
+                options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
                 options.sortingAlgorithm = naturalSort;
               } else {
                 options.filter = inventory_service.combinedFilter();
@@ -843,13 +843,13 @@ angular.module('BE.seed.controller.mapping', [])
           // user chose to NOT delete file
         }, function () {
           // user chose to delete file
-          dataset_service.delete_file($scope.import_file.id).then(function() {
-            Notification.primary('File deleted')
+          dataset_service.delete_file($scope.import_file.id).then(function () {
+            Notification.primary('File deleted');
             $state.go('dataset_list');
-          }, function(message) {
+          }, function (message) {
             $log.error('Error deleting file.', message);
             $state.go('dataset_list');
-          })
+          });
         });
       }
 

@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -142,20 +142,20 @@ angular.module('BE.seed.controller.cycle_admin', [])
 
       initialize_new_cycle();
 
-      $scope.showDeleteCycleModal = function(cycle_id, cycle_name) {
+      $scope.showDeleteCycleModal = function (cycle_id, cycle_name) {
         const delete_cycle_modal = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
           controller: 'delete_cycle_modal_controller',
           resolve: {
             cycle_id: () => cycle_id,
-            cycle_name: () => cycle_name,
+            cycle_name: () => cycle_name
           }
-        })
-        delete_cycle_modal.result.then(function(es) {
-          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles)
-        }).catch(function() {
-          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles)
         });
-      }
+        delete_cycle_modal.result.then(function () {
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+        }).catch(function () {
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+        });
+      };
     }
   ]);

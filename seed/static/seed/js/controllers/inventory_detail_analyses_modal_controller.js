@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  *
  * Controller for the analysis modal.
@@ -22,7 +22,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       $uibModalInstance,
       Notification,
       analyses_service,
-      inventory_ids,
+      inventory_ids
     ) {
       $scope.bsyncr_models = [
         {model_type: 'Simple Linear Regression'},
@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           $scope.new_analysis.name,
           $scope.new_analysis.service,
           $scope.new_analysis.configuration,
-          inventory_ids,
+          inventory_ids
         ).then(function (data) {
           Notification.primary('Created Analysis');
           initialize_new_analysis();
@@ -52,7 +52,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           $scope.$close(data);
         }, function (response) {
           $log.error('Error creating new analysis.', response);
-          Notification.error('Failed to create Analysis: ' + response.data.message)
+          Notification.error('Failed to create Analysis: ' + response.data.message);
         });
       };
 
