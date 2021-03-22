@@ -148,7 +148,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
           controller: 'delete_cycle_modal_controller',
           resolve: {
             cycle_id: () => cycle_id,
-            cycle_name: () => cycle_name
+            cycle_name: () => cycle_name,
+            organization_id: () => $scope.org.id
           }
         });
         delete_cycle_modal.result.then(function () {
