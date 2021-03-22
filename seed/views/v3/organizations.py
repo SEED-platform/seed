@@ -424,14 +424,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         if Organization.objects.filter(name=org_name).exists():
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization name already exists'
+                'message': 'Organization name already exists'
             }, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse(
             {
                 'status': 'success',
-                'message': 'organization created',
+                'message': 'Organization created',
                 'organization': _dict_org(request, [org])[0]
             }
         )
