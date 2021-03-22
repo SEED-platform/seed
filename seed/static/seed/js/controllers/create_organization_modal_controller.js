@@ -36,9 +36,8 @@ angular.module('BE.seed.controller.create_organization_modal', [])
         const org = _.cloneDeep($scope.org);
         organization_service.add(org).then(function () {
           window.location.href = '/app';
-          // $uibModalInstance.close();
-        }, function (data) {
-          $scope.$emit('app_error', data);
+        }).catch(function (error) {
+          $scope.error_message = error.data.message;
         });
       };
 

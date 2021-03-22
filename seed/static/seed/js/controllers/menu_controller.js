@@ -189,7 +189,6 @@ angular.module('BE.seed.controller.menu', [])
             }
           });
           orgModalInstance.result.finally(function () {
-            $scope.$broadcast('org_updated');
             init();
           });
         } else {
