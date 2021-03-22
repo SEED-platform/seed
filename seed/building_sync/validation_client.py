@@ -62,13 +62,13 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
         )
 
     if response_body.get('success', False) is not True:
-        ValidationClientException(
+        raise ValidationClientException(
             f"Selection Tool request was not successful: {response.text}",
         )
 
     response_schema_version = response_body.get('schema_version')
     if response_schema_version != schema_version:
-        ValidationClientException(
+        raise ValidationClientException(
             f"Expected schema_version to be '{schema_version}' but it was '{response_schema_version}'",
         )
 
