@@ -20,10 +20,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed.decorators import lock_and_track
-from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnMapping,
