@@ -45,6 +45,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
           inventory_service.save_last_cycle($scope.cycle_id);
           const inventory_url = $state.href('inventory_list', {inventory_type: inventory_type});
           $window.open(inventory_url, '_blank');
+          // refresh the current page b/c we have modified the default organization
           location.reload();
         }).catch(function (response) {
           console.error('Failed to set default org: ');
