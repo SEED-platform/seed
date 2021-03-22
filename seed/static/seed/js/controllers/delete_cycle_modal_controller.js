@@ -50,7 +50,7 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
         }).catch(function (response) {
           console.error('Failed to set default org: ');
           console.error(response);
-          $scope.error_occurred = false;
+          $scope.error_occurred = true;
         })
       };
 
