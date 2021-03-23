@@ -12,7 +12,7 @@ from requests.models import Response
 import json
 
 from config.settings.common import BASE_DIR
-from seed.building_sync.validation_client import validate_use_case, DEFAULT_USE_CASE
+from seed.building_sync.validation_client import validate_use_case, DEFAULT_USE_CASE, DEFAULT_SCHEMA_VERSION
 
 
 def responseFactory(status_code, body_dict):
@@ -32,6 +32,7 @@ class TestValidationClient(TestCase):
     def test_validation_single_file_ok(self):
         good_body = {
             'success': True,
+            'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': {
                 'schema': {
                     'valid': True
@@ -54,6 +55,7 @@ class TestValidationClient(TestCase):
     def test_validation_zip_file_ok(self):
         good_body = {
             'success': True,
+            'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': [
                 {
                     'file': 'file1.xml',
@@ -111,6 +113,7 @@ class TestValidationClient(TestCase):
 
         body = {
             'success': True,
+            'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': [
                 {
                     'file': 'file1.xml',
@@ -156,6 +159,7 @@ class TestValidationClient(TestCase):
 
         body = {
             'success': True,
+            'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': [
                 {
                     'file': 'file1.xml',
@@ -185,6 +189,7 @@ class TestValidationClient(TestCase):
     def test_validation_zip_file_ok_when_warnings(self):
         good_body = {
             'success': True,
+            'schema_version': DEFAULT_SCHEMA_VERSION,
             'validation_results': [
                 {
                     'file': 'file1.xml',
