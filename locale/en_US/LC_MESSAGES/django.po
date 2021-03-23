@@ -592,6 +592,9 @@ msgstr "Create a user"
 msgid "Create an organization"
 msgstr "Create an organization"
 
+msgid "Create an Organization to continue"
+msgstr "Create an Organization to continue"
+
 msgid "Create Analysis"
 msgstr "Create Analysis"
 
@@ -1073,8 +1076,8 @@ msgstr "File Source:"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
-msgid "Files (Master State Only)"
-msgstr "Files (Master State Only)"
+msgid "Files (Main State Only)"
+msgstr "Files (Main State Only)"
 
 msgid "Filter by label"
 msgstr "Filter by label"
@@ -1470,6 +1473,9 @@ msgstr "This operation may take a while."
 msgid "Longitude"
 msgstr "Longitude"
 
+msgid "Main"
+msgstr "Main"
+
 msgid "Maintenance"
 msgstr "Maintenance"
 
@@ -1527,9 +1533,6 @@ msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie b
 #: seed/landing/templates/landing/_marketing_bullets.html:23
 msgid "MARKETING_BULLET_3"
 msgstr "Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance."
-
-msgid "Master"
-msgstr "Master"
 
 msgid "Match"
 msgstr "Match"
