@@ -1,0 +1,23 @@
+<div class="modal-header">
+    <h4 class="modal-title">{$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $} {$:: org.name $}</h4>
+</div>
+<div class="modal-body row">
+    <div class="col-sm-12" ng-if="!status.in_progress">
+        <p>{$:: 'Are you absolutely sure you want to delete the ' + (org.is_parent ? '' : 'sub-') + 'organization' | translate $}, {$:: org.name $}?</p>
+        <p>{$:: org.is_parent ? 'DELETE_ORG_WARNING' : 'DELETE_SUB_ORG_WARNING' | translate $}</p>
+        <p translate="TYPE_TO_CONFIRM" translate-values="{ org: org.name }"></p>
+        <div>
+            <input ng-model="$parent.confirmOrgName" style="width: 100%;">
+        </div>
+    </div>
+    <div class="col-sm-12" ng-if="status.in_progress">
+        <p translate>Deleting in progress...</p>
+        <uib-progressbar class="progress-striped active" value="status.progress" type="success"></uib-progressbar>
+    </div>
+</div>
+<div class="modal-footer" ng-if="!status.in_progress">
+    <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" class="btn btn-danger" ng-click="delete_org()" ng-disabled="!valid()">
+        {$:: 'Yes, Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
+    </button>
+</div>
