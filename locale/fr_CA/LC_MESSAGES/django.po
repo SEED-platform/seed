@@ -599,6 +599,9 @@ msgstr "Créer un utilisateur"
 msgid "Create an organization"
 msgstr "Créer une organisation"
 
+msgid "Create an Organization to continue"
+msgstr "Créer une organisation pour continuer"
+
 msgid "Create Analysis"
 msgstr "Créer une analyse"
 
@@ -1082,7 +1085,8 @@ msgstr "Source du fichier:"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, et <strong>.json</strong>."
 
-msgid "Files (Master State Only)"
+#, fuzzy
+msgid "Files (Main State Only)"
 msgstr "Fichiers (état principal uniquement)"
 
 msgid "Filter by label"
@@ -1481,6 +1485,9 @@ msgstr "Cette opération peut prendre un certain temps."
 msgid "Longitude"
 msgstr "Longitude"
 
+msgid "Main"
+msgstr "Principale"
+
 msgid "Maintenance"
 msgstr "Maintenance"
 
@@ -1538,9 +1545,6 @@ msgstr "Associez votre liste de bâtiments à l'ensemble de données Portfolio M
 #: seed/landing/templates/landing/_marketing_bullets.html:23
 msgid "MARKETING_BULLET_3"
 msgstr "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les regroupements d'inventaire pour suivre l'état de la soumission, de l'examen et de la conformité des données."
-
-msgid "Master"
-msgstr "Maître"
 
 msgid "Match"
 msgstr "Faire correspondre"
