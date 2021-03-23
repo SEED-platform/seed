@@ -142,13 +142,18 @@ angular.module('BE.seed.controller.cycle_admin', [])
 
       initialize_new_cycle();
 
-      $scope.showDeleteCycleModal = function (cycle_id, cycle_name) {
+      $scope.showDeleteCycleModal = function (cycle_id) {
         const delete_cycle_modal = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
           controller: 'delete_cycle_modal_controller',
           resolve: {
-            cycle_id: () => cycle_id,
-            cycle_name: () => cycle_name,
+            // use cycle data from organization endpoint b/c it includes inventory counts
+            cycle: (organization_service) => {
+              return organization_service.get_organization($scope.org.id)
+                .then(res => {
+                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id)
+                })
+            },
             organization_id: () => $scope.org.id
           }
         });

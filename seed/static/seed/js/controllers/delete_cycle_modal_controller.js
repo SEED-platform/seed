@@ -12,30 +12,18 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
     'inventory_service',
     'user_service',
     'cycle_service',
-    'cycle_id',
-    'cycle_name',
+    'cycle',
     'organization_id',
-    function ($scope, $window, $state, $q, $uibModalInstance, inventory_service, user_service, cycle_service, cycle_id, cycle_name, organization_id) {
-      $scope.cycle_id = cycle_id;
-      $scope.cycle_name = cycle_name;
+    function ($scope, $window, $state, $q, $uibModalInstance, inventory_service, user_service, cycle_service, cycle, organization_id) {
+      $scope.cycle_id = cycle.cycle_id;
+      $scope.cycle_name = cycle.name;
       $scope.organization_id = organization_id;
 
-      $scope.cycle_has_properties = null;
-      $scope.cycle_has_taxlots = null;
-      $scope.cycle_has_inventory = null;
+      $scope.cycle_has_properties = cycle.num_properties > 0;
+      $scope.cycle_has_taxlots = cycle.num_taxlots > 0;
+      $scope.cycle_has_inventory = $scope.cycle_has_properties || $scope.cycle_has_taxlots;
       $scope.delete_cycle_status = null;
       $scope.error_occurred = false;
-
-      // determine if there are any properties or tax lots in the cycle
-      // when fetching inventory, ask for only 1 inventory per page and first page to reduce overhead
-      $q.all([
-        inventory_service.get_properties(1, 1, {id: $scope.cycle_id}, null, null, false, $scope.organization_id),
-        inventory_service.get_taxlots(1, 1, {id: $scope.cycle_id}, null, null, false, $scope.organization_id)
-      ]).then(function (responses) {
-        $scope.cycle_has_properties = responses[0].results.length > 0;
-        $scope.cycle_has_taxlots = responses[1].results.length > 0;
-        $scope.cycle_has_inventory = $scope.cycle_has_properties || $scope.cycle_has_taxlots;
-      });
 
       // open an inventory list page in a new tab
       $scope.goToInventoryList = function (inventory_type) {
