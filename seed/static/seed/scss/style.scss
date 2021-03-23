@@ -2002,7 +2002,7 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   }
 }
 
-.table-xscroll-unfrozen{
+.table-xscroll-unfrozen {
 
   overflow: auto;
   height: 600px;
@@ -2036,7 +2036,7 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     position: sticky;
     left: 0px;
     z-index: 0;
-    background-color:#F9F9F9
+    background-color: #F9F9F9
   }
 
   .table_item_detail {
@@ -3680,16 +3680,19 @@ $pairedCellWidth: 60px;
   justify-content: center;
   align-items: center;
 }
+
 .column-settings-instructions {
   td:first-child {
     font-weight: bold;
     vertical-align: top;
     min-width: 110px;
   }
+
   td:last-child {
     padding-bottom: 5px;
   }
 }
+
 .lock:hover .glyphicon-pushpin {
   Display: inline;
 }
@@ -3714,6 +3717,7 @@ $pairedCellWidth: 60px;
     margin: 0 6px;
     white-space: nowrap;
   }
+
   .time-table {
     tr:first-child td {
       padding-bottom: 6px;
@@ -3778,4 +3782,55 @@ FAQ page
 // always-visible notes_count icon
 .ui-grid-icon-up-dir.translucent {
   opacity: 0.1;
+}
+
+// org settings tabs
+.org-settings {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: row;
+
+  .nav-stacked > li + li {
+    margin-top: 4px;
+  }
+
+  ul {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 20px;
+    padding: 4px;
+
+    li.active.warning > a {
+      background-color: #d9534f;
+      border-color: #d43f3a;
+      color: #fff;
+    }
+  }
+
+  .tab-content {
+    flex: 1;
+    margin: 20px 20px 20px 0;
+
+    // no margin on first header
+    .tab-pane .section_content_container:first-child .section_content h3 {
+      margin-top: 8px;
+    }
+  }
+
+  input[type='checkbox'] {
+    cursor: pointer;
+  }
+
+  .email-form {
+    @media (min-width: 768px) {
+      .col-sm-1 {
+        width: 120px;
+      }
+    }
+  }
+
+  .maintenance small {
+    display: block;
+    padding-bottom: 12px;
+  }
 }
