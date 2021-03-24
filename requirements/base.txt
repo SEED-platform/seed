@@ -30,7 +30,7 @@ python-dateutil==2.7.3
 django-pint==0.4
 
 # API
-djangorestframework==3.10.3
+djangorestframework==3.11.2
 # simplejson dependency needs to be installed via github due to a pip segfault with Python 3.6.7
 -e git+https://github.com/simplejson/simplejson@v3.16.1#egg=simplejson
 drf-yasg==1.17.1
