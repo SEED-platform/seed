@@ -4,6 +4,8 @@
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
+  '$uibModal',
+  'urls',
   'organization_payload',
   'auth_payload',
   'organization_service',
@@ -13,6 +15,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   '$translate',
   function (
     $scope,
+    $uibModal,
+    urls,
     organization_payload,
     auth_payload,
     organization_service,
@@ -119,10 +123,22 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
-    const resize_textarea = function () {
+    $scope.confirm_delete = function (org) {
+      $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/delete_org_modal.html',
+        controller: 'delete_org_modal_controller',
+        backdrop: 'static',
+        keyboard: false,
+        resolve: {
+          org: org
+        }
+      });
+    };
+
+    $scope.resize_textarea = function () {
       const input = document.getElementById('new-user-email-content');
       input.style.height = '34px';
-      input.style.height = (input.scrollHeight) + 'px';
+      input.style.height = input.scrollHeight + 'px';
     };
 
     /**

@@ -348,9 +348,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({'organizations': orgs})
 
-    @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_owner')
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.

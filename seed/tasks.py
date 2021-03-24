@@ -20,10 +20,9 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed.decorators import lock_and_track
-from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnMapping,
@@ -167,19 +166,9 @@ def delete_organization(org_pk):
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(org_pk, prog_key):
-    # Get all org users
-    user_ids = OrganizationUser.objects.filter(
-        organization_id=org_pk).values_list('user_id', flat=True)
-    users = list(User.objects.filter(pk__in=user_ids))
-
     Organization.objects.get(pk=org_pk).delete()
 
     # TODO: Delete measures in BRICR branch
-
-    # Delete any abandoned users.
-    for user in users:
-        if not OrganizationUser.objects.filter(user_id=user.pk).exists():
-            user.delete()
 
     progress_data = ProgressData.from_key(prog_key)
     return progress_data.result()
