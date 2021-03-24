@@ -13,7 +13,9 @@ from random import randint
 import dateutil
 
 from celery import shared_task
+from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, JsonResponse
@@ -1358,3 +1360,28 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
 
         return org.geocoding_enabled
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['GET'])
+    def reset_all_passwords(self, request, pk=None):
+        """
+        Resets all user passwords in organization
+        """
+        org_users = OrganizationUser.objects.filter(organization=pk).select_related('user')
+        for org_user in org_users:
+            form = PasswordResetForm({'email': org_user.user.email})
+            if form.is_valid():
+                form.save(
+                    from_email=settings.PASSWORD_RESET_EMAIL,
+                    subject_template_name='landing/password_reset_subject.txt',
+                    email_template_name='landing/password_reset_email.html'
+                )
+
+        return JsonResponse(
+            {
+                'status': 'success',
+                'message': 'passwords reset'
+            }
+        )

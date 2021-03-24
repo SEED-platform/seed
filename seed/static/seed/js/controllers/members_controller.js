@@ -110,6 +110,15 @@ angular.module('BE.seed.controller.members', [])
       };
 
       /**
+       * reset_all_passwords triggers a reset password email for all users
+       */
+       $scope.reset_all_passwords = function () {
+         if (confirm("Really reset all passwords?")) {
+           organization_service.reset_all_passwords($scope.org.id);
+         }
+       };
+
+      /**
        * called on controller load and when users are refreshed
        *  - creates a name field for each user from first_name and last_name
        */
