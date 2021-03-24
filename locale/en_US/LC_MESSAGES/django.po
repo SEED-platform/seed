@@ -160,8 +160,14 @@ msgstr "An error occurred while processing the file. Please ensure that your fil
 msgid "Analyses"
 msgstr "Analyses"
 
+msgid "Analysis Name"
+msgstr "Analysis Name"
+
 msgid "Analysis Name (User Defined)"
 msgstr "Analysis Name (User Defined)"
+
+msgid "Analysis State"
+msgstr "Analysis State"
 
 msgid "and"
 msgstr "and"
@@ -186,6 +192,12 @@ msgstr "Apply Profile"
 #: seed/models/projects.py:159
 msgid "approved_date"
 msgstr "approved_date"
+
+msgid "Are you absolutely sure you want to delete the organization"
+msgstr "Are you absolutely sure you want to delete the organization"
+
+msgid "Are you absolutely sure you want to delete the sub-organization"
+msgstr "Are you absolutely sure you want to delete the sub-organization"
 
 msgid "Are you sure you want to delete"
 msgstr "Are you sure you want to delete"
@@ -257,6 +269,12 @@ msgstr "Block Number"
 #: seed/models/models.py:178
 msgid "blue"
 msgstr "blue"
+
+msgid "Body"
+msgstr "Body"
+
+msgid "Boolean"
+msgstr "Boolean"
 
 msgid "Both"
 msgstr "Both"
@@ -387,6 +405,9 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "Collapse Tabs"
 msgstr "Collapse Tabs"
 
+msgid "Column List Profile"
+msgstr "Column List Profile"
+
 msgid "Column List Profiles"
 msgstr "Column List Profiles"
 
@@ -401,6 +422,9 @@ msgstr "Column Name"
 
 msgid "Column Order/Visibility"
 msgstr "Column Order/Visibility"
+
+msgid "Column Settings"
+msgstr "Column Settings"
 
 msgid "COLUMN_NAME_DUPLICATE_ERROR"
 msgstr "Error: New column name cannot match previous name."
@@ -484,8 +508,14 @@ msgstr "Year Built"
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concatenate Headers (Columns of Data)"
 
+msgid "Condition Check"
+msgstr "Condition Check"
+
 msgid "Conditioned Floor Area"
 msgstr "Conditioned Floor Area"
+
+msgid "Configuration"
+msgstr "Configuration"
 
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
@@ -561,6 +591,12 @@ msgstr "Create a user"
 
 msgid "Create an organization"
 msgstr "Create an organization"
+
+msgid "Create an Organization to continue"
+msgstr "Create an Organization to continue"
+
+msgid "Create Analysis"
+msgstr "Create Analysis"
 
 msgid "Create Cycle"
 msgstr "Create Cycle"
@@ -721,6 +757,9 @@ msgstr "date joined"
 msgid "Date Uploaded"
 msgstr "Date Uploaded"
 
+msgid "Datetime"
+msgstr "Datetime"
+
 msgid "Deadline"
 msgstr "Deadline"
 
@@ -730,6 +769,9 @@ msgstr "deadline_date"
 
 msgid "Deadline:"
 msgstr "Deadline:"
+
+msgid "Default Display Fields"
+msgstr "Default Display Fields"
 
 msgid "Delete"
 msgstr "Delete"
@@ -742,6 +784,9 @@ msgstr "Delete Organization"
 
 msgid "Delete Selected"
 msgstr "Delete Selected"
+
+msgid "Delete Sub-Organization"
+msgstr "Delete Sub-Organization"
 
 msgid "Delete User?"
 msgstr "Delete User?"
@@ -761,8 +806,17 @@ msgstr "Delete your Profile"
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
 
+msgid "DELETE_ORG_WARNING"
+msgstr "This action cannot be undone. This will permanently delete this organization and all sub-organizations, associated uploads, properties, taxlots, cycles, data quality rules, and remove all member associations."
+
+msgid "DELETE_SUB_ORG_WARNING"
+msgstr "This action cannot be undone. This will permanently delete this organization and all associated uploads, properties, taxlots, cycles, data quality rules, sub-organizations, and remove all member associations."
+
 msgid "DELETED_LABEL_NAMED"
 msgstr "Deleted label {label_name}"
+
+msgid "Deleting in progress..."
+msgstr "Deleting in progress..."
 
 #: seed/models/projects.py:47
 msgid "description"
@@ -778,6 +832,9 @@ msgstr "Designates whether this user should be treated as active. Unselect this 
 
 msgid "Desired Name"
 msgstr "Desired Name"
+
+msgid "Detail Column List Profile"
+msgstr "Detail Column List Profile"
 
 msgid "Determine Time Period from Field:"
 msgstr "Determine Time Period from Field:"
@@ -797,8 +854,14 @@ msgstr "If you'd like to geocode your data using the MapQuest service, please pr
 msgid "Dismiss"
 msgstr "Dismiss"
 
+msgid "Display Name"
+msgstr "Display Name"
+
 msgid "District"
 msgstr "District"
+
+msgid "Documentation"
+msgstr "Documentation"
 
 msgid "Done"
 msgstr "Done"
@@ -863,6 +926,9 @@ msgstr "Email Address:"
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
 
+msgid "Enable Geocoding"
+msgstr "Enable Geocoding"
+
 #: seed/models/models.py:237
 msgid "end_date"
 msgstr "end_date"
@@ -926,6 +992,9 @@ msgstr "EUI"
 msgid "ex: joe@company.com"
 msgstr "ex: joe@company.com"
 
+msgid "Example Usage"
+msgstr "Example Usage"
+
 msgid "EXCLUDE"
 msgstr "EXCLUDE"
 
@@ -949,6 +1018,15 @@ msgstr "Export Buildings"
 
 msgid "Export BuildingSync"
 msgstr "Export BuildingSync"
+
+msgid "Export BuildingSync in Excel format"
+msgstr "Export BuildingSync in Excel format"
+
+msgid "Export CSV"
+msgstr "Export CSV"
+
+msgid "Export GeoJSON"
+msgstr "Export GeoJSON"
 
 msgid "Export Name"
 msgstr "Export Name"
@@ -986,6 +1064,9 @@ msgstr "Field names for matching"
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
 
+msgid "Fields that have a \"Must Contain\" or \"Must Not Contain\" Condition Check rule cannot have a \"Range\" Condition Check rule."
+msgstr "Fields that have a \"Must Contain\" or \"Must Not Contain\" Condition Check rule cannot have a \"Range\" Condition Check rule."
+
 msgid "File Name"
 msgstr "File Name"
 
@@ -995,8 +1076,8 @@ msgstr "File Source:"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
-msgid "Files (Master State Only)"
-msgstr "Files (Master State Only)"
+msgid "Files (Main State Only)"
+msgstr "Files (Main State Only)"
 
 msgid "Filter by label"
 msgstr "Filter by label"
@@ -1022,6 +1103,9 @@ msgstr "First name is required."
 
 msgid "First Name:"
 msgstr "First Name:"
+
+msgid "Float"
+msgstr "Float"
 
 msgid "For direct help on a specific problem, please email:"
 msgstr "For direct help on a specific problem, please email:"
@@ -1054,6 +1138,9 @@ msgstr "From date"
 msgid "From Date"
 msgstr "From Date"
 
+msgid "From Email"
+msgstr "From Email"
+
 msgid "From first date of"
 msgstr "From first date of"
 
@@ -1068,6 +1155,9 @@ msgstr "Funding from"
 
 msgid "Geocode"
 msgstr "Geocode"
+
+msgid "Geocode Selected"
+msgstr "Geocode Selected"
 
 msgid "GEOCODE_ATTEMPTED_PREVIOUSLY"
 msgstr "Geocoding attempted previously"
@@ -1086,6 +1176,12 @@ msgstr "successful with high confidence in the result"
 
 msgid "GEOCODED_WITH_LOW_CONFIDENCE"
 msgstr "unsuccessful due to a low geocode confidence in the result"
+
+msgid "Geocoding Confidence"
+msgstr "Geocoding Confidence"
+
+msgid "Geocoding Order"
+msgstr "Geocoding Order"
 
 msgid "GEOCODING_COL_COUNT_REQUIREMENT"
 msgstr "At least 1 geocoding column is required for this building type in order to attempt geocoding."
@@ -1107,6 +1203,9 @@ msgstr "Geocoding now..."
 
 msgid "Geolocating has been disabled for this organization."
 msgstr "Geolocating has been disabled for this organization."
+
+msgid "Geometry"
+msgstr "Geometry"
 
 msgid "Get a New API Key"
 msgstr "Get a New API Key"
@@ -1187,6 +1286,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "Import Portfolio Manager Data"
+msgstr "Import Portfolio Manager Data"
+
 msgid "IMPORT_ANOTHER_QUESTION"
 msgstr "Would you like to add another file?"
 
@@ -1196,6 +1298,12 @@ msgstr "In addition, you need to specify where the field should be associated wi
 #: seed/models/projects.py:23
 msgid "Inactive"
 msgstr "Inactive"
+
+msgid "Include CSV Label Header"
+msgstr "Include CSV Label Header"
+
+msgid "Include Notes"
+msgstr "Include Notes"
 
 msgid "INCLUDE_SHARED_PROPERTIES"
 msgstr "Include in your Properties List all properties shared with you."
@@ -1208,6 +1316,9 @@ msgstr "This action will kick off a match and merge round for the resulting reco
 
 msgid "Ineligible"
 msgstr "Ineligible"
+
+msgid "Integer"
+msgstr "Integer"
 
 msgid "INTERNAL"
 msgstr "INTERNAL"
@@ -1303,6 +1414,9 @@ msgstr "Last name is required."
 msgid "Last Name:"
 msgstr "Last Name:"
 
+msgid "Latitude"
+msgstr "Latitude"
+
 msgid "Left Half"
 msgstr "Left Half"
 
@@ -1356,6 +1470,18 @@ msgstr "Logout"
 msgid "LONG_OPERATION_WARNING"
 msgstr "This operation may take a while."
 
+msgid "Longitude"
+msgstr "Longitude"
+
+msgid "Main"
+msgstr "Main"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Maintenance Actions"
+msgstr "Maintenance Actions"
+
 msgid "Make this a snapshot project."
 msgstr "Make this a snapshot project."
 
@@ -1373,6 +1499,9 @@ msgstr "Managed by"
 
 msgid "Manual Matching"
 msgstr "Manual Matching"
+
+msgid "Map"
+msgstr "Map"
 
 msgid "Map SEED fields to imported file fields"
 msgstr "Map SEED fields to imported file fields"
@@ -1405,11 +1534,11 @@ msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie b
 msgid "MARKETING_BULLET_3"
 msgstr "Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance."
 
-msgid "Master"
-msgstr "Master"
-
 msgid "Match"
 msgstr "Match"
+
+msgid "Match Criteria"
+msgstr "Match Criteria"
 
 msgid "Match Properties"
 msgstr "Match Properties"
@@ -1469,6 +1598,12 @@ msgstr "Max"
 msgid "Maximum"
 msgstr "Maximum"
 
+msgid "Measurement unit display for areas"
+msgstr "Measurement unit display for areas"
+
+msgid "Measurement unit display for energy use intensities (EUI)"
+msgstr "Measurement unit display for energy use intensities (EUI)"
+
 msgid "Measurement Units"
 msgstr "Measurement Units"
 
@@ -1495,6 +1630,9 @@ msgstr "Member Role"
 
 msgid "Members"
 msgstr "Members"
+
+msgid "Merge Protection"
+msgstr "Merge Protection"
 
 msgid "MERGE_IN_CYCLE_MATCHES"
 msgstr "Matches within this cycle will be merged."
@@ -1540,6 +1678,9 @@ msgstr "Meter energy display units (change one at a time)"
 
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
+
+msgid "Meters"
+msgstr "Meters"
 
 msgid "Min"
 msgstr "Min"
@@ -1593,6 +1734,12 @@ msgstr "name already in use"
 msgid "National Renewable Energy Laboratory"
 msgstr "National Renewable Energy Laboratory"
 
+msgid "New Analysis"
+msgstr "New Analysis"
+
+msgid "New Note"
+msgstr "New Note"
+
 #: seed/landing/templates/landing/password_reset_confirm.html:50
 #: seed/landing/templates/landing/signup.html:49
 msgid "New password"
@@ -1603,6 +1750,9 @@ msgstr "New properties"
 
 msgid "New tax lots"
 msgstr "New tax lots"
+
+msgid "New User Email"
+msgstr "New User Email"
 
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "A new column will be created, and/or existing data can be replaced."
@@ -1643,18 +1793,18 @@ msgstr "Not Null"
 msgid "NOT_GEOCODED_PREVIOUSLY"
 msgstr "Not geocoded previously"
 
-msgid "Note 1: Sub-organizations cannot be deleted."
-msgstr "Note 1: Sub-organizations cannot be deleted."
-
-msgid "Note 2: Parent organization members are not automatically made members of sub-organizations."
-msgstr "Note 2: Parent organization members are not automatically made members of sub-organizations."
-
 msgid "Note:"
 msgstr "Note:"
+
+msgid "Note: Parent organization members are not automatically made members of sub-organizations."
+msgstr "Note: Parent organization members are not automatically made members of sub-organizations."
 
 #: seed/landing/templates/landing/_password_note.html:1
 msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
 msgstr "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
+
+msgid "Notes"
+msgstr "Notes"
 
 msgid "NUM_PROPERTIES_AND_TAXLOTS_DELETED"
 msgstr "{num_properties,plural,=0{no properties} one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,=0{no tax lots} one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}} have been deleted"
@@ -1695,6 +1845,12 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 #: src/django-tos-master/tos/models.py:34
 msgid "Only one terms of service is allowed to be active"
 msgstr "Only one terms of service is allowed to be active"
+
+msgid "Only Show Populated Columns"
+msgstr "Only Show Populated Columns"
+
+msgid "Options"
+msgstr "Options"
 
 msgid "OR"
 msgstr "OR"
@@ -1769,6 +1925,9 @@ msgstr "Pair Tax Lots to Properties"
 msgid "Paired"
 msgstr "Paired"
 
+msgid "Paired Tax Lots"
+msgstr "Paired Tax Lots"
+
 msgid "Pairing"
 msgstr "Pairing"
 
@@ -1808,6 +1967,9 @@ msgstr "Password set unsuccessful"
 
 msgid "PERCENT_COMPLETE"
 msgstr "{progress}% Complete"
+
+msgid "Permanently delete extra_data columns and all associated data"
+msgstr "Permanently delete extra_data columns and all associated data"
 
 #: seed/landing/templates/landing/password_set.html:16
 msgid "Please enter your new password twice so we can verify you typed it in correctly."
@@ -1975,8 +2137,17 @@ msgstr "Property Count"
 msgid "Property Detail"
 msgstr "Property Detail"
 
+msgid "Property Detail Notes"
+msgstr "Property Detail Notes"
+
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
+
+msgid "Property Detail View Display Field"
+msgstr "Property Detail View Display Field"
+
+msgid "Property Footprint"
+msgstr "Property Footprint"
 
 msgid "Property Name"
 msgstr "Property Name"
@@ -2043,6 +2214,9 @@ msgstr "Remove Column Mappings"
 msgid "Remove From Project"
 msgstr "Remove From Project"
 
+msgid "Remove Inventory"
+msgstr "Remove Inventory"
+
 msgid "Remove inventory and organizations"
 msgstr "Remove inventory and organizations"
 
@@ -2051,6 +2225,9 @@ msgstr "Remove User"
 
 msgid "Removing buildings from project"
 msgstr "Removing buildings from project"
+
+msgid "Rename"
+msgstr "Rename"
 
 msgid "Rename Profile"
 msgstr "Rename Profile"
@@ -2131,6 +2308,9 @@ msgstr "Row 4"
 msgid "Row 5"
 msgstr "Row 5"
 
+msgid "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
+msgstr "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
+
 msgid "Run Author"
 msgstr "Run Author"
 
@@ -2139,6 +2319,9 @@ msgstr "Run Date"
 
 msgid "Run Duration"
 msgstr "Run Duration"
+
+msgid "Run Id"
+msgstr "Run Id"
 
 msgid "Run Status"
 msgstr "Run Status"
@@ -2173,8 +2356,14 @@ msgstr "saving energy data"
 msgid "Search column name"
 msgstr "Search column name"
 
+msgid "Search display name"
+msgstr "Search display name"
+
 msgid "Search field name"
 msgstr "Search field name"
+
+msgid "Search table name"
+msgstr "Search table name"
 
 msgid "Security"
 msgstr "Security"
@@ -2255,6 +2444,9 @@ msgstr "Settings"
 msgid "Severity"
 msgstr "Severity"
 
+msgid "Severity Level"
+msgstr "Severity Level"
+
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
@@ -2309,6 +2501,12 @@ msgstr "Showing {start} to {end} of {total} tax lots"
 #: seed/landing/models.py:60
 msgid "shows shared buildings within search results"
 msgstr "shows shared buildings within search results"
+
+msgid "Signature"
+msgstr "Signature"
+
+msgid "Significant figures for EUIs and areas"
+msgstr "Significant figures for EUIs and areas"
 
 msgid "Site Energy Use Intensity"
 msgstr "Site Energy Use Intensity"
@@ -2389,6 +2587,9 @@ msgstr "Sub-Organization Name"
 msgid "Sub-Organizations"
 msgstr "Sub-Organizations"
 
+msgid "Subject"
+msgstr "Subject"
+
 msgid "Submittal Type"
 msgstr "Submittal Type"
 
@@ -2409,6 +2610,9 @@ msgstr "Update the geocoding column settings in your organization's column setti
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
+
+msgid "Table Name"
+msgstr "Table Name"
 
 msgid "Tax Lot"
 msgstr "Tax Lot"
@@ -2436,6 +2640,9 @@ msgstr "Tax Lots"
 
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
+
+msgid "Taxlot Detail View Display Field"
+msgstr "Taxlot Detail View Display Field"
 
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
 msgstr "At least one of the following Tax Lot fields is required"
@@ -2475,6 +2682,9 @@ msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"bea
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 
+msgid "The following actions have destructive effects, please read all warnings after clicking an option."
+msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
+
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
@@ -2508,6 +2718,9 @@ msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software app
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 
+msgid "There was an error loading the page"
+msgstr "There was an error loading the page"
+
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
 
@@ -2517,12 +2730,18 @@ msgstr "This action replaces any of your current columns with the comma-delmited
 msgid "This cycle name is already taken."
 msgstr "This cycle name is already taken."
 
+msgid "This email link is invalid."
+msgstr "This email link is invalid."
+
 msgid "This label name is already taken."
 msgstr "This label name is already taken."
 
 #: seed/validators.py:17
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "This password must contain at least %(quantity)d %(type)s characters."
+
+msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
+msgstr "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
 
 msgid "Time Period"
 msgstr "Time Period"
@@ -2562,6 +2781,9 @@ msgstr "Type of Submittal"
 msgid "Type of Submittal:"
 msgstr "Type of Submittal:"
 
+msgid "TYPE_TO_CONFIRM"
+msgstr "Please type <strong>{org}</strong> to confirm."
+
 msgid ""
 "U.S."
 "                        Department of Energy"
@@ -2569,6 +2791,9 @@ msgstr "U.S. Department of Energy"
 
 msgid "U.S. Department of Energy"
 msgstr "U.S. Department of Energy"
+
+msgid "UBID"
+msgstr "UBID"
 
 msgid "Units"
 msgstr "Units"
@@ -2582,8 +2807,14 @@ msgstr "Update Charts"
 msgid "Update Filters"
 msgstr "Update Filters"
 
+msgid "Update with BuildingSync"
+msgstr "Update with BuildingSync"
+
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
+
+msgid "Updated"
+msgstr "Updated"
 
 msgid "Upload a Spreadsheet"
 msgstr "Upload a Spreadsheet"
@@ -2640,6 +2871,9 @@ msgstr "uploading file"
 msgid "Uploading your data"
 msgstr "Uploading your data"
 
+msgid "Uploading your data."
+msgstr "Uploading your data."
+
 msgid "UPLOADING_FILE_TITLE"
 msgstr "Uploading File"
 
@@ -2666,6 +2900,9 @@ msgstr "User E-mail:"
 
 msgid "User Email"
 msgstr "User Email"
+
+msgid "User Email:"
+msgstr "User Email:"
 
 msgid "User First Name:"
 msgstr "User First Name:"
@@ -2698,6 +2935,9 @@ msgstr "Using your current browser will prevent you from accessing features on o
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
 
+msgid "Valid"
+msgstr "Valid"
+
 msgid "Version"
 msgstr "Version"
 
@@ -2726,6 +2966,9 @@ msgstr "We've detected an outdated browser."
 #: seed/landing/templates/landing/password_reset_done.html:15
 msgid "We've e-mailed instructions for resetting your password."
 msgstr "We've e-mailed instructions for resetting your password."
+
+msgid "We've sent a sign in link to your email to access your account."
+msgstr "We've sent a sign in link to your email to access your account."
 
 msgid "Weather Norm. Site EUI"
 msgstr "Weather Norm. Site EUI"
@@ -2802,6 +3045,12 @@ msgstr "Yes, Delete Data Set"
 
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
+
+msgid "Yes, Delete Organization"
+msgstr "Yes, Delete Organization"
+
+msgid "Yes, Delete Sub-Organization"
+msgstr "Yes, Delete Sub-Organization"
 
 msgid "Yes, Delete User"
 msgstr "Yes, Delete User"

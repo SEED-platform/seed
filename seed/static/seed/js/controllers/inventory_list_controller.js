@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_list', [])
@@ -50,7 +50,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $translate,
       uiGridConstants,
       i18nService,
-      organization_payload,
+      organization_payload
     ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
@@ -299,10 +299,10 @@ angular.module('BE.seed.controller.inventory_list', [])
               });
             },
             data: function () {
-              const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id'
+              const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
               const selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                return row.$$treeLevel === 0
-              }), viewIdProp).reverse()
+                return row.$$treeLevel === 0;
+              }), viewIdProp).reverse();
               var data = new Array(selectedViewIds.length);
 
               if ($scope.inventory_type === 'properties') {
@@ -436,7 +436,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   name: _.constant(null),
                   uploaded: _.constant(null),
                   run_id: _.constant(result.unique_id),
-                  orgId: _.constant($scope.organization.id),
+                  orgId: _.constant($scope.organization.id)
                 }
               });
               modalInstance.result.then(function () {
@@ -485,8 +485,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.columns.unshift({
         name: 'merged_indicator',
         displayName: '',
+        headerCellTemplate: '<span></span>', // remove header
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-          '  <div title="' + $translate.instant("Merged Records") + '" class="ui-grid-cell-contents merged-indicator">' +
+          '  <div title="' + $translate.instant('Merged Records') + '" class="ui-grid-cell-contents merged-indicator">' +
           '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
           '  </div>' +
           '</div>',
@@ -503,11 +504,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       }, {
         name: 'notes_count',
         displayName: '',
+        headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-          '  <a title="' + $translate.instant("Go to Notes") + '" class="ui-grid-cell-contents notes-button" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+          '  <a title="' + $translate.instant('Go to Notes') + '" class="ui-grid-cell-contents notes-button" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
           '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count ? row.entity.notes_count : \'\' $}</div>' +
           '  </a>' +
-          '  <a title="' + $translate.instant("Go to Notes") + '" class="ui-grid-cell-contents notes-button" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
+          '  <a title="' + $translate.instant('Go to Notes') + '" class="ui-grid-cell-contents notes-button" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
           '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count ? row.entity.notes_count : \'\' $}</div>' +
           '  </a>' +
           '</div>',
@@ -516,7 +518,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         enableColumnResizing: false,
         enableFiltering: false,
         enableHiding: false,
-        enableSorting: false,
+        enableSorting: true,
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
@@ -524,11 +526,12 @@ angular.module('BE.seed.controller.inventory_list', [])
       }, {
         name: 'id',
         displayName: '',
+        headerCellTemplate: '<span></span>', // remove header
         cellTemplate: '<div class="ui-grid-row-header-link">' +
-          '  <a title="' + $translate.instant("Go to Detail Page") + '" class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+          '  <a title="' + $translate.instant('Go to Detail Page') + '" class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
           '    <i class="ui-grid-icon-info-circled"></i>' +
           '  </a>' +
-          '  <a title="' + $translate.instant("Go to Detail Page") + '" class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
+          '  <a title="' + $translate.instant('Go to Detail Page') + '" class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
           '    <i class="ui-grid-icon-info-circled"></i>' +
           '  </a>' +
           '</div>',
@@ -818,8 +821,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             },
             ids: function () {
               var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function(row) {
-                return row.entity[viewId]
+              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
+                return row.entity[viewId];
               });
               var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), viewId);
               return _.filter(visibleRowIds, function (id) {
@@ -834,7 +837,7 @@ angular.module('BE.seed.controller.inventory_list', [])
                   '"", Filter Labels: "',
                   $scope.selected_labels.map(label => label.name).join(' - '),
                   '"'
-                 ].join('');
+                ].join('');
               }
               return 'Filter Method: ""none""';
             },

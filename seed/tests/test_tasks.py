@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -13,7 +13,7 @@ from django.test import TestCase
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,8 @@ class TestTasks(TestCase):
         }
 
     def test_delete_organization(self):
-        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertTrue(
+            User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertTrue(
             Organization.objects.filter(pk=self.fake_org.pk).exists())
         self.assertTrue(
@@ -92,23 +93,11 @@ class TestTasks(TestCase):
 
         tasks.delete_organization(self.fake_org.pk)
 
-        self.assertFalse(User.objects.filter(pk=self.fake_user.pk).exists())
+        self.assertTrue(
+            User.objects.filter(pk=self.fake_user.pk).exists())
         self.assertFalse(
             Organization.objects.filter(pk=self.fake_org.pk).exists())
         self.assertFalse(
             ImportRecord.objects.filter(pk=self.import_record.pk).exists())
         self.assertFalse(
             ImportFile.objects.filter(pk=self.import_file.pk).exists())
-
-    def test_delete_organization_doesnt_delete_user_if_multiple_memberships(self):
-        """
-        Deleting an org should not delete the orgs users if the user belongs to many orgs.
-        """
-        org = Organization.objects.create()
-        OrganizationUser.objects.create(organization=org, user=self.fake_user)
-
-        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())
-
-        tasks.delete_organization(self.fake_org.pk)
-
-        self.assertTrue(User.objects.filter(pk=self.fake_user.pk).exists())

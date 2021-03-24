@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -12,11 +12,15 @@ from django.contrib.auth.views import (
 
 from seed.landing.views import (
     landing_page, login_view, password_reset, password_reset_done,
-    password_reset_complete, signup
+    password_reset_complete, signup, create_account, account_activation_sent, activate
 )
 
 urlpatterns = [
     url(r'^$', landing_page, name='landing_page'),
+    url(r'^accounts/create/$', create_account, name='create_account'),
+    url(r'^account_activation_sent/$', account_activation_sent, name='account_activation_sent'),
+    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+        activate, name='activate'),
     url(r'^accounts/login/$', login_view, name='login'),
     url(
         r'^accounts/logout/$',

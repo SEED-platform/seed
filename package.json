@@ -1,6 +1,6 @@
 {
   "name": "seed",
-  "version": "2.9.2",
+  "version": "2.9.3",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE",
   "directories": {
@@ -32,7 +32,7 @@
   },
   "scripts": {
     "postinstall": "cd vendors && npm install",
-    "lint": "./node_modules/.bin/eslint './seed/landing/static/**/*.js' './seed/static/seed/**/*.js'",
+    "lint": "./node_modules/.bin/eslint './seed/docs/static/**/*.js' './seed/landing/static/**/*.js' './seed/static/seed/**/*.js'",
     "lint:fix": "npm run lint -- --fix",
     "test": "./node_modules/.bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js"
   },

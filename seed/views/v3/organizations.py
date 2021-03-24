@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -260,7 +260,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'Query param `import_file_id` is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         try:
-            _ = ImportFile.objects.get(pk=import_file_id)
+            ImportFile.objects.get(pk=import_file_id)
             organization = Organization.objects.get(pk=pk)
         except ImportFile.DoesNotExist:
             return JsonResponse({
@@ -348,9 +348,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({'organizations': orgs})
 
-    @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_owner')
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.

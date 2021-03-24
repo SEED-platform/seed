@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California,
+:copyright (c) 2014 - 2021, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -113,6 +113,7 @@ SEED_CORE_APPS = (
     'seed.data_importer',
     'seed',
     'seed.lib.superperms.orgs',
+    'seed.docs'
 )
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
@@ -307,6 +308,9 @@ SWAGGER_SETTINGS = {
 
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
+
+# Google reCAPTCHA env variable for self-registration
+GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 
 # Certification
 # set this for a default validity_duration

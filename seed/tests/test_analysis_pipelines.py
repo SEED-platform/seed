@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from datetime import datetime
@@ -578,7 +578,6 @@ class TestBsyncrPipeline(TestCase):
             # mock the call to _bsyncr_service_request by returning a constructed Response
 
             # ignore model_type
-            _ = model_type
 
             the_response = Response()
             if error_messages is not None:
