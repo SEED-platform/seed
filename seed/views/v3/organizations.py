@@ -421,6 +421,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         user = User.objects.get(pk=body['user_id'])
         org_name = body['organization_name']
 
+        if not request.user.is_superuser and request.user.id != user.id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'not authorized'
+            }, status=status.HTTP_403_FORBIDDEN)
+
         if Organization.objects.filter(name=org_name).exists():
             return JsonResponse({
                 'status': 'error',

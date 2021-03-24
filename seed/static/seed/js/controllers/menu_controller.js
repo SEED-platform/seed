@@ -181,15 +181,14 @@ angular.module('BE.seed.controller.menu', [])
           return;
         }
         if( !user_service.get_organization().id ){
-          var orgModalInstance = $uibModal.open({
+          $uibModal.open({
+            backdrop: 'static',
+            keyboard: false,
             templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
             controller: 'create_organization_modal_controller',
             resolve: {
               user_id: user_service.get_user_id()
             }
-          });
-          orgModalInstance.result.finally(function () {
-            init();
           });
         } else {
           organization_service.get_organizations_brief().then(function (data) {

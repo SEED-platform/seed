@@ -23,9 +23,9 @@ angular.module('BE.seed.controller.create_organization_modal', [])
 
       //This in the pattern that the organization service understands
       $scope.org = {
-        "email": {
-          "email": $scope.email,
-          "user_id": user_id
+        email: {
+          email: $scope.email,
+          user_id: user_id
         }
       };
 
