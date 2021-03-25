@@ -9,6 +9,7 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from random import randint
+import os
 
 import dateutil
 
@@ -16,15 +17,20 @@ from celery import shared_task
 from django.contrib.auth.decorators import permission_required
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from seed import tasks
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
@@ -32,7 +38,8 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
                                              ROLE_VIEWER, Organization,
                                              OrganizationUser)
-from seed.models import Column, Cycle, ImportFile, PropertyView, TaxLotView
+from seed.models import Column, Cycle, PropertyView, TaxLot, TaxLotView, TaxLotState, StatusLabel as Label, \
+    PropertyState, Property, AUDIT_IMPORT, PropertyAuditLog
 from seed.serializers.column_mappings import \
     SaveColumnMappingsRequestPayloadSerializer
 from seed.serializers.organizations import (SaveSettingsSerializer,
@@ -42,11 +49,15 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.generic import median, round_down_hundred_thousand
+from seed.utils.geocode import geocode_buildings
 from seed.utils.match import (matching_criteria_column_names,
                               whole_org_match_merge_link)
 from seed.utils.organizations import (create_organization,
                                       create_suborganization)
 from xlsxwriter import Workbook
+from seed.utils.merge import merge_properties
+from seed.utils.match import match_merge_link
+from seed.utils.properties import pair_unpair_property_taxlot
 
 _log = logging.getLogger(__name__)
 
@@ -1358,3 +1369,328 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
 
         return org.geocoding_enabled
+
+    @has_perm_class('requires_member')
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def insert_sample_data(self, request, pk=None):
+        """
+        Create a button for new users to import data below if no data exists
+        """
+        org = Organization.objects.get(id=pk)
+        cycles = Cycle.objects.filter(organization=org)
+        if cycles.count() != 1:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'there must be 1 cycle'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        cycle = cycles.first()
+
+        property_details = [
+            {'jurisdiction_property_id': 123456,
+             'pm_parent_property_id': '5766961',
+             'pm_property_id': '5766961',
+             'lot_number': 'A-12345',
+             'address_line_1': '120243 E True Lane',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1990,
+             'site_eui': 78,
+             'gross_floor_area': 264949,
+             'owner': 'MileStone Community Builders',
+             'owner_email': 'milestonebuilders@gmail.com',
+             'owner_telephone': '555-555-5555',
+             'owner_address': '119134 SE Lemon Highway',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123457,
+             'ubid': '10107/71db4',
+             'pm_parent_property_id': '5766963',
+             'pm_property_id': '5766963',
+             'lot_number': 'B-12346',
+             'address_line_1': '95373 E Peach Avenue',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1987,
+             'site_eui': 46.9,
+             'latitude': 45.4323688,
+             'longitude': -122.3837476,
+             'gross_floor_area': 322701,
+             'owner': 'Pangea Properties',
+             'owner_email': 'pangeapro@gmail.com',
+             'owner_telephone': '555-555-5556',
+             'owner_address': '80219 SW Mandarin Court',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123458,
+             'pm_parent_property_id': '5766965',
+             'pm_property_id': '5766965',
+             'lot_number': 'C-12347',
+             'address_line_1': '95864 SW Cottonwood Court',
+             'property_footprint': 'POLYGON (( -121.923334302218 37.3934010356015, -121.923440592918 37.3934235330101, -121.92356698003 37.3936116923571, -121.923552774477 37.3936484785362, -121.923605798117 37.3937228774319, -121.923579872131 37.3938076004871, -121.923153874221 37.3940008153921, -121.923049383115 37.3938542232925, -121.922986409567 37.3938827849227, -121.923008376084 37.3939136124804, -121.922870312593 37.3939762383228, -121.922848133714 37.3939451114231, -121.92239383827 37.3941511922195, -121.922215665856 37.3939011155036, -121.922245707602 37.3938209298304, -121.922375373489 37.3937638721803, -121.922449212554 37.3937797601238, -121.922502531763 37.3937559028462, -121.922519208098 37.3937077969401, -121.922587819478 37.3937221819622, -121.922621631181 37.3936194815158, -121.922751070381 37.3935595703745, -121.923031397361 37.393622229074, -121.923085688948 37.3935969593067, -121.923103636973 37.3935488099458, -121.923168133175 37.3935622830086, -121.923206355467 37.3934598037207, -121.923334302218 37.3934010356015 ))',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1964,
+             'site_eui': 69.8,
+             'gross_floor_area': 139835,
+             'owner': 'Matt Martin Real Estate Management',
+             'owner_email': 'matt.martin@gmail.com',
+             'owner_telephone': '555-555-5557',
+             'owner_address': '238539 SE Willow Street',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123459,
+             'pm_parent_property_id': '5766967',
+             'pm_property_id': '5766967',
+             'lot_number': 'D-12348',
+             'address_line_1': '155371 W Cherry Loop',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1969,
+             'site_eui': 91.8,
+             'gross_floor_area': 194395,
+             'owner': 'Celerity Ventures',
+             'owner_email': 'celvent@gmail.com',
+             'owner_telephone': '555-555-5558',
+             'owner_address': '90274 SW Madrone Court',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk,
+             'extra_data': {'Note': 'Residential'}},
+            {'jurisdiction_property_id': 123460,
+             'ubid': '10107/71db5',
+             'pm_parent_property_id': '5766969',
+             'pm_property_id': '5766969',
+             'lot_number': 'E-12349',
+             'address_line_1': '180821 S Tyler Lane',
+             'city': 'Portland',
+             'state': 'Oregon',
+             'postal_code': 97201,
+             'latitude': 45.542627,
+             'longitude': -122.7947543,
+             'year_built': 1997,
+             'site_eui': 84.6,
+             'gross_floor_area': 100654,
+             'owner': 'Marketplace Homes',
+             'owner_email': 'mphomes@gmail.com',
+             'owner_telephone': '555-555-5559',
+             'owner_address': '231069 SW True Way',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123461,
+             'pm_parent_property_id': '5766971',
+             'pm_property_id': '5766971',
+             'lot_number': 'F-12350',
+             'address_line_1': '124217 W Horsechestnut Boulevard',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1985,
+             'site_eui': 64.5,
+             'gross_floor_area': 100654,
+             'owner': 'Apartment List',
+             'owner_email': 'apartment.list@gmail.com',
+             'owner_telephone': '555-555-5560',
+             'owner_address': '48633 NE Papaya Lane',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123462,
+             'pm_parent_property_id': '5766973',
+             'pm_property_id': '5766973',
+             'lot_number': 'G-12351',
+             'address_line_1': '155830 SW Garfield Way',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1975,
+             'site_eui': 82.3,
+             'gross_floor_area': 296432,
+             'owner': 'Econohomes',
+             'owner_email': 'econohomes@gmail.com',
+             'owner_telephone': '555-555-5561',
+             'owner_address': '44166 S Hoover Alley',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk,
+             'extra_data': {'Note': 'Residential'}},
+            {'jurisdiction_property_id': 123463,
+             'pm_parent_property_id': '5766975',
+             'pm_property_id': '5766975',
+             'lot_number': 'H-12352',
+             'address_line_1': '134217 SE Kennedy Lane',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1978,
+             'site_eui': 76.9,
+             'gross_floor_area': 390302,
+             'owner': 'PropertyRate',
+             'owner_email': 'propertyrate@gmail.com',
+             'owner_telephone': '555-555-5562',
+             'owner_address': '129218 N Palm Highway',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123464,
+             'pm_parent_property_id': '5766977',
+             'pm_property_id': '5766977',
+             'lot_number': 'I-12353',
+             'address_line_1': '92496 E Tangarine Boulevard',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 1988,
+             'site_eui': 54.7,
+             'gross_floor_area': 373152,
+             'owner': 'Landmark Network',
+             'owner_email': 'landmark@gmail.com',
+             'owner_telephone': '555-555-5563',
+             'owner_address': '159308 SE Sycamore Court',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk,
+             'extra_data': {'Note': 'Residential'}},
+            {'jurisdiction_property_id': 123465,
+             'pm_parent_property_id': '5766979',
+             'pm_property_id': '5766979',
+             'lot_number': 'J-12354',
+             'address_line_1': '180702 N Horsechestnut Loop',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 2000,
+             'site_eui': 31.4,
+             'gross_floor_area': 373152,
+             'owner': 'Memphis Invest',
+             'owner_email': 'memphis.invest@gmail.com',
+             'owner_telephone': '555-555-5564',
+             'owner_address': '94734 SE Honeylocust Street',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk},
+            {'jurisdiction_property_id': 123465,
+             'pm_parent_property_id': '5766979',
+             'pm_property_id': '5766979',
+             'lot_number': 'J-12354',
+             'address_line_1': '180702 N Horsechestnut Loop',
+             'city': 'Boring',
+             'state': 'Oregon',
+             'postal_code': 80401,
+             'year_built': 2000,
+             'site_eui': 45.6,
+             'gross_floor_area': 373152,
+             'owner': 'Memphis Invest',
+             'owner_email': 'memphis.invest@gmail.com',
+             'owner_telephone': '555-555-5564',
+             'owner_address': '94734 SE Honeylocust Street',
+             'owner_city_state': 'Colorado',
+             'owner_postal_code': 80202,
+             'organization_id': pk}
+        ]
+
+        taxlot_details = {'jurisdiction_tax_lot_id': 'A-12345',
+                          'city': 'Boring',
+                          'organization_id': pk,
+                          'extra_data': {'Note': 'This is my first note'}}
+
+        taxlot_state = TaxLotState(**taxlot_details)
+        taxlot_state.save()
+        taxlot_1 = TaxLot.objects.create(organization=org)
+        taxview = TaxLotView.objects.create(taxlot=taxlot_1, cycle=cycle, state=taxlot_state)
+
+        state_ids_to_merge = []
+        property_views = []
+        properties = []
+        ids = []
+        for dic in property_details:
+            state = PropertyState(**dic)
+            state.save()
+            ids.append(state.id)
+
+            # merge
+            for count in range(len(property_details)):
+                if count > 9:
+                    state_ids_to_merge = [state.id]
+                    state_ids_to_merge.append(state.id)
+
+            property_1 = Property.objects.create(organization=org)
+            properties.append(property_1)
+            propertyview = PropertyView.objects.create(property=property_1, cycle=cycle, state=state)
+            property_views.append(propertyview)
+
+            # create labels and add to records
+            new_label, created = Label.objects.get_or_create(color="red", name="Housing", super_organization=org)
+            if state.extra_data.get('Note') == 'Residential':
+                propertyview.labels.add(new_label)
+
+            PropertyAuditLog.objects.create(
+                organization=org,
+                state=state,
+                record_type=AUDIT_IMPORT,
+                name='Import Creation'
+            )
+
+            # Geocoding - need mapquest API (should add comment for new users)
+            geocode = PropertyState.objects.filter(id__in=ids)
+            geocode_buildings(geocode)
+
+        # Create a merge of 2 properties
+        merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
+        match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+
+        # pair a property to tax lot
+        property_id = property_views[0].id
+        taxlot_id = taxview.id
+        pair_unpair_property_taxlot(property_id, taxlot_id, org, True)
+
+        # create column for Note
+        Column.objects.get_or_create(
+            organization=org,
+            table_name='PropertyState',
+            column_name='Note',
+            is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
+        )
+
+        import_record = ImportRecord.objects.create(name='Datasets', super_organization=org)
+
+        # Interval Data
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_meterdata = ImportFile.objects.create(
+            import_record=import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=cycle
+        )
+
+        save_raw_data(import_meterdata.id)
+
+        # Greenbutton Import
+        filename = "example-GreenButton-data.xml"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_greenbutton = ImportFile.objects.create(
+            import_record=import_record,
+            source_type="GreenButton",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=cycle,
+            matching_results_data={"property_id": properties[7].id}
+        )
+
+        save_raw_data(import_greenbutton.id)
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'hello world'})
