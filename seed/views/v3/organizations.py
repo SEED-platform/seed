@@ -1378,6 +1378,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         for org_user in org_users:
             form = PasswordResetForm({'email': org_user.user.email})
             if form.is_valid():
+                org_user.user.set_unusable_password()
+                org_user.user.save()
                 form.save(
                     from_email=settings.PASSWORD_RESET_EMAIL,
                     subject_template_name='landing/password_reset_subject.txt',
