@@ -17,8 +17,6 @@ angular.module('BE.seed.controller.menu', [])
     'modified_service',
     '$timeout',
     '$state',
-    '$cookies',
-    '$window',
     function (
       $rootScope,
       $scope,
@@ -32,9 +30,7 @@ angular.module('BE.seed.controller.menu', [])
       dataset_service,
       modified_service,
       $timeout,
-      $state,
-      $cookies,
-      $window
+      $state
     ) {
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;

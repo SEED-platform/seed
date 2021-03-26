@@ -8,7 +8,7 @@
                 <i ng-show="expanded_controller" id="sidebar-menu-close" class="fa fa-chevron-left"></i>
             </div>
         </a>
-        <a id="sidebar-profile" class="item" ui-sref="profile" ui-sref-active="active">
+        <a id="sidebar-profile" class="item" ng-class="{active: is_active('/profile'), 'disabled-item': !logged_in}" href="{% url "seed:home" %}#/profile">
             <div class="icon"><i class="fa fa-cog"></i></div>
             <div class="item_name">{$ username $}</div>
         </a>
