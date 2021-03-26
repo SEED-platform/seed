@@ -12,6 +12,9 @@ from config.settings.common import *  # noqa
 
 from celery.utils import LOG_LEVELS
 
+# override MEDIA_URL (requires nginx which dev stack doesn't use)
+MEDIA_URL = '/media/'
+
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD']
 
