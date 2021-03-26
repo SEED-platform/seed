@@ -127,7 +127,7 @@ SEED_URL_APPS = (
     'seed',
 )
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/api/v3/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
