@@ -861,11 +861,10 @@ a:not([href]) {
 
       .home_hero_content_container {
         backdrop-filter: blur(4px);
-        background-color: rgba(20, 20, 50, 0.3);
+        background-color: rgba(20, 20, 50, 0.5);
         margin: 0;
         padding: 30px;
         border-radius: 10px;
-        text-shadow: 1px 1px 1px black;
         box-shadow: 0 0 20px rgba(255, 255, 255, .25);
 
         h1 {
