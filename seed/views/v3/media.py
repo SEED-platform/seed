@@ -79,7 +79,6 @@ def check_file_permission(user, filepath):
 
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
     def retrieve(self, request, filepath):
-        # raise Exception('hello world')
         filepath = os.path.normpath(filepath)
         try:
             user_has_permission = check_file_permission(request.user, filepath)
