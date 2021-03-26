@@ -89,8 +89,8 @@ class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
 
         if user_has_permission:
             response = HttpResponse()
-            # response["Content-Disposition"] = "attachment; filename={0}".format()
-            response['X-Accel-Redirect'] = "/protected/{0}".format(filepath)
+            response['Content-Disposition'] = f'attachment; filename={os.path.basename(filepath)}'
+            response['X-Accel-Redirect'] = f'/protected/{filepath}'
             return response
         else:
             # 404 instead of 403 to avoid leaking information
