@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -87,8 +88,16 @@ class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
             return HttpResponse(status=404)
 
         if user_has_permission:
+            # Attempt to remove NamedTemporaryFile suffix
+            filename = os.path.basename(filepath)
+            name, ext = os.path.splitext(filename)
+            pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+            match = pattern.match(name)
+            if match:
+                filename = match.groups()[0] + ext
+
             response = HttpResponse()
-            response['Content-Disposition'] = f'attachment; filename={os.path.basename(filepath)}'
+            response['Content-Disposition'] = f'attachment; filename={filename}'
             response['X-Accel-Redirect'] = f'/protected/{filepath}'
             return response
         else:
