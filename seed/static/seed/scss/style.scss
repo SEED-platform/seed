@@ -3834,3 +3834,9 @@ FAQ page
     padding-bottom: 12px;
   }
 }
+
+.dataset-detail-actions {
+  a:hover, a:focus {
+    text-decoration: none;
+  }
+}
