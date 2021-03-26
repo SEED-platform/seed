@@ -413,7 +413,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
     def create(self, request):
         """
         Creates a new organization.
@@ -422,17 +421,23 @@ class OrganizationViewSet(viewsets.ViewSet):
         user = User.objects.get(pk=body['user_id'])
         org_name = body['organization_name']
 
+        if not request.user.is_superuser and request.user.id != user.id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'not authorized'
+            }, status=status.HTTP_403_FORBIDDEN)
+
         if Organization.objects.filter(name=org_name).exists():
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization name already exists'
+                'message': 'Organization name already exists'
             }, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse(
             {
                 'status': 'success',
-                'message': 'organization created',
+                'message': 'Organization created',
                 'organization': _dict_org(request, [org])[0]
             }
         )
