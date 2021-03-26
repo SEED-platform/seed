@@ -30,6 +30,10 @@
         <div class="row">
             <div class="col-sm-12">
                 Deleting cycle <em>{$ cycle_name $}...</em>
+                <div class="progress_bar_container" ng-show="uploader.in_progress">
+                    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+                </div>
             </div>
         </div>
     </div>
