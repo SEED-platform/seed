@@ -104,10 +104,11 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
 
-        extension = the_file.name.split(".")[1]
+        extension = the_file.name.split(".")[-1]
         if extension == "xlsx" or extension == "xls":
-            check = pd.read_excel(the_file)
-            if check.empty:
+            df_dict = pd.read_excel(the_file, sheet_name=None)
+            df_empty = [df.empty for _, df in df_dict.items()]
+            if all(df_empty):
                 return JsonResponse({
                     'success': False,
                     'message': "Import %s was empty" % the_file.name
