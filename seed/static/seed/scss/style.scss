@@ -860,12 +860,13 @@ a:not([href]) {
       color: $white;
 
       .home_hero_content_container {
+        backdrop-filter: blur(4px);
         background-color: rgba(20, 20, 50, 0.3);
         margin: 0;
         padding: 30px;
         border-radius: 10px;
         text-shadow: 1px 1px 1px black;
-        box-shadow: 0px 0px 20px rgba(255, 255, 255, .25);
+        box-shadow: 0 0 20px rgba(255, 255, 255, .25);
 
         h1 {
           font-weight: bold;
@@ -939,7 +940,35 @@ a:not([href]) {
           text-align: center;
         }
 
+        > div {
+          place-content: stretch space-between;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+
+          @media (min-width: 992px) {
+            & {
+              flex-direction: row;
+            }
+
+            &:not(:first-of-type) {
+              padding-top: 30px;
+            }
+
+            > div {
+              flex: 1 1 33.33333%;
+              max-width: 33.33333%;
+              padding: 0 15px;
+            }
+          }
+
+        }
+
         a {
+          align-items: center;
+          display: flex;
+          height: 100%;
+          justify-content: center;
           width: 100%;
         }
       }
