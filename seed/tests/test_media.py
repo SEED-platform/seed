@@ -187,8 +187,7 @@ class TestMeasures(TestCase):
         analysis_input_file.save()
 
         # Act
-        path = os.path.relpath(analysis_input_file.file.path, settings.MEDIA_ROOT)
-        is_permitted = check_file_permission(self.user_a, path)
+        is_permitted = check_file_permission(self.user_a, analysis_input_file.file.name)
 
         # Assert
         self.assertTrue(is_permitted)
@@ -210,8 +209,7 @@ class TestMeasures(TestCase):
 
         # Act
         # check permission for user_b, not part of org
-        path = os.path.relpath(analysis_input_file.file.path, settings.MEDIA_ROOT)
-        is_permitted = check_file_permission(self.user_b, path)
+        is_permitted = check_file_permission(self.user_b, analysis_input_file.file.name)
 
         # Assert
         self.assertFalse(is_permitted)
