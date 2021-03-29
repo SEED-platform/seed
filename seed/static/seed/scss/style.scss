@@ -1677,6 +1677,10 @@ a:not([href]) {
 }
 
 @media (min-width: 1300px) {
+  .modal-md {
+    width: 900px;
+  }
+
   .modal-lg {
     width: 1230px;
   }
@@ -3816,4 +3820,8 @@ FAQ page
     display: block;
     padding-bottom: 12px;
   }
+}
+
+.auto-populate-list > li {
+  margin-bottom: 8px;
 }

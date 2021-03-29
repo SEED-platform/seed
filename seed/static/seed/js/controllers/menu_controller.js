@@ -15,6 +15,7 @@ angular.module('BE.seed.controller.menu', [])
     'user_service',
     'dataset_service',
     'modified_service',
+    'inventory_service',
     '$timeout',
     '$state',
     function (
@@ -29,6 +30,7 @@ angular.module('BE.seed.controller.menu', [])
       user_service,
       dataset_service,
       modified_service,
+      inventory_service,
       $timeout,
       $state
     ) {
@@ -83,7 +85,8 @@ angular.module('BE.seed.controller.menu', [])
 
       //Sets initial expanded/collapse state of sidebar menu
       const STORAGE_KEY = "seed_nav_is_expanded";
-      function init_menu () {
+
+      function init_menu() {
         if ($window.localStorage.getItem(STORAGE_KEY) === null) {
           $window.localStorage.setItem(STORAGE_KEY, 'true');
         }
@@ -148,6 +151,28 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       /**
+       * open_sample_data_modal: opens the auto-populate sample data modal
+       */
+      $scope.open_sample_data_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sample_data_modal.html',
+          controller: 'sample_data_modal_controller',
+          size: 'md',
+          resolve: {
+            organization: () => {
+              return $scope.menu.user.organization;
+            },
+            cycle: ['organization_service', function (organization_service) {
+              return organization_service.get_organization($scope.menu.user.organization.org_id)
+                .then(response => {
+                  return response.organization.cycles.find(cycle => cycle.cycle_id === inventory_service.get_last_cycle())
+                });
+            }]
+          }
+        });
+      };
+
+      /**
        * sets the users primary organization, reloads/refreshed the page
        * @param {obj} org
        */
@@ -181,7 +206,7 @@ angular.module('BE.seed.controller.menu', [])
         if (!$scope.logged_in) {
           return;
         }
-        if( !user_service.get_organization().id ){
+        if (!user_service.get_organization().id) {
           $uibModal.open({
             backdrop: 'static',
             keyboard: false,
