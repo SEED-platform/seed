@@ -53,6 +53,6 @@
     </div>
 </div>
 <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-click="cancel()">{$ delete_cycle_status == 'success' ? 'Close' : 'Cancel' $}</button>
+    <button ng-if="delete_cycle_status != 'pending'" type="button" class="btn btn-default" ng-click="cancel()">{$ delete_cycle_status == 'success' ? 'Close' : 'Cancel' $}</button>
     <button ng-if="cycle_has_inventory == false && (delete_cycle_status == null || delete_cycle_status == 'pending')" ng-disabled="delete_cycle_status == 'pending'" type="button" class="btn btn-danger" ng-click="confirmDelete()" autofocus translate>Yes, Delete Cycle</button>
 </div>

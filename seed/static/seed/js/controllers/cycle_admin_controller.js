@@ -146,6 +146,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
         const delete_cycle_modal = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
           controller: 'delete_cycle_modal_controller',
+          backdrop: 'static',
+          keyboard: false,
           resolve: {
             // use cycle data from organization endpoint b/c it includes inventory counts
             cycle: (organization_service) => {
