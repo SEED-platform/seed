@@ -20,10 +20,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
-        organization_id: user_service.get_organization().id,
+        organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999
       };
@@ -251,9 +252,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+
       var params = {
-        organization_id: user_service.get_organization().id,
+        organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999
       };
@@ -459,9 +462,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
-    inventory_service.save_last_cycle = function (pk) {
-      var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
+    inventory_service.save_last_cycle = function (pk, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      var cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
