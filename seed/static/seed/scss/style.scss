@@ -235,6 +235,14 @@ a:not([href]) {
       text-overflow: ellipsis;
     }
 
+    #sidebar-menu-open,
+    #sidebar-menu-close {
+      font-size: 1em;
+      position: absolute;
+      top: .3em;
+      left: 1.5em;
+    }
+
     .item {
       position: relative;
       overflow: hidden;
@@ -260,11 +268,6 @@ a:not([href]) {
         font-weight: bold;
         color: $white;
         background-color: $gray_dark;
-      }
-
-      &:hover .fa-bars,
-      & #expand-collapse-icon {
-        display: none;
       }
 
       &:hover #expand-collapse-icon {
@@ -364,35 +367,11 @@ a:not([href]) {
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
 
-      .menu_toggle_container,
-      .logo_container,
-      .add_menu_container {
-        position: relative;
-        float: left;
-      }
-
-      .menu_toggle_container {
-
-        .menu_toggle {
-          display: block;
-          cursor: pointer;
-          padding: 18px 20px 15px 20px;
-          border-right: 1px solid $gray_lighter;
-
-          i {
-            font-size: 18px;
-          }
-
-          &:hover {
-            background-color: $gray_lightest;
-          }
-        }
-      }
-
       .logo_container {
 
         .logo {
           display: block;
+          color: black;
 
           .logo_text {
             width: 234px;
@@ -413,6 +392,11 @@ a:not([href]) {
               text-decoration: none;
             }
           }
+        }
+
+        .logo:hover {
+          text-decoration: none;
+          color: #23527c;
         }
       }
 
@@ -867,51 +851,21 @@ a:not([href]) {
       }
     }
 
-    .home_jump_nav_container {
-      position: relative;
-
-      .home_jump_nav {
-        margin: 0 auto;
-        padding: 0 10%;
-        position: relative;
-        overflow: auto;
-        text-align: center;
-
-        a {
-          width: 25%;
-          position: relative;
-          overflow: auto;
-          float: left;
-          display: block;
-          padding: 20px;
-          font-size: 18px;
-          text-decoration: none;
-
-          i {
-            padding-right: 12px;
-          }
-
-          &:hover {
-            background-color: $gray_lightest;
-            text-decoration: none;
-          }
-        }
-      }
-    }
-
     .jumbotron {
       background: url('../../seed/images/kc_2.jpg') no-repeat center bottom;
       background-size: cover;
-      height: 402px;
+      min-height: 402px;
       margin-bottom: 0;
       padding: 30px 10%;
       color: $white;
 
       .home_hero_content_container {
-        background-color: rgba(20, 20, 50, 0.3);
-        margin: 0 18% 0 0;
+        backdrop-filter: blur(4px);
+        background-color: rgba(20, 20, 50, 0.5);
+        margin: 0;
         padding: 30px;
         border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255, 255, 255, .25);
 
         h1 {
           font-weight: bold;
@@ -927,65 +881,94 @@ a:not([href]) {
       p {
         margin-bottom: 0;
       }
+
+      .content_col {
+
+        .content_col_header {
+          position: relative;
+          overflow: auto;
+
+          .content_col_header_left {
+            position: relative;
+            float: left;
+
+            i {
+              padding-top: 7px;
+              padding-right: 10px;
+              font-size: 48px;
+
+              &.fa-cloud-upload {
+                color: $lightBlue;
+              }
+
+              &.fa-exchange {
+                color: lighten($purple, 25%);
+              }
+
+              &.fa-check-square {
+                color: lighten($green, 20%);
+              }
+            }
+          }
+
+          .content_col_header_right {
+            h3 {
+              font-size: 20px;
+              font-weight: bold;
+            }
+          }
+        }
+
+        .copy {
+          clear: both;
+          padding: 5px 30px 0 0;
+          font-size: 16px;
+        }
+      }
     }
 
-    .whats_new_container {
+    .getting_started_container {
       padding: 0 10%;
 
-      .whats_new {
+      .getting_started {
 
         h2 {
           font-weight: bold;
           margin: 0;
           padding: 20px 0;
           text-align: center;
-          border-bottom: 1px solid $gray_lightest;
+        }
+
+        > div {
+          place-content: stretch space-between;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+
+          @media (min-width: 992px) {
+            & {
+              flex-direction: row;
+            }
+
+            &:not(:first-of-type) {
+              padding-top: 30px;
+            }
+
+            > div {
+              flex: 1 1 33.33333%;
+              max-width: 33.33333%;
+              padding: 0 15px;
+            }
+          }
 
         }
 
-        .content_col {
-          margin-top: 10px;
-
-          .content_col_header {
-            position: relative;
-            overflow: auto;
-
-            .content_col_header_left {
-              position: relative;
-              float: left;
-
-              i {
-                padding-top: 7px;
-                padding-right: 10px;
-                font-size: 48px;
-
-                &.fa-cloud-upload {
-                  color: $lightBlue;
-                }
-
-                &.fa-exchange {
-                  color: lighten($purple, 25%);
-                }
-
-                &.fa-check-square {
-                  color: lighten($green, 20%);
-                }
-              }
-            }
-
-            .content_col_header_right {
-              h3 {
-                font-size: 20px;
-                font-weight: bold;
-              }
-            }
-          }
-
-          .copy {
-            clear: both;
-            padding: 5px 30px 0 0;
-            font-size: 16px;
-          }
+        a {
+          align-items: center;
+          display: flex;
+          height: 100%;
+          justify-content: center;
+          width: 100%;
         }
       }
     }
@@ -3832,5 +3815,11 @@ FAQ page
   .maintenance small {
     display: block;
     padding-bottom: 12px;
+  }
+}
+
+.dataset-detail-actions {
+  a:hover, a:focus {
+    text-decoration: none;
   }
 }
