@@ -320,3 +320,6 @@ GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 
 # Config to include v2 APIs
 INCLUDE_SEED_V2_APIS = os.environ.get('INCLUDE_SEED_V2_APIS', 'true').lower() == 'true'
+
+# Config self registration
+INCLUDE_ACCT_REG = os.environ.get('INCLUDE_ACCT_REG', 'true').lower() == 'true'
