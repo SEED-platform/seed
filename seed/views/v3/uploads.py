@@ -29,6 +29,14 @@ from seed.utils.api_schema import AutoSchemaHelper
 _log = logging.getLogger(__name__)
 
 
+def get_upload_path(filename):
+    path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
+
+    # Get a unique filename using the get_available_name method in FileSystemStorage
+    s = FileSystemStorage()
+    return s.get_available_name(path)
+
+
 class UploadViewSet(viewsets.ViewSet, OrgMixin):
     """
     Endpoint to upload data files to, if uploading to local file storage.
@@ -90,11 +98,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         else:
             the_file = request.data['file']
         filename = the_file.name
-        path = os.path.join(settings.MEDIA_ROOT, "uploads", filename)
-
-        # Get a unique filename using the get_available_name method in FileSystemStorage
-        s = FileSystemStorage()
-        path = s.get_available_name(path)
+        path = get_upload_path(filename)
 
         # verify the directory exists
         if not os.path.exists(os.path.dirname(path)):
