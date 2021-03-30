@@ -5,6 +5,7 @@
 :author
 """
 
+from django.conf import settings
 from django.conf.urls import url
 from django.contrib.auth.views import (
     logout_then_login, PasswordChangeView, PasswordChangeDoneView
@@ -17,10 +18,6 @@ from seed.landing.views import (
 
 urlpatterns = [
     url(r'^$', landing_page, name='landing_page'),
-    url(r'^accounts/create/$', create_account, name='create_account'),
-    url(r'^account_activation_sent/$', account_activation_sent, name='account_activation_sent'),
-    url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        activate, name='activate'),
     url(r'^accounts/login/$', login_view, name='login'),
     url(
         r'^accounts/logout/$',
@@ -54,3 +51,11 @@ urlpatterns = [
         {'template_name': 'landing/password_change_done.html'}
     ),
 ]
+
+if settings.INCLUDE_ACCT_REG:
+    urlpatterns += [
+        url(r'^accounts/create/$', create_account, name='create_account'),
+        url(r'^account_activation_sent/$', account_activation_sent, name='account_activation_sent'),
+        url(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+            activate, name='activate')
+    ]
