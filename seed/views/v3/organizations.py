@@ -1383,7 +1383,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 form.save(
                     from_email=settings.PASSWORD_RESET_EMAIL,
                     subject_template_name='landing/password_reset_subject.txt',
-                    email_template_name='landing/password_reset_email.html'
+                    email_template_name='landing/password_reset_forced_email.html'
                 )
 
         return JsonResponse(

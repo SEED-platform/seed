@@ -2188,6 +2188,9 @@ msgstr "PUBLIC"
 msgid "Read more here."
 msgstr "Lire la suite ici."
 
+msgid "Really reset all passwords?"
+msgstr "Réinitialiser tous les mots de passe?"
+
 msgid "Recent Sale Date"
 msgstr "Date de vente récente"
 
@@ -2441,6 +2444,9 @@ msgstr "Sélection des champs à partager"
 
 msgid "Send Invite"
 msgstr "Envoyer une invitation"
+
+msgid "Sends the reset password email to all users."
+msgstr "Envoie l'e-mail de réinitialisation du mot de passe à tous les utilisateurs"
 
 msgid "Set a Query Threshold"
 msgstr "Définir un seuil de requête"
@@ -3109,6 +3115,9 @@ msgstr "Vous recevez cet e-mail car vous avez demandé une réinitialisation du 
 #: seed/templates/seed/account_create_email.html:4
 msgid "You're receiving this e-mail because you've been registered for a SEED account."
 msgstr "Vous recevez cet e-mail parce que vous avez été enregistré pour un compte SEED."
+
+msgid "You're receiving this email because your password was reset"
+msgstr "Vous recevez cet e-mail car votre mot de passe a été réinitialisé"
 
 msgid "your data set name"
 msgstr "votre nom du jeu de données"

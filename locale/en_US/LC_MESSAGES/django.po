@@ -2173,6 +2173,9 @@ msgstr "PUBLIC"
 msgid "Read more here."
 msgstr "Read more here."
 
+msgid "Really reset all passwords?"
+msgstr "Really reset all passwords?"
+
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
 
@@ -2423,6 +2426,9 @@ msgstr "Selecting Fields to Share"
 
 msgid "Send Invite"
 msgstr "Send Invite"
+
+msgid "Sends the reset password email to all users."
+msgstr "Sends the reset password email to all users"
 
 msgid "Set a Query Threshold"
 msgstr "Set a Query Threshold"
@@ -3086,6 +3092,9 @@ msgstr "You're receiving this e-mail because you requested a password reset"
 #: seed/templates/seed/account_create_email.html:4
 msgid "You're receiving this e-mail because you've been registered for a SEED account."
 msgstr "You're receiving this e-mail because you've been registered for a SEED account."
+
+msgid "You're receiving this email because your password was reset"
+msgstr "You're receiving this e-mail because your password was reset"
 
 msgid "your data set name"
 msgstr "your data set name"
