@@ -194,7 +194,7 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     };
 
     organization_factory.reset_all_passwords = function (org_id) {
-      return $http.get('/api/v3/organizations/' + org_id + '/reset_all_passwords/').then(function (response) {
+      return $http.post('/api/v3/organizations/' + org_id + '/reset_all_passwords/').then(function (response) {
         return response.data;
       });
     };

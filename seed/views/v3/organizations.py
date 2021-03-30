@@ -1369,7 +1369,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_owner')
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=['POST'])
     def reset_all_passwords(self, request, pk=None):
         """
         Resets all user passwords in organization
