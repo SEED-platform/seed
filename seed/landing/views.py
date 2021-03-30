@@ -35,7 +35,7 @@ def landing_page(request):
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
     context = {'self_registration': settings.INCLUDE_ACCT_REG}
-    return render(request, 'landing/home.html', locals(), context)
+    return render(request, 'landing/home.html', locals())
 
 
 def login_view(request):
@@ -84,7 +84,7 @@ def login_view(request):
     else:
         form = LoginForm()
     context = {'self_registration': settings.INCLUDE_ACCT_REG}
-    return render(request, 'landing/login.html', locals(), context)
+    return render(request, 'landing/login.html', locals())
 
 
 def password_set(request, uidb64=None, token=None):
