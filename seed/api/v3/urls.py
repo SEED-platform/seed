@@ -26,6 +26,7 @@ from seed.views.v3.import_files import ImportFileViewSet
 from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.label_inventories import LabelInventoryViewSet
+from seed.views.v3.media import MediaViewSet
 from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organizations import OrganizationViewSet
@@ -114,4 +115,5 @@ urlpatterns = [
     url(r'^', include(analysis_view_messages_router.urls)),
     url(r'^', include(properties_router.urls)),
     url(r'^', include(taxlots_router.urls)),
+    url(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
 ]
