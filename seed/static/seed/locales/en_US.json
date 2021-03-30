@@ -694,7 +694,7 @@
     "PROPERTY_MATCHING_FIELDS_REQUIREMENT": "At least one of the following Property fields is required",
     "PUBLIC": "PUBLIC",
     "Read more here.": "Read more here.",
-    "Really reset all passwords?": "Really reset all passwords?",
+    "Really reset all passwords?  This will sign you out of SEED.": "Really reset all passwords?  This will sign you out of SEED.",
     "Recent Sale Date": "Recent Sale Date",
     "Recognize Empty": "Recognize Empty",
     "RECOGNIZE_EMPTY_EXPLANATION": "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting.",

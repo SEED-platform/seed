@@ -694,7 +694,7 @@
     "PROPERTY_MATCHING_FIELDS_REQUIREMENT": "Au moins un des champs de propriété suivants est requis",
     "PUBLIC": "PUBLIC",
     "Read more here.": "Lire la suite ici.",
-    "Really reset all passwords?": "Réinitialiser tous les mots de passe?",
+    "Really reset all passwords?  This will sign you out of SEED.": "Réinitialiser tous les mots de passe? Cela vous déconnectera de SEED.",
     "Recent Sale Date": "Date de vente récente",
     "Recognize Empty": "Reconnaître vide",
     "RECOGNIZE_EMPTY_EXPLANATION": "Cocher cette case pour un champ affectera la façon dont les valeurs vides ou vides sont traitées lors des fusions. Plus précisément, les valeurs vides pourront remplacer les valeurs non vides par le paramètre \"Protection contre la fusion\".",

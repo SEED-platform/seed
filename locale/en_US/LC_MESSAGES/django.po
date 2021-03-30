@@ -2173,8 +2173,8 @@ msgstr "PUBLIC"
 msgid "Read more here."
 msgstr "Read more here."
 
-msgid "Really reset all passwords?"
-msgstr "Really reset all passwords?"
+msgid "Really reset all passwords?  This will sign you out of SEED."
+msgstr "Really reset all passwords?  This will sign you out of SEED."
 
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
