@@ -21,10 +21,10 @@
                 <span>
                     <h2>
                         <span ng-if="::inventory_type==='properties'">
-                            <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                            <i class="fa fa-building-o"></i><span translate>Property</span> :
                         </span>
                         <span ng-if="::inventory_type==='taxlots'">
-                            <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                            <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                         </span>
                         <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
                     </h2>
@@ -148,6 +148,9 @@
                             <th ng-repeat="historical_item in ::historical_items">
                                 <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}" popover-placement="bottom">
                                     {$:: historical_item.filename $}
+                                    <a ng-if="::historical_item.file" style="padding-left: 8px;" href="{$:: historical_item.file $}" download="{$:: historical_item.filename $}">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                    </a>
                                 </div>
                             </th>
                         </tr>
@@ -305,8 +308,8 @@
                             <tbody>
                                 <tr ng-repeat="file in item_state.files">
                                     <td> {$ file.file_type $}</td>
-                                    <td><a href='{$ file.file $}'>{$ file.filename $}</a></td>
-                                    <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</a></td>
+                                    <td><a href="{$ file.file $}" download="{$ file.filename $}">{$ file.filename $}</a></td>
+                                    <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
                                 </tr>
                             </tbody>
                         </table>
