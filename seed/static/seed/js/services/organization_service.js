@@ -193,6 +193,12 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       return deferred.promise;
     };
 
+    organization_factory.reset_all_passwords = function (org_id) {
+      return $http.post('/api/v3/organizations/' + org_id + '/reset_all_passwords/').then(function (response) {
+        return response.data;
+      });
+    };
+
     var checkStatusLoop = function (deferred, progress_key) {
       $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
         $timeout(function () {
