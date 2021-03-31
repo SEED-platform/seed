@@ -31,7 +31,7 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
      language {string}
     **/
     template_factory.get_templates = function () {
-      return get_templates_for_org(user_service.get_organization().id);
+      return template_factory.get_templates_for_org(user_service.get_organization().id);
     };
 
     // Extracting EmailTemplate objects by running a get request on postoffice
@@ -84,16 +84,16 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
       });
     };
 
-    template_factory.send_templated_email = function (template_name, inventory_id, inventory_type) {
-      return send_templated_email_for_org(template_name, inventory_id, inventory_type, user_service.get_organization().id);
+    template_factory.send_templated_email = function (template_id, inventory_id, inventory_type) {
+      return template_factory.send_templated_email_for_org(template_id, inventory_id, inventory_type, user_service.get_organization().id);
     };
 
     // Passing data from the Front End to the View
-    template_factory.send_templated_email_for_org = function (template_name, inventory_id, inventory_type, organization_id) {
+    template_factory.send_templated_email_for_org = function (template_id, inventory_id, inventory_type, organization_id) {
       return $http.post('/api/v3/postoffice_email/', {
         // The from email_field has to be passed to the view, can put a dummy email in place.
         from_email: "dummy_email@example.com", //TODO replace with real variable
-        name: template_name,
+        template_id: template_id,
         inventory_id: inventory_id,
         inventory_type: inventory_type
       }, {

@@ -279,7 +279,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           get_labels();
         });
       };
-      
+
       /**
        Opens the postoffice modal for sending emails.
        'property_state_id's/'taxlot_state_id's for selected rows are stored as part of the resolver
@@ -301,24 +301,13 @@ angular.module('BE.seed.controller.inventory_list', [])
                 return !_.has(row, '$$treeLevel');
               }), 'taxlot_state_id');
             },
-            cycle_id: function () {
-              return $scope.cycle.selected_cycle.id;
-            },
             inventory_type: function () {
               return $scope.inventory_type;
-            },
-            profile_id: function () {
-              // Check to see if the profile id is set
-              if ($scope.currentProfile) {
-                return $scope.currentProfile.id;
-              } else {
-                return null;
-              }
             }
           }
         });
       };
-        
+
       $scope.open_merge_modal = function () {
         spinner_utility.show();
         var modalInstance = $uibModal.open({

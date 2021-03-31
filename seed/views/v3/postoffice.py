@@ -42,13 +42,14 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         return PostOfficeEmail.objects.all()
 
     def perform_create(self, serializer):
-        name = self.request.data.get('name')
+        template_id = self.request.data.get('template_id')
         inventory_id = self.request.data.get('inventory_id', [])
         if self.request.data.get('inventory_type') == "properties":
             state = PropertyState
         else:
             state = TaxLotState
         properties = state.objects.filter(id__in=inventory_id)
+        org_id = self.get_organization(self.request)
 
         email_sender = 'from@example.com'  # TODO remove hard-coding
         for prop in properties:  # loop to include details in template
@@ -58,11 +59,10 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             ptr = mail.send(
                     prop.owner_email,
                     email_sender,
-                    template=PostOfficeEmailTemplate.objects.get(name=name),
+                    template=PostOfficeEmailTemplate.objects.get(id=template_id, organization_id=org_id),
                     context=context,
                     backend='post_office_backend')
 
-            org = self.get_organization(self.request)
             user = self.request.user
 
             # Assigning all the fields inside of postoffice to seed_postoffice
@@ -88,4 +88,4 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
                 'expires_at': ptr.expires_at
             }
 
-            serializer.save(**email_data, organization_id=org, user=user)
+            serializer.save(**email_data, organization_id=org_id, user=user)
