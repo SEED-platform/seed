@@ -2,11 +2,10 @@
 
 Date Range: 12/28/20 - 3/31/2021
 
-Closed Issues and Features (Total: 55):
+Closed Issues and Features (Total: 54):
 - Feature [#1113]( https://github.com/SEED-platform/seed/issues/1113 ), Delete Cycle
 - Feature [#1753]( https://github.com/SEED-platform/seed/issues/1753 ), Add header file to show the filter criteria
 - Fixed [#2019]( https://github.com/SEED-platform/seed/issues/2019 ), Geocoding confidence values have changed between versions
-- Fixed [#2079]( https://github.com/SEED-platform/seed/issues/2079 ), Gateway timeout (504) importing a file with 120,000+ records
 - Feature [#2104]( https://github.com/SEED-platform/seed/issues/2104 ), Add settings for emails sent out when an Org adds a new member
 - Fixed [#2237]( https://github.com/SEED-platform/seed/issues/2237 ), Geocoding broken pipe error
 - Fixed [#2374]( https://github.com/SEED-platform/seed/issues/2374 ), Import spreadsheets without a raw header results in an error
