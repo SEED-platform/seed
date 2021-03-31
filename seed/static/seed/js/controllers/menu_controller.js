@@ -165,8 +165,19 @@ angular.module('BE.seed.controller.menu', [])
             cycle: ['organization_service', function (organization_service) {
               return organization_service.get_organization($scope.menu.user.organization.org_id)
                 .then(response => {
-                  return response.organization.cycles.find(cycle => cycle.cycle_id === inventory_service.get_last_cycle())
+                  let lastCycleId = inventory_service.get_last_cycle();
+                  let lastCycle;
+                  if (typeof lastCycleId === 'number') {
+                    lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId)
+                  }
+                  if ((lastCycleId === undefined || !lastCycle) && response.organization.cycles.length) {
+                    lastCycle = response.organization.cycles[0];
+                  }
+                  return lastCycle;
                 });
+            }],
+            profiles: ['inventory_service', function (inventory_service) {
+              return inventory_service.get_column_list_profiles('List View Profile', 'Property');
             }]
           }
         });

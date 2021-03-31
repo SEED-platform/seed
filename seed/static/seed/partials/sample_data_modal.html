@@ -48,6 +48,7 @@
         </li>
     </ul>
     <div ng-if="hasData" uib-alert class="alert-danger">Auto-Populate is only intended for organizations with no properties or tax lots. To continue you must first remove pre-existing data</div>
+    <uib-progressbar ng-if="inProgress" class="progress-striped active" value="100" type="info" style="margin-top: 30px;"></uib-progressbar>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="inProgress">Cancel</button>

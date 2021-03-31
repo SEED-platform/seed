@@ -1384,33 +1384,34 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(id=pk)
         cycles = Cycle.objects.filter(organization=org)
-        if cycles.count() != 1:
+        if cycles.count() == 0:
             return JsonResponse({
                 'status': 'error',
-                'message': 'there must be 1 cycle'
+                'message': 'there must be at least 1 cycle'
             }, status=status.HTTP_400_BAD_REQUEST)
         cycle = cycles.first()
 
-        property_details = [
-            {'jurisdiction_property_id': 123456,
-             'pm_parent_property_id': '5766961',
-             'pm_property_id': '5766961',
-             'lot_number': 'A-12345',
-             'address_line_1': '120243 E True Lane',
-             'city': 'Boring',
-             'state': 'Oregon',
-             'postal_code': 80401,
-             'year_built': 1990,
-             'site_eui': 78,
-             'gross_floor_area': 264949,
-             'owner': 'MileStone Community Builders',
-             'owner_email': 'milestonebuilders@gmail.com',
-             'owner_telephone': '555-555-5555',
-             'owner_address': '119134 SE Lemon Highway',
-             'owner_city_state': 'Colorado',
-             'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123457,
+        property_details = [{
+            'jurisdiction_property_id': 123456,
+            'pm_parent_property_id': '5766961',
+            'pm_property_id': '5766961',
+            'lot_number': 'A-12345',
+            'address_line_1': '120243 E True Lane',
+            'city': 'Boring',
+            'state': 'Oregon',
+            'postal_code': 80401,
+            'year_built': 1990,
+            'site_eui': 78,
+            'gross_floor_area': 264949,
+            'owner': 'MileStone Community Builders',
+            'owner_email': 'milestonebuilders@gmail.com',
+            'owner_telephone': '555-555-5555',
+            'owner_address': '119134 SE Lemon Highway',
+            'owner_city_state': 'Colorado',
+            'owner_postal_code': 80202,
+            'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123457,
              'ubid': '10107/71db4',
              'pm_parent_property_id': '5766963',
              'pm_property_id': '5766963',
@@ -1430,8 +1431,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '80219 SW Mandarin Court',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123458,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123458,
              'pm_parent_property_id': '5766965',
              'pm_property_id': '5766965',
              'lot_number': 'C-12347',
@@ -1449,8 +1451,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '238539 SE Willow Street',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123459,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123459,
              'pm_parent_property_id': '5766967',
              'pm_property_id': '5766967',
              'lot_number': 'D-12348',
@@ -1468,8 +1471,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
              'organization_id': pk,
-             'extra_data': {'Note': 'Residential'}},
-            {'jurisdiction_property_id': 123460,
+             'extra_data': {'Note': 'Residential'}
+        }, {
+            'jurisdiction_property_id': 123460,
              'ubid': '10107/71db5',
              'pm_parent_property_id': '5766969',
              'pm_property_id': '5766969',
@@ -1489,8 +1493,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '231069 SW True Way',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123461,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123461,
              'pm_parent_property_id': '5766971',
              'pm_property_id': '5766971',
              'lot_number': 'F-12350',
@@ -1507,8 +1512,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '48633 NE Papaya Lane',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123462,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123462,
              'pm_parent_property_id': '5766973',
              'pm_property_id': '5766973',
              'lot_number': 'G-12351',
@@ -1526,8 +1532,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
              'organization_id': pk,
-             'extra_data': {'Note': 'Residential'}},
-            {'jurisdiction_property_id': 123463,
+             'extra_data': {'Note': 'Residential'}
+        }, {
+            'jurisdiction_property_id': 123463,
              'pm_parent_property_id': '5766975',
              'pm_property_id': '5766975',
              'lot_number': 'H-12352',
@@ -1544,8 +1551,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '129218 N Palm Highway',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123464,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123464,
              'pm_parent_property_id': '5766977',
              'pm_property_id': '5766977',
              'lot_number': 'I-12353',
@@ -1563,8 +1571,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
              'organization_id': pk,
-             'extra_data': {'Note': 'Residential'}},
-            {'jurisdiction_property_id': 123465,
+             'extra_data': {'Note': 'Residential'}
+        }, {
+            'jurisdiction_property_id': 123465,
              'pm_parent_property_id': '5766979',
              'pm_property_id': '5766979',
              'lot_number': 'J-12354',
@@ -1581,8 +1590,9 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '94734 SE Honeylocust Street',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk},
-            {'jurisdiction_property_id': 123465,
+             'organization_id': pk
+        }, {
+            'jurisdiction_property_id': 123465,
              'pm_parent_property_id': '5766979',
              'pm_property_id': '5766979',
              'lot_number': 'J-12354',
@@ -1599,13 +1609,15 @@ class OrganizationViewSet(viewsets.ViewSet):
              'owner_address': '94734 SE Honeylocust Street',
              'owner_city_state': 'Colorado',
              'owner_postal_code': 80202,
-             'organization_id': pk}
-        ]
+             'organization_id': pk
+        }]
 
-        taxlot_details = {'jurisdiction_tax_lot_id': 'A-12345',
-                          'city': 'Boring',
-                          'organization_id': pk,
-                          'extra_data': {'Note': 'This is my first note'}}
+        taxlot_details = {
+            'jurisdiction_tax_lot_id': 'A-12345',
+            'city': 'Boring',
+            'organization_id': pk,
+            'extra_data': {'Note': 'This is my first note'}
+        }
 
         taxlot_state = TaxLotState(**taxlot_details)
         taxlot_state.save()
@@ -1665,7 +1677,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
         )
 
-        import_record = ImportRecord.objects.create(name='Datasets', super_organization=org)
+        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
 
         # Interval Data
         filename = "example-pm-monthly-meter-usage.xlsx"
@@ -1697,5 +1709,5 @@ class OrganizationViewSet(viewsets.ViewSet):
         save_raw_data(import_greenbutton.id)
 
         return JsonResponse({
-            'status': 'success',
-            'message': 'hello world'})
+            'status': 'success'
+        })
