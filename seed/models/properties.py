@@ -12,6 +12,7 @@ import logging
 import re
 from os import path
 
+from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import (
@@ -419,7 +420,11 @@ class PropertyState(models.Model):
         }
 
         def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
+            filename = file = None
+            if log.import_filename:
+                filename = path.basename(log.import_filename)
+                file = settings.MEDIA_URL + '/'.join(log.import_filename.split('/')[-2:])
+
             if filename:
                 # Attempt to remove NamedTemporaryFile suffix
                 name, ext = path.splitext(filename)
@@ -433,6 +438,7 @@ class PropertyState(models.Model):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
+                'file': file
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
