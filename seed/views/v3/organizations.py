@@ -1418,7 +1418,13 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'status': 'error',
                 'message': 'there must be at least 1 cycle'
             }, status=status.HTTP_400_BAD_REQUEST)
+
         cycle = cycles.first()
+        if PropertyView.objects.filter(cycle=cycle).count() > 0 or TaxLotView.objects.filter(cycle=cycle).count() > 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'the cycle must not contain any properties or tax lots'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         property_details = [{
             'jurisdiction_property_id': 123456,
@@ -1675,12 +1681,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             state.save()
             ids.append(state.id)
 
-            # merge
-            for count in range(len(property_details)):
-                if count > 9:
-                    state_ids_to_merge = [state.id]
-                    state_ids_to_merge.append(state.id)
-
             property_1 = Property.objects.create(organization=org)
             properties.append(property_1)
             propertyview = PropertyView.objects.create(property=property_1, cycle=cycle, state=state)
@@ -1702,7 +1702,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             geocode = PropertyState.objects.filter(id__in=ids)
             geocode_buildings(geocode)
 
-        # Create a merge of 2 properties
+        # Create a merge of the last 2 properties
+        state_ids_to_merge = ids[-2:]
         merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
         match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
 
