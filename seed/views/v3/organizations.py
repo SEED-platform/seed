@@ -9,7 +9,7 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from random import randint
-import os
+from pathlib import Path
 
 import dateutil
 
@@ -1426,7 +1426,6 @@ class OrganizationViewSet(viewsets.ViewSet):
                 'message': 'the cycle must not contain any properties or tax lots'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
         taxlot_details = {
             'jurisdiction_tax_lot_id': 'A-12345',
             'city': 'Boring',
@@ -1446,13 +1445,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             name='Import Creation'
         )
 
-        filename_pd = "property_sample_data.json"
-        filepath_pd = os.path.dirname(os.path.abspath(__file__)) + "/../../tests/data/" + filename_pd
+        filename_pd = 'property_sample_data.json'
+        filepath_pd = f"{Path(__file__).parent.absolute()}/../../tests/data/{filename_pd}"
 
         with open(filepath_pd) as file:
             property_details = json.load(file)
 
-        state_ids_to_merge = []
         property_views = []
         properties = []
         ids = []
@@ -1470,7 +1468,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             property_views.append(propertyview)
 
             # create labels and add to records
-            new_label, created = Label.objects.get_or_create(color="red", name="Housing", super_organization=org)
+            new_label, created = Label.objects.get_or_create(color='red', name='Housing', super_organization=org)
             if state.extra_data.get('Note') == 'Residential':
                 propertyview.labels.add(new_label)
 
@@ -1506,12 +1504,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
 
         # Interval Data
-        filename = "example-pm-monthly-meter-usage.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-pm-monthly-meter-usage.xlsx'
+        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
 
         import_meterdata = ImportFile.objects.create(
             import_record=import_record,
-            source_type="PM Meter Usage",
+            source_type='PM Meter Usage',
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle
@@ -1520,16 +1518,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         save_raw_data(import_meterdata.id)
 
         # Greenbutton Import
-        filename = "example-GreenButton-data.xml"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        filename = 'example-GreenButton-data.xml'
+        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
 
         import_greenbutton = ImportFile.objects.create(
             import_record=import_record,
-            source_type="GreenButton",
+            source_type='GreenButton',
             uploaded_filename=filename,
             file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
             cycle=cycle,
-            matching_results_data={"property_id": properties[7].id}
+            matching_results_data={'property_id': properties[7].id}
         )
 
         save_raw_data(import_greenbutton.id)
