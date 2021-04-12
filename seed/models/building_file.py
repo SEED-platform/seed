@@ -180,6 +180,7 @@ class BuildingFile(models.Model):
             implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
             application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
             category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
+            recommended = str(m.get('recommended', 'false')).lower() == 'true'
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
@@ -187,7 +188,7 @@ class BuildingFile(models.Model):
                 implementation_status=PropertyMeasure.str_to_impl_status(implementation_status),
                 application_scale=PropertyMeasure.str_to_application_scale(application_scale),
                 category_affected=PropertyMeasure.str_to_category_affected(category_affected),
-                recommended=m.get('recommended', 'false') == 'true',
+                recommended=recommended,
             )
             join.description = m.get('description')
             join.cost_mv = m.get('mv_cost')
