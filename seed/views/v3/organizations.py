@@ -373,7 +373,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     def retrieve(self, request, pk=None):
         """
         Retrieves a single organization by id.
