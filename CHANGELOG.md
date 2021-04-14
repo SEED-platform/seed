@@ -1,3 +1,10 @@
+# SEED Version 2.9.4
+
+Minor patch that fixes access to inventory list page for organization user's with role "viewer".
+
+Closed:
+- Fix [#2669]( https://github.com/SEED-platform/seed/issues/2669 ), Fix org viewer perms
+
 # SEED Version 2.9.3
 
 Minor patch that adds an option to exclude notes when exporting a list of properties.
