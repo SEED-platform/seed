@@ -2441,6 +2441,21 @@ select {
   margin-right: 5px;
 }
 
+.label-bars {
+
+  display: flex;
+  height: 100%;
+
+  .label-bar {
+    flex-grow: 1;
+    display: inline-block;
+  }
+
+  .label-bar:not(:last-child) {
+    margin-right: 1px;
+  }
+}
+
 /* Styles for update labels modal */
 
 #update-building-labels-modal {

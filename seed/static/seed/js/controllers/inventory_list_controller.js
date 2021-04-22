@@ -27,6 +27,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'uiGridConstants',
     'i18nService', // from ui-grid
     'organization_payload',
+    'gridUtil',
     function (
       $scope,
       $filter,
@@ -50,7 +51,8 @@ angular.module('BE.seed.controller.inventory_list', [])
       $translate,
       uiGridConstants,
       i18nService,
-      organization_payload
+      organization_payload,
+      gridUtil
     ) {
       spinner_utility.show();
       $scope.selectedCount = 0;
@@ -92,9 +94,72 @@ angular.module('BE.seed.controller.inventory_list', [])
       } else {
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
-      }
+      };
 
       $scope.restoring = false;
+
+      // Find labels that should be displayed and organize by applied id
+      $scope.show_labels = [];
+      for (let n in labels) {
+        let label = labels[n];
+        if (label.show_in_list) {
+          for (let m in label.is_applied) {
+            let id = label.is_applied[m];
+            if (!$scope.show_labels[id]) {
+              $scope.show_labels[id] = [];
+            }
+            $scope.show_labels[id].push(label);
+          }
+        }
+      };
+
+      // Builds the html to display labels associated with this row entity
+      $scope.display_labels = function (entity) {
+        let id = $scope.inventory_type === 'properties' ? entity.property_view_id : entity.taxlot_view_id;
+        let labels = [];
+        let titles = [];
+        if ($scope.show_labels[id]) {
+          for (let i in $scope.show_labels[id]) {
+            let label = $scope.show_labels[id][i];
+            labels.push('<span class="', $scope.show_full_labels ? 'label' : 'label-bar', ' label-', label.label, '">', $scope.show_full_labels ? label.text : '', '</span>');
+            titles.push(label.text);
+          }
+        }
+        return ['<span title="', titles.join(', ') ,'" class="label-bars">', labels.join(''), '</span>'].join('');
+      };
+
+      $scope.show_full_labels = false;
+      $scope.toggle_labels = function () {
+        $scope.show_full_labels = !$scope.show_full_labels;
+        setTimeout(() => {
+          $scope.gridApi.grid.getColumn('labels').width = $scope.get_label_column_width();
+          let icon = document.getElementById('label-header-icon');
+          icon.classList.add($scope.show_full_labels ? 'fa-chevron-circle-left' : 'fa-chevron-circle-right');
+          icon.classList.remove($scope.show_full_labels ? 'fa-chevron-circle-right' : 'fa-chevron-circle-left');
+          $scope.gridApi.grid.refresh();
+        }, 0);
+      };
+
+      $scope.get_label_column_width = function () {
+        if (!$scope.show_full_labels) {
+          return 30;
+        }
+        let maxWidth = 0;
+        let renderContainer = document.body.getElementsByClassName('ui-grid-render-container-left')[0];
+        let col = $scope.gridApi.grid.getColumn('labels');
+        let cells = renderContainer.querySelectorAll('.' + uiGridConstants.COL_CLASS_PREFIX + col.uid + ' .ui-grid-cell-contents');
+        Array.prototype.forEach.call(cells, function (cell) {
+          gridUtil.fakeElement(cell, {}, function(newElm) {
+            var e = angular.element(newElm);
+            e.attr('style', 'float: left;');
+            var width = gridUtil.elementWidth(e);
+            if (width > maxWidth) {
+              maxWidth = width;
+            }
+          });
+        });
+        return maxWidth + 2;
+      };
 
       // Reduce labels to only records found in the current cycle
       $scope.selected_labels = [];
@@ -545,6 +610,21 @@ angular.module('BE.seed.controller.inventory_list', [])
         pinnedLeft: true,
         visible: true,
         width: 30
+      }, {
+        name: 'labels',
+        displayName: '',
+        headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fa fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
+        cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
+        enableColumnMenu: false,
+        enableColumnMoving: false,
+        enableColumnResizing: false,
+        enableFiltering: false,
+        enableHiding: false,
+        enableSorting: false,
+        exporterSuppressExport: true,
+        pinnedLeft: true,
+        visible: true,
+        width: '*'
       });
 
       var findColumn = _.memoize(function (name) {
