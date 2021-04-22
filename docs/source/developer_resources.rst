@@ -247,14 +247,14 @@ user:
 
     createuser -U seed seeduser
 
-    psql -c 'DROP DATABASE "seeddb"'
-    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
+    psql -c 'DROP DATABASE "seed"'
+    psql -c 'CREATE DATABASE "seed" WITH OWNER = "seeduser";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seed" TO seeduser;'
     psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
-    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
-    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
-    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
-    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seed -c 'SELECT timescaledb_pre_restore();'
+    psql -d seed -c 'SELECT timescaledb_post_restore();'
 
     ./manage.py migrate
     ./manage.py create_default_user \
@@ -267,18 +267,20 @@ Restoring a Database Dump
 
 .. code-block:: console
 
-    psql -c 'DROP DATABASE "seeddb";'
-    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";'
+    psql -c 'DROP DATABASE "seed";'
+    psql -c 'CREATE DATABASE "seed" WITH OWNER = "seeduser";'
+    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seed" TO "seeduser";'
     psql -c 'ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;'
-    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
-    psql -d seeddb -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
-    psql -d seeddb -c 'SELECT timescaledb_pre_restore();'
+    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
+    psql -d seed -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
+    psql -d seed -c 'SELECT timescaledb_pre_restore();'
 
     # restore a previous database dump (must be pg_restore 12+)
-    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seeddb /backups/prod-backups/seedv2_20191203_000002.dump
+    /usr/lib/postgresql/12/bin/pg_restore -U seeduser -d seed /backups/prod-backups/seedv2_20191203_000002.dump
+    # if any errors appear during the pg_restore process check that the `installed_version` of the timescaledb extension where the database was dumped matches the extension version where it's being restored
+    # `SELECT default_version, installed_version FROM pg_available_extensions WHERE name = 'timescaledb';`
 
-    psql -d seeddb -c 'SELECT timescaledb_post_restore();'
+    psql -d seed -c 'SELECT timescaledb_post_restore();'
 
     ./manage.py migrate
 
