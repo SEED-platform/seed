@@ -58,6 +58,13 @@ Closed Issues and Features (Total: 54):
 - Improved [#2627]( https://github.com/SEED-platform/seed/issues/2627 ), Reimplement ToS - "By creating an account, signing in, and using the website, you're agreeing to the..."
 - Fixed [#2634]( https://github.com/SEED-platform/seed/issues/2634 ), Error on importing xlsx with empty first sheet
 
+# SEED Version 2.9.4
+
+Minor patch that fixes access to inventory list page for organization user's with role "viewer".
+
+Closed:
+- Fix [#2669]( https://github.com/SEED-platform/seed/issues/2669 ), Fix org viewer perms
+
 # SEED Version 2.9.3
 
 Minor patch that adds an option to exclude notes when exporting a list of properties.
