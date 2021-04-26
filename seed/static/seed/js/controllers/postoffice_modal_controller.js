@@ -22,7 +22,6 @@ angular.module('BE.seed.controller.postoffice_modal', [])
       postoffice_service.get_templates().then(function(templates){
         $scope.available_templates = templates;
       });
-
       $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };

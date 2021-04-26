@@ -90,13 +90,13 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
 
     // Passing data from the Front End to the View
     template_factory.send_templated_email_for_org = function (template_id, inventory_id, inventory_type, organization_id) {
-      return $http.post('/api/v3/postoffice_email/', {
-        // The from email_field has to be passed to the view, can put a dummy email in place.
-        from_email: "dummy_email@example.com", //TODO replace with real variable
+      var data = {
+        from_email: "dummy_email@example.com", // The from email_field has to be passed to the view, can put a dummy email in place.
         template_id: template_id,
         inventory_id: inventory_id,
         inventory_type: inventory_type
-      }, {
+      };
+      return $http.post('/api/v3/postoffice_email/', data, {
         params: {
           organization_id: organization_id,
         }
