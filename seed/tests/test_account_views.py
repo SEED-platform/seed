@@ -434,7 +434,7 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'error',
-                'message': 'an organization must have at least one owner level member'
+                'message': 'an organization must have at least one owner'
             })
         self.assertEquals(ou.role_level, ROLE_OWNER)
 
