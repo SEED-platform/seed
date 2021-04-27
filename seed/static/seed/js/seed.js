@@ -61,7 +61,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_org_modal',
-  'BE.seed.controller.delete_user_modal',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
