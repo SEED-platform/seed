@@ -3288,6 +3288,10 @@ div.table_list_container.matching, div.table_list_container.matching_detail {
   tr:nth-child(2) th {
     top: 29px;
   }
+
+  td {
+    height: 42px;
+  }
 }
 
 .no-click {
