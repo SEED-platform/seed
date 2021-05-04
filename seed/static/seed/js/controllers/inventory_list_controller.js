@@ -98,17 +98,17 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.restoring = false;
 
-      // Find labels that should be displayed and organize by applied id
-      $scope.show_labels = [];
+      // Find labels that should be displayed and organize by applied inventory id
+      $scope.show_labels_by_inventory_id = {};
       for (let n in labels) {
         let label = labels[n];
         if (label.show_in_list) {
           for (let m in label.is_applied) {
             let id = label.is_applied[m];
-            if (!$scope.show_labels[id]) {
-              $scope.show_labels[id] = [];
+            if (!$scope.show_labels_by_inventory_id[id]) {
+              $scope.show_labels_by_inventory_id[id] = [];
             }
-            $scope.show_labels[id].push(label);
+            $scope.show_labels_by_inventory_id[id].push(label);
           }
         }
       };
@@ -118,14 +118,14 @@ angular.module('BE.seed.controller.inventory_list', [])
         let id = $scope.inventory_type === 'properties' ? entity.property_view_id : entity.taxlot_view_id;
         let labels = [];
         let titles = [];
-        if ($scope.show_labels[id]) {
-          for (let i in $scope.show_labels[id]) {
-            let label = $scope.show_labels[id][i];
+        if ($scope.show_labels_by_inventory_id[id]) {
+          for (let i in $scope.show_labels_by_inventory_id[id]) {
+            let label = $scope.show_labels_by_inventory_id[id][i];
             labels.push('<span class="', $scope.show_full_labels ? 'label' : 'label-bar', ' label-', label.label, '">', $scope.show_full_labels ? label.text : '', '</span>');
             titles.push(label.text);
           }
         }
-        return ['<span title="', titles.join(', ') ,'" class="label-bars">', labels.join(''), '</span>'].join('');
+        return ['<span title="', titles.join(', ') ,'" class="label-bars" style="overflow-x:scroll">', labels.join(''), '</span>'].join('');
       };
 
       $scope.show_full_labels = false;
@@ -140,6 +140,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         }, 0);
       };
 
+      $scope.max_label_width = 1000;
       $scope.get_label_column_width = function () {
         if (!$scope.show_full_labels) {
           return 30;
@@ -158,7 +159,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           });
         });
-        return maxWidth + 2;
+        return maxWidth > $scope.max_label_width ? $scope.max_label_width : maxWidth + 2;
       };
 
       // Reduce labels to only records found in the current cycle
@@ -624,7 +625,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
-        width: '*'
+        width: '*',
+        maxWidth: $scope.max_label_width
       });
 
       var findColumn = _.memoize(function (name) {

@@ -2445,6 +2445,7 @@ select {
 
   display: flex;
   height: 100%;
+  overflow-x: scroll;
 
   .label-bar {
     flex-grow: 1;
