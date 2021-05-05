@@ -100,18 +100,22 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
-      for (let n in labels) {
-        let label = labels[n];
-        if (label.show_in_list) {
-          for (let m in label.is_applied) {
-            let id = label.is_applied[m];
-            if (!$scope.show_labels_by_inventory_id[id]) {
-              $scope.show_labels_by_inventory_id[id] = [];
+      $scope.build_labels = function() {
+        $scope.show_labels_by_inventory_id = {};
+        for (let n in $scope.labels) {
+          let label = $scope.labels[n];
+          if (label.show_in_list) {
+            for (let m in label.is_applied) {
+              let id = label.is_applied[m];
+              if (!$scope.show_labels_by_inventory_id[id]) {
+                $scope.show_labels_by_inventory_id[id] = [];
+              }
+              $scope.show_labels_by_inventory_id[id].push(label);
             }
-            $scope.show_labels_by_inventory_id[id].push(label);
           }
         }
       };
+      $scope.build_labels();
 
       // Builds the html to display labels associated with this row entity
       $scope.display_labels = function (entity) {
@@ -275,7 +279,8 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.selected_labels = _.filter($scope.labels, function (label) {
           return _.find($scope.selected_labels, ['id', label.id]);
         });
-      }
+        $scope.build_labels();
+      };
 
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
