@@ -103,6 +103,7 @@ class StatusLabel(TimeStampedModel):
         null=True,
         related_name='labels'
     )
+    show_in_list = models.BooleanField(default=False)
 
     DEFAULT_LABELS = [
         'Residential',

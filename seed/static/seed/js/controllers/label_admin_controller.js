@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.label_admin', [])
       $scope.labels = labels_payload;
 
       function initialize_new_label () {
-        $scope.new_label = {color: 'gray', label: 'default', name: ''};
+        $scope.new_label = {color: 'gray', label: 'default', name: '', show_in_list: false};
       }
 
       $scope.showColor = function (label) {
