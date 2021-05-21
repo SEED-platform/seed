@@ -61,6 +61,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_file_modal',
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_org_modal',
+  'BE.seed.controller.derived_columns_admin',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
@@ -133,6 +134,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.columns',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
+  'BE.seed.service.derived_columns',
   'BE.seed.service.meter',
   'BE.seed.service.flippers',
   'BE.seed.service.geocode',
@@ -1237,6 +1239,34 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           user_profile_payload: ['user_service', function (user_service) {
             return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'organization_derived_columns',
+        url: '/accounts/{organization_id:int}/derived_columns/{inventory_type:properties|taxlots}',
+        templateUrl: static_url + 'seed/partials/derived_columns_admin.html',
+        controller: 'derived_columns_admin_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', function (derived_columns_service, $stateParams) {
+            return derived_columns_service.get_derived_columns($stateParams.organization_id, $stateParams.inventory_type);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
           }]
         }
       })
