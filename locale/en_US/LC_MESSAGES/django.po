@@ -193,6 +193,12 @@ msgstr "Apply Profile"
 msgid "approved_date"
 msgstr "approved_date"
 
+msgid "Are you absolutely sure you want to delete the organization"
+msgstr "Are you absolutely sure you want to delete the organization"
+
+msgid "Are you absolutely sure you want to delete the sub-organization"
+msgstr "Are you absolutely sure you want to delete the sub-organization"
+
 msgid "Are you sure you want to delete"
 msgstr "Are you sure you want to delete"
 
@@ -586,6 +592,9 @@ msgstr "Create a user"
 msgid "Create an organization"
 msgstr "Create an organization"
 
+msgid "Create an Organization to continue"
+msgstr "Create an Organization to continue"
+
 msgid "Create Analysis"
 msgstr "Create Analysis"
 
@@ -761,6 +770,9 @@ msgstr "deadline_date"
 msgid "Deadline:"
 msgstr "Deadline:"
 
+msgid "Default Display Fields"
+msgstr "Default Display Fields"
+
 msgid "Delete"
 msgstr "Delete"
 
@@ -772,6 +784,9 @@ msgstr "Delete Organization"
 
 msgid "Delete Selected"
 msgstr "Delete Selected"
+
+msgid "Delete Sub-Organization"
+msgstr "Delete Sub-Organization"
 
 msgid "Delete User?"
 msgstr "Delete User?"
@@ -791,8 +806,17 @@ msgstr "Delete your Profile"
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
 
+msgid "DELETE_ORG_WARNING"
+msgstr "This action cannot be undone. This will permanently delete this organization and all sub-organizations, associated uploads, properties, taxlots, cycles, data quality rules, and remove all member associations."
+
+msgid "DELETE_SUB_ORG_WARNING"
+msgstr "This action cannot be undone. This will permanently delete this organization and all associated uploads, properties, taxlots, cycles, data quality rules, sub-organizations, and remove all member associations."
+
 msgid "DELETED_LABEL_NAMED"
 msgstr "Deleted label {label_name}"
+
+msgid "Deleting in progress..."
+msgstr "Deleting in progress..."
 
 #: seed/models/projects.py:47
 msgid "description"
@@ -1052,8 +1076,8 @@ msgstr "File Source:"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
-msgid "Files (Master State Only)"
-msgstr "Files (Master State Only)"
+msgid "Files (Main State Only)"
+msgstr "Files (Main State Only)"
 
 msgid "Filter by label"
 msgstr "Filter by label"
@@ -1449,6 +1473,15 @@ msgstr "This operation may take a while."
 msgid "Longitude"
 msgstr "Longitude"
 
+msgid "Main"
+msgstr "Main"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Maintenance Actions"
+msgstr "Maintenance Actions"
+
 msgid "Make this a snapshot project."
 msgstr "Make this a snapshot project."
 
@@ -1500,9 +1533,6 @@ msgstr "Match-up your buildings list with the Portfolio Manager dataset to tie b
 #: seed/landing/templates/landing/_marketing_bullets.html:23
 msgid "MARKETING_BULLET_3"
 msgstr "Use SEED Platform's flexible, easy-to-use labeling system and inventory groupings to track the status of data submission, review, and compliance."
-
-msgid "Master"
-msgstr "Master"
 
 msgid "Match"
 msgstr "Match"
@@ -1763,14 +1793,11 @@ msgstr "Not Null"
 msgid "NOT_GEOCODED_PREVIOUSLY"
 msgstr "Not geocoded previously"
 
-msgid "Note 1: Sub-organizations cannot be deleted."
-msgstr "Note 1: Sub-organizations cannot be deleted."
-
-msgid "Note 2: Parent organization members are not automatically made members of sub-organizations."
-msgstr "Note 2: Parent organization members are not automatically made members of sub-organizations."
-
 msgid "Note:"
 msgstr "Note:"
+
+msgid "Note: Parent organization members are not automatically made members of sub-organizations."
+msgstr "Note: Parent organization members are not automatically made members of sub-organizations."
 
 #: seed/landing/templates/landing/_password_note.html:1
 msgid "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit."
@@ -1821,6 +1848,9 @@ msgstr "Only one terms of service is allowed to be active"
 
 msgid "Only Show Populated Columns"
 msgstr "Only Show Populated Columns"
+
+msgid "Options"
+msgstr "Options"
 
 msgid "OR"
 msgstr "OR"
@@ -2143,6 +2173,9 @@ msgstr "PUBLIC"
 msgid "Read more here."
 msgstr "Read more here."
 
+msgid "Really reset all passwords?  This will sign you out of SEED."
+msgstr "Really reset all passwords?  This will sign you out of SEED."
+
 msgid "Recent Sale Date"
 msgstr "Recent Sale Date"
 
@@ -2394,6 +2427,9 @@ msgstr "Selecting Fields to Share"
 msgid "Send Invite"
 msgstr "Send Invite"
 
+msgid "Sends the reset password email to all users."
+msgstr "Sends the reset password email to all users"
+
 msgid "Set a Query Threshold"
 msgstr "Set a Query Threshold"
 
@@ -2428,6 +2464,9 @@ msgstr "Sharing Your Data"
 
 msgid "Show All"
 msgstr "Show All"
+
+msgid "Show in List"
+msgstr "Show in List"
 
 msgid "Show Matched"
 msgstr "Show Matched"
@@ -2652,6 +2691,9 @@ msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"bea
 msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
 
+msgid "The following actions have destructive effects, please read all warnings after clicking an option."
+msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
+
 msgid ""
 "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
@@ -2747,6 +2789,9 @@ msgstr "Type of Submittal"
 
 msgid "Type of Submittal:"
 msgstr "Type of Submittal:"
+
+msgid "TYPE_TO_CONFIRM"
+msgstr "Please type <strong>{org}</strong> to confirm."
 
 msgid ""
 "U.S."
@@ -2873,9 +2918,6 @@ msgstr "User First Name:"
 
 msgid "User Last Name:"
 msgstr "User Last Name:"
-
-msgid "USER_WILL_BE_DELETED"
-msgstr "The user <strong>{user}</strong> only belongs to this organization. Removing them will result in the user being deleted. Are you sure you want to continue?"
 
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."
@@ -3010,6 +3052,12 @@ msgstr "Yes, Delete Data Set"
 msgid "Yes, Delete Inventory"
 msgstr "Yes, Delete Inventory"
 
+msgid "Yes, Delete Organization"
+msgstr "Yes, Delete Organization"
+
+msgid "Yes, Delete Sub-Organization"
+msgstr "Yes, Delete Sub-Organization"
+
 msgid "Yes, Delete User"
 msgstr "Yes, Delete User"
 
@@ -3044,6 +3092,9 @@ msgstr "You're receiving this e-mail because you requested a password reset"
 #: seed/templates/seed/account_create_email.html:4
 msgid "You're receiving this e-mail because you've been registered for a SEED account."
 msgstr "You're receiving this e-mail because you've been registered for a SEED account."
+
+msgid "You're receiving this email because your password was reset"
+msgstr "You're receiving this e-mail because your password was reset"
 
 msgid "your data set name"
 msgstr "your data set name"

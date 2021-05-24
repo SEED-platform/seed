@@ -654,11 +654,11 @@ BASE_MAPPING_V2_0 = {
                 'value': 'exist'
             },
             'measure_ids': {
-                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:MeasureIDs',
+                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:MeasureIDs/auc:MeasureID',
                 'type': 'list',
                 'items': {
                     'id': {
-                        'xpath': './auc:MeasureID',
+                        'xpath': '.',
                         'type': 'value',
                         'value': '@IDref'
                     }

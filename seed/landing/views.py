@@ -34,6 +34,7 @@ def landing_page(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect(reverse('seed:home'))
     login_form = LoginForm()
+    context = {'self_registration': settings.INCLUDE_ACCT_REG}
     return render(request, 'landing/home.html', locals())
 
 
@@ -82,7 +83,7 @@ def login_view(request):
                 errors.append('Username and/or password were invalid.')
     else:
         form = LoginForm()
-
+    context = {'self_registration': settings.INCLUDE_ACCT_REG}
     return render(request, 'landing/login.html', locals())
 
 

@@ -290,7 +290,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             description='IDs for properties to be checked for which labels are applied.'
         )
     )
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_viewer')
     @action(detail=False, methods=['POST'])
     def labels(self, request):
         """
@@ -342,7 +342,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def meters(self, request, pk):
         """
@@ -751,7 +751,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('can_modify_data')
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def links(self, request, pk=None):
         """

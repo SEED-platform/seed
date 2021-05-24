@@ -133,7 +133,7 @@
                                 <tr ng-repeat="user in org_user.users track by user.user_id">
                                     <td>{$:: user.email $}</td>
                                     <td>
-                                        <button class="btn btn-default" type="submit" ng-click="org_user.remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
+                                        <button class="btn btn-default" type="submit" ng-click="confirm_remove_user(user, org_user.organization.org_id)" translate>Remove User</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -183,8 +183,10 @@
                                     <td style="width: 470px;">
                                         <div>
                                             <button class="btn btn-default" ng-click="confirm_inventory_delete(org)" ng-disabled="org.progress > -1" translate>Remove Inventory</button>
-                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="confirm_org_delete(org)" ng-disabled="org.progress > -1">
-                                                <i class="fa fa-exclamation-triangle"></i> {$:: 'Delete Organization' | translate $}
+                                            <button class="btn btn-danger" type="button" style="margin-left:10px;" ng-click="delete_org(org)" ng-disabled="org.progress > -1">
+                                                <i class="fa fa-exclamation-triangle"></i>
+                                                <span ng-if="org.is_parent" translate>Delete Organization</span>
+                                                <span ng-if="!org.is_parent" translate>Delete Sub-Organization</span>
                                             </button>
                                             <uib-progressbar class="progress-striped active" value="org.progress" type="success" ng-show="org.progress > -1">{$ org.remove_message | translate $}</uib-progressbar>
                                         </div>

@@ -20,18 +20,20 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed.decorators import lock_and_track
-from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnMapping,
+    Cycle,
     DATA_STATE_MATCHING,
     Property,
     PropertyState,
+    PropertyView,
     TaxLot,
-    TaxLotState
+    TaxLotState,
+    TaxLotView
 )
 
 logger = get_task_logger(__name__)
@@ -167,19 +169,9 @@ def delete_organization(org_pk):
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(org_pk, prog_key):
-    # Get all org users
-    user_ids = OrganizationUser.objects.filter(
-        organization_id=org_pk).values_list('user_id', flat=True)
-    users = list(User.objects.filter(pk__in=user_ids))
-
     Organization.objects.get(pk=org_pk).delete()
 
     # TODO: Delete measures in BRICR branch
-
-    # Delete any abandoned users.
-    for user in users:
-        if not OrganizationUser.objects.filter(user_id=user.pk).exists():
-            user.delete()
 
     progress_data = ProgressData.from_key(prog_key)
     return progress_data.result()
@@ -265,6 +257,65 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     chord(tasks, interval=15)(_finish_delete.subtask([org_pk, progress_data.key]))
 
     return progress_data.result()
+
+
+@shared_task
+@lock_and_track
+def delete_organization_cycle(cycle_pk, organization_pk, prog_key=None, chunk_size=100, *args, **kwargs):
+    """Deletes an organization's cycle.
+
+    This must be an async task b/c a cascading deletion can require the removal
+    of many *States associated with an ImportFile, overwhelming the server.
+
+    :param cycle_pk: int
+    :param prog_key: str
+    :param chunk_size: int
+    :return: dict, from ProgressData.result()
+    """
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
+        func_name='delete_organization_cycle', unique_id=cycle_pk)
+
+    has_inventory = (
+        PropertyView.objects.filter(cycle_id=cycle_pk).exists()
+        or TaxLotView.objects.filter(cycle_id=cycle_pk).exists()
+    )
+    if has_inventory:
+        progress_data.finish_with_error('All PropertyView and TaxLotViews linked to the Cycle must be removed')
+        return progress_data.result()
+
+    property_state_ids = PropertyState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
+    tax_lot_state_ids = TaxLotState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
+    progress_data.total = (len(property_state_ids) + len(tax_lot_state_ids)) / chunk_size
+    progress_data.save()
+
+    tasks = []
+    for chunk_ids in batch(property_state_ids, chunk_size):
+        tasks.append(
+            _delete_organization_property_state_chunk.si(
+                chunk_ids, progress_data.key, organization_pk
+            )
+        )
+    for chunk_ids in batch(tax_lot_state_ids, chunk_size):
+        tasks.append(
+            _delete_organization_taxlot_state_chunk.si(
+                chunk_ids, progress_data.key, organization_pk
+            )
+        )
+
+    chord(tasks, interval=15)(_finish_delete_cycle.si(cycle_pk, progress_data.key))
+
+    return progress_data.result()
+
+
+@shared_task
+def _finish_delete_cycle(cycle_id, prog_key):
+    # Finally delete the cycle
+    cycle = Cycle.objects.get(id=cycle_id)
+    cycle.delete()
+
+    progress_data = ProgressData.from_key(prog_key)
+    return progress_data.finish_with_success(
+        f'Removed {cycle.name}')
 
 
 @shared_task

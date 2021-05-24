@@ -15,9 +15,9 @@ angular.module('BE.seed.controller.menu', [])
     'user_service',
     'dataset_service',
     'modified_service',
+    'inventory_service',
     '$timeout',
     '$state',
-    '$cookies',
     function (
       $rootScope,
       $scope,
@@ -30,9 +30,9 @@ angular.module('BE.seed.controller.menu', [])
       user_service,
       dataset_service,
       modified_service,
+      inventory_service,
       $timeout,
-      $state,
-      $cookies
+      $state
     ) {
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -84,9 +84,13 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
-      function init_menu () {
-        //Default to false but use cookie value if one has been set
-        var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
+      const STORAGE_KEY = "seed_nav_is_expanded";
+
+      function init_menu() {
+        if ($window.localStorage.getItem(STORAGE_KEY) === null) {
+          $window.localStorage.setItem(STORAGE_KEY, 'true');
+        }
+        var isNavExpanded = $window.localStorage.getItem(STORAGE_KEY) === 'true';
         $scope.expanded_controller = isNavExpanded;
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
@@ -111,7 +115,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.wide_controller = !$scope.wide_controller;
         try {
           //TODO : refactor to put() when we move to Angular 1.3 or greater
-          $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString();
+          $window.localStorage.setItem(STORAGE_KEY, $scope.expanded_controller.toString());
         } catch (err) {
           //it's ok if the cookie can't be written, so just report in the log and move along.
           $log.error('Couldn\'t write cookie for nav state. Error: ', err);
@@ -143,6 +147,43 @@ angular.module('BE.seed.controller.menu', [])
         dataModalInstance.result.finally(function () {
           $scope.$broadcast('datasets_updated');
           init();
+        });
+      };
+
+      /**
+       * open_sample_data_modal: opens the auto-populate sample data modal
+       */
+      $scope.open_sample_data_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sample_data_modal.html',
+          controller: 'sample_data_modal_controller',
+          size: 'md',
+          resolve: {
+            organization: () => {
+              return $scope.menu.user.organization;
+            },
+            cycle: ['Notification', 'organization_service', function (Notification, organization_service) {
+              return organization_service.get_organization($scope.menu.user.organization.org_id)
+                .then(response => {
+                  if (!response.organization.cycles.length) {
+                    Notification.error('Error: please create a cycle before Auto-Populating data');
+                    return;
+                  }
+                  let lastCycleId = inventory_service.get_last_cycle();
+                  let lastCycle;
+                  if (typeof lastCycleId === 'number') {
+                    lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId)
+                  }
+                  if ((lastCycleId === undefined || !lastCycle)) {
+                    lastCycle = response.organization.cycles[0];
+                  }
+                  return lastCycle;
+                });
+            }],
+            profiles: ['inventory_service', function (inventory_service) {
+              return inventory_service.get_column_list_profiles('List View Profile', 'Property');
+            }]
+          }
         });
       };
 
@@ -180,21 +221,31 @@ angular.module('BE.seed.controller.menu', [])
         if (!$scope.logged_in) {
           return;
         }
-
-        organization_service.get_organizations_brief().then(function (data) {
-          $scope.organizations_count = data.organizations.length;
-          $scope.menu.user.organizations = data.organizations;
-
-          // get the default org for the user
-          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
-        }).catch(function (error) {
-          $rootScope.route_load_error = true;
-          $rootScope.load_error_message = error.data.message;
-        });
-
-        dataset_service.get_datasets_count().then(function (data) {
-          $scope.datasets_count = data.datasets_count;
-        });
+        if (!user_service.get_organization().id) {
+          $uibModal.open({
+            backdrop: 'static',
+            keyboard: false,
+            templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
+            controller: 'create_organization_modal_controller',
+            resolve: {
+              user_id: user_service.get_user_id()
+            }
+          });
+        } else {
+          organization_service.get_organizations_brief().then(function (data) {
+            $scope.organizations_count = data.organizations.length;
+            $scope.menu.user.organizations = data.organizations;
+            // get the default org for the user
+            $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+          }).catch(function (error) {
+            // user does not have an org
+            $rootScope.route_load_error = true;
+            $rootScope.load_error_message = error.data.message;
+          });
+          dataset_service.get_datasets_count().then(function (data) {
+            $scope.datasets_count = data.datasets_count;
+          });
+        }
       };
       init();
       init_menu();
