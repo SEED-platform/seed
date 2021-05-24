@@ -135,7 +135,7 @@ class PropertyMeasure(models.Model):
     description = models.TextField(null=True)
     implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=MEASURE_PROPOSED)
     application_scale = models.IntegerField(choices=APPLICATION_SCALE_TYPES, default=SCALE_ENTIRE_FACILITY)
-    recommended = models.BooleanField(default=False)
+    recommended = models.BooleanField(default=True)
     cost_mv = models.FloatField(null=True)
     cost_total_first = models.FloatField(null=True)
     cost_installation = models.FloatField(null=True)
