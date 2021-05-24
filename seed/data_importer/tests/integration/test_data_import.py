@@ -323,6 +323,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         scenarios = Scenario.objects.all()
         self.assertEqual(scenarios.count(), 31)
 
+
 class TestBuildingSyncImportXml(DataMappingBaseTestCase):
     def setUp(self):
         self.maxDiff = None
