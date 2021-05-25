@@ -153,7 +153,6 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
         meter = meters[0]
 
         better_doc, errors = _build_better_input(analysis_property_view, meter)
-        print(better_doc)
         if errors:
             for error in errors:
                 AnalysisMessage.log_and_create(
