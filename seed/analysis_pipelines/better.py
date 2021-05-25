@@ -213,7 +213,123 @@ def _build_better_input(analysis_property_view, meter):
     :returns: tuple(bytes, list[str])
     """
     # TODO Build BETTER bsync input xml
-    return True
+    errors = []
+    property_state = analysis_property_view.property_state
+
+    if property_state.property_name is None:
+        errors.append('Linked PropertyState is missing a name')
+    if property_state.city is None:
+        errors.append('Linked PropertyState is missing a city')
+    if property_state.state is None:
+        errors.append('Linked PropertyState is missing a State')
+    if property_state.gross_floor_area is None:
+        errors.append('Linked PropertyState is missing a gross floor area')
+    for meter_reading in meter.meter_readings.all():
+        if meter_reading.reading is None:
+            errors.append(f'MeterReading starting at {meter_reading.start_time} has no reading value')
+    if errors:
+        return None, errors
+
+    # clean gross floor area
+    gross_floor_area = str(property_state.gross_floor_area.magnitude)
+
+    XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
+    nsmap = {
+        'xsi': XSI_URI,
+    }
+    nsmap.update(NAMESPACES)
+    E = ElementMaker(
+        namespace=BUILDINGSYNC_URI,
+        nsmap=nsmap
+    )
+
+    elec_resource_id = 'Resource-Elec'
+    doc = (
+        E.BuildingSync(
+            {
+                etree.QName(XSI_URI,
+                            'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd',
+                'version': '2.2.0'
+            },
+            E.Facilities(
+                E.Facility(
+                    {'ID': 'Facility-1'},
+                    E.Sites(
+                        E.Site(
+                            {'ID': 'Site-1'},
+                            E.Buildings(
+                                E.Building(
+                                    {'ID': 'Building-1'},
+                                    E.PremisesName(property_state.property_name),
+                                    E.OccupancyClassification("Office"),
+                                    E.eGRIDRegionCode("RMPA"),
+                                    E.Address(
+                                        E.City(property_state.city),
+                                        E.State(property_state.state),
+                                        E.PostalCode(property_state.postal_code)
+                                    ),
+                                    E.FloorAreas(
+                                        E.FloorArea(
+                                            E.FloorAreaType("Gross"),
+                                            E.FloorAreaValue(gross_floor_area)
+                                        )
+                                    ),
+                                    E.PremisesIdentifiers(
+                                        E.PremisesIdentifier(
+                                            E.IdentifierLabel('Custom'),
+                                            E.IdentifierCustomName(PREMISES_ID_NAME),
+                                            E.IdentifierValue(str(analysis_property_view.id)),
+                                        )
+                                    ),
+                                    E.Longitude(str(analysis_property_view.property_state.longitude)),
+                                    E.Latitude(str(analysis_property_view.property_state.latitude)),
+                                )
+                            )
+                        )
+                    ),
+                    E.Reports(
+                        E.Report(
+                            {'ID': 'Report-1'},
+                            E.Scenarios(
+                                E.Scenario(
+                                    {'ID': 'Scenario-Measured'},
+                                    E.ScenarioType(
+                                        E.CurrentBuilding(
+                                            E.CalculationMethod(
+                                                E.Measured()
+                                            )
+                                        )
+                                    ),
+                                    E.ResourceUses(
+                                        E.ResourceUse(
+                                            {'ID': elec_resource_id},
+                                            E.EnergyResource('Electricity'),
+                                            E.ResourceUnits('kWh'),
+                                            E.EndUse('All end uses')
+                                        )
+                                    ),
+                                    E.TimeSeriesData(
+                                        *[
+                                            E.TimeSeries(
+                                                {'ID': f'TimeSeries-{i}'},
+                                                E.StartTimestamp(reading.start_time.isoformat()),
+                                                E.IntervalFrequency('Month'),
+                                                E.IntervalReading(str(reading.reading)),
+                                                E.ResourceUseID({'IDref': elec_resource_id}),
+                                            )
+                                            for i, reading in enumerate(meter.meter_readings.all())
+                                        ]
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+    return etree.tostring(doc, pretty_print=True), []
+
 
 def _parse_analysis_property_view_id(filepath):
     input_file_tree = etree.parse(filepath)
@@ -322,7 +438,7 @@ def _better_analysis_service_request(building_id, config):
     :returns: requests.Response
     """
 
-    # TODO: Add actual BETTER endpoint here
+    # TODO: Add actual BETTER analysis endpoint here
     return True
 
 
@@ -335,8 +451,7 @@ def _better_building_service_request(file_):
     files = [
         ('file', file_)
     ]
-    # TODO: Add actual BETTER endpoint here
-
+    # TODO: Add actual BETTER building create endpoint here
     return True
 
 
