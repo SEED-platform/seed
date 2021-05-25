@@ -153,6 +153,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
         meter = meters[0]
 
         better_doc, errors = _build_better_input(analysis_property_view, meter)
+        print(better_doc)
         if errors:
             for error in errors:
                 AnalysisMessage.log_and_create(
@@ -313,6 +314,7 @@ def _build_better_input(analysis_property_view, meter):
                                             E.TimeSeries(
                                                 {'ID': f'TimeSeries-{i}'},
                                                 E.StartTimestamp(reading.start_time.isoformat()),
+                                                E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
                                                 E.ResourceUseID({'IDref': elec_resource_id}),
