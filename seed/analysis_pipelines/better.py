@@ -392,13 +392,13 @@ def _start_analysis(self, analysis_id, progress_data_key):
                     file_ = ImageFile(f)
                 else:
                     raise AnalysisPipelineException(
-                        f'Received unhandled file type from bsyncr: {result_file_path.name}')
+                        f'Received unhandled file type from BETTER: {result_file_path.name}')
 
                 analysis_output_file = AnalysisOutputFile(
                     content_type=content_type,
                 )
                 padded_id = f'{analysis_property_view_id:06d}'
-                analysis_output_file.file.save(f'bsyncr_output_{padded_id}_{result_file_path.name}', file_)
+                analysis_output_file.file.save(f'better_output_{padded_id}_{result_file_path.name}', file_)
                 analysis_output_file.clean()
                 analysis_output_file.save()
                 analysis_output_file.analysis_property_views.set([analysis_property_view_id])
