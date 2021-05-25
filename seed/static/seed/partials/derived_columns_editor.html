@@ -70,7 +70,7 @@
                         aria-label="Parameter name"
                     >
                     <div ng-if="parameter.errors.invalid_parameter_name" class="text-danger">Parameter name is invalid.</div>
-                    <div ng-if="parameter.errors.duplicate_parameter_name" class="text-danger">Parameter name <code>${$ parameter.parameter_name $}</code> is duplicated. Please change or remove one of the duplicate parameters.</div>
+                    <div ng-if="parameter.errors.duplicate_parameter_name" class="text-danger">Parameter name "{$ parameter.parameter_name $}" is duplicated. Please change or remove one of the duplicate parameters.</div>
                     <div ng-if="parameter.errors.expression_missing_parameter" class="text-danger">Parameter is not used in the expression. Use <code>${$ parameter.parameter_name $}</code> to reference the parameter.</div>
                 </div>
                 <div>
@@ -94,7 +94,7 @@
                         aria-label="Source column name"
                     >
                     <div ng-if="parameter.errors.invalid_source_column" class="text-danger">Column name is invalid. Please select one of the provided choices.</div>
-                    <div ng-if="parameter.errors.duplicate_source_column" class="text-danger">Column is duplicated. Please change or remove one of the duplicate parameters.</div>
+                    <div ng-if="parameter.errors.duplicate_source_column" class="text-danger">Column is duplicated. Please change or remove one of the duplicate columns.</div>
                 </div>
                 <div ng-repeat-end>
                     <button ng-if="parameters.length > 1" ng-click="delete_parameter($index)" class="btn btn-danger" aria-label="Delete">
