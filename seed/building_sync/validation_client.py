@@ -76,12 +76,12 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     validation_results = response_body.get('validation_results')
     # check the returned type and make validation_results a list if it's not already
     if file_extension == '.zip':
-        if type(validation_results) is not list:
+        if not isinstance(validation_results, list):
             raise ValidationClientException(
                 f"Expected response validation_results to be list for zip file: {response.text}",
             )
     else:
-        if type(validation_results) is not dict:
+        if not isinstance(validation_results, dict):
             raise ValidationClientException(
                 f"Expected response validation_results to be dict for single xml file: {response.text}",
             )
