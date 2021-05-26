@@ -231,7 +231,7 @@ def _build_better_input(analysis_property_view, meter):
         return None, errors
 
     # clean gross floor area
-    gross_floor_area = str(property_state.gross_floor_area.magnitude)
+    gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
 
     XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
     nsmap = {
@@ -329,6 +329,7 @@ def _build_better_input(analysis_property_view, meter):
             )
         )
     )
+    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
