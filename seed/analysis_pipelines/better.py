@@ -93,7 +93,7 @@ class BETTERPipeline(AnalysisPipeline):
 
         # Steps:
         # 1) ...starting
-        # 2) make requests to bsyncr
+        # 2) make requests to better
         # 3) process the results files
         progress_data.total = 3
         progress_data.save()
