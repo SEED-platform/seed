@@ -19,16 +19,16 @@ from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Cycle,
+from seed.models.cycles import Cycle
+from seed.models.models import (
     StatusLabel,
-    TaxLotProperty,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
 )
+from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,

@@ -25,5 +25,8 @@ Sphinx==2.3.1
 sphinxcontrib-spelling==4.3.0
 sphinx_rtd_theme==0.4.3
 
+# property-based testing
+hypothesis==6.12.0
+
 # For running the server
 uWSGI==2.0.18

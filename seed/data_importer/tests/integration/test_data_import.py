@@ -40,6 +40,7 @@ from seed.models import (
     Meter,
     Scenario,
     BuildingFile,
+    PropertyMeasure,
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
@@ -390,6 +391,11 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         scenario = Scenario.objects.filter(property_state=ps[0])
         self.assertEqual(scenario.count(), 3)
+
+        # verify that there is only 1 false recommended measure that was explicitly defined, the others were
+        # empty or True -- and empty now defaults to True
+        pms = PropertyMeasure.objects.filter(property_state=ps.last(), recommended=False)
+        self.assertEqual(pms.count(), 1)
 
         # for bsync, meters are linked to scenarios only (not properties)
         meters = Meter.objects.filter(scenario__in=scenario)
