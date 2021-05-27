@@ -19,19 +19,6 @@ from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
 
-class CreateDerivedColumnSerializer(DerivedColumnSerializer):
-    class Meta:
-        model = DerivedColumn
-        fields = ['name', 'expression', 'inventory_type']
-
-    def create(self, validated_data):
-        return DerivedColumn.objects.create(
-            name=validated_data['name'],
-            expression=validated_data['expression'],
-            inventory_type=validated_data['inventory_type'],
-        )
-
-
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = DerivedColumnSerializer
     model = DerivedColumn
