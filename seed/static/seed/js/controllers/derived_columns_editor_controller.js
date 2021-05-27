@@ -117,7 +117,7 @@ angular.module('BE.seed.controller.derived_columns_editor', [])
         })
       }
 
-      // updates parameter errors according to source column validity
+      // updates parameter errors according to source column validity and check for duplicate
       validate_parameter_source_column = function(parameter_index) {
         const this_param = $scope.parameters[parameter_index]
         this_param.errors.invalid_source_column = !this_param.source_column

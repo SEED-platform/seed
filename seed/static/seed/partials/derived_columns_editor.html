@@ -33,7 +33,7 @@
         <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px; padding: 0 2em 0 2em;">
             <div style="display: grid; grid-template-columns: 15em 30em 10em; gap: .75em;">
                 <!-- basic info -->
-                <h3>Column name</h3>
+                <h3>Derived column name</h3>
                 <h3>Type</h3>
                 <span></span>
                 <div>
@@ -42,7 +42,7 @@
                         ng-model="derived_column.name"
                         ng-change="update_column_name_error()"
                         class="form-control"
-                        placeholder="Column name"
+                        placeholder="Derived column name"
                     >
                     <div ng-if="invalid_column_name" class="text-danger">Please provide a valid name</div>
                 </div>
