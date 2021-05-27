@@ -134,7 +134,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
                 .annotate(readings_count=Count('meter_readings'))
                 .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
+                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
             )
         )
@@ -144,15 +144,12 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
                 type_=AnalysisMessage.INFO,
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
-                user_message='Property not used in analysis: Property has no linked electricity meters with 12 or more readings',
+                user_message='Property not used in analysis: Property has no linked electricity or natural gas meters with 12 or more readings',
                 debug_message=''
             )
             continue
 
-        # arbitrarily choosing the first meter for now
-        meter = meters[0]
-
-        better_doc, errors = _build_better_input(analysis_property_view, meter)
+        better_doc, errors = _build_better_input(analysis_property_view, meters)
         if errors:
             for error in errors:
                 AnalysisMessage.log_and_create(
@@ -203,7 +200,7 @@ def _finish_preparation(self, analysis_id, progress_data_key):
 PREMISES_ID_NAME = 'seed_analysis_property_view_id'
 
 
-def _build_better_input(analysis_property_view, meter):
+def _build_better_input(analysis_property_view, meters):
     """Constructs a BuildingSync document to be used as input for a BETTER analysis.
     The function returns a tuple, the first value being the XML document as a byte
     string. The second value is a list of error messages.
@@ -213,6 +210,7 @@ def _build_better_input(analysis_property_view, meter):
     :returns: tuple(bytes, list[str])
     """
     # TODO Build BETTER bsync input xml
+
     errors = []
     property_state = analysis_property_view.property_state
 
@@ -224,9 +222,10 @@ def _build_better_input(analysis_property_view, meter):
         errors.append('Linked PropertyState is missing a State')
     if property_state.gross_floor_area is None:
         errors.append('Linked PropertyState is missing a gross floor area')
-    for meter_reading in meter.meter_readings.all():
-        if meter_reading.reading is None:
-            errors.append(f'MeterReading starting at {meter_reading.start_time} has no reading value')
+    for meter in meters:
+        for meter_reading in meter.meter_readings.all():
+            if meter_reading.reading is None:
+                errors.append(f'MeterReading starting at {meter_reading.start_time} has no reading value')
     if errors:
         return None, errors
 
@@ -243,7 +242,6 @@ def _build_better_input(analysis_property_view, meter):
         nsmap=nsmap
     )
 
-    elec_resource_id = 'Resource-Elec'
     doc = (
         E.BuildingSync(
             {
@@ -302,11 +300,17 @@ def _build_better_input(analysis_property_view, meter):
                                     ),
                                     E.ResourceUses(
                                         E.ResourceUse(
-                                            {'ID': elec_resource_id},
+                                            {'ID': 'Resource-'+str(11)},
                                             E.EnergyResource('Electricity'),
                                             E.ResourceUnits('kWh'),
                                             E.EndUse('All end uses')
-                                        )
+                                        ),
+                                        E.ResourceUse(
+                                            {'ID': 'Resource-'+str(19)},
+                                            E.EnergyResource('Natural Gas'),
+                                            E.ResourceUnits('MMBtu'),
+                                            E.EndUse('Heating')
+                                        ),
                                     ),
                                     E.TimeSeriesData(
                                         *[
@@ -316,9 +320,9 @@ def _build_better_input(analysis_property_view, meter):
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': elec_resource_id}),
+                                                E.ResourceUseID({'IDref': 'Resource-'+str(meter.type)}),
                                             )
-                                            for i, reading in enumerate(meter.meter_readings.all())
+                                            for meter in meters for i, reading in enumerate(meter.meter_readings.all())
                                         ]
                                     )
                                 )
@@ -329,7 +333,6 @@ def _build_better_input(analysis_property_view, meter):
             )
         )
     )
-    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
