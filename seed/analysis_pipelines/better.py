@@ -209,7 +209,7 @@ def _build_better_input(analysis_property_view, meters):
     :param meter: Meter
     :returns: tuple(bytes, list[str])
     """
-    # TODO Build BETTER bsync input xml
+    # TODO Refine ID assignment
 
     errors = []
     property_state = analysis_property_view.property_state
@@ -225,11 +225,17 @@ def _build_better_input(analysis_property_view, meters):
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
-                errors.append(f'MeterReading starting at {meter_reading.start_time} has no reading value')
+                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value')
     if errors:
         return None, errors
 
-    # clean gross floor area
+    # clean inputs
+    # BETTER will default if eGRIDRegion is not explicitly set
+    try:
+        eGRIDRegion = property_state.extra_data['eGRIDRegion']
+    except KeyError:
+        eGRIDRegion = ""
+
     gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
 
     XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -260,7 +266,7 @@ def _build_better_input(analysis_property_view, meters):
                                     {'ID': 'Building-1'},
                                     E.PremisesName(property_state.property_name),
                                     E.OccupancyClassification("Office"),
-                                    E.eGRIDRegionCode("RMPA"),
+                                    E.eGRIDRegionCode(eGRIDRegion),
                                     E.Address(
                                         E.City(property_state.city),
                                         E.State(property_state.state),
@@ -300,13 +306,13 @@ def _build_better_input(analysis_property_view, meters):
                                     ),
                                     E.ResourceUses(
                                         E.ResourceUse(
-                                            {'ID': 'Resource-'+str(11)},
+                                            {'ID': 'Resource-' + str(11)},
                                             E.EnergyResource('Electricity'),
                                             E.ResourceUnits('kWh'),
                                             E.EndUse('All end uses')
                                         ),
                                         E.ResourceUse(
-                                            {'ID': 'Resource-'+str(19)},
+                                            {'ID': 'Resource-' + str(19)},
                                             E.EnergyResource('Natural Gas'),
                                             E.ResourceUnits('MMBtu'),
                                             E.EndUse('Heating')
@@ -320,7 +326,7 @@ def _build_better_input(analysis_property_view, meters):
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': 'Resource-'+str(meter.type)}),
+                                                E.ResourceUseID({'IDref': 'Resource-' + str(meter.type)}),
                                             )
                                             for meter in meters for i, reading in enumerate(meter.meter_readings.all())
                                         ]
@@ -333,6 +339,7 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
+    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
@@ -367,56 +374,16 @@ def _start_analysis(self, analysis_id, progress_data_key):
         'min_r_squared': analysis.configuration['min_r_squared']
     }
 
-    output_xml_file_ids = []
     for input_file in analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        better_building_id = _better_building_service_request(input_file.file.path)
-        results_dir, errors = _run_better_analysis(better_building_id, analysis_config)
+        # TODO connect the BETTER endpoints when complete
+        # better_building_id = _better_building_service_request(input_file.file.path)
+        # results_dir, errors = _run_better_analysis(better_building_id, analysis_config)
 
-        if errors:
-            for error in errors:
-                AnalysisMessage.log_and_create(
-                    logger=logger,
-                    type_=AnalysisMessage.ERROR,
-                    analysis_id=analysis.id,
-                    analysis_property_view_id=analysis_property_view_id,
-                    user_message='Unexpected error from BETTER service',
-                    debug_message=error,
-                )
-            continue
+    message = 'BETTER service not connected yet'
+    raise AnalysisPipelineException(message)
 
-        for result_file_path in pathlib.Path(results_dir.name).iterdir():
-            with open(result_file_path, 'rb') as f:
-                if result_file_path.suffix == '.xml':
-                    content_type = AnalysisOutputFile.BUILDINGSYNC
-                    file_ = BaseFile(f)
-                elif result_file_path.suffix == '.png':
-                    content_type = AnalysisOutputFile.IMAGE_PNG
-                    file_ = ImageFile(f)
-                else:
-                    raise AnalysisPipelineException(
-                        f'Received unhandled file type from BETTER: {result_file_path.name}')
 
-                analysis_output_file = AnalysisOutputFile(
-                    content_type=content_type,
-                )
-                padded_id = f'{analysis_property_view_id:06d}'
-                analysis_output_file.file.save(f'better_output_{padded_id}_{result_file_path.name}', file_)
-                analysis_output_file.clean()
-                analysis_output_file.save()
-                analysis_output_file.analysis_property_views.set([analysis_property_view_id])
-
-                if content_type == AnalysisOutputFile.BUILDINGSYNC:
-                    output_xml_file_ids.append(analysis_output_file.id)
-
-    if len(output_xml_file_ids) == 0:
-        pipeline = BETTERPipeline(analysis.id)
-        message = 'Failed to get results for all properties'
-        pipeline.fail(message, logger, progress_data_key=progress_data.key)
-        # stop the task chain
-        raise StopAnalysisTaskChain(message)
-
-    return output_xml_file_ids
 
 
 @shared_task(bind=True)
