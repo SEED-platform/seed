@@ -4,10 +4,7 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from tempfile import TemporaryFile, TemporaryDirectory
 import logging
-import pathlib
-from zipfile import ZipFile
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -22,15 +19,12 @@ from seed.models import (
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
-    AnalysisOutputFile,
     AnalysisPropertyView,
     Meter
 )
 
-from django.core.files.base import ContentFile, File as BaseFile
-from django.core.files.images import ImageFile
+from django.core.files.base import ContentFile
 from django.db.models import Count
-from django.conf import settings
 from django.utils import timezone as tz
 
 from celery import chain, shared_task
@@ -131,8 +125,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-                .annotate(readings_count=Count('meter_readings'))
-                .filter(
+            .annotate(readings_count=Count('meter_readings'))
+            .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -144,7 +138,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
                 type_=AnalysisMessage.INFO,
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
-                user_message='Property not used in analysis: Property has no linked electricity or natural gas meters with 12 or more readings',
+                user_message='Property not used in analysis: Property has no linked electricity or natural gas meters '
+                             'with 12 or more readings',
                 debug_message=''
             )
             continue
@@ -368,22 +363,20 @@ def _start_analysis(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Sending requests to BETTER service')
 
-    analysis_config = {
-        'benchmark_data': analysis.configuration['benchmark_data'],
-        'savings_target': analysis.configuration['savings_target'],
-        'min_r_squared': analysis.configuration['min_r_squared']
-    }
+    # analysis_config = {
+    #     'benchmark_data': analysis.configuration['benchmark_data'],
+    #     'savings_target': analysis.configuration['savings_target'],
+    #     'min_r_squared': analysis.configuration['min_r_squared']
+    # }
 
-    for input_file in analysis.input_files.all():
-        analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        # TODO connect the BETTER endpoints when complete
-        # better_building_id = _better_building_service_request(input_file.file.path)
-        # results_dir, errors = _run_better_analysis(better_building_id, analysis_config)
+    # for input_file in analysis.input_files.all():
+    #     # analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
+    #     # TODO connect the BETTER endpoints when complete
+    #     # better_building_id = _better_building_service_request(input_file.file.path)
+    #     # results_dir, errors = _run_better_analysis(better_building_id, analysis_config)
 
     message = 'BETTER service not connected yet'
     raise AnalysisPipelineException(message)
-
-
 
 
 @shared_task(bind=True)
@@ -420,9 +413,9 @@ def _better_building_service_request(file_):
     :param file_: File
     :returns: requests.Response building_id
     """
-    files = [
-        ('file', file_)
-    ]
+    # files = [
+    #     ('file', file_)
+    # ]
     # TODO: Add actual BETTER building create endpoint here
     return True
 
