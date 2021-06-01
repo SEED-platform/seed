@@ -62,6 +62,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.delete_modal',
   'BE.seed.controller.delete_org_modal',
   'BE.seed.controller.derived_columns_admin',
+  'BE.seed.controller.derived_columns_editor',
   'BE.seed.controller.developer',
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
@@ -1254,6 +1255,44 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           derived_columns_payload: ['derived_columns_service', '$stateParams', function (derived_columns_service, $stateParams) {
             return derived_columns_service.get_derived_columns($stateParams.organization_id, $stateParams.inventory_type);
+          }],
+          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
+            var organization_id = $stateParams.organization_id;
+            return auth_service.is_authorized(organization_id, ['requires_owner'])
+              .then(function (data) {
+                if (data.auth.requires_owner) {
+                  return data;
+                } else {
+                  return $q.reject('not authorized');
+                }
+              }, function (data) {
+                return $q.reject(data.message);
+              });
+          }]
+        }
+      })
+      .state({
+        name: 'organization_derived_column_editor',
+        url: '/accounts/{organization_id:int}/derived_columns/edit/:derived_column_id',
+        templateUrl: static_url + 'seed/partials/derived_columns_editor.html',
+        controller: 'derived_columns_editor_controller',
+        resolve: {
+          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
+            var organization_id = $stateParams.organization_id;
+            return organization_service.get_organization(organization_id);
+          }],
+          derived_column_payload: ['derived_columns_service', '$stateParams', function (derived_columns_service, $stateParams) {
+            if ($stateParams.derived_column_id === undefined) {
+              return {}
+            }
+
+            return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
+          }],
+          property_columns_payload: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_property_columns_for_org($stateParams.organization_id, false, false);
+          }],
+          taxlot_columns_payload: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
+            return inventory_service.get_taxlot_columns_for_org($stateParams.organization_id, false, false);
           }],
           auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
             var organization_id = $stateParams.organization_id;
