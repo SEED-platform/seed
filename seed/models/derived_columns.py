@@ -158,13 +158,11 @@ class InvalidExpression(Exception):
     def __str__(self):
         expression_message = self.expression
         if self.error_position is not None:
-            expression_message += (
-                f'\n'
-                f'    {" " * (self.error_position - 1)}^\n'
-                f'     Error potentially at position indicated above (character {self.error_position + 1})'
-            )
+            error_pos_to_end = self.expression[self.error_position:]
+            truncated_error = (error_pos_to_end[:5] + '...') if len(error_pos_to_end) > 8 else error_pos_to_end
+            expression_message = f'starting at "{truncated_error}"'
 
-        return f'Expression is not valid:\n{expression_message}'
+        return f'Expression is not valid: {expression_message}'
 
 
 class DerivedColumn(models.Model):
