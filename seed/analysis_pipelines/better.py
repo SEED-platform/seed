@@ -261,7 +261,6 @@ def _build_better_input(analysis_property_view, meters):
                                     {'ID': 'Building-1'},
                                     E.PremisesName(property_state.property_name),
                                     E.OccupancyClassification("Office"),
-                                    E.eGRIDRegionCode(eGRIDRegion),
                                     E.Address(
                                         E.City(property_state.city),
                                         E.State(property_state.state),
@@ -282,6 +281,7 @@ def _build_better_input(analysis_property_view, meters):
                                     ),
                                     E.Longitude(str(analysis_property_view.property_state.longitude)),
                                     E.Latitude(str(analysis_property_view.property_state.latitude)),
+                                    E.eGRIDRegionCode(eGRIDRegion),
                                 )
                             )
                         )
@@ -308,7 +308,7 @@ def _build_better_input(analysis_property_view, meters):
                                         ),
                                         E.ResourceUse(
                                             {'ID': 'Resource-' + str(19)},
-                                            E.EnergyResource('Natural Gas'),
+                                            E.EnergyResource('Natural gas'),
                                             E.ResourceUnits('MMBtu'),
                                             E.EndUse('Heating')
                                         ),
@@ -316,7 +316,7 @@ def _build_better_input(analysis_property_view, meters):
                                     E.TimeSeriesData(
                                         *[
                                             E.TimeSeries(
-                                                {'ID': f'TimeSeries-{i}'},
+                                                {'ID': f'TimeSeries-{meter.type}-{i}'},
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
