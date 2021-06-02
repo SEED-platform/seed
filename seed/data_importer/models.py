@@ -796,7 +796,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         if not hasattr(self, '_first_row_columns'):
             if self.cached_first_row:
                 self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+                _log.debug("Using cached first row columns.")
             else:
+                _log.debug("No first row columns property or cache was found!")
                 return None
         return self._first_row_columns
 
