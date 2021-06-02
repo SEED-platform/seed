@@ -13,7 +13,7 @@ from seed.analysis_pipelines.bsyncr import (  # noqa: F401
     _finish_analysis,
 )
 
-from seed.analysis_pipelines.better import (  # noqa: F401
+from seed.analysis_pipelines.better import (  # noqa: F811, F401
     _prepare_all_properties,
     _finish_preparation,
     _start_analysis,
