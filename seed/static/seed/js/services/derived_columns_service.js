@@ -8,7 +8,7 @@ angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_s
 
     const derived_columns_factory = {};
 
-    derived_columns_factory.get_derived_columns = function (organization_id, inventory_type) {
+    derived_columns_factory.get_derived_columns = function(organization_id, inventory_type) {
       return $http({
         url: '/api/v3/derived_columns/',
         method: 'GET',
@@ -17,6 +17,48 @@ angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_s
         return response.data;
       });
     };
+
+    derived_columns_factory.get_derived_column = function(organization_id, derived_column_id) {
+      return $http({
+        url: `/api/v3/derived_columns/${derived_column_id}`,
+        method: 'GET',
+        params: { organization_id }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    derived_columns_factory.create_derived_column = function(organization_id, { name, expression, inventory_type, parameters }) {
+      return $http({
+        url: `/api/v3/derived_columns/`,
+        method: 'POST',
+        params: { organization_id },
+        data: { name, expression, inventory_type, parameters }
+      }).then(function (response) {
+        return response.data;
+      });
+    }
+
+    derived_columns_factory.update_derived_column = function(organization_id, derived_column_id, { name, expression, inventory_type, parameters }) {
+      return $http({
+        url: `/api/v3/derived_columns/${derived_column_id}/`,
+        method: 'PUT',
+        params: { organization_id },
+        data: { name, expression, inventory_type, parameters }
+      }).then(function (response) {
+        return response.data;
+      });
+    }
+
+    derived_columns_factory.delete_derived_column = function(organization_id, derived_column_id) {
+      return $http({
+        url: `/api/v3/derived_columns/${derived_column_id}/`,
+        method: 'DELETE',
+        params: { organization_id },
+      }).then(function (response) {
+        return response.data;
+      });
+    }
 
     return derived_columns_factory;
   }]);
