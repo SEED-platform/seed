@@ -260,18 +260,6 @@ def _build_better_input(analysis_property_view, meters):
                                 E.Building(
                                     {'ID': 'Building-1'},
                                     E.PremisesName(property_state.property_name),
-                                    E.OccupancyClassification("Office"),
-                                    E.Address(
-                                        E.City(property_state.city),
-                                        E.State(property_state.state),
-                                        E.PostalCode(property_state.postal_code)
-                                    ),
-                                    E.FloorAreas(
-                                        E.FloorArea(
-                                            E.FloorAreaType("Gross"),
-                                            E.FloorAreaValue(gross_floor_area)
-                                        )
-                                    ),
                                     E.PremisesIdentifiers(
                                         E.PremisesIdentifier(
                                             E.IdentifierLabel('Custom'),
@@ -279,9 +267,21 @@ def _build_better_input(analysis_property_view, meters):
                                             E.IdentifierValue(str(analysis_property_view.id)),
                                         )
                                     ),
+                                    E.Address(
+                                        E.City(property_state.city),
+                                        E.State(property_state.state),
+                                        E.PostalCode(property_state.postal_code)
+                                    ),
+                                    E.eGRIDRegionCode(eGRIDRegion),
                                     E.Longitude(str(analysis_property_view.property_state.longitude)),
                                     E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                    E.eGRIDRegionCode(eGRIDRegion),
+                                    E.OccupancyClassification("Office"),
+                                    E.FloorAreas(
+                                        E.FloorArea(
+                                            E.FloorAreaType("Gross"),
+                                            E.FloorAreaValue(gross_floor_area)
+                                        )
+                                    ),
                                 )
                             )
                         )
