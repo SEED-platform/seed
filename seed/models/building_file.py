@@ -180,7 +180,8 @@ class BuildingFile(models.Model):
             implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
             application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
             category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
-            recommended = str(m.get('recommended', 'false')).lower() == 'true'
+            # for some reason this is returning none if the field is empty. So none and true should both be true.
+            recommended = str(m.get('recommended', 'true')).lower() in ['true', 'none']
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,

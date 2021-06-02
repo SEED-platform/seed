@@ -166,38 +166,16 @@ angular.module('BE.seed.controller.admin', [])
         });
       };
 
-      $scope.org_user.remove_user = function (user, org_id) {
-        // Only do this if the user only belongs to one org
-        if (user.number_of_orgs === 1) {
-          var modalInstance = $uibModal.open({
-            templateUrl: urls.static_url + 'seed/partials/delete_user_modal.html',
-            controller: 'delete_user_modal_controller',
-            resolve: {
-              user: function () {
-                return user.email;
-              }
-            }
-          });
-          modalInstance.result.then(function () {
-            confirm_remove_user(user, org_id);
-          }).catch(function () {
-            // Do nothing
-          });
-        } else {
-          confirm_remove_user(user, org_id);
-        }
-      };
-
-      function confirm_remove_user (user, org_id) {
+      $scope.confirm_remove_user = function (user, org_id) {
         organization_service.remove_user(user.user_id, org_id).then(function () {
           $scope.get_organizations_users($scope.org_user.organization);
           get_users();
-          update_alert(true, 'user removed organization');
+          update_alert(true, `user ${user.email} removed from organization ${$scope.org_user.organization.name}`);
         }).catch(function (response) {
           $log.log({message: 'error from data call', status: response.status, data: response.data});
           update_alert(false, 'error removing user from organization: ' + response.data.message);
         });
-      }
+      };
 
       $scope.confirm_column_mappings_delete = function (org) {
         var yes = confirm('Are you sure you want to delete the \'' + org.name + '\' column mappings?  This will invalidate preexisting mapping review data');
