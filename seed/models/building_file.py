@@ -290,7 +290,7 @@ class BuildingFile(models.Model):
                         meter_id=meter.id,
                         conversion_factor=1.00,  # assuming kBtu
                     )
-                    for mrz
+                    for mr
                     in m.get('readings', [])
                 }
 
