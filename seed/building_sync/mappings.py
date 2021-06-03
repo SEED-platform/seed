@@ -566,6 +566,36 @@ BASE_MAPPING_V2_0 = {
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_bool
+            },
+            'measure_total_first_cost': {
+                'xpath': './auc:MeasureTotalFirstCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'measure_installation_cost': {
+                'xpath': './auc:MeasureInstallationCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'measure_material_cost': {
+                'xpath': './auc:MeasureMaterialCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'mv_cost': {
+                'xpath': './auc:MVCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'useful_life': {
+                'xpath': './auc:UsefulLife',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
             }
         }
     },
