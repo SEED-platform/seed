@@ -556,6 +556,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               return inventory_service.get_taxlot_columns();
             }
           }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
+            const organization_id = user_service.get_organization().id
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
+          }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_column_list_profiles('List View Profile', inventory_type);
@@ -598,6 +602,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
                 });
               });
             }
+          }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
+            const organization_id = user_service.get_organization().id
+            return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
