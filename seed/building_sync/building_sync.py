@@ -251,6 +251,7 @@ class BuildingSync(object):
                 'annual_source_energy_use_intensity': scenario['annual_source_energy_use_intensity'],
                 'annual_electricity_energy': scenario['annual_electricity_energy'],
                 'annual_peak_demand': scenario['annual_peak_demand'],
+                'annual_peak_electricity_reduction': scenario['annual_peak_electricity_reduction'],
                 'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
                 'measures': [id['id'] for id in scenario['measure_ids']],
             }
