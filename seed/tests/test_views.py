@@ -1462,7 +1462,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         cycle = results['cycles'][0]
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
-        
+
     def test_postoffice(self):
         # Create a template
         response = self.client.post('/api/v3/postoffice/', {
