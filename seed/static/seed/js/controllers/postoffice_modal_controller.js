@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.postoffice_modal', [])
     function ($scope, $uibModalInstance, postoffice_service, property_states, taxlot_states, inventory_type) {
       $scope.loading = false;
       $scope.available_templates = [];
+
       postoffice_service.get_templates().then(function(templates){
         $scope.available_templates = templates;
       });
@@ -32,6 +33,6 @@ angular.module('BE.seed.controller.postoffice_modal', [])
         postoffice_service.send_templated_email(template_id, inventory_id, inventory_type).then(function(result) {
           $uibModalInstance.close(result);
         });
-      }
+      };
     }]);
 
