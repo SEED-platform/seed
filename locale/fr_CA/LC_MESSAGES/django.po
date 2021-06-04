@@ -2483,6 +2483,9 @@ msgstr "Partage de vos données"
 msgid "Show All"
 msgstr "Montrer tout"
 
+msgid "Show in List"
+msgstr "Afficher dans la liste"
+
 msgid "Show Matched"
 msgstr "Montrer Appariés"
 
@@ -2937,9 +2940,6 @@ msgstr "Prénom de l'utilisateur:"
 
 msgid "User Last Name:"
 msgstr "Nom de famille de l'utilisateur:"
-
-msgid "USER_WILL_BE_DELETED"
-msgstr "L'utilisateur <strong> {user} </strong> appartient uniquement à cette organisation. Les supprimer entraînera la suppression de l'utilisateur. Es-tu sur de vouloir continuer?"
 
 #: seed/landing/models.py:42
 msgid "User's email address.  Used for auth as well."

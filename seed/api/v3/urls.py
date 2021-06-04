@@ -17,6 +17,7 @@ from seed.views.v3.cycles import CycleViewSet
 from seed.views.v3.data_quality_checks import DataQualityCheckViewSet
 from seed.views.v3.data_quality_check_rules import DataQualityCheckRuleViewSet
 from seed.views.v3.datasets import DatasetViewSet
+from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
@@ -52,6 +53,7 @@ api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, 
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
+api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename="properties")
 api_v3_router.register(r'geocode', GeocodeViewSet, basename='geocode')
 api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyViewSet, basename="green_assessment_properties")

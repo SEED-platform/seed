@@ -83,6 +83,9 @@ def create_column_regexes(raw_columns):
             {'regex': <_sre.SRE_Pattern object at 0x10f10e870>, 'raw': 'has  multi spaces'}
         ]
     """
+    if not raw_columns:
+        _log.debug("No raw_columns provided!")
+        return []
 
     # clean up the comparing columns
     new_list = []
