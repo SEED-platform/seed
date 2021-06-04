@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
+    'post_office',
 )
 
 SEED_CORE_APPS = (
@@ -114,10 +115,6 @@ SEED_CORE_APPS = (
     'seed',
     'seed.lib.superperms.orgs',
     'seed.docs'
-)
-
-BEAM_APPS = (
-    'post_office',
 )
 
 # Added by Ashray Wadhwa (08/19/2020)
@@ -134,7 +131,7 @@ POST_OFFICE = {
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS + BEAM_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (
