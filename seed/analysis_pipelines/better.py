@@ -6,6 +6,7 @@
 """
 import logging
 
+from django.conf import settings
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
@@ -32,6 +33,7 @@ from celery import chain, shared_task
 from lxml import etree
 from lxml.builder import ElementMaker
 
+import json
 import requests
 
 logger = logging.getLogger(__name__)
@@ -125,8 +127,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
+                .annotate(readings_count=Count('meter_readings'))
+                .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -334,7 +336,6 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
-    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
@@ -363,17 +364,18 @@ def _start_analysis(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Sending requests to BETTER service')
 
-    # analysis_config = {
-    #     'benchmark_data': analysis.configuration['benchmark_data'],
-    #     'savings_target': analysis.configuration['savings_target'],
-    #     'min_r_squared': analysis.configuration['min_r_squared']
-    # }
+    analysis_config = {
+        "benchmark_data": analysis.configuration['benchmark_data']['benchmark_data'],
+        "savings_target": analysis.configuration['savings_target']['savings_target'],
+        "min_model_r_squared": analysis.configuration['min_r_squared']
+    }
 
-    # for input_file in analysis.input_files.all():
-    #     # analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-    #     # TODO connect the BETTER endpoints when complete
-    #     # better_building_id = _better_building_service_request(input_file.file.path)
-    #     # results_dir, errors = _run_better_analysis(better_building_id, analysis_config)
+    for input_file in analysis.input_files.all():
+        analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
+        better_building_id = _better_building_service_request(input_file.file.path)
+        better_analysis_id = _run_better_analysis(better_building_id, analysis_config)
+        #TODO self contained html file returning login page even though I am passing API token
+        result = _better_report_service_request(better_analysis_id)
 
     message = 'BETTER service not connected yet'
     raise AnalysisPipelineException(message)
@@ -396,6 +398,49 @@ def _finish_analysis(self, analysis_id, progress_data_key):
     progress_data.finish_with_success()
 
 
+def _better_building_service_request(bsync_xml):
+    """Makes request to better building endpoint using the provided file
+
+    :param bsync_xml: BSync xml for property
+    :returns: requests.Response building_id
+    """
+    url = "https://better-lbnl-development.herokuapp.com/api/v1/buildings/"
+
+    # TODO: Make this the BSync file once my PR is merged
+    bsync_xml = {
+        "name": "SEED test",
+        "space_type": "OFFICE",
+        "floor_area": 10000,
+        "location": "Denver",
+        "utility_bills": [
+            {
+                "fuel_type": "ELECTRIC_GRID",
+                "bill_start_date": "2019-06-07",
+                "bill_end_date": "2019-06-07",
+                "consumption": 100,
+                "unit": "KWH",
+                "cost": 10,
+                "temperature": 50
+            }
+        ]
+    }
+
+    headers = {
+        'accept': 'application/json',
+        'Authorization': settings.BETTER_TOKEN,
+        'Content-Type': 'application/json',
+    }
+    try:
+        response = requests.request("POST", url, headers=headers, data=json.dumps(bsync_xml))
+        data = response.json()
+        building_id = data['id']
+    except:
+        message = 'BETTER service could not create building'
+        raise AnalysisPipelineException(message)
+
+    return building_id
+
+
 def _better_analysis_service_request(building_id, config):
     """Makes request to better analysis endpoint using the provided configuration
 
@@ -403,26 +448,50 @@ def _better_analysis_service_request(building_id, config):
     :returns: requests.Response
     """
 
-    # TODO: Add actual BETTER analysis endpoint here
-    return True
+    url = "https://better-lbnl-development.herokuapp.com/api/v1/buildings/{id}/analytics/".format(id=building_id)
+
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': settings.BETTER_TOKEN,
+        'Content-Type': 'application/json',
+    }
+
+    try:
+        response = requests.request("POST", url, headers=headers, data=json.dumps(config))
+    except:
+        message = 'BETTER service could not create analytics for this building'
+        raise AnalysisPipelineException(message)
+
+    return response
 
 
-def _better_building_service_request(file_):
-    """Makes request to better building endpoint using the provided file
+def _better_report_service_request(analysis_id):
+    """Makes request to better html report endpoint using the provided analysis_id
 
-    :param file_: File
-    :returns: requests.Response building_id
+    :params: analysis id
+    :returns: requests.Response
     """
-    # files = [
-    #     ('file', file_)
-    # ]
-    # TODO: Add actual BETTER building create endpoint here
-    return True
+    url = "https://better-lbnl-development.herokuapp.com/api/v1/standalone_building_analytics_html/{}/".format(
+        analysis_id)
+
+    headers = {
+        'accept': '*/*',
+        'Authorization': settings.BETTER_TOKEN,
+    }
+
+    try:
+        response = requests.request("GET", url, headers=headers)
+    except:
+        message = 'BETTER service could not find the analysis'
+        raise AnalysisPipelineException(message)
+
+    return response
 
 
 def _run_better_analysis(building_id, config):
     """Runs the better analysis by making a request to a better server with the
-    provided configuration. Returns a self contained html file
+    provided configuration. Returns the analysis id for standalone html
 
     :param building_id: BETTER building id analysis configuration
     :param config: dict
@@ -435,7 +504,7 @@ def _run_better_analysis(building_id, config):
     except Exception as e:
         return None, [f'Failed to make request to better server: {e}']
 
-    if response.status_code != 200:
+    if response.status_code != 201:
         try:
             response_body = response.json()
             flattened_errors = [error['detail'] for error in response_body['errors']]
@@ -444,5 +513,6 @@ def _run_better_analysis(building_id, config):
             return None, [
                 f'Expected JSON response with "errors" from better server but got the following: {response.text}']
 
-    # TODO get the self contained html file from the response
-    return response
+    data = response.json()
+    better_analysis_id = data['id']
+    return better_analysis_id
