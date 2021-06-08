@@ -393,7 +393,6 @@ def _start_analysis(self, analysis_id, progress_data_key):
 
         for result_file_path in pathlib.Path(results_dir.name).iterdir():
             with open(result_file_path, 'r') as f:
-                print(f.read())
                 if result_file_path.suffix == '.html':
                     content_type = AnalysisOutputFile.HTML
                     file_ = BaseFile(f)
@@ -514,8 +513,8 @@ def _better_report_service_request(analysis_id):
     :params: analysis id
     :returns: requests.Response
     """
-    url = "https://better-lbnl-development.herokuapp.com/api/v1/standalone_building_analytics_html/{}/".format(
-        analysis_id)
+    url = "https://better-lbnl-development.herokuapp.com/api/v1/standalone_building_analytics_html/{id}/".format(
+        id=analysis_id)
 
     headers = {
         'accept': '*/*',
