@@ -5,6 +5,9 @@
 :author
 """
 import logging
+import os
+import pathlib
+from tempfile import TemporaryDirectory, TemporaryFile, NamedTemporaryFile
 
 from django.conf import settings
 from seed.analysis_pipelines.pipeline import (
@@ -20,11 +23,11 @@ from seed.models import (
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
+    AnalysisOutputFile,
     AnalysisPropertyView,
     Meter
 )
-
-from django.core.files.base import ContentFile
+from django.core.files.base import ContentFile, File as BaseFile
 from django.db.models import Count
 from django.utils import timezone as tz
 
@@ -369,16 +372,56 @@ def _start_analysis(self, analysis_id, progress_data_key):
         "savings_target": analysis.configuration['savings_target']['savings_target'],
         "min_model_r_squared": analysis.configuration['min_r_squared']
     }
-
+    output_html_file_ids = []
     for input_file in analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
         better_building_id = _better_building_service_request(input_file.file.path)
-        better_analysis_id = _run_better_analysis(better_building_id, analysis_config)
-        #TODO self contained html file returning login page even though I am passing API token
-        result = _better_report_service_request(better_analysis_id)
+        better_analysis_id, errors = _run_better_analysis(better_building_id, analysis_config)
+        # TODO self contained html file returning login page even though I am passing API token
+        results_dir, errors = _better_report_service_request(better_analysis_id)
 
-    message = 'BETTER service not connected yet'
-    raise AnalysisPipelineException(message)
+        if errors:
+            for error in errors:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    analysis_id=analysis.id,
+                    analysis_property_view_id=analysis_property_view_id,
+                    user_message='Unexpected error from better service',
+                    debug_message=error,
+                )
+            continue
+
+        for result_file_path in pathlib.Path(results_dir.name).iterdir():
+            with open(result_file_path, 'r') as f:
+                print(f.read())
+                if result_file_path.suffix == '.html':
+                    content_type = AnalysisOutputFile.HTML
+                    file_ = BaseFile(f)
+                else:
+                    raise AnalysisPipelineException(
+                        f'Received unhandled file type from bsyncr: {result_file_path.name}')
+
+                analysis_output_file = AnalysisOutputFile(
+                    content_type=content_type,
+                )
+                padded_id = f'{analysis_property_view_id:06d}'
+                analysis_output_file.file.save(f'better_output_{padded_id}_{result_file_path.name}', file_)
+                analysis_output_file.clean()
+                analysis_output_file.save()
+                analysis_output_file.analysis_property_views.set([analysis_property_view_id])
+
+                if content_type == AnalysisOutputFile.HTML:
+                    output_html_file_ids.append(analysis_output_file.id)
+
+        if len(output_html_file_ids) == 0:
+            pipeline = BETTERPipeline(analysis.id)
+            message = 'Failed to get results for all properties'
+            pipeline.fail(message, logger, progress_data_key=progress_data.key)
+            # stop the task chain
+            raise StopAnalysisTaskChain(message)
+
+        return output_html_file_ids
 
 
 @shared_task(bind=True)
@@ -434,7 +477,7 @@ def _better_building_service_request(bsync_xml):
         response = requests.request("POST", url, headers=headers, data=json.dumps(bsync_xml))
         data = response.json()
         building_id = data['id']
-    except:
+    except (ConnectionError, KeyError):
         message = 'BETTER service could not create building'
         raise AnalysisPipelineException(message)
 
@@ -459,7 +502,7 @@ def _better_analysis_service_request(building_id, config):
 
     try:
         response = requests.request("POST", url, headers=headers, data=json.dumps(config))
-    except:
+    except ConnectionError:
         message = 'BETTER service could not create analytics for this building'
         raise AnalysisPipelineException(message)
 
@@ -482,11 +525,18 @@ def _better_report_service_request(analysis_id):
 
     try:
         response = requests.request("GET", url, headers=headers)
-    except:
+    except ConnectionError:
         message = 'BETTER service could not find the analysis'
         raise AnalysisPipelineException(message)
 
-    return response
+    # save the file from the response
+    temporary_results_dir = TemporaryDirectory()
+    with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False) as file:
+        for chunk in response.iter_content(chunk_size=128):
+            chunk = chunk.decode("utf-8")
+            file.write(chunk)
+
+    return temporary_results_dir, []
 
 
 def _run_better_analysis(building_id, config):
@@ -515,4 +565,4 @@ def _run_better_analysis(building_id, config):
 
     data = response.json()
     better_analysis_id = data['id']
-    return better_analysis_id
+    return better_analysis_id, []
