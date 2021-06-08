@@ -235,6 +235,7 @@ class BuildingFile(models.Model):
             scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
             scenario.annual_electricity_energy = s.get('annual_electricity_energy')
             scenario.annual_peak_demand = s.get('annual_peak_demand')
+            scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
 
             # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
             #                                       default=TEMPORAL_STATUS_CURRENT)

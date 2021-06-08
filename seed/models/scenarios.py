@@ -65,6 +65,7 @@ class Scenario(models.Model):
     annual_natural_gas_energy = models.FloatField(null=True)
     annual_electricity_energy = models.FloatField(null=True)
     annual_peak_demand = models.FloatField(null=True)
+    annual_peak_electricity_reduction = models.FloatField(null=True)
     annual_site_energy_use_intensity = models.FloatField(null=True)
     annual_source_energy_use_intensity = models.FloatField(null=True)
     hdd = models.FloatField(null=True)
