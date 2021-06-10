@@ -673,6 +673,11 @@ BASE_MAPPING_V2_0 = {
                 'type': 'value',
                 'value': 'text'
             },
+            'annual_peak_electricity_reduction': {
+                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualPeakElectricityReduction',
+                'type': 'value',
+                'value': 'text'
+            },
             'annual_natural_gas_energy': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Natural gas"]/auc:AnnualFuelUseConsistentUnits',
                 'type': 'value',
