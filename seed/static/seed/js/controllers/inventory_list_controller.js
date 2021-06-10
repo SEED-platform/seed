@@ -144,7 +144,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         }, 0);
       };
 
-      $scope.max_label_width = 1000;
+      $scope.max_label_width = 750;
       $scope.get_label_column_width = function () {
         if (!$scope.show_full_labels) {
           return 30;
