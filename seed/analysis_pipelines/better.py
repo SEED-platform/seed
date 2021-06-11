@@ -398,7 +398,7 @@ def _start_analysis(self, analysis_id, progress_data_key):
                     file_ = BaseFile(f)
                 else:
                     raise AnalysisPipelineException(
-                        f'Received unhandled file type from bsyncr: {result_file_path.name}')
+                        f'Received unhandled file type from better: {result_file_path.name}')
 
                 analysis_output_file = AnalysisOutputFile(
                     content_type=content_type,
