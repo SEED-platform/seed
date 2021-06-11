@@ -198,6 +198,7 @@ class BuildingFile(models.Model):
             join.cost_material = m.get('measure_material_cost')
             join.cost_capital_replacement = m.get('measure_capital_replacement_cost')
             join.cost_residual_value = m.get('measure_residual_value')
+            join.useful_life = m.get('useful_life')
             join.save()
 
         # add in scenarios
