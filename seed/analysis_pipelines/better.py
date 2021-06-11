@@ -543,7 +543,7 @@ def _run_better_analysis(building_id, config):
 
     :param building_id: BETTER building id analysis configuration
     :param config: dict
-    :returns: TBD
+    :returns: better_analysis_pk
     """
     try:
         response = _better_analysis_service_request(building_id, config)
