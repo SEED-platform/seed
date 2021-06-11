@@ -129,8 +129,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-                .annotate(readings_count=Count('meter_readings'))
-                .filter(
+            .annotate(readings_count=Count('meter_readings'))
+            .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
