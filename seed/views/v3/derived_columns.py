@@ -177,7 +177,6 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             'message': 'Successfully deleted derived column',
         })
 
-
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
@@ -233,9 +232,9 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         inventory_name, view_model = inventory_map[derived_column.inventory_type]
 
         inventory_views = view_model.objects.filter(**{
-                f'{inventory_name}_id__in': inventory_ids,
-                f'{inventory_name}__organization': org,
-                f'cycle_id': cycle_id,
+            f'{inventory_name}_id__in': inventory_ids,
+            f'{inventory_name}__organization': org,
+            'cycle_id': cycle_id,
         }).prefetch_related('state', inventory_name)
 
         results = []

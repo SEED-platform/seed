@@ -115,7 +115,7 @@ class ColumnListProfileSerializer(serializers.ModelSerializer):
                 # note that the org is the user's existing org, not the parent org!
                 if not Column.objects.filter(pk=column.get('id'), organization_id=org.pk).exists():
                     raise ValidationError(f"Column does not exist for organization, column id: {column.get('id')}")
-            
+
             for derived_column in self.initial_data.get('derived_columns', []):
                 # note that the org is the user's existing org, not the parent org!
                 if not DerivedColumn.objects.filter(pk=derived_column.get('id'), organization_id=org.pk).exists():
