@@ -511,7 +511,7 @@ def _better_report_service_request(analysis_id):
     """Makes request to better html report endpoint using the provided analysis_id
 
     :params: analysis id
-    :returns: requests.Response
+    :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
     """
     url = "https://better-lbnl-development.herokuapp.com/api/v1/standalone_building_analytics_html/{id}/".format(
         id=analysis_id)
