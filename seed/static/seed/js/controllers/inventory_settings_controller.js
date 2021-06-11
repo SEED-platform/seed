@@ -144,6 +144,8 @@ angular.module('BE.seed.controller.inventory_settings', [])
             col.displayName = col.name;
             return col;
           }));
+
+          $scope.gridOptions.data = inventory_service.reorderSettings($scope.gridOptions.data);
         } else {
           // No profiles exist
           var data = _.map(deselected_columns, function (col) {
