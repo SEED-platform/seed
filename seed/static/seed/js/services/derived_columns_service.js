@@ -60,5 +60,14 @@ angular.module('BE.seed.service.derived_columns', []).factory('derived_columns_s
       });
     }
 
+    derived_columns_factory.evaluate = function(organization_id, derived_column_id, cycle_id, inventory_ids) {
+      return $http({
+        url: `/api/v3/derived_columns/${derived_column_id}/evaluate/`,
+        method: 'GET',
+        params: { organization_id, cycle_id, inventory_ids: inventory_ids.join(',') },
+      }).then(function (response) {
+        return response.data;
+      });
+    }
     return derived_columns_factory;
   }]);
