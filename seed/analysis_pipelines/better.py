@@ -129,8 +129,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
+                .annotate(readings_count=Count('meter_readings'))
+                .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -547,19 +547,12 @@ def _run_better_analysis(building_id, config):
     """
     try:
         response = _better_analysis_service_request(building_id, config)
-    except requests.exceptions.Timeout:
-        return None, ['Request to better server timed out.']
     except Exception as e:
         return None, [f'Failed to make request to better server: {e}']
 
     if response.status_code != 201:
-        try:
-            response_body = response.json()
-            flattened_errors = [error['detail'] for error in response_body['errors']]
-            return None, flattened_errors
-        except (ValueError, KeyError):
-            return None, [
-                f'Expected JSON response with "errors" from better server but got the following: {response.text}']
+        return None, ['BETTER analysis could not be completed and got the following response: {message}'.format(
+            message=response.text)]
 
     data = response.json()
     better_analysis_id = data['id']
