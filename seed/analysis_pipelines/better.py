@@ -132,8 +132,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-                .annotate(readings_count=Count('meter_readings'))
-                .filter(
+            .annotate(readings_count=Count('meter_readings'))
+            .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -549,7 +549,7 @@ def _run_better_analysis(building_id, config):
             timeout=60,
             step=1)
     except TimeoutError:
-        return None, [f'BETTER analysis timed out']
+        return None, ['BETTER analysis timed out']
 
     data = response.json()
     better_analysis_id = data[0]['id']
