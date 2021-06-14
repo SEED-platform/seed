@@ -8,6 +8,7 @@ import logging
 import pathlib
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 
+import polling
 from django.conf import settings
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -39,6 +40,8 @@ import json
 import requests
 
 logger = logging.getLogger(__name__)
+
+HOST = "https://better-lbnl-development.herokuapp.com"
 
 
 def _validate_better_config(analysis):
@@ -129,8 +132,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
+                .annotate(readings_count=Count('meter_readings'))
+                .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -209,7 +212,6 @@ def _build_better_input(analysis_property_view, meters):
     :returns: tuple(bytes, list[str])
     """
     # TODO Refine ID assignment
-
     errors = []
     property_state = analysis_property_view.property_state
 
@@ -444,7 +446,7 @@ def _better_building_service_request(bsync_xml):
     :param bsync_xml: BSync xml for property
     :returns: requests.Response building_id
     """
-    url = "https://better-lbnl-development.herokuapp.com/api/v1/buildings/"
+    url = "{host}/api/v1/buildings/".format(host=HOST)
 
     with open(bsync_xml, 'r') as file:
         bsync_content = file.read()
@@ -471,7 +473,7 @@ def _better_analysis_service_request(building_id, config):
     :returns: requests.Response
     """
 
-    url = "https://better-lbnl-development.herokuapp.com/api/v1/buildings/{id}/analytics/".format(id=building_id)
+    url = "{host}/api/v1/buildings/{id}/analytics/".format(host=HOST, id=building_id)
 
     headers = {
         'accept': 'application/json',
@@ -494,14 +496,12 @@ def _better_report_service_request(analysis_id):
     :params: analysis id
     :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
     """
-    url = "https://better-lbnl-development.herokuapp.com/api/v1/standalone_building_analytics_html/{id}/".format(
-        id=analysis_id)
+    url = "{host}/api/v1/standalone_building_analytics_html/{id}/".format(host=HOST, id=analysis_id)
 
     headers = {
         'accept': '*/*',
         'Authorization': settings.BETTER_TOKEN,
     }
-
     try:
         response = requests.request("GET", url, headers=headers)
         standalone_html = response.text.encode('utf8').decode()
@@ -535,6 +535,22 @@ def _run_better_analysis(building_id, config):
         return None, ['BETTER analysis could not be completed and got the following response: {message}'.format(
             message=response.text)]
 
+    # Gotta make sure the analysis is done
+    url = "{host}/api/v1/buildings/{id}/analytics/".format(host=HOST, id=building_id)
+
+    headers = {
+        'accept': 'application/json',
+        'Authorization': settings.BETTER_TOKEN,
+    }
+    try:
+        response = polling.poll(
+            lambda: requests.request("GET", url, headers=headers),
+            check_success=lambda response: response.json()[0]['generation_result'] == 'COMPLETE',
+            timeout=60,
+            step=1)
+    except TimeoutError:
+        return None, [f'BETTER analysis timed out']
+
     data = response.json()
-    better_analysis_id = data['id']
+    better_analysis_id = data[0]['id']
     return better_analysis_id, []
