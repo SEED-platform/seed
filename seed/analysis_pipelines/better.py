@@ -376,7 +376,6 @@ def _start_analysis(self, analysis_id, progress_data_key):
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
         better_building_id = _better_building_service_request(input_file.file.path)
         better_analysis_id, errors = _run_better_analysis(better_building_id, analysis_config)
-        # TODO self contained html file returning login page even though I am passing API token
         results_dir, errors = _better_report_service_request(better_analysis_id)
 
         if errors:
@@ -447,32 +446,15 @@ def _better_building_service_request(bsync_xml):
     """
     url = "https://better-lbnl-development.herokuapp.com/api/v1/buildings/"
 
-    # TODO: Make this the BSync file once my PR is merged
-    bsync_xml = {
-        "name": "SEED test",
-        "space_type": "OFFICE",
-        "floor_area": 10000,
-        "location": "Denver",
-        "utility_bills": [
-            {
-                "fuel_type": "ELECTRIC_GRID",
-                "bill_start_date": "2019-06-07",
-                "bill_end_date": "2019-06-07",
-                "consumption": 100,
-                "unit": "KWH",
-                "cost": 10,
-                "temperature": 50
-            }
-        ]
-    }
+    with open(bsync_xml, 'r') as file:
+        bsync_content = file.read()
 
     headers = {
-        'accept': 'application/json',
         'Authorization': settings.BETTER_TOKEN,
-        'Content-Type': 'application/json',
+        'Content-Type': 'buildingsync/xml',
     }
     try:
-        response = requests.request("POST", url, headers=headers, data=json.dumps(bsync_xml))
+        response = requests.request("POST", url, headers=headers, data=bsync_content)
         data = response.json()
         building_id = data['id']
     except (ConnectionError, KeyError):
@@ -495,7 +477,6 @@ def _better_analysis_service_request(building_id, config):
         'accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': settings.BETTER_TOKEN,
-        'Content-Type': 'application/json',
     }
 
     try:
@@ -523,6 +504,8 @@ def _better_report_service_request(analysis_id):
 
     try:
         response = requests.request("GET", url, headers=headers)
+        standalone_html = response.text.encode('utf8').decode()
+
     except ConnectionError:
         message = 'BETTER service could not find the analysis'
         raise AnalysisPipelineException(message)
@@ -530,9 +513,7 @@ def _better_report_service_request(analysis_id):
     # save the file from the response
     temporary_results_dir = TemporaryDirectory()
     with NamedTemporaryFile(mode='w', suffix='.html', dir=temporary_results_dir.name, delete=False) as file:
-        for chunk in response.iter_content(chunk_size=128):
-            chunk = chunk.decode("utf-8")
-            file.write(chunk)
+        file.write(standalone_html)
 
     return temporary_results_dir, []
 
