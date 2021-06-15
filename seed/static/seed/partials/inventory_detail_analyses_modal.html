@@ -15,15 +15,49 @@
                     <label class="control-label sectionLabel">Type</label>
                     <select class="form-control" ng-model="new_analysis.service" ng-dropdown required>
                         <option ng-option value='BSyncr' selected="selected">BSyncr</option>
+                        <option ng-option value='BETTER' selected="selected">BETTER</option>
                     </select>
                 </div>
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
-                         <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$:: model.model_type $}</option>
+                        <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$::
+                            model.model_type $}
+                        </option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create Analysis</button>
+                <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
+                    <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
+                    <div class="form-group" style="padding-top: 1em">
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <label class="control-label sectionLabel text-muted">Savings Target</label>
+                                <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
+                                    <option ng-repeat="model in better_savings_targets" selected="selected"
+                                            ng-value=model>{$:: model.savings_target $}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="control-label sectionLabel text-muted">Benchmark Data</label>
+                                <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
+                                    <option ng-repeat="model in better_benchmark_options" selected="selected"
+                                            ng-value=model>{$:: model.benchmark_data $}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-12" style="padding-top: 1em; padding-bottom: 1em">
+                                <label class="control-label sectionLabel text-muted">Minimum Model R Squared</label>
+                                <input ng-model="new_analysis.configuration.min_r_squared" type="number" class="form-control" step=".01" min="0" max="1" >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create
+                    Analysis
+                </button>
             </form>
         </div>
     </div>
