@@ -216,7 +216,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: currentColumns,
+            data: function () {
+              return {
+                columns: currentColumns(),
+                derived_columns: [],
+              }
+            },
             profile_location: _.constant('List View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
@@ -1010,7 +1015,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible;
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible && col.id;
         });
 
         // Ensure pinned ordering first
