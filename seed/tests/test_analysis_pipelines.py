@@ -923,6 +923,6 @@ class TestBETTERPipeline(TestCase):
 
         # Assert
         self.assertIsNone(doc)
-        self.assertEqual(3, len(errors))
+        self.assertEqual(2, len(errors))
         self.assertTrue('Linked PropertyState is missing a name' in errors)
         self.assertTrue('Linked PropertyState is missing a city' in errors)
