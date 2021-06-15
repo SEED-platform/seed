@@ -6,6 +6,7 @@
 """
 
 from collections import OrderedDict
+from seed.models.derived_columns import DerivedColumn
 
 from django.apps import apps
 from django.db import models
@@ -40,6 +41,7 @@ class ColumnListProfile(models.Model):
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
     columns = models.ManyToManyField(Column, related_name='column_list_profiles',
                                      through='seed.ColumnListProfileColumn')
+    derived_columns = models.ManyToManyField(DerivedColumn, related_name='column_list_profiles')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
     COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}
