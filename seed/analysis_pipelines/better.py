@@ -42,6 +42,24 @@ import requests
 logger = logging.getLogger(__name__)
 
 HOST = "https://better-lbnl-development.herokuapp.com"
+# Acceptable BEDES defined BETTER inputs
+BETTER_PROPERTY_TYPES = ['Office',
+                         'Lodging',
+                         'Education',
+                         'Health care-Inpatient hospital',
+                         'Bank',
+                         'Courthouse',
+                         'Data Center',
+                         'Distribution Center',
+                         'Office-Financial',
+                         'Multifamily',
+                         'Warehouse unrefrigerated',
+                         'Warehouse refrigerated',
+                         'Retail',
+                         'Health care-Skilled nursing facility',
+                         'Food sales-Grocery store',
+                         'Other'
+                         ]
 
 
 def _validate_better_config(analysis):
@@ -225,6 +243,8 @@ def _build_better_input(analysis_property_view, meters):
         errors.append('Linked PropertyState is missing a gross floor area')
     if property_state.property_type is None:
         errors.append('Linked PropertyState is missing a property type')
+    if property_state.property_type not in BETTER_PROPERTY_TYPES:
+        errors.append('Linked PropertyState must have property type of : {}'.format(BETTER_PROPERTY_TYPES))
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
@@ -459,8 +479,11 @@ def _better_building_service_request(bsync_xml):
     }
     try:
         response = requests.request("POST", url, headers=headers, data=bsync_content)
-        data = response.json()
-        building_id = data['id']
+        if response.status_code == 201:
+            data = response.json()
+            building_id = data['id']
+        else:
+            raise
     except Exception as e:
         message = 'BETTER service could not create building with the following message: {e}'.format(e=e)
         raise AnalysisPipelineException(message)
