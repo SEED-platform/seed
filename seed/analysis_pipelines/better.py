@@ -223,6 +223,8 @@ def _build_better_input(analysis_property_view, meters):
         errors.append('Linked PropertyState is missing a State')
     if property_state.gross_floor_area is None:
         errors.append('Linked PropertyState is missing a gross floor area')
+    if property_state.property_type is None:
+        errors.append('Linked PropertyState is missing a property type')
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
@@ -281,7 +283,7 @@ def _build_better_input(analysis_property_view, meters):
                                     E.eGRIDRegionCode(eGRIDRegion),
                                     E.Longitude(str(analysis_property_view.property_state.longitude)),
                                     E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                    E.OccupancyClassification("Office"),
+                                    E.OccupancyClassification(property_state.property_type),
                                     E.FloorAreas(
                                         E.FloorArea(
                                             E.FloorAreaType("Gross"),
@@ -459,8 +461,8 @@ def _better_building_service_request(bsync_xml):
         response = requests.request("POST", url, headers=headers, data=bsync_content)
         data = response.json()
         building_id = data['id']
-    except (ConnectionError, KeyError):
-        message = 'BETTER service could not create building'
+    except Exception as e:
+        message = 'BETTER service could not create building with the following message: {e}'.format(e=e)
         raise AnalysisPipelineException(message)
 
     return building_id
