@@ -157,6 +157,10 @@ describe('controller: inventory_detail_controller', function () {
       sortable: true,
       checked: false
     }];
+
+    var fake_derived_columns_payload = {
+      derived_columns: [],
+    };
     controller('inventory_detail_controller', {
       $scope: inventory_detail_controller_scope,
       $stateParams: {
@@ -165,6 +169,7 @@ describe('controller: inventory_detail_controller', function () {
       },
       inventory_payload: fake_payload,
       columns: fake_all_columns,
+      derived_columns_payload: fake_derived_columns_payload,
       profiles: [],
       current_profile: undefined,
       labels_payload: {
