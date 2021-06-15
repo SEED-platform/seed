@@ -34,6 +34,7 @@ class Meter(models.Model):
     PROPANE = 21
     WOOD = 22
     COST = 23
+    ELECTRICITY_UNKNOWN = 24
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
@@ -60,6 +61,7 @@ class Meter(models.Model):
         (PROPANE, 'Propane'),
         (WOOD, 'Wood'),
         (COST, 'Cost'),
+        (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
     )
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
@@ -67,11 +69,13 @@ class Meter(models.Model):
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2
     BUILDINGSYNC = 3
+    PORTFOLIO_MANAGER_DATA_REQUEST = 4
 
     SOURCES = (
         (PORTFOLIO_MANAGER, 'Portfolio Manager'),
         (GREENBUTTON, 'GreenButton'),
         (BUILDINGSYNC, 'BuildingSync'),
+        (PORTFOLIO_MANAGER_DATA_REQUEST, 'Portfolio Manager'),
     )
 
     is_virtual = models.BooleanField(default=False)
