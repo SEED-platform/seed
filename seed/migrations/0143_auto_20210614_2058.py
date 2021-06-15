@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0141_propertymeasure_useful_life'),
+        ('seed', '0142_columnlistprofile_derived_columns'),
     ]
 
     operations = [
