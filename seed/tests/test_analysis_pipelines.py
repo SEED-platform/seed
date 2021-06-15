@@ -46,7 +46,7 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
-from seed.analysis_pipelines.better import _build_better_input, BETTERPipeline
+from seed.analysis_pipelines.better import _build_better_input
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, \
     PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
@@ -89,7 +89,7 @@ class TestAnalysisPipeline(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.analysis = (
             FakeAnalysisFactory(organization=self.org, user=self.user)
-                .get_analysis()
+            .get_analysis()
         )
 
     def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
@@ -235,7 +235,7 @@ class TestAnalysisPipeline(TestCase):
         # Setup
         property_view = (
             FakePropertyViewFactory(organization=self.org, user=self.user)
-                .get_property_view()
+            .get_property_view()
         )
         bogus_property_view_id = -1
         property_view_ids = [bogus_property_view_id, property_view.id]
@@ -519,7 +519,7 @@ class TestBsyncrPipeline(TestCase):
 
         self.analysis_b = (
             FakeAnalysisFactory(organization=self.org, user=self.user)
-                .get_analysis(
+            .get_analysis(
                 name='Good Analysis',
                 service=Analysis.BSYNCR,
                 configuration={'model_type': 'Simple Linear Regression'}
@@ -909,7 +909,7 @@ class TestBETTERPipeline(TestCase):
 
         ts_elems = tree.xpath('//auc:TimeSeries', namespaces=NAMESPACES)
 
-        self.assertEqual(self.meter_elec.meter_readings.count()+self.meter_nat.meter_readings.count(), len(ts_elems))
+        self.assertEqual(self.meter_elec.meter_readings.count() + self.meter_nat.meter_readings.count(), len(ts_elems))
 
     def test_build_better_input_returns_errors_if_state_missing_info(self):
         # remove some required fields
