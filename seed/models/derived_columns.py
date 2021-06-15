@@ -12,6 +12,8 @@ from django.core.exceptions import ValidationError
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
 
+from quantityfield import ureg
+
 from seed.landing.models import Organization
 from seed.models.columns import Column
 from seed.models.properties import PropertyState
@@ -29,6 +31,9 @@ def _cast_params_to_floats(params):
         # handle booleans as special case b/c float(True) == 1.0 which we don't want
         if isinstance(value, bool):
             continue
+
+        if isinstance(value, ureg.Quantity):
+            value = value.magnitude
 
         try:
             tmp_params[key] = float(value)
