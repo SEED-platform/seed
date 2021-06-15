@@ -132,6 +132,8 @@
   "state": "Oregon",
   "postal_code": 80401,
   "year_built": 1975,
+  "latitude": 45.4441146,
+  "longitude": -122.383320,
   "site_eui": 82.3,
   "gross_floor_area": 296432,
   "owner": "Econohomes",
