@@ -44,9 +44,11 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
             name: $scope.newName,
             profile_location: $scope.profile_location,
             inventory_type: $scope.inventory_type,
-            columns: $scope.data
+            columns: $scope.data.columns,
+            derived_columns: $scope.data.derived_columns
           }).then(function (result) {
             result.columns = _.sortBy(result.columns, ['order', 'column_name']);
+            result.derived_columns = _.sortBy(result.derived_columns, ['column_name']);
             $uibModalInstance.close(result);
           });
         }
