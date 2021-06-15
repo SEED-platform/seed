@@ -915,7 +915,7 @@ class TestBETTERPipeline(TestCase):
         # remove some required fields
         property_state = self.analysis_property_view.property_state
         property_state.property_name = None
-        property_state.property_type = None
+        property_state.city = None
         property_state.save()
 
         # Act
@@ -923,6 +923,6 @@ class TestBETTERPipeline(TestCase):
 
         # Assert
         self.assertIsNone(doc)
-        self.assertEqual(2, len(errors))
+        self.assertEqual(3, len(errors))
         self.assertTrue('Linked PropertyState is missing a name' in errors)
-        self.assertTrue('Linked PropertyState is missing a property type' in errors)
+        self.assertTrue('Linked PropertyState is missing a city' in errors)
