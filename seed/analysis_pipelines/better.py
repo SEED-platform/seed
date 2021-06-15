@@ -483,7 +483,7 @@ def _better_building_service_request(bsync_xml):
             data = response.json()
             building_id = data['id']
         else:
-            raise
+            raise Exception(f'Received non 2xx status from BETTER: {response.status_code}: {response.content}')
     except Exception as e:
         message = 'BETTER service could not create building with the following message: {e}'.format(e=e)
         raise AnalysisPipelineException(message)
