@@ -175,7 +175,7 @@ report_memory()
 
 # Export dataset
 print('\n|---Export Dataset---|\n')
-export_data(header, main_url, organization_id, cycle_id, log)
+export_data(header, main_url, organization_id, log)
 report_memory()
 
 # Delete dataset

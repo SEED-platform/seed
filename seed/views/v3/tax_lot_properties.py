@@ -61,7 +61,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle_id", True, "Cycle ID"),
             AutoSchemaHelper.query_string_field(
                 "inventory_type",
                 False,
@@ -88,11 +87,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats.
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
-
         org_id = self.get_organization(request)
         profile_id = None
         column_profile = None
@@ -115,19 +109,19 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         select_related = ['state', 'cycle']
         prefetch_related = ['labels']
         ids = request.data.get('ids', [])
-        filter_str = {'cycle': cycle_pk}
+        filter_str = {}
         if ids:
             filter_str['id__in'] = ids
         if hasattr(view_klass, 'property'):
             select_related.append('property')
-            filter_str = {'property__organization_id': org_id}
+            filter_str['property__organization_id'] = org_id
             # always export the labels and notes
             column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
-            filter_str = {'taxlot__organization_id': org_id}
+            filter_str['taxlot__organization_id'] = org_id
             # always export the labels and notes
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
