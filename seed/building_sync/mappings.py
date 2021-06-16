@@ -207,18 +207,106 @@ def to_energy_type(energy_type):
     """converts an energy type from BuildingSync into one allowed by SEED
 
     :param energy_type: string, building sync energy type
-    :return: string
+    :return: int
     """
     # avoid circular dependency
     from seed.models import Meter
 
-    energy_name = "Electric - Grid" if energy_type == 'Electricity' else energy_type
-    energy_name = energy_name.lower()
+    # valid energy type values from the schema (<xs:simpleType name="FuelTypes">) and their maps
+    # non-trivial or non-obvious mappings currently map to "Other:" and are flagged with a comment
+    # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
+    energy_name = {
+        'Electricity': 'Electric - Grid',
+        'Electricity-Exported': 'Other:',                           # other?
+        'Electricity-Onsite generated': 'Other:',                   # other?
+        'Natural gas': 'Natural Gas',
+        'Fuel oil': 'Other:',                                       # other?
+        'Fuel oil no 1': 'Fuel oil (No. 1)',
+        'Fuel oil no 2': 'Fuel Oil (No. 2)',
+        'Fuel oil no 4': 'Fuel Oil (No. 4)',
+        'Fuel oil no 5': 'Other:',                                  # other?
+        'Fuel oil no 5 (light)': 'Other:',                          # other?
+        'Fuel oil no 5 (heavy)': 'Other:',                          # other?
+        'Fuel oil no 6': 'Fuel Oil (No. 5 and No. 6)',              # other?
+        'Fuel oil no 5 and no 6': 'Fuel Oil (No. 5 and No. 6)',
+        'District steam': 'District Steam',
+        'District hot water': 'District Hot Water',
+        'District chilled water': 'District Chilled Water - Other', # correct mapping?
+        'Propane': 'Propane',
+        'Liquid propane': 'Propane',                                # correct mapping?
+        'Kerosene': 'Kerosene',
+        'Diesel': 'Diesel',
+        'Coal': 'Other:',                                           # other?
+        'Coal anthracite': 'Coal (anthracite)',
+        'Coal bituminous': 'Coal (bituminous)',
+        'Coke': 'Coke',
+        'Wood': 'Wood',
+        'Wood pellets': 'Wood',                                     # correct mapping?
+        'Hydropower': 'Other:',                                     # other?
+        'Biofuel': 'Other:',                                        # other?
+        'Biofuel B5': 'Other:',                                     # other?
+        'Biofuel B10': 'Other:',                                    # other?
+        'Biofuel B20': 'Other:',                                    # other?
+        'Wind': 'Electric - Wind',                                  # correct mapping?
+        'Geothermal': 'Other:',                                     # other?
+        'Solar': 'Electric - Solar',                                # correct mapping?
+        'Biomass': 'Other:',                                        # other?
+        'Hydrothermal': 'Other:',                                   # other?
+        'Dry steam': 'Other:',                                      # other?
+        'Flash steam': 'Other:',                                    # other?
+        'Ethanol': 'Other:',                                        # other?
+        'Biodiesel': 'Other:',                                      # other?
+        'Waste heat': 'Other:',                                     # other?
+        'Dual fuel': 'Other:',                                      # other?
+        'Gasoline': 'Other:',                                       # other?
+        'Thermal-Exported': 'Other:',                               # other?
+        'Thermal-Onsite generated': 'Other:',                       # other?
+        'Other delivered-Exported': 'Other:',                       # other?
+        'Other delivered-Onsite generated': 'Other:',               # other?
+        'Other metered-Exported': 'Other:',                         # other?
+        'Other metered-Onsite generated': 'Other:',                 # other?
+        'Other': 'Other:',
+        'Unknown': 'Other:',                                        # other?
+    }.get(energy_type, energy_type).lower()
     for energy_pair in Meter.ENERGY_TYPES:
         if energy_pair[1].lower() == energy_name:
             return energy_pair[0]
 
-    return energy_type
+    # couldn't find this energy type... default to "Other:"
+    return Meter.ENERGY_TYPES.OTHER
+
+
+def to_energy_units(units):
+    """converts energy units from BuildingSync into one allowed by SEED
+
+    :param units: string, building sync units
+    :return: string
+    """
+
+    # valid energy unit values from the schema (<xs:element name="ResourceUnits">) and their maps
+    # non-trivial or non-obvious mappings currently map to "Unknown" and are flagged with a comment
+    # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
+    return {
+        'Cubic Meters': 'cm (cubic meters)',
+        'kcf': 'kcf (thousand cubic feet)',
+        'MCF': 'Mcf (million cubic feet)',
+        'Gallons': 'Gallons (US)',              # assuming "US" for conversion_factor but could be "UK"
+        'Wh': 'Wh (Watt-hours)',
+        'kWh': 'kWh (thousand Watt-hours)',
+        'MWh': 'MWh (million Watt-hours)',
+        'Btu': 'Btu',
+        'kBtu': 'kBtu (thousand Btu)',
+        'MMBtu': 'MBtu/MMBtu (million Btu)',
+        'therms': 'therms',
+        'lbs': 'Lbs. (pounds)',
+        'Klbs': 'kLbs. (thousand pounds)',
+        'Mlbs': 'MLbs. (million pounds)',
+        'Mass ton': 'Tons',                     # assuming "Tons" over "Tonnes (metric)"
+        'Ton-hour': 'Unknown',                  # no relevant conversion
+        'Other': 'Unknown',
+        'Unknown': 'Unknown',
+        'None': 'None',
+    }.get(units, "Unknown")
 
 
 def to_float(value):
@@ -717,7 +805,8 @@ BASE_MAPPING_V2_0 = {
                     'units': {
                         'xpath': './auc:ResourceUnits',
                         'type': 'value',
-                        'value': 'text'
+                        'value': 'text',
+                        'formatter': to_energy_units
                     }
                 }
             },
