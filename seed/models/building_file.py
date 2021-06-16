@@ -57,9 +57,9 @@ class BuildingFile(models.Model):
     property_state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='building_files', null=True)
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
-    filename = models.CharField(blank=True, max_length=255)   
+    filename = models.CharField(blank=True, max_length=255)
 
-    _cache_kbtu_thermal_conversion_factors = None     
+    _cache_kbtu_thermal_conversion_factors = None
 
     @classmethod
     def str_to_file_type(cls, file_type):

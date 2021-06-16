@@ -231,7 +231,7 @@ def to_energy_type(energy_type):
         'Fuel oil no 5 and no 6': 'Fuel Oil (No. 5 and No. 6)',
         'District steam': 'District Steam',
         'District hot water': 'District Hot Water',
-        'District chilled water': 'District Chilled Water - Other', # correct mapping?
+        'District chilled water': 'District Chilled Water - Other',  # correct mapping?
         'Propane': 'Propane',
         'Liquid propane': 'Propane',                                # correct mapping?
         'Kerosene': 'Kerosene',
