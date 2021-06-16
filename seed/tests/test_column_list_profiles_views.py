@@ -48,7 +48,8 @@ class ColumnListProfilesView(DeleteModelsTestCase):
                  "table_name": self.column_2.table_name},
                 {"id": self.column_3.id, "pinned": True, "order": 3, "column_name": self.column_3.column_name,
                  "table_name": self.column_3.table_name},
-            ]
+            ],
+            "derived_columns": [],
         }
         self.client.login(**user_details)
 
@@ -130,7 +131,8 @@ class ColumnListProfilesView(DeleteModelsTestCase):
             "name": "New Name",
             "inventory_type": "Tax Lot",
             "profile_location": "List View Profile",
-            "columns": []
+            "columns": [],
+            "derived_columns": [],
         }
         url = reverse('api:v3:column_list_profiles-detail',
                       args=[json.loads(cls.content)['data']['id']]) + '?organization_id=' + str(

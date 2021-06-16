@@ -10,13 +10,17 @@ from django.http import JsonResponse
 import django.core.exceptions
 
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema, no_body
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import DerivedColumn
+from seed.models import DerivedColumn, TaxLotView, PropertyView
 from seed.serializers.derived_columns import DerivedColumnSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import swagger_auto_schema_org_query_param, AutoSchemaHelper
 
 
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
@@ -171,4 +175,76 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({
             'status': 'success',
             'message': 'Successfully deleted derived column',
+        })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                name='cycle_id',
+                required=True,
+                description='Cycle to evaluate'
+            ),
+            openapi.Parameter(
+                'inventory_ids',
+                openapi.IN_QUERY,
+                description='List of inventory IDs (i.e. Property or TaxLot)',
+                required=True,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_INTEGER
+                )
+            )
+        ],
+        request_body=no_body
+    )
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def evaluate(self, request, pk):
+        org = self.get_organization(request)
+
+        cycle_id, inventory_ids = None, None
+        try:
+            cycle_id = request.query_params['cycle_id']
+            inventory_ids = [int(x) for x in request.query_params['inventory_ids'].split(',')]
+        except (KeyError, ValueError):
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Bad request',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        derived_column = None
+        try:
+            derived_column = DerivedColumn.objects.get(id=pk, organization=org)
+        except DerivedColumn.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Derived column with id {pk} does not exist'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        inventory_map = {
+            DerivedColumn.PROPERTY_TYPE: ('property', PropertyView),
+            DerivedColumn.TAXLOT_TYPE: ('taxlot', TaxLotView),
+        }
+        inventory_name, view_model = inventory_map[derived_column.inventory_type]
+
+        inventory_views = view_model.objects.filter(**{
+            f'{inventory_name}_id__in': inventory_ids,
+            f'{inventory_name}__organization': org,
+            'cycle_id': cycle_id,
+        }).prefetch_related('state', inventory_name)
+
+        results = []
+        for view in inventory_views:
+            results.append({
+                'id': getattr(view, inventory_name).id,
+                'value': derived_column.evaluate(view.state)
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'results': results
         })

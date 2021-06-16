@@ -61,6 +61,11 @@ def clean_fieldnames(fieldnames):
     return new_fieldnames, num_generated_headers > 0
 
 
+class SheetDoesNotExist(Exception):
+    """Exception when parsing an Excel workbook and the specified sheet does not exist"""
+    pass
+
+
 class GreenButtonParser(object):
     """
     This class accepts GreenButton data in XML format.
@@ -505,6 +510,8 @@ class MCMParser(object):
         except XLRDError as e:
             if 'Unsupported format' in str(e):
                 return CSVParser(import_file)
+            elif 'No sheet named' in str(e):
+                raise SheetDoesNotExist(str(e))
             else:
                 raise Exception('Cannot parse file')
 

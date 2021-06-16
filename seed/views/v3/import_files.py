@@ -21,7 +21,7 @@ from seed.data_importer.tasks import \
     validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mcm import mapper, reader
+from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
@@ -904,9 +904,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.GreenButtonParser(import_file.local_file)
-        raw_meter_data = list(parser.data)
-
         try:
             property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
@@ -914,10 +911,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {'status': 'error', 'message': 'Could not find property with pk=' + str(
                     view_id)}, status=status.HTTP_400_BAD_REQUEST)
 
-        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+        meters_parser = MetersParser.factory(
+            import_file.local_file,
+            org_id,
+            source_type=Meter.GREENBUTTON,
+            property_id=property_id
+        )
 
         result = {}
-
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
 
@@ -948,13 +949,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
-        raw_meter_data = list(parser.data)
-
-        meters_parser = MetersParser(org_id, raw_meter_data)
+        meters_parser = MetersParser.factory(import_file.local_file, org_id)
 
         result = {}
-
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids
