@@ -279,6 +279,7 @@ class BuildingFile(models.Model):
             scenario.save()
 
             # meters
+            energy_types = dict(Meter.ENERGY_TYPES)
             for m in s.get('meters', []):
                 # print("BUILDING FILE METER: {}".format(m))
                 # check by scenario_id and source_id
@@ -294,7 +295,13 @@ class BuildingFile(models.Model):
                 meter.save()
 
                 # meterreadings
-                meter_type = dict(Meter.ENERGY_TYPES)[meter.type]
+
+                if meter.type in energy_types:
+                    meter_type = energy_types[meter.type]
+                else:
+                    meter_type = None
+                print("meter_type: {}".format(meter_type))
+                print("meter.type: {}".format(meter.type))
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
                 readings = {
                     MeterReading(
