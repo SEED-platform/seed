@@ -166,6 +166,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Electric - Wind']['kWh (thousand Watt-hours)'] = 3.41
         factors['Electric - Wind']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Wind']['MWh (million Watt-hours)'] = 3412.00
+        factors['Electric - Unknown']['GJ'] = 947.82
+        factors['Electric - Unknown']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric - Unknown']['kWh (thousand Watt-hours)'] = 3.41
+        factors['Electric - Unknown']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Electric - Unknown']['MWh (million Watt-hours)'] = 3412.00
         factors['Fuel Oil (No. 1)']['Gallons (UK)'] = 166.93
         factors['Fuel Oil (No. 1)']['Gallons (US)'] = 139.00
         factors['Fuel Oil (No. 1)']['GJ'] = 947.82
@@ -320,6 +325,11 @@ def kbtu_thermal_conversion_factors(country):
         factors['Electric - Wind']['kWh (thousand Watt-hours)'] = 3.41
         factors['Electric - Wind']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Wind']['MWh (million Watt-hours)'] = 3412.00
+        factors['Electric - Unknown']['GJ'] = 947.82
+        factors['Electric - Unknown']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric - Unknown']['kWh (thousand Watt-hours)'] = 3.41
+        factors['Electric - Unknown']['MBtu/MMBtu (million Btu)'] = 1000.00
+        factors['Electric - Unknown']['MWh (million Watt-hours)'] = 3412.00
         factors['Fuel Oil (No. 1)']['Gallons (UK)'] = 167.18
         factors['Fuel Oil (No. 1)']['Gallons (US)'] = 139.21
         factors['Fuel Oil (No. 1)']['GJ'] = 947.82

@@ -10,16 +10,19 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$uibModal',
     '$sce',
     '$stateParams',
+    '$q',
     'inventory_service',
     'label_service',
     'data_quality_service',
     'geocode_service',
     'user_service',
+    'derived_columns_service',
     'cycles',
     'profiles',
     'current_profile',
     'labels',
     'all_columns',
+    'derived_columns_payload',
     'urls',
     'spinner_utility',
     'naturalSort',
@@ -35,16 +38,19 @@ angular.module('BE.seed.controller.inventory_list', [])
       $uibModal,
       $sce,
       $stateParams,
+      $q,
       inventory_service,
       label_service,
       data_quality_service,
       geocode_service,
       user_service,
+      derived_columns_service,
       cycles,
       profiles,
       current_profile,
       labels,
       all_columns,
+      derived_columns_payload,
       urls,
       spinner_utility,
       naturalSort,
@@ -84,6 +90,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       if ($scope.currentProfile) {
         $scope.columns = [];
+        // add columns
         _.forEach($scope.currentProfile.columns, function (col) {
           var foundCol = _.find(all_columns, {id: col.id});
           if (foundCol) {
@@ -91,6 +98,15 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.columns.push(foundCol);
           }
         });
+
+        // add derived columns
+        _.forEach($scope.currentProfile.derived_columns, function (col) {
+          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id})
+          if (foundCol) {
+            foundCol.is_derived_column = true
+            $scope.columns.push(foundCol)
+          }
+        })
       } else {
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
@@ -200,7 +216,12 @@ angular.module('BE.seed.controller.inventory_list', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: currentColumns,
+            data: function () {
+              return {
+                columns: currentColumns(),
+                derived_columns: [],
+              }
+            },
             profile_location: _.constant('List View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
@@ -721,6 +742,50 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      // evaluate all derived columns and add the results to the table
+      var evaluateDerivedColumns = function () {
+        const batch_size = 1000;
+        const batched_inventory_ids = [];
+        let batch_index = 0;
+        while (batch_index < $scope.data.length) {
+          batched_inventory_ids.push(
+            $scope.data.slice(batch_index, batch_index + batch_size).map(d => d.id)
+          );
+          batch_index += batch_size;
+        }
+
+        const all_evaluation_results = []
+        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column)
+        for (const col of visible_derived_columns) {
+          all_evaluation_results.push(...batched_inventory_ids.map(ids => {
+            return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
+              .then(res => {
+                return {derived_column_id: col.id, results: res.results}
+              })
+          }))
+        }
+
+        $q.all(all_evaluation_results).then(results => {
+          const aggregated_results = {}
+          results.forEach(result => {
+            if (result.derived_column_id in aggregated_results) {
+              aggregated_results[result.derived_column_id].push(...result.results)
+            } else {
+              aggregated_results[result.derived_column_id] = result.results
+            }
+          })
+
+          // finally, update the data to include the calculated values
+          $scope.data.forEach(row => {
+            Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
+              const derived_column = visible_derived_columns.find(col => col.id == derived_column_id)
+              const result = results.find(res => res.id == row.id) || {}
+              row[derived_column.name] = result.value
+            })
+          })
+        })
+      }
+
       var refresh_objects = function () {
         var page = 1;
         var chunk = 5000;
@@ -737,6 +802,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           processData(data);
           $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
           modalInstance.close();
+          evaluateDerivedColumns();
         });
       };
 
@@ -949,7 +1015,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible;
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible && col.id;
         });
 
         // Ensure pinned ordering first
