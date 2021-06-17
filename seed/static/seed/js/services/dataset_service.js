@@ -87,5 +87,25 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
       });
     };
 
+    dataset_service.check_meters_tab_exists = function (file_id) {
+      debugger;
+      return $http.get('/api/v3/import_files/' + file_id + '/check_meters_tab_exists', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
+        return response.data
+      });
+    }
+
+    dataset_service.reuse_inventory_file_for_meters = function (file_id) {
+      return $http.post('/api/v3/import_files/reuse_inventory_file_for_meters/', {
+        import_file_id: file_id,
+        organization_id: user_service.get_organization().id
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     return dataset_service;
   }]);
