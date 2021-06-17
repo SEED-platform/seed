@@ -368,17 +368,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
-        $scope.accept_meters = function (file_id, cycle_id) {
-          $scope.uploader.in_progress = true;
-          save_raw_assessed_data(file_id, cycle_id, true);
-        };
-
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
         _.defer(function () {
           $scope.$apply();
         });
+      };
+
+      $scope.accept_meters = function (file_id, cycle_id) {
+        file_id = file_id || $scope.dataset.import_file_id;
+        cycle_id = cycle_id || $scope.selectedCycle.id;
+        $scope.uploader.in_progress = true;
+        save_raw_assessed_data(file_id, cycle_id, true);
       };
 
       /**
