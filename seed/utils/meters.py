@@ -225,10 +225,9 @@ class PropertyMeterReadingsExporter():
             source_id = meter.source_id
 
         field_name = '{} - {} - {}'.format(type_text, source, source_id)
-
         if meter.type == Meter.COST:
             display_unit = "{} Dollars".format(self._org_country)
-            conversion_factor = 1
+            conversion_factor = 1.00
         else:
             display_unit = self.org_meter_display_settings[type_text]
             conversion_factor = self.factors[type_text][display_unit]
