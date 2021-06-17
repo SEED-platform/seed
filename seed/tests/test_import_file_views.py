@@ -572,6 +572,35 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         body = json.loads(response.content)
         self.assertEqual(body.get('data'), 'false')
 
+    def test_post_reuse_inventory_file_for_meters_creates_new_import_file_based_on_the_same_file_and_returns_the_new_id(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            mapping_done=True,
+            source_type="Assessed Raw",
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-reuse-inventory-file-for-meters') + '?organization_id=' + str(self.org.id)
+        response = self.client.post(
+            url,
+            data=json.dumps({"import_file_id": import_file.id}),
+            content_type='application/json'
+        )
+
+        # check that the new and old file reference the same 'file'
+        newest_import_file = ImportFile.objects.order_by('-id').first()
+        body = json.loads(response.content)
+
+        self.assertEqual(body.get('import_file_id'), newest_import_file.id)
+        self.assertEqual(import_file.file, newest_import_file.file)
+
 
 class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""

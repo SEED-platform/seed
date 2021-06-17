@@ -192,6 +192,48 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'success',
                 'data': 'false'
             })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory({
+            'import_file_id': 'integer'
+        })
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['POST'])
+    def reuse_inventory_file_for_meters(self, request):
+        org_id = self.get_organization(request)
+        try:
+            import_file_id = request.data.get('import_file_id', 0)
+            original_file = ImportFile.objects.get(
+                id=import_file_id,
+                import_record__super_organization_id=org_id,
+                mapping_done=True,
+                source_type="Assessed Raw"
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find previously imported inventory file with pk=' + str(import_file_id)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        new_file = ImportFile.objects.create(
+            import_record=original_file.import_record,
+            file=original_file.file,
+            uploaded_filename=original_file.uploaded_filename,
+            source_type="PM Meter Usage",
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'import_file_id': new_file.id
+        })
+
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
     @ajax_request_class
