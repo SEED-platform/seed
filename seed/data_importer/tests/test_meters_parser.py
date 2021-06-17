@@ -33,7 +33,6 @@ from seed.utils.organizations import create_organization
 
 class ThermalConversionTests(TestCase):
     def test_US_and_CAN_have_the_same_type_unit_combinations(self):
-        self.maxDiff = None
         """
         This was true when Meters features were first developed. Many aspects of
         these features depend on this assumption, so this test was written.
