@@ -492,6 +492,86 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # support this use case.
         self.assertNotEqual(converted, expected)
 
+    def test_get_check_for_meters_tab_returns_true_when_meter_entries_tab_present(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return true
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'true')
+
+    def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-data-request-response.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return true
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'true')
+
+    def test_get_check_for_meters_tab_returns_false(self):
+        # create import file record without either a Meter Entries or a Monthly Usage tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "portfolio-manager-sample.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return false
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'false')
+
+    def test_get_check_for_meters_tab_returns_false_when_not_xlsx(self):
+        # create import file record that's not an xlsx
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "san-jose-test-taxlots.csv"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return false
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'false')
+
 
 class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
     """Tests for dealing with SEED related tasks for mapping data."""
