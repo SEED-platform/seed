@@ -217,7 +217,7 @@ def to_energy_type(energy_type):
     # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
     energy_name = {
         'Electricity': 'Electric - Grid',
-        'Electricity-Exported': 'Other:',                           # other?
+        'Electricity-Exported': 'Electric - Grid',
         'Electricity-Onsite generated': 'Other:',                   # other?
         'Natural gas': 'Natural Gas',
         'Fuel oil': 'Other:',                                       # other?
@@ -233,7 +233,7 @@ def to_energy_type(energy_type):
         'District hot water': 'District Hot Water',
         'District chilled water': 'District Chilled Water - Other',  # correct mapping?
         'Propane': 'Propane',
-        'Liquid propane': 'Propane',                                # correct mapping?
+        'Liquid propane': 'Propane',
         'Kerosene': 'Kerosene',
         'Diesel': 'Diesel',
         'Coal': 'Other:',                                           # other?
@@ -241,15 +241,15 @@ def to_energy_type(energy_type):
         'Coal bituminous': 'Coal (bituminous)',
         'Coke': 'Coke',
         'Wood': 'Wood',
-        'Wood pellets': 'Wood',                                     # correct mapping?
+        'Wood pellets': 'Wood',
         'Hydropower': 'Other:',                                     # other?
         'Biofuel': 'Other:',                                        # other?
         'Biofuel B5': 'Other:',                                     # other?
         'Biofuel B10': 'Other:',                                    # other?
         'Biofuel B20': 'Other:',                                    # other?
-        'Wind': 'Electric - Wind',                                  # correct mapping?
+        'Wind': 'Electric - Wind',
         'Geothermal': 'Other:',                                     # other?
-        'Solar': 'Electric - Solar',                                # correct mapping?
+        'Solar': 'Electric - Solar',
         'Biomass': 'Other:',                                        # other?
         'Hydrothermal': 'Other:',                                   # other?
         'Dry steam': 'Other:',                                      # other?
@@ -290,7 +290,7 @@ def to_energy_units(units):
         'Cubic Meters': 'cm (cubic meters)',
         'kcf': 'kcf (thousand cubic feet)',
         'MCF': 'Mcf (million cubic feet)',
-        'Gallons': 'Gallons (US)',              # assuming "US" for conversion_factor but could be "UK"
+        'Gallons': 'Gallons (US)',
         'Wh': 'Wh (Watt-hours)',
         'kWh': 'kWh (thousand Watt-hours)',
         'MWh': 'MWh (million Watt-hours)',

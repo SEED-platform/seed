@@ -294,8 +294,7 @@ class BuildingFile(models.Model):
                 meter.save()
 
                 # meterreadings
-                # ENERGY_TYPES index starts at 1, tuple indexes start at 0
-                meter_type = Meter.ENERGY_TYPES[meter.type - 1][1]
+                meter_type = dict(Meter.ENERGY_TYPES)[meter.type]
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
                 readings = {
                     MeterReading(
@@ -304,8 +303,7 @@ class BuildingFile(models.Model):
                         reading=mr.get('reading'),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
-                        # default to a conversion_factor of 0 if the units specified are not found
-                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 0.00)
+                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
                     )
                     for mr
                     in m.get('readings', [])

@@ -101,13 +101,13 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.assertEqual(meter_reading_10.end_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
         self.assertAlmostEqual(meter_reading_10.reading, 1790 * 3.41 / 1000)
         self.assertEqual(meter_reading_10.source_unit, 'Wh (Watt-hours)')
-        self.assertEqual(meter_reading_10.conversion_factor, .00341)
+        self.assertEqual(meter_reading_10.conversion_factor, 0.00341)
 
         self.assertEqual(meter_reading_11.start_time, make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=self.tz_obj))
         self.assertEqual(meter_reading_11.end_time, make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=self.tz_obj))
         self.assertAlmostEqual(meter_reading_11.reading, 1791 * 3.41 / 1000)
         self.assertEqual(meter_reading_11.source_unit, 'Wh (Watt-hours)')
-        self.assertEqual(meter_reading_11.conversion_factor, .00341)
+        self.assertEqual(meter_reading_11.conversion_factor, 0.00341)
 
         # matching_results_data gets cleared out since the field wasn't meant for this
         refreshed_import_file = ImportFile.objects.get(pk=self.import_file.id)
@@ -203,7 +203,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
         self.assertEqual(meter_reading.end_time, end_time)
         self.assertAlmostEqual(meter_reading.reading, 1790 * 3.41 / 1000)
         self.assertEqual(meter_reading.source_unit, 'Wh (Watt-hours)')
-        self.assertEqual(meter_reading.conversion_factor, .00341)
+        self.assertEqual(meter_reading.conversion_factor, 0.00341)
 
     def test_the_response_contains_expected_and_actual_reading_counts(self):
         url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])
