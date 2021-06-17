@@ -87,7 +87,7 @@ def kbtu_thermal_conversion_factors(country):
         factors['Coal (anthracite)']['Tonnes (metric)'] = 27658.36
         factors['Coal (anthracite)']['Tons'] = 25090.00
         factors['Coal (bituminous)']['GJ'] = 947.82
-        factors['Coal (bituminous']['Btu'] = .001
+        factors['Coal (bituminous)']['Btu'] = .001
         factors['Coal (bituminous)']['kBtu (thousand Btu)'] = 1.00
         factors['Coal (bituminous)']['kLbs. (thousand pounds)'] = 12465.00
         factors['Coal (bituminous)']['Lbs. (pounds)'] = 12.46
