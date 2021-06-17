@@ -289,13 +289,14 @@ class BuildingFile(models.Model):
                 )
                 meter.source = m.get('source')
                 meter.type = m.get('type')
+                if meter.type is None:
+                    meter.type = Meter.OTHER
                 meter.is_virtual = m.get('is_virtual')
                 if meter.is_virtual is None:
                     meter.is_virtual = False
                 meter.save()
 
                 # meterreadings
-
                 if meter.type in energy_types:
                     meter_type = energy_types[meter.type]
                 else:
@@ -310,10 +311,9 @@ class BuildingFile(models.Model):
                         meter_id=meter.id,
                         conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
                     )
-                    for mr
-                    in m.get('readings', [])
+                    for mr in m.get('readings', [])
+                    if mr.get('start_time') is not None and mr.get('end_time') is not None
                 }
-
                 MeterReading.objects.bulk_create(readings)
 
         # merge or create the property state's view
