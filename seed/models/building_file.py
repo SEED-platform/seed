@@ -300,8 +300,6 @@ class BuildingFile(models.Model):
                     meter_type = energy_types[meter.type]
                 else:
                     meter_type = None
-                print("meter_type: {}".format(meter_type))
-                print("meter.type: {}".format(meter.type))
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
                 readings = {
                     MeterReading(
