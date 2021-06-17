@@ -302,7 +302,7 @@ def to_energy_units(units):
         'Klbs': 'kLbs. (thousand pounds)',
         'Mlbs': 'MLbs. (million pounds)',
         'Mass ton': 'Tons',                     # assuming "Tons" over "Tonnes (metric)"
-        'Ton-hour': 'Unknown',                  # no relevant conversion
+        'Ton-hour': 'ton hours',
         'Other': 'Unknown',
         'Unknown': 'Unknown',
         'None': 'None',

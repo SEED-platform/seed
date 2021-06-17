@@ -167,7 +167,9 @@ def kbtu_thermal_conversion_factors(country):
         factors['Electric - Wind']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Wind']['MWh (million Watt-hours)'] = 3412.00
         factors['Electric - Unknown']['GJ'] = 947.82
+        factors['Electric - Unknown']['Btu'] = .001
         factors['Electric - Unknown']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric - Unknown']['Wh (Watt-hours)'] = .00341
         factors['Electric - Unknown']['kWh (thousand Watt-hours)'] = 3.41
         factors['Electric - Unknown']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Unknown']['MWh (million Watt-hours)'] = 3412.00
@@ -326,7 +328,9 @@ def kbtu_thermal_conversion_factors(country):
         factors['Electric - Wind']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Wind']['MWh (million Watt-hours)'] = 3412.00
         factors['Electric - Unknown']['GJ'] = 947.82
+        factors['Electric - Unknown']['Btu'] = .001
         factors['Electric - Unknown']['kBtu (thousand Btu)'] = 1.00
+        factors['Electric - Unknown']['Wh (Watt-hours)'] = .00341
         factors['Electric - Unknown']['kWh (thousand Watt-hours)'] = 3.41
         factors['Electric - Unknown']['MBtu/MMBtu (million Btu)'] = 1000.00
         factors['Electric - Unknown']['MWh (million Watt-hours)'] = 3412.00
