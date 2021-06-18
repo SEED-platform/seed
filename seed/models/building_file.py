@@ -305,7 +305,7 @@ class BuildingFile(models.Model):
                     MeterReading(
                         start_time=mr.get('start_time'),
                         end_time=mr.get('end_time'),
-                        reading=mr.get('reading'),
+                        reading=float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
                         conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
