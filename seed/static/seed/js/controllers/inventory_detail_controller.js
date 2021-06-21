@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     '$anchorScroll',
     '$location',
     '$window',
+    '$q',
     'Notification',
     'urls',
     'spinner_utility',
@@ -21,8 +22,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
+    'derived_columns_service',
     'inventory_payload',
     'columns',
+    'derived_columns_payload',
     'profiles',
     'current_profile',
     'labels_payload',
@@ -38,6 +41,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $anchorScroll,
       $location,
       $window,
+      $q,
       Notification,
       urls,
       spinner_utility,
@@ -45,8 +49,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       inventory_service,
       matching_service,
       pairing_service,
+      derived_columns_service,
       inventory_payload,
       columns,
+      derived_columns_payload,
       profiles,
       current_profile,
       labels_payload,
@@ -59,12 +65,71 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
+      $scope.inventory = {
+        view_id: $stateParams.view_id,
+        related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
+      };
+      $scope.cycle = inventory_payload.cycle;
+      $scope.labels = _.filter(labels_payload, function (label) {
+        return !_.isEmpty(label.is_applied);
+      });
+
+      /** See service for structure of returned payload */
+      $scope.historical_items = inventory_payload.history;
+      $scope.item_state = inventory_payload.state;
+
+      // stores derived column values -- updated later once we fetch the data
+      $scope.item_derived_values = {};
+
+      // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
+      if ($scope.inventory_type === 'properties') {
+        $scope.item_parent = inventory_payload.property;
+      } else {
+        $scope.item_parent = inventory_payload.taxlot;
+      }
+
+      // Detail Column List Profile
+      $scope.profiles = profiles;
+      $scope.currentProfile = current_profile;
+
+      // Flag columns whose values have changed between imports and edits.
+      var historical_states = _.map($scope.historical_items, 'state');
+
+      var historical_changes_check = function (column) {
+        var uniq_column_values;
+        var states = historical_states.concat($scope.item_state);
+
+        if (column.is_extra_data) {
+          uniq_column_values = _.uniqBy(states, function (state) {
+            // Normalize missing column_name keys returning undefined to return null.
+            return state.extra_data[column.column_name] || null;
+          });
+        } else {
+          uniq_column_values = _.uniqBy(states, column.column_name);
+        }
+
+        column.changed = uniq_column_values.length > 1;
+        return column;
+      };
+
       if ($scope.currentProfile) {
         $scope.columns = [];
+        // add columns
         _.forEach($scope.currentProfile.columns, function (col) {
           var foundCol = _.find(columns, {id: col.id});
-          if (foundCol) $scope.columns.push(foundCol);
+          if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
         });
+
+        // add derived columns
+        _.forEach($scope.currentProfile.derived_columns, function (col) {
+          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id})
+          if (foundCol) {
+            foundCol.displayName = foundCol.name
+            foundCol.column_name = foundCol.name
+            foundCol.is_derived_column = true
+            $scope.columns.push(foundCol)
+          }
+        })
       } else {
         // No profiles exist
         $scope.columns = _.reject(columns, 'is_extra_data');
@@ -88,7 +153,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
           controller: 'settings_profile_modal_controller',
           resolve: {
             action: _.constant('new'),
-            data: profile_formatted_columns,
+            data: function () {
+              return {
+                columns: profile_formatted_columns(),
+                derived_columns: [],
+              }
+            },
             profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
@@ -163,61 +233,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
           'updated'
         ], name);
       };
-
-      $scope.inventory = {
-        view_id: $stateParams.view_id,
-        related: $scope.inventory_type === 'properties' ? inventory_payload.taxlots : inventory_payload.properties
-      };
-      $scope.cycle = inventory_payload.cycle;
-      $scope.labels = _.filter(labels_payload, function (label) {
-        return !_.isEmpty(label.is_applied);
-      });
-
-      /** See service for structure of returned payload */
-      $scope.historical_items = inventory_payload.history;
-      $scope.item_state = inventory_payload.state;
-
-      // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
-      if ($scope.inventory_type === 'properties') {
-        $scope.item_parent = inventory_payload.property;
-      } else {
-        $scope.item_parent = inventory_payload.taxlot;
-      }
-
-      // Detail Column List Profile
-      $scope.profiles = profiles;
-      $scope.currentProfile = current_profile;
-
-      // Flag columns whose values have changed between imports and edits.
-      var historical_states = _.map($scope.historical_items, 'state');
-
-      var historical_changes_check = function (column) {
-        var uniq_column_values;
-        var states = historical_states.concat($scope.item_state);
-
-        if (column.is_extra_data) {
-          uniq_column_values = _.uniqBy(states, function (state) {
-            // Normalize missing column_name keys returning undefined to return null.
-            return state.extra_data[column.column_name] || null;
-          });
-        } else {
-          uniq_column_values = _.uniqBy(states, column.column_name);
-        }
-
-        column.changed = uniq_column_values.length > 1;
-        return column;
-      };
-
-      if ($scope.currentProfile) {
-        $scope.columns = [];
-        _.forEach($scope.currentProfile.columns, function (col) {
-          var foundCol = _.find(columns, {id: col.id});
-          if (foundCol) $scope.columns.push(historical_changes_check(foundCol));
-        });
-      } else {
-        // No profiles exist
-        $scope.columns = _.reject(columns, 'is_extra_data');
-      }
 
       // The server provides of *all* extra_data keys (across current state and all historical state)
       // Let's remember this.
@@ -720,6 +735,26 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
       };
 
+      // evaluate all derived columns and store the results
+      var evaluate_derived_columns = function () {
+        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column)
+        const all_evaluation_results = visible_derived_columns.map(col => {
+          return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id])
+            .then(res => {
+              return {
+                derived_column_id: col.id,
+                value: res.results[0].value
+              }
+            })
+        })
+
+        $q.all(all_evaluation_results).then(results => {
+          results.forEach(result => {
+            $scope.item_derived_values[result.derived_column_id] = result.value
+          })
+        })
+      }
+
       /**
        *   init: sets default state of inventory detail page,
        *   sets the field arrays for each section, performs
@@ -733,6 +768,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
         } else if ($scope.inventory_type === 'taxlots') {
           $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
         }
+
+        evaluate_derived_columns();
       };
 
       init();

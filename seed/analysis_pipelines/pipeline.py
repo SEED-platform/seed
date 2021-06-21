@@ -265,9 +265,12 @@ class AnalysisPipeline(abc.ABC):
         """
         # import here to avoid circular dependencies
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
+        from seed.analysis_pipelines.better import BETTERPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
+        elif analysis.service == Analysis.BETTER:
+            return BETTERPipeline(analysis.id)
         else:
             raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 
