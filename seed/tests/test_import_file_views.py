@@ -300,7 +300,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         validated_type_units = [
             {
                 "parsed_type": "Electric - Grid",
-                "parsed_unit": "kWh (thousand Watt-hours)",
+                "parsed_unit": "Wh (Watt-hours)",
             },
         ]
 
