@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
+    'post_office',
 )
 
 SEED_CORE_APPS = (
@@ -115,6 +116,16 @@ SEED_CORE_APPS = (
     'seed.lib.superperms.orgs',
     'seed.docs'
 )
+
+# Added by Ashray Wadhwa (08/19/2020)
+POST_OFFICE = {
+    'BACKENDS': {
+        'default': 'smtp.EmailBackend',
+        'post_office_backend': 'django.core.mail.backends.console.EmailBackend',
+    }
+}
+
+
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
 # Internal apps can resolve this via South's depends_on.

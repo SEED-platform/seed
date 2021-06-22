@@ -372,6 +372,34 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      /**
+       Opens the postoffice modal for sending emails.
+       'property_state_id's/'taxlot_state_id's for selected rows are stored as part of the resolver
+      */
+      $scope.open_postoffice_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl:  urls.static_url + 'seed/partials/postoffice_modal.html',
+          controller: 'postoffice_modal_controller',
+          resolve: {
+            property_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_state_id');
+            },
+            taxlot_states: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'taxlot_state_id');
+            },
+            inventory_type: function () {
+              return $scope.inventory_type;
+            }
+          }
+        });
+      };
+
       $scope.open_merge_modal = function () {
         spinner_utility.show();
         var modalInstance = $uibModal.open({

@@ -1463,6 +1463,49 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
 
+    def test_postoffice(self):
+        # Create a template
+        response = self.client.post('/api/v3/postoffice/', {
+            'organization_id': self.org.pk,
+            'name': 'Email Template',
+            'subject': 'Test',
+            'content': 'This is a test email.'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        template = results['data']
+
+        # Get list of templates
+        response = self.client.get('/api/v3/postoffice/', {'organization_id': self.org.pk})
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(len(results['data']), 1)
+
+        # Update a template
+        response = self.client.put('/api/v3/postoffice/' + str(template['id']) + '/', {
+            'organization_id': self.org.pk,
+            'name': 'New Email Template'
+        }, content_type='application/json')
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(results['data']['name'], 'New Email Template')
+
+        # Send email
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        response = self.client.post('/api/v3/postoffice_email/', {
+            'organization_id': self.org.pk,
+            'from_email': 'dummy@email.com',
+            'template_id': template['id'],
+            'inventory_id': pv.id,
+            'inventory_type': 'properties'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+
     def test_get_property_columns(self):
         self.column_factory.get_column(
             'Property Extra Data Column',
