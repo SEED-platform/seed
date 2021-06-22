@@ -18,6 +18,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DerivedColumn,
     Property,
     PropertyState,
     PropertyView,
@@ -45,6 +46,7 @@ from seed.utils.organizations import create_organization
 class DeleteModelsTestCase(TestCase):
     def _delete_models(self):
         # Order matters here
+        DerivedColumn.objects.all().delete()
         Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
         DataQualityCheck.objects.all().delete()
