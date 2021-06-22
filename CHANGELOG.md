@@ -1,3 +1,71 @@
+# SEED Version 2.11.0
+
+Date Range: 3/31/2021 - 5/22/21
+
+Closed Issues and Features (Total: 62):
+- Fixed [#111]( https://github.com/SEED-platform/seed/issues/111 ), DataError: value too long for type character varying(255)
+- Fixed [#146]( https://github.com/SEED-platform/seed/issues/146 ), Remove S3 requirement
+- Fixed [#197]( https://github.com/SEED-platform/seed/issues/197 ), Implement generic XML import capability
+- Fixed [#653]( https://github.com/SEED-platform/seed/issues/653 ), Report the total number of records imported at the end of data upload
+- Fixed [#731]( https://github.com/SEED-platform/seed/issues/731 ), It is possible to create two datasets with the same name
+- Fixed [#851]( https://github.com/SEED-platform/seed/issues/851 ), Improve documentation about AWS configuration
+- Fixed [#881]( https://github.com/SEED-platform/seed/issues/881 ), Update wiki contributor guidelines
+- Fixed [#1338]( https://github.com/SEED-platform/seed/issues/1338 ), Add the option to identify multiple fields within the same file for the same matching field
+- Fixed [#1589]( https://github.com/SEED-platform/seed/issues/1589 ), Verify Permissions
+- Fixed [#1595]( https://github.com/SEED-platform/seed/issues/1595 ), Update deployment documentation
+- Feature [#1642]( https://github.com/SEED-platform/seed/issues/1642 ), Data Analysis: Ability to define new calculated fields based on existing data
+- Feature [#1643]( https://github.com/SEED-platform/seed/issues/1643 ), Add ability for users to display labels and allow which labels to see in the list view
+- Fixed [#1657]( https://github.com/SEED-platform/seed/issues/1657 ), Error Deleting Organization as Superuser
+- Feature [#1757]( https://github.com/SEED-platform/seed/issues/1757 ), Add ability to filter on Notes
+- Fixed [#2093]( https://github.com/SEED-platform/seed/issues/2093 ), List View Export from Actions menu contains history records, not just master
+- Feature [#2104]( https://github.com/SEED-platform/seed/issues/2104 ), Add settings for emails sent out when an Org adds a new member
+- Fixed [#2237]( https://github.com/SEED-platform/seed/issues/2237 ), Geocoding broken pipe error
+- Maintenance [#2379]( https://github.com/SEED-platform/seed/issues/2379 ), Refactor perms for several API v3 views
+- Fixed [#2410]( https://github.com/SEED-platform/seed/issues/2410 ), Merge and Link Matches -- didn't seem to merge records that should have merged
+- Maintenance [#2432]( https://github.com/SEED-platform/seed/issues/2432 ), Migrate seedv2 to helm and upgrade to latest approved version
+- Feature [#2507]( https://github.com/SEED-platform/seed/issues/2507 ), DQ Rules - sorts alphabetically by field as you are creating the rule, and then you can't find it
+- Improved [#2509]( https://github.com/SEED-platform/seed/issues/2509 ), Inventory List: Have a sort and/or filter for Notes icon
+- Feature [#2514]( https://github.com/SEED-platform/seed/issues/2514 ), Add ability to download the originally imported file
+- Maintenance [#2536]( https://github.com/SEED-platform/seed/issues/2536 ), Portfolio Manager import fails with TypeError
+- Feature [#2538]( https://github.com/SEED-platform/seed/issues/2538 ), Allow users to self register
+- Feature [#2539]( https://github.com/SEED-platform/seed/issues/2539 ), Each user should have their own organization
+- Improved [#2541]( https://github.com/SEED-platform/seed/issues/2541 ), Links on About page should open separate tab
+- Fixed [#2548]( https://github.com/SEED-platform/seed/issues/2548 ), 500 errors can be triggered on some endpoints
+- Feature [#2577]( https://github.com/SEED-platform/seed/issues/2577 ), Add notes count to appear in rows
+- Improved [#2592]( https://github.com/SEED-platform/seed/issues/2592 ), New User Improvements: Update Landing Page
+- Feature [#2594]( https://github.com/SEED-platform/seed/issues/2594 ), New User Improvements: Develop FAQ Page
+- Feature [#2595]( https://github.com/SEED-platform/seed/issues/2595 ), New User Improvements: Update Sample Data
+- Improved [#2596]( https://github.com/SEED-platform/seed/issues/2596 ), Add warning to swagger endpoints for *views and *states
+- Fixed [#2603]( https://github.com/SEED-platform/seed/issues/2603 ), Deleting a column can crash SEED due to the memory spiking
+- Maintenance [#2610]( https://github.com/SEED-platform/seed/issues/2610 ), Find and replace all occurrences of `Master` on the frontend
+- Fixed [#2626]( https://github.com/SEED-platform/seed/issues/2626 ), Authorize /media file requests
+- Improved [#2627]( https://github.com/SEED-platform/seed/issues/2627 ), Reimplement ToS - "By creating an account, signing in, and using the website, you're agreeing to the..."
+- Fixed [#2629]( https://github.com/SEED-platform/seed/issues/2629 ), Delete cycles does not work for non-default org
+- Fixed [#2637]( https://github.com/SEED-platform/seed/issues/2637 ), SES Signature v3 is deprecated
+- Fixed [#2650]( https://github.com/SEED-platform/seed/issues/2650 ), Defect template (added scope and console errors)
+- Maintenance [#2653]( https://github.com/SEED-platform/seed/issues/2653 ), Audit/Trim down open tickets.
+- Feature [#2657]( https://github.com/SEED-platform/seed/issues/2657 ), BETTER integration
+- Maintenance [#2662]( https://github.com/SEED-platform/seed/issues/2662 ), Integrate stale-bot
+- Maintenance [#2663]( https://github.com/SEED-platform/seed/issues/2663 ), questions for SEED users/platform developers
+- Maintenance [#2664]( https://github.com/SEED-platform/seed/issues/2664 ), reach out to SF, Berkeley, Open, Clearly, and GB.
+- Maintenance [#2666]( https://github.com/SEED-platform/seed/issues/2666 ), Fix bsync measures import
+- Fixed [#2671]( https://github.com/SEED-platform/seed/issues/2671 ), Bug Template
+- Improved [#2673]( https://github.com/SEED-platform/seed/issues/2673 ), Import data request meter data
+- Maintenance [#2677]( https://github.com/SEED-platform/seed/issues/2677 ), Multiple visual org member permissions issues
+- Fixed [#2680]( https://github.com/SEED-platform/seed/issues/2680 ), Update installed timescale extensions
+- Feature [#2681]( https://github.com/SEED-platform/seed/issues/2681 ), Auto Populate Data -- I need the info about the data AFTER I upload it
+- Maintenance [#2684]( https://github.com/SEED-platform/seed/issues/2684 ), Test new BuildingSync's unique ScenarioName unique
+- Improved [#2689]( https://github.com/SEED-platform/seed/issues/2689 ), BuildingSync: default auc:Recommended to True
+- Feature [#2690]( https://github.com/SEED-platform/seed/issues/2690 ), BuildingSync: parse auc:AnnualPeakElectricityReduction
+- Improved [#2691]( https://github.com/SEED-platform/seed/issues/2691 ), BuildingSync: parse units for meter data
+- Improved [#2692]( https://github.com/SEED-platform/seed/issues/2692 ), BuildingSync: parse additional auc:Measure fields
+- Improved [#2694]( https://github.com/SEED-platform/seed/issues/2694 ), BuildingSync: returns `None` for `is_virtual` when ScenarioType is not PackageOfMeasures
+- Improved [#2695]( https://github.com/SEED-platform/seed/issues/2695 ), BuildingSync: how to handle timeseries that isn't monthly meter data
+- Feature [#2709]( https://github.com/SEED-platform/seed/issues/2709 ), Derived Columns: allow users to create/edit/delete derived columns
+- Feature [#2710]( https://github.com/SEED-platform/seed/issues/2710 ), Derived Columns: users can view derived column results in inventory list view
+- Feature [#2711]( https://github.com/SEED-platform/seed/issues/2711 ), Derived Columns: users can create data quality checks based on derived columns
+- Feature [#2717]( https://github.com/SEED-platform/seed/issues/2717 ), Derived Columns: users can export derived column results
+
 # SEED Version 2.10.0
 
 Date Range: 12/28/20 - 3/31/2021
