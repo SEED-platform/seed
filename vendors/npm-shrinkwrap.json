@@ -2261,6 +2261,21 @@
       "resolved": "https://registry.npmjs.org/ng-tags-input/-/ng-tags-input-3.2.0.tgz",
       "integrity": "sha1-kSgt5XUTDIq3lHl/6/CXKw87uj4="
     },
+    "ng-wig": {
+      "version": "3.0.19",
+      "resolved": "https://registry.npmjs.org/ng-wig/-/ng-wig-3.0.19.tgz",
+      "integrity": "sha512-PNxyUpvafC/5XQsmwRfAeUc17TZYtiJLybFhxCjtMv21SzecQ5q0azmUrsnvssxR3fWyUNb6Z78rfjtHqxaS+A==",
+      "requires": {
+        "angular": "1.6.0"
+      },
+      "dependencies": {
+        "angular": {
+          "version": "1.6.0",
+          "resolved": "https://registry.npmjs.org/angular/-/angular-1.6.0.tgz",
+          "integrity": "sha1-FsXt69CjQgRr1Sgcyi3s8ExA33Y="
+        }
+      }
+    },
     "nomnom": {
       "version": "1.8.1",
       "resolved": "https://registry.npmjs.org/nomnom/-/nomnom-1.8.1.tgz",

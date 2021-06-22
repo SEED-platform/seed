@@ -32,6 +32,7 @@
     "moment": "~2.25.3",
     "ng-focus-if": "~1.0.7",
     "ng-tags-input": "~3.2.0",
+    "ng-wig": "~3.0.19",
     "openlayers-ext": "~3.1.5",
     "raven-js": "~3.27.2",
     "spin.js": "=2.3.2",
