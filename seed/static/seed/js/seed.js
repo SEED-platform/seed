@@ -1107,6 +1107,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             }
           }],
+          derived_columns_payload: ['derived_columns_service', '$stateParams', function (derived_columns_service, $stateParams) {
+            return derived_columns_service.get_derived_columns($stateParams.organization_id, $stateParams.inventory_type);
+          }],
           organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
             var organization_id = $stateParams.organization_id;
             return organization_service.get_organization(organization_id);

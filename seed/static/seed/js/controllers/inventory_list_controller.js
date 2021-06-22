@@ -997,9 +997,6 @@ angular.module('BE.seed.controller.inventory_list', [])
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
-            cycle_id: function () {
-              return $scope.cycle.selected_cycle.id;
-            },
             ids: function () {
               var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
               var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
