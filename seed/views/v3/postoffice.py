@@ -46,10 +46,16 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
         inventory_id = self.request.data.get('inventory_id', [])
         if self.request.data.get('inventory_type') == "properties":
             state = PropertyState
+            org_filter = 'propertyview__property__organization_id'
         else:
             state = TaxLotState
-        properties = state.objects.filter(id__in=inventory_id)
+            org_filter = 'taxlotview__taxlot__organization_id'
+
         org_id = self.get_organization(self.request)
+        properties = state.objects.filter(
+            id__in=inventory_id,
+            **{org_filter: org_id}
+        )
 
         for prop in properties:  # loop to include details in template
             context = {}
