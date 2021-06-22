@@ -578,7 +578,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }, {
           params: {
             organization_id: $scope.organization.id,
-            cycle_id: $scope.cycle.id,
             inventory_type: $scope.inventory_type
           },
           responseType: 'arraybuffer'
