@@ -64,7 +64,28 @@ class PostOfficeEmailViewSet(SEEDOrgModelViewSet):
             )
 
             user = self.request.user
-            ptr.organization_id = org_id
-            ptr.user = user
-            ptr.template_id = template_id
-            ptr.save()
+
+            # Assigning all the fields inside of postoffice to seed_postoffice
+            email_data = {
+                'email_ptr_id': ptr.id,
+                'from_email': settings.SERVER_EMAIL,
+                'to': ptr.to,
+                'cc': ptr.cc,
+                'bcc': ptr.bcc,
+                'subject': ptr.subject,
+                'message': ptr.message,
+                'html_message': ptr.message,
+                'status': ptr.status,
+                'priority': ptr.priority,
+                'created': ptr.created,
+                'last_updated': ptr.last_updated,
+                'scheduled_time': ptr.scheduled_time,
+                'headers': ptr.headers,
+                'context': ptr.context,
+                'template_id': ptr.template_id,
+                'backend_alias': ptr.backend_alias,
+                'number_of_retries': ptr.number_of_retries,
+                'expires_at': ptr.expires_at
+            }
+
+            serializer.save(**email_data, organization_id=org_id, user=user)
