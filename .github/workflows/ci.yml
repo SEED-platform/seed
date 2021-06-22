@@ -105,5 +105,15 @@ jobs:
           sudo apt update
           sudo apt install gdal-bin
       -
+        name: Setup config
+        run: |
+          cat <<EOF > config/settings/local_untracked.py
+          {
+              'default': {
+                  'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+              }
+          }
+          EOF
+      -
         name: Run tox
         run: tox -e ${{ matrix.tox_env }}
