@@ -21,19 +21,18 @@ class GreenButtonParserTest(TestCase):
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Meter Type': 'Electric - Grid',
-                'Usage Units': 'kWh (thousand Watt-hours)',
-                'Usage/Quantity': 1.79,
+                'Usage Units': 'Wh (Watt-hours)',
+                'Usage/Quantity': 1790.0,
             },
             {
                 'start_time': 1299388500,
                 'source_id': 'User/6150855/UsagePoint/409483/MeterReading/1/IntervalBlock/1',
                 'duration': 900,
                 'Meter Type': 'Electric - Grid',
-                'Usage Units': 'kWh (thousand Watt-hours)',
-                'Usage/Quantity': 1.792,
+                'Usage Units': 'Wh (Watt-hours)',
+                'Usage/Quantity': 1792.0,
             }
         ]
-
         self.assertEqual(parser.data, expectation)
 
     def test_data_property_can_handle_gas_MBtu(self):

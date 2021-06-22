@@ -521,7 +521,7 @@ def _better_report_service_request(analysis_id):
     :params: analysis id
     :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
     """
-    url = "{host}/api/v1/standalone_building_analytics_html/{id}/".format(host=HOST, id=analysis_id)
+    url = "{host}/api/v1/standalone_html/building_analytics/{id}/".format(host=HOST, id=analysis_id)
 
     headers = {
         'accept': '*/*',
