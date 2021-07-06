@@ -33,7 +33,7 @@
     "ng-focus-if": "~1.0.7",
     "ng-tags-input": "~3.2.0",
     "ng-wig": "~3.0.19",
-    "openlayers-ext": "~3.1.5",
+    "ol-ext": "~3.2.3",
     "raven-js": "~3.27.2",
     "spin.js": "=2.3.2",
     "terraformer": "~1.0.12",
@@ -48,6 +48,6 @@
   },
   "napa": {
     "jasmine": "jasmine/jasmine#v1.3.1",
-    "ol": "https://github.com/openlayers/openlayers/releases/download/v5.3.0/v5.3.0-dist.zip"
+    "ol": "https://github.com/openlayers/openlayers/releases/download/v5.3.3/v5.3.3-dist.zip"
   }
 }
