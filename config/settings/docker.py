@@ -44,6 +44,12 @@ ALLOWED_HOSTS = ['*']
 # create a pull request.
 EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")
 DEFAULT_FROM_EMAIL = SERVER_EMAIL
+POST_OFFICE = {
+    'BACKENDS': {
+        'default': EMAIL_BACKEND,
+        'post_office_backend': EMAIL_BACKEND,
+    }
+}
 
 # PostgreSQL DB config
 DATABASES = {
