@@ -27,7 +27,7 @@ RUN apk add --no-cache python3-dev \
     rm -r /usr/lib/python*/ensurepip && \
     ln -sf /usr/bin/pip3 /usr/bin/pip && \
     pip install --upgrade pip setuptools && \
-    pip install git+https://github.com/Supervisor/supervisor@837c159ae51f3 && \
+    pip install supervisor==4.2.2 && \
     mkdir -p /var/log/supervisord/ && \
     rm -r /root/.cache && \
     addgroup -g 1000 uwsgi && \
@@ -65,8 +65,8 @@ COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 
 # nginx configurations - alpine doesn't use the sites-available directory. Put seed
-# configuration file into the /etc/nginx/conf.d/ folder.
-COPY /docker/nginx-seed.conf /etc/nginx/conf.d/seed.conf
+# configuration file into the /etc/nginx/http.d/ folder.
+COPY /docker/nginx-seed.conf /etc/nginx/http.d/default.conf
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
 # set execute permissions on the maint script to toggle on and off
