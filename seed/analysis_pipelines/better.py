@@ -150,8 +150,8 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     for analysis_property_view in analysis_property_views:
         meters = (
             Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
+                .annotate(readings_count=Count('meter_readings'))
+                .filter(
                 property=analysis_property_view.property,
                 type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
                 readings_count__gte=12,
@@ -345,6 +345,7 @@ def _build_better_input(analysis_property_view, meters):
                                         *[
                                             E.TimeSeries(
                                                 {'ID': f'TimeSeries-{meter.type}-{i}'},
+                                                E.ReadingType('Total'),
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
@@ -353,6 +354,12 @@ def _build_better_input(analysis_property_view, meters):
                                             )
                                             for meter in meters for i, reading in enumerate(meter.meter_readings.all())
                                         ]
+                                    ),
+                                    E.LinkedPremises(
+                                        E.Building(
+                                            E.LinkedBuildingID({'IDref': 'Building-1'})
+                                        )
+
                                     )
                                 )
                             )
@@ -362,6 +369,7 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
+    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
