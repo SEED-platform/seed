@@ -19,7 +19,7 @@ Docker Native (Windows/OSX)
 ---------------------------
 
 Following instructions `for Mac <https://docs.docker.com/docker-for-mac/install/>`_ or
-`for Windows <https://docs.docker.com/docker-for-windows/install/>`_.
+`for Windows <https://docs.docker.com/docker-for-windows/install/>`_. Note that for OSX you must have docker desktop version `3.0 or later <https://github.com/concourse/concourse/issues/6038>`.
 
 * `Install Docker Compose <https://docs.docker.com/compose/install/>`_
 

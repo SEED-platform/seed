@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     'Notification',
     'columns',
     'used_columns',
+    'derived_columns_payload',
     'organization_payload',
     'data_quality_rules_payload',
     'auth_payload',
@@ -33,6 +34,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       Notification,
       columns,
       used_columns,
+      derived_columns_payload,
       organization_payload,
       data_quality_rules_payload,
       auth_payload,
@@ -131,6 +133,16 @@ angular.module('BE.seed.controller.data_quality_admin', [])
         }
         return col;
       });
+      $scope.columns.push(...derived_columns_payload.derived_columns.map(derived_column => {
+        return {
+          ...derived_column,
+          data_type: $scope.data_type_keys.number,
+          column_name: derived_column.name,
+          displayName: derived_column.name,
+          group: 'Derived',
+          is_derived: true,
+        }
+      }))
 
       // if (flippers.is_active('release:orig_columns')) {
       //   // db may return _orig columns; don't suggest them in the select
@@ -239,6 +251,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
               // Skip rules that haven't been assigned to a field yet
               if (rule.field === null) return;
 
+              const column = _.find($scope.columns, {column_name: rule.field}) || {};
               var r = {
                 enabled: rule.enabled,
                 condition: rule.condition,
@@ -254,7 +267,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 text_match: rule.text_match,
                 severity: rule.severity,
                 units: rule.units,
-                status_label: null
+                status_label: null,
+                for_derived_column: !!column.is_derived,
               };
               if (rule.condition === 'not_null' || rule.condition === 'required') {
                 r.min = null;

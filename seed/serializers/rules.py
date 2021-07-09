@@ -35,6 +35,7 @@ class RuleSerializer(serializers.ModelSerializer):
             'table_name',
             'text_match',
             'units',
+            'for_derived_column',
         ]
 
     def create(self, validated_data):

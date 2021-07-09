@@ -46,7 +46,9 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
-from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, PREMISES_ID_NAME
+from seed.analysis_pipelines.better import _build_better_input
+from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, \
+    PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 
@@ -103,7 +105,8 @@ class TestAnalysisPipeline(TestCase):
             try:
                 celery_task.__wrapped__._is_analysis_pipeline_task
             except AttributeError:
-                self.assertTrue(False, f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
+                self.assertTrue(False,
+                                f'Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task')
 
     def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
         # Setup
@@ -243,7 +246,8 @@ class TestAnalysisPipeline(TestCase):
         # Assert
         # a message for the bad property view should have been created
         message = AnalysisMessage.objects.get(analysis=self.analysis)
-        self.assertTrue(f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
+        self.assertTrue(
+            f'Failed to copy property data for PropertyView ID {bogus_property_view_id}' in message.user_message)
 
     def test_analysis_pipeline_task_calls_decorated_function_when_status_is_as_expected(self):
         # Setup
@@ -504,7 +508,7 @@ class TestBsyncrPipeline(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(property_view_factory.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(property_view_factory.fake.random_number(digits=6)),
@@ -550,6 +554,7 @@ class TestBsyncrPipeline(TestCase):
 
         :param error_messages: list[str], list of error messages to return in response
         """
+
         def _build_bsyncr_output(file_):
             # copy the example bsyncr output file then update the ID within it
             bsyncr_output_example_file = path.join(BASE_DIR, 'seed', 'tests', 'data', 'example-bsyncr-output.xml')
@@ -682,7 +687,8 @@ class TestBsyncrPipeline(TestCase):
         )
         messages = AnalysisMessage.objects.filter(analysis_property_view=analysis_property_view)
         self.assertEqual(1, messages.count())
-        self.assertTrue('Property has no linked electricity meters with 12 or more readings' in messages[0].user_message)
+        self.assertTrue(
+            'Property has no linked electricity meters with 12 or more readings' in messages[0].user_message)
 
     def test_prepare_analysis_fails_when_it_fails_to_make_at_least_one_input_file(self):
         # Setup
@@ -812,11 +818,111 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(Analysis.FAILED, self.analysis_b.status)
 
         # there should be a generic analysis message indicating all properties failed
-        analysis_generic_message = AnalysisMessage.objects.get(analysis=self.analysis_b, analysis_property_view__isnull=True)
+        analysis_generic_message = AnalysisMessage.objects.get(analysis=self.analysis_b,
+                                                               analysis_property_view__isnull=True)
         self.assertEqual('Failed to get results for all properties', analysis_generic_message.user_message)
 
         # every property should have a linked message with the bsyncr error
-        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b, analysis_property_view__isnull=False)
+        analysis_messages = AnalysisMessage.objects.filter(analysis=self.analysis_b,
+                                                           analysis_property_view__isnull=False)
         self.assertEqual(len(property_view_ids), analysis_messages.count())
         for analysis_message in analysis_messages:
             self.assertTrue('Unexpected error from bsyncr service' in analysis_message.user_message)
+
+
+class TestBETTERPipeline(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+        }
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
+
+        property_state = (
+            FakePropertyStateFactory(organization=self.org).get_property_state(
+                # fields required for analysis
+                property_name="test",
+                postal_code="1234",
+                property_type="Office",
+                city="Golden",
+                gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"),
+            )
+        )
+        self.analysis_property_view = (
+            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
+                property_state=property_state,
+                # analysis args
+                name='Good Analysis',
+                service=Analysis.BETTER,
+                configuration={
+                    'benchmark_data': {'benchmark_data': 'DEFAULT'},
+                    'savings_target': {'savings_target': 'NOMINAL'},
+                    'min_model_r_squared': 0.1
+                }
+            )
+        )
+
+        self.meter_nat = Meter.objects.create(
+            property=self.analysis_property_view.property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.NATURAL_GAS,
+        )
+
+        self.meter_elec = Meter.objects.create(
+            property=self.analysis_property_view.property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID,
+        )
+        tz_obj = timezone(TIME_ZONE)
+        for j in range(1, 13):
+            MeterReading.objects.create(
+                meter=self.meter_nat,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
+                reading=12345,
+                source_unit='MMBtu',
+                conversion_factor=1.00
+            )
+
+            MeterReading.objects.create(
+                meter=self.meter_elec,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+
+    def test_build_better_input_returns_valid_bsync_document(self):
+        # Act
+        doc, errors = _build_better_input(self.analysis_property_view, [self.meter_nat, self.meter_elec])
+        tree = etree.parse(BytesIO(doc))
+
+        # Assert
+        self.assertEqual(0, len(errors))
+
+        ts_elems = tree.xpath('//auc:TimeSeries', namespaces=NAMESPACES)
+
+        self.assertEqual(self.meter_elec.meter_readings.count() + self.meter_nat.meter_readings.count(), len(ts_elems))
+
+    def test_build_better_input_returns_errors_if_state_missing_info(self):
+        # remove some required fields
+        property_state = self.analysis_property_view.property_state
+        property_state.property_name = None
+        property_state.city = None
+        property_state.save()
+
+        # Act
+        doc, errors = _build_better_input(self.analysis_property_view, [self.meter_nat, self.meter_elec])
+
+        # Assert
+        self.assertIsNone(doc)
+        self.assertEqual(2, len(errors))
+        self.assertTrue('Linked PropertyState is missing a name' in errors)
+        self.assertTrue('Linked PropertyState is missing a city' in errors)

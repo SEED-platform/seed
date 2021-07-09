@@ -9,6 +9,7 @@ from datetime import (
     datetime,
     timedelta,
 )
+import re
 
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
@@ -25,6 +26,7 @@ from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
     usage_point_id,
 )
+from seed.lib.mcm import reader
 
 
 class MetersParser(object):
@@ -81,6 +83,33 @@ class MetersParser(object):
             self._property_link = 'Portfolio Manager ID'
             self._unlinkable_pm_ids = set()  # to avoid duplicates
 
+    @classmethod
+    def factory(cls, meters_file, org_id, source_type=Meter.PORTFOLIO_MANAGER, property_id=None):
+        """Factory function for MetersParser
+
+        :param meters_file: File
+        :param org_id: int
+        :param source_type: int, type of meter data
+        :param property_id: int, id of property - required if meter data is for a specific property (e.g. GreenButton)
+        :return: MetersParser
+        """
+        if source_type == Meter.GREENBUTTON:
+            parser = reader.GreenButtonParser(meters_file)
+            raw_meter_data = list(parser.data)
+            return cls(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+
+        try:
+            # try to parse the file as if it came from "Download your entire portfolio"
+            # spreadsheet (the original method for importing PM meter data)
+            parser = reader.MCMParser(meters_file, sheet_name='Meter Entries')
+            raw_meter_data = list(parser.data)
+            return cls(org_id, raw_meter_data)
+        except reader.SheetDoesNotExist:
+            # try to parse the file as one from a Data Request
+            parser = reader.MCMParser(meters_file, sheet_name='Monthly Usage')
+            raw_meter_data = cls.preprocess_raw_pm_data_request(parser.data)
+            return cls(org_id, raw_meter_data, source_type=Meter.PORTFOLIO_MANAGER_DATA_REQUEST)
+
     @property
     def _kbtu_thermal_conversion_factors(self):
         if self._cache_kbtu_thermal_conversion_factors is None:
@@ -136,7 +165,7 @@ class MetersParser(object):
             # reset _cache_proposed_imports
             self._cache_proposed_imports = None
 
-            if self._source_type == Meter.PORTFOLIO_MANAGER:
+            if self._source_type == Meter.PORTFOLIO_MANAGER or self._source_type == Meter.PORTFOLIO_MANAGER_DATA_REQUEST:
                 self._parse_pm_meter_details()
             elif self._source_type == Meter.GREENBUTTON:
                 self._parse_gb_meter_details()
@@ -183,7 +212,7 @@ class MetersParser(object):
                 }
 
                 id = meter.get("source_id")
-                if meter['source'] == Meter.PORTFOLIO_MANAGER:
+                if meter['source'] == Meter.PORTFOLIO_MANAGER or meter['source'] == Meter.PORTFOLIO_MANAGER_DATA_REQUEST:
                     property_id_info = property_ids_info[meter.get("property_id")]
 
                     meter_summary['source_id'] = id
@@ -406,3 +435,83 @@ class MetersParser(object):
             for type_unit
             in type_unit_combinations
         ]
+
+    @staticmethod
+    def preprocess_raw_pm_data_request(raw_data):
+        """Reformats the raw data. Must be called on meter data which comes
+        from a Data Request spreadsheet, _before_ intializing the MetersParser
+        class with the data.
+
+        :param raw_data: list[dict], `.data` from MCMParser for the Monthly Usage sheet
+        :return: list[dict], processed meter readings for initialization of MetersParser
+        """
+        # kinda lazy but convert the generator to a list
+        raw_data = list(raw_data)
+
+        if not raw_data:
+            return []
+
+        # check which (if any) meter readings are provided
+        # there can be more than one reading type per row (e.g. both electricity
+        # and natural gas in the same row)
+        provided_reading_types = []
+        for field in raw_data[0].keys():
+            if field.startswith('Electricity Use') or field.startswith('Natural Gas Use'):
+                provided_reading_types.append(field)
+
+        if not provided_reading_types:
+            return []
+
+        TYPE_AND_UNITS_REGEX = re.compile(r'(?P<meter_type>.*)\s+\((?P<units>.*)\)')
+        METER_TYPE_MAPPING = {
+            'Electricity Use': 'Electric - Unknown',
+            'Natural Gas Use': 'Natural Gas',
+        }
+        METER_UNITS_MAPPING = {
+            'kBtu': 'kBtu (thousand Btu)',
+            'GJ': 'GJ',
+        }
+
+        results = []
+        for raw_reading in raw_data:
+            start_date = datetime.strptime(raw_reading['Month'], '%b-%y')
+            _, days_in_month = monthrange(start_date.year, start_date.month)
+            end_date = datetime(
+                start_date.year,
+                start_date.month,
+                days_in_month,
+                23,
+                59,
+                59
+            ) + timedelta(seconds=1)
+
+            for reading_type in provided_reading_types:
+                if not raw_reading[reading_type].strip() or 'not available' in raw_reading[reading_type].lower():
+                    continue
+
+                type_and_units_match = TYPE_AND_UNITS_REGEX.match(reading_type)
+                if type_and_units_match is None:
+                    raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
+
+                meter_type_match = type_and_units_match.group('meter_type').strip()
+                meter_type = METER_TYPE_MAPPING.get(meter_type_match)
+                if meter_type is None:
+                    raise Exception(f'Invalid meter type "{meter_type_match}"')
+
+                units_match = type_and_units_match.group('units').strip()
+                units = METER_UNITS_MAPPING.get(units_match)
+                if units is None:
+                    raise Exception(f'Invalid units "{units_match}"')
+
+                reading = {
+                    'Start Date': start_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'End Date': end_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    'Portfolio Manager ID': raw_reading['Property Id'],
+                    'Portfolio Manager Meter ID': 'Unknown',
+                    'Meter Type': meter_type,
+                    'Usage/Quantity': raw_reading[reading_type],
+                    'Usage Units': units,
+                }
+                results.append(reading)
+
+        return results

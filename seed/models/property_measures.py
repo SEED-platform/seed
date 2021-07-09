@@ -135,7 +135,7 @@ class PropertyMeasure(models.Model):
     description = models.TextField(null=True)
     implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=MEASURE_PROPOSED)
     application_scale = models.IntegerField(choices=APPLICATION_SCALE_TYPES, default=SCALE_ENTIRE_FACILITY)
-    recommended = models.BooleanField(default=False)
+    recommended = models.BooleanField(default=True)
     cost_mv = models.FloatField(null=True)
     cost_total_first = models.FloatField(null=True)
     cost_installation = models.FloatField(null=True)
@@ -143,6 +143,7 @@ class PropertyMeasure(models.Model):
     cost_capital_replacement = models.FloatField(null=True)
     cost_residual_value = models.FloatField(null=True)
     category_affected = models.IntegerField(choices=CATEGORY_AFFECTED_TYPE, default=CATEGORY_OTHER)
+    useful_life = models.FloatField(null=True)
 
     class Meta:
         unique_together = ('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')

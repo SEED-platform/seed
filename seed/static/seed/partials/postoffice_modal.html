@@ -1,0 +1,28 @@
+<!-- Using the same id as used for the labels modal for consistency in styling -->
+<div id="update-property-labels-modal">
+    <div class="modal-header">
+        <h4 class="modal-title" id="manageLabelsModalLabel" translate>Select an Email Template</h4>
+    </div>
+    <div class="modal-body">
+        <div class="table-list-container">
+            <table class="table table-striped" style="margin-bottom: 0;">
+                <!-- Running a loop on 'available_templates' retrieved from the postoffice service 'get_templates()' method -->
+                <tr ng-repeat="template in available_templates">
+                    <td class="label_column" style="vertical-align: middle;">
+                        <!-- Displaying the names of 'available_templates' -->
+                        {$ template.name | translate $}
+                    </td>
+                    <td align="right">
+                        <!-- Selected template is used for sending emails -->
+                        <button ng-click="send_templated_email(template.id)" type="button" translate>Select</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button ng-click="cancel()" type="button" class="btn btn-default" style="min-width:90px;" ng-click="cancel()" translate>Cancel</button>
+    </div>
+</div>
+
+

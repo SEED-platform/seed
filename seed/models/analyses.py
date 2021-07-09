@@ -16,9 +16,11 @@ class Analysis(models.Model):
     The Analysis represents an analysis performed on one or more properties.
     """
     BSYNCR = 1
+    BETTER = 2
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
+        (BETTER, 'BETTER')
     )
 
     PENDING_CREATION = 8

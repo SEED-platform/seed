@@ -12,6 +12,8 @@ from django.core.exceptions import ValidationError
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
 
+from quantityfield import ureg
+
 from seed.landing.models import Organization
 from seed.models.columns import Column
 from seed.models.properties import PropertyState
@@ -29,6 +31,9 @@ def _cast_params_to_floats(params):
         # handle booleans as special case b/c float(True) == 1.0 which we don't want
         if isinstance(value, bool):
             continue
+
+        if isinstance(value, ureg.Quantity):
+            value = value.magnitude
 
         try:
             tmp_params[key] = float(value)
@@ -158,13 +163,11 @@ class InvalidExpression(Exception):
     def __str__(self):
         expression_message = self.expression
         if self.error_position is not None:
-            expression_message += (
-                f'\n'
-                f'    {" " * (self.error_position - 1)}^\n'
-                f'     Error potentially at position indicated above (character {self.error_position + 1})'
-            )
+            error_pos_to_end = self.expression[self.error_position:]
+            truncated_error = (error_pos_to_end[:5] + '...') if len(error_pos_to_end) > 8 else error_pos_to_end
+            expression_message = f'starting at "{truncated_error}"'
 
-        return f'Expression is not valid:\n{expression_message}'
+        return f'Expression is not valid: {expression_message}'
 
 
 class DerivedColumn(models.Model):

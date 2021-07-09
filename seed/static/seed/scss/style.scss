@@ -2446,6 +2446,8 @@ select {
   display: flex;
   height: 100%;
   overflow-x: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 
   .label-bar {
     flex-grow: 1;
@@ -2455,6 +2457,10 @@ select {
   .label-bar:not(:last-child) {
     margin-right: 1px;
   }
+}
+
+.label-bars::-webkit-scrollbar {
+  display: none;
 }
 
 /* Styles for update labels modal */

@@ -31,8 +31,19 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         {model_type: 'Four Parameter Linear Model'}
       ];
 
+      $scope.better_savings_targets = [
+        {savings_target: 'CONSERVATIVE'},
+        {savings_target: 'NOMINAL'},
+        {savings_target: 'AGGRESSIVE'}
+      ];
+
+      $scope.better_benchmark_options = [
+        {benchmark_data: 'DEFAULT'},
+        {benchmark_data: 'GENERATE'}
+      ];
+
       function initialize_new_analysis () {
-        $scope.new_analysis = {name: null, service: null, configuration: null};
+        $scope.new_analysis = {name: null, service: null, configuration: {savings_target: null, benchmark_data: null, min_r_squared: null}};
       }
 
       /* Create a new analysis based on user input */
