@@ -40,7 +40,8 @@ angular.module('BE.seed.controller.sample_data_modal', [])
             name: 'Auto-Populate',
             profile_location: 'List View Profile',
             inventory_type: 'Property',
-            columns: []
+            columns: [],
+            derived_columns: []
           });
         }
 
