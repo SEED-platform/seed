@@ -345,6 +345,7 @@ def _build_better_input(analysis_property_view, meters):
                                         *[
                                             E.TimeSeries(
                                                 {'ID': f'TimeSeries-{meter.type}-{i}'},
+                                                E.ReadingType('Total'),
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
@@ -353,6 +354,12 @@ def _build_better_input(analysis_property_view, meters):
                                             )
                                             for meter in meters for i, reading in enumerate(meter.meter_readings.all())
                                         ]
+                                    ),
+                                    E.LinkedPremises(
+                                        E.Building(
+                                            E.LinkedBuildingID({'IDref': 'Building-1'})
+                                        )
+
                                     )
                                 )
                             )
@@ -521,7 +528,7 @@ def _better_report_service_request(analysis_id):
     :params: analysis id
     :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
     """
-    url = "{host}/api/v1/standalone_building_analytics_html/{id}/".format(host=HOST, id=analysis_id)
+    url = "{host}/api/v1/standalone_html/building_analytics/{id}/".format(host=HOST, id=analysis_id)
 
     headers = {
         'accept': '*/*',

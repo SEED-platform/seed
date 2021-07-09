@@ -12,6 +12,16 @@ from django.core.serializers.json import DjangoJSONEncoder
 from quantityfield import ureg
 from rest_framework import serializers
 
+# Update the registry's definition for year
+# Updating pint from 0.9 resulted in a change in the symbol from 'year' to 'a'
+# see: https://github.com/hgrecco/pint/commit/3ad5c2bb24ca92cb69353af9a84458da9bebc8f3#diff-cc2784e7cfe7c2d896ae4ec1ef1563eed99bed539cb02f5a0f00e276dab48fe5R125
+# Symbols are used when doing the pretty, shortened formatting (ie '{:~P}'.format(...))
+# which SEED uses when creating display names for columns.
+# Thus we go back to 'year' by copying the current year definition from
+# https://github.com/hgrecco/pint/blob/636961a8ac988f5af25799ffdd041da725554bfb/pint/default_en.txt#L174
+# but use `_` for the symbol name in the definition below
+ureg.define('year = 365.25 * day = _ = yr = julian_year')
+
 AREA_DIMENSIONALITY = '[length] ** 2'
 EUI_DIMENSIONALITY = '[mass] / [time] ** 3'
 

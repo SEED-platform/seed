@@ -48,7 +48,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_a.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_a.fake.random_number(digits=6)),
@@ -63,7 +63,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_b.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_b.fake.random_number(digits=6)),
