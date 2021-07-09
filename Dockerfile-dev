@@ -28,9 +28,7 @@ RUN apk add --no-cache python3-dev \
     rm -r /root/.cache && \
     addgroup -g 1000 uwsgi && \
     adduser -G uwsgi -H -u 1000 -S uwsgi && \
-    mkdir -p /run/nginx && \
-    echo "daemon off;" >> /etc/nginx/nginx.conf && \
-    rm -f /etc/nginx/conf.d/default.conf
+    mkdir -p /run/nginx
 
 ### Install python requirements
 WORKDIR /seed

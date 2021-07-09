@@ -32,16 +32,12 @@ RUN apk add --no-cache python3-dev \
     rm -r /root/.cache && \
     addgroup -g 1000 uwsgi && \
     adduser -G uwsgi -H -u 1000 -S uwsgi && \
-    mkdir -p /run/nginx && \
-    echo "daemon off;" >> /etc/nginx/nginx.conf && \
-    rm -f /etc/nginx/conf.d/default.conf
+    mkdir -p /run/nginx
 
 ## Note on some of the commands above:
 ##   - create the uwsgi user and group to have id of 1000
 ##   - copy over python3 as python
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
-##   - install supervisor that works with Python3.
-##   - enchant, python-gdbm, libssl-dev, libxml2-dev are no longer explicitly installed
 
 ### Install python requirements
 WORKDIR /seed
@@ -64,9 +60,8 @@ WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 
-# nginx configurations - alpine doesn't use the sites-available directory. Put seed
-# configuration file into the /etc/nginx/http.d/ folder.
-COPY /docker/nginx-seed.conf /etc/nginx/http.d/default.conf
+# nginx configuration - replace the root/default nginx config file
+COPY /docker/nginx-seed.conf /etc/nginx/nginx.conf
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
 # set execute permissions on the maint script to toggle on and off
