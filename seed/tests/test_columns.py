@@ -26,7 +26,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.utils.organizations import create_organization
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 
 class TestColumns(TestCase):

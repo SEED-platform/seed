@@ -12,7 +12,7 @@ import re
 from io import StringIO, BytesIO
 
 from django.db.models import FieldDoesNotExist
-from quantityfield import ureg
+from quantityfield.units import ureg
 from lxml import etree
 import xmlschema
 

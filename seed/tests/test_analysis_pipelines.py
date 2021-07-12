@@ -15,7 +15,7 @@ from zipfile import ZipFile
 from lxml import etree
 from pytz import timezone
 from requests import Response
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from django.db.models import Q
 from django.test import TestCase, override_settings

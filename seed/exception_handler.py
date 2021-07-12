@@ -12,7 +12,6 @@ provides function for handling exceptions not otherwise handled by DRF
 """
 
 from django.db.models.deletion import ProtectedError
-from django.utils import six
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import status
 from rest_framework.response import Response
@@ -29,7 +28,7 @@ def custom_exception_handler(exc, context):
             # ForeignKey on_delete=PROTECT argument.
             msg = _('Cannot delete protected objects while '
                     'related objects still exist')
-            data = {'detail': six.text_type(msg)}
+            data = {'detail': str(msg)}
 
             # Set Rollback removed in https://www.django-rest-framework.org/community/release-notes/#374. The
             # method is now handled in the views exception_handler which is called above

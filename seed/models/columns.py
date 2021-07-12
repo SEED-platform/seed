@@ -637,7 +637,7 @@ class Column(models.Model):
         from pint.errors import DimensionalityError
         from seed.models.properties import PropertyState
         from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
-        from quantityfield import ureg
+        from quantityfield.units import ureg
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):

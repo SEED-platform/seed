@@ -10,7 +10,7 @@ import logging
 
 import os.path as osp
 
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
