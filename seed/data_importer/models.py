@@ -696,6 +696,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
     raw_property_state_to_filename = JSONField(default=dict, blank=True)
 
+    class Meta:
+        ordering = ('-modified', '-created',)
+
     def __str__(self):
         return '%s' % self.file.name
 

@@ -54,6 +54,9 @@ class Project(TimeStampedModel):
         'TaxLotView', through="ProjectTaxLotView", blank=True
     )
 
+    class Meta:
+        ordering = ('-modified', '-created',)
+
     @property
     def property_count(self):
         return self.property_views.count()

@@ -145,6 +145,9 @@ class Compliance(TimeStampedModel):
     deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name=_('Project'), )
 
+    class Meta:
+        ordering = ('-modified', '-created',)
+
     def __str__(self):
         return 'Compliance %s for project %s' % (
             self.compliance_type, self.project
