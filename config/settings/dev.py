@@ -69,12 +69,12 @@ REQUIRE_UNIQUE_EMAIL = False
 
 ALLOWED_HOSTS = ['*']
 
-# use imp module to find the local_untracked file rather than a hard-coded path
+# use importlib module to find the local_untracked file rather than a hard-coded path
 try:
-    import imp
+    import importlib
     import config.settings
 
-    local_untracked_exists = imp.find_module(
+    local_untracked_exists = importlib.util.find_spec(
         'local_untracked', config.settings.__path__
     )
 except BaseException:
