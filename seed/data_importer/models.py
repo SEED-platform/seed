@@ -737,7 +737,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             temp_file.flush()
             temp_file.close()
             self.file.close()
-            self._local_file = open(temp_file.name, 'rU')
+            self._local_file = open(temp_file.name, 'r', newline=None)
 
         self._local_file.seek(0)
         return self._local_file

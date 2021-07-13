@@ -758,7 +758,7 @@ class Column(models.Model):
 
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'rU') as csvfile:
+            with open(filename, 'r', newline=None) as csvfile:
                 for row in csv.reader(csvfile):
                     data = {
                         "from_field": row[0],
