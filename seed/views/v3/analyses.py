@@ -207,12 +207,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Requested analysis doesn\'t exist in this organization.'
             }, status=HTTP_409_CONFLICT)
 
-
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
     @action(detail=False, methods=['get'])
-
     def stats(self, request):
         org_id = self.get_organization(request)
         cycle_id = request.query_params.get('cycle_id')
@@ -233,12 +231,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
-        property_types = list(states.values('extra_data__Largest Property Use Type')
-                               .annotate(count=Count('extra_data__Largest Property Use Type')).order_by('-count'))
+        property_types = list(states.values('extra_data__Largest Property Use Type').annotate(count=Count('extra_data__Largest Property Use Type')).order_by('-count'))
         year_built = list(states.values('year_built').annotate(count=Count('year_built')).order_by('-count'))
         energy = list(states.values('site_eui').annotate(count=Count('site_eui')).order_by('-count'))
         sqftage = list(states.values('gross_floor_area').annotate(count=Count('gross_floor_area')).order_by('-count'))
-
 
         from collections import defaultdict
 
@@ -281,7 +277,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         c = defaultdict(int)
         for d in year_built_agg:
             c[d['year_built']] += d['count']
-        year_built_list = [{'year_built': year_built, 'percentage': count/views.count()*100} for year_built, count in c.items()]
+        year_built_list = [{'year_built': year_built, 'percentage': count / views.count() * 100} for year_built, count in c.items()]
 
         energy_list = []
         for i in energy:
@@ -310,7 +306,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         e = defaultdict(int)
         for f in energy_agg:
             e[f['site_eui']] += f['count']
-        energy_list2 = [{'site_eui': site_eui, 'percentage': count/views.count()*100} for site_eui, count in e.items()]
+        energy_list2 = [{'site_eui': site_eui, 'percentage': count / views.count() * 100} for site_eui, count in e.items()]
 
         sqftage_list = []
         for i in sqftage:
@@ -349,7 +345,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         g = defaultdict(int)
         for h in sqftage_agg:
             g[h['gross_floor_area']] += h['count']
-        sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count/views.count()*100} for gross_floor_area, count in g.items()]
+        sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
         return JsonResponse({
             'status': 'success',
