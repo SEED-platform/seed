@@ -1,10 +1,9 @@
 # Django
 django==3.0.14
 
-django-autoslug==1.9.6
-django-storages==1.8
+django-autoslug==1.9.8
+# Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
 django-crispy-forms==1.8.1
-modeltranslation==0.25
 
 # Persistence stores
 psycopg2-binary==2.8.4
