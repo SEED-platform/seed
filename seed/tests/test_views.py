@@ -45,7 +45,7 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DeleteModelsTestCase, AssertDictSubsetMixin
 
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             # 'calculated_taxlot_ids', 'primary',
@@ -483,7 +483,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
-class InventoryViewTests(DeleteModelsTestCase):
+class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',

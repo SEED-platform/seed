@@ -23,10 +23,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import DataMappingBaseTestCase, AssertDictSubsetMixin
 
 
-class DataQualityCheckTests(DataMappingBaseTestCase):
+class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
 
