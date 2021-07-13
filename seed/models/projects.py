@@ -7,7 +7,7 @@
 
 from autoslug import AutoSlugField
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from seed.landing.models import SEEDUser as User

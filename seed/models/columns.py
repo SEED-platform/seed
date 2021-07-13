@@ -20,7 +20,7 @@ from django.db import (
 )
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
