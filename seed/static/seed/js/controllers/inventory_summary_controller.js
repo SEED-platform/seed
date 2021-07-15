@@ -7,21 +7,25 @@ angular.module('BE.seed.controller.inventory_summary', [])
     '$scope',
     '$stateParams',
     '$uibModal',
+    'urls',
     'analyses_service',
+    'inventory_service',
     'cycles',
     function (
       $scope,
       $stateParams,
       $uibModal,
+      urls,
       analyses_service,
-      cycles,
+      inventory_service,
+      cycles_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
       const lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
-        selected_cycle: _.find(cycles.cycles, {id: lastCycleId}) || _.first(cycles.cycles),
-        cycles: cycles.cycles
+        selected_cycle: _.find(cycles_payload.cycles, {id: lastCycleId}) || _.first(cycles_payload.cycles),
+        cycles: cycles_payload.cycles
       };
 
       const refresh_data = function () {
@@ -34,7 +38,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
         });
 
         analyses_service.get_summary($scope.cycle.selected_cycle.id)
-          .then(data, function(data) {
+          .then(function(data) {
             console.log('Summary data:', data)
             $scope.summary_data = data
             // TODO: update the chart (help: https://stackoverflow.com/questions/20905429/update-dimple-js-chart-when-select-a-new-option)

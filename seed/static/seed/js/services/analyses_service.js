@@ -105,7 +105,7 @@ angular.module('BE.seed.service.analyses', [])
       const get_summary = function (cycle_id) {
         const organization_id = user_service.get_organization().id
         return $http({
-          url: '/api/v3/analyses/summary',
+          url: '/api/v3/analyses/stats',
           method: 'GET',
           params: { organization_id: organization_id, cycle_id: cycle_id }
         }).then(function (response) {
