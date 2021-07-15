@@ -14,10 +14,12 @@ class AnalysisOutputFile(models.Model):
     The AnalysisOutputFile is a file returned as output from an analysis.
     """
     BUILDINGSYNC = 1
+    HTML = 2
     IMAGE_PNG = 100
 
     CONTENT_TYPES = (
         (BUILDINGSYNC, 'BuildingSync'),
+        (HTML, 'html'),
         (IMAGE_PNG, 'PNG'),
     )
 

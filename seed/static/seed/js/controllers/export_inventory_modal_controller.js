@@ -7,13 +7,12 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   '$scope',
   '$uibModalInstance',
   'user_service',
-  'cycle_id',
   'ids',
   'columns',
   'inventory_type',
   'profile_id',
   'filter_header_string',
-  function ($http, $scope, $uibModalInstance, user_service, cycle_id, ids, columns, inventory_type, profile_id, filter_header_string) {
+  function ($http, $scope, $uibModalInstance, user_service, ids, columns, inventory_type, profile_id, filter_header_string) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
@@ -32,7 +31,6 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       }, {
         params: {
           organization_id: user_service.get_organization().id,
-          cycle_id: cycle_id,
           inventory_type: inventory_type
         },
         responseType: export_type === 'xlsx' ? 'arraybuffer' : undefined

@@ -143,6 +143,7 @@ class PropertyMeasure(models.Model):
     cost_capital_replacement = models.FloatField(null=True)
     cost_residual_value = models.FloatField(null=True)
     category_affected = models.IntegerField(choices=CATEGORY_AFFECTED_TYPE, default=CATEGORY_OTHER)
+    useful_life = models.FloatField(null=True)
 
     class Meta:
         unique_together = ('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')

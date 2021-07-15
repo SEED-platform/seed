@@ -2615,6 +2615,7 @@
               </auc:UserDefinedFields>
             </auc:Scenario>
             <auc:Scenario ID="ScenarioType-69817888952820">
+              <auc:ScenarioName>Temp Name</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
