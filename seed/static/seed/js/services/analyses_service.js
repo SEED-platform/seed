@@ -9,45 +9,45 @@ angular.module('BE.seed.service.analyses', [])
       user_service
     ) {
 
-      let get_analyses_for_org = function (org_id) {
+      const get_analyses_for_org = function (org_id) {
         return $http.get('/api/v3/analyses/?organization_id=' + org_id).then(function (response) {
           return response.data;
         });
       };
 
-      let get_analyses_for_canonical_property = function (property_id) {
-        let org = user_service.get_organization().id;
+      const get_analyses_for_canonical_property = function (property_id) {
+        const org = user_service.get_organization().id;
         return $http.get('/api/v3/analyses/?organization_id=' + org + '&property_id=' + property_id).then(function (response) {
           return response.data;
         });
       };
 
-      let get_analysis_for_org = function (analysis_id, org_id) {
+      const get_analysis_for_org = function (analysis_id, org_id) {
         return $http.get('/api/v3/analyses/' + analysis_id + '?organization_id=' + org_id).then(function (response) {
           return response.data;
         });
       };
 
-      let get_analysis_messages_for_org = function (analysis_id, org_id) {
+      const get_analysis_messages_for_org = function (analysis_id, org_id) {
         return $http.get('/api/v3/analyses/' + analysis_id + '/messages/?organization_id=' + org_id).then(function (response) {
           return response.data;
         });
       };
 
-      let get_analysis_views_for_org = function (analysis_id, org_id) {
+      const get_analysis_views_for_org = function (analysis_id, org_id) {
         return $http.get('/api/v3/analyses/' + analysis_id + '/views/?organization_id=' + org_id).then(function (response) {
           return response.data;
         });
       };
 
-      let get_analysis_view_for_org = function (analysis_id, view_id, org_id) {
+      const get_analysis_view_for_org = function (analysis_id, view_id, org_id) {
         return $http.get('/api/v3/analyses/' + analysis_id + '/views/' + view_id + '/?organization_id=' + org_id).then(function (response) {
           return response.data;
         });
       };
 
-      let create_analysis = function (name, service, configuration, property_view_ids) {
-        let organization_id = user_service.get_organization().id;
+      const create_analysis = function (name, service, configuration, property_view_ids) {
+        const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/',
           method: 'POST',
@@ -63,8 +63,8 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      let start_analysis = function (analysis_id) {
-        let organization_id = user_service.get_organization().id;
+      const start_analysis = function (analysis_id) {
+        const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/start/',
           method: 'POST',
@@ -76,8 +76,8 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      let stop_analysis = function (analysis_id) {
-        let organization_id = user_service.get_organization().id;
+      const stop_analysis = function (analysis_id) {
+        const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/stop/',
           method: 'POST',
@@ -89,8 +89,8 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      let delete_analysis = function (analysis_id) {
-        let organization_id = user_service.get_organization().id;
+      const delete_analysis = function (analysis_id) {
+        const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/',
           method: 'DELETE',
@@ -102,7 +102,20 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
-      let analyses_factory = {
+      const get_summary = function (cycle_id) {
+        const organization_id = user_service.get_organization().id
+        return $http({
+          url: '/api/v3/analyses/summary',
+          method: 'GET',
+          params: { organization_id: organization_id, cycle_id: cycle_id }
+        }).then(function (response) {
+          return response.data;
+        }).catch(function (response) {
+          return response.data;
+        });
+      }
+
+      const analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
         get_analyses_for_canonical_property: get_analyses_for_canonical_property,
         get_analysis_for_org: get_analysis_for_org,
@@ -112,7 +125,8 @@ angular.module('BE.seed.service.analyses', [])
         create_analysis: create_analysis,
         start_analysis: start_analysis,
         stop_analysis: stop_analysis,
-        delete_analysis: delete_analysis
+        delete_analysis: delete_analysis,
+        get_summary: get_summary,
       };
 
       return analyses_factory;
