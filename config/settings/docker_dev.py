@@ -124,17 +124,10 @@ LOGGING = {
 }
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
-try:
-    import importlib
-    import config.settings
+import importlib
 
-    local_untracked_exists = importlib.util.find_spec(
-        'local_untracked', config.settings.__path__
-    )
-except BaseException:
-    pass
-
-if 'local_untracked_exists' in locals():
-    from config.settings.local_untracked import *  # noqa
-else:
+local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
+if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
+else:
+    from config.settings.local_untracked import *  # noqa

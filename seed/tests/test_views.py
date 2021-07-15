@@ -722,7 +722,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['postal_code']],
-                          result[column_name_mappings['postal_code']])
+                         result[column_name_mappings['postal_code']])
         # self.assertEqual(related['primary'], 'P')
 
     def test_get_properties_with_taxlots_with_footprints(self):
@@ -768,7 +768,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['postal_code']],
-                          result[column_name_mappings['postal_code']])
+                         result[column_name_mappings['postal_code']])
 
     def test_get_properties_taxlot_extra_data(self):
         extra_data = {
@@ -1059,14 +1059,14 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         result = results[0]
         self.assertEqual(len(result['related']), 1)
         self.assertEqual(result[column_name_mappings['address_line_1']],
-                          taxlot_state.address_line_1)
+                         taxlot_state.address_line_1)
         self.assertEqual(result[column_name_mappings['block_number']], taxlot_state.block_number)
 
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
+                         property_state.address_line_1)
         self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
+                         property_state.pm_parent_property_id)
         # self.assertEqual(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
         # self.assertEqual(related['calculated_taxlot_ids'], result[column_name_mappings['jurisdiction_tax_lot_id']])
         # self.assertEqual(related['primary'], 'P')
@@ -1227,14 +1227,14 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         result = results[0]
         self.assertEqual(len(result['related']), 1)
         self.assertEqual(result[column_name_mappings['address_line_1']],
-                          taxlot_state_1.address_line_1)
+                         taxlot_state_1.address_line_1)
         self.assertEqual(result[column_name_mappings['block_number']], taxlot_state_1.block_number)
 
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
+                         property_state.address_line_1)
         self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
+                         property_state.pm_parent_property_id)
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
         # self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         # self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
@@ -1244,14 +1244,14 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         result = results[1]
         self.assertEqual(len(result['related']), 1)
         self.assertEqual(result[column_name_mappings['address_line_1']],
-                          taxlot_state_2.address_line_1)
+                         taxlot_state_2.address_line_1)
         self.assertEqual(result[column_name_mappings['block_number']], taxlot_state_2.block_number)
 
         related = result['related'][0]
         self.assertEqual(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
+                         property_state.address_line_1)
         self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
+                         property_state.pm_parent_property_id)
 
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
         # self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
