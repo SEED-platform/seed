@@ -52,6 +52,7 @@ DATABASES = {
 if SEED_TESTING:
     INSTALLED_APPS += (
         "django_nose",
+        "django_extensions",
     )
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
     NOSE_PLUGINS = [
