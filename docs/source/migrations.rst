@@ -71,7 +71,7 @@ Version 2.7.1
 
 **Important Note:**
 
-If upgrading from < 2.7.0 to >= 2.7.1 you may encounter a failed migration with ``0118_match_merge_link_all_orgs``.  This is expected if the database is several versions behind, and it effectively reorders migration 118 to run after all other migrations have completed to prepare your database to recognize properties and taxlots across multiple cycles.  Run the following code manually to fully migrate:
+If upgrading from `< 2.7.0` to `>= 2.7.1` you may encounter a failed migration with ``0118_match_merge_link_all_orgs``.  This is expected if the database is several versions behind, and it effectively reorders migration 118 to run after all other migrations have completed to prepare your database to recognize properties and taxlots across multiple cycles.  Run the following code manually to fully migrate:
 
 #. ``./manage.py migrate --fake seed 0118_match_merge_link_all_orgs``
 
@@ -105,7 +105,7 @@ Version 2.6.0
 -------------
 
 Version 2.6.0 includes support for meters and time series data storage. In order to use this release
-you must first install [timescaledb](https://docs.timescale.com/v1.2/getting-started).
+you must first install `TimescaleDB`_.
 
 Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -198,3 +198,5 @@ Development
 .. _`MapQuest Developer`: https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register
 
 .. _`MapQuest Key`: https://developer.mapquest.com/user/me/apps
+
+.. _`TimescaleDB`: https://docs.timescale.com/v1.2/getting-started
