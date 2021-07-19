@@ -35,6 +35,7 @@ from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
+from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots,
@@ -1620,12 +1621,15 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 def _validate_use_cases(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
+    bs = BuildingSync()
+    bs.import_file(import_file.file)
 
     progress_data.step('validating data with Selection Tool')
     try:
         all_files_valid, file_summaries = validation_client.validate_use_case(
             import_file.file,
-            filename=import_file.uploaded_filename
+            filename=import_file.uploaded_filename,
+            schema_version=bs.version
         )
         if all_files_valid is False:
             import_file.delete()
