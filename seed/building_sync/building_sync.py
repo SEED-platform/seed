@@ -49,6 +49,7 @@ class BuildingSync(object):
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2
     }
+    BUILDINGSYNC_V_LATEST = BUILDINGSYNC_V2_3_0
 
     def __init__(self):
         self.element_tree = None
@@ -379,7 +380,7 @@ class BuildingSync(object):
         # second check if it's a file form Audit Template Tool and infer the version
         # Currently ATT doesn't include a schemaLocation so this is necessary
         if self._is_from_audit_template_tool():
-            return self.BUILDINGSYNC_V2_0
+            return self.BUILDINGSYNC_V_LATEST
 
         # attempt to parse the version from the xsi:schemaLocation
         schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()
