@@ -42,24 +42,25 @@ import requests
 logger = logging.getLogger(__name__)
 
 HOST = "https://better-lbnl-development.herokuapp.com"
-# Acceptable BEDES defined BETTER inputs
-BETTER_PROPERTY_TYPES = ['Office',
-                         'Lodging',
-                         'Education',
-                         'Health care-Inpatient hospital',
-                         'Bank',
-                         'Courthouse',
-                         'Data Center',
-                         'Distribution Center',
-                         'Office-Financial',
-                         'Multifamily',
-                         'Warehouse unrefrigerated',
-                         'Warehouse refrigerated',
-                         'Retail',
-                         'Health care-Skilled nursing facility',
-                         'Food sales-Grocery store',
-                         'Other'
-                         ]
+# BETTER and ESPM use different names for property types than BEDES and BSync
+BETTER_TO_BSYNC_PROPERTY_TYPE = {
+    'Office': 'Office',
+    'Hotel': 'Lodging',
+    'K-12 School': 'Education',
+    'Hospital (General Medical & Surgical)': 'Health care-Inpatient hospital',
+    'Bank Branch': 'Bank',
+    'Courthouse': 'Courthouse',
+    'Data Center': 'Data Center',
+    'Distribution Center': 'Distribution Center',
+    'Financial Office': 'Office-Financial',
+    'Multifamily Housing': 'Multifamily',
+    'Non-Refrigerated Warehouse': 'Warehouse unrefrigerated',
+    'Refrigerated Warehouse': 'Warehouse refrigerated',
+    'Retail Store': 'Retail',
+    'Senior Care Community': 'Health care-Skilled nursing facility',
+    'Supermarket/Grocery Store': 'Food sales-Grocery store',
+    'Other': 'Other'
+}
 
 
 def _validate_better_config(analysis):
@@ -243,8 +244,8 @@ def _build_better_input(analysis_property_view, meters):
         errors.append('Linked PropertyState is missing a gross floor area')
     if property_state.property_type is None:
         errors.append('Linked PropertyState is missing a property type')
-    if property_state.property_type not in BETTER_PROPERTY_TYPES:
-        errors.append('Linked PropertyState must have property type of : {}'.format(BETTER_PROPERTY_TYPES))
+    if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
+        errors.append(f'Linked PropertyState must have property type of: {", ".join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}')
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
@@ -258,6 +259,8 @@ def _build_better_input(analysis_property_view, meters):
         eGRIDRegion = property_state.extra_data['eGRIDRegion']
     except KeyError:
         eGRIDRegion = ""
+
+    property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
     gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
 
@@ -303,7 +306,7 @@ def _build_better_input(analysis_property_view, meters):
                                     E.eGRIDRegionCode(eGRIDRegion),
                                     E.Longitude(str(analysis_property_view.property_state.longitude)),
                                     E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                    E.OccupancyClassification(property_state.property_type),
+                                    E.OccupancyClassification(property_type),
                                     E.FloorAreas(
                                         E.FloorArea(
                                             E.FloorAreaType("Gross"),
