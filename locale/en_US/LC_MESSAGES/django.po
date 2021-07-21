@@ -242,9 +242,6 @@ msgstr "auto-mapping energy data"
 msgid "auto-matching energy data"
 msgstr "auto-matching energy data"
 
-msgid "available templates"
-msgstr "available templates"
-
 #: seed/landing/templates/landing/thank_you.html:17
 msgid "Back"
 msgstr "Back"
@@ -2964,6 +2961,9 @@ msgstr "View Project"
 
 msgid "Viewer"
 msgstr "Viewer"
+
+msgid "Visit the BETTER website to run a portfolio analysis"
+msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Warning"
 msgstr "Warning"
