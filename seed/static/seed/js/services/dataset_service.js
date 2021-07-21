@@ -88,7 +88,6 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
     };
 
     dataset_service.check_meters_tab_exists = function (file_id) {
-      debugger;
       return $http.get('/api/v3/import_files/' + file_id + '/check_meters_tab_exists', {
         params: {
           organization_id: user_service.get_organization().id
