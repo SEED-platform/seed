@@ -368,17 +368,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
-        $scope.accept_meters = function (file_id, cycle_id) {
-          $scope.uploader.in_progress = true;
-          save_raw_assessed_data(file_id, cycle_id, true);
-        };
-
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
         _.defer(function () {
           $scope.$apply();
         });
+      };
+
+      $scope.accept_meters = function (file_id, cycle_id) {
+        file_id = file_id || $scope.dataset.import_file_id;
+        cycle_id = cycle_id || $scope.selectedCycle.id;
+        $scope.uploader.in_progress = true;
+        save_raw_assessed_data(file_id, cycle_id, true);
       };
 
       /**
@@ -545,6 +547,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           });
       };
 
+      $scope.reuse_import_file_to_import_meters = function () {
+        dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
+          $scope.dataset.import_file_id = data.import_file_id;
+          $scope.uploader.progress = 50;
+          $scope.uploader.status_message = 'analyzing file';
+          uploader_service
+            .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
+            .then(present_parsed_meters_confirmation)
+            .catch(present_meter_import_error);
+        })
+      }
+
       /**
        * save_raw_assessed_data: saves Assessed data
        *
@@ -636,6 +650,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                   $scope.step_10_style = 'danger';
                   $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2);
                 }
+
+                // Toggle a meter import button if the imported file also has a meters tab
+                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function(result) {
+                  $scope.import_file_reusable_for_meters = result;
+                });
 
                 // If merges against existing exist, provide slightly different feedback
                 if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {
