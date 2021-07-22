@@ -245,7 +245,8 @@ def _build_better_input(analysis_property_view, meters):
     if property_state.property_type is None:
         errors.append('Linked PropertyState is missing a property type')
     if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
-        errors.append(f'Linked PropertyState must have property type of: {", ".join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}')
+        errors.append(
+            f'Linked PropertyState must have property type of: {", ".join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}')
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
@@ -299,6 +300,11 @@ def _build_better_input(analysis_property_view, meters):
                                         )
                                     ),
                                     E.Address(
+                                        E.StreetAddressDetail(
+                                            E.Simplified(
+                                                E.StreetAddress(str(property_state.address_line_1))
+                                            )
+                                        ),
                                         E.City(property_state.city),
                                         E.State(property_state.state),
                                         E.PostalCode(property_state.postal_code)
