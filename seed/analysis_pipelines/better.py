@@ -377,7 +377,6 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
-    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
