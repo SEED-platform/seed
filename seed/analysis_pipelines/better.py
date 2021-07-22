@@ -451,14 +451,14 @@ def _start_analysis(self, analysis_id, progress_data_key):
                 if content_type == AnalysisOutputFile.HTML:
                     output_html_file_ids.append(analysis_output_file.id)
 
-        if len(output_html_file_ids) == 0:
-            pipeline = BETTERPipeline(analysis.id)
-            message = 'Failed to get results for all properties'
-            pipeline.fail(message, logger, progress_data_key=progress_data.key)
-            # stop the task chain
-            raise StopAnalysisTaskChain(message)
+    if len(output_html_file_ids) == 0:
+        pipeline = BETTERPipeline(analysis.id)
+        message = 'Failed to get results for all properties'
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        # stop the task chain
+        raise StopAnalysisTaskChain(message)
 
-        return output_html_file_ids
+    return output_html_file_ids
 
 
 @shared_task(bind=True)
