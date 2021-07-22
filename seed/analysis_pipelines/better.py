@@ -299,6 +299,11 @@ def _build_better_input(analysis_property_view, meters):
                                         )
                                     ),
                                     E.Address(
+                                        E.StreetAddressDetail(
+                                          E.Simplified(
+                                              E.StreetAddress(str(property_state.address_line_1))
+                                          )
+                                        ),
                                         E.City(property_state.city),
                                         E.State(property_state.state),
                                         E.PostalCode(property_state.postal_code)
@@ -372,6 +377,7 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
+    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
