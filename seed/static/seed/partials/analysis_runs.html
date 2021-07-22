@@ -15,7 +15,7 @@
                 <td>{$:: (messages | filter : {'analysis_property_view':view.id})[0]['user_message'] $}</td>
                 <td>
                     <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-                        <a href="{$:: file.file $}">{$:: file.content_type $}</a>
+                        <a href="{$:: file.file $}" target="_blank">{$:: file.content_type $}</a>
                         <span ng-repeat-end ng-if="!$last">,&nbsp;</span>
                     </span>
                 </td>
