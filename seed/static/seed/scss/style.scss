@@ -2264,6 +2264,16 @@ select {
   cursor: move;
 }
 
+/* STYLES FOR SUMMARY */
+
+/* Styles for building summary page */
+
+ #inventory-summary {
+  table, th, td {
+    border: 1px solid black;
+  }
+}
+
 /* STYLES FOR REPORTS */
 
 /* Styles for building reports page */
@@ -3857,3 +3867,5 @@ FAQ page
 .auto-populate-list > li {
   margin-bottom: 8px;
 }
+
+

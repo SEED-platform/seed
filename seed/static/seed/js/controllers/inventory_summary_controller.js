@@ -40,8 +40,70 @@ angular.module('BE.seed.controller.inventory_summary', [])
         analyses_service.get_summary($scope.cycle.selected_cycle.id)
           .then(function(data) {
             console.log('Summary data:', data)
-            $scope.summary_data = data
+            originalData = data
             // TODO: update the chart (help: https://stackoverflow.com/questions/20905429/update-dimple-js-chart-when-select-a-new-option)
+
+            // function analysisCtrl($scope) {
+              $scope.data = [
+                {
+                  text: "total_records",
+                  count: originalData['total_records']
+                },{
+                  text: "number_extra_data_fields",
+                  count: originalData['number_extra_data_fields']
+                }
+              ];
+            // }
+
+            //function analysisCtrl($scope) {
+              //$scope.data = [
+                //{
+                  //text: "extra_data fields and count",
+                  //count: originalData['extra_data fields and count']
+                //}
+              //];
+            //}
+
+            var svg = dimple.newSvg("#chart", 1100, 900);
+            var data = originalData['property_types'];
+
+            var chart = new dimple.chart(svg, data);
+            var x = chart.addCategoryAxis("x", "extra_data__Largest Property Use Type");
+            var y = chart.addMeasureAxis("y", "count");
+
+            chart.addSeries(null, dimple.plot.bar);
+            chart.draw();
+
+            var svg = dimple.newSvg("#chart", 1100, 900);
+            var data = originalData['year_built'];
+
+            var chart = new dimple.chart(svg, data);
+            var x = chart.addCategoryAxis("x", "year_built");
+            var y = chart.addMeasureAxis("y", "percentage");
+
+            chart.addSeries(null, dimple.plot.bar);
+            chart.draw();
+
+            var svg = dimple.newSvg("#chart", 1100, 900);
+            var data = originalData['energy'];
+
+            var chart = new dimple.chart(svg, data);
+            var x = chart.addCategoryAxis("x", "site_eui");
+            var y = chart.addMeasureAxis("y", "percentage");
+
+            chart.addSeries(null, dimple.plot.bar);
+            chart.draw();
+
+            var svg = dimple.newSvg("#chart", 1100, 900);
+            var data = originalData['Square Footage'];
+
+            var chart = new dimple.chart(svg, data);
+            var x = chart.addCategoryAxis("x", "gross_floor_area");
+            var y = chart.addMeasureAxis("y", "percentage");
+
+            chart.addSeries(null, dimple.plot.bar);
+            chart.draw();
+
             modalInstance.close()
           })
       };
