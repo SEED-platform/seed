@@ -567,7 +567,7 @@ def _process_results(self, analysis_id, progress_data_key):
     property_view_query = Q()
     for analysis_property_view in analysis_property_views:
         property_view_query |= (
-            Q(property=analysis_property_view.property) \
+            Q(property=analysis_property_view.property)
             & Q(cycle=analysis_property_view.cycle)
         )
     # get original property views keyed by canonical property id and cycle
@@ -703,10 +703,8 @@ def _better_report_json_request(better_building_id, better_analysis_id):
             return None, [f'BETTER analysis could not be fetched: {response.text}']
         response_json = response.json()
     except ConnectionError as e:
-        message = [f'Failed to connect to BETTER service: {e}']
+        message = f'Failed to connect to BETTER service: {e}'
         raise AnalysisPipelineException(message)
-    except Exception as e:
-        return None, [f'Encountered an unexpected error: {e}']
 
     return response_json, []
 
