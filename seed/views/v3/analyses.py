@@ -355,5 +355,5 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'extra_data fields and count': extra_data,
             'year_built': year_built_list,
             'energy': energy_list2,
-            'Square Footage': sqftage_list2
+            'square_footage': sqftage_list2
         })

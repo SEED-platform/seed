@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
           { name: 'property_types', x: 'extra_data__Largest Property Use Type', y: 'count' },
           { name: 'year_built', x: 'year_built', y: 'percentage' },
           { name: 'energy', x: 'site_eui', y: 'percentage' },
-          { name: 'Square Footage', x: 'gross_floor_area', y: 'percentage' },
+          { name: 'square_footage', x: 'gross_floor_area', y: 'percentage' },
         ]
 
         if (_.isEmpty(charts)) {
