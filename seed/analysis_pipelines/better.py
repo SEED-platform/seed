@@ -235,21 +235,22 @@ def _build_better_input(analysis_property_view, meters):
     property_state = analysis_property_view.property_state
 
     if property_state.property_name is None:
-        errors.append('Linked PropertyState is missing a name')
+        errors.append("BETTER analysis requires the property's name.")
     if property_state.city is None:
-        errors.append('Linked PropertyState is missing a city')
+        errors.append("BETTER analysis requires the property's city.")
     if property_state.state is None:
-        errors.append('Linked PropertyState is missing a State')
+        errors.append("BETTER analysis requires the property's state.")
     if property_state.gross_floor_area is None:
-        errors.append('Linked PropertyState is missing a gross floor area')
+        errors.append("BETTER analysis requires the property's gross floor area.")
     if property_state.property_type is None:
-        errors.append('Linked PropertyState is missing a property type')
+        errors.append("BETTER analysis requires the property's type (office, retail, etc).")
     if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
-        errors.append(f'Linked PropertyState must have property type of: {", ".join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}')
+        errors.append(
+            f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
-                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value')
+                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value.')
     if errors:
         return None, errors
 
@@ -299,6 +300,11 @@ def _build_better_input(analysis_property_view, meters):
                                         )
                                     ),
                                     E.Address(
+                                        E.StreetAddressDetail(
+                                            E.Simplified(
+                                                E.StreetAddress(str(property_state.address_line_1))
+                                            )
+                                        ),
                                         E.City(property_state.city),
                                         E.State(property_state.state),
                                         E.PostalCode(property_state.postal_code)
@@ -445,14 +451,14 @@ def _start_analysis(self, analysis_id, progress_data_key):
                 if content_type == AnalysisOutputFile.HTML:
                     output_html_file_ids.append(analysis_output_file.id)
 
-        if len(output_html_file_ids) == 0:
-            pipeline = BETTERPipeline(analysis.id)
-            message = 'Failed to get results for all properties'
-            pipeline.fail(message, logger, progress_data_key=progress_data.key)
-            # stop the task chain
-            raise StopAnalysisTaskChain(message)
+    if len(output_html_file_ids) == 0:
+        pipeline = BETTERPipeline(analysis.id)
+        message = 'Failed to get results for all properties'
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        # stop the task chain
+        raise StopAnalysisTaskChain(message)
 
-        return output_html_file_ids
+    return output_html_file_ids
 
 
 @shared_task(bind=True)
