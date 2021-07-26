@@ -14,7 +14,7 @@
     <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
-<div id="inventory-summary-controls">
+<div class="inventory-summary-controls">
     <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
         <span>
             <label>{$:: 'Cycle' | translate $}:</label>
@@ -26,15 +26,28 @@
     </div>
 </div>
 
-<div id="inventory-summary">
-    <div>
-        <table>
-            <!-- TODO: update table creation -->
-            <tr ng-repeat="item in data">
-              <td>{$item.text$}</td>
-              <td>{$item.count$}</td>
-            </tr>
-        </table>
+<div class="section inventory-summary">
+    <div class="section_content_container">
+        <div class="section_content container-fluid">
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <table>
+                            <tr ng-repeat="item in table_data">
+                                <td>{$item.text$}</td>
+                                <td>{$item.count$}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div id="chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="chart"></div>
 </div>

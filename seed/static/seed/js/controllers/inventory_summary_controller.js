@@ -21,12 +21,41 @@ angular.module('BE.seed.controller.inventory_summary', [])
       cycles_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
+      // charts is where we will store references to our charts
+      const charts = {};
 
       const lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
         selected_cycle: _.find(cycles_payload.cycles, {id: lastCycleId}) || _.first(cycles_payload.cycles),
         cycles: cycles_payload.cycles
       };
+
+      const draw_charts = function() {
+        const chartConfigs = [
+          { name: 'property_types', x: 'extra_data__Largest Property Use Type', y: 'count' },
+          { name: 'year_built', x: 'year_built', y: 'percentage' },
+          { name: 'energy', x: 'site_eui', y: 'percentage' },
+          { name: 'Square Footage', x: 'gross_floor_area', y: 'percentage' },
+        ]
+
+        if (_.isEmpty(charts)) {
+          // initialize charts
+          chartConfigs.forEach(config => {
+            const svg = dimple.newSvg("#chart", 500, 400);
+            const chart = new dimple.chart(svg, []);
+            chart.addCategoryAxis('x', config.x);
+            chart.addMeasureAxis('y', config.y);
+            chart.addSeries(null, dimple.plot.bar);
+            charts[config.name] = chart;
+          })
+        }
+
+        chartConfigs.forEach(config => {
+          const chart = charts[config.name]
+          chart.data = $scope.summary_data[config.name]
+          chart.draw();
+        })
+      }
 
       const refresh_data = function () {
         $scope.progress = {};
@@ -39,71 +68,18 @@ angular.module('BE.seed.controller.inventory_summary', [])
 
         analyses_service.get_summary($scope.cycle.selected_cycle.id)
           .then(function(data) {
-            console.log('Summary data:', data)
-            originalData = data
-            // TODO: update the chart (help: https://stackoverflow.com/questions/20905429/update-dimple-js-chart-when-select-a-new-option)
+            $scope.summary_data = data;
+            $scope.table_data = [
+              {
+                text: "total_records",
+                count: data['total_records']
+              },{
+                text: "number_extra_data_fields",
+                count: data['number_extra_data_fields']
+              }
+            ];
 
-            // function analysisCtrl($scope) {
-              $scope.data = [
-                {
-                  text: "total_records",
-                  count: originalData['total_records']
-                },{
-                  text: "number_extra_data_fields",
-                  count: originalData['number_extra_data_fields']
-                }
-              ];
-            // }
-
-            //function analysisCtrl($scope) {
-              //$scope.data = [
-                //{
-                  //text: "extra_data fields and count",
-                  //count: originalData['extra_data fields and count']
-                //}
-              //];
-            //}
-
-            var svg = dimple.newSvg("#chart", 1100, 900);
-            var data = originalData['property_types'];
-
-            var chart = new dimple.chart(svg, data);
-            var x = chart.addCategoryAxis("x", "extra_data__Largest Property Use Type");
-            var y = chart.addMeasureAxis("y", "count");
-
-            chart.addSeries(null, dimple.plot.bar);
-            chart.draw();
-
-            var svg = dimple.newSvg("#chart", 1100, 900);
-            var data = originalData['year_built'];
-
-            var chart = new dimple.chart(svg, data);
-            var x = chart.addCategoryAxis("x", "year_built");
-            var y = chart.addMeasureAxis("y", "percentage");
-
-            chart.addSeries(null, dimple.plot.bar);
-            chart.draw();
-
-            var svg = dimple.newSvg("#chart", 1100, 900);
-            var data = originalData['energy'];
-
-            var chart = new dimple.chart(svg, data);
-            var x = chart.addCategoryAxis("x", "site_eui");
-            var y = chart.addMeasureAxis("y", "percentage");
-
-            chart.addSeries(null, dimple.plot.bar);
-            chart.draw();
-
-            var svg = dimple.newSvg("#chart", 1100, 900);
-            var data = originalData['Square Footage'];
-
-            var chart = new dimple.chart(svg, data);
-            var x = chart.addCategoryAxis("x", "gross_floor_area");
-            var y = chart.addMeasureAxis("y", "percentage");
-
-            chart.addSeries(null, dimple.plot.bar);
-            chart.draw();
-
+            draw_charts();
             modalInstance.close()
           })
       };

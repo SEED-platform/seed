@@ -2719,7 +2719,7 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.inventory-list-controls {
+.inventory-list-controls, .inventory-summary-controls {
   padding: 20px 10px;
 
   .form-group {
@@ -3873,4 +3873,16 @@ iframe.analysis-results {
   width: 100%;
   height: 500px;
   overflow: hidden;
+}
+
+
+.inventory-summary {
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+  }
+
+  table {
+    width: 300px;
+  }
 }
