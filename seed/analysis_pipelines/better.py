@@ -339,8 +339,8 @@ def _build_better_input(analysis_property_view, meters):
                                     E.ResourceUses(
                                         *[
                                             E.ResourceUse(
-                                                {'ID': 'Resource-' + Meter.ENERGY_TYPES[meter.type-1][1]},
-                                                E.EnergyResource(Meter.ENERGY_TYPES[meter.type-1][1]),
+                                                {'ID': 'Resource-' + Meter.ENERGY_TYPES[meter.type - 1][1]},
+                                                E.EnergyResource(Meter.ENERGY_TYPES[meter.type - 1][1]),
                                                 E.ResourceUnits(meter.meter_readings.first().source_unit),
                                                 E.EndUse('All end uses')
                                             )
@@ -350,13 +350,13 @@ def _build_better_input(analysis_property_view, meters):
                                     E.TimeSeriesData(
                                         *[
                                             E.TimeSeries(
-                                                {'ID': f'TimeSeries-{Meter.ENERGY_TYPES[meter.type-1][1]}-{i}'},
+                                                {'ID': f'TimeSeries-{Meter.ENERGY_TYPES[meter.type - 1][1]}-{i}'},
                                                 E.ReadingType('Total'),
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': 'Resource-' + str(Meter.ENERGY_TYPES[meter.type-1][1])}),
+                                                E.ResourceUseID({'IDref': 'Resource-' + str(Meter.ENERGY_TYPES[meter.type - 1][1])}),
                                             )
                                             for meter in meters for i, reading in enumerate(meter.meter_readings.all())
                                         ]
