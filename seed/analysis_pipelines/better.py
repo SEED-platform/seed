@@ -292,9 +292,6 @@ def _build_better_input(analysis_property_view, meters):
     if errors:
         return None, errors
 
-    for meter in meters:
-        x = BETTER_TO_BSYNC_RESOURCE_TYPE[Meter.ENERGY_TYPES[meter.type - 1][1]]
-        print(x)
     # clean inputs
     # BETTER will default if eGRIDRegion is not explicitly set
     try:
@@ -416,7 +413,6 @@ def _build_better_input(analysis_property_view, meters):
             )
         )
     )
-    print(etree.tostring(doc))
     return etree.tostring(doc, pretty_print=True), []
 
 
