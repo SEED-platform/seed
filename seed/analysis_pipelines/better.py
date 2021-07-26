@@ -176,7 +176,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
             .annotate(readings_count=Count('meter_readings'))
             .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
+                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
                 readings_count__gte=12,
             )
         )
@@ -382,7 +382,7 @@ def _build_better_input(analysis_property_view, meters):
                                                 E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
                                             )
                                             for meter_idx, meter in enumerate(meters) \
-                                                for reading_idx, reading in enumerate(meter.meter_readings.all())
+                                            for reading_idx, reading in enumerate(meter.meter_readings.all())
                                         ]
                                     ),
                                     E.LinkedPremises(
