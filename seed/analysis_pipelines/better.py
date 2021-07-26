@@ -42,6 +42,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 HOST = "https://better-lbnl-development.herokuapp.com"
+
 # BETTER and ESPM use different names for property types than BEDES and BSync
 BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Office': 'Office',
@@ -62,42 +63,25 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Other': 'Other'
 }
 
-BETTER_TO_BSYNC_RESOURCE_TYPE = {
-    'Electric - Grid': 'Electricity',
-    'Natural Gas': 'Natural gas',
-    'Diesel': 'Diesel',
-    'Propane': 'Propane',
-    'Coal (anthracite)': 'Coal anthracite',
-    'Coal (bituminous)': 'Coal bituminous',
-    'Coke': 'Coke',
-    'Fuel Oil (No. 1)': 'Fuel oil no 1',
-    'Fuel Oil (No. 2)': 'Fuel oil no 2',
-    'Fuel Oil (No. 4)': 'Fuel oil no 4',
-    'Fuel Oil (No. 5 and No. 6)': 'Fuel oil no 5 and no 6',
-    'District Steam': 'District steam',
-    'District Hot Water': 'District hot water',
-    'District Chilled Water - Electric': 'District chilled water',
-    'Kerosene': 'Kerosene',
-    'Wood': 'Wood'
-}
-
-BETTER_TO_BSYNC_UNIT_TYPE = {
-    'kWh (thousand Watt-hours)': 'kWh',
-    'kBtu (thousand Btu)': 'kBtu',
-    'MBtu/MMBtu (million Btu)': 'MBtu',
-    'MBtu/ MMBtu/ Dth (million Btu/ dekatherm)': 'MMBtu',
-    'MWh': 'MWh',
-    'therms': 'therms',
-    'Gallons (US)': 'Gallons',
-    'Lbs': "lbs",
-    'kLbs (thousand pounds)': "kLbs",
-    'MLbs (million pounds)': "MLbs",
-    'Metric Tonnes': 'Mass ton',
-    'ton Hours': "Ton-hour",
-    'Tons': 'Tons',
-    'kcf (thousand cubic feet)': 'kcf',
-    'Mcf (million cubic feet)': 'MCF',
-    'cm (cubic meters)': 'Cubic Meters'
+# maps SEED Meter types to BuildignSync ResourceUse types
+# NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
+SEED_TO_BSYNC_RESOURCE_TYPE = {
+    Meter.ELECTRICITY_GRID: 'Electricity',
+    Meter.NATURAL_GAS: 'Natural gas',
+    Meter.DIESEL: 'Diesel',
+    Meter.PROPANE: 'Propane',
+    Meter.COAL_ANTHRACITE: 'Coal anthracite',
+    Meter.COAL_BITUMINOUS: 'Coal bituminous',
+    Meter.COKE: 'Coke',
+    Meter.FUEL_OIL_NO_1: 'Fuel oil no 1',
+    Meter.FUEL_OIL_NO_2: 'Fuel oil no 2',
+    Meter.FUEL_OIL_NO_4: 'Fuel oil no 4',
+    Meter.FUEL_OIL_NO_5_AND_NO_6: 'Fuel oil no 5 and no 6',
+    Meter.DISTRICT_STEAM: 'District steam',
+    Meter.DISTRICT_HOT_WATER: 'District hot water',
+    Meter.DISTRICT_CHILLED_WATER_ELECTRIC: 'District chilled water',
+    Meter.KEROSENE: 'Kerosene',
+    Meter.WOOD: 'Wood'
 }
 
 
@@ -377,33 +361,34 @@ def _build_better_input(analysis_property_view, meters):
                                     E.ResourceUses(
                                         *[
                                             E.ResourceUse(
-                                                {'ID': 'Resource-' + BETTER_TO_BSYNC_RESOURCE_TYPE[Meter.ENERGY_TYPES[meter.type - 1][1]]},
-                                                E.EnergyResource(BETTER_TO_BSYNC_RESOURCE_TYPE[Meter.ENERGY_TYPES[meter.type - 1][1]]),
-                                                E.ResourceUnits(BETTER_TO_BSYNC_UNIT_TYPE[meter.meter_readings.first().source_unit]),
+                                                {'ID': f'ResourceUse-{meter_idx:03}'},
+                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter.type]),
+                                                # SEED stores all meter readings as kBtu
+                                                E.ResourceUnits('kBtu'),
                                                 E.EndUse('All end uses')
                                             )
-                                            for meter in meters
+                                            for meter_idx, meter in enumerate(meters)
                                         ]
                                     ),
                                     E.TimeSeriesData(
                                         *[
                                             E.TimeSeries(
-                                                {'ID': f'TimeSeries-{BETTER_TO_BSYNC_RESOURCE_TYPE[Meter.ENERGY_TYPES[meter.type - 1][1]]}-{i}'},
+                                                {'ID': f'TimeSeries-{meter_idx:03}-{reading_idx:03}'},
                                                 E.ReadingType('Total'),
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': 'Resource-' + str(BETTER_TO_BSYNC_RESOURCE_TYPE[Meter.ENERGY_TYPES[meter.type - 1][1]])}),
+                                                E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
                                             )
-                                            for meter in meters for i, reading in enumerate(meter.meter_readings.all())
+                                            for meter_idx, meter in enumerate(meters) \
+                                                for reading_idx, reading in enumerate(meter.meter_readings.all())
                                         ]
                                     ),
                                     E.LinkedPremises(
                                         E.Building(
                                             E.LinkedBuildingID({'IDref': 'Building-1'})
                                         )
-
                                     )
                                 )
                             )
