@@ -9,6 +9,8 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
+from pandas import ExcelFile
+from json import dumps
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
@@ -36,6 +38,7 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
+from xlrd.biffh import XLRDError
 
 _log = logging.getLogger(__name__)
 
@@ -154,6 +157,81 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({
             'status': 'success',
             'import_file': f,
+        })
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def check_meters_tab_exists(self, request, pk=None):
+        """
+        Checks for the existence of meters tab "Meter Entries" for a file.
+        """
+        org_id = self.get_organization(request)
+        try:
+            import_file = ImportFile.objects.get(
+                id=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find import file with pk=' + str(pk)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            meter_tab_check = {'Meter Entries', 'Monthly Usage'} & set(ExcelFile(import_file.file).sheet_names)
+            return JsonResponse({
+                'status': 'success',
+                'data': dumps(bool(meter_tab_check))
+            })
+        except XLRDError:
+            return JsonResponse({
+                'status': 'success',
+                'data': 'false'
+            })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory({
+            'import_file_id': 'integer'
+        })
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['POST'])
+    def reuse_inventory_file_for_meters(self, request):
+        org_id = self.get_organization(request)
+        try:
+            import_file_id = request.data.get('import_file_id', 0)
+            original_file = ImportFile.objects.get(
+                id=import_file_id,
+                import_record__super_organization_id=org_id,
+                mapping_done=True,
+                source_type="Assessed Raw"
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find previously imported inventory file with pk=' + str(import_file_id)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        new_file = ImportFile.objects.create(
+            import_record=original_file.import_record,
+            file=original_file.file,
+            uploaded_filename=original_file.uploaded_filename,
+            source_type="PM Meter Usage",
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'import_file_id': new_file.id
         })
 
     @swagger_auto_schema_org_query_param
