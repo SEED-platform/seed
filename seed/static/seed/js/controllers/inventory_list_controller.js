@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     '$window',
     '$uibModal',
     '$sce',
+    '$state',
     '$stateParams',
     '$q',
     'inventory_service',
@@ -17,6 +18,7 @@ angular.module('BE.seed.controller.inventory_list', [])
     'geocode_service',
     'user_service',
     'derived_columns_service',
+    'Notification',
     'cycles',
     'profiles',
     'current_profile',
@@ -37,6 +39,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $window,
       $uibModal,
       $sce,
+      $state,
       $stateParams,
       $q,
       inventory_service,
@@ -45,6 +48,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       geocode_service,
       user_service,
       derived_columns_service,
+      Notification,
       cycles,
       profiles,
       current_profile,
@@ -1035,6 +1039,28 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
+      };
+
+      $scope.open_analyses_modal = function () {
+        const modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
+          controller: 'inventory_detail_analyses_modal_controller',
+          resolve: {
+            inventory_ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_view_id');
+            }
+          }
+        });
+        modalInstance.result.then(function(data) {
+          setTimeout(() => {
+            Notification.primary(`<a href="#/accounts/${$scope.organization.id}/analyses" style="color: #337ab7;">Click here to view your analyses</a>`)
+          }, 1000)
+        }, function() {
+          // Modal dismissed, do nothing
+        })
       };
 
       function currentColumns () {

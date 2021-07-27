@@ -4,11 +4,13 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from collections import namedtuple
 import logging
 import pathlib
 from tempfile import TemporaryDirectory, NamedTemporaryFile
 
 import polling
+from django.db.models import Q
 from django.conf import settings
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -25,7 +27,9 @@ from seed.models import (
     AnalysisMessage,
     AnalysisOutputFile,
     AnalysisPropertyView,
-    Meter
+    Column,
+    Meter,
+    PropertyView
 )
 from django.core.files.base import ContentFile, File as BaseFile
 from django.db.models import Count
@@ -42,24 +46,25 @@ import requests
 logger = logging.getLogger(__name__)
 
 HOST = "https://better-lbnl-development.herokuapp.com"
-# Acceptable BEDES defined BETTER inputs
-BETTER_PROPERTY_TYPES = ['Office',
-                         'Lodging',
-                         'Education',
-                         'Health care-Inpatient hospital',
-                         'Bank',
-                         'Courthouse',
-                         'Data Center',
-                         'Distribution Center',
-                         'Office-Financial',
-                         'Multifamily',
-                         'Warehouse unrefrigerated',
-                         'Warehouse refrigerated',
-                         'Retail',
-                         'Health care-Skilled nursing facility',
-                         'Food sales-Grocery store',
-                         'Other'
-                         ]
+# BETTER and ESPM use different names for property types than BEDES and BSync
+BETTER_TO_BSYNC_PROPERTY_TYPE = {
+    'Office': 'Office',
+    'Hotel': 'Lodging',
+    'K-12 School': 'Education',
+    'Hospital (General Medical & Surgical)': 'Health care-Inpatient hospital',
+    'Bank Branch': 'Bank',
+    'Courthouse': 'Courthouse',
+    'Data Center': 'Data Center',
+    'Distribution Center': 'Distribution Center',
+    'Financial Office': 'Office-Financial',
+    'Multifamily Housing': 'Multifamily',
+    'Non-Refrigerated Warehouse': 'Warehouse unrefrigerated',
+    'Refrigerated Warehouse': 'Warehouse refrigerated',
+    'Retail Store': 'Retail',
+    'Senior Care Community': 'Health care-Skilled nursing facility',
+    'Supermarket/Grocery Store': 'Food sales-Grocery store',
+    'Other': 'Other'
+}
 
 
 def _validate_better_config(analysis):
@@ -125,6 +130,7 @@ class BETTERPipeline(AnalysisPipeline):
 
         chain(
             _start_analysis.si(self._analysis_id, progress_data.key),
+            _process_results.si(self._analysis_id, progress_data.key),
             _finish_analysis.si(self._analysis_id, progress_data.key),
         ).apply_async()
 
@@ -234,21 +240,22 @@ def _build_better_input(analysis_property_view, meters):
     property_state = analysis_property_view.property_state
 
     if property_state.property_name is None:
-        errors.append('Linked PropertyState is missing a name')
+        errors.append("BETTER analysis requires the property's name.")
     if property_state.city is None:
-        errors.append('Linked PropertyState is missing a city')
+        errors.append("BETTER analysis requires the property's city.")
     if property_state.state is None:
-        errors.append('Linked PropertyState is missing a State')
+        errors.append("BETTER analysis requires the property's state.")
     if property_state.gross_floor_area is None:
-        errors.append('Linked PropertyState is missing a gross floor area')
+        errors.append("BETTER analysis requires the property's gross floor area.")
     if property_state.property_type is None:
-        errors.append('Linked PropertyState is missing a property type')
-    if property_state.property_type not in BETTER_PROPERTY_TYPES:
-        errors.append('Linked PropertyState must have property type of : {}'.format(BETTER_PROPERTY_TYPES))
+        errors.append("BETTER analysis requires the property's type (office, retail, etc).")
+    if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
+        errors.append(
+            f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
     for meter in meters:
         for meter_reading in meter.meter_readings.all():
             if meter_reading.reading is None:
-                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value')
+                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value.')
     if errors:
         return None, errors
 
@@ -258,6 +265,8 @@ def _build_better_input(analysis_property_view, meters):
         eGRIDRegion = property_state.extra_data['eGRIDRegion']
     except KeyError:
         eGRIDRegion = ""
+
+    property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
     gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
 
@@ -296,6 +305,11 @@ def _build_better_input(analysis_property_view, meters):
                                         )
                                     ),
                                     E.Address(
+                                        E.StreetAddressDetail(
+                                            E.Simplified(
+                                                E.StreetAddress(str(property_state.address_line_1))
+                                            )
+                                        ),
                                         E.City(property_state.city),
                                         E.State(property_state.state),
                                         E.PostalCode(property_state.postal_code)
@@ -303,7 +317,7 @@ def _build_better_input(analysis_property_view, meters):
                                     E.eGRIDRegionCode(eGRIDRegion),
                                     E.Longitude(str(analysis_property_view.property_state.longitude)),
                                     E.Latitude(str(analysis_property_view.property_state.latitude)),
-                                    E.OccupancyClassification(property_state.property_type),
+                                    E.OccupancyClassification(property_type),
                                     E.FloorAreas(
                                         E.FloorArea(
                                             E.FloorAreaType("Gross"),
@@ -407,18 +421,20 @@ def _start_analysis(self, analysis_id, progress_data_key):
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
         better_building_id = _better_building_service_request(input_file.file.path)
         better_analysis_id, errors = _run_better_analysis(better_building_id, analysis_config)
-        results_dir, errors = _better_report_service_request(better_analysis_id)
 
+        # Get results as standalone HTML and save as analysis output files
+        results_dir, errors = _better_report_service_request(better_analysis_id)
         if errors:
-            for error in errors:
+            for message in errors:
                 AnalysisMessage.log_and_create(
                     logger=logger,
                     type_=AnalysisMessage.ERROR,
                     analysis_id=analysis.id,
                     analysis_property_view_id=analysis_property_view_id,
                     user_message='Unexpected error from better service',
-                    debug_message=error,
+                    debug_message=message,
                 )
+            # continue to next input file
             continue
 
         for result_file_path in pathlib.Path(results_dir.name).iterdir():
@@ -442,14 +458,132 @@ def _start_analysis(self, analysis_id, progress_data_key):
                 if content_type == AnalysisOutputFile.HTML:
                     output_html_file_ids.append(analysis_output_file.id)
 
-        if len(output_html_file_ids) == 0:
-            pipeline = BETTERPipeline(analysis.id)
-            message = 'Failed to get results for all properties'
-            pipeline.fail(message, logger, progress_data_key=progress_data.key)
-            # stop the task chain
-            raise StopAnalysisTaskChain(message)
+        # Get results as JSON
+        results_dict, errors = _better_report_json_request(better_building_id, better_analysis_id)
+        if errors:
+            for message in errors:
+                AnalysisMessage.log_and_create(
+                    logger=logger,
+                    type_=AnalysisMessage.ERROR,
+                    analysis_id=analysis.id,
+                    analysis_property_view_id=analysis_property_view_id,
+                    user_message='Unexpected error from better service',
+                    debug_message=message,
+                )
+            # continue to next input file
+            continue
 
-        return output_html_file_ids
+        analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
+        analysis_property_view.parsed_results = results_dict
+        analysis_property_view.save()
+
+    if len(output_html_file_ids) == 0:
+        pipeline = BETTERPipeline(analysis.id)
+        message = 'Failed to get results for all properties'
+        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        # stop the task chain
+        raise StopAnalysisTaskChain(message)
+
+    return output_html_file_ids
+
+
+# Used to define json paths to parse from analysis results, which are linked to an extra data column
+# column_name: Column.column_name (also the extra_data key)
+# column_display_name: Column.display_name
+# json_path: naive json path -- dot separated keys into the parsed analysis results dict
+ExtraDataColumnPath = namedtuple('ExtraDataColumnPath', ['column_name', 'column_display_name', 'json_path'])
+
+
+def _update_original_property_state(property_state, data, data_paths):
+    """Pull all interesting bits out of data and add them to the property_state.
+    Note: this method updates the property state in the database!
+
+    :param property_state: PropertyState
+    :param data: dict
+    :param data_paths: list[ExtraDataColumnPath]
+    """
+    def get_json_path(json_path, data):
+        """very naive JSON path implementation. WARNING: it only handles key names that are dot separated
+        e.g. 'key1.key2.key3'
+
+        :param json_path: str
+        :param data: dict
+        :return: value, None if path not valid for dict
+        """
+        json_path = json_path.split('.')
+        result = data
+        for key in json_path:
+            result = result.get(key, {})
+
+        if type(result) is dict and not result:
+            # path was probably not valid in the data...
+            return None
+        return result
+
+    results = {
+        data_path.column_name: get_json_path(data_path.json_path, data)
+        for data_path in data_paths
+    }
+    property_state.extra_data.update(results)
+    property_state.save()
+
+
+@shared_task(bind=True)
+@analysis_pipeline_task(Analysis.RUNNING)
+def _process_results(self, analysis_id, progress_data_key):
+    """Store results from the analysis in the original PropertyState"""
+    analysis = Analysis.objects.get(id=analysis_id)
+    analysis.status = Analysis.RUNNING
+    analysis.save()
+
+    progress_data = ProgressData.from_key(progress_data_key)
+    progress_data.step('Processing results')
+
+    # create the results Columns if the don't already exist
+    column_data_paths = [
+        ExtraDataColumnPath(
+            'better_cost_savings_combined',
+            'BETTER Potential Cost Savings (USD)',
+            'assessment.assessment_energy_use.cost_savings_combined'
+        ),
+        ExtraDataColumnPath(
+            'better_energy_savings_combined',
+            'BETTER Potential Energy Savings (kWh)',
+            'assessment.assessment_energy_use.energy_savings_combined'
+        ),
+    ]
+
+    for column_data_path in column_data_paths:
+        Column.objects.get_or_create(
+            is_extra_data=True,
+            column_name=column_data_path.column_name,
+            display_name=column_data_path.column_display_name,
+            organization=analysis.organization,
+            table_name='PropertyState',
+        )
+
+    # Update the original PropertyView's PropertyState with analysis results of interest
+    analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
+    property_view_query = Q()
+    for analysis_property_view in analysis_property_views:
+        property_view_query |= (
+            Q(property=analysis_property_view.property)
+            & Q(cycle=analysis_property_view.cycle)
+        )
+    # get original property views keyed by canonical property id and cycle
+    property_views_by_property_cycle_id = {
+        (pv.property.id, pv.cycle.id): pv
+        for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
+    }
+
+    for analysis_property_view in analysis_property_views:
+        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
+        property_view = property_views_by_property_cycle_id[property_cycle_id]
+        _update_original_property_state(
+            property_view.state,
+            analysis_property_view.parsed_results,
+            column_data_paths
+        )
 
 
 @shared_task(bind=True)
@@ -548,6 +682,31 @@ def _better_report_service_request(analysis_id):
         file.write(standalone_html)
 
     return temporary_results_dir, []
+
+
+def _better_report_json_request(better_building_id, better_analysis_id):
+    """Makes request to better html report endpoint using the provided analysis_id
+
+    :params: better_building_id
+    :params: better_analysis_id
+    :returns: tuple(dict, list[str]), analysis response json and error messages
+    """
+    url = f'{HOST}/api/v1/buildings/{better_building_id}/analytics/{better_analysis_id}/?format=json'
+
+    headers = {
+        'accept': '*/*',
+        'Authorization': settings.BETTER_TOKEN,
+    }
+    try:
+        response = requests.request("GET", url, headers=headers)
+        if response.status_code != 200:
+            return None, [f'BETTER analysis could not be fetched: {response.text}']
+        response_json = response.json()
+    except ConnectionError as e:
+        message = f'Failed to connect to BETTER service: {e}'
+        raise AnalysisPipelineException(message)
+
+    return response_json, []
 
 
 def _run_better_analysis(building_id, config):
