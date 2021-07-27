@@ -2,9 +2,12 @@
 
 <div class="section">
     <div class="section_header_container">
-        <div class="section_header fixed_height_short">
-            <div class="left section_action_container" style="width:100%;">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $}</h2>
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="left section_action_container">
+                <h2><i class="fa fa-bar-chart"></i>{$:: 'Analyses' | translate $}: {$:: analysis.name $}</h2>
+            </div>
+            <div class="right section_action_container" ng-if="analysis.service == 'BETTER'">
+                <a href="https://better.lbl.gov/" target="_blank">{$:: 'Visit the BETTER website to run a portfolio analysis' | translate $}<i class="fa fa-arrow-right"></i></a>
             </div>
         </div>
     </div>

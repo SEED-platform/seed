@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -24,7 +24,7 @@ from seed.models.data_quality import (
     Rule,
     DataQualityCheck,
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
@@ -94,7 +94,7 @@ def _get_severity_from_js(severity):
     return d.get(severity)
 
 
-class DataQualityViews(viewsets.ViewSet):
+class DataQualityViews(viewsets.ViewSet, OrgMixin):
     """
     Handles Data Quality API operations within Inventory backend.
     (1) Post, wait, get…
@@ -159,7 +159,7 @@ class DataQualityViews(viewsets.ViewSet):
               required: true
               paramType: path
         """
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(pk, self.get_organization(request)))
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="Data Quality Check Results.csv"'
 
@@ -463,7 +463,7 @@ class DataQualityViews(viewsets.ViewSet):
         Organization.objects.get(pk=request.query_params['organization_id'])
 
         data_quality_id = request.query_params['data_quality_id']
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id))
+        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id, self.get_organization(request)))
         return JsonResponse({
             'data': data_quality_results
         })

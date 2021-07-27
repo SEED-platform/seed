@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.utils.dateparse import parse_datetime
@@ -55,8 +55,8 @@ class TestMeasures(DeleteModelsTestCase):
         # create new property, state, and view
         new_property_state = self.property_state_factory.get_property_state()
         new_property = Property.objects.create(organization_id=1)
-        _ = PropertyView.objects.create(cycle_id=1, state_id=new_property_state.id,
-                                        property_id=new_property.id)
+        PropertyView.objects.create(cycle_id=1, state_id=new_property_state.id,
+                                    property_id=new_property.id)
         new_scenario = Scenario.objects.create(property_state=new_property_state)
 
         # create a meter and meter readings for the source

@@ -12,7 +12,9 @@ Translating SEED
       script/get_python_translations
       script/get_angular_translations
 
-4. Verify and commit changes
+4. Uncomment the ``useMissingTranslationHandlerLog`` line seed.js to log untranslated strings to the console for review
+
+5. Verify and commit changes
 
 **Note: The lokalize website is the canonical source of data. If you
 change the locale files locally, then you need to push them to

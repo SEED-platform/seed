@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -35,6 +35,8 @@ class AdminViewsTest(TestCase):
                         'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
+        # for some reason we can't reverse api:v3:organizations-create
+        # so we use -list b/c it's the same url but with different HTTP method
         self.add_org_url = reverse_lazy('api:v3:organizations-list')
         self.add_user_url = reverse_lazy('api:v3:user-list')
 

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_analyses', [])
@@ -34,7 +34,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $log,
       analyses_service,
       Notification,
-      uploader_service,
+      uploader_service
     ) {
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
@@ -46,62 +46,81 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
         view_id: $stateParams.view_id
       };
 
-      refresh_analyses = function() {
+      const refresh_analyses = function () {
         analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
-        .then(function(data) {
-          $scope.analyses = data.analyses
-        })
-      }
+          .then(function (data) {
+            $scope.analyses = data.analyses;
+          });
+      };
 
-      $scope.start_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Starting...'
+      $scope.start_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Starting...';
 
         analyses_service.start_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis started')
-            refresh_analyses()
-            uploader_service.check_progress_loop(result.progress_key, 0, 1, function() {
-              refresh_analyses()
-            }, function() {
-              refresh_analyses()
-            }, {})
-          } else {
-            Notification.error('Failed to start analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis started');
+              refresh_analyses();
+              uploader_service.check_progress_loop(result.progress_key, 0, 1, function () {
+                refresh_analyses();
+              }, function () {
+                refresh_analyses();
+              }, {});
+            } else {
+              Notification.error('Failed to start analysis: ' + result.message);
+            }
+          });
+      };
 
-      $scope.stop_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Stopping...'
+      $scope.stop_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Stopping...';
 
         analyses_service.stop_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis stopped')
-            refresh_analyses()
-          } else {
-            Notification.error('Failed to stop analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis stopped');
+              refresh_analyses();
+            } else {
+              Notification.error('Failed to stop analysis: ' + result.message);
+            }
+          });
+      };
 
-      $scope.delete_analysis = function(analysis_id) {
-        analysis = $scope.analyses.find(function(a) { return a.id === analysis_id })
-        analysis.status = 'Deleting...'
+      $scope.delete_analysis = function (analysis_id) {
+        const analysis = $scope.analyses.find(function (a) {
+          return a.id === analysis_id;
+        });
+        analysis.status = 'Deleting...';
 
         analyses_service.delete_analysis(analysis_id)
-        .then(function (result) {
-          if (result.status === 'success') {
-            Notification.primary('Analysis deleted')
-            refresh_analyses()
-          } else {
-            Notification.error('Failed to delete analysis: ' + result.message)
-          }
-        })
-      }
+          .then(function (result) {
+            if (result.status === 'success') {
+              Notification.primary('Analysis deleted');
+              refresh_analyses();
+            } else {
+              Notification.error('Failed to delete analysis: ' + result.message);
+            }
+          });
+      };
+
+      $scope.inventory_display_name = function (property_type) {
+        let error = '';
+        let field = property_type === 'property' ? $scope.org.property_display_field : $scope.org.taxlot_display_field;
+        if (!(field in $scope.item_state)) {
+          error = field + ' does not exist';
+          field = 'address_line_1';
+        }
+        if (!$scope.item_state[field]) {
+          error += (error === '' ? '' : ' and default ') + field + ' is blank';
+        }
+        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
+      };
 
       $scope.open_analysis_modal = function () {
         $uibModal.open({
@@ -110,20 +129,20 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
           resolve: {
             inventory_ids: function () {
               return [$scope.inventory.view_id];
-            },
+            }
           //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
           //   var organization_id = user_service.get_organization().id;
           //   return meter_service.get_meters($stateParams.view_id, organization_id);
           // }],
           }
-        }).result.then(function(data) {
+        }).result.then(function (data) {
           if (data) {
-            refresh_analyses()
-            uploader_service.check_progress_loop(data.progress_key, 0, 1, function() {
-              refresh_analyses()
-            }, function() {
-              refresh_analyses()
-            }, {})
+            refresh_analyses();
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, function () {
+              refresh_analyses();
+            }, function () {
+              refresh_analyses();
+            }, {});
           }
         });
       };

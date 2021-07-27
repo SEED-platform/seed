@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
 import logging
 
@@ -59,6 +59,9 @@ class DataQualityCheckRuleViewSet(viewsets.GenericViewSet, ListModelMixin, Updat
     model = Rule
     pagination_class = None
     permission_classes = (SEEDOrgPermissions,)
+
+    # allow nested_organization_id to be used for authorization (ie in has_perm_class)
+    authz_org_id_kwarg = 'nested_organization_id'
 
     def get_queryset(self):
         # Handle the anonymous case (e.g. Swagger page load)

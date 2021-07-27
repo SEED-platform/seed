@@ -64,6 +64,10 @@ spec:
           value: <enter-dsn>
         - name: SENTRY_RAVEN_DSN
           value: <enter-dsn>
+        - name: GOOGLE_RECAPTCHA_SECRET_KEY
+          value: <reCAPTCHA-key>
+        - name: INCLUDE_SEED_V2_APIS
+          value: TRUE
         image: seedplatform/seed:develop
         imagePullPolicy: Always
         name: web

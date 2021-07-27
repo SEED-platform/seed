@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import json
@@ -83,6 +83,9 @@ def create_column_regexes(raw_columns):
             {'regex': <_sre.SRE_Pattern object at 0x10f10e870>, 'raw': 'has  multi spaces'}
         ]
     """
+    if not raw_columns:
+        _log.debug("No raw_columns provided!")
+        return []
 
     # clean up the comparing columns
     new_list = []

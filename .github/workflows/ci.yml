@@ -27,9 +27,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          # using `-v2` in key to clear old cache due to errors
+          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
+          key: ${{ runner.os }}-buildx-v2-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-v2-
       -
         name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
@@ -102,9 +104,18 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install tox==2.7.0
-          sudo add-apt-repository ppa:ubuntugis/ppa
           sudo apt update
           sudo apt install gdal-bin
+      -
+        name: Setup config
+        run: |
+          cat <<EOF > config/settings/local_untracked.py
+          {
+              'default': {
+                  'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+              }
+          }
+          EOF
       -
         name: Run tox
         run: tox -e ${{ matrix.tox_env }}

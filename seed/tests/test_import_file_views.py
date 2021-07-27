@@ -34,7 +34,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email='test_user@demo.com', **self.user_details
         )
         self.org, _, _ = create_organization(self.user)
@@ -300,7 +300,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
         validated_type_units = [
             {
                 "parsed_type": "Electric - Grid",
-                "parsed_unit": "kWh (thousand Watt-hours)",
+                "parsed_unit": "Wh (Watt-hours)",
             },
         ]
 
@@ -346,12 +346,13 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(email='test_user@demo.com', **user_details)
+        self.user = User.objects.create_user(email='test_user@demo.com', **user_details)
+        self.org, _, _ = create_organization(self.user, "my org")
         self.client.login(**user_details)
 
     def test_get_raw_column_names(self):
         """Make sure we get column names back in a format we expect."""
-        import_record = ImportRecord.objects.create()
+        import_record = ImportRecord.objects.create(super_organization=self.org)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_saved_format = ROW_DELIMITER.join(expected_raw_columns)
         import_file = ImportFile.objects.create(
@@ -364,7 +365,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         url = reverse_lazy("api:v3:import_files-raw-column-names", args=[import_file.pk])
         resp = self.client.get(
-            url, content_type='application/json'
+            url, {'organization_id': self.org.id}, content_type='application/json'
         )
 
         body = json.loads(resp.content)
@@ -373,7 +374,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
     def test_get_first_five_rows(self):
         """Make sure we get our first five rows back correctly."""
-        import_record = ImportRecord.objects.create()
+        import_record = ImportRecord.objects.create(super_organization=self.org)
         expected_raw_columns = ['tax id', 'name', 'etc.']
         expected_raw_rows = [
             ['02023', '12 Jefferson St.', 'etc.'],
@@ -401,7 +402,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         url = reverse_lazy("api:v3:import_files-first-five-rows", args=[import_file.pk])
         resp = self.client.get(
-            url, content_type='application/json'
+            url, {'organization_id': self.org.id}, content_type='application/json'
         )
 
         body = json.loads(resp.content)
@@ -490,6 +491,115 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # This test fails on purpose becasue the format of the first five rows will not
         # support this use case.
         self.assertNotEqual(converted, expected)
+
+    def test_get_check_for_meters_tab_returns_true_when_meter_entries_tab_present(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return true
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'true')
+
+    def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-data-request-response.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return true
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'true')
+
+    def test_get_check_for_meters_tab_returns_false(self):
+        # create import file record without either a Meter Entries or a Monthly Usage tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "portfolio-manager-sample.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return false
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'false')
+
+    def test_get_check_for_meters_tab_returns_false_when_not_xlsx(self):
+        # create import file record that's not an xlsx
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "san-jose-test-taxlots.csv"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return false
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), 'false')
+
+    def test_post_reuse_inventory_file_for_meters_creates_new_import_file_based_on_the_same_file_and_returns_the_new_id(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            mapping_done=True,
+            source_type="Assessed Raw",
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-reuse-inventory-file-for-meters') + '?organization_id=' + str(self.org.id)
+        response = self.client.post(
+            url,
+            data=json.dumps({"import_file_id": import_file.id}),
+            content_type='application/json'
+        )
+
+        # check that the new and old file reference the same 'file'
+        newest_import_file = ImportFile.objects.order_by('-id').first()
+        body = json.loads(response.content)
+
+        self.assertEqual(body.get('import_file_id'), newest_import_file.id)
+        self.assertEqual(import_file.file, newest_import_file.file)
 
 
 class TestDataImportViewWithCRLF(DataMappingBaseTestCase):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -12,6 +12,7 @@ import logging
 import re
 from os import path
 
+from django.conf import settings
 from django.contrib.gis.db import models as geomodels
 from django.contrib.postgres.fields import JSONField
 from django.db import (
@@ -29,16 +30,16 @@ from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Cycle,
+from seed.models.cycles import Cycle
+from seed.models.models import (
     StatusLabel,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
-    TaxLotProperty
 )
+from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
@@ -419,7 +420,11 @@ class PropertyState(models.Model):
         }
 
         def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
+            filename = file = None
+            if log.import_filename:
+                filename = path.basename(log.import_filename)
+                file = settings.MEDIA_URL + '/'.join(log.import_filename.split('/')[-2:])
+
             if filename:
                 # Attempt to remove NamedTemporaryFile suffix
                 name, ext = path.splitext(filename)
@@ -433,6 +438,7 @@ class PropertyState(models.Model):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
+                'file': file
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 

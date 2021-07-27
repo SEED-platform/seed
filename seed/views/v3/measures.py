@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.http import JsonResponse
@@ -58,7 +58,7 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         """
         Reset all the measures back to the defaults (as provided by BuildingSync)
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         if not organization_id:
             return JsonResponse({
                 'status': 'error', 'message': 'organization_id not provided'},

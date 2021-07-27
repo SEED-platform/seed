@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -11,6 +11,7 @@ import logging
 from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
 from seed.models import (
@@ -25,6 +26,7 @@ from seed.models import (
     MeterReading,
     MERGE_STATE_MERGED,
 )
+
 
 _log = logging.getLogger(__name__)
 
@@ -56,6 +58,8 @@ class BuildingFile(models.Model):
     file = models.FileField(upload_to="buildingsync_files", max_length=500, blank=True, null=True)
     file_type = models.IntegerField(choices=BUILDING_FILE_TYPES, default=UNKNOWN)
     filename = models.CharField(blank=True, max_length=255)
+
+    _cache_kbtu_thermal_conversion_factors = None
 
     @classmethod
     def str_to_file_type(cls, file_type):
@@ -124,6 +128,13 @@ class BuildingFile(models.Model):
 
         return property_state
 
+    def _kbtu_thermal_conversion_factors(self):
+        if self._cache_kbtu_thermal_conversion_factors is None:
+            # assuming "US" for conversion_factor but could be "CAN"
+            self._cache_kbtu_thermal_conversion_factors = kbtu_thermal_conversion_factors("US")
+
+        return self._cache_kbtu_thermal_conversion_factors
+
     def process(self, organization_id, cycle, property_view=None):
         """
         Process the building file that was uploaded and create the correct models for the object
@@ -180,6 +191,8 @@ class BuildingFile(models.Model):
             implementation_status = m['implementation_status'] if m.get('implementation_status') else 'Proposed'
             application_scale = m['application_scale_of_application'] if m.get('application_scale_of_application') else PropertyMeasure.SCALE_ENTIRE_FACILITY
             category_affected = m['system_category_affected'] if m.get('system_category_affected') else PropertyMeasure.CATEGORY_OTHER
+            # for some reason this is returning none if the field is empty. So none and true should both be true.
+            recommended = str(m.get('recommended', 'true')).lower() in ['true', 'none']
             join, _ = PropertyMeasure.objects.get_or_create(
                 property_state_id=self.property_state_id,
                 measure_id=measure.pk,
@@ -187,7 +200,7 @@ class BuildingFile(models.Model):
                 implementation_status=PropertyMeasure.str_to_impl_status(implementation_status),
                 application_scale=PropertyMeasure.str_to_application_scale(application_scale),
                 category_affected=PropertyMeasure.str_to_category_affected(category_affected),
-                recommended=m.get('recommended', 'false') == 'true',
+                recommended=recommended,
             )
             join.description = m.get('description')
             join.cost_mv = m.get('mv_cost')
@@ -196,6 +209,7 @@ class BuildingFile(models.Model):
             join.cost_material = m.get('measure_material_cost')
             join.cost_capital_replacement = m.get('measure_capital_replacement_cost')
             join.cost_residual_value = m.get('measure_residual_value')
+            join.useful_life = m.get('useful_life')
             join.save()
 
         # add in scenarios
@@ -233,6 +247,7 @@ class BuildingFile(models.Model):
             scenario.annual_natural_gas_energy = s.get('annual_natural_gas_energy')
             scenario.annual_electricity_energy = s.get('annual_electricity_energy')
             scenario.annual_peak_demand = s.get('annual_peak_demand')
+            scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
 
             # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
             #                                       default=TEMPORAL_STATUS_CURRENT)
@@ -264,6 +279,7 @@ class BuildingFile(models.Model):
             scenario.save()
 
             # meters
+            energy_types = dict(Meter.ENERGY_TYPES)
             for m in s.get('meters', []):
                 # print("BUILDING FILE METER: {}".format(m))
                 # check by scenario_id and source_id
@@ -273,24 +289,31 @@ class BuildingFile(models.Model):
                 )
                 meter.source = m.get('source')
                 meter.type = m.get('type')
+                if meter.type is None:
+                    meter.type = Meter.OTHER
                 meter.is_virtual = m.get('is_virtual')
+                if meter.is_virtual is None:
+                    meter.is_virtual = False
                 meter.save()
 
                 # meterreadings
-                # TODO: need to check that these are in kBtu already?
+                if meter.type in energy_types:
+                    meter_type = energy_types[meter.type]
+                else:
+                    meter_type = None
+                meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
                 readings = {
                     MeterReading(
                         start_time=mr.get('start_time'),
                         end_time=mr.get('end_time'),
-                        reading=mr.get('reading'),
+                        reading=float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
                         source_unit=mr.get('source_unit'),
                         meter_id=meter.id,
-                        conversion_factor=1.00,  # assuming kBtu
+                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
                     )
-                    for mr
-                    in m.get('readings', [])
+                    for mr in m.get('readings', [])
+                    if mr.get('start_time') is not None and mr.get('end_time') is not None
                 }
-
                 MeterReading.objects.bulk_create(readings)
 
         # merge or create the property state's view

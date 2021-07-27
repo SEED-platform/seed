@@ -1,25 +1,34 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
+  '$uibModal',
+  'urls',
   'organization_payload',
   'auth_payload',
   'organization_service',
+  'property_column_names',
+  'taxlot_column_names',
   'meters_service',
   '$translate',
   function (
     $scope,
+    $uibModal,
+    urls,
     organization_payload,
     auth_payload,
     organization_service,
+    property_column_names,
+    taxlot_column_names,
     meters_service,
     $translate
   ) {
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
-
+    $scope.property_column_names = property_column_names;
+    $scope.taxlot_column_names = taxlot_column_names;
     $scope.org_static = angular.copy($scope.org);
 
     $scope.unit_options_eui = [{
@@ -113,6 +122,24 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       label: 'Canada',
       value: 2
     }];
+
+    $scope.confirm_delete = function (org) {
+      $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/delete_org_modal.html',
+        controller: 'delete_org_modal_controller',
+        backdrop: 'static',
+        keyboard: false,
+        resolve: {
+          org: org
+        }
+      });
+    };
+
+    $scope.resize_textarea = function () {
+      const input = document.getElementById('new-user-email-content');
+      input.style.height = '34px';
+      input.style.height = input.scrollHeight + 'px';
+    };
 
     /**
      * saves the updates settings

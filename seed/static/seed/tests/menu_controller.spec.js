@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('Controller: menu_controller', function () {
@@ -79,7 +79,6 @@ describe('Controller: menu_controller', function () {
   //   menu_controller_scope.$broadcast('app_error', {data: 'something'});
   //   menu_controller_scope.is_active('/seed/data');
   //   // expect(menu_controller_scope.href("/something")).toBe(1);
-  //   menu_controller_scope.menu_toggle_has_never_been_clicked();
   //   menu_controller_scope.is_initial_state();
   //   menu_controller_scope.open_data_upload_modal();
   //

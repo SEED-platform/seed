@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -30,7 +30,7 @@ from seed.models.data_quality import Rule
 from seed.tasks import (
     invite_to_seed,
 )
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -121,7 +121,7 @@ user_response_schema = AutoSchemaHelper.schema_factory({
 })
 
 
-class UserViewSet(viewsets.ViewSet):
+class UserViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
     def validate_request_user(self, pk, request):
@@ -181,6 +181,9 @@ class UserViewSet(viewsets.ViewSet):
         Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
         Sends invitation email to the new user.
         """
+        # WARNING: we aren't using the OrgMixin here to validate the organization
+        # It is assumed the org authorization logic implemented in this view is
+        # consistent with our permissions checking (has_perm_class decorator)
         body = request.data
         org_name = body.get('org_name')
         org_id = request.query_params.get('organization_id', None)
@@ -235,9 +238,7 @@ class UserViewSet(viewsets.ViewSet):
             domain = request.get_host()
         except Exception:
             domain = 'seed-platform.org'
-        invite_to_seed(
-            domain, user.email, default_token_generator.make_token(user), user.pk, first_name
-        )
+        invite_to_seed(domain, user.email, default_token_generator.make_token(user), org, user.pk, first_name)
 
         return JsonResponse({
             'status': 'success',
@@ -292,7 +293,7 @@ class UserViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['PUT'])
     def role(self, request, pk=None):
         """
@@ -301,18 +302,26 @@ class UserViewSet(viewsets.ViewSet):
         body = request.data
         role = _get_role_from_js(body['role'])
 
-        user_id = pk
-        organization_id = request.query_params.get('organization_id', None)
+        user_id = int(pk)
+        organization_id = self.get_organization(request)
 
-        is_last_member = not OrganizationUser.objects.filter(
-            organization_id=organization_id,
-        ).exclude(user_id=user_id).exists()
+        requester = OrganizationUser.objects.get(user=request.user, organization_id=organization_id)
 
-        if is_last_member:
+        try:
+            user = OrganizationUser.objects.get(user_id=user_id, organization_id=organization_id)
+        except OrganizationUser.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'an organization must have at least one member'
-            }, status=status.HTTP_409_CONFLICT)
+                'message': 'no relationship to organization'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Non-superuser members can only change their own role, and it must have the same or less permissions
+        if requester.role_level == ROLE_MEMBER and not requester.user.is_superuser:
+            if requester.user_id != user_id or role > ROLE_MEMBER:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'members can only change their own role to viewer'
+                }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_owner = not OrganizationUser.objects.filter(
             organization_id=organization_id,
@@ -322,13 +331,11 @@ class UserViewSet(viewsets.ViewSet):
         if is_last_owner:
             return JsonResponse({
                 'status': 'error',
-                'message': 'an organization must have at least one owner level member'
+                'message': 'an organization must have at least one owner'
             }, status=status.HTTP_409_CONFLICT)
 
-        OrganizationUser.objects.filter(
-            user_id=user_id,
-            organization_id=organization_id
-        ).update(role_level=role)
+        user.role_level = role
+        user.save()
 
         return JsonResponse({'status': 'success'})
 
@@ -546,6 +553,8 @@ class UserViewSet(viewsets.ViewSet):
             message = 'no actions to check'
             error = True
 
+        # WARNING: we aren't using the OrgMixin here to validate the organization
+        # It is assumed the org authorization logic implemented here is sufficient
         org_id = request.query_params.get('organization_id', None)
         if org_id == '':
             message = 'organization id is undefined'
@@ -609,6 +618,7 @@ class UserViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['PUT'])
     def default_organization(self, request, pk=None):
         """
@@ -619,7 +629,7 @@ class UserViewSet(viewsets.ViewSet):
             user = content
         else:
             return content
-        user.default_organization_id = request.query_params.get('organization_id', None)
+        user.default_organization_id = self.get_organization(request)
         user.save()
         return {'status': 'success'}
 
@@ -628,7 +638,7 @@ class UserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):
         """
-        Deactivates a user
+        Deactivates a user. This action can only be performed by superusers
         """
         try:
             user_id = pk

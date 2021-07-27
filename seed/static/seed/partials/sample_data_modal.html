@@ -1,0 +1,62 @@
+<div class="modal-header">
+    <h4 class="modal-title" translate>Auto-Populate Data</h4>
+</div>
+<div class="modal-body">
+    <h5><em>Auto-Populate Data</em> will insert sample records in your organization viewable from the Inventory Tab. The provided data demonstrates the following advanced capabilities of the SEED Platform:</h5>
+    <ul class="auto-populate-list">
+        <li><strong>Meter Data</strong>
+            <ul>
+                <li>PM Property IDs: <code>5766973; 5766975</code></li>
+                <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>]. Click the <em>Meters</em> tab at the top of the screen</li>
+            </ul>
+        </li>
+        <li><strong>Green Button Import</strong>
+            <ul>
+                <li>PM Property IDs: <code>5766975</code></li>
+                <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>]. Click the <em>Meters</em> tab at the top of the screen</li>
+            </ul>
+        </li>
+        <li><strong>Geocoding</strong>
+            <ul>
+                <li>PM Property IDs: <code>5766963; 5766969</code></li>
+                <li>Click the <em>Map</em> tab at the top of the screen</li>
+            </ul>
+        </li>
+        <li><strong>Merging [ <i class="fa fa-code-fork text-info"></i> ]</strong>
+            <ul>
+                <li>PM Property ID: <code>5766979</code></li>
+                <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>] to view the history of the merged record</li>
+            </ul>
+        </li>
+        <li><strong>Property Footprint</strong>
+            <ul>
+                <li>PM Property ID: <code>5766965</code></li>
+                <li>Scroll-right to the field <em>Property Footprint</em>. Hover the mouse over the <code>POLYGON</code> coordinates to visualize the property’s footprint</li>
+            </ul>
+        </li>
+        <li><strong>Tax Lots</strong>
+            <ul>
+                <li>PM Property ID: <code>5766961</code></li>
+                <li>Click the <em>View by Tax Lot</em> tab to see the paired tax lot record</li>
+            </ul>
+        </li>
+        <li><strong>Labels</strong>
+            <ul>
+                <li>PM Property ID: <code>5766967, 5766973, 5766977</code></li>
+                <li>Add <em>Housing</em> label in the <em>Filter by label</em> box at the top of the page to view records</li>
+            </ul>
+        </li>
+        <li><strong>BSyncr Analysis</strong>
+            <ul>
+                <li>PM Property ID: <code>5766973</code></li>
+                <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>]. Click the <em>Actions</em> drop down box at the top left of the screen.  Click <em>Run Analysis</em> in the drop down menu.  <em>Name</em> your analysis and enter <em>Type</em> as <em>BSyncr</em>. <em>Create Analysis</em></li>
+            </ul>
+        </li>
+    </ul>
+    <div ng-if="hasData" uib-alert class="alert-danger">Auto-Populate is only intended for organizations with no properties or tax lots. To continue you must first remove pre-existing data</div>
+    <uib-progressbar ng-if="inProgress" class="progress-striped active" value="100" type="info" style="margin-top: 30px;"></uib-progressbar>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="inProgress">Cancel</button>
+    <button type="button" class="btn btn-info" ng-click="continue()" ng-disabled="inProgress || hasData" autofocus>Continue</button>
+</div>

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -20,10 +20,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
-        organization_id: user_service.get_organization().id,
+        organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999
       };
@@ -34,7 +35,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var lastCycleId = inventory_service.get_last_cycle();
         if (_.has(cycle, 'id')) {
           params.cycle = cycle.id;
-          inventory_service.save_last_cycle(cycle.id);
+          if (save_last_cycle === true) {
+            inventory_service.save_last_cycle(cycle.id);
+          }
         } else if (_.includes(validCycleIds, lastCycleId)) {
           params.cycle = lastCycleId;
         }
@@ -233,7 +236,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           'Content-Type': 'application/json;charset=utf-8'
         },
         data: { property_view_ids },
-        params: { organization_id: user_service.get_organization().id },
+        params: { organization_id: user_service.get_organization().id }
       });
     };
 
@@ -249,9 +252,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+
       var params = {
-        organization_id: user_service.get_organization().id,
+        organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999
       };
@@ -262,7 +267,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         var lastCycleId = inventory_service.get_last_cycle();
         if (cycle) {
           params.cycle = cycle.id;
-          inventory_service.save_last_cycle(cycle.id);
+          if (save_last_cycle === true) {
+            inventory_service.save_last_cycle(cycle.id);
+          }
         } else if (_.includes(validCycleIds, lastCycleId)) {
           params.cycle = lastCycleId;
         }
@@ -455,9 +462,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
-    inventory_service.save_last_cycle = function (pk) {
-      var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
+    inventory_service.save_last_cycle = function (pk, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      var cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };
@@ -498,6 +505,37 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       localStorage.setItem('detailProfiles.' + key, JSON.stringify(profiles));
     };
 
+    inventory_service.get_property_column_names_for_org = function (org_id) {
+      return $http.get('/api/v3/columns/', {
+        params: {
+          inventory_type: 'property',
+          organization_id: org_id,
+          only_used: false,
+          display_units: true
+        }
+      }).then(function (response) {
+        let property_columns = response.data.columns.filter(column => column.table_name == 'PropertyState');
+        return property_columns.map(a => {
+          return { column_name: a.column_name, display_name: a.display_name };
+        });
+      });
+    };
+
+    inventory_service.get_taxlot_column_names_for_org = function (org_id) {
+      return $http.get('/api/v3/columns/', {
+        params: {
+          inventory_type: 'taxlot',
+          organization_id: org_id,
+          only_used: false,
+          display_units: true
+        }
+      }).then(function (response) {
+        let taxlot_columns = response.data.columns.filter(column => column.table_name == 'TaxLotState');
+        return taxlot_columns.map(a => {
+          return { column_name: a.column_name, display_name: taxlot_columns.find(x => x.column_name == a.column_name).display_name };
+        });
+      });
+    };
 
     inventory_service.get_property_columns = function () {
       return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
@@ -548,7 +586,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.get('/api/v3/columns/mappable/', {
         params: {
           organization_id: user_service.get_organization().id,
-          inventory_type: 'property',
+          inventory_type: 'property'
         }
       }).then(function (response) {
         // Remove empty columns
@@ -631,7 +669,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return $http.get('/api/v3/columns/mappable/', {
         params: {
           organization_id: user_service.get_organization().id,
-          inventory_type: 'taxlot',
+          inventory_type: 'taxlot'
         }
       }).then(function (response) {
         // Remove empty columns

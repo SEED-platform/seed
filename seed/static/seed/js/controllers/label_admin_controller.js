@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.label_admin', [])
       $scope.labels = labels_payload;
 
       function initialize_new_label () {
-        $scope.new_label = {color: 'gray', label: 'default', name: ''};
+        $scope.new_label = {color: 'gray', label: 'default', name: '', show_in_list: false};
       }
 
       $scope.showColor = function (label) {

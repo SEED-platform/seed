@@ -15,9 +15,13 @@
                     <table class="signup_table">
                         {{form.as_table}}
                     </table>
-                    <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
-                    <a href="{% url "landing:landing_page" %}" type="submit" class="btn btn-default">Cancel</a>
-                    <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
+                    <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}"><br>
+                    <div>
+                        {% if context.self_registration %}
+                        <a class="create_account" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
+                        {% endif %}
+                        <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
+                    </div>
                 </form>
                 {% include "landing/_password_note.html" %}
             </div>

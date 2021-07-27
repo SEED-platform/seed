@@ -83,7 +83,8 @@
                                 <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>cancel</button>
                             </form>
                             <div class="buttons" ng-show="!rowform.$visible">
-                                <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>edit</button>
+                                <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>Edit</button>
+                                <button class="btn btn-danger" ng-click="showDeleteCycleModal(cycle.id)" translate>Delete</button>
                             </div>
                         </td>
                     </tr>

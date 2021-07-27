@@ -30,6 +30,16 @@ spec:
       - args:
         - /seed/docker/start_celery_docker.sh
         env:
+        - name: AWS_ACCESS_KEY_ID
+          value: <access key id>
+        - name: AWS_SECRET_ACCESS_KEY
+          value: <secret access key>
+        - name: AWS_SES_REGION_NAME
+          value: us-west-2
+        - name: AWS_SES_REGION_ENDPOINT
+          value: email.us-west-2.amazonaws.com
+        - name: SERVER_EMAIL
+          value: info@seed-platform.org
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings.docker
         - name: POSTGRES_DB
@@ -46,7 +56,7 @@ spec:
           value: "5000"
         - name: BSYNCR_SERVER_HOST
           value: bsyncr
-        image: seedplatform/seed:develop
+        image: seedplatform/seed:<version>
         imagePullPolicy: Always
         name: web-celery
         resources: {}

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -145,6 +145,26 @@ class ProgressData(object):
 
         if new_summary is not None:
             self.data['summary'] = new_summary
+
+        self.save()
+
+        return self.result()
+
+    def step_with_counter(self):
+        """Step the function by increment_value and save back to the cache with a count"""
+        # load the latest value out of the cache
+        self.load()
+
+        value = self.data['progress']
+        if value + self.increment_value() >= 100.0:
+            value = 100.0
+        else:
+            value += self.increment_value()
+
+        self.data['progress'] = value
+        self.data['status'] = 'running'
+        self.data['completed_records'] = round(value / 100.0 * self.data['total_records'])
+        self.data['status_message'] = f'{self.data["completed_records"]:,} / {self.data["total_records"]:,}'
 
         self.save()
 

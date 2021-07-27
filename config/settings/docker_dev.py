@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -11,6 +11,9 @@ import sys
 from config.settings.common import *  # noqa
 
 from celery.utils import LOG_LEVELS
+
+# override MEDIA_URL (requires nginx which dev stack doesn't use)
+MEDIA_URL = '/media/'
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD']

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.merge_modal', [])
@@ -150,7 +150,6 @@ angular.module('BE.seed.controller.merge_modal', [])
 
       $scope.merge = function () {
         $scope.processing = true;
-        var state_ids;
         if ($scope.inventory_type === 'properties') {
           const property_view_ids = _.map($scope.data, 'property_view_id').reverse();
           return matching_service.mergeProperties(property_view_ids).then(function (data) {

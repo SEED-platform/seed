@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -57,6 +57,7 @@ def _get_default_display_meter_units():
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Electric - Unknown': 'kWh (thousand Watt-hours)',
         'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
@@ -146,6 +147,7 @@ class Organization(models.Model):
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Electric - Unknown': 'kWh (thousand Watt-hours)',
         'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
@@ -189,9 +191,19 @@ class Organization(models.Model):
     # in exported views of its data.
     query_threshold = models.IntegerField(blank=True, null=True)
 
+    # geolocation
     mapquest_api_key = models.CharField(blank=True, max_length=128, default='')
-
     geocoding_enabled = models.BooleanField(default=True)
+
+    # new user email fields
+    new_user_email_from = models.CharField(max_length=128, blank=False, default="info@seed-platform.org")
+    new_user_email_subject = models.CharField(max_length=128, blank=False, default="New SEED account")
+    new_user_email_content = models.CharField(max_length=1024, blank=False, default="Hello {{first_name}},\nYou are receiving this e-mail because you have been registered for a SEED account.\nSEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.\nPlease go to the following page and setup your account:\n{{sign_up_link}}")
+    new_user_email_signature = models.CharField(max_length=128, blank=False, default="The SEED Team")
+
+    # display settings
+    property_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
+    taxlot_display_field = models.CharField(max_length=32, blank=False, default="address_line_1")
 
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 

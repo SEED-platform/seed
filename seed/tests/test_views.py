@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -60,7 +60,7 @@ class MainViewTests(TestCase):
             'username': 'test_user@demo.com',
             'password': 'test_pass',
         }
-        self.user = User.objects.create_superuser(
+        self.user = User.objects.create_user(
             email='test_user@demo.com', **user_details
         )
         self.org, _, _ = create_organization(self.user)
@@ -78,7 +78,7 @@ class GetDatasetsViewsTests(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
@@ -107,10 +107,10 @@ class GetDatasetsViewsTests(TestCase):
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
                                    {'organization_id': 666})
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(403, response.status_code)
         j = response.json()
-        self.assertEqual(j['status'], 'success')
-        self.assertEqual(j['datasets_count'], 0)
+        self.assertEqual(j['status'], 'error')
+        self.assertEqual(j['message'], 'Organization does not exist')
 
     def test_get_dataset(self):
         import_record = ImportRecord.objects.create(owner=self.user)
@@ -163,7 +163,7 @@ class ImportFileViewsTests(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         self.cycle = self.cycle_factory.get_cycle(
@@ -236,7 +236,7 @@ class TestMCMViews(TestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com',
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
 
         self.client.login(**user_details)
@@ -387,7 +387,7 @@ class TestMCMViews(TestCase):
             'password': 'test_pass',
             'email': 'test_2_user@demo.com',
         }
-        user_2 = User.objects.create_superuser(**user_2_details)
+        user_2 = User.objects.create_user(**user_2_details)
         OrganizationUser.objects.create(
             user=user_2, organization=self.org
         )
@@ -490,7 +490,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'password': 'test_pass',
             'email': 'test_user@demo.com'
         }
-        self.user = User.objects.create_superuser(**user_details)
+        self.user = User.objects.create_user(**user_details)
         self.org, _, _ = create_organization(self.user)
         self.column_factory = FakeColumnFactory(organization=self.org)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -1462,6 +1462,49 @@ class InventoryViewTests(DeleteModelsTestCase):
         cycle = results['cycles'][0]
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
+
+    def test_postoffice(self):
+        # Create a template
+        response = self.client.post('/api/v3/postoffice/', {
+            'organization_id': self.org.pk,
+            'name': 'Email Template',
+            'subject': 'Test',
+            'content': 'This is a test email.'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        template = results['data']
+
+        # Get list of templates
+        response = self.client.get('/api/v3/postoffice/', {'organization_id': self.org.pk})
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(len(results['data']), 1)
+
+        # Update a template
+        response = self.client.put('/api/v3/postoffice/' + str(template['id']) + '/', {
+            'organization_id': self.org.pk,
+            'name': 'New Email Template'
+        }, content_type='application/json')
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(results['data']['name'], 'New Email Template')
+
+        # Send email
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        response = self.client.post('/api/v3/postoffice_email/', {
+            'organization_id': self.org.pk,
+            'from_email': 'dummy@email.com',
+            'template_id': template['id'],
+            'inventory_id': pv.id,
+            'inventory_type': 'properties'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
 
     def test_get_property_columns(self):
         self.column_factory.get_column(

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -98,11 +98,11 @@ def check_data_chunk(model, ids, dq_id):
         qs = TaxLotState.objects.filter(id__in=ids)
     else:
         qs = None
-    super_org = qs.first().organization
-
-    d = DataQualityCheck.retrieve(super_org.get_parent().id)
+    organization = qs.first().organization
+    super_organization = organization.get_parent()
+    d = DataQualityCheck.retrieve(super_organization.id)
     d.check_data(model, qs.iterator())
-    d.save_to_cache(dq_id)
+    d.save_to_cache(dq_id, organization.id)
 
 
 @shared_task(ignore_result=True)
@@ -130,7 +130,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, import_file_id=None):
     """
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
-    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id)
+    cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
 
     progress_data = ProgressData(func_name='check_data', unique_id=dq_id)
     progress_data.delete()
@@ -598,10 +598,10 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     end.
     :return: JSON
     """
-    # Clear out the previously mapped data
-    DataQualityCheck.initialize_cache(import_file_id)
-
     import_file = ImportFile.objects.get(pk=import_file_id)
+
+    # Clear out the previously mapped data
+    DataQualityCheck.initialize_cache(import_file_id, import_file.import_record.super_organization.id)
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
@@ -962,10 +962,7 @@ def _save_pm_meter_usage_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
 
-    parser = reader.MCMParser(import_file.local_file, 'Meter Entries')
-    raw_meter_data = list(parser.data)
-
-    meters_parser = MetersParser(org_id, raw_meter_data)
+    meters_parser = MetersParser.factory(import_file.local_file, org_id)
     meters_and_readings = meters_parser.meter_and_reading_objs
 
     # add in the proposed_imports into the progress key to be used later. (This used to be the summary).

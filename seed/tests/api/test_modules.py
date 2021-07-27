@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime as dt
@@ -544,13 +544,12 @@ def data_quality(header, main_url, organization_id, log):
     check_status(result, partmsg, log)
 
 
-def export_data(header, main_url, organization_id, cycle_id, log):
+def export_data(header, main_url, organization_id, log):
 
     # Get IDs for some properties
     num_props = 25
     params = {
         'organization_id': organization_id,
-        'cycle': cycle_id,
         'page': 1,
         'per_page': 999999999
     }
@@ -564,7 +563,6 @@ def export_data(header, main_url, organization_id, cycle_id, log):
     partmsg = 'export_properties'
     params = {
         'organization_id': organization_id,
-        'cycle_id': cycle_id,
         'inventory_type': 'properties'
     }
     payload = {
@@ -583,7 +581,6 @@ def export_data(header, main_url, organization_id, cycle_id, log):
     num_lots = 25
     params = {
         'organization_id': organization_id,
-        'cycle': cycle_id,
         'page': 1,
         'per_page': 999999999
     }
@@ -597,7 +594,6 @@ def export_data(header, main_url, organization_id, cycle_id, log):
     partmsg = 'export_taxlots'
     params = {
         'organization_id': organization_id,
-        'cycle_id': cycle_id,
         'inventory_type': 'taxlots'
     }
     payload = {

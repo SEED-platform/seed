@@ -19,8 +19,13 @@
         <div class="section_action_container left" style="width: 50%;">
             <span>
                 <h2>
-                    <span ng-if="::inventory_type==='properties'"><i class="fa fa-building-o"></i><span translate>Property</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
-                    <span ng-if="::inventory_type==='taxlots'"><i class="fa fa-map-o"></i><span translate>Tax Lot</span> : {$ item_state.address_line_1 ? item_state.address_line_1 : ('(no address 1)' | translate) $}</span>
+                    <span ng-if="::inventory_type==='properties'">
+                        <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                    </span>
+                    <span ng-if="::inventory_type==='taxlots'">
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                    </span>
+                    <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
                 </h2>
             </span>
         </div>

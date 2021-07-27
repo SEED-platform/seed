@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.contrib.postgres.fields import JSONField
@@ -16,9 +16,11 @@ class Analysis(models.Model):
     The Analysis represents an analysis performed on one or more properties.
     """
     BSYNCR = 1
+    BETTER = 2
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
+        (BETTER, 'BETTER')
     )
 
     PENDING_CREATION = 8

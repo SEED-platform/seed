@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 
@@ -251,6 +251,7 @@ class BuildingSync(object):
                 'annual_source_energy_use_intensity': scenario['annual_source_energy_use_intensity'],
                 'annual_electricity_energy': scenario['annual_electricity_energy'],
                 'annual_peak_demand': scenario['annual_peak_demand'],
+                'annual_peak_electricity_reduction': scenario['annual_peak_electricity_reduction'],
                 'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
                 'measures': [id['id'] for id in scenario['measure_ids']],
             }

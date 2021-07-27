@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: organization_settings_controller', function () {
@@ -75,7 +75,9 @@ describe('controller: organization_settings_controller', function () {
           is_owner: true,
           is_parent_org_owner: false
         }
-      }
+      },
+      property_column_names: { 'column_name': 'test', 'display_name': 'test' },
+      taxlot_column_names: { 'column_name': 'test', 'display_name': 'test' }
     });
   }
 

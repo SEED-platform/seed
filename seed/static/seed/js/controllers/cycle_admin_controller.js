@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -8,7 +8,6 @@ angular.module('BE.seed.controller.cycle_admin', [])
     '$scope',
     '$log',
     'urls',
-    'simple_modal_service',
     'Notification',
     'cycle_service',
     'cycles_payload',
@@ -16,7 +15,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
     'auth_payload',
     '$translate',
     '$sce',
-    function ($scope, $log, urls, simple_modal_service, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce) {
+    '$uibModal',
+    function ($scope, $log, urls, Notification, cycle_service, cycles_payload, organization_payload, auth_payload, $translate, $sce, $uibModal) {
 
       $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
@@ -93,17 +93,6 @@ angular.module('BE.seed.controller.cycle_admin', [])
         });
       };
 
-      //commented out 6.15.17 ability to delete cycle is commented out dbressan code cov work
-      // $scope.deleteCycle = function (cycle) {
-      //   cycle_service.delete_cycle_for_org(cycle, $scope.org.id).then(function () {
-      //     var msg = 'Cycle deleted.';
-      //     Notification.primary(msg);
-      //     cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
-      //   }, function (message) {
-      //     $log.error('Error deleting cycle.', message);
-      //   });
-      // };
-
       $scope.opened = {};
       $scope.open = function ($event, elementOpened) {
         $event.preventDefault();
@@ -153,5 +142,28 @@ angular.module('BE.seed.controller.cycle_admin', [])
 
       initialize_new_cycle();
 
+      $scope.showDeleteCycleModal = function (cycle_id) {
+        const delete_cycle_modal = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
+          controller: 'delete_cycle_modal_controller',
+          backdrop: 'static',
+          keyboard: false,
+          resolve: {
+            // use cycle data from organization endpoint b/c it includes inventory counts
+            cycle: (organization_service) => {
+              return organization_service.get_organization($scope.org.id)
+                .then(res => {
+                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id)
+                })
+            },
+            organization_id: () => $scope.org.id
+          }
+        });
+        delete_cycle_modal.result.then(function () {
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+        }).catch(function () {
+          cycle_service.get_cycles_for_org($scope.org.id).then(processCycles);
+        });
+      };
     }
   ]);

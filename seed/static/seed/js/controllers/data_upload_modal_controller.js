@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         complete: false,
         status_message: '',
         progress_last_updated: null,
-        progress_last_checked: null,
+        progress_last_checked: null
       };
 
       /**
@@ -165,8 +165,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.reset_mapquest_api_key = function () {
         $uibModalInstance.close();
-        $state.go('organization_settings', {organization_id: $scope.organization.org_id})
-      }
+        $state.go('organization_settings', {organization_id: $scope.organization.org_id});
+      };
       /**
        * cancel: dismissed the modal, routes to the dismiss function of the parent
        *  scope
@@ -368,17 +368,19 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             break;
         }
 
-        $scope.accept_meters = function (file_id, cycle_id) {
-          $scope.uploader.in_progress = true;
-          save_raw_assessed_data(file_id, cycle_id, true);
-        };
-
         // $apply() or $digest() needed maybe because of this:
         // https://github.com/angular-ui/bootstrap/issues/1798
         // otherwise alert doesn't show unless modal is interacted with
         _.defer(function () {
           $scope.$apply();
         });
+      };
+
+      $scope.accept_meters = function (file_id, cycle_id) {
+        file_id = file_id || $scope.dataset.import_file_id;
+        cycle_id = cycle_id || $scope.selectedCycle.id;
+        $scope.uploader.in_progress = true;
+        save_raw_assessed_data(file_id, cycle_id, true);
       };
 
       /**
@@ -545,6 +547,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           });
       };
 
+      $scope.reuse_import_file_to_import_meters = function () {
+        dataset_service.reuse_inventory_file_for_meters($scope.dataset.import_file_id).then(function (data) {
+          $scope.dataset.import_file_id = data.import_file_id;
+          $scope.uploader.progress = 50;
+          $scope.uploader.status_message = 'analyzing file';
+          uploader_service
+            .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
+            .then(present_parsed_meters_confirmation)
+            .catch(present_meter_import_error);
+        })
+      }
+
       /**
        * save_raw_assessed_data: saves Assessed data
        *
@@ -583,7 +597,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           $scope.step_10_mapquest_api_error = false;
 
           // helper function to set scope parameters for when the task fails
-          handleSystemMatchingError = function(data) {
+          const handleSystemMatchingError = function (data) {
             $scope.uploader.complete = true;
             $scope.uploader.in_progress = false;
             $scope.uploader.progress = 0;
@@ -591,10 +605,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.step_10_style = 'danger';
             $scope.step_10_error_message = data.message;
             $scope.step_10_title = data.message;
-          }
+          };
 
           if (_.includes(['error', 'warning'], data.status)) {
-            handleSystemMatchingError(data)
+            handleSystemMatchingError(data);
           } else {
             uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
@@ -637,6 +651,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                   $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2);
                 }
 
+                // Toggle a meter import button if the imported file also has a meters tab
+                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function(result) {
+                  $scope.import_file_reusable_for_meters = result;
+                });
+
                 // If merges against existing exist, provide slightly different feedback
                 if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {
                   $scope.step.number = 8;
@@ -645,7 +664,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 }
               });
             }, function (response) {
-              handleSystemMatchingError(response.data)
+              handleSystemMatchingError(response.data);
               if ($scope.step_10_error_message.includes('MapQuest')) {
                 $scope.step_10_mapquest_api_error = true;
               }

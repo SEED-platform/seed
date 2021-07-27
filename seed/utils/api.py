@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California,
+:copyright (c) 2014 - 2021, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -319,15 +319,16 @@ class OrgMixin(object):
             if not org_id:
                 org = get_user_org(request.user)
                 org_id = int(getattr(org, 'pk'))
+            if not org:
+                # ALWAYS check if user is member of org for the ID provided!
+                try:
+                    org = request.user.orgs.get(pk=org_id)
+                except ObjectDoesNotExist:
+                    raise PermissionDenied('Incorrect org id.')
             if return_obj:
-                if not org:
-                    try:
-                        org = request.user.orgs.get(pk=org_id)
-                        self._organization = org
-                    except ObjectDoesNotExist:
-                        raise PermissionDenied('Incorrect org id.')
-                else:
-                    self._organization = org
+                # not sure why we are allowing _organization to be set as an id
+                # or model instance...
+                self._organization = org
             else:
                 self._organization = org_id
         return self._organization

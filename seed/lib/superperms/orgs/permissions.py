@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California,
+:copyright (c) 2014 - 2021, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.
@@ -55,21 +55,55 @@ def get_org_or_id(dictlike):
 
 
 def get_org_id(request):
-    """Get org id from request"""
-    org_id = get_org_or_id(request.query_params)
-    if not org_id:
+    """Extract the organization ID from a request. Returns None if not found
+
+    This function attempts to find the organization id by checking (in order):
+    - Path of the request (e.g. /organizations/<id>/...)
+    - Query parameters
+    - Request body
+
+    :param request:
+    :return: str | None
+    """
+    # first check if the view is configured to get the org id from a path parameter
+    request_view = request.parser_context.get('view', None)
+    if request_view is not None and hasattr(request_view, 'authz_org_id_kwarg'):
+        kwarg_name = request_view.authz_org_id_kwarg
+        if kwarg_name:
+            request_kwargs = request.parser_context.get('kwargs', {})
+            # some views might not include the ID in the path so we have to check (e.g. data quality)
+            kwarg_org_id = request_kwargs.get(kwarg_name, None)
+            if kwarg_org_id is not None:
+                return kwarg_org_id
+
+    # if the view doesn't explicitly provide a kwarg for organization id in the path,
+    # check the path string.
+    # this is required for backwards compatibility of older APIs
+    if hasattr(request, '_request') and 'organizations' in request._request.path:
+        request_path = request._request.path.split('/')
         try:
-            if hasattr(request, 'data'):
-                data = request.data
-                org_id = get_org_or_id(data)
-        except ValueError:
-            org_id = None
+            if request_path[3] == 'organizations' and request_path[4].isdigit():
+                return int(request_path[4])
+        except (IndexError, ValueError):
+            # IndexError will occur if the split results in less than 4 tokens
+            # ValueError will occur if the result is non-numeric somehow
+            pass
 
-    # Handle cases where the Org ID is nested as a path field that shows up in the kwargs
-    if org_id is None:
-        org_id = request.parser_context.get('kwargs', {}).get('nested_organization_id')
+    # Try to get it from the query parameters
+    query_params_org_id = get_org_or_id(request.query_params)
+    if query_params_org_id is not None:
+        return query_params_org_id
 
-    return org_id
+    # try getting it from the request body itself
+    try:
+        if hasattr(request, 'data'):
+            data_org_id = get_org_or_id(request.data)
+            if data_org_id is not None:
+                return data_org_id
+    except ValueError:
+        return None
+
+    return None
 
 
 def get_user_org(user):

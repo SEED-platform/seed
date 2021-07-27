@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
@@ -48,7 +48,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_a.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_a.fake.random_number(digits=6)),
@@ -63,7 +63,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_b.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_b.fake.random_number(digits=6)),

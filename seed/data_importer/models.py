@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import csv
@@ -796,7 +796,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         if not hasattr(self, '_first_row_columns'):
             if self.cached_first_row:
                 self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+                _log.debug("Using cached first row columns.")
             else:
+                _log.debug("No first row columns property or cache was found!")
                 return None
         return self._first_row_columns
 

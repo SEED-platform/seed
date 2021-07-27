@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pipermerriam@gmail.com>', Paul Munday<paul@paulmunday.net>
 
 Unit tests for seed/views/labels.py
@@ -24,14 +24,14 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory
 )
 from seed.utils.organizations import create_organization
-from seed.views.labels import (
-    UpdateInventoryLabelsAPIView,
+from seed.views.v3.label_inventories import (
+    LabelInventoryViewSet,
 )
 
 
 class TestLabelIntegrityChecks(DataMappingBaseTestCase):
     def setUp(self):
-        self.api_view = UpdateInventoryLabelsAPIView()
+        self.api_view = LabelInventoryViewSet()
 
         # Models can't  be imported directly hence self
         self.PropertyViewLabels = self.api_view.models['property']
@@ -106,10 +106,10 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
                 self.api_view.add_labels(
-                    self.api_view.models['taxlot'].objects.none(),
-                    'taxlot',
-                    [org_1_taxlot.id],
-                    [self.org_2_status_label.id]
+                    qs=self.api_view.models['taxlot'].objects.none(),
+                    inventory_type='taxlot',
+                    inventory_ids=[org_1_taxlotview.id],
+                    add_label_ids=[self.org_2_status_label.id]
                 )
 
         with transaction.atomic():
@@ -126,10 +126,10 @@ class TestLabelIntegrityChecks(DataMappingBaseTestCase):
         with transaction.atomic():
             with self.assertRaises(IntegrityError):
                 org_1_dq.update_status_label(
-                    self.TaxlotViewLabels,
-                    Rule.objects.get(pk=org_1_tls_rule.id),
-                    org_1_taxlot.id,
-                    org_1_taxlotstate.id
+                    label_class=self.TaxlotViewLabels,
+                    rule=Rule.objects.get(pk=org_1_tls_rule.id),
+                    linked_id=org_1_taxlotview.id,
+                    row_id=org_1_taxlotstate.id
                 )
 
         self.assertFalse(TaxLotView.objects.get(pk=org_1_taxlotview.id).labels.all().exists())

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California,
+:copyright (c) 2014 - 2021, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -38,16 +38,16 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
         Return all PropertyViews available to user through specified org.
 
     create:
-        Create a new PropertyView within user`s specified org.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Create a new PropertyView within user`s specified org.
 
     delete:
-        Remove an existing PropertyView.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Remove an existing PropertyView.
 
     update:
-        Update a PropertyView record.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update a PropertyView record.
 
     partial_update:
-        Update one or more fields on an existing PropertyView.
+        WARNING: using this endpoint is not recommended as it can cause unexpected results; please use the `properties/` endpoints instead. Update one or more fields on an existing PropertyView.
     """
     serializer_class = PropertyViewAsStateSerializer
     model = PropertyView

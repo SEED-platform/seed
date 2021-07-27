@@ -1,0 +1,56 @@
+{% extends "seed/base.html" %}{% load compress %}
+
+{% block js %}{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div ng-controller="menu_controller" class="ng-cloak">
+
+    {% include "seed/_sidebar.html" %}
+
+    <div class="display">
+        <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true, hide_transition:is_initial_state}">
+
+            {% include "seed/_header.html" %}
+
+            <div class="page">
+                {{ faq_data|json_script:"faq-data" }}
+                <div ng-controller="faq_controller" class="faq-container">
+                    <h1>Frequently Asked Questions</h1>
+                    <div class="faq-filter-controls">
+                        <input type="text" class="faq-search-input" placeholder="Search" ng-model="search" ng-change="updateFilter(search)">
+                    </div>
+                    <div id="accordion-categories">
+                        <div class="faq-category" ng-repeat="(categoryName, faqItems) in faqData" ng-show="(faqItems | filter:search).length > 0" ng-init="categoryIndex = $index">
+                            <div class="faq-category-title">
+                                <h3>
+                                    <a data-toggle="collapse" data-parent="#accordion-categories" href="#category-{$:: categoryIndex $}" style="display: block;">
+                                        {$:: categoryName $}
+                                    </a>
+                                </h3>
+                            </div>
+                            <div id="category-{$:: categoryIndex $}" class="faq-category-content collapse">
+                                <div class="panel-group" id="accordion-{$:: categoryIndex $}">
+                                    <div ng-repeat="faqItem in faqItems | filter:search" class="panel panel-default">
+                                        <div class="panel-heading">
+                                            <h4 class="panel-title">
+                                                <a class="faq-question" data-toggle="collapse" data-parent="#accordion-{$:: categoryIndex $}" href="#collapse-{$:: categoryIndex $}-{$:: $index $}" style="display: block;">
+                                                    {$:: faqItem.question $}
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapse-{$:: categoryIndex $}-{$:: $index $}" class="panel-collapse collapse">
+                                            <div class="panel-body faq-answer" ng-bind-html="faqItem.answer"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

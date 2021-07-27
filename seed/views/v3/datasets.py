@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -18,7 +18,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import obj_to_dict
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.time import convert_to_js_timestamp
 
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -26,7 +26,7 @@ from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_quer
 _log = logging.getLogger(__name__)
 
 
-class DatasetViewSet(viewsets.ViewSet):
+class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
     @swagger_auto_schema_org_query_param
@@ -39,7 +39,7 @@ class DatasetViewSet(viewsets.ViewSet):
         Retrieves all datasets for the user's organization.
         """
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
         datasets = []
         for d in ImportRecord.objects.filter(super_organization=org):
@@ -71,7 +71,7 @@ class DatasetViewSet(viewsets.ViewSet):
             Updates the name of a dataset (ImportRecord).
         """
 
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         if organization_id is None:
             return JsonResponse(
                 {'status': 'error', 'message': 'Missing organization_id query parameter'})
@@ -108,7 +108,7 @@ class DatasetViewSet(viewsets.ViewSet):
             Retrieves a dataset (ImportRecord).
         """
 
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         if organization_id is None:
             return JsonResponse(
                 {'status': 'error', 'message': 'Missing organization_id query parameter'},
@@ -171,7 +171,7 @@ class DatasetViewSet(viewsets.ViewSet):
         """
             Deletes a dataset (ImportRecord).
         """
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(self.get_organization(request))
         dataset_id = pk
         # check if user has access to the dataset
         d = ImportRecord.objects.filter(
@@ -209,7 +209,7 @@ class DatasetViewSet(viewsets.ViewSet):
         """
 
         body = request.data
-        org_id = int(request.query_params.get('organization_id', None))
+        org_id = int(self.get_organization(request))
 
         try:
             org = Organization.objects.get(pk=org_id)
@@ -245,7 +245,7 @@ class DatasetViewSet(viewsets.ViewSet):
         """
         Retrieves the number of datasets for an org.
         """
-        org_id = int(request.query_params.get('organization_id', None))
+        org_id = int(self.get_organization(request))
 
         datasets_count = ImportRecord.objects.filter(super_organization_id=org_id).count()
         return JsonResponse({'status': 'success', 'datasets_count': datasets_count})

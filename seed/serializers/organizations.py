@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import serializers
@@ -23,6 +23,12 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
     mapquest_api_key = serializers.CharField()
     geocoding_enabled = serializers.BooleanField()
+    property_display_field = serializers.CharField()
+    taxlot_display_field = serializers.CharField()
+    new_user_email_from = serializers.CharField(max_length=128)
+    new_user_email_subject = serializers.CharField(max_length=128)
+    new_user_email_content = serializers.CharField(max_length=1024)
+    new_user_email_signature = serializers.CharField(max_length=128)
 
 
 class SaveSettingsSerializer(serializers.Serializer):

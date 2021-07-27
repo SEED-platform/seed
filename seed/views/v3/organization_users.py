@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -20,6 +20,8 @@ from seed.views.v3.organizations import _get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
+    # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
+    authz_org_id_kwarg = 'organization_pk'
 
     @api_endpoint_class
     @ajax_request_class
@@ -71,7 +73,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
             except Exception:
                 domain = 'seed-platform.org'
             invite_to_organization(
-                domain, user, request.user.username, org.name
+                domain, user, request.user.username, org
             )
 
         return JsonResponse({'status': 'success'})
@@ -82,7 +84,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['DELETE'])
     def remove(self, request, organization_pk, pk):
         """
-        Removes a user from an organization and deletes orphaned users.
+        Removes a user from an organization.
         """
         try:
             org = Organization.objects.get(pk=organization_pk)
@@ -139,8 +141,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         user_orgs = OrganizationUser.objects.filter(user=user)
 
         if user_orgs.count() == 0:
-            # Deactivate orphaned user
-            user.is_active = False
+            user.default_organization_id = None
             user.save()
         elif user.default_organization == org:
             first_org = user_orgs.order_by('id').first()

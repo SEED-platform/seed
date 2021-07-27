@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -18,6 +18,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DerivedColumn,
     Property,
     PropertyState,
     PropertyView,
@@ -45,6 +46,7 @@ from seed.utils.organizations import create_organization
 class DeleteModelsTestCase(TestCase):
     def _delete_models(self):
         # Order matters here
+        DerivedColumn.objects.all().delete()
         Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
         DataQualityCheck.objects.all().delete()

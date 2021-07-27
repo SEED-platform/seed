@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -19,16 +19,16 @@ from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Cycle,
+from seed.models.cycles import Cycle
+from seed.models.models import (
     StatusLabel,
-    TaxLotProperty,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
 )
+from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // organization services
@@ -191,6 +191,18 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       var deferred = $q.defer();
       checkStatusLoop(deferred, progress_key);
       return deferred.promise;
+    };
+
+    organization_factory.reset_all_passwords = function (org_id) {
+      return $http.post('/api/v3/organizations/' + org_id + '/reset_all_passwords/').then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.insert_sample_data = function (org_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/insert_sample_data/').then(function (response) {
+        return response.data;
+      });
     };
 
     var checkStatusLoop = function (deferred, progress_key) {

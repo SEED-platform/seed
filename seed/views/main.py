@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -10,6 +10,7 @@ import logging
 import os
 import subprocess
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -71,6 +72,7 @@ def home(request):
     initial_org_id, initial_org_name, initial_org_user_role = _get_default_org(
         request.user
     )
+    debug = settings.DEBUG
 
     return render(request, 'seed/index.html', locals())
 

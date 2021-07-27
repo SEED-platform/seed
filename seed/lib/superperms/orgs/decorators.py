@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -17,6 +17,7 @@ from seed.lib.superperms.orgs.models import (
     Organization,
     OrganizationUser
 )
+from seed.lib.superperms.orgs.permissions import get_org_id
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, 'ALLOW_SUPER_USER_PERMS', True)
@@ -151,42 +152,6 @@ def _make_resp(message_name):
     )
 
 
-def _get_org_id(request):
-    """Extract the ``organization_id`` regardless of HTTP method type."""
-    # first try to get it from the query parameters
-    org_id = request.GET.get('organization_id')
-
-    # Handle cases where the Org ID is a path field that shows up in the kwargs as 'organization_id'
-    if org_id is None:
-        org_id = request.parser_context.get('kwargs', {}).get('organization_id')
-
-    # Handle cases where the Org ID is a path field that shows up in the kwargs as 'nested_organization_id'
-    if org_id is None:
-        org_id = request.parser_context.get('kwargs', {}).get('nested_organization_id')
-
-    # if that does not work...
-    if org_id is None:
-        # try getting it from the request body itself
-        if hasattr(request, 'data'):
-            body = request.data
-            org_id = body.get('organization_id', None)
-        else:
-            body = request.body
-            org_id = json.loads(body).get('organization_id', None)
-        if org_id is None:
-            # if that does not work, try getting it from the url path itself, i.e. '/api/v2/organizations/12/'
-            if hasattr(request, '_request') and 'organizations' in request._request.path:
-                try:
-                    org_id = int(request._request.path.split('/')[4])
-                except (IndexError, ValueError):
-                    # IndexError will occur if the split results in less than 4 tokens
-                    # ValueError will occur if the result is non-numeric somehow
-                    return None
-            else:
-                return None
-    return org_id
-
-
 def has_perm(perm_name):
     """Proceed if user from request has ``perm_name``."""
 
@@ -197,7 +162,7 @@ def has_perm(perm_name):
             if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
                 return fn(request, *args, **kwargs)
 
-            org_id = _get_org_id(request)
+            org_id = get_org_id(request)
 
             try:
                 org = Organization.objects.get(pk=org_id)
@@ -232,7 +197,7 @@ def has_perm_class(perm_name):
             if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
                 return fn(self, request, *args, **kwargs)
 
-            org_id = _get_org_id(request)
+            org_id = get_org_id(request)
 
             try:
                 org = Organization.objects.get(pk=org_id)

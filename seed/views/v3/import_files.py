@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -9,6 +9,8 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
+from pandas import ExcelFile
+from json import dumps
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
@@ -21,7 +23,7 @@ from seed.data_importer.tasks import \
     validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mcm import mapper, reader
+from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
@@ -33,9 +35,10 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MAPPING,
                          TaxLotProperty, TaxLotState, get_column_mapping,
                          obj_to_dict)
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
+from xlrd.biffh import XLRDError
 
 _log = logging.getLogger(__name__)
 
@@ -113,7 +116,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     return [dict(zip(header, row)) for row in rows]
 
 
-class ImportFileViewSet(viewsets.ViewSet):
+class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
     queryset = ImportFile.objects.all()
 
@@ -157,15 +160,90 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def check_meters_tab_exists(self, request, pk=None):
+        """
+        Checks for the existence of meters tab "Meter Entries" for a file.
+        """
+        org_id = self.get_organization(request)
+        try:
+            import_file = ImportFile.objects.get(
+                id=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find import file with pk=' + str(pk)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            meter_tab_check = {'Meter Entries', 'Monthly Usage'} & set(ExcelFile(import_file.file).sheet_names)
+            return JsonResponse({
+                'status': 'success',
+                'data': dumps(bool(meter_tab_check))
+            })
+        except XLRDError:
+            return JsonResponse({
+                'status': 'success',
+                'data': 'false'
+            })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory({
+            'import_file_id': 'integer'
+        })
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['POST'])
+    def reuse_inventory_file_for_meters(self, request):
+        org_id = self.get_organization(request)
+        try:
+            import_file_id = request.data.get('import_file_id', 0)
+            original_file = ImportFile.objects.get(
+                id=import_file_id,
+                import_record__super_organization_id=org_id,
+                mapping_done=True,
+                source_type="Assessed Raw"
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find previously imported inventory file with pk=' + str(import_file_id)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        new_file = ImportFile.objects.create(
+            import_record=original_file.import_record,
+            file=original_file.file,
+            uploaded_filename=original_file.uploaded_filename,
+            source_type="PM Meter Usage",
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'import_file_id': new_file.id
+        })
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def first_five_rows(self, request, pk=None):
         """
         Retrieves the first five rows of an ImportFile.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         try:
             import_file = ImportFile.objects.get(
                 pk=pk,
@@ -194,15 +272,15 @@ class ImportFileViewSet(viewsets.ViewSet):
         })
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_viewer')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
     def raw_column_names(self, request, pk=None):
         """
         Retrieves a list of all column names from an ImportFile.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -236,7 +314,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
         """
         import_file_id = pk
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
 
         try:
@@ -399,7 +477,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         remap = body.get('remap', False)
         mark_as_done = body.get('mark_as_done', True)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
         import_file = ImportFile.objects.filter(
             pk=pk,
             import_record__super_organization_id=org_id
@@ -423,7 +501,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             ImportFile.objects.get(
@@ -447,7 +525,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to attempt automatic matching between buildings
         in an ImportFile with other existing buildings within the same org.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -476,7 +554,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Starts a background task to call BuildingSync's use case validation
         tool.
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -515,7 +593,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass file_id of file to save'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -570,7 +648,7 @@ class ImportFileViewSet(viewsets.ViewSet):
                 'message': 'must pass import_file_id'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -603,7 +681,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Retrieves the number of matched and unmatched properties & tax lots for
         a given ImportFile record.  Specifically for new imports
         """
-        org_id = request.query_params.get('organization_id', None)
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -758,7 +836,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         Returns suggested mappings from an uploaded file's headers to known
         data fields.
         """
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
 
         result = {'status': 'success'}
 
@@ -847,7 +925,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Deletes an import file
         """
-        organization_id = int(request.query_params.get('organization_id', None))
+        organization_id = int(self.get_organization(request))
         try:
             import_file = ImportFile.objects.get(
                 pk=pk,
@@ -891,7 +969,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Returns validated type units and proposed imports
         """
-        org_id = request.query_params.get('organization_id')
+        org_id = self.get_organization(request)
         view_id = request.query_params.get('view_id')
 
         try:
@@ -904,9 +982,6 @@ class ImportFileViewSet(viewsets.ViewSet):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.GreenButtonParser(import_file.local_file)
-        raw_meter_data = list(parser.data)
-
         try:
             property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
@@ -914,10 +989,14 @@ class ImportFileViewSet(viewsets.ViewSet):
                 {'status': 'error', 'message': 'Could not find property with pk=' + str(
                     view_id)}, status=status.HTTP_400_BAD_REQUEST)
 
-        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+        meters_parser = MetersParser.factory(
+            import_file.local_file,
+            org_id,
+            source_type=Meter.GREENBUTTON,
+            property_id=property_id
+        )
 
         result = {}
-
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
 
@@ -936,7 +1015,7 @@ class ImportFileViewSet(viewsets.ViewSet):
         """
         Returns validated type units, proposed imports and unlinkable PM ids
         """
-        org_id = request.query_params.get('organization_id')
+        org_id = self.get_organization(request)
 
         try:
             import_file = ImportFile.objects.get(
@@ -948,13 +1027,9 @@ class ImportFileViewSet(viewsets.ViewSet):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
-        raw_meter_data = list(parser.data)
-
-        meters_parser = MetersParser(org_id, raw_meter_data)
+        meters_parser = MetersParser.factory(import_file.local_file, org_id)
 
         result = {}
-
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids

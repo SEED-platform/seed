@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from drf_yasg.utils import swagger_auto_schema
@@ -15,7 +15,7 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Analysis
 from seed.serializers.analyses import AnalysisSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
 
@@ -36,7 +36,7 @@ class CreateAnalysisSerializer(AnalysisSerializer):
         )
 
 
-class AnalysisViewSet(viewsets.ViewSet):
+class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisSerializer
     model = Analysis
 
@@ -61,7 +61,7 @@ class AnalysisViewSet(viewsets.ViewSet):
 
         analysis = serializer.save(
             user_id=request.user.id,
-            organization_id=request.query_params['organization_id']
+            organization_id=self.get_organization(request)
         )
         pipeline = AnalysisPipeline.factory(analysis)
         try:
@@ -88,7 +88,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def list(self, request):
-        organization_id = request.query_params.get('organization_id', None)
+        organization_id = self.get_organization(request)
         property_id = request.query_params.get('property_id', None)
         analyses = []
         if property_id is not None:
@@ -119,7 +119,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def retrieve(self, request, pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
         except Analysis.DoesNotExist:
@@ -143,7 +143,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['post'])
     def start(self, request, pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
             pipeline = AnalysisPipeline.factory(analysis)
@@ -171,7 +171,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @has_perm_class('requires_member')
     @action(detail=True, methods=['post'])
     def stop(self, request, pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
             pipeline = AnalysisPipeline.factory(analysis)
@@ -191,7 +191,7 @@ class AnalysisViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def destroy(self, request, pk):
-        organization_id = int(request.query_params.get('organization_id', 0))
+        organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
             pipeline = AnalysisPipeline.factory(analysis)

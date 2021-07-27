@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.column_settings', [])
@@ -432,6 +432,7 @@ angular.module('BE.seed.controller.column_settings', [])
       $scope.delete_column = function (column) {
         $uibModal.open({
           backdrop: 'static',
+          keyboard: false,
           templateUrl: urls.static_url + 'seed/partials/delete_column_modal.html',
           controller: 'delete_column_modal_controller',
           resolve: {
