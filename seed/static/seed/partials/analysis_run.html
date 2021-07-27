@@ -4,7 +4,7 @@
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
             <div class="left section_action_container" style="width:100%;">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $} - Run #{$:: view.id $}</h2>
+                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: <a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a> - Run #{$:: view.id $}</h2>
             </div>
         </div>
     </div>
@@ -19,10 +19,25 @@
 <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
         <div class="section_action_container left" style="width: 50%;">
-            <span>
-                <h2 translate>Results</h2>
-                <pre>{$:: view.parsed_results | json $}</pre>
-            </span>
+            <h2 translate>Results</h2>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <div ng-if="!angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
+                        <pre>{$:: view.parsed_results | json $}</pre>
+                    </div>
+                    <div ng-repeat="file in view.output_files | filter:filter_params:strict">
+                        <div ng-if="file.content_type == 'html'">
+                            <iframe class="analysis-results" scrolling="no" src="{$:: file.file $}" onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"></iframe>
+                            <div ng-repeat-end ng-if="!$last">
+                                <br />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
