@@ -1,3 +1,10 @@
+# SEED Version 2.9.5
+
+Minor patch to:
+
+* Bump boto3 for security patch
+* Most recent version of OEP which leverages SEED's v3 API
+
 # SEED Version 2.9.4
 
 Minor patch that fixes access to inventory list page for organization user's with role "viewer".
