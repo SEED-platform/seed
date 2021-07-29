@@ -19,6 +19,7 @@ from seed.analysis_pipelines.pipeline import (
     StopAnalysisTaskChain
 )
 from seed.analysis_pipelines.better.buildingsync import (
+    SEED_TO_BSYNC_RESOURCE_TYPE,
     _build_better_input,
 )
 from seed.analysis_pipelines.better.client import (
@@ -149,7 +150,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
             .annotate(readings_count=Count('meter_readings'))
             .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
+                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
                 readings_count__gte=12,
             )
         )
