@@ -106,6 +106,13 @@ Closed Issues and Features (Total: 54):
 - Improved [#2627]( https://github.com/SEED-platform/seed/issues/2627 ), Reimplement ToS - "By creating an account, signing in, and using the website, you're agreeing to the..."
 - Fixed [#2634]( https://github.com/SEED-platform/seed/issues/2634 ), Error on importing xlsx with empty first sheet
 
+# SEED Version 2.9.5
+
+Minor patch to:
+
+* Bump boto3 for security patch
+* Most recent version of OEP which leverages SEED's v3 API
+
 # SEED Version 2.9.4
 
 Minor patch that fixes access to inventory list page for organization user's with role "viewer".
