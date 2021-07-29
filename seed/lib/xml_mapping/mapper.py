@@ -16,7 +16,7 @@ _log = logging.getLogger(__name__)
 
 def build_column_mapping(base_mapping=None, custom_mapping=None):
     if base_mapping is None:
-        base_mapping = BuildingSync.VERSION_MAPPINGS_DICT[BuildingSync.BUILDINGSYNC_V2]
+        base_mapping = BuildingSync.VERSION_MAPPINGS_DICT[BuildingSync.BUILDINGSYNC_V2_0]
     merged_map = merge_mappings(base_mapping, custom_mapping)
     column_mapping = xpath_to_column_map(merged_map)
     return {
