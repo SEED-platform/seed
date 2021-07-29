@@ -46,6 +46,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 HOST = "https://better-lbnl-development.herokuapp.com"
+
 # BETTER and ESPM use different names for property types than BEDES and BSync
 BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Office': 'Office',
@@ -64,6 +65,27 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     'Senior Care Community': 'Health care-Skilled nursing facility',
     'Supermarket/Grocery Store': 'Food sales-Grocery store',
     'Other': 'Other'
+}
+
+# maps SEED Meter types to BuildignSync ResourceUse types
+# NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
+SEED_TO_BSYNC_RESOURCE_TYPE = {
+    Meter.ELECTRICITY_GRID: 'Electricity',
+    Meter.NATURAL_GAS: 'Natural gas',
+    Meter.DIESEL: 'Diesel',
+    Meter.PROPANE: 'Propane',
+    Meter.COAL_ANTHRACITE: 'Coal anthracite',
+    Meter.COAL_BITUMINOUS: 'Coal bituminous',
+    Meter.COKE: 'Coke',
+    Meter.FUEL_OIL_NO_1: 'Fuel oil no 1',
+    Meter.FUEL_OIL_NO_2: 'Fuel oil no 2',
+    Meter.FUEL_OIL_NO_4: 'Fuel oil no 4',
+    Meter.FUEL_OIL_NO_5_AND_NO_6: 'Fuel oil no 5 and no 6',
+    Meter.DISTRICT_STEAM: 'District steam',
+    Meter.DISTRICT_HOT_WATER: 'District hot water',
+    Meter.DISTRICT_CHILLED_WATER_ELECTRIC: 'District chilled water',
+    Meter.KEROSENE: 'Kerosene',
+    Meter.WOOD: 'Wood'
 }
 
 
@@ -159,7 +181,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
             .annotate(readings_count=Count('meter_readings'))
             .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.NATURAL_GAS],
+                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
                 readings_count__gte=12,
             )
         )
@@ -342,38 +364,36 @@ def _build_better_input(analysis_property_view, meters):
                                         )
                                     ),
                                     E.ResourceUses(
-                                        E.ResourceUse(
-                                            {'ID': 'Resource-' + str(11)},
-                                            E.EnergyResource('Electricity'),
-                                            E.ResourceUnits('kWh'),
-                                            E.EndUse('All end uses')
-                                        ),
-                                        E.ResourceUse(
-                                            {'ID': 'Resource-' + str(19)},
-                                            E.EnergyResource('Natural gas'),
-                                            E.ResourceUnits('MMBtu'),
-                                            E.EndUse('Heating')
-                                        ),
+                                        *[
+                                            E.ResourceUse(
+                                                {'ID': f'ResourceUse-{meter_idx:03}'},
+                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter.type]),
+                                                # SEED stores all meter readings as kBtu
+                                                E.ResourceUnits('kBtu'),
+                                                E.EndUse('All end uses')
+                                            )
+                                            for meter_idx, meter in enumerate(meters)
+                                        ]
                                     ),
                                     E.TimeSeriesData(
                                         *[
                                             E.TimeSeries(
-                                                {'ID': f'TimeSeries-{meter.type}-{i}'},
+                                                {'ID': f'TimeSeries-{meter_idx:03}-{reading_idx:03}'},
                                                 E.ReadingType('Total'),
                                                 E.StartTimestamp(reading.start_time.isoformat()),
                                                 E.EndTimestamp(reading.end_time.isoformat()),
                                                 E.IntervalFrequency('Month'),
                                                 E.IntervalReading(str(reading.reading)),
-                                                E.ResourceUseID({'IDref': 'Resource-' + str(meter.type)}),
+                                                E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
                                             )
-                                            for meter in meters for i, reading in enumerate(meter.meter_readings.all())
+                                            for meter_idx, meter in enumerate(meters) \
+                                            for reading_idx, reading in enumerate(meter.meter_readings.all())
                                         ]
                                     ),
                                     E.LinkedPremises(
                                         E.Building(
                                             E.LinkedBuildingID({'IDref': 'Building-1'})
                                         )
-
                                     )
                                 )
                             )

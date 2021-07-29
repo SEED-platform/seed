@@ -886,7 +886,7 @@ class TestBETTERPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
-                source_unit='MMBtu',
+                source_unit='MBtu',
                 conversion_factor=1.00
             )
 
