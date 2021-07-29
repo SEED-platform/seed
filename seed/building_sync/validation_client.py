@@ -13,16 +13,11 @@ class ValidationClientException(Exception):
 
 
 def _validation_api_post(file_, schema_version, use_case_name):
-    payload = {'schema_version': schema_version}
-    files = [
-        ('file', file_)
-    ]
-
     return requests.request(
         "POST",
         VALIDATION_API_URL,
-        data=payload,
-        files=files,
+        data={'schema_version': schema_version},
+        files={'file': (file_.name, open(file_.name,'r').read(), 'application/xml')},
         timeout=60 * 2,  # timeout after two minutes (it can take a long time for zips)
     )
 
