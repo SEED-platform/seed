@@ -17,7 +17,7 @@ def _validation_api_post(file_, schema_version, use_case_name):
         "POST",
         VALIDATION_API_URL,
         data={'schema_version': schema_version},
-        files={'file': (file_.name, open(file_.name,'r').read(), 'application/xml')},
+        files={'file': (file_.name, open(file_.name, 'r').read(), 'application/xml')},
         timeout=60 * 2,  # timeout after two minutes (it can take a long time for zips)
     )
 
