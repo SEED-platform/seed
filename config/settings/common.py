@@ -323,9 +323,6 @@ BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 # Google reCAPTCHA env variable for self-registration
 GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 
-# BETTER service token
-BETTER_TOKEN = os.environ.get('BETTER_TOKEN')
-
 # Certification
 # set this for a default validity_duration
 # should be a integer representing a number of days
