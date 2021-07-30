@@ -246,7 +246,7 @@ def _start_analysis(self, analysis_id, progress_data_key):
 
     better_portfolio_id = None
     if analysis.configuration.get('portfolio_analysis', False):
-        better_portfolio_id, errors = client.better_create_portfolio(f'SEED Analysis {analysis.name} ({analysis.id})')
+        better_portfolio_id, errors = client.create_portfolio(f'SEED Analysis {analysis.name} ({analysis.id})')
         if errors:
             _check_errors(
                 errors,

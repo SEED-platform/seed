@@ -90,7 +90,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     :param progress_data: ProgressData
     :returns: int, better_analysis_id, ID of the analysis which was created and run
     """
-    better_analysis_id, errors = context.client.create_better_portfolio_analysis(
+    better_analysis_id, errors = context.client.create_portfolio_analysis(
         better_portfolio_id,
         analysis_config,
     )
@@ -101,7 +101,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
         fail_on_error=True
     )
 
-    errors = context.client.generate_better_portfolio_analysis_results(
+    errors = context.client.run_portfolio_analysis(
         better_portfolio_id,
         better_analysis_id
     )
@@ -115,7 +115,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
 
     # find and store all individual building analysis IDs for the portfolio
     # so we can fetch and save those individual analysis results later
-    better_portfolio_analysis, errors = context.client.get_better_portfolio_analysis_json(better_portfolio_id, better_analysis_id)
+    better_portfolio_analysis, errors = context.client.get_portfolio_analysis(better_portfolio_id, better_analysis_id)
     _check_errors(
         errors,
         'Failed to get BETTER portfolio analysis as JSON',
@@ -143,7 +143,7 @@ def _store_better_portfolio_analysis_results(better_analysis_id, better_building
     :param analysis: Analysis
     :param progress_data: ProgressData
     """
-    results_dir, errors = context.client.get_better_portfolio_analysis_standalone_html(better_analysis_id)
+    results_dir, errors = context.client.get_portfolio_analysis_standalone_html(better_analysis_id)
     _check_errors(
         errors,
         'Failed to get BETTER portfolio analysis standalone HTML',
@@ -183,7 +183,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, con
         better_building_id = building_analysis.better_building_id
         analysis_property_view_id = building_analysis.analysis_property_view_id
 
-        better_analysis_id, errors = context.client.run_better_analysis(
+        better_analysis_id, errors = context.client.create_and_run_building_analysis(
             better_building_id,
             analysis_config
         )
@@ -221,7 +221,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
         #
         # Store the standalone HTML
         #
-        results_dir, errors = context.client.get_better_building_analysis_standalone_html(better_analysis_id)
+        results_dir, errors = context.client.get_building_analysis_standalone_html(better_analysis_id)
         if errors:
             _check_errors(
                 errors,
@@ -254,7 +254,7 @@ def _store_better_building_analysis_results(better_building_analyses, context):
         #
         # Store the JSON results into the AnalysisPropertyView
         #
-        results_dict, errors = context.client.better_report_json_request(better_building_id, better_analysis_id)
+        results_dict, errors = context.client.get_building_analysis(better_building_id, better_analysis_id)
         if errors:
             _check_errors(
                 errors,
@@ -281,7 +281,7 @@ def _create_better_buildings(better_portfolio_id, context):
     better_building_analyses = []
     for input_file in context.analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        better_building_id = context.client.better_building_service_request(input_file.file.path, better_portfolio_id)
+        better_building_id = context.client.create_building(input_file.file.path, better_portfolio_id)
         better_building_analyses.append(
             BuildingAnalysis(
                 analysis_property_view_id,

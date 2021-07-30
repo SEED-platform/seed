@@ -25,6 +25,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       inventory_ids
     ) {
       $scope.inventory_count = inventory_ids.length
+      // used to disable buttons on submit
+      $scope.waiting_for_server = false
+
       $scope.new_analysis = {
         name: null,
         service: null,
@@ -69,16 +72,19 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         if (form.$invalid) {
           return;
         }
+        $scope.waiting_for_server = true
         analyses_service.create_analysis(
           $scope.new_analysis.name,
           $scope.new_analysis.service,
           $scope.new_analysis.configuration,
           inventory_ids
         ).then(function (data) {
+          $scope.waiting_for_server = false
           Notification.primary('Created Analysis');
           form.$setPristine();
           $scope.$close(data);
         }, function (response) {
+          $scope.waiting_for_server = false
           $log.error('Error creating new analysis.', response);
           Notification.error('Failed to create Analysis: ' + response.data.message);
         });

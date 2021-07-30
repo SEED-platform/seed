@@ -38,7 +38,7 @@ class BETTERClient:
 
         return response.json(), []
 
-    def better_create_portfolio(self, name):
+    def create_portfolio(self, name):
         """Create a new BETTER portfolio
 
         :param name: str, portfolio name
@@ -66,7 +66,7 @@ class BETTERClient:
 
         return portfolio_id, []
 
-    def create_better_portfolio_analysis(self, better_portfolio_id, analysis_config):
+    def create_portfolio_analysis(self, better_portfolio_id, analysis_config):
         """Create an analysis for the portfolio.
 
         :param better_portfolio_id: int
@@ -95,7 +95,7 @@ class BETTERClient:
 
         return analysis_id, []
 
-    def get_better_portfolio_analysis_json(self, better_portfolio_id, better_analysis_id):
+    def get_portfolio_analysis(self, better_portfolio_id, better_analysis_id):
         """Get portfolio analysis as dict
 
         :param better_portfolio_id: int
@@ -117,7 +117,7 @@ class BETTERClient:
 
         return response.json(), []
 
-    def generate_better_portfolio_analysis_results(self, better_portfolio_id, better_analysis_id):
+    def run_portfolio_analysis(self, better_portfolio_id, better_analysis_id):
         """Start portfolio analysis and wait for it to finish.
 
         :param better_portfolio_id: int
@@ -140,7 +140,7 @@ class BETTERClient:
         # Gotta make sure the analysis is done
         def is_ready(res):
             """
-            :param res: response tuple from _get_better_analysis_json
+            :param res: response tuple from get_portfolio_analysis
             :return: bool
             """
             response, errors = res[0], res[1]
@@ -150,7 +150,7 @@ class BETTERClient:
 
         try:
             polling.poll(
-                lambda: self.get_better_portfolio_analysis_json(better_portfolio_id, better_analysis_id),
+                lambda: self.get_portfolio_analysis(better_portfolio_id, better_analysis_id),
                 check_success=is_ready,
                 timeout=60,
                 step=1
@@ -162,7 +162,7 @@ class BETTERClient:
 
         return []
 
-    def get_better_portfolio_analysis_standalone_html(self, better_analysis_id):
+    def get_portfolio_analysis_standalone_html(self, better_analysis_id):
         """Get portfolio analysis HTML results.
 
         :param better_analysis_id: int, ID of an analysis for a portfolio
@@ -191,8 +191,8 @@ class BETTERClient:
 
         return temporary_results_dir, []
 
-    def better_building_service_request(self, bsync_xml, better_portfolio_id=None):
-        """Makes request to better building endpoint using the provided file
+    def create_building(self, bsync_xml, better_portfolio_id=None):
+        """Creates BETTER building from bsync_xml
 
         :param bsync_xml: str, path to BSync xml file for property
         :param better_portfolio_id: int | str, optional, if provided it will add the
@@ -225,10 +225,11 @@ class BETTERClient:
 
         return building_id
 
-    def better_analysis_service_request(self, building_id, config):
+    def _create_building_analysis(self, building_id, config):
         """Makes request to better analysis endpoint using the provided configuration
 
-        :params: request body with building_id, savings_target, benchmark_data, min_model_r_squared
+        :param building_id: int
+        :param config: request body with building_id, savings_target, benchmark_data, min_model_r_squared
         :returns: requests.Response
         """
 
@@ -248,7 +249,7 @@ class BETTERClient:
 
         return response
 
-    def get_better_building_analysis_standalone_html(self, analysis_id):
+    def get_building_analysis_standalone_html(self, analysis_id):
         """Makes request to better html report endpoint using the provided analysis_id
 
         :params: analysis id
@@ -275,8 +276,8 @@ class BETTERClient:
 
         return temporary_results_dir, []
 
-    def better_report_json_request(self, better_building_id, better_analysis_id):
-        """Makes request to better html report endpoint using the provided analysis_id
+    def get_building_analysis(self, better_building_id, better_analysis_id):
+        """Get a building analysis
 
         :params: better_building_id
         :params: better_analysis_id
@@ -299,7 +300,7 @@ class BETTERClient:
 
         return response_json, []
 
-    def run_better_analysis(self, building_id, config):
+    def create_and_run_building_analysis(self, building_id, config):
         """Runs the better analysis by making a request to a better server with the
         provided configuration. Returns the analysis id for standalone html
 
@@ -308,9 +309,9 @@ class BETTERClient:
         :returns: better_analysis_pk
         """
         try:
-            response = self.better_analysis_service_request(building_id, config)
+            response = self._create_building_analysis(building_id, config)
         except Exception as e:
-            return None, [f'Failed to make request to better server: {e}']
+            return None, [f'Failed to create analysis for building: {e}']
 
         if response.status_code != 201:
             return None, ['BETTER analysis could not be completed and got the following response: {message}'.format(
