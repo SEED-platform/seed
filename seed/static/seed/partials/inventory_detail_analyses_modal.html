@@ -33,7 +33,7 @@
                             <div class="col-md-6">
                                 <label class="control-label sectionLabel text-muted">
                                     Savings Target
-                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"></i>
                                 </label>
                                 <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
                                     <option ng-repeat="model in better_savings_targets" selected="selected"
@@ -44,7 +44,7 @@
                             <div class="col-md-6">
                                 <label class="control-label sectionLabel text-muted">
                                     Benchmark Data
-                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"></i>
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
                                 </label>
                                 <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
                                     <option ng-repeat="model in better_benchmark_options" selected="selected"
