@@ -24,6 +24,13 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       analyses_service,
       inventory_ids
     ) {
+      $scope.inventory_count = inventory_ids.length
+      $scope.new_analysis = {
+        name: null,
+        service: null,
+        configuration: {}
+      };
+
       $scope.bsyncr_models = [
         {model_type: 'Simple Linear Regression'},
         {model_type: 'Three Parameter Linear Model Cooling'},
@@ -42,8 +49,19 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         {benchmark_data: 'GENERATE'}
       ];
 
-      function initialize_new_analysis () {
-        $scope.new_analysis = {name: null, service: null, configuration: {savings_target: null, benchmark_data: null, min_r_squared: null}};
+      $scope.initializeAnalysisConfig = () => {
+        if ($scope.service == 'BSyncr') {
+          $scope.new_analysis.configuration = {
+            model: null
+          }
+        } else {
+          $scope.new_analysis.configuration = {
+            savings_target: null,
+            benchmark_data: null,
+            min_r_squared: null,
+            portfolio_analysis: false,
+          }
+        }
       }
 
       /* Create a new analysis based on user input */
@@ -58,7 +76,6 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           inventory_ids
         ).then(function (data) {
           Notification.primary('Created Analysis');
-          initialize_new_analysis();
           form.$setPristine();
           $scope.$close(data);
         }, function (response) {

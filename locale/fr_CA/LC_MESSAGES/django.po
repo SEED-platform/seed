@@ -2985,9 +2985,6 @@ msgstr "Voir le projet"
 msgid "Viewer"
 msgstr "Spectateur"
 
-msgid "Visit the BETTER website to run a portfolio analysis"
-msgstr "Visitez le site Web de BETTER pour effectuer une analyse de portefeuille"
-
 msgid "Warning"
 msgstr "Mise en garde"
 
