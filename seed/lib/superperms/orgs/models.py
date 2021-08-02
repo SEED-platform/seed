@@ -209,6 +209,9 @@ class Organization(models.Model):
 
     comstock_enabled = models.BooleanField(default=False)
 
+    # API Token for communicating with BETTER
+    better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
+
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
         # There can only be one.
