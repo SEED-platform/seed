@@ -95,11 +95,11 @@ def _build_better_input(analysis_property_view, meters):
 
     property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
-    gfl = property_state.gross_floor_area
-    if gfl.units != ureg.feet**2:
-        gross_floor_area = str(gfl.to(ureg.feet ** 2).magnitude)
+    gfa = property_state.gross_floor_area
+    if gfa.units != ureg.feet**2:
+        gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
     else:
-        gross_floor_area = str(gfl.magnitude)
+        gross_floor_area = str(gfa.magnitude)
 
     XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
     nsmap = {
