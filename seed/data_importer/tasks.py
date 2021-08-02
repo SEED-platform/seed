@@ -1621,15 +1621,34 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 def _validate_use_cases(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
-    bs = BuildingSync()
-    bs.import_file(import_file.file)
-
     progress_data.step('validating data with Selection Tool')
     try:
+        found_version = 0
+
+        # if this is a zip, ensure all zipped versions are the same...
+        if zipfile.is_zipfile(import_file.file.name):
+            with zipfile.ZipFile(import_file.file, 'r', zipfile.ZIP_STORED) as open_zip:
+                for file_name in open_zip.namelist():
+                    new_file = SimpleUploadedFile(
+                        name=file_name,
+                        content=open_zip.read(file_name),
+                        content_type='application/xml')
+                    bs = BuildingSync()
+                    bs.import_file(new_file.file)
+                    if found_version == 0:
+                        found_version = bs.version
+                    elif found_version != bs.version:
+                        raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
+
+        # it's not a zip, just get the version directly...
+        else:
+            bs = BuildingSync()
+            bs.import_file(import_file.file)
+            found_version = bs.version
         all_files_valid, file_summaries = validation_client.validate_use_case(
             import_file.file,
             filename=import_file.uploaded_filename,
-            schema_version=bs.version
+            schema_version=found_version
         )
         if all_files_valid is False:
             import_file.delete()
