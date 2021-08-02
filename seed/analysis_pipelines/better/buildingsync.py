@@ -5,6 +5,8 @@ from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.models import Meter
 
+from quantityfield import ureg
+
 
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
 # to link it to SEED's AnalysisPropertyViews
@@ -94,7 +96,11 @@ def _build_better_input(analysis_property_view, meters):
 
     property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
-    gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
+    gfl = property_state.gross_floor_area
+    if gfl.units != ureg.feet**2:
+        gross_floor_area = str(gfl.to(ureg.feet ** 2).magnitude)
+    else:
+        gross_floor_area = str(gfl.magnitude)
 
     XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
     nsmap = {
