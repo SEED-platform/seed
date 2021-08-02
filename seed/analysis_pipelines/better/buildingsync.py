@@ -63,7 +63,6 @@ def _build_better_input(analysis_property_view, meters):
     :param meter: Meter
     :returns: tuple(bytes, list[str])
     """
-    # TODO Refine ID assignment
     errors = []
     property_state = analysis_property_view.property_state
 
