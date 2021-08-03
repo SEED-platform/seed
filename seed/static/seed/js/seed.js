@@ -78,7 +78,6 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_analyses_modal',
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
-  'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_list',
@@ -92,6 +91,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.merge_modal',
   'BE.seed.controller.modified_modal',
   'BE.seed.controller.new_member_modal',
+  'BE.seed.controller.notes',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.organization_sharing',
@@ -634,7 +634,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         name: 'inventory_detail_notes',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
         templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
-        controller: 'inventory_detail_notes_controller',
+        controller: 'notes_controller',
         resolve: {
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
@@ -650,13 +650,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          inventory_type: ['$stateParams', function ($stateParams) {
+            return $stateParams.inventory_type;
+          }],
+          view_id: ['$stateParams', function ($stateParams) {
+            return $stateParams.view_id;
+          }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
           }],
           notes: ['$stateParams', 'note_service', 'user_service', function ($stateParams, note_service, user_service) {
             var organization_id = user_service.get_organization().id;
             return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
-          }]
+          }],
+          $uibModalInstance: _.constant(undefined)
         }
       })
       .state({
