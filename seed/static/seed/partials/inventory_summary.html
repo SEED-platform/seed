@@ -32,11 +32,19 @@
             <div class="content_block row" style="padding:20px 20px 10px 20px">
                 <div class="col-md-12">
                     <div class="row">
-                        <table>
-                            <tr ng-repeat="item in table_data">
-                                <td>{$item.text$}</td>
-                                <td>{$item.count$}</td>
-                            </tr>
+                        <table class="zebra">
+                        <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Count</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="item in table_data">
+                            <td>{$item.text$}</td>
+                            <td>{$item.count$}</td>
+                        </tr>
+                        </tbody>
                         </table>
                     </div>
                 </div>

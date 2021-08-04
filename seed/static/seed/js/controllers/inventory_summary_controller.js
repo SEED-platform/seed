@@ -32,18 +32,19 @@ angular.module('BE.seed.controller.inventory_summary', [])
 
       const draw_charts = function() {
         const chartConfigs = [
-          { name: 'property_types', x: 'extra_data__Largest Property Use Type', y: 'count' },
-          { name: 'year_built', x: 'year_built', y: 'percentage' },
-          { name: 'energy', x: 'site_eui', y: 'percentage' },
-          { name: 'square_footage', x: 'gross_floor_area', y: 'percentage' },
+          { name: 'property_types', x: 'extra_data__Largest Property Use Type', y: 'count', xLabel: 'Property Types'},
+          { name: 'year_built', x: 'year_built', y: 'percentage', xLabel: 'Year Built' },
+          { name: 'energy', x: 'site_eui', y: 'percentage', xLabel: 'Site EUI' },
+          { name: 'square_footage', x: 'gross_floor_area', y: 'percentage' , xLabel: 'Gross Floor Area'},
         ]
 
         if (_.isEmpty(charts)) {
           // initialize charts
           chartConfigs.forEach(config => {
-            const svg = dimple.newSvg("#chart", 500, 400);
+            const svg = dimple.newSvg("#chart", 500, 750);
             const chart = new dimple.chart(svg, []);
-            chart.addCategoryAxis('x', config.x);
+            const xaxis = chart.addCategoryAxis('x', config.x);
+            xaxis.title = config.xLabel;
             chart.addMeasureAxis('y', config.y);
             chart.addSeries(null, dimple.plot.bar);
             charts[config.name] = chart;
@@ -71,10 +72,10 @@ angular.module('BE.seed.controller.inventory_summary', [])
             $scope.summary_data = data;
             $scope.table_data = [
               {
-                text: "total_records",
+                text: "Total Records",
                 count: data['total_records']
               },{
-                text: "number_extra_data_fields",
+                text: "Number of Extra Data Fields",
                 count: data['number_extra_data_fields']
               }
             ];

@@ -3881,7 +3881,9 @@ iframe.analysis-results {
     border: 1px solid black;
     border-collapse: collapse;
   }
-
+  tbody tr:nth-child(odd) {
+    background: #eee;
+  }
   table {
     width: 300px;
   }
