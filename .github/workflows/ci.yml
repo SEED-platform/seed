@@ -59,7 +59,7 @@ jobs:
           sudo apt update
           sudo apt install -y xvfb
           wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb
-          sudo apt install -y /tmp/chrome.deb
+          sudo apt install -y --allow-downgrades /tmp/chrome.deb
           google-chrome --version
       -
         name: Test Django
