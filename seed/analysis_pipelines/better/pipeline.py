@@ -5,6 +5,7 @@
 :author
 """
 import logging
+import copy
 
 from django.db.models import Q, Count
 from django.utils import timezone as tz
@@ -300,7 +301,32 @@ def _process_results(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Processing results')
 
-    # create the results Columns if the don't already exist
+    # store all measure recommendations
+    ee_measure_names = [
+        'Upgrade Windows',
+        'Reduce Plug Loads',
+        'Add/Fix Economizers',
+        'Decrease Ventilation',
+        'Reduce Lighting Load',
+        'Check Fossil Baseload',
+        'Decrease Infiltration',
+        'Decrease Heating Setpoints',
+        'Eliminate Electric Heating',
+        'Increase Cooling Setpoints',
+        'Reduce Equipment Schedules',
+        'Add Wall/Ceiling Insulation',
+        'Increase Cooling System Efficiency',
+        'Increase Heating System Efficiency'
+    ]
+    ee_measure_column_data_paths = [
+        ExtraDataColumnPath(
+            f'better_recommendation_{ee_measure_name.lower().replace(" ", "_")}',
+            f'BETTER Recommendation: {ee_measure_name}',
+            f'assessment.ee_measures.{ee_measure_name}'
+        ) for ee_measure_name in ee_measure_names
+    ]
+
+    # gather all columns to store
     column_data_paths = [
         ExtraDataColumnPath(
             'better_cost_savings_combined',
@@ -312,8 +338,21 @@ def _process_results(self, analysis_id, progress_data_key):
             'BETTER Potential Energy Savings (kWh)',
             'assessment.assessment_energy_use.energy_savings_combined'
         ),
-    ]
+        ExtraDataColumnPath(
+            'better_ghg_reductions_combined',
+            'BETTER Potential GHG Emissions Reduction (kgCO2e)',
+            'assessment.assessment_energy_use.ghg_reductions_combined'
+        ),
+        ExtraDataColumnPath(
+            # we will manually add this to the data later (it's not part of BETTER's results)
+            # Provides info so user knows which SEED analysis last updated these stored values
+            'better_seed_analysis_id',
+            'BETTER Analysis Id',
+            'better_seed_analysis_id'
+        ),
+    ] + ee_measure_column_data_paths
 
+    # create columns if they don't already exist
     for column_data_path in column_data_paths:
         Column.objects.get_or_create(
             is_extra_data=True,
@@ -340,9 +379,11 @@ def _process_results(self, analysis_id, progress_data_key):
     for analysis_property_view in analysis_property_views:
         property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
         property_view = property_views_by_property_cycle_id[property_cycle_id]
+        data = copy.deepcopy(analysis_property_view.parsed_results)
+        data.update({'better_seed_analysis_id': analysis_id })
         _update_original_property_state(
             property_view.state,
-            analysis_property_view.parsed_results,
+            data,
             column_data_paths
         )
 
