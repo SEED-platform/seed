@@ -6,7 +6,6 @@ from seed.building_sync.building_sync import BuildingSync
 
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
-# VALIDATION_API_URL = "http://host.docker.internal:8080/api/validate"
 DEFAULT_SCHEMA_VERSION = '2.0.0'
 DEFAULT_USE_CASE = 'SEED'
 
