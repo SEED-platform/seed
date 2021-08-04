@@ -120,6 +120,7 @@ def _dict_org(request, organizations):
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
+            'better_analysis_api_key': o.better_analysis_api_key or '',
             'property_display_field': o.property_display_field,
             'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
@@ -541,6 +542,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get('geocoding_enabled', True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update BETTER Analysis API Key if it's been changed
+        better_analysis_api_key = posted_org.get('better_analysis_api_key', '').strip()
+        if better_analysis_api_key != org.better_analysis_api_key:
+            org.better_analysis_api_key = better_analysis_api_key
 
         # Update property_display_field option
         property_display_field = posted_org.get('property_display_field', 'address_line_1')
