@@ -20,6 +20,7 @@ from datetime import date, datetime
 from itertools import chain
 from math import ceil
 import zipfile
+import tempfile
 
 from celery import chord, shared_task
 from celery import chain as celery_chain
@@ -1627,18 +1628,17 @@ def _validate_use_cases(file_pk, progress_key):
 
         # if this is a zip, ensure all zipped versions are the same...
         if zipfile.is_zipfile(import_file.file.name):
-            with zipfile.ZipFile(import_file.file, 'r', zipfile.ZIP_STORED) as open_zip:
-                for file_name in open_zip.namelist():
-                    new_file = SimpleUploadedFile(
-                        name=file_name,
-                        content=open_zip.read(file_name),
-                        content_type='application/xml')
-                    bs = BuildingSync()
-                    bs.import_file(new_file.file)
-                    if found_version == 0:
-                        found_version = bs.version
-                    elif found_version != bs.version:
-                        raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
+            with zipfile.ZipFile(import_file.file, 'r') as zip_file:
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    zip_file.extractall(path=temp_dir)
+                    for file_name in zip_file.namelist():
+                        bs = BuildingSync()
+                        bs.import_file(f'{temp_dir}/{file_name}')
+                        if found_version == 0:
+                            found_version = bs.version
+                        elif found_version != bs.version:
+                            raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
+            import_file.refresh_from_db()
 
         # it's not a zip, just get the version directly...
         else:
