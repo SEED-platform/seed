@@ -350,6 +350,11 @@ def _process_results(self, analysis_id, progress_data_key):
             'BETTER Analysis Id',
             'better_seed_analysis_id'
         ),
+        ExtraDataColumnPath(
+            'better_min_model_r_squared',
+            'BETTER Min Model R^2',
+            'min_model_r_squared'
+        ),
     ] + ee_measure_column_data_paths
 
     # create columns if they don't already exist
@@ -380,7 +385,7 @@ def _process_results(self, analysis_id, progress_data_key):
         property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
         property_view = property_views_by_property_cycle_id[property_cycle_id]
         data = copy.deepcopy(analysis_property_view.parsed_results)
-        data.update({'better_seed_analysis_id': analysis_id })
+        data.update({'better_seed_analysis_id': analysis_id})
         _update_original_property_state(
             property_view.state,
             data,
