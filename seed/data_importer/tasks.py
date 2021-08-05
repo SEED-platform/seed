@@ -20,6 +20,7 @@ from datetime import date, datetime
 from itertools import chain
 from math import ceil
 import zipfile
+import tempfile
 
 from celery import chord, shared_task
 from celery import chain as celery_chain
@@ -35,6 +36,7 @@ from past.builtins import basestring
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
+from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots,
@@ -1620,12 +1622,33 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 def _validate_use_cases(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
-
     progress_data.step('validating data with Selection Tool')
     try:
+        found_version = 0
+
+        # if this is a zip, ensure all zipped versions are the same...
+        if zipfile.is_zipfile(import_file.file.name):
+            with zipfile.ZipFile(import_file.file, 'r') as zip_file:
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    zip_file.extractall(path=temp_dir)
+                    for file_name in zip_file.namelist():
+                        bs = BuildingSync()
+                        bs.import_file(f'{temp_dir}/{file_name}')
+                        if found_version == 0:
+                            found_version = bs.version
+                        elif found_version != bs.version:
+                            raise Exception(f'Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})')
+            import_file.refresh_from_db()
+
+        # it's not a zip, just get the version directly...
+        else:
+            bs = BuildingSync()
+            bs.import_file(import_file.file)
+            found_version = bs.version
         all_files_valid, file_summaries = validation_client.validate_use_case(
             import_file.file,
-            filename=import_file.uploaded_filename
+            filename=import_file.uploaded_filename,
+            schema_version=found_version
         )
         if all_files_valid is False:
             import_file.delete()
