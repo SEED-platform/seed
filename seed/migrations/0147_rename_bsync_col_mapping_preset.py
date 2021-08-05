@@ -2,10 +2,11 @@
 
 from django.db import migrations
 
+
 def rename_default_bsync_presets(apps, schema_editor):
     """rename the default BuildingSync column mapping preset for each organization"""
     ColumnMappingProfile = apps.get_model("seed", "ColumnMappingProfile")
-    
+
     ColumnMappingProfile.objects.filter(name='BuildingSync v2.0 Defaults').update(name='BuildingSync v2 Defaults')
 
 
