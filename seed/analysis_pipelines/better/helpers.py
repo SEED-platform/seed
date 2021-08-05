@@ -5,16 +5,6 @@ import pathlib
 from django.core.files.base import File as BaseFile
 
 from seed.analysis_pipelines.pipeline import StopAnalysisTaskChain, AnalysisPipelineException
-from seed.analysis_pipelines.better.client import (
-    _create_better_portfolio_analysis,
-    _generate_better_portfolio_analysis_results,
-    _better_building_service_request,
-    _get_better_portfolio_analysis_standalone_html,
-    _run_better_analysis,
-    _get_better_building_analysis_standalone_html,
-    _better_report_json_request,
-    _get_better_portfolio_analysis_json,
-)
 from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
 from seed.models import (
     AnalysisMessage,
@@ -40,7 +30,7 @@ class BuildingAnalysis:
 ExtraDataColumnPath = namedtuple('ExtraDataColumnPath', ['column_name', 'column_display_name', 'json_path'])
 
 
-def _check_errors(errors, analysis, progress_data, what_failed_desc, analysis_property_view_id=None, fail_on_error=False):
+def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=None, fail_on_error=False):
     """Creates error messages for the analysis if any are found.
 
     :param analysis: Analysis
@@ -60,9 +50,9 @@ def _check_errors(errors, analysis, progress_data, what_failed_desc, analysis_pr
         AnalysisMessage.log_and_create(
             logger=logger,
             type_=AnalysisMessage.ERROR,
-            analysis_id=analysis.id,
+            analysis_id=context.analysis.id,
             analysis_property_view_id=analysis_property_view_id,
-            user_message='Unexpected error from BETTER service. Please try again or contact the SEED administrators.',
+            user_message='Unexpected error from BETTER service. Please confirm your Organization\'s API token is correct and try again or contact the SEED administrators.',
             debug_message=f'{what_failed_desc}: {error}',
         )
 
@@ -70,13 +60,13 @@ def _check_errors(errors, analysis, progress_data, what_failed_desc, analysis_pr
         # avoid circular import
         from seed.analysis_pipelines.better.pipeline import BETTERPipeline
 
-        pipeline = BETTERPipeline(analysis.id)
-        pipeline.fail(what_failed_desc, logger, progress_data_key=progress_data.key)
+        pipeline = BETTERPipeline(context.analysis.id)
+        pipeline.fail(what_failed_desc, logger, progress_data_key=context.progress_data.key)
         # stop the task chain
         raise StopAnalysisTaskChain(what_failed_desc)
 
 
-def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses, analysis_config, analysis, progress_data):
+def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses, analysis_config, context):
     """Create and run an analysis for a BETTER portfolio. Updates all BuildingAnalysis
     objects in better_building_analyses to store their individual building analysis IDs.
 
@@ -87,39 +77,36 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     :param progress_data: ProgressData
     :returns: int, better_analysis_id, ID of the analysis which was created and run
     """
-    better_analysis_id, errors = _create_better_portfolio_analysis(
+    better_analysis_id, errors = context.client.create_portfolio_analysis(
         better_portfolio_id,
         analysis_config,
     )
     _check_errors(
         errors,
-        analysis,
-        progress_data,
         'Failed to create BETTER portfolio analysis',
+        context,
         fail_on_error=True
     )
 
-    errors = _generate_better_portfolio_analysis_results(
+    errors = context.client.run_portfolio_analysis(
         better_portfolio_id,
         better_analysis_id
     )
     if errors:
         _check_errors(
             errors,
-            analysis,
-            progress_data,
             'Failed to generate BETTER portfolio analysis',
+            context,
             fail_on_error=True,
         )
 
     # find and store all individual building analysis IDs for the portfolio
     # so we can fetch and save those individual analysis results later
-    better_portfolio_analysis, errors = _get_better_portfolio_analysis_json(better_portfolio_id, better_analysis_id)
+    better_portfolio_analysis, errors = context.client.get_portfolio_analysis(better_portfolio_id, better_analysis_id)
     _check_errors(
         errors,
-        analysis,
-        progress_data,
         'Failed to get BETTER portfolio analysis as JSON',
+        context,
         fail_on_error=True
     )
 
@@ -135,7 +122,7 @@ def _run_better_portfolio_analysis(better_portfolio_id, better_building_analyses
     return better_analysis_id
 
 
-def _store_better_portfolio_analysis_results(better_analysis_id, better_building_analyses, analysis, progress_data):
+def _store_better_portfolio_analysis_results(better_analysis_id, better_building_analyses, context):
     """Stores results for portfolio analysis. Analysis should be completed before calling.
 
     :param better_analysis_id: int
@@ -143,12 +130,11 @@ def _store_better_portfolio_analysis_results(better_analysis_id, better_building
     :param analysis: Analysis
     :param progress_data: ProgressData
     """
-    results_dir, errors = _get_better_portfolio_analysis_standalone_html(better_analysis_id)
+    results_dir, errors = context.client.get_portfolio_analysis_standalone_html(better_analysis_id)
     _check_errors(
         errors,
-        analysis,
-        progress_data,
         'Failed to get BETTER portfolio analysis standalone HTML',
+        context,
         fail_on_error=True
     )
     for result_file_path in pathlib.Path(results_dir.name).iterdir():
@@ -163,7 +149,7 @@ def _store_better_portfolio_analysis_results(better_analysis_id, better_building
             analysis_output_file = AnalysisOutputFile(
                 content_type=content_type,
             )
-            padded_id = f'{analysis.id:06d}'
+            padded_id = f'{context.analysis.id:06d}'
             analysis_output_file.file.save(f'better_portfolio_output_{padded_id}_{result_file_path.name}', file_)
             analysis_output_file.clean()
             analysis_output_file.save()
@@ -171,7 +157,7 @@ def _store_better_portfolio_analysis_results(better_analysis_id, better_building
             analysis_output_file.analysis_property_views.set([b.analysis_property_view_id for b in better_building_analyses])
 
 
-def _run_better_building_analyses(better_building_analyses, analysis_config, analysis, progress_data):
+def _run_better_building_analyses(better_building_analyses, analysis_config, context):
     """Runs building analysis for each building. Updates the BuildingAnalysis objects
     in better_building_analyses with the IDs of BETTER analyses created.
 
@@ -184,16 +170,15 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, ana
         better_building_id = building_analysis.better_building_id
         analysis_property_view_id = building_analysis.analysis_property_view_id
 
-        better_analysis_id, errors = _run_better_analysis(
+        better_analysis_id, errors = context.client.create_and_run_building_analysis(
             better_building_id,
             analysis_config
         )
         if errors:
             _check_errors(
                 errors,
-                analysis,
-                progress_data,
                 'Failed to run BETTER building analysis',
+                context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
             )
@@ -204,7 +189,7 @@ def _run_better_building_analyses(better_building_analyses, analysis_config, ana
         building_analysis.better_analysis_id = better_analysis_id
 
 
-def _store_better_building_analysis_results(better_building_analyses, analysis, progress_data):
+def _store_better_building_analysis_results(better_building_analyses, context):
     """Stores results for building analysis. Analysis should be completed before calling.
 
     Specifically, it stores each building's standalone HTML file and links it to
@@ -223,13 +208,13 @@ def _store_better_building_analysis_results(better_building_analyses, analysis, 
         #
         # Store the standalone HTML
         #
-        results_dir, errors = _get_better_building_analysis_standalone_html(better_analysis_id)
+
+        results_dir, errors = context.client.get_building_analysis_standalone_html(better_analysis_id)
         if errors:
             _check_errors(
                 errors,
-                analysis,
-                progress_data,
                 'Failed to get BETTER building analysis standalone HTML',
+                context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
             )
@@ -257,13 +242,12 @@ def _store_better_building_analysis_results(better_building_analyses, analysis, 
         #
         # Store the JSON results into the AnalysisPropertyView
         #
-        results_dict, errors = _better_report_json_request(better_building_id, better_analysis_id)
+        results_dict, errors = context.client.get_building_analysis(better_building_id, better_analysis_id)
         if errors:
             _check_errors(
                 errors,
-                analysis,
-                progress_data,
                 'Failed to get BETTER building analysis results',
+                context,
                 analysis_property_view_id=analysis_property_view_id,
                 fail_on_error=False,
             )
@@ -275,7 +259,7 @@ def _store_better_building_analysis_results(better_building_analyses, analysis, 
         analysis_property_view.save()
 
 
-def _create_better_buildings(analysis, better_portfolio_id):
+def _create_better_buildings(better_portfolio_id, context):
     """Create a BETTER building
 
     :param analysis: Analysis
@@ -283,9 +267,9 @@ def _create_better_buildings(analysis, better_portfolio_id):
     :return: list[BuildingAnalysis]
     """
     better_building_analyses = []
-    for input_file in analysis.input_files.all():
+    for input_file in context.analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        better_building_id = _better_building_service_request(input_file.file.path, better_portfolio_id)
+        better_building_id = context.client.create_building(input_file.file.path, better_portfolio_id)
         better_building_analyses.append(
             BuildingAnalysis(
                 analysis_property_view_id,

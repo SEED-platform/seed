@@ -1,6 +1,8 @@
 import os
+import zipfile
 
 import requests
+from seed.building_sync.building_sync import BuildingSync
 
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
@@ -13,11 +15,16 @@ class ValidationClientException(Exception):
 
 
 def _validation_api_post(file_, schema_version, use_case_name):
+    if zipfile.is_zipfile(file_.name):
+        files = [('file', file_)]
+    else:
+        files = {'file': (file_.name, open(file_.name, 'r').read(), 'application/xml')}
+
     return requests.request(
         "POST",
         VALIDATION_API_URL,
         data={'schema_version': schema_version},
-        files={'file': (file_.name, open(file_.name, 'r').read(), 'application/xml')},
+        files=files,
         timeout=60 * 2,  # timeout after two minutes (it can take a long time for zips)
     )
 
@@ -32,6 +39,9 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     :return: tuple, (bool, list), bool indicates if the file passes validation,
              the list is a collection of files and their errors, warnings, and infos
     """
+
+    if schema_version == BuildingSync.BUILDINGSYNC_V2_0:
+        schema_version = BuildingSync.BUILDINGSYNC_V2_0_0
 
     try:
         response = _validation_api_post(file_, schema_version, use_case_name)

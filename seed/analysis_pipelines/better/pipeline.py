@@ -23,9 +23,10 @@ from seed.analysis_pipelines.better.buildingsync import (
     _build_better_input,
 )
 from seed.analysis_pipelines.better.client import (
-    _better_create_portfolio,
+    BETTERClient,
 )
 from seed.analysis_pipelines.better.helpers import (
+    BETTERPipelineContext,
     ExtraDataColumnPath,
     _check_errors,
     _create_better_buildings,
@@ -84,11 +85,27 @@ class BETTERPipeline(AnalysisPipeline):
 
     def _prepare_analysis(self, property_view_ids):
         """Internal implementation for preparing better analysis"""
+        analysis = Analysis.objects.get(id=self._analysis_id)
+        organization = analysis.organization
+        if not organization.better_analysis_api_key:
+            message = (f'Organization "{organization.name}" is missing the required BETTER Analysis API Key. '
+                       'Please update your organization\'s settings or contact your organization administrator.')
+            self.fail(message, logger)
+            raise AnalysisPipelineException(message)
 
-        validation_errors = _validate_better_config(Analysis.objects.get(id=self._analysis_id))
+        # ping BETTER to verify the token is valid
+        client = BETTERClient(organization.better_analysis_api_key)
+        _, errors = client.get_buildings()
+        if errors:
+            message = '; '.join(errors)
+            self.fail(message, logger)
+            raise AnalysisPipelineException(message)
+
+        # validate the configuration
+        validation_errors = _validate_better_config(analysis)
         if validation_errors:
             raise AnalysisPipelineException(
-                f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
+                f'Analysis configuration is invalid: {"; ".join(validation_errors)}')
 
         progress_data = ProgressData('prepare-analysis-better', self._analysis_id)
 
@@ -224,19 +241,21 @@ def _start_analysis(self, analysis_id, progress_data_key):
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Sending requests to BETTER service')
 
+    client = BETTERClient(analysis.organization.better_analysis_api_key)
+    context = BETTERPipelineContext(analysis, progress_data, client)
+
     better_portfolio_id = None
     if analysis.configuration.get('portfolio_analysis', False):
-        better_portfolio_id, errors = _better_create_portfolio(f'SEED Analysis {analysis.name} ({analysis.id})')
+        better_portfolio_id, errors = client.create_portfolio(f'SEED Analysis {analysis.name} ({analysis.id})')
         if errors:
             _check_errors(
                 errors,
-                analysis,
-                progress_data,
                 'Failed to create BETTER portfolio',
+                context,
                 fail_on_error=True,
             )
 
-    better_building_analyses = _create_better_buildings(analysis, better_portfolio_id)
+    better_building_analyses = _create_better_buildings(better_portfolio_id, context)
 
     analysis_config = {
         "benchmark_data": analysis.configuration['benchmark_data']['benchmark_data'],
@@ -248,29 +267,25 @@ def _start_analysis(self, analysis_id, progress_data_key):
             better_portfolio_id,
             better_building_analyses,
             analysis_config,
-            analysis,
-            progress_data
+            context,
         )
 
         _store_better_portfolio_analysis_results(
             better_analysis_id,
             better_building_analyses,
-            analysis,
-            progress_data,
+            context,
         )
 
     else:
         _run_better_building_analyses(
             better_building_analyses,
             analysis_config,
-            analysis,
-            progress_data,
+            context,
         )
 
     _store_better_building_analysis_results(
         better_building_analyses,
-        analysis,
-        progress_data,
+        context,
     )
 
 
