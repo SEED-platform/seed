@@ -184,9 +184,13 @@ class BuildingSync(object):
     @classmethod
     def get_schema(cls, version):
         schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
+        # TODO: refactor so we don't have to explicitly write schema version for
+        # ever new schema added.
         schema_files = {
             cls.BUILDINGSYNC_V2_0: 'BuildingSync_v2_0.xsd',
-            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd'
+            cls.BUILDINGSYNC_V2_1_0: 'BuildingSync_v2_1_0.xsd',
+            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd',
+            cls.BUILDINGSYNC_V2_3_0: 'BuildingSync_v2_3_0.xsd',
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
