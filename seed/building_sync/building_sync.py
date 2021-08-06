@@ -220,6 +220,8 @@ class BuildingSync(object):
             # process the scenario meters (aka resource uses)
             meters = {}
             for resource_use in scenario['resource_uses']:
+                if resource_use['type'] is None:
+                    continue
                 meter = {
                     'source': Meter.BUILDINGSYNC,
                     'source_id': resource_use['source_id'],
