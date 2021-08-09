@@ -54,6 +54,17 @@ angular.module('BE.seed.controller.inventory_summary', [])
         chartConfigs.forEach(config => {
           const chart = charts[config.name]
           chart.data = $scope.summary_data[config.name]
+          if ($scope.summary_data[config.name].length > 0) {
+            chart.svg.select('.missing-data').remove()
+          } else {
+            chart.svg
+              .append('text')
+              .attr('class', 'missing-data')
+              .attr('x', 100)
+              .attr('y', 100)
+              .attr('dy', '2em')
+              .text('Insufficient number of properties to summarize')
+          }
           chart.draw();
         })
       }

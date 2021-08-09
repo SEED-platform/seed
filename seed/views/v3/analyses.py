@@ -12,6 +12,8 @@ from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
+from quantityfield import ureg
+
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -231,10 +233,25 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
-        property_types = list(states.values('extra_data__Largest Property Use Type').annotate(count=Count('extra_data__Largest Property Use Type')).order_by('-count'))
-        year_built = list(states.values('year_built').annotate(count=Count('year_built')).order_by('-count'))
-        energy = list(states.values('site_eui').annotate(count=Count('site_eui')).order_by('-count'))
-        sqftage = list(states.values('gross_floor_area').annotate(count=Count('gross_floor_area')).order_by('-count'))
+
+        def get_counts(field_name):
+            """Get aggregated count of each unique value for the field
+
+            :param field_name: str, field on property state to aggregate
+            :returns: list[dict], each dict has the key "count" containing the count
+                of the value stored in the key "<field_name>"
+            """
+            agg = list(states
+                .values(field_name)
+                .annotate(count=Count(field_name))
+                .order_by('-count')
+            )
+            return [count for count in agg if count[field_name] is not None]
+
+        property_types =get_counts('extra_data__Largest Property Use Type')
+        year_built = get_counts('year_built')
+        energy = get_counts('site_eui')
+        sqftage = get_counts('gross_floor_area')
 
         from collections import defaultdict
 
@@ -284,7 +301,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             dict = i.copy()
             for k, v in i.items():
                 if isinstance(v, Quantity):
-                    dict[k] = v.magnitude
+                    dict[k] = v.to(ureg.kBTU / ureg.sq_ft / ureg.year).magnitude
             energy_list.append(dict)
 
         energy_agg = []
@@ -313,7 +330,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             dict = i.copy()
             for k, v in i.items():
                 if isinstance(v, Quantity):
-                    dict[k] = v.magnitude
+                    dict[k] = v.to(ureg.feet**2).magnitude
             sqftage_list.append(dict)
 
         sqftage_agg = []
