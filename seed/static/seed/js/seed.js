@@ -84,6 +84,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
+  'BE.seed.controller.inventory_summary',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -1433,6 +1434,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
               });
             });
           }]
+        }
+      })
+      .state({
+        name: 'inventory_summary',
+        url: '/{inventory_type:properties|taxlots}/summary',
+        templateUrl: static_url + 'seed/partials/inventory_summary.html',
+        controller: 'inventory_summary_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
         }
       })
       .state({
