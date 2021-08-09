@@ -3797,6 +3797,39 @@ FAQ page
   opacity: 0.1;
 }
 
+// modal tabs
+.modal-tabs {
+
+  .nav-tabs>li.active>a,
+  .nav-tabs>li.active>a:focus,
+  .nav-tabs>li.active>a:hover {
+    background: $gray_lightest;
+  }
+
+  .tab-content {
+    border: 1px solid #ddd;
+    border-top-color: transparent;
+    background: $gray_lightest;
+
+    .tab-content-section {
+      padding: 1em;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid #ddd;
+      }
+    }
+  }
+
+  .flex-centered {
+    display: flex;
+    align-items: center;
+
+    & > .grow {
+      flex-grow: 1;
+    }
+  }
+}
+
 // org settings tabs
 .org-settings {
   align-items: flex-start;
