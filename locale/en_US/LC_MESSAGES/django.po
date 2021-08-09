@@ -2962,9 +2962,6 @@ msgstr "View Project"
 msgid "Viewer"
 msgstr "Viewer"
 
-msgid "Visit the BETTER website to run a portfolio analysis"
-msgstr "Visit the BETTER website to run a portfolio analysis"
-
 msgid "Warning"
 msgstr "Warning"
 

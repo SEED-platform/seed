@@ -79,6 +79,20 @@
                     </form>
                 </div>
             </div>
+
+            <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <h3 translate>BETTER Analysis API Key</h3>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <p>Please refer to the <a href="https://better.lbl.gov/docs/api/" target="_blank" rel="noopener noreferrer">BETTER documentation</a> to learn how to get an API key. Note, do not prefix the token with "Token ", only include the token itself.</p>
+                                <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </uib-tab>
         <uib-tab index="1" heading="{$:: 'Units' | translate $}">
             <div class="section_content_container">

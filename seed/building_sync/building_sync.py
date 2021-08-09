@@ -19,7 +19,7 @@ import xmlschema
 from config.settings.common import BASE_DIR
 from seed.models.meters import Meter
 from seed.building_sync.mappings import (
-    BASE_MAPPING_V2_0,
+    BASE_MAPPING_V2,
     BUILDINGSYNC_URI,
     NAMESPACES,
     merge_mappings,
@@ -42,9 +42,14 @@ class ParsingError(Exception):
 
 class BuildingSync(object):
     BUILDINGSYNC_V2_0 = '2.0'
+    BUILDINGSYNC_V2_0_0 = '2.0.0'
+    BUILDINGSYNC_V2_1_0 = '2.1.0'
     BUILDINGSYNC_V2_2_0 = '2.2.0'
+    BUILDINGSYNC_V2_3_0 = '2.3.0'
     VERSION_MAPPINGS_DICT = {
-        BUILDINGSYNC_V2_0: BASE_MAPPING_V2_0,
+        BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2
     }
 
     def __init__(self):
@@ -179,9 +184,13 @@ class BuildingSync(object):
     @classmethod
     def get_schema(cls, version):
         schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
+        # TODO: refactor so we don't have to explicitly write schema version for
+        # ever new schema added.
         schema_files = {
             cls.BUILDINGSYNC_V2_0: 'BuildingSync_v2_0.xsd',
-            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd'
+            cls.BUILDINGSYNC_V2_1_0: 'BuildingSync_v2_1_0.xsd',
+            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd',
+            cls.BUILDINGSYNC_V2_3_0: 'BuildingSync_v2_3_0.xsd',
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
@@ -211,6 +220,8 @@ class BuildingSync(object):
             # process the scenario meters (aka resource uses)
             meters = {}
             for resource_use in scenario['resource_uses']:
+                if resource_use['type'] is None:
+                    continue
                 meter = {
                     'source': Meter.BUILDINGSYNC,
                     'source_id': resource_use['source_id'],
@@ -365,14 +376,19 @@ class BuildingSync(object):
         if self.element_tree is None:
             raise ParsingError('A file must first be imported with import method')
 
-        # first check if it's a file form Audit Template Tool and infer the version
-        # Currently ATT doesn't include a schemaLocation so this is necessary
-        if self._is_from_audit_template_tool():
-            return self.BUILDINGSYNC_V2_0
-
         bsync_element = self.element_tree.getroot()
         if not bsync_element.tag.endswith('BuildingSync'):
             raise ParsingError('Expected BuildingSync element as root element in xml')
+
+        # first check for a version attribute in the buldingsync tag
+        if "version" in bsync_element.attrib:
+            return bsync_element.attrib["version"]
+
+        # second check if it's a file form Audit Template Tool
+        if self._is_from_audit_template_tool():
+
+            # it must be a 2.0 file as that was the last version which didn't require @version
+            return self.BUILDINGSYNC_V2_0
 
         # attempt to parse the version from the xsi:schemaLocation
         schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()

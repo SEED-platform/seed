@@ -46,7 +46,7 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
-from seed.analysis_pipelines.better import _build_better_input
+from seed.analysis_pipelines.better.buildingsync import _build_better_input
 from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, \
     PREMISES_ID_NAME
 from seed.building_sync.building_sync import BuildingSync
@@ -886,7 +886,7 @@ class TestBETTERPipeline(TestCase):
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
-                source_unit='MMBtu',
+                source_unit='MBtu',
                 conversion_factor=1.00
             )
 

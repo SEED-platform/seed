@@ -55,8 +55,9 @@ jobs:
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt install ./google-chrome-stable_current_amd64.deb
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y /tmp/chrome.deb
+          google-chrome --version
       -
         name: Test Django
         if: ${{ matrix.test_env == 'django' }}
@@ -78,7 +79,9 @@ jobs:
         env:
           DISPLAY: ":99"
         run: |
-          ./node_modules/protractor/bin/webdriver-manager update --gecko=false
+          CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
+          echo "Getting webdriver for chrome version ${CHROME_VERSION}"
+          ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       -
