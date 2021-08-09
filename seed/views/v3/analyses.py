@@ -241,14 +241,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             :returns: list[dict], each dict has the key "count" containing the count
                 of the value stored in the key "<field_name>"
             """
-            agg = list(states
+            agg = list(
+                states
                 .values(field_name)
                 .annotate(count=Count(field_name))
                 .order_by('-count')
             )
             return [count for count in agg if count[field_name] is not None]
 
-        property_types =get_counts('extra_data__Largest Property Use Type')
+        property_types = get_counts('extra_data__Largest Property Use Type')
         year_built = get_counts('year_built')
         energy = get_counts('site_eui')
         sqftage = get_counts('gross_floor_area')
