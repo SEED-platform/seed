@@ -514,8 +514,8 @@ def update_tree(schema, tree, xpath, target, value, namespaces):
         update_element(last_element, target, value)
 
 
-# Base mapping for BuildingSync schema version 2.0
-BASE_MAPPING_V2_0 = {
+# Base mapping for BuildingSync schema version 2.x
+BASE_MAPPING_V2 = {
     'property': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site',
         'type': 'object',
