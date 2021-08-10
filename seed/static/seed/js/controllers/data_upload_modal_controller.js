@@ -653,7 +653,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
                 // Toggle a meter import button if the imported file also has a meters tab
                 dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function(result) {
-                  $scope.import_file_reusable_for_meters = result;
+                  $scope.import_file_reusable_for_meters = result.data || false;
                 });
 
                 // If merges against existing exist, provide slightly different feedback
