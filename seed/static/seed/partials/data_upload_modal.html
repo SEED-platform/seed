@@ -38,6 +38,15 @@
 
             <uib-tab index="0" heading="{$:: 'Property and Tax Lot Data' | translate $}">
                 <div class="tab-content-section">
+                    <div class="row" ng-hide="uploader.in_progress">
+                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Cycle</label>
+                        <div class="col-sm-8">
+                            <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
+                            <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content-section">
                     <div class="row">
                         <div class="col-sm-4">
                           <p translate>FILE_TYPES_SUPPORTED</p>
@@ -121,20 +130,6 @@
                             <div class="btn btn-primary upload-btn flex-centered" sd-uploader organization-id="organization.org_id" sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)">
                                 <i class="fa fa-bolt fa-2x"></i>
                                 <span class="grow" translate>PM_METER_IMPORT_BUTTON</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </uib-tab>
-
-            <uib-tab index="2" heading="{$:: 'Time Period' | translate $} ({$:: selectedCycle.name $})">
-                <div class="tab-content-section">
-                    <div class="row" ng-hide="uploader.in_progress">
-                        <label class="col-sm-4 control-label" for="selected-cycle" style="margin-top: 5px;" translate>Time Period</label>
-                                <div class="col-sm-8">
-                                    <select id="selected-cycle" name="selected-cycle" class="form-control input-sm" ng-change="cycleChanged(selectedCycle)" ng-model="selectedCycle" ng-options="cycle.name for cycle in cycles track by cycle.id" style="width:100%;"></select>
-                                    <a ui-sref="organization_cycles(::{organization_id: organization.id})" ng-click="cancel()" translate>Manage available cycles.</a>
-                                </div>
                             </div>
                         </div>
                     </div>
