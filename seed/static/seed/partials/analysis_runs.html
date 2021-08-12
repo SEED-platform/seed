@@ -15,8 +15,9 @@
                 <td>{$:: (messages | filter : {'analysis_property_view':view.id})[0]['user_message'] $}</td>
                 <td>
                     <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-                        <a href="{$:: file.file $}" download>{$:: file.content_type $} <span class="fa fa-download"></span></a>
-                        <span ng-repeat-end ng-if="!$last">,&nbsp;</span>
+                        <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa fa-download"></span></a>
+                        <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>Building Report <span class="fa fa-download"></span></a>
+                        <span ng-repeat-end ng-if="!$last">, </span>
                     </span>
                 </td>
             </tr>

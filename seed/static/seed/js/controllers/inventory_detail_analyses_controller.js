@@ -130,10 +130,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
             inventory_ids: function () {
               return [$scope.inventory.view_id];
             }
-          //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-          //   var organization_id = user_service.get_organization().id;
-          //   return meter_service.get_meters($stateParams.view_id, organization_id);
-          // }],
+            //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            //   var organization_id = user_service.get_organization().id;
+            //   return meter_service.get_meters($stateParams.view_id, organization_id);
+            // }],
           }
         }).result.then(function (data) {
           if (data) {
@@ -145,5 +145,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
             }, {});
           }
         });
+      };
+      $scope.has_children = function (value) {
+        if (typeof value == 'object') {
+          return true;
+        }
       };
     }]);
