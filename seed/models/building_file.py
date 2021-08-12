@@ -302,7 +302,7 @@ class BuildingFile(models.Model):
                 if num_skipped_readings > 0:
                     messages['warnings'].append(
                         f'Skipped {num_skipped_readings} readings due to missing start time,'
-                        f' end time, or reading value for meter {meter.source_id}'
+                        f' end time, or reading value for meter {m.get("source_id")}'
                     )
 
                 # print("BUILDING FILE METER: {}".format(m))
