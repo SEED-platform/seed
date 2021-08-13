@@ -90,7 +90,7 @@ def _build_better_input(analysis_property_view, meters):
             })
     if len(valid_meters_and_readings) == 0:
         errors.append(
-            f'BETTER analysis requires at least one meter with 12 consecutive readings with values >= 1.0'
+            'BETTER analysis requires at least one meter with 12 consecutive readings with values >= 1.0'
         )
 
     if errors:
