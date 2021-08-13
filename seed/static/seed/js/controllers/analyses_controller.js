@@ -92,6 +92,11 @@ angular.module('BE.seed.controller.analyses', [])
             }
           });
       };
+      $scope.has_children = function (value) {
+        if (typeof value == 'object') {
+          return true;
+        }
+      };
 
     }
   ])
