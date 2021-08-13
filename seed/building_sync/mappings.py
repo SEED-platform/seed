@@ -207,10 +207,13 @@ def to_energy_type(energy_type):
     """converts an energy type from BuildingSync into one allowed by SEED
 
     :param energy_type: string, building sync energy type
-    :return: int
+    :return: int | None
     """
     # avoid circular dependency
     from seed.models import Meter
+
+    if energy_type is None:
+        return energy_type
 
     # valid energy type values from the schema (<xs:simpleType name="FuelTypes">) and their maps
     # non-trivial or non-obvious mappings currently map to "Other:" and are flagged with a comment
@@ -280,8 +283,11 @@ def to_energy_units(units):
     """converts energy units from BuildingSync into one allowed by SEED
 
     :param units: string, building sync units
-    :return: string
+    :return: string | None
     """
+
+    if units is None:
+        return None
 
     # valid energy unit values from the schema (<xs:element name="ResourceUnits">) and their maps
     # non-trivial or non-obvious mappings currently map to "Unknown" and are flagged with a comment
