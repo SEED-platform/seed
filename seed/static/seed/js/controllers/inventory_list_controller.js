@@ -1087,7 +1087,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id'], col.name) && col.visible && col.id;
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id', 'labels'], col.name)
+            && col.visible
+            && !col.colDef.is_derived_column;
         });
 
         // Ensure pinned ordering first
