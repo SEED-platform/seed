@@ -19,9 +19,6 @@ from seed.analysis_pipelines.pipeline import (
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
-    AnalysisInputFile,
-    AnalysisMessage,
-    AnalysisOutputFile,
     AnalysisPropertyView,
     Meter,
     MeterReading,
@@ -168,4 +165,3 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
     analysis.save()
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.finish_with_success()
-
