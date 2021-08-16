@@ -146,19 +146,30 @@ class BETTERClient:
             response, errors = res[0], res[1]
             if errors:
                 raise Exception('; '.join(errors))
-            return response['generation_result'] == 'COMPLETE'
 
+            if response['generation_result'] == 'COMPLETE':
+                return True
+            elif response['generation_result'] == 'FAILED':
+                raise Exception(f'BETTER failed to generate the portfolio analysis: {response}')
+            else:
+                return False
+
+        POLLING_TIMEOUT_SECS = 300
         try:
             polling.poll(
                 lambda: self.get_portfolio_analysis(better_portfolio_id, better_analysis_id),
                 check_success=is_ready,
-                timeout=60,
-                step=1
+                timeout=POLLING_TIMEOUT_SECS,
+                step=10,  # wait 10 seconds between polls
             )
-        except TimeoutError:
-            return ['BETTER analysis timed out']
+        except polling.TimeoutException as te:
+            return [f'BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}']
         except Exception as e:
-            return [f'Unexpected error checking status of BETTER portfolio analysis: {e}']
+            return [
+                f'Unexpected error checking status of BETTER portfolio analysis:'
+                f' better_portfolio_id: "{better_portfolio_id}"; better_analysis_id: "{better_analysis_id}"'
+                f': {e}'
+            ]
 
         return []
 
@@ -197,7 +208,7 @@ class BETTERClient:
         :param bsync_xml: str, path to BSync xml file for property
         :param better_portfolio_id: int | str, optional, if provided it will add the
             building to the portfolio
-        :returns: requests.Response building_id
+        :returns: tuple(int, list[str]), BETTER Building ID followed by list of errors
         """
         url = ""
         if better_portfolio_id is None:
@@ -218,12 +229,11 @@ class BETTERClient:
                 data = response.json()
                 building_id = data['id']
             else:
-                raise Exception(f'Received non 2xx status from BETTER: {response.status_code}: {response.content}')
+                return None, [f'Received non 2xx status from BETTER: {response.status_code}: {response.content}']
         except Exception as e:
-            message = 'BETTER service could not create building with the following message: {e}'.format(e=e)
-            raise AnalysisPipelineException(message)
+            return None, [f'BETTER service could not create building with the following message: {e}']
 
-        return building_id
+        return building_id, []
 
     def _create_building_analysis(self, building_id, config):
         """Makes request to better analysis endpoint using the provided configuration
