@@ -281,7 +281,18 @@ def _create_better_buildings(better_portfolio_id, context):
     better_building_analyses = []
     for input_file in context.analysis.input_files.all():
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
-        better_building_id = context.client.create_building(input_file.file.path, better_portfolio_id)
+        better_building_id, errors = context.client.create_building(input_file.file.path, better_portfolio_id)
+        if errors:
+            _check_errors(
+                errors,
+                f'Failed to create building for analysis property view {analysis_property_view_id}',
+                context,
+                analysis_property_view_id,
+                fail_on_error=False
+            )
+            # go to next building
+            continue
+
         better_building_analyses.append(
             BuildingAnalysis(
                 analysis_property_view_id,
