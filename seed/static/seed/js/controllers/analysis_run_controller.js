@@ -34,4 +34,10 @@ angular.module('BE.seed.controller.analysis_run', [])
       $scope.views = [view_payload.view];
       $scope.view = view_payload.view;
       $scope.view_id = $stateParams.view_id;
+
+      $scope.has_children = function (value) {
+        if (typeof value == 'object') {
+          return true;
+        }
+      };
     }]);
