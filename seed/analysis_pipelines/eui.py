@@ -13,12 +13,12 @@ from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
     task_create_analysis_property_views,
-    analysis_pipeline_task,
-    StopAnalysisTaskChain
+    analysis_pipeline_task
 )
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
+    AnalysisMessage,
     AnalysisPropertyView,
     Meter,
     MeterReading,
@@ -32,17 +32,19 @@ logger = logging.getLogger(__name__)
 def _get_valid_meters(property_view_ids):
     """Performs basic validation of the properties for running EUI and returns any errors.
 
-    :param analysis: Analysis
-    :returns: list[str], list of validation error messages
+    :param analysis: property_view_ids
+    :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
-    errors = []
+    invalid_area = []
+    invalid_meter_1 = []
+    invalid_meter_2 = []
     meter_readings_by_property_view = {}
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
 
         # ensure we have Gross Floor Area on this property view's state
         if property_view.state.gross_floor_area is None:
-            errors.append(f'Property view #{property_view.id} has invalid Gross Floor Area: {property_view.state.gross_floor_area}')
+            invalid_area.append(property_view.id)
             continue
 
         # ensure we have at least 1 meter with 12 readings
@@ -56,7 +58,7 @@ def _get_valid_meters(property_view_ids):
             )
         )
         if meters.count() == 0:
-            errors.append(f'Property view #{property_view.id} has no linked electricity meters with 12 or more readings.')
+            invalid_meter_1.append(property_view.id)
             continue
 
         # ensure one found meter has at least 12 consecutive monthly readings
@@ -88,20 +90,56 @@ def _get_valid_meters(property_view_ids):
                 break
 
         if streak < 12:
-            errors.append(f'Property view #{property_view.id} has no meters with 12 months of consecutive readings.')
+            invalid_meter_2.append(property_view.id)
             continue
         meter_readings.reverse()
         meter_readings_by_property_view[property_view.id] = meter_readings
 
-    return meter_readings_by_property_view, errors
+    errors_by_property_view_id = {}
+    for pid in invalid_area:
+        if pid not in errors_by_property_view_id:
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append('Property view skipped (invalid Gross Floor Area).')
+    for pid in invalid_meter_1:
+        if pid not in errors_by_property_view_id:
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append('Property view skipped (no linked electricity meters with 12 or more readings).')
+    for pid in invalid_meter_2:
+        if pid not in errors_by_property_view_id:
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append('Property view skipped (no linked electricity meters with 12 months of consecutive readings).')
+
+    return meter_readings_by_property_view, errors_by_property_view_id
 
 
 class EUIPipeline(AnalysisPipeline):
 
     def _prepare_analysis(self, property_view_ids):
-        meter_readings_by_property_view, validation_errors = _get_valid_meters(property_view_ids)
-        if validation_errors:
-            raise AnalysisPipelineException(f'Unexpected error(s) while validating properties: {"; ".join(validation_errors)}')
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters(property_view_ids)
+
+        if not meter_readings_by_property_view:
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=self._analysis_id,
+                analysis_property_view_id=None,
+                user_message='Analysis found no valid properties.',
+                debug_message=''
+            )
+            analysis = Analysis.objects.get(id=self._analysis_id)
+            analysis.status = Analysis.FAILED
+            analysis.save()
+            raise AnalysisPipelineException('Analysis found no valid properties.')
+
+        if errors_by_property_view_id:
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.WARNING,
+                analysis_id=self._analysis_id,
+                analysis_property_view_id=None,
+                user_message='Some properties failed to validate.',
+                debug_message=''
+            )
 
         progress_data = ProgressData('prepare-analysis-eui', self._analysis_id)
         progress_data.total = 3
@@ -109,7 +147,7 @@ class EUIPipeline(AnalysisPipeline):
 
         chain(
             task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
-            _finish_preparation.s(meter_readings_by_property_view, self._analysis_id, progress_data.key),
+            _finish_preparation.s(meter_readings_by_property_view, errors_by_property_view_id, self._analysis_id, progress_data.key),
             _run_analysis.s(self._analysis_id, progress_data.key)
         ).apply_async()
 
@@ -121,10 +159,23 @@ class EUIPipeline(AnalysisPipeline):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readings_by_property_view, analysis_id, progress_data_key):
+def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readings_by_property_view, errors_by_property_view_id, analysis_id, progress_data_key):
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.READY
     analysis.save()
+
+    # attach errors to respective analysis_property_views
+    if errors_by_property_view_id:
+        for pid in errors_by_property_view_id:
+            analysis_view_id = analysis_view_ids_by_property_view_id[pid]
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis_id,
+                analysis_property_view_id=analysis_view_id,
+                user_message="  ".join(errors_by_property_view_id[pid]),
+                debug_message=''
+            )
 
     # replace property_view id with analysis_property_view id in meter lookup
     meter_readings_by_analysis_property_view = {}
@@ -154,7 +205,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
         calculated_eui = sum(meter_readings_by_analysis_property_view[analysis_property_view_id]) / property_state.gross_floor_area.magnitude
         analysis_property_view.parsed_results = {
             'EUI': calculated_eui,
-            'Yearly Meter': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
+            'Total Yearly Meter Reading': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
             'Gross Floor Area': property_state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
