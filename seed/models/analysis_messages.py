@@ -17,6 +17,7 @@ from seed.models import (
 
 logger = logging.getLogger(__name__)
 
+
 class AnalysisMessage(models.Model):
     """
     The AnalysisMessage represents user-facing messages of events that occur
