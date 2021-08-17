@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'dataset',
     'cycles',
     'organization',
+    'urls',
     function (
       $http,
       $scope,
@@ -58,8 +59,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       step,
       dataset,
       cycles,
-      organization
+      organization,
+      urls
     ) {
+      console.log('datauploadmodal', urls);
+      $scope.urls = urls;
       $scope.cycles = cycles.cycles;
       var cached_cycle = inventory_service.get_last_cycle();
       $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
