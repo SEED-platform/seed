@@ -510,7 +510,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         # verify return true
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), 'true')
+        self.assertEqual(body.get('data'), True)
 
     def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present(self):
         # create import file record with Meter Entries tab
@@ -530,7 +530,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         # verify return true
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), 'true')
+        self.assertEqual(body.get('data'), True)
 
     def test_get_check_for_meters_tab_returns_false(self):
         # create import file record without either a Meter Entries or a Monthly Usage tab
@@ -550,7 +550,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         # verify return false
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), 'false')
+        self.assertEqual(body.get('data'), False)
 
     def test_get_check_for_meters_tab_returns_false_when_not_xlsx(self):
         # create import file record that's not an xlsx
@@ -570,7 +570,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
 
         # verify return false
         body = json.loads(response.content)
-        self.assertEqual(body.get('data'), 'false')
+        self.assertEqual(body.get('data'), False)
 
     def test_post_reuse_inventory_file_for_meters_creates_new_import_file_based_on_the_same_file_and_returns_the_new_id(self):
         # create import file record with Meter Entries tab

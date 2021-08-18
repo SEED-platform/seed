@@ -10,7 +10,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from pandas import ExcelFile
-from json import dumps
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from seed.data_importer.meters_parser import MetersParser
@@ -185,12 +184,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             meter_tab_check = {'Meter Entries', 'Monthly Usage'} & set(ExcelFile(import_file.file).sheet_names)
             return JsonResponse({
                 'status': 'success',
-                'data': dumps(bool(meter_tab_check))
+                'data': bool(meter_tab_check)
             })
         except XLRDError:
             return JsonResponse({
                 'status': 'success',
-                'data': 'false'
+                'data': False
             })
 
     @swagger_auto_schema(
