@@ -28,6 +28,20 @@ from seed.models import (
 
 logger = logging.getLogger(__name__)
 
+ERROR_INVALID_GROSS_FLOOR_AREA = 0
+ERROR_INSUFFICIENT_METER_READINGS = 1
+ERROR_INVALID_METER_READINGS = 2
+ERROR_NO_VALID_PROPERTIES = 3
+WARNING_SOME_INVALID_PROPERTIES = 4
+
+EUI_ANALYSIS_MESSAGES = {
+    ERROR_INVALID_GROSS_FLOOR_AREA: 'Property view skipped (invalid Gross Floor Area).',
+    ERROR_INSUFFICIENT_METER_READINGS: 'Property view skipped (no linked electricity meters with 12 or more readings).',
+    ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with 12 months of consecutive readings).',
+    ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
+    WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
+}
+
 
 def _get_valid_meters(property_view_ids):
     """Performs basic validation of the properties for running EUI and returns any errors.
@@ -99,15 +113,15 @@ def _get_valid_meters(property_view_ids):
     for pid in invalid_area:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append('Property view skipped (invalid Gross Floor Area).')
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INVALID_GROSS_FLOOR_AREA)
     for pid in invalid_meter_1:
         if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append('Property view skipped (no linked electricity meters with 12 or more readings).')
+            errors_by_property_view_id[pid] = [EUI_ANALYSIS_MESSAGES.ERROR_INSUFFICIENT_METER_READINGS]
+        errors_by_property_view_id[pid].append()
     for pid in invalid_meter_2:
         if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append('Property view skipped (no linked electricity meters with 12 months of consecutive readings).')
+            errors_by_property_view_id[pid] = [EUI_ANALYSIS_MESSAGES.ERROR_INVALID_METER_READINGS]
+        errors_by_property_view_id[pid].append()
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
@@ -123,13 +137,13 @@ class EUIPipeline(AnalysisPipeline):
                 type_=AnalysisMessage.ERROR,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message='Analysis found no valid properties.',
+                user_message=EUI_ANALYSIS_MESSAGES.ERROR_NO_VALID_PROPERTIES,
                 debug_message=''
             )
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException('Analysis found no valid properties.')
+            raise AnalysisPipelineException(EUI_ANALYSIS_MESSAGES.ERROR_NO_VALID_PROPERTIES)
 
         if errors_by_property_view_id:
             AnalysisMessage.log_and_create(
@@ -137,7 +151,7 @@ class EUIPipeline(AnalysisPipeline):
                 type_=AnalysisMessage.WARNING,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message='Some properties failed to validate.',
+                user_message=EUI_ANALYSIS_MESSAGES.WARNING_SOME_INVALID_PROPERTIES,
                 debug_message=''
             )
 

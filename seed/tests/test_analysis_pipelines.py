@@ -36,6 +36,8 @@ from seed.models import (
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeAnalysisPropertyViewFactory,
+    FakeCycleFactory,
+    FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
@@ -47,8 +49,13 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task
 )
 from seed.analysis_pipelines.better.buildingsync import _build_better_input
-from seed.analysis_pipelines.bsyncr import _build_bsyncr_input, BsyncrPipeline, _parse_analysis_property_view_id, \
+from seed.analysis_pipelines.bsyncr import (
+    _build_bsyncr_input,
+    BsyncrPipeline,
+    _parse_analysis_property_view_id,
     PREMISES_ID_NAME
+)
+import seed.analysis_pipelines.eui
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 
@@ -926,3 +933,102 @@ class TestBETTERPipeline(TestCase):
         self.assertEqual(2, len(errors))
         self.assertTrue("BETTER analysis requires the property's name." in errors)
         self.assertTrue("BETTER analysis requires the property's city." in errors)
+
+
+class TestEuiPipeline(TestCase):
+    def setUp(self):
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+            'email': 'test_user@demo.com',
+            'first_name': 'Test',
+            'last_name': 'User',
+        }
+        user = User.objects.create_user(**user_details)
+        org, _, _ = create_organization(user)
+
+        cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.test_property = FakePropertyFactory(organization=self.org).get_property()
+        invalid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state()
+        self.invalid_property_view = PropertyView.objects.create(property=self.test_property, cycle=cycle, state=invalid_property_state)
+        valid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
+        self.valid_property_view = PropertyView.objects.create(property=self.test_property, cycle=cycle, state=valid_property_state)     
+
+        # get a meter without enough readings
+        insufficient_meter = Meter.objects.create(
+            property=self.test_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID
+        )
+        for j in range(1, 11):
+            MeterReading.objects.create(
+                meter=insufficient_meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+
+        # get a meter with 12 non-consecutive readings
+        invalid_meter = Meter.objects.create(
+            property=test_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID
+        )
+        for j in range(1, 11):
+            MeterReading.objects.create(
+                meter=invalid_meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+        MeterReading.objects.create(
+            meter=invalid_meter,
+            start_time=make_aware(datetime(2021, 1, 1, 0, 0, 0), timezone=tz_obj),
+            end_time=make_aware(datetime(2021, 1, 28, 0, 0, 0), timezone=tz_obj),
+            reading=12345,
+            source_unit='kWh',
+            conversion_factor=1.00
+        )
+
+        # get 12 consecutive meters with valid readings
+        valid_meter = Meter.objects.create(
+            property=test_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.ELECTRICITY_GRID,
+        )
+        tz_obj = timezone(TIME_ZONE)
+        for j in range(1, 12):
+            MeterReading.objects.create(
+                meter=valid_meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
+                reading=12345,
+                source_unit='kWh',
+                conversion_factor=1.00
+            )
+
+    def test_insufficient_meters(self):
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.valid_property_view.id])
+        self.assertIsNone(meter_readings_by_property_view)
+        self.assertDictEqual(errors_by_property_view_id, {
+            self.valid_property_view.id: [EUI_ANALYSIS_MESSAGES.ERROR_INSUFFICIENT_METER_READINGS]
+        })
+
+    def test_invalid_meters(self):
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.valid_property_view.id])
+        self.assertIsNone(meter_readings_by_property_view)
+        self.assertDictEqual(errors_by_property_view_id, {
+            self.valid_property_view.id: [EUI_ANALYSIS_MESSAGES.ERROR_INVALID_METER_READINGS]
+        })
+
+    def test_valid_meters(self):
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.valid_property_view.id])
+        self.assertIsNotNone(meter_readings_by_property_view)
+        self.assertDictEqual(errors_by_property_view_id, {})
