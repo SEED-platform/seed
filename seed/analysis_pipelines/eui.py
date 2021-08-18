@@ -116,12 +116,12 @@ def _get_valid_meters(property_view_ids):
         errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INVALID_GROSS_FLOOR_AREA)
     for pid in invalid_meter_1:
         if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = [EUI_ANALYSIS_MESSAGES.ERROR_INSUFFICIENT_METER_READINGS]
-        errors_by_property_view_id[pid].append()
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INSUFFICIENT_METER_READINGS)
     for pid in invalid_meter_2:
         if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = [EUI_ANALYSIS_MESSAGES.ERROR_INVALID_METER_READINGS]
-        errors_by_property_view_id[pid].append()
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INVALID_METER_READINGS)
 
     return meter_readings_by_property_view, errors_by_property_view_id
 

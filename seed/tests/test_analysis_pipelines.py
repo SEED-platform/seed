@@ -19,7 +19,8 @@ from quantityfield import ureg
 
 from django.db.models import Q
 from django.test import TestCase, override_settings
-from django.utils.timezone import make_aware
+from django.utils import timezone
+
 
 from config.settings.common import TIME_ZONE, BASE_DIR
 
@@ -32,6 +33,7 @@ from seed.models import (
     AnalysisMessage,
     AnalysisOutputFile,
     AnalysisPropertyView,
+    PropertyView
 )
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
@@ -944,15 +946,14 @@ class TestEuiPipeline(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        user = User.objects.create_user(**user_details)
-        org, _, _ = create_organization(user)
-
-        cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.user = User.objects.create_user(**user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle()
         self.test_property = FakePropertyFactory(organization=self.org).get_property()
-        invalid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state()
-        self.invalid_property_view = PropertyView.objects.create(property=self.test_property, cycle=cycle, state=invalid_property_state)
-        valid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
-        self.valid_property_view = PropertyView.objects.create(property=self.test_property, cycle=cycle, state=valid_property_state)     
+        self.invalid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state()
+        self.invalid_property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.invalid_property_state)
+        self.valid_property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
+        self.valid_property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.valid_property_state)     
 
         # get a meter without enough readings
         insufficient_meter = Meter.objects.create(
@@ -963,7 +964,7 @@ class TestEuiPipeline(TestCase):
         )
         for j in range(1, 11):
             MeterReading.objects.create(
-                meter=insufficient_meter,
+                meter=self.insufficient_meter,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
@@ -973,14 +974,14 @@ class TestEuiPipeline(TestCase):
 
         # get a meter with 12 non-consecutive readings
         invalid_meter = Meter.objects.create(
-            property=test_property,
+            property=self.test_property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID
         )
         for j in range(1, 11):
             MeterReading.objects.create(
-                meter=invalid_meter,
+                meter=self.invalid_meter,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
@@ -988,7 +989,7 @@ class TestEuiPipeline(TestCase):
                 conversion_factor=1.00
             )
         MeterReading.objects.create(
-            meter=invalid_meter,
+            meter=self.invalid_meter,
             start_time=make_aware(datetime(2021, 1, 1, 0, 0, 0), timezone=tz_obj),
             end_time=make_aware(datetime(2021, 1, 28, 0, 0, 0), timezone=tz_obj),
             reading=12345,
@@ -998,7 +999,7 @@ class TestEuiPipeline(TestCase):
 
         # get 12 consecutive meters with valid readings
         valid_meter = Meter.objects.create(
-            property=test_property,
+            property=self.test_property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
@@ -1006,13 +1007,20 @@ class TestEuiPipeline(TestCase):
         tz_obj = timezone(TIME_ZONE)
         for j in range(1, 12):
             MeterReading.objects.create(
-                meter=valid_meter,
+                meter=self.valid_meter,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
                 source_unit='kWh',
                 conversion_factor=1.00
             )
+
+    def test_invalid_property_state(self):
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.valid_property_view.id])
+        self.assertIsNone(meter_readings_by_property_view)
+        self.assertDictEqual(errors_by_property_view_id, {
+            self.valid_property_view.id: [EUI_ANALYSIS_MESSAGES.ERROR_INVALID_GROSS_FLOOR_AREA]
+        })
 
     def test_insufficient_meters(self):
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.valid_property_view.id])
