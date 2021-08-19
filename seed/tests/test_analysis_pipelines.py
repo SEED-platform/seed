@@ -60,8 +60,7 @@ from seed.analysis_pipelines.eui import (
     EUI_ANALYSIS_MESSAGES,
     ERROR_INVALID_GROSS_FLOOR_AREA,
     ERROR_INSUFFICIENT_METER_READINGS,
-    ERROR_INVALID_METER_READINGS,
-    ERROR_NO_VALID_PROPERTIES
+    ERROR_INVALID_METER_READINGS
 )
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
