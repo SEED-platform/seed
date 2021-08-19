@@ -113,17 +113,20 @@ def _get_valid_meters(property_view_ids):
     for pid in invalid_area:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INVALID_GROSS_FLOOR_AREA)
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA])
     for pid in invalid_meter_1:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INSUFFICIENT_METER_READINGS)
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INSUFFICIENT_METER_READINGS])
     for pid in invalid_meter_2:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES.ERROR_INVALID_METER_READINGS)
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
 
     return meter_readings_by_property_view, errors_by_property_view_id
+
+def _calculate_eui(meter_readings, gross_floor_area):
+    return round(sum(meter_readings) / gross_floor_area, 4)
 
 
 class EUIPipeline(AnalysisPipeline):
@@ -143,7 +146,7 @@ class EUIPipeline(AnalysisPipeline):
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException(EUI_ANALYSIS_MESSAGES.ERROR_NO_VALID_PROPERTIES)
+            raise AnalysisPipelineException(EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
 
         if errors_by_property_view_id:
             AnalysisMessage.log_and_create(
@@ -151,7 +154,7 @@ class EUIPipeline(AnalysisPipeline):
                 type_=AnalysisMessage.WARNING,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message=EUI_ANALYSIS_MESSAGES.WARNING_SOME_INVALID_PROPERTIES,
+                user_message=EUI_ANALYSIS_MESSAGES[WARNING_SOME_INVALID_PROPERTIES],
                 debug_message=''
             )
 
@@ -216,9 +219,8 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
     for analysis_property_view_id in meter_readings_by_analysis_property_view:
         analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
         property_state = PropertyState.objects.get(id=analysis_property_view.property_state.id)
-        calculated_eui = sum(meter_readings_by_analysis_property_view[analysis_property_view_id]) / property_state.gross_floor_area.magnitude
         analysis_property_view.parsed_results = {
-            'EUI': calculated_eui,
+            'EUI': _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], property_state.gross_floor_area.magnitude),
             'Total Yearly Meter Reading': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
             'Gross Floor Area': property_state.gross_floor_area.magnitude
         }
