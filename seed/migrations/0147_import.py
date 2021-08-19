@@ -3,14 +3,22 @@
 
 import pandas as pd
 from sodapy import Socrata
-from sqlalchemy import create_engine
+# For data abstraction - sqlalchemy
+from sqlalchemy import create_engine 
+# Driver library for database - psychopg2
 import psycopg2
+from dotenv import load_dotenv
+import os
 
 # API and Token
-client = Socrata("data.cityofnewyork.us", 'O3jxmkAkib901njllRmAWkAGn')
+load_dotenv()
+appToken = os.getenv('permitApiKey')
+client = Socrata("data.cityofnewyork.us", appToken)
+
 
 # First 2000 results, returned as JSON from API / converted to Python list of dictionaries by sodapy.
-results = client.get("ipu4-2q9a", limit=2000)
+PERMIT_ISSUANCE = "ipu4-2q9a"
+results = client.get(PERMIT_ISSUANCE, limit=2000)
 
 # Convert to pandas DataFrame
 results_df = pd.DataFrame.from_records(results)
@@ -26,31 +34,26 @@ param_dic = {
     "password"  : "postgres"
 }
 
-# Connect to the database
-def connect(params_dic):
-    # Connect to the PostgreSQL database server
+# Connect to the PostgreSQL database server
+conn = None
+try:
+    # connect to the PostgreSQL server
+    print('Connecting to the PostgreSQL database...')
+    conn = psycopg2.connect(param_dic)
+except (Exception, psycopg2.DatabaseError) as error:
+    print(error)
     conn = None
-    try:
-        # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(**params_dic)
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        conn = None
-    print("Connection successful")
-    return conn
-conn = connect(param_dic)
+print("Connection successful")
 
 # Bulk insert into the table
-connect = "postgresql+psycopg2://%s:%s@%s:5433/%s" % (
+# Use to_sql method to append dataframe to table
+def to_alchemy(table_df):
+    connect = "postgresql+psycopg2://%s:%s@%s:5433/%s" % (
     param_dic['user'],
     param_dic['password'],
     param_dic['host'],
     param_dic['database']
 )
-
-# Use to_sql method to append to dataframe to table
-def to_alchemy(table_df):
     engine = create_engine(connect)
     table_df.to_sql(
         'test_table', 

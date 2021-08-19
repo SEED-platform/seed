@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
                 ('work_type', models.CharField(null=True, blank=True)),
                 ('permit_status', models.CharField(null=True, blank=True)),
                 ('permit_subtype', models.CharField(null=True, blank=True)),
-                ('oil_gas', models.CharField(null=True, blank=True)),
+                # ('oil_gas', models.CharField(null=True, blank=True)),
             ],
             options={
             },
