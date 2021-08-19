@@ -17,7 +17,6 @@ from requests import Response
 from quantityfield import ureg
 from django.db.models import Q
 from django.test import TestCase, override_settings
-from django.utils import timezone
 from django.utils.timezone import make_aware
 from config.settings.common import TIME_ZONE, BASE_DIR
 
@@ -29,8 +28,7 @@ from seed.models import (
     AnalysisInputFile,
     AnalysisMessage,
     AnalysisOutputFile,
-    AnalysisPropertyView,
-    PropertyView
+    AnalysisPropertyView
 )
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,

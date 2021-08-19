@@ -125,6 +125,7 @@ def _get_valid_meters(property_view_ids):
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
+
 def _calculate_eui(meter_readings, gross_floor_area):
     return round(sum(meter_readings) / gross_floor_area, 4)
 
