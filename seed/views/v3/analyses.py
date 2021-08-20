@@ -17,7 +17,7 @@ from quantityfield import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Cycle, PropertyView, PropertyState
+from seed.models import Analysis, Cycle, PropertyView, PropertyState, Column
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
@@ -233,6 +233,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
+        columns = Column.objects.filter(organization_id=org_id, table_name='PropertyState')
 
         def get_counts(field_name):
             """Get aggregated count of each unique value for the field
@@ -263,6 +264,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                     extra_data_count[key] += 1
 
         extra_data = {k: v for k, v in sorted(extra_data_count.items(), key=lambda item: item[1], reverse=True)}
+
+        data_col = []
+        for col in list(columns.values('column_name')):
+            data_col.append(col)
 
         year_built_agg = []
         for record in year_built:
@@ -365,6 +370,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             g[h['gross_floor_area']] += h['count']
         sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
+
         return JsonResponse({
             'status': 'success',
             'total_records': views.count(),
@@ -373,5 +379,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'extra_data fields and count': extra_data,
             'year_built': year_built_list,
             'energy': energy_list2,
-            'square_footage': sqftage_list2
+            'square_footage': sqftage_list2,
+            'data fields and count': data_col
         })
