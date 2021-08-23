@@ -820,6 +820,11 @@ BASE_MAPPING_V2 = {
                 'xpath': './auc:TimeSeriesData/auc:TimeSeries',
                 'type': 'list',
                 'items': {
+                    'id': {
+                        'xpath': '.',
+                        'type': 'value',
+                        'value': '@ID',
+                    },
                     'start_time': {
                         'xpath': './auc:StartTimestamp',
                         'type': 'value',
@@ -841,6 +846,24 @@ BASE_MAPPING_V2 = {
                         'xpath': './auc:ResourceUseID',
                         'type': 'value',
                         'value': '@IDref'
+                    }
+                }
+            },
+            # Audit Template stores some meter readings in AllResourceTotals...
+            'audit_template_all_resource_totals': {
+                'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:UserDefinedFields/auc:UserDefinedField/auc:FieldName="Linked Time Series ID"]',
+                'type': 'list',
+                'items': {
+                    'linked_time_series_id': {
+                        'xpath': './auc:UserDefinedFields/auc:UserDefinedField[auc:FieldName="Linked Time Series ID"]/auc:FieldValue',
+                        'type': 'value',
+                        'value': 'text',
+                    },
+                    'site_energy_use': {
+                        'xpath': './auc:SiteEnergyUse',
+                        'type': 'value',
+                        'value': 'text',
+                        'formatter': to_float,
                     }
                 }
             }
