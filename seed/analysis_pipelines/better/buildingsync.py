@@ -82,7 +82,7 @@ def _build_better_input(analysis_property_view, meters):
 
     valid_meters_and_readings = []
     for meter in meters:
-        readings = meter.meter_readings.filter(reading__gte=1.0)
+        readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
         if readings.count() >= 12:
             valid_meters_and_readings.append({
                 'meter': meter,
