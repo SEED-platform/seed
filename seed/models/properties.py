@@ -231,6 +231,17 @@ class PropertyState(models.Model):
                                          null=True)
     analysis_state_message = models.TextField(null=True)
 
+    # stores results from various analyses in the following format:
+    # analyses_results = {
+    #     analysis_type: [ # ordered descending by timestamp
+    #         timestamp:
+    #         analysis_property_view_id:
+    #         data: { # depends on each analysis }
+    #         summary: # one-line summary for display
+    #     ]
+    # }
+    analyses_results = JSONField(default=dict, blank=True)
+
     # Need to add another field eventually to define the source of the EUI's and other
     # reported fields. Ideally would have the ability to provide the same field from
     # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
