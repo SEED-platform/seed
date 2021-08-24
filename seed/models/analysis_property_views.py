@@ -42,8 +42,9 @@ class AnalysisPropertyView(models.Model):
     @classmethod
     def batch_create(cls, analysis_id, property_view_ids):
         """Creates AnalysisPropertyViews from provided PropertyView IDs.
-        The method returns a tuple, the first value being a list of the created
-        AnalysisPropertyView IDs, the second value being a list of BatchCreateErrors.
+        The method returns a tuple, the first value being a dictionary of the created
+        AnalysisPropertyView IDs with the key as the original property_view_id,
+        the second value being a list of BatchCreateErrors.
 
         Intended to be used when initializing an analysis.
 
@@ -65,7 +66,7 @@ class AnalysisPropertyView(models.Model):
                 for view_id in missing_property_views
             ]
 
-            analysis_property_view_ids = []
+            analysis_property_view_ids = {}
             for property_view in property_views:
                 try:
                     # clone the property state
@@ -81,7 +82,7 @@ class AnalysisPropertyView(models.Model):
                     )
                     analysis_property_view.full_clean()
                     analysis_property_view.save()
-                    analysis_property_view_ids.append(analysis_property_view.id)
+                    analysis_property_view_ids[property_view.id] = analysis_property_view.id
                 except ValidationError as e:
                     failures.append(BatchCreateError(
                         property_view.id,
