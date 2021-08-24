@@ -17,10 +17,12 @@ class Analysis(models.Model):
     """
     BSYNCR = 1
     BETTER = 2
+    EUI = 3
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
-        (BETTER, 'BETTER')
+        (BETTER, 'BETTER'),
+        (EUI, 'EUI')
     )
 
     PENDING_CREATION = 8

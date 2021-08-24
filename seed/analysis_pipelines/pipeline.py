@@ -25,12 +25,12 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
     :param analysis_id: int
     :param property_view_ids: list[int]
     :param progress_data_key: str, optional
-    :returns: list[int], IDs of the successfully created AnalysisPropertyViews
+    :returns: dictionary[int:int] IDs of the successfully created AnalysisPropertyViews listed by property_view_id
     """
     if progress_data_key is not None:
         progress_data = ProgressData.from_key(progress_data_key)
         progress_data.step('Copying property data')
-    analysis_view_ids, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
+    analysis_view_ids_by_property_view_id, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
     for failure in failures:
         truncated_user_message = f'Failed to copy property data for PropertyView ID {failure.property_view_id}: {failure.message}'
         if len(truncated_user_message) > 255:
@@ -40,7 +40,7 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
             type=AnalysisMessage.DEFAULT,
             user_message=truncated_user_message,
         )
-    return analysis_view_ids
+    return analysis_view_ids_by_property_view_id
 
 
 def analysis_pipeline_task(expected_status):
@@ -266,11 +266,14 @@ class AnalysisPipeline(abc.ABC):
         # import here to avoid circular dependencies
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.better import BETTERPipeline
+        from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
         elif analysis.service == Analysis.BETTER:
             return BETTERPipeline(analysis.id)
+        elif analysis.service == Analysis.EUI:
+            return EUIPipeline(analysis.id)
         else:
             raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

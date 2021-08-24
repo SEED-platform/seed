@@ -53,17 +53,26 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       ];
 
       $scope.initializeAnalysisConfig = () => {
-        if ($scope.service == 'BSyncr') {
-          $scope.new_analysis.configuration = {
-            model: null
-          }
-        } else {
-          $scope.new_analysis.configuration = {
-            savings_target: null,
-            benchmark_data: null,
-            min_r_squared: null,
-            portfolio_analysis: false,
-          }
+        switch ($scope.new_analysis.service) {
+
+          case 'BSyncr':
+            $scope.new_analysis.configuration = {
+              model: null
+            }
+            break;
+
+          case 'EUI':
+            $scope.new_analysis.configuration = {}
+            break;
+
+          default:
+            $scope.new_analysis.configuration = {
+              savings_target: null,
+              benchmark_data: null,
+              min_r_squared: null,
+              portfolio_analysis: false,
+            }
+            break;
         }
       }
 
