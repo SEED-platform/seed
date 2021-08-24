@@ -148,10 +148,10 @@ class BETTERPipeline(AnalysisPipeline):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progress_data_key):
+def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysis_id, progress_data_key):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
-    :param analysis_property_view_ids: list[int]
+    :param analysis_view_ids_by_property_view_id: dictionary[int:int]
     :param analysis_id: int
     :param progress_data_key: str
     :returns: void
@@ -160,7 +160,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
     progress_data.step('Creating files for analysis')
 
     analysis = Analysis.objects.get(id=analysis_id)
-    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
+    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids_by_property_view_id.values())
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
         meters = (

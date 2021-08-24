@@ -16,8 +16,10 @@
                     <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
                         <option ng-option value='BSyncr' selected="selected">BSyncr</option>
                         <option ng-option value='BETTER' selected="selected">BETTER</option>
+                        <option ng-option value='EUI' selected="selected">EUI</option>
                     </select>
                 </div>
+
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
@@ -26,6 +28,7 @@
                         </option>
                     </select>
                 </div>
+
                 <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
                     <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
                     <div class="form-group" style="padding-top: 1em">
@@ -71,9 +74,8 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create
-                    Analysis
-                </button>
+
+                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
             </form>
         </div>
     </div>
