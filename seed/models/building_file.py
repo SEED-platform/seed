@@ -213,6 +213,7 @@ class BuildingFile(models.Model):
             join.save()
 
         # add in scenarios
+        linked_meters = []
         for s in data.get('scenarios', []):
             # measures = models.ManyToManyField(PropertyMeasure)
 
@@ -319,6 +320,7 @@ class BuildingFile(models.Model):
                 if meter.is_virtual is None:
                     meter.is_virtual = False
                 meter.save()
+                linked_meters.append(meter)
 
                 # meterreadings
                 if meter.type in energy_types:
@@ -381,5 +383,9 @@ class BuildingFile(models.Model):
         else:
             # invalid arguments, must pass both or neither
             return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+
+        for meter in linked_meters:
+            meter.property = property_view.property
+            meter.save()
 
         return True, property_state, property_view, messages

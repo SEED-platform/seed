@@ -237,16 +237,51 @@ class BuildingSync(object):
 
             # process the scenario meter readings
             for series_data in scenario['time_series']:
-                reading = {
+                meter_reading = {
                     'start_time': series_data['start_time'],
                     'end_time': series_data['end_time'],
                     'reading': series_data['reading'],
                     'source_id': series_data['source_id'],
                 }
-                reading['source_unit'] = meters[reading['source_id']].get('units')
+                meter_reading['source_unit'] = meters[meter_reading['source_id']].get('units')
 
                 # add reading to the meter
-                meters[reading['source_id']]['readings'].append(reading)
+                meters[meter_reading['source_id']]['readings'].append(meter_reading)
+
+                #
+                # Begin Audit Template weirdness
+                #
+
+                # Audit Template (AT) puts some meter reading data in AllResourceTotals
+                # It uses a UserDefinedField "Linked Time Series ID" to associate the
+                # reading with an auc:TimeSeries (which stores the other relevant info
+                # including start time, end time, etc)
+                for all_resource_total in scenario['audit_template_all_resource_totals']:
+                    if all_resource_total['linked_time_series_id'] == series_data['id']:
+                        # store this data in a separate "meter" -- we can't have two
+                        # readings for the same time period in SEED currently
+                        # NOTE: to future reader, this problem seems to arise from the
+                        # fact that SEED is unaware of the _type_ of reading,
+                        # e.g. see BuildingSync's ReadingType (point, median, average, peak, etc)
+
+                        # if the meter doesn't exist yet, copy it
+                        original_meter = meters[meter_reading['source_id']]
+                        other_meter_source_id = f'Site Energy Use {original_meter["source_id"]}'
+                        if other_meter_source_id not in meters:
+                            meters[other_meter_source_id] = {
+                                **original_meter,
+                                'source_id': other_meter_source_id,
+                                'readings': []
+                            }
+
+                        meters[other_meter_source_id]['readings'].append({
+                            **meter_reading,
+                            'reading': all_resource_total['site_energy_use']
+                        })
+
+                #
+                # End Audit Template weirdness
+                #
 
             # create scenario
             seed_scenario = {
