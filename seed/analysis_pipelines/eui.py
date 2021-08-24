@@ -141,7 +141,7 @@ class EUIPipeline(AnalysisPipeline):
                 type_=AnalysisMessage.ERROR,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message=EUI_ANALYSIS_MESSAGES.ERROR_NO_VALID_PROPERTIES,
+                user_message=EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES],
                 debug_message=''
             )
             analysis = Analysis.objects.get(id=self._analysis_id)
