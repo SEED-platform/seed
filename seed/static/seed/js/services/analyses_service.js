@@ -51,7 +51,7 @@ angular.module('BE.seed.service.analyses', [])
         return $http({
           url: '/api/v3/analyses/',
           method: 'POST',
-          params: { organization_id: organization_id },
+          params: { organization_id: organization_id, start_analysis: true },
           data: {
             name: name,
             service: service,

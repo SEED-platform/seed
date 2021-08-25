@@ -47,6 +47,11 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_boolean_field(
+                name='start_analysis',
+                required=True,
+                description='If true, immediately start running the analysis after creation. Defaults to false.',
+            )
         ],
         request_body=CreateAnalysisSerializer,
     )
@@ -69,7 +74,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         )
         pipeline = AnalysisPipeline.factory(analysis)
         try:
-            progress_data = pipeline.prepare_analysis(serializer.validated_data['property_view_ids'])
+            progress_data = pipeline.prepare_analysis(
+                serializer.validated_data['property_view_ids'],
+                start_analysis=request.query_params.get('start_analysis', False)
+            )
             return JsonResponse({
                 'status': 'success',
                 'progress_key': progress_data['progress_key'],
