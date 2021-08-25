@@ -221,6 +221,7 @@ def _finish_preparation(self, analysis_id, progress_data_key, start_analysis):
         pipeline = BsyncrPipeline(analysis_id)
         pipeline.start_analysis()
 
+
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
 # to link it to SEED's AnalysisPropertyViews
 PREMISES_ID_NAME = 'seed_analysis_property_view_id'
