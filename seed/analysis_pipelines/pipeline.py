@@ -277,10 +277,11 @@ class AnalysisPipeline(abc.ABC):
         else:
             raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 
-    def prepare_analysis(self, property_view_ids):
+    def prepare_analysis(self, property_view_ids, start_analysis=False):
         """Entrypoint for preparing an analysis.
 
         :param property_view_ids: list[int]
+        :param start_analysis: bool, if true, the pipeline should immediately start the analysis after preparation
         :returns: str, ProgressData.result
         """
         with transaction.atomic():
@@ -291,7 +292,7 @@ class AnalysisPipeline(abc.ABC):
             else:
                 raise AnalysisPipelineException('Analysis has already been prepared or is currently being prepared')
 
-        return self._prepare_analysis(property_view_ids)
+        return self._prepare_analysis(property_view_ids, start_analysis)
 
     def start_analysis(self):
         """Entrypoint for starting an analysis.
@@ -367,11 +368,14 @@ class AnalysisPipeline(abc.ABC):
         Analysis.objects.get(id=self._analysis_id).delete()
 
     @abc.abstractmethod
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis):
         """Abstract method which should do the work necessary for preparing
         an analysis, e.g. creating input file(s)
 
         :param property_view_ids: list[int]
+        :param start_analysis: bool, if true, the pipeline should be started immediately
+            after preparation is finished. It is the responsibility of the pipline
+            implementation to make sure this happens by calling `pipeline.start_analysis()`
         :returns: str, ProgressData.result
         """
         pass
