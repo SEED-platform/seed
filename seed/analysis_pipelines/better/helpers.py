@@ -329,7 +329,10 @@ def _update_original_property_state(property_state, data, data_paths):
         if type(result) is dict and not result:
             # path was probably not valid in the data...
             return None
-        return result
+        elif type(result) is float:
+            return round(result, 2)
+        else:
+            return result
 
     results = {
         data_path.column_name: get_json_path(data_path.json_path, data)
