@@ -1,0 +1,47 @@
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
+from django.db import models
+
+class JobApplications(models.Model):
+    id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
+    bin = models.IntegerField(null=False, blank=False)
+    job_number = models.AutoField(verbose_name='Job_Number', serialize=False, auto_created=True, primary_key=True)
+    job_type = models.CharField(null=True, blank=True)
+    doc_number = models.CharField(null=True, blank=True)
+    city_owned = models.CharField(null=True, blank=True)
+    filed_type = models.CharField(null=True, blank=True)
+    plumbing = models.CharField(null=True, blank=True)
+    mechanical = models.CharField(null=True, blank=True)
+    boiler = models.CharField(null=True, blank=True)
+    fuel_burning = models.CharField(null=True, blank=True)
+    fuel_Storage = models.CharField(null=True, blank=True)
+    equipment = models.CharField(null=True, blank=True)
+    other_work_type = models.CharField(null=True, blank=True)
+    other_work_type_desc = models.CharField(null=True, blank=True)
+    pre_filing_date = models.CharField(null=True, blank=True)
+    approved = models.CharField(null=True, blank=True)
+    fully_permitted = models.CharField(null=True, blank=True)
+    initial_cost = models.CharField(null=True, blank=True)
+    existing_zoning_sqft = models.CharField(null=True, blank=True)
+    proposed_zoning_sqft = models.CharField(null=True, blank=True)
+    enlargement_sq_footage = models.CharField(null=True, blank=True)
+    street_frontage = models.CharField(null=True, blank=True)
+    current_num_floors = models.IntegerField(null=True, blank=True)
+    proposed_num_floors = models.IntegerField(null=True, blank=True)
+    current_height = models.IntegerField(null=True, blank=True)
+    proposed_height = models.IntegerField(null=True, blank=True)
+    proposed_dwelling_units = models.IntegerField(null=True, blank=True)
+    current_occupancy = models.IntegerField(null=True, blank=True)
+    proposed_occupancy = models.IntegerField(null=True, blank=True)
+    total_construction_floor_area = models.IntegerField(null=True, blank=True)
+    signoff_date = models.DateField(null=True)
+    building_class = models.CharField(null=True, blank=True)
+    
+class PermitIssuance(models.Model):
+    id = models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)
+    bin_num = models.IntegerField(null=False, blank=False)
+    job_number = models.ForeignKey(JobApplications, on_delete=models.CASCADE)
+    work_type = models.CharField(null=True, blank=True)
+    permit_status = models.CharField(null=True, blank=True)
+    permit_subtype = models.CharField(null=True, blank=True)

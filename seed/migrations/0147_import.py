@@ -1,12 +1,14 @@
 # API: "https://data.cityofnewyork.us/resource/ipu4-2q9a.json"
 # Import Permit Issuance API data into permit_issuance table
 
+
 import pandas as pd
 from sodapy import Socrata
 # For data abstraction - sqlalchemy
 from sqlalchemy import create_engine 
 # Driver library for database - psychopg2
 import psycopg2
+# For app token privacy
 from dotenv import load_dotenv
 import os
 
