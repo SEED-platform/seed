@@ -238,8 +238,6 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
             'Gross Floor Area': property_state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
-        # todo: update when no longer using extra_data to save
-        # analysis_property_view.add_results_to_property_state(analysis_property_view_id=analysis_property_view_id, new_results="yay")
         property_state.extra_data.update({'analysis_eui': eui})
         property_state.save()
 
