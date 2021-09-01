@@ -13,6 +13,7 @@ from seed.lib.superperms.orgs.models import Organization
 import logging
 logger = logging.getLogger(__name__)
 
+
 class Analysis(models.Model):
     """
     The Analysis represents an analysis performed on one or more properties.
@@ -81,7 +82,7 @@ class Analysis(models.Model):
 
         # Bsynchr
         if self.service == self.BSYNCR:
-            return [{'name':'Unimplemented','value':'Oops!'}]
+            return [{'name': 'Unimplemented', 'value': 'Oops!'}]
 
         # BETTER
         elif self.service == self.BETTER:
@@ -103,8 +104,7 @@ class Analysis(models.Model):
             return [{'name': 'EUI', 'value': f'{extra_data["analysis_eui"]:,.2f}'}]
 
         # Unexpected
-        return [{'name':'Unexpected Analysis Type','value':'Oops!'}]
-        
+        return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
 
     def in_terminal_state(self):
         """Returns True if the analysis has finished, e.g. stopped, failed,

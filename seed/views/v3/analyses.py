@@ -117,7 +117,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         for analysis in analyses_queryset:
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info(property_id))
-            serialized_analysis.update({'highlights':analysis.get_highlights(property_id)})
+            serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
         return JsonResponse({
