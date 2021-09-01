@@ -92,7 +92,6 @@ class Analysis(models.Model):
                     'value': f'${extra_data["better_cost_savings_combined"]:,.2f}'
                 })
             if 'better_energy_savings_combined' in extra_data:
-                value = 1.2
                 ret.append({
                     'name': 'Potential Energy Savings (kWh)',
                     'value': f'{extra_data["better_energy_savings_combined"]:,.2f}'
