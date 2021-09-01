@@ -115,6 +115,19 @@ angular.module('BE.seed.service.analyses', [])
         });
       }
 
+      const get_progress_key = function (analysis_id) {
+        const organization_id = user_service.get_organization().id;
+        return $http({
+          url: '/api/v3/analyses/' + analysis_id + '/progress_key/',
+          method: 'GET',
+          params: { organization_id: organization_id }
+        }).then(function (response) {
+          return response.data;
+        }).catch(function (response) {
+          return response.data;
+        });
+      }
+
       const analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
         get_analyses_for_canonical_property: get_analyses_for_canonical_property,
@@ -127,6 +140,7 @@ angular.module('BE.seed.service.analyses', [])
         stop_analysis: stop_analysis,
         delete_analysis: delete_analysis,
         get_summary: get_summary,
+        get_progress_key: get_progress_key,
       };
 
       return analyses_factory;

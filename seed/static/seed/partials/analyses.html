@@ -47,7 +47,12 @@
                                 <li ng-repeat="(key, value) in setting">{$:: key $} = {$:: value $}</li>
                             </ul>
                         </td>
-                        <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
+                        <td class="analysis-status {$:: analysis.status.toLowerCase() $}">
+                            <i
+                                class="fa fa-refresh fa-pulse fa-fw" style="padding-right: 0"
+                                ng-if="analysis._tracking_progress"></i>
+                            {$:: analysis.status $}
+                        </td>
                         <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>
                         <td>{$:: analysis | get_run_duration $}</td>
                         <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>

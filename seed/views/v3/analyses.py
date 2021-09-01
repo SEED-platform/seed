@@ -217,6 +217,32 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 'message': 'Requested analysis doesn\'t exist in this organization.'
             }, status=HTTP_409_CONFLICT)
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['get'])
+    def progress_key(self, request, pk):
+        organization_id = int(self.get_organization(request))
+        try:
+            analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+            pipeline = AnalysisPipeline.factory(analysis)
+            progress_data = pipeline.get_progress_data(analysis)
+            progress_key = progress_data.key if progress_data is not None else None
+            return JsonResponse({
+                'status': 'success',
+                # NOTE: intentionally *not* returning the actual progress here b/c then
+                # folks will poll this endpoint which is less efficient than using
+                # the /progress/<key> endpoint
+                'progress_key': progress_key,
+            })
+        except Analysis.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Requested analysis doesn\'t exist in this organization.'
+            }, status=HTTP_409_CONFLICT)
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')

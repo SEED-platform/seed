@@ -37,6 +37,41 @@ angular.module('BE.seed.controller.analyses', [])
           });
       };
 
+      // Check the progress of the analysis. Every time a task completes, refresh
+      // the analysis for the $scope and see if there's another trackable task to check
+      const check_analysis_progress_loop = (analysis_id) => {
+        analyses_service.get_progress_key(analysis_id)
+          .then(data => {
+            if (!data.progress_key) {
+              // analysis isn't in a trackable state/status, stop checking
+              return
+            }
+
+            const analysis_index = $scope.analyses.findIndex(analysis => {
+              return analysis.id === analysis_id
+            })
+            $scope.analyses[analysis_index]._tracking_progress = true
+
+            uploader_service.check_progress_loop(data.progress_key, 0, 1, () => {
+              analyses_service.get_analysis_for_org(analysis_id, $scope.org.id)
+                .then(data => {
+                  const analysis_index = $scope.analyses.findIndex(analysis => {
+                    return analysis.id === analysis_id
+                  })
+                  $scope.analyses[analysis_index] = data.analysis
+
+                  // start tracking the progress again
+                  check_analysis_progress_loop(analysis_id)
+                })
+            }, () => {},
+            {})
+          })
+      }
+
+      $scope.analyses.forEach(analysis => {
+        check_analysis_progress_loop(analysis.id)
+      })
+
       $scope.start_analysis = function (analysis_id) {
         const analysis = $scope.analyses.find(function (a) {
           return a.id === analysis_id;
