@@ -8,7 +8,6 @@ import logging
 import copy
 
 from django.db.models import Q, Count
-from django.utils import timezone as tz
 from django.core.files.base import ContentFile
 from celery import chain, shared_task
 
@@ -38,7 +37,6 @@ from seed.analysis_pipelines.better.helpers import (
     _update_original_property_state,
 )
 
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
     AnalysisInputFile,
