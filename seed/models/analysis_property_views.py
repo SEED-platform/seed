@@ -90,3 +90,10 @@ class AnalysisPropertyView(models.Model):
                     ))
 
         return analysis_property_view_ids, failures
+
+    def add_results_to_property_state(this, analysis_property_view_id, new_results):
+        analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
+        property_state = PropertyState.objects.get(id=analysis_property_view.property_state.id)
+        current_results = property_state.analyses_results
+        property_state.analyses_results = {'test': new_results}
+        property_state.save()

@@ -62,7 +62,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       organization,
       urls
     ) {
-      console.log('datauploadmodal', urls);
       $scope.urls = urls;
       $scope.cycles = cycles.cycles;
       var cached_cycle = inventory_service.get_last_cycle();

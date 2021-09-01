@@ -10,6 +10,8 @@ from django.db import models
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 
+import logging
+logger = logging.getLogger(__name__)
 
 class Analysis(models.Model):
     """
@@ -69,6 +71,41 @@ class Analysis(models.Model):
             'views': list(analysis_property_views.values_list('id', flat=True).distinct()),
             'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())
         }
+
+    def get_highlights(self, property_id):
+        if self.status < self.COMPLETED:
+            return []
+        for view in self.analysispropertyview_set.filter(property=property_id):
+            extra_data = view.property_state.extra_data
+            break
+
+        # Bsynchr
+        if self.service == self.BSYNCR:
+            return [{'name':'Unimplemented','value':'Oops!'}]
+
+        # BETTER
+        elif self.service == self.BETTER:
+            ret = []
+            if 'better_cost_savings_combined' in extra_data:
+                ret.append({
+                    'name': 'Potential Cost Savings (USD)',
+                    'value': f'${extra_data["better_cost_savings_combined"]:,.2f}'
+                })
+            if 'better_energy_savings_combined' in extra_data:
+                value = 1.2
+                ret.append({
+                    'name': 'Potential Energy Savings (kWh)',
+                    'value': f'{extra_data["better_energy_savings_combined"]:,.2f}'
+                })
+            return ret
+
+        # EUI
+        elif self.service == self.EUI:
+            return [{'name': 'EUI', 'value': f'{extra_data["analysis_eui"]:,.2f}'}]
+
+        # Unexpected
+        return [{'name':'Unexpected Analysis Type','value':'Oops!'}]
+        
 
     def in_terminal_state(self):
         """Returns True if the analysis has finished, e.g. stopped, failed,

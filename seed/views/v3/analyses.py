@@ -107,9 +107,9 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 .order_by('-id')
             )
         for analysis in analyses_queryset:
-            property_view_info = analysis.get_property_view_info(property_id)
             serialized_analysis = AnalysisSerializer(analysis).data
-            serialized_analysis.update(property_view_info)
+            serialized_analysis.update(analysis.get_property_view_info(property_id))
+            serialized_analysis.update({'highlights':analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
         return JsonResponse({
@@ -132,8 +132,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 'message': "Requested analysis doesn't exist in this organization."
             }, status=HTTP_409_CONFLICT)
         serialized_analysis = AnalysisSerializer(analysis).data
-        property_view_info = analysis.get_property_view_info()
-        serialized_analysis.update(property_view_info)
+        serialized_analysis.update(analysis.get_property_view_info())
 
         return JsonResponse({
             'status': 'success',

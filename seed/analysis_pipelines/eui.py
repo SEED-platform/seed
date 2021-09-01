@@ -20,6 +20,7 @@ from seed.models import (
     Analysis,
     AnalysisMessage,
     AnalysisPropertyView,
+    Column,
     Meter,
     MeterReading,
     PropertyState,
@@ -217,15 +218,28 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.step('Caclulating EUI')
 
+    Column.objects.get_or_create(
+        is_extra_data=True,
+        column_name="analysis_eui",
+        display_name="Analysis EUI",
+        organization=analysis.organization,
+        table_name='PropertyState',
+    )
+
     for analysis_property_view_id in meter_readings_by_analysis_property_view:
         analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
         property_state = PropertyState.objects.get(id=analysis_property_view.property_state.id)
+        eui = _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], property_state.gross_floor_area.magnitude)
         analysis_property_view.parsed_results = {
-            'EUI': _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], property_state.gross_floor_area.magnitude),
+            'EUI': eui,
             'Total Yearly Meter Reading': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
             'Gross Floor Area': property_state.gross_floor_area.magnitude
         }
         analysis_property_view.save()
+        # todo: update when no longer using extra_data to save
+        # analysis_property_view.add_results_to_property_state(analysis_property_view_id=analysis_property_view_id, new_results="yay")
+        property_state.extra_data.update({'analysis_eui':eui})
+        property_state.save()
 
     # all done!
     analysis.status = Analysis.COMPLETED

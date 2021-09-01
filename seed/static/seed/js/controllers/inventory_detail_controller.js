@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'pairing_service',
     'derived_columns_service',
     'inventory_payload',
+    'analyses_payload',
     'columns',
     'derived_columns_payload',
     'profiles',
@@ -51,6 +52,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       pairing_service,
       derived_columns_service,
       inventory_payload,
+      analysis_payload,
       columns,
       derived_columns_payload,
       profiles,
@@ -91,6 +93,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
       // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
+
+      $scope.analysis = analysis_payload.analyses.sort(function(a, b) {
+        let key_a = new Date(a.end_time);
+        let key_b = new Date(b.end_time);
+        if (key_a > key_b) return -1;
+        if (key_a < key_b) return 1;
+        return 0;
+      })[0];
 
       // Flag columns whose values have changed between imports and edits.
       var historical_states = _.map($scope.historical_items, 'state');

@@ -1515,6 +1515,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
+          }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
@@ -1628,7 +1631,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
             var view_id = $stateParams.view_id;
-            var promise = inventory_service.get_property(view_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
