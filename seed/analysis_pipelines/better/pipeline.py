@@ -84,7 +84,7 @@ class BETTERPipeline(AnalysisPipeline):
     methods.
     """
 
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis=False):
         """Internal implementation for preparing better analysis"""
         analysis = Analysis.objects.get(id=self._analysis_id)
         organization = analysis.organization
@@ -120,7 +120,7 @@ class BETTERPipeline(AnalysisPipeline):
         chain(
             task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
             _prepare_all_properties.s(self._analysis_id, progress_data.key),
-            _finish_preparation.si(self._analysis_id, progress_data.key)
+            _finish_preparation.si(self._analysis_id, progress_data.key, start_analysis)
         ).apply_async()
 
         return progress_data.result()
@@ -216,11 +216,12 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _finish_preparation(self, analysis_id, progress_data_key):
+def _finish_preparation(self, analysis_id, progress_data_key, start_analysis):
     """A Celery task which finishes the preparation for BETTER analysis
 
     :param analysis_id: int
     :param progress_data_key: str
+    :param start_analysis: bool
     """
     analysis = Analysis.objects.get(id=analysis_id)
     analysis.status = Analysis.READY
@@ -228,6 +229,10 @@ def _finish_preparation(self, analysis_id, progress_data_key):
 
     progress_data = ProgressData.from_key(progress_data_key)
     progress_data.finish_with_success()
+
+    if start_analysis:
+        pipeline = BETTERPipeline(analysis_id)
+        pipeline.start_analysis()
 
 
 @shared_task(bind=True)

@@ -68,7 +68,7 @@ logger = logging.getLogger(__name__)
 
 class MockPipeline(AnalysisPipeline):
 
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis):
         analysis = Analysis.objects.get(id=self._analysis_id)
         analysis.status = Analysis.READY
         analysis.save()

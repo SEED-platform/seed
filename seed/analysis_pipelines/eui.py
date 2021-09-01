@@ -133,7 +133,9 @@ def _calculate_eui(meter_readings, gross_floor_area):
 
 class EUIPipeline(AnalysisPipeline):
 
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis=True):
+        # current implemtation will *always* start the analysis immediately
+
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters(property_view_ids)
 
         if not meter_readings_by_property_view:
