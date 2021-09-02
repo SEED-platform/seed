@@ -75,7 +75,7 @@ class Analysis(models.Model):
         }
 
     def get_highlights(self, property_id=None):
-        from seed.models import PropertyView # avoiding cyclic dependancy
+        from seed.models import PropertyView  # avoiding cyclic dependancy
         if self.status < self.COMPLETED:
             return []
         if property_id is not None:

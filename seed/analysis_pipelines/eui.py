@@ -23,7 +23,6 @@ from seed.models import (
     Column,
     Meter,
     MeterReading,
-    PropertyState,
     PropertyView
 )
 
@@ -247,7 +246,6 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
         property_view = property_views_by_property_cycle_id[property_cycle_id]
         property_view.state.extra_data.update({'analysis_eui': eui})
         property_view.state.save()
-
 
     # all done!
     analysis.status = Analysis.COMPLETED
