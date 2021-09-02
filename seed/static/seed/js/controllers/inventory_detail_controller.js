@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       pairing_service,
       derived_columns_service,
       inventory_payload,
-      analysis_payload,
+      analyses_payload,
       users_payload,
       columns,
       derived_columns_payload,

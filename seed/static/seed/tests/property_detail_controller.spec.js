@@ -257,7 +257,10 @@ describe('controller: inventory_detail_controller', function () {
       organization_payload: {
         id: 1,
         display_significant_figures: 2,
-      }
+      },
+      analyses_payload: {
+        analyses: []
+      },
     });
   }
 
