@@ -185,9 +185,10 @@ class BETTERClient:
             'accept': 'text/html',
             'Authorization': self._token,
         }
+        params = {'unit': 'IP'}
 
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, params=params)
             if response.status_code != 200:
                 return None, [f'Expected 200 response from BETTER but got {response.status_code}: {response.content}']
 
@@ -266,13 +267,14 @@ class BETTERClient:
         :returns: tuple(tempfile.TemporaryDirectory, list[str]), temporary directory containing result files and list of error messages
         """
         url = f"{self.API_URL}/standalone_html/building_analytics/{analysis_id}/"
-
         headers = {
             'accept': '*/*',
             'Authorization': self._token,
         }
+        params = {'unit': 'IP'}
+
         try:
-            response = requests.request("GET", url, headers=headers)
+            response = requests.request("GET", url, headers=headers, params=params)
             standalone_html = response.text.encode('utf8').decode()
 
         except ConnectionError:
