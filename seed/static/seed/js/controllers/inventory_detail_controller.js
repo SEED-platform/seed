@@ -62,6 +62,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+      $scope.org = {'id': organization_payload.organization.id};
 
       // Detail Column List Profile
       $scope.profiles = profiles;
