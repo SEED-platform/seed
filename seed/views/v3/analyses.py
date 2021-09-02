@@ -141,6 +141,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             }, status=HTTP_409_CONFLICT)
         serialized_analysis = AnalysisSerializer(analysis).data
         serialized_analysis.update(analysis.get_property_view_info())
+        serialized_analysis.update({'highlights': analysis.get_highlights()})
 
         return JsonResponse({
             'status': 'success',

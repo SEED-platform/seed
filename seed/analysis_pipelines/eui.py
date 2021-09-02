@@ -6,7 +6,7 @@
 """
 import logging
 from celery import chain, shared_task
-from django.db.models import Count
+from django.db.models import Q, Count
 from django.utils import timezone as tz
 
 from seed.analysis_pipelines.pipeline import (
@@ -230,16 +230,24 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
 
     for analysis_property_view_id in meter_readings_by_analysis_property_view:
         analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
-        property_state = PropertyState.objects.get(id=analysis_property_view.property_state.id)
-        eui = _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], property_state.gross_floor_area.magnitude)
+        area = analysis_property_view.property_state.gross_floor_area.magnitude
+        eui = _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], area)
         analysis_property_view.parsed_results = {
             'EUI': eui,
             'Total Yearly Meter Reading': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
-            'Gross Floor Area': property_state.gross_floor_area.magnitude
+            'Gross Floor Area': area
         }
         analysis_property_view.save()
-        property_state.extra_data.update({'analysis_eui': eui})
-        property_state.save()
+        property_view_query = Q(property=analysis_property_view.property) & Q(cycle=analysis_property_view.cycle)
+        property_views_by_property_cycle_id = {
+            (pv.property.id, pv.cycle.id): pv
+            for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
+        }
+        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
+        property_view = property_views_by_property_cycle_id[property_cycle_id]
+        property_view.state.extra_data.update({'analysis_eui': eui})
+        property_view.state.save()
+
 
     # all done!
     analysis.status = Analysis.COMPLETED

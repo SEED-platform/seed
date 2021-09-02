@@ -6,6 +6,7 @@
 """
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.db.models import Q
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
@@ -73,12 +74,21 @@ class Analysis(models.Model):
             'cycles': list(analysis_property_views.values_list('cycle', flat=True).distinct())
         }
 
-    def get_highlights(self, property_id):
+    def get_highlights(self, property_id=None):
+        from seed.models import PropertyView # avoiding cyclic dependancy
         if self.status < self.COMPLETED:
             return []
-        for view in self.analysispropertyview_set.filter(property=property_id):
-            extra_data = view.property_state.extra_data
-            break
+        if property_id is not None:
+            analysis_property_view = self.analysispropertyview_set.filter(property=property_id).first()
+        else:
+            analysis_property_view = self.analysispropertyview_set.first()
+        property_view_query = Q(property=analysis_property_view.property) & Q(cycle=analysis_property_view.cycle)
+        property_views_by_property_cycle_id = {
+            (pv.property.id, pv.cycle.id): pv
+            for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
+        }
+        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
+        extra_data = property_views_by_property_cycle_id[property_cycle_id].state.extra_data
 
         # Bsynchr
         if self.service == self.BSYNCR:
