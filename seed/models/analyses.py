@@ -97,12 +97,12 @@ class Analysis(models.Model):
         # BETTER
         elif self.service == self.BETTER:
             ret = []
-            if 'better_cost_savings_combined' in extra_data:
+            if extra_data.get('better_cost_savings_combined') is not None:
                 ret.append({
                     'name': 'Potential Cost Savings (USD)',
                     'value': f'${extra_data["better_cost_savings_combined"]:,.2f}'
                 })
-            if 'better_energy_savings_combined' in extra_data:
+            if extra_data.get('better_energy_savings_combined') is not None:
                 ret.append({
                     'name': 'Potential Energy Savings (kWh)',
                     'value': f'{extra_data["better_energy_savings_combined"]:,.2f}'
@@ -111,7 +111,10 @@ class Analysis(models.Model):
 
         # EUI
         elif self.service == self.EUI:
-            return [{'name': 'EUI', 'value': f'{extra_data["analysis_eui"]:,.2f}'}]
+            if extra_data.get('analysis_eui') is not None:
+                return [{'name': 'EUI', 'value': f'{extra_data["analysis_eui"]:,.2f}'}]
+            else:
+                return []
 
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
