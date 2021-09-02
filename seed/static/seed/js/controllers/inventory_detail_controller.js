@@ -25,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'derived_columns_service',
     'inventory_payload',
     'analyses_payload',
+    'users_payload',
     'columns',
     'derived_columns_payload',
     'profiles',
@@ -53,6 +54,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       derived_columns_service,
       inventory_payload,
       analysis_payload,
+      users_payload,
       columns,
       derived_columns_payload,
       profiles,
@@ -102,6 +104,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         if (key_a < key_b) return 1;
         return 0;
       })[0];
+      $scope.users = users_payload.users;
 
       // Flag columns whose values have changed between imports and edits.
       var historical_states = _.map($scope.historical_items, 'state');

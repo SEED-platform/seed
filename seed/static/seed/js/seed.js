@@ -1544,6 +1544,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
           }],
+          users_payload: ['organization_service', 'user_service', '$stateParams', function (organization_service, user_service, $stateParams) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
+          }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
             var lastProfileId = inventory_service.get_last_detail_profile($stateParams.inventory_type);
