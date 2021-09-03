@@ -40,7 +40,9 @@
                 <b>{$:: type $}</b> <small>({$:: analyses.length $})</small>
             </uib-tab-heading>
             <div class="tab-content-cards">
-                <div ng-repeat="analysis in analyses" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card">
+                <!-- NOTE: This is bad, using a controller created for someone else but it will work
+                     we should refactor this into a AnalysisCard component. -->
+                <div ng-repeat="analysis in analyses" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card">
                 </div>
             </div>
         </uib-tab>
