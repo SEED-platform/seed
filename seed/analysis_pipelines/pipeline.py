@@ -424,9 +424,12 @@ class AnalysisPipeline(abc.ABC):
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
 
-            if locked_analysis.status == Analysis.QUEUED:
+            # allow pipeline authors to go straight from Queued or Ready to Running
+            valid_statuses = [Analysis.QUEUED, Analysis.READY]
+            if locked_analysis.status in valid_statuses:
                 progress_data = self.get_progress_data(locked_analysis)
-                progress_data.finish_with_success('Analysis is now being run')
+                if progress_data:  # analyses in Ready status don't have progress data
+                    progress_data.finish_with_success('Analysis is now being run')
 
                 locked_analysis.status = Analysis.RUNNING
                 locked_analysis.start_time = tz.now()
@@ -438,9 +441,10 @@ class AnalysisPipeline(abc.ABC):
                 )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
+                valid_statuses_str = ' or '.join([statuses[s] for s in valid_statuses])
                 raise AnalysisPipelineException(
                     f'Analysis status can\'t be set to RUNNING. '
-                    f'Its status should be "{statuses[Analysis.QUEUED]}" but it is "{statuses[locked_analysis.status]}"'
+                    f'Its status should be {valid_statuses_str} but it is "{statuses[locked_analysis.status]}"'
                 )
 
     def set_analysis_status_to_completed(self):
