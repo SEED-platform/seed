@@ -385,7 +385,6 @@ class AnalysisPipeline(abc.ABC):
         """Abstract method which should start the analysis, e.g. make HTTP requests
         to the analysis service.
 
-        :param analysis_id: int
         :returns: str, ProgressData.result
         """
         pass

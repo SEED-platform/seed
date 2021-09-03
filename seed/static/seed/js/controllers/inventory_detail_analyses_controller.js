@@ -45,13 +45,22 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
+      $scope.tab = 0;
 
       const refresh_analyses = function () {
         analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
           .then(function (data) {
             $scope.analyses = data.analyses;
+            $scope.analyses_by_type = {};
+            for (let analysis in $scope.analyses) {
+              if (!$scope.analyses_by_type[$scope.analyses[analysis].service]) {
+                $scope.analyses_by_type[$scope.analyses[analysis].service] = [];
+              }
+              $scope.analyses_by_type[$scope.analyses[analysis].service].push($scope.analyses[analysis]);
+            }
           });
       };
+      refresh_analyses();
 
       $scope.start_analysis = function (analysis_id) {
         const analysis = $scope.analyses.find(function (a) {
