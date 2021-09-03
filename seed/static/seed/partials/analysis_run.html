@@ -25,7 +25,7 @@
     <div class="section">
         <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <div ng-if="analysis.service === 'BSyncr' && !angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
+                    <div ng-if="analysis.service !== 'BETTER' && !angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
                         <pre>{$:: view.parsed_results | json $}</pre>
                     </div>
                     <div ng-repeat="file in view.output_files | filter:filter_params:strict">
