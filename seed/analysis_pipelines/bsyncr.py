@@ -17,7 +17,6 @@ from seed.analysis_pipelines.pipeline import (
     StopAnalysisTaskChain
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
     AnalysisInputFile,
@@ -31,7 +30,6 @@ from django.core.files.base import ContentFile, File as BaseFile
 from django.core.files.images import ImageFile
 from django.db.models import Count
 from django.conf import settings
-from django.utils import timezone as tz
 
 from celery import chain, shared_task
 
@@ -135,7 +133,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     :param analysis_view_ids_by_property_view_id: dictionary[int:int]
     :param analysis_id: int
     :returns: void
-    """    
+    """
     analysis = Analysis.objects.get(id=analysis_id)
     pipeline = BsyncrPipeline(analysis.id)
     progress_data = pipeline.get_progress_data(analysis)
@@ -342,7 +340,7 @@ def _start_analysis(self, analysis_id):
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Sending requests to bsyncr service')
 
-    analysis = Analysis.objects.get(id=analysis_id)    
+    analysis = Analysis.objects.get(id=analysis_id)
 
     ANALYSIS_STATUS_CHECK_FREQUENCY = 5
     bsyncr_model_type = BSYNCR_MODEL_TYPE_MAP[analysis.configuration['model_type']]
