@@ -170,9 +170,17 @@ describe('controller: inventory_detail_controller', function () {
       current_profile: undefined,
       labels_payload: mock_label_payload,
       organization_payload: {
-        id: 1,
-        display_significant_figures: 2,
-      }
+        organization: {
+          id: 1,
+          display_significant_figures: 2,
+        },
+      },
+      analyses_payload: {
+        analyses: []
+      },
+      users_payload: {
+        users: []
+      },
     });
   }
 
