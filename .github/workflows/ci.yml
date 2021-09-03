@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - 'develop'
+      - 'main'
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
