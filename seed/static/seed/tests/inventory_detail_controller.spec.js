@@ -182,6 +182,9 @@ describe('controller: inventory_detail_controller', function () {
       analyses_payload: {
         analyses: []
       },
+      users_payload: {
+        users: []
+      },
     });
   }
 
