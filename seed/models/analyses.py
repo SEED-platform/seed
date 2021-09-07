@@ -88,7 +88,11 @@ class Analysis(models.Model):
             for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
         }
         property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
-        extra_data = property_views_by_property_cycle_id[property_cycle_id].state.extra_data
+        original_property_view = property_views_by_property_cycle_id[property_cycle_id]
+        extra_data = {}
+        if original_property_view.state is not None:
+            if original_property_view.state.extra_data is not None:
+                extra_data = property_views_by_property_cycle_id[property_cycle_id].state.extra_data
 
         # Bsynchr
         if self.service == self.BSYNCR:
