@@ -7,7 +7,6 @@
 import logging
 from celery import chain, shared_task
 from django.db.models import Q, Count
-from django.utils import timezone as tz
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -15,7 +14,6 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
     AnalysisMessage,
@@ -161,17 +159,15 @@ class EUIPipeline(AnalysisPipeline):
                 debug_message=''
             )
 
-        progress_data = ProgressData('prepare-analysis-eui', self._analysis_id)
+        progress_data = self.get_progress_data()
         progress_data.total = 3
         progress_data.save()
 
         chain(
-            task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
-            _finish_preparation.s(meter_readings_by_property_view, errors_by_property_view_id, self._analysis_id, progress_data.key),
-            _run_analysis.s(self._analysis_id, progress_data.key)
+            task_create_analysis_property_views.si(self._analysis_id, property_view_ids),
+            _finish_preparation.s(meter_readings_by_property_view, errors_by_property_view_id, self._analysis_id),
+            _run_analysis.s(self._analysis_id)
         ).apply_async()
-
-        return progress_data.result()
 
     def _start_analysis(self):
         return None
@@ -179,10 +175,9 @@ class EUIPipeline(AnalysisPipeline):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readings_by_property_view, errors_by_property_view_id, analysis_id, progress_data_key):
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.READY
-    analysis.save()
+def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readings_by_property_view, errors_by_property_view_id, analysis_id):
+    pipeline = EUIPipeline(analysis_id)
+    pipeline.set_analysis_status_to_ready('Ready to run EUI analysis')
 
     # attach errors to respective analysis_property_views
     if errors_by_property_view_id:
@@ -203,21 +198,17 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readi
         analysis_view_id = analysis_view_ids_by_property_view_id[property_view]
         meter_readings_by_analysis_property_view[analysis_view_id] = meter_readings_by_property_view[property_view]
 
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
-
     return meter_readings_by_analysis_property_view
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)
-def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, progress_data_key):
+def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
+    pipeline = EUIPipeline(analysis_id)
+    progress_data = pipeline.set_analysis_status_to_running()
+    progress_data.step('Calculating EUI')
+
     analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.RUNNING
-    analysis.start_time = tz.now()
-    analysis.save()
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.step('Caclulating EUI')
 
     Column.objects.get_or_create(
         is_extra_data=True,
@@ -248,8 +239,4 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id, p
         property_view.state.save()
 
     # all done!
-    analysis.status = Analysis.COMPLETED
-    analysis.end_time = tz.now()
-    analysis.save()
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
+    pipeline.set_analysis_status_to_completed()

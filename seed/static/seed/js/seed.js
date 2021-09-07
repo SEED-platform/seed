@@ -41,6 +41,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.admin',
   'BE.seed.controller.analyses',
   'BE.seed.controller.analysis',
+  'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
   'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
