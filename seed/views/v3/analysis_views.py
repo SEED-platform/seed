@@ -5,13 +5,14 @@
 :author
 """
 from drf_yasg.utils import swagger_auto_schema
+from django.db.models import Q
 from django.http import JsonResponse
 from rest_framework import viewsets
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import AnalysisPropertyView
+from seed.models import AnalysisPropertyView, PropertyView
 from seed.serializers.analysis_property_views import AnalysisPropertyViewSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
@@ -36,12 +37,21 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'message': "Requested analysis doesn't exist in this organization."
             }, status=HTTP_409_CONFLICT)
         serialized_views = []
+        original_views = {}
         for view in views_queryset:
             serialized_view = AnalysisPropertyViewSerializer(view).data
             serialized_views.append(serialized_view)
+            property_view_query = Q(property=view.property) & Q(cycle=view.cycle)
+            property_views_by_property_cycle_id = {
+                (pv.property.id, pv.cycle.id): pv
+                for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
+            }
+            original_views[view.id] = property_views_by_property_cycle_id[(view.property.id, view.cycle.id)].id
+
         return JsonResponse({
             'status': 'success',
-            'views': serialized_views
+            'views': serialized_views,
+            'original_views': original_views
         })
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
@@ -58,8 +68,15 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'error',
                 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."
             }, status=HTTP_409_CONFLICT)
+        property_view_query = Q(property=view.property) & Q(cycle=view.cycle)
+        property_views_by_property_cycle_id = {
+            (pv.property.id, pv.cycle.id): pv
+            for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
+        }
+        original_view = property_views_by_property_cycle_id[(view.property.id, view.cycle.id)].id
 
         return JsonResponse({
             'status': 'success',
-            'view': AnalysisPropertyViewSerializer(view).data
+            'view': AnalysisPropertyViewSerializer(view).data,
+            'original_view': original_view
         })
