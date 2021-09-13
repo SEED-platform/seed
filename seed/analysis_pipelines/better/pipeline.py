@@ -44,7 +44,6 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Meter,
-    PropertyView
 )
 
 

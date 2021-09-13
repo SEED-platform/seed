@@ -6,7 +6,7 @@
 """
 import logging
 from celery import chain, shared_task
-from django.db.models import Q, Count
+from django.db.models import Count
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
