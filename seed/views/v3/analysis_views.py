@@ -36,22 +36,20 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'error',
                 'message': "Requested analysis doesn't exist in this organization."
             }, status=HTTP_409_CONFLICT)
+
         serialized_views = []
-        original_views = {}
+        property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
         for view in views_queryset:
             serialized_view = AnalysisPropertyViewSerializer(view).data
             serialized_views.append(serialized_view)
-            property_view_query = Q(property=view.property) & Q(cycle=view.cycle)
-            property_views_by_property_cycle_id = {
-                (pv.property.id, pv.cycle.id): pv
-                for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
-            }
-            original_views[view.id] = property_views_by_property_cycle_id[(view.property.id, view.cycle.id)].id
 
         return JsonResponse({
             'status': 'success',
             'views': serialized_views,
-            'original_views': original_views
+            'original_views': {
+                apv_id: property_view.id if property_view is not None else None
+                for apv_id, property_view in property_views_by_apv_id.items()
+            }
         })
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
@@ -68,15 +66,12 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
                 'status': 'error',
                 'message': "Requested analysis property view doesn't exist in this organization and/or analysis."
             }, status=HTTP_409_CONFLICT)
-        property_view_query = Q(property=view.property) & Q(cycle=view.cycle)
-        property_views_by_property_cycle_id = {
-            (pv.property.id, pv.cycle.id): pv
-            for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
-        }
-        original_view = property_views_by_property_cycle_id[(view.property.id, view.cycle.id)].id
+
+        property_view_by_apv_id = AnalysisPropertyView.get_property_views([view])
+        original_view = property_view_by_apv_id[view.id]
 
         return JsonResponse({
             'status': 'success',
             'view': AnalysisPropertyViewSerializer(view).data,
-            'original_view': original_view
+            'original_view': original_view.id if original_view is not None else None
         })

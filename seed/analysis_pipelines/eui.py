@@ -218,23 +218,28 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         table_name='PropertyState',
     )
 
-    for analysis_property_view_id in meter_readings_by_analysis_property_view:
-        analysis_property_view = AnalysisPropertyView.objects.get(id=analysis_property_view_id)
+    # for some reason the keys, which should be ids (ie integers), get turned into strings
+    # let's fix that here
+    meter_readings_by_analysis_property_view = {int(key): value for key, value in meter_readings_by_analysis_property_view.items()}
+
+    analysis_property_view_ids = list(meter_readings_by_analysis_property_view.keys())
+    # prefetching property and cycle b/c .get_property_views() uses them (this is not "clean" but whatever)
+    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids).prefetch_related('property', 'cycle', 'property_state')
+    property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
+
+    for analysis_property_view in analysis_property_views:
         area = analysis_property_view.property_state.gross_floor_area.magnitude
-        eui = _calculate_eui(meter_readings_by_analysis_property_view[analysis_property_view_id], area)
+        meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
+        eui = _calculate_eui(meter_readings, area)
+
         analysis_property_view.parsed_results = {
             'EUI': eui,
-            'Total Yearly Meter Reading': sum(meter_readings_by_analysis_property_view[analysis_property_view_id]),
+            'Total Yearly Meter Reading': sum(meter_readings),
             'Gross Floor Area': area
         }
         analysis_property_view.save()
-        property_view_query = Q(property=analysis_property_view.property) & Q(cycle=analysis_property_view.cycle)
-        property_views_by_property_cycle_id = {
-            (pv.property.id, pv.cycle.id): pv
-            for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
-        }
-        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
-        property_view = property_views_by_property_cycle_id[property_cycle_id]
+
+        property_view = property_views_by_apv_id[analysis_property_view.id]
         property_view.state.extra_data.update({'analysis_eui': eui})
         property_view.state.save()
 
