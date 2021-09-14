@@ -7,7 +7,7 @@
 import logging
 import copy
 
-from django.db.models import Q, Count
+from django.db.models import Count
 from django.core.files.base import ContentFile
 from celery import chain, shared_task
 
@@ -44,7 +44,6 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Meter,
-    PropertyView
 )
 
 
@@ -359,21 +358,10 @@ def _process_results(self, analysis_id):
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
-    property_view_query = Q()
-    for analysis_property_view in analysis_property_views:
-        property_view_query |= (
-            Q(property=analysis_property_view.property)
-            & Q(cycle=analysis_property_view.cycle)
-        )
-    # get original property views keyed by canonical property id and cycle
-    property_views_by_property_cycle_id = {
-        (pv.property.id, pv.cycle.id): pv
-        for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
-    }
+    property_view_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     for analysis_property_view in analysis_property_views:
-        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
-        property_view = property_views_by_property_cycle_id[property_cycle_id]
+        property_view = property_view_by_apv_id[analysis_property_view.id]
         data = copy.deepcopy(analysis_property_view.parsed_results)
         data.update({'better_seed_analysis_id': analysis_id})
         _update_original_property_state(

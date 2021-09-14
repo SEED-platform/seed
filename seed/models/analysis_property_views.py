@@ -90,3 +90,32 @@ class AnalysisPropertyView(models.Model):
                     ))
 
         return analysis_property_view_ids, failures
+
+    @classmethod
+    def get_property_views(cls, analysis_property_views):
+        """Get PropertyViews related to the AnalysisPropertyViews. If no PropertyView
+        is found for an AnalysisPropertyView, the value will be None for that key.
+
+        :param analysis_property_views: list[AnalysisPropertyView]
+        :return: dict{int: PropertyView}, PropertyViews keyed by the related AnalysisPropertyView id
+        """
+        # build a query to find PropertyViews linked to the canonical property and cycles we're interested in
+        property_view_query = models.Q()
+        for analysis_property_view in analysis_property_views:
+            property_view_query |= (
+                models.Q(property=analysis_property_view.property)
+                & models.Q(cycle=analysis_property_view.cycle)
+            )
+        property_views = PropertyView.objects.filter(property_view_query).prefetch_related('state')
+
+        # get original property views keyed by canonical property id and cycle
+        property_views_by_property_cycle_id = {
+            (pv.property.id, pv.cycle.id): pv
+            for pv in property_views
+        }
+
+        return {
+            # we use .get() here because the PropertyView might not exist anymore!
+            apv.id: property_views_by_property_cycle_id.get((apv.property.id, apv.cycle.id), None)
+            for apv in analysis_property_views
+        }
