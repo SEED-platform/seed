@@ -10,7 +10,9 @@
     </div>
     <div class="section_content_container">
         <div class="section_content">
-            <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+            <div ng-controller="analysis_details_controller">
+                <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+            </div>
             <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
         </div>
     </div>
@@ -25,12 +27,18 @@
     <div class="section">
         <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <div ng-if="!angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
+                    <div ng-if="analysis.service !== 'BETTER' && !angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
                         <pre>{$:: view.parsed_results | json $}</pre>
                     </div>
                     <div ng-repeat="file in view.output_files | filter:filter_params:strict">
                         <div ng-if="file.content_type == 'html'">
                             <iframe class="analysis-results" scrolling="no" src="{$:: file.file $}" onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"></iframe>
+                            <div ng-repeat-end ng-if="!$last">
+                                <br />
+                            </div>
+                        </div>
+                        <div ng-if="file.content_type == 'PNG'" style='width: 50%; min-width: 200px;'>
+                            <img src="{$:: file.file $}" style="width: 100%"></img>
                             <div ng-repeat-end ng-if="!$last">
                                 <br />
                             </div>

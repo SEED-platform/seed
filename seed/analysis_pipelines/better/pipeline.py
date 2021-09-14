@@ -5,9 +5,9 @@
 :author
 """
 import logging
+import copy
 
-from django.db.models import Q, Count
-from django.utils import timezone as tz
+from django.db.models import Count
 from django.core.files.base import ContentFile
 from celery import chain, shared_task
 
@@ -37,7 +37,6 @@ from seed.analysis_pipelines.better.helpers import (
     _update_original_property_state,
 )
 
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
     AnalysisInputFile,
@@ -45,7 +44,6 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Meter,
-    PropertyView
 )
 
 
@@ -83,7 +81,7 @@ class BETTERPipeline(AnalysisPipeline):
     methods.
     """
 
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis=False):
         """Internal implementation for preparing better analysis"""
         analysis = Analysis.objects.get(id=self._analysis_id)
         organization = analysis.organization
@@ -107,7 +105,7 @@ class BETTERPipeline(AnalysisPipeline):
             raise AnalysisPipelineException(
                 f'Analysis configuration is invalid: {"; ".join(validation_errors)}')
 
-        progress_data = ProgressData('prepare-analysis-better', self._analysis_id)
+        progress_data = self.get_progress_data(analysis)
 
         # Steps:
         # 1) ...starting
@@ -117,17 +115,15 @@ class BETTERPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
-            _prepare_all_properties.s(self._analysis_id, progress_data.key),
-            _finish_preparation.si(self._analysis_id, progress_data.key)
+            task_create_analysis_property_views.si(self._analysis_id, property_view_ids),
+            _prepare_all_properties.s(self._analysis_id),
+            _finish_preparation.si(self._analysis_id, start_analysis)
         ).apply_async()
-
-        return progress_data.result()
 
     def _start_analysis(self):
         """Internal implementation for starting the BETTER analysis"""
 
-        progress_data = ProgressData('start-analysis-better', self._analysis_id)
+        progress_data = self.get_progress_data()
 
         # Steps:
         # 1) ...starting
@@ -137,29 +133,28 @@ class BETTERPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            _start_analysis.si(self._analysis_id, progress_data.key),
-            _process_results.si(self._analysis_id, progress_data.key),
-            _finish_analysis.si(self._analysis_id, progress_data.key),
+            _start_analysis.si(self._analysis_id),
+            _process_results.si(self._analysis_id),
+            _finish_analysis.si(self._analysis_id),
         ).apply_async()
-
-        return progress_data.result()
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progress_data_key):
+def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysis_id):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
-    :param analysis_property_view_ids: list[int]
+    :param analysis_view_ids_by_property_view_id: dictionary[int:int]
     :param analysis_id: int
-    :param progress_data_key: str
     :returns: void
     """
-    progress_data = ProgressData.from_key(progress_data_key)
+    analysis = Analysis.objects.get(id=analysis_id)
+    pipeline = BETTERPipeline(analysis.id)
+
+    progress_data = pipeline.get_progress_data(analysis)
     progress_data.step('Creating files for analysis')
 
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
+    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids_by_property_view_id.values())
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
         meters = (
@@ -206,41 +201,37 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
         input_file_paths.append(analysis_input_file.file.path)
 
     if len(input_file_paths) == 0:
-        pipeline = BETTERPipeline(analysis.id)
         message = 'No files were able to be prepared for the analysis'
-        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        pipeline.fail(message, logger)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _finish_preparation(self, analysis_id, progress_data_key):
+def _finish_preparation(self, analysis_id, start_analysis):
     """A Celery task which finishes the preparation for BETTER analysis
 
     :param analysis_id: int
-    :param progress_data_key: str
+    :param start_analysis: bool
     """
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.READY
-    analysis.save()
+    pipeline = BETTERPipeline(analysis_id)
+    pipeline.set_analysis_status_to_ready('Analysis is ready to be started')
 
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
+    if start_analysis:
+        pipeline = BETTERPipeline(analysis_id)
+        pipeline.start_analysis()
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.QUEUED)
-def _start_analysis(self, analysis_id, progress_data_key):
+def _start_analysis(self, analysis_id):
     """Start better analysis by making requests to the service"""
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.RUNNING
-    analysis.start_time = tz.now()
-    analysis.save()
-
-    progress_data = ProgressData.from_key(progress_data_key)
+    pipeline = BETTERPipeline(analysis_id)
+    progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Sending requests to BETTER service')
 
+    analysis = Analysis.objects.get(id=analysis_id)
     client = BETTERClient(analysis.organization.better_analysis_api_key)
     context = BETTERPipelineContext(analysis, progress_data, client)
 
@@ -291,16 +282,40 @@ def _start_analysis(self, analysis_id, progress_data_key):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
-def _process_results(self, analysis_id, progress_data_key):
+def _process_results(self, analysis_id):
     """Store results from the analysis in the original PropertyState"""
+    pipeline = BETTERPipeline(analysis_id)
     analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.RUNNING
-    analysis.save()
 
-    progress_data = ProgressData.from_key(progress_data_key)
+    progress_data = pipeline.get_progress_data(analysis)
     progress_data.step('Processing results')
 
-    # create the results Columns if the don't already exist
+    # store all measure recommendations
+    ee_measure_names = [
+        'Upgrade Windows',
+        'Reduce Plug Loads',
+        'Add/Fix Economizers',
+        'Decrease Ventilation',
+        'Reduce Lighting Load',
+        'Check Fossil Baseload',
+        'Decrease Infiltration',
+        'Decrease Heating Setpoints',
+        'Eliminate Electric Heating',
+        'Increase Cooling Setpoints',
+        'Reduce Equipment Schedules',
+        'Add Wall/Ceiling Insulation',
+        'Increase Cooling System Efficiency',
+        'Increase Heating System Efficiency'
+    ]
+    ee_measure_column_data_paths = [
+        ExtraDataColumnPath(
+            f'better_recommendation_{ee_measure_name.lower().replace(" ", "_")}',
+            f'BETTER Recommendation: {ee_measure_name}',
+            f'assessment.ee_measures.{ee_measure_name}'
+        ) for ee_measure_name in ee_measure_names
+    ]
+
+    # gather all columns to store
     column_data_paths = [
         ExtraDataColumnPath(
             'better_cost_savings_combined',
@@ -312,8 +327,26 @@ def _process_results(self, analysis_id, progress_data_key):
             'BETTER Potential Energy Savings (kWh)',
             'assessment.assessment_energy_use.energy_savings_combined'
         ),
-    ]
+        ExtraDataColumnPath(
+            'better_ghg_reductions_combined',
+            'BETTER Potential GHG Emissions Reduction (kgCO2e)',
+            'assessment.assessment_energy_use.ghg_reductions_combined'
+        ),
+        ExtraDataColumnPath(
+            # we will manually add this to the data later (it's not part of BETTER's results)
+            # Provides info so user knows which SEED analysis last updated these stored values
+            'better_seed_analysis_id',
+            'BETTER Analysis Id',
+            'better_seed_analysis_id'
+        ),
+        ExtraDataColumnPath(
+            'better_min_model_r_squared',
+            'BETTER Min Model R^2',
+            'min_model_r_squared'
+        ),
+    ] + ee_measure_column_data_paths
 
+    # create columns if they don't already exist
     for column_data_path in column_data_paths:
         Column.objects.get_or_create(
             is_extra_data=True,
@@ -325,40 +358,25 @@ def _process_results(self, analysis_id, progress_data_key):
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related('property', 'cycle').all()
-    property_view_query = Q()
-    for analysis_property_view in analysis_property_views:
-        property_view_query |= (
-            Q(property=analysis_property_view.property)
-            & Q(cycle=analysis_property_view.cycle)
-        )
-    # get original property views keyed by canonical property id and cycle
-    property_views_by_property_cycle_id = {
-        (pv.property.id, pv.cycle.id): pv
-        for pv in PropertyView.objects.filter(property_view_query).prefetch_related('state')
-    }
+    property_view_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     for analysis_property_view in analysis_property_views:
-        property_cycle_id = (analysis_property_view.property.id, analysis_property_view.cycle.id)
-        property_view = property_views_by_property_cycle_id[property_cycle_id]
+        property_view = property_view_by_apv_id[analysis_property_view.id]
+        data = copy.deepcopy(analysis_property_view.parsed_results)
+        data.update({'better_seed_analysis_id': analysis_id})
         _update_original_property_state(
             property_view.state,
-            analysis_property_view.parsed_results,
+            data,
             column_data_paths
         )
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
-def _finish_analysis(self, analysis_id, progress_data_key):
+def _finish_analysis(self, analysis_id):
     """A Celery task which finishes the analysis run
 
     :param analysis_id: int
-    :param progress_data_key: str
     """
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.COMPLETED
-    analysis.end_time = tz.now()
-    analysis.save()
-
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
+    pipeline = BETTERPipeline(analysis_id)
+    pipeline.set_analysis_status_to_completed()

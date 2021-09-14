@@ -1,0 +1,5 @@
+<div class="progress_bar_container">
+    <div class="progress_bar_copy_top" translate="UPLOADING_PROGRESS" translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+    <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+</div

@@ -16,8 +16,10 @@
                     <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
                         <option ng-option value='BSyncr' selected="selected">BSyncr</option>
                         <option ng-option value='BETTER' selected="selected">BETTER</option>
+                        <option ng-option value='EUI' selected="selected">EUI</option>
                     </select>
                 </div>
+
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
@@ -26,6 +28,7 @@
                         </option>
                     </select>
                 </div>
+
                 <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
                     <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
                     <div class="form-group" style="padding-top: 1em">
@@ -57,9 +60,9 @@
                             <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em">
                                 <label class="control-label sectionLabel text-muted">
                                     Minimum Model R Squared
-                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'R² is the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"></i>
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'R² is a value from 0 to 1 that represents the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"></i>
                                 </label>
-                                <input ng-model="new_analysis.configuration.min_r_squared" type="number" class="form-control" step=".01" min="0" max="1" >
+                                <input ng-model="new_analysis.configuration.min_r_squared" type="number" class="form-control" ng-init="new_analysis.configuration.min_r_squared=0.6" ng-value="0.6" step=".01" min="0" max="1">
                             </div>
                             <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em">
                                 <label class="control-label sectionLabel text-muted">
@@ -71,9 +74,8 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create
-                    Analysis
-                </button>
+
+                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
             </form>
         </div>
     </div>

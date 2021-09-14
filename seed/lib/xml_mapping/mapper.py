@@ -9,7 +9,7 @@ from __future__ import absolute_import
 import logging
 
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2_0
+from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2
 
 _log = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def default_buildingsync_profile_mappings():
         "kBtu/m**2/year",
     ]
 
-    mapping = BASE_MAPPING_V2_0.copy()
+    mapping = BASE_MAPPING_V2.copy()
     base_path = mapping['property']['xpath'].rstrip('/')
     result = []
     for col_name, col_info in mapping['property']['properties'].items():

@@ -5,6 +5,8 @@ from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.models import Meter
 
+from quantityfield import ureg
+
 
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
 # to link it to SEED's AnalysisPropertyViews
@@ -61,7 +63,6 @@ def _build_better_input(analysis_property_view, meters):
     :param meter: Meter
     :returns: tuple(bytes, list[str])
     """
-    # TODO Refine ID assignment
     errors = []
     property_state = analysis_property_view.property_state
 
@@ -78,10 +79,20 @@ def _build_better_input(analysis_property_view, meters):
     if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
         errors.append(
             f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
+
+    valid_meters_and_readings = []
     for meter in meters:
-        for meter_reading in meter.meter_readings.all():
-            if meter_reading.reading is None:
-                errors.append(f'{meter}: MeterReading starting at {meter_reading.start_time} has no reading value.')
+        readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+        if readings.count() >= 12:
+            valid_meters_and_readings.append({
+                'meter': meter,
+                'readings': readings,
+            })
+    if len(valid_meters_and_readings) == 0:
+        errors.append(
+            'BETTER analysis requires at least one meter with 12 consecutive readings with values >= 1.0'
+        )
+
     if errors:
         return None, errors
 
@@ -94,7 +105,11 @@ def _build_better_input(analysis_property_view, meters):
 
     property_type = BETTER_TO_BSYNC_PROPERTY_TYPE[property_state.property_type]
 
-    gross_floor_area = str(int(property_state.gross_floor_area.magnitude))
+    gfa = property_state.gross_floor_area
+    if gfa.units != ureg.feet**2:
+        gross_floor_area = str(gfa.to(ureg.feet ** 2).magnitude)
+    else:
+        gross_floor_area = str(gfa.magnitude)
 
     XSI_URI = 'http://www.w3.org/2001/XMLSchema-instance'
     nsmap = {
@@ -171,12 +186,12 @@ def _build_better_input(analysis_property_view, meters):
                                         *[
                                             E.ResourceUse(
                                                 {'ID': f'ResourceUse-{meter_idx:03}'},
-                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter.type]),
+                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter_and_readings['meter'].type]),
                                                 # SEED stores all meter readings as kBtu
                                                 E.ResourceUnits('kBtu'),
                                                 E.EndUse('All end uses')
                                             )
-                                            for meter_idx, meter in enumerate(meters)
+                                            for meter_idx, meter_and_readings in enumerate(valid_meters_and_readings)
                                         ]
                                     ),
                                     E.TimeSeriesData(
@@ -190,8 +205,8 @@ def _build_better_input(analysis_property_view, meters):
                                                 E.IntervalReading(str(reading.reading)),
                                                 E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
                                             )
-                                            for meter_idx, meter in enumerate(meters) \
-                                            for reading_idx, reading in enumerate(meter.meter_readings.all())
+                                            for meter_idx, meter_and_readings in enumerate(valid_meters_and_readings) \
+                                            for reading_idx, reading in enumerate(meter_and_readings['readings'])
                                         ]
                                     ),
                                     E.LinkedPremises(

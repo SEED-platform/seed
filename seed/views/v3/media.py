@@ -100,7 +100,8 @@ class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
                 filename = match.groups()[0] + ext
 
             response = HttpResponse()
-            response['Content-Disposition'] = f'attachment; filename={filename}'
+            if ext != '.html':
+                response['Content-Disposition'] = f'attachment; filename={filename}'
             response['X-Accel-Redirect'] = f'/protected/{filepath}'
             return response
         else:

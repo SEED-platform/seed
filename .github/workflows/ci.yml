@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - 'develop'
+      - 'main'
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
@@ -16,9 +19,6 @@ jobs:
     strategy:
       matrix:
         test_env: [django, functional, api]
-    env:
-      # Available versions: https://www.ubuntuupdates.org/package/google_chrome/stable/main/base/google-chrome-stable
-      CHROME_VERSION: 92.0.4515.107
     steps:
       -
         uses: actions/checkout@v2
@@ -58,7 +58,7 @@ jobs:
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install -y /tmp/chrome.deb
           google-chrome --version
       -
@@ -82,6 +82,8 @@ jobs:
         env:
           DISPLAY: ":99"
         run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
+          echo "Getting webdriver for chrome version ${CHROME_VERSION}"
           ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js

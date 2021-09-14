@@ -1,0 +1,61 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container">
+
+        </div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-summary-controls">
+    <div class="form-group settings_profile" style="padding-top: 20px; display: flex; justify-content: space-between;">
+        <span>
+            <label>{$:: 'Cycle' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control input-sm" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
+                </select>
+            </div>
+        </span>
+    </div>
+</div>
+
+<div class="section inventory-summary">
+    <div class="section_content_container">
+        <div class="section_content container-fluid">
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <table class="zebra">
+                        <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Count</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="item in table_data">
+                            <td>{$item.text$}</td>
+                            <td>{$item.count$}</td>
+                        </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div id="chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

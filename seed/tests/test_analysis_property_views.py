@@ -78,6 +78,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=[p.id for p in self.property_views_a],
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(failures))
@@ -114,6 +115,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(failures))
@@ -132,6 +134,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=bad_property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(analysis_view_ids))
@@ -150,6 +153,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(len(analysis_view_ids), len(self.property_views_a))

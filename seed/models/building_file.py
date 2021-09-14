@@ -213,6 +213,7 @@ class BuildingFile(models.Model):
             join.save()
 
         # add in scenarios
+        linked_meters = []
         for s in data.get('scenarios', []):
             # measures = models.ManyToManyField(PropertyMeasure)
 
@@ -281,6 +282,30 @@ class BuildingFile(models.Model):
             # meters
             energy_types = dict(Meter.ENERGY_TYPES)
             for m in s.get('meters', []):
+                num_skipped_readings = 0
+                valid_readings = []
+                for mr in m.get('readings', []):
+                    is_usable = (
+                        mr.get('start_time') is not None
+                        and mr.get('end_time') is not None
+                        and mr.get('reading') is not None
+                    )
+                    if is_usable:
+                        valid_readings.append(mr)
+                    else:
+                        num_skipped_readings += 1
+
+                if len(valid_readings) == 0:
+                    # skip this meter
+                    messages['warnings'].append(f'Skipped meter {m.get("source_id")} because it had no valid readings')
+                    continue
+
+                if num_skipped_readings > 0:
+                    messages['warnings'].append(
+                        f'Skipped {num_skipped_readings} readings due to missing start time,'
+                        f' end time, or reading value for meter {m.get("source_id")}'
+                    )
+
                 # print("BUILDING FILE METER: {}".format(m))
                 # check by scenario_id and source_id
                 meter, _ = Meter.objects.get_or_create(
@@ -295,6 +320,7 @@ class BuildingFile(models.Model):
                 if meter.is_virtual is None:
                     meter.is_virtual = False
                 meter.save()
+                linked_meters.append(meter)
 
                 # meterreadings
                 if meter.type in energy_types:
@@ -302,7 +328,8 @@ class BuildingFile(models.Model):
                 else:
                     meter_type = None
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
-                readings = {
+
+                valid_reading_models = {
                     MeterReading(
                         start_time=mr.get('start_time'),
                         end_time=mr.get('end_time'),
@@ -311,10 +338,9 @@ class BuildingFile(models.Model):
                         meter_id=meter.id,
                         conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
                     )
-                    for mr in m.get('readings', [])
-                    if mr.get('start_time') is not None and mr.get('end_time') is not None
+                    for mr in valid_readings
                 }
-                MeterReading.objects.bulk_create(readings)
+                MeterReading.objects.bulk_create(valid_reading_models)
 
         # merge or create the property state's view
         if property_view:
@@ -357,5 +383,9 @@ class BuildingFile(models.Model):
         else:
             # invalid arguments, must pass both or neither
             return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+
+        for meter in linked_meters:
+            meter.property = property_view.property
+            meter.save()
 
         return True, property_state, property_view, messages

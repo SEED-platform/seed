@@ -41,6 +41,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     'dataset',
     'cycles',
     'organization',
+    'urls',
     function (
       $http,
       $scope,
@@ -58,8 +59,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       step,
       dataset,
       cycles,
-      organization
+      organization,
+      urls
     ) {
+      $scope.urls = urls;
       $scope.cycles = cycles.cycles;
       var cached_cycle = inventory_service.get_last_cycle();
       $scope.selectedCycle = _.find(cycles.cycles, {id: cached_cycle}) || _.first(cycles.cycles);
@@ -653,7 +656,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
                 // Toggle a meter import button if the imported file also has a meters tab
                 dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function(result) {
-                  $scope.import_file_reusable_for_meters = result;
+                  $scope.import_file_reusable_for_meters = result.data || false;
                 });
 
                 // If merges against existing exist, provide slightly different feedback

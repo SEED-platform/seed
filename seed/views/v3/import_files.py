@@ -9,7 +9,6 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from json import dumps
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 import xlrd
@@ -188,12 +187,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             )
             return JsonResponse({
                 'status': 'success',
-                'data': dumps(has_meter_tab)
+                'data': has_meter_tab
             })
         except xlrd.XLRDError:
             return JsonResponse({
                 'status': 'success',
-                'data': 'false'
+                'data': False
             })
 
     @swagger_auto_schema(

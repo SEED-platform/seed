@@ -41,6 +41,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.admin',
   'BE.seed.controller.analyses',
   'BE.seed.controller.analysis',
+  'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
   'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
@@ -78,13 +79,13 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_analyses_modal',
   'BE.seed.controller.inventory_detail_cycles',
   'BE.seed.controller.inventory_detail_settings',
-  'BE.seed.controller.inventory_detail_notes',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_detail_meters',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_map',
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
+  'BE.seed.controller.inventory_summary',
   'BE.seed.controller.label_admin',
   'BE.seed.controller.mapping',
   'BE.seed.controller.members',
@@ -92,6 +93,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.merge_modal',
   'BE.seed.controller.modified_modal',
   'BE.seed.controller.new_member_modal',
+  'BE.seed.controller.notes',
   'BE.seed.controller.organization',
   'BE.seed.controller.organization_settings',
   'BE.seed.controller.organization_sharing',
@@ -634,7 +636,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         name: 'inventory_detail_notes',
         url: '/{inventory_type:properties|taxlots}/{view_id:int}/notes',
         templateUrl: static_url + 'seed/partials/inventory_detail_notes.html',
-        controller: 'inventory_detail_notes_controller',
+        controller: 'notes_controller',
         resolve: {
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
@@ -650,13 +652,20 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          inventory_type: ['$stateParams', function ($stateParams) {
+            return $stateParams.inventory_type;
+          }],
+          view_id: ['$stateParams', function ($stateParams) {
+            return $stateParams.view_id;
+          }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);
           }],
           notes: ['$stateParams', 'note_service', 'user_service', function ($stateParams, note_service, user_service) {
             var organization_id = user_service.get_organization().id;
             return note_service.get_notes(organization_id, $stateParams.inventory_type, $stateParams.view_id);
-          }]
+          }],
+          $uibModalInstance: _.constant(undefined)
         }
       })
       .state({
@@ -1429,6 +1438,17 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         }
       })
       .state({
+        name: 'inventory_summary',
+        url: '/{inventory_type:properties|taxlots}/summary',
+        templateUrl: static_url + 'seed/partials/inventory_summary.html',
+        controller: 'inventory_summary_controller',
+        resolve: {
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+        }
+      })
+      .state({
         name: 'inventory_cycles',
         url: '/{inventory_type:properties|taxlots}/cycles',
         templateUrl: static_url + 'seed/partials/inventory_cycles.html',
@@ -1496,6 +1516,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
+          }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
@@ -1521,6 +1544,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
+          }],
+          users_payload: ['organization_service', 'user_service', '$stateParams', function (organization_service, user_service, $stateParams) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1609,7 +1635,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
             var view_id = $stateParams.view_id;
-            var promise = inventory_service.get_property(view_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting
