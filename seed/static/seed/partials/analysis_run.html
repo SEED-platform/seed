@@ -1,13 +1,16 @@
-<div ng-include="::urls.static_url + 'seed/partials/analyses_header.html'"></div>
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" class="page_action">
+                <i class="fa fa-chevron-left"></i>{$:: 'Analysis' | translate $}: {$:: analysis.name $}
+            </a>
+        </div>
+        <div class="page_title"><h1>{$:: analysis.name $}</a> - Run #{$:: view.id $}</h1></div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
 
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header fixed_height_short">
-            <div class="left section_action_container" style="width:100%;">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: <a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a> - Run #{$:: view.id $}</h2>
-            </div>
-        </div>
-    </div>
     <div class="section_content_container">
         <div class="section_content">
             <div ng-controller="analysis_details_controller">

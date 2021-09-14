@@ -403,7 +403,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/accounts/{organization_id:int}/analyses',
+        url: '/analyses/{organization_id:int}',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
@@ -434,7 +434,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}',
+        url: '/analyses/{organization_id:int}/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
@@ -470,7 +470,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/analyses/{organization_id:int}/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
