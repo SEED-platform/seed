@@ -88,7 +88,10 @@ class Analysis(models.Model):
 
         results = {}
         if property_id is not None:
-            results = self.analysispropertyview_set.filter(property=property_id).first().parsed_results
+            try:
+                results = self.analysispropertyview_set.get(property=property_id).parsed_results
+            except models.Model.DoesNotExist:
+                return []
         else:
             results = self.parsed_results
 
