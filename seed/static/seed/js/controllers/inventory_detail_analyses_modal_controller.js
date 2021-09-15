@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             $scope.new_analysis.configuration = {
               savings_target: null,
               benchmark_data: null,
-              min_r_squared: null,
+              min_model_r_squared: null,
               portfolio_analysis: false,
             }
             break;
@@ -81,7 +81,14 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         if (form.$invalid) {
           return;
         }
-        $scope.waiting_for_server = true
+        $scope.waiting_for_server = true;
+        ['benchmark_data', 'savings_target'].forEach((key, index) => {
+          if (key in $scope.new_analysis.configuration) {
+            if (key in $scope.new_analysis.configuration[key]) {
+              $scope.new_analysis.configuration[key] = $scope.new_analysis.configuration[key][key];
+            }
+          }
+        });
         analyses_service.create_analysis(
           $scope.new_analysis.name,
           $scope.new_analysis.service,
