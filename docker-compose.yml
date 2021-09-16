@@ -32,6 +32,7 @@ services:
       - BSYNCR_SERVER_HOST
       - BSYNCR_SERVER_PORT
       - SERVER_EMAIL
+      - GOOGLE_RECAPTCHA_SECRET_KEY
       - POSTGRES_DB=seed
       - POSTGRES_PORT=5432
       - POSTGRES_USER=seed

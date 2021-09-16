@@ -68,6 +68,7 @@ services:
       - SECRET_KEY
       - SENTRY_JS_DSN
       - SENTRY_RAVEN_DSN
+      - GOOGLE_RECAPTCHA_SECRET_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
     depends_on:
       - db-redis
