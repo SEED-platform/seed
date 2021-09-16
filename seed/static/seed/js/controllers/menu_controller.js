@@ -194,6 +194,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.set_user_org = function (org) {
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
+        console.log($scope.menu.user.organization);
         $state.reload();
         init();
       };
