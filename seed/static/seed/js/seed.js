@@ -41,6 +41,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.admin',
   'BE.seed.controller.analyses',
   'BE.seed.controller.analysis',
+  'BE.seed.controller.analysis_details',
   'BE.seed.controller.analysis_run',
   'BE.seed.controller.api',
   'BE.seed.controller.column_mapping_profile_modal',
@@ -402,23 +403,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/accounts/{organization_id:int}/analyses',
+        url: '/analyses',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
-          analyses_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analyses_for_org($stateParams.organization_id);
+          analyses_payload: ['analyses_service', 'user_service', function (analyses_service, user_service) {
+            return analyses_service.get_analyses_for_org(user_service.get_organization().id);
           }],
-          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization($stateParams.organization_id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_organization_users({org_id: organization_id});
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-            var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
@@ -433,28 +432,27 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}',
+        url: '/analyses/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
-          analysis_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          analysis_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          messages_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization($stateParams.organization_id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization_users({org_id: $stateParams.organization_id});
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          views_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_views_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          views_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_views_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-            var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
@@ -469,28 +467,27 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/analyses/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
-          analysis_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          analysis_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          messages_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          view_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          view_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, user_service.get_organization().id);
           }],
-          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
-            return organization_service.get_organization(user_service.get_organization().id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', 'user_service', function (organization_service, $stateParams, user_service) {
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', 'user_service', function (auth_service, $stateParams, $q, user_service) {
-            var organization_id = user_service.get_organization().id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
@@ -1515,6 +1512,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
+          }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns().then(function (columns) {
@@ -1540,6 +1540,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
+          }],
+          users_payload: ['organization_service', 'user_service', '$stateParams', function (organization_service, user_service, $stateParams) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
             var validProfileIds = _.map(profiles, 'id');
@@ -1628,7 +1631,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
             var view_id = $stateParams.view_id;
-            var promise = inventory_service.get_property(view_id);
+            if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
+            else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {
               if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
                 // Inventory item not found for current organization, redirecting

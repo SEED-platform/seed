@@ -6,6 +6,7 @@ from django.core.files.base import File as BaseFile
 
 from seed.analysis_pipelines.pipeline import StopAnalysisTaskChain, AnalysisPipelineException
 from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
+from seed.analysis_pipelines.utils import get_json_path
 from seed.models import (
     AnalysisMessage,
     AnalysisOutputFile,
@@ -313,30 +314,16 @@ def _update_original_property_state(property_state, data, data_paths):
     :param data: dict
     :param data_paths: list[ExtraDataColumnPath]
     """
-    def get_json_path(json_path, data):
-        """very naive JSON path implementation. WARNING: it only handles key names that are dot separated
-        e.g. 'key1.key2.key3'
-
-        :param json_path: str
-        :param data: dict
-        :return: value, None if path not valid for dict
-        """
-        json_path = json_path.split('.')
-        result = data
-        for key in json_path:
-            result = result.get(key, {})
-
-        if type(result) is dict and not result:
-            # path was probably not valid in the data...
-            return None
-        elif type(result) is float:
-            return round(result, 2)
-        else:
-            return result
-
     results = {
         data_path.column_name: get_json_path(data_path.json_path, data)
         for data_path in data_paths
     }
+
+    # round float values decimal places
+    results = {
+        col_name: (value if type(value) is not float else round(value, 2))
+        for col_name, value in results.items()
+    }
+
     property_state.extra_data.update(results)
     property_state.save()

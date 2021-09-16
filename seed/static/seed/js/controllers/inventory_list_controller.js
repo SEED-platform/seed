@@ -683,7 +683,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
-        width: '*',
+        width: $scope.get_label_column_width(),
         maxWidth: $scope.max_label_width
       });
 
@@ -1056,7 +1056,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
         modalInstance.result.then(function(data) {
           setTimeout(() => {
-            Notification.primary(`<a href="#/accounts/${$scope.organization.id}/analyses" style="color: #337ab7;">Click here to view your analyses</a>`)
+            Notification.primary(`<a href="#/analyses" style="color: #337ab7;">Click here to view your analyses</a>`)
           }, 1000)
         }, function() {
           // Modal dismissed, do nothing
