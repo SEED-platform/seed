@@ -35,21 +35,21 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       };
 
       $scope.bsyncr_models = [
-        {model_type: 'Simple Linear Regression'},
-        {model_type: 'Three Parameter Linear Model Cooling'},
-        {model_type: 'Three Parameter Linear Model Heating'},
-        {model_type: 'Four Parameter Linear Model'}
+        'Simple Linear Regression',
+        'Three Parameter Linear Model Cooling',
+        'Three Parameter Linear Model Heating',
+        'Four Parameter Linear Model'
       ];
 
       $scope.better_savings_targets = [
-        {savings_target: 'CONSERVATIVE'},
-        {savings_target: 'NOMINAL'},
-        {savings_target: 'AGGRESSIVE'}
+        'CONSERVATIVE',
+        'NOMINAL',
+        'AGGRESSIVE'
       ];
 
       $scope.better_benchmark_options = [
-        {benchmark_data: 'DEFAULT'},
-        {benchmark_data: 'GENERATE'}
+        'DEFAULT',
+        'GENERATE'
       ];
 
       $scope.initializeAnalysisConfig = () => {
@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             $scope.new_analysis.configuration = {
               savings_target: null,
               benchmark_data: null,
-              min_r_squared: null,
+              min_model_r_squared: null,
               portfolio_analysis: false,
             }
             break;
@@ -81,7 +81,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
         if (form.$invalid) {
           return;
         }
-        $scope.waiting_for_server = true
+        $scope.waiting_for_server = true;
         analyses_service.create_analysis(
           $scope.new_analysis.name,
           $scope.new_analysis.service,
