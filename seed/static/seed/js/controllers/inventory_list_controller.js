@@ -683,7 +683,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         exporterSuppressExport: true,
         pinnedLeft: true,
         visible: true,
-        width: '*',
+        width: $scope.get_label_column_width(),
         maxWidth: $scope.max_label_width
       });
 
