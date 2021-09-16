@@ -52,7 +52,12 @@ class RuleSerializer(serializers.ModelSerializer):
         from child orgs. In other words, Rule and associated Label should be
         from the same org.
         """
-        if label is not None and label.super_organization_id != self.instance.data_quality_check.organization_id:
+        # WARNING: assuming serialization can only be initialized by an HTTP request!
+        if 'request' not in self.context:
+            raise serializers.ValidationError('No `request` in serializer context, which is required.')
+
+        org_id = org_id = self.context['request'].parser_context['kwargs']['nested_organization_id']
+        if label is not None and label.super_organization_id != int(org_id):
             raise serializers.ValidationError(
                 f'Label with ID {label.id} not found in organization, {self.instance.data_quality_check.organization.name}.'
             )
