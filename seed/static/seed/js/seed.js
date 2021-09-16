@@ -403,23 +403,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analyses',
-        url: '/accounts/{organization_id:int}/analyses',
+        url: '/analyses',
         templateUrl: static_url + 'seed/partials/analyses.html',
         controller: 'analyses_controller',
         resolve: {
-          analyses_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analyses_for_org($stateParams.organization_id);
+          analyses_payload: ['analyses_service', 'user_service', function (analyses_service, user_service) {
+            return analyses_service.get_analyses_for_org(user_service.get_organization().id);
           }],
-          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization($stateParams.organization_id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            var organization_id = $stateParams.organization_id;
-            return organization_service.get_organization_users({org_id: organization_id});
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-            var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
@@ -434,28 +432,27 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}',
+        url: '/analyses/{analysis_id:int}',
         templateUrl: static_url + 'seed/partials/analysis.html',
         controller: 'analysis_controller',
         resolve: {
-          analysis_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          analysis_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          messages_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          organization_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization($stateParams.organization_id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', function (organization_service, $stateParams) {
-            return organization_service.get_organization_users({org_id: $stateParams.organization_id});
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
+            return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          views_payload: ['analyses_service', '$stateParams', function (analyses_service, $stateParams) {
-            return analyses_service.get_analysis_views_for_org($stateParams.analysis_id, $stateParams.organization_id);
+          views_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
+            return analyses_service.get_analysis_views_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', function (auth_service, $stateParams, $q) {
-            var organization_id = $stateParams.organization_id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
@@ -470,28 +467,27 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
       })
       .state({
         name: 'analysis_run',
-        url: '/accounts/{organization_id:int}/analyses/{analysis_id:int}/runs/{run_id:int}',
+        url: '/analyses/{analysis_id:int}/runs/{run_id:int}',
         templateUrl: static_url + 'seed/partials/analysis_run.html',
         controller: 'analysis_run_controller',
         resolve: {
-          analysis_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          analysis_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          messages_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          view_payload: ['analyses_service', '$stateParams', 'user_service', function (analyses_service, $stateParams, user_service) {
+          view_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, user_service.get_organization().id);
           }],
-          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
-            return organization_service.get_organization(user_service.get_organization().id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
-          users_payload: ['organization_service', '$stateParams', 'user_service', function (organization_service, $stateParams, user_service) {
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
-          auth_payload: ['auth_service', '$stateParams', '$q', 'user_service', function (auth_service, $stateParams, $q, user_service) {
-            var organization_id = user_service.get_organization().id;
-            return auth_service.is_authorized(organization_id, ['requires_owner', 'requires_member'])
+          auth_payload: ['auth_service', 'user_service', '$q', function (auth_service, user_service, $q) {
+            return auth_service.is_authorized(user_service.get_organization().id, ['requires_owner', 'requires_member'])
               .then(function (data) {
                 if (data.auth.requires_member) {
                   return data;
