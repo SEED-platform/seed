@@ -776,7 +776,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       // evaluate all derived columns and add the results to the table
       var evaluateDerivedColumns = function () {
-        const batch_size = 1000;
+        const batch_size = 100;
         const batched_inventory_ids = [];
         let batch_index = 0;
         while (batch_index < $scope.data.length) {
