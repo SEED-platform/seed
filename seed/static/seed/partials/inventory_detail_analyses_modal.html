@@ -40,7 +40,7 @@
                                 </label>
                                 <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
                                     <option ng-repeat="model in better_savings_targets" selected="selected"
-                                            ng-value=model>{$:: model.savings_target $}
+                                            ng-value=model>{$:: model $}
                                     </option>
                                 </select>
                             </div>
@@ -51,7 +51,7 @@
                                 </label>
                                 <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
                                     <option ng-repeat="model in better_benchmark_options" selected="selected"
-                                            ng-value=model>{$:: model.benchmark_data $}
+                                            ng-value=model>{$:: model $}
                                     </option>
                                 </select>
                             </div>
