@@ -24,7 +24,7 @@
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
                     <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
                         <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$::
-                            model.model_type $}
+                            model $}
                         </option>
                     </select>
                 </div>

@@ -35,10 +35,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       };
 
       $scope.bsyncr_models = [
-        {model_type: 'Simple Linear Regression'},
-        {model_type: 'Three Parameter Linear Model Cooling'},
-        {model_type: 'Three Parameter Linear Model Heating'},
-        {model_type: 'Four Parameter Linear Model'}
+        'Simple Linear Regression',
+        'Three Parameter Linear Model Cooling',
+        'Three Parameter Linear Model Heating',
+        'Four Parameter Linear Model'
       ];
 
       $scope.better_savings_targets = [
