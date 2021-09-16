@@ -28,7 +28,6 @@
     <div class="card-stats grow">
         <ul ng-if="(analysis.configuration | json) != '{}'" ng-repeat="(config, setting) in analysis.configuration">
             <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
-            <li ng-repeat="(key, value) in setting">{$:: key $} = {$:: value $}</li>
         </ul>
         <div ng-if="(analysis.configuration | json) == '{}'">
             No configuration.

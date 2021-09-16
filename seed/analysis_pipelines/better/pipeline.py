@@ -62,7 +62,7 @@ def _validate_better_config(analysis):
         return ['Analysis configuration must be a dictionary/JSON']
 
     REQUIRED_CONFIG_PROPERTIES = [
-        'min_r_squared',
+        'min_model_r_squared',
         'savings_target',
         'benchmark_data',
         'portfolio_analysis',
@@ -248,16 +248,11 @@ def _start_analysis(self, analysis_id):
 
     better_building_analyses = _create_better_buildings(better_portfolio_id, context)
 
-    analysis_config = {
-        "benchmark_data": analysis.configuration['benchmark_data']['benchmark_data'],
-        "savings_target": analysis.configuration['savings_target']['savings_target'],
-        "min_model_r_squared": analysis.configuration['min_r_squared']
-    }
     if better_portfolio_id is not None:
         better_analysis_id = _run_better_portfolio_analysis(
             better_portfolio_id,
             better_building_analyses,
-            analysis_config,
+            analysis.configuration,
             context,
         )
 
@@ -270,7 +265,7 @@ def _start_analysis(self, analysis_id):
     else:
         _run_better_building_analyses(
             better_building_analyses,
-            analysis_config,
+            analysis.configuration,
             context,
         )
 
