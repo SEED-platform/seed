@@ -1,4 +1,5 @@
 {% extends "landing/base.html" %}{% load compress %}{% load i18n %}
+{% load settings_value %}
 {% block js %}{{ block.super }}
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <script type="text/javascript">
@@ -26,7 +27,7 @@
                             {{ form.as_table }}
                         </table>
                         {% include "landing/_password_note.html" %}
-                        <div  style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV"></div>
+                        <div  style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="{% settings_value "GOOGLE_RECAPTCHA_SITE_KEY" %}"></div>
                         <div style="padding-bottom: 2em">
                             <input class="btn btn-primary" type="submit"
                                    value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">
