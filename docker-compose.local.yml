@@ -68,8 +68,11 @@ services:
       - SECRET_KEY
       - SENTRY_JS_DSN
       - SENTRY_RAVEN_DSN
-      - GOOGLE_RECAPTCHA_SECRET_KEY
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      # Recaptcha for testing: 
+      # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+      - GOOGLE_RECAPTCHA_SITE_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+      - GOOGLE_RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
     depends_on:
       - db-redis
       - db-postgres

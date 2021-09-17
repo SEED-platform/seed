@@ -320,7 +320,10 @@ SWAGGER_SETTINGS = {
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 
-# Google reCAPTCHA env variable for self-registration
+# Google reCAPTCHA env variable for self-registration. SITE_KEY defaults
+# to the key registered for SEED. Override if needing to test. 
+# https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+GOOGLE_RECAPTCHA_SITE_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY', '6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV')
 GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 
 # Certification
