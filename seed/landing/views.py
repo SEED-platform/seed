@@ -8,7 +8,6 @@ import urllib
 import json
 import logging
 
-import botocore.exceptions
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import authenticate, login
@@ -172,13 +171,10 @@ def create_account(request):
                         user.pk, user.email
                     )
                     return redirect('landing:account_activation_sent')
-                except botocore.exceptions.ClientError:
-                    # AWS is not configured correctly.
+                except Exception as e:
+                    logger.error(f'Unexpected error creating new account: {str(e)}')
                     errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
-                    errors.append('Mailer not configured properly to activate account. Contact site admin.')
-                except Exception:
-                    errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
-                    errors.append('Username and/or password already exist.')
+                    errors.append('An unexpected error occurred. Please contact the site administrator.')
             else:
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Invalid reCAPTCHA, please try again')
