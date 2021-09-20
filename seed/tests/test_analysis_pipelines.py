@@ -873,8 +873,8 @@ class TestBETTERPipeline(TestCase):
                 name='Good Analysis',
                 service=Analysis.BETTER,
                 configuration={
-                    'benchmark_data': {'benchmark_data': 'DEFAULT'},
-                    'savings_target': {'savings_target': 'NOMINAL'},
+                    'benchmark_data': 'DEFAULT',
+                    'savings_target': 'NOMINAL',
                     'min_model_r_squared': 0.1
                 }
             )

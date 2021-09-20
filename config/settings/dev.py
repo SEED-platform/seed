@@ -17,6 +17,9 @@ CSRF_COOKIE_SECURE = False
 COMPRESS_ENABLED = compress
 COMPRESS_OFFLINE = compress
 
+# When running in dev mode and without nginx, specify the location of the media files.
+MEDIA_URL = '/media/'
+
 # override this in local_untracked.py
 DATABASES = {
     'default': {
