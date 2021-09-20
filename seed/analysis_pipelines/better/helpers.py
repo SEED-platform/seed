@@ -6,7 +6,6 @@ from django.core.files.base import File as BaseFile
 
 from seed.analysis_pipelines.pipeline import StopAnalysisTaskChain, AnalysisPipelineException
 from seed.analysis_pipelines.better.buildingsync import _parse_analysis_property_view_id
-from seed.analysis_pipelines.utils import get_json_path
 from seed.models import (
     AnalysisMessage,
     AnalysisOutputFile,
