@@ -504,7 +504,12 @@ class AnalysisPipeline(abc.ABC):
         try:
             return ProgressData.from_key(progress_key)
         except Exception:
-            raise Exception(f'Expected analysis to have progress data, but {progress_key} was not found')
+            logger.warn(
+                f'Expected analysis to have progress data, but {progress_key} was not found. '
+                'A race condition probably occurred due to the analysis status becoming "outdated" '
+                'inside this method. Returning None for progress data...'
+            )
+            return None
 
     @abc.abstractmethod
     def _prepare_analysis(self, property_view_ids, start_analysis):

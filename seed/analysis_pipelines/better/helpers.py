@@ -304,26 +304,3 @@ def _create_better_buildings(better_portfolio_id, context):
         logger.info(f'Created BETTER building ({better_building_id}) for AnalysisPropertyView ({analysis_property_view_id})')
 
     return better_building_analyses
-
-
-def _update_original_property_state(property_state, data, data_paths):
-    """Pull all interesting bits out of data and add them to the property_state.
-    Note: this method updates the property state in the database!
-
-    :param property_state: PropertyState
-    :param data: dict
-    :param data_paths: list[ExtraDataColumnPath]
-    """
-    results = {
-        data_path.column_name: get_json_path(data_path.json_path, data)
-        for data_path in data_paths
-    }
-
-    # round float values decimal places
-    results = {
-        col_name: (value if type(value) is not float else round(value, 2))
-        for col_name, value in results.items()
-    }
-
-    property_state.extra_data.update(results)
-    property_state.save()
