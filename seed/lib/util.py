@@ -26,7 +26,7 @@ def create_map(path_in, path_out):
     :return: None
     """
     bedes_flag = mapper.Mapping.META_BEDES
-    infile = csv.reader(open(path_in, 'rU'))
+    infile = csv.reader(open(path_in, 'r', newline=None))
     header = infile.next()
     assert len(header) >= 5
     map = {}
@@ -67,7 +67,7 @@ def apply_map(map_path, data_path, out_file):
     """
     map_file = open(map_path, 'r')
     mapping = mapper.Mapping(map_file, encoding='latin_1')
-    data_file = open(data_path, 'rU')
+    data_file = open(data_path, 'r', newline=None)
     data_csv = csv.reader(data_file)
     # map each field
     d = {}
@@ -101,7 +101,7 @@ def find_duplicates(map_path, data_path, out_file):
     """
     map_file = open(map_path, 'r')
     mapping = mapper.Mapping(map_file, encoding='latin-1')
-    data_file = open(data_path, 'rU')
+    data_file = open(data_path, 'r', newline=None)
     data_csv = csv.reader(data_file)
     hdr = data_csv.next()
     seen_values, dup = {}, {}

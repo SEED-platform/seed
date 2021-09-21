@@ -163,3 +163,14 @@ class FakeClient(object):
 
     def post(self, view_func, data, headers=None, **kwargs):
         return self._gen_req(view_func, data, headers, **kwargs)
+
+
+class AssertDictSubsetMixin:
+    def assertDictContainsSubset(self, subset, dictionary):
+        """Checks whether dictionary is a superset of subset
+
+        This is a necessary polyfill b/c assertDictContainsSubset was deprecated
+        and I believe it's much more readable compared to the implementation below
+        """
+        # source: https://stackoverflow.com/a/59777678
+        self.assertEqual(dictionary, dictionary | subset)

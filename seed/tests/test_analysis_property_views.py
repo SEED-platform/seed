@@ -5,7 +5,7 @@
 :author
 """
 from django.test import TestCase
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.landing.models import SEEDUser as User
 from seed.models import AnalysisPropertyView, Analysis

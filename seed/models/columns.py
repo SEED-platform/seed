@@ -20,7 +20,7 @@ from django.db import (
 )
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
@@ -637,7 +637,7 @@ class Column(models.Model):
         from pint.errors import DimensionalityError
         from seed.models.properties import PropertyState
         from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
-        from quantityfield import ureg
+        from quantityfield.units import ureg
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):
@@ -758,7 +758,7 @@ class Column(models.Model):
 
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'rU') as csvfile:
+            with open(filename, 'r', newline=None) as csvfile:
                 for row in csv.reader(csvfile):
                     data = {
                         "from_field": row[0],

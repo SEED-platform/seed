@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
-from quantityfield import ureg
+from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet

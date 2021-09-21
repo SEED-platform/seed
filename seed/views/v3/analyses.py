@@ -12,7 +12,7 @@ from rest_framework import viewsets, serializers, status
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_409_CONFLICT
 
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class

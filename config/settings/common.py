@@ -14,7 +14,7 @@ from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -144,11 +144,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'django_compressor_autoprefixer.AutoprefixerFilter',
-    'compressor.filters.cssmin.CSSMinFilter'
-]
+COMPRESS_FILTERS = {
+    'css': [
+        'compressor.filters.css_default.CssAbsoluteFilter',
+        'django_compressor_autoprefixer.AutoprefixerFilter',
+        'compressor.filters.cssmin.CSSMinFilter',
+    ]
+}
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'vendors')
 ]

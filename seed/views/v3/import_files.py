@@ -9,9 +9,10 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from pandas import ExcelFile
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+import xlrd
+
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
@@ -37,7 +38,6 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import (AutoSchemaHelper,
                                    swagger_auto_schema_org_query_param)
-from xlrd.biffh import XLRDError
 
 _log = logging.getLogger(__name__)
 
@@ -181,12 +181,15 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            meter_tab_check = {'Meter Entries', 'Monthly Usage'} & set(ExcelFile(import_file.file).sheet_names)
+            has_meter_tab = bool(
+                {'Meter Entries', 'Monthly Usage'}
+                & set(xlrd.open_workbook(import_file.file.path).sheet_names())
+            )
             return JsonResponse({
                 'status': 'success',
-                'data': bool(meter_tab_check)
+                'data': has_meter_tab
             })
-        except XLRDError:
+        except xlrd.XLRDError:
             return JsonResponse({
                 'status': 'success',
                 'data': False
