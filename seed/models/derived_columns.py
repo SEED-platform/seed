@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
 
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.landing.models import Organization
 from seed.models.columns import Column

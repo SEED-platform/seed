@@ -9,10 +9,10 @@ import pint
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
-import pandas as pd
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+import xlrd
 
 from seed.data_importer.models import (
     ImportFile,
@@ -106,9 +106,18 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
 
         extension = the_file.name.split(".")[-1]
         if extension == "xlsx" or extension == "xls":
-            df_dict = pd.read_excel(the_file, sheet_name=None)
-            df_empty = [df.empty for _, df in df_dict.items()]
-            if all(df_empty):
+            workbook = xlrd.open_workbook(file_contents=the_file.read())
+            all_sheets_empty = True
+            for sheet_name in workbook.sheet_names():
+                try:
+                    sheet = workbook.sheet_by_name(sheet_name)
+                    if sheet.nrows > 0:
+                        all_sheets_empty = False
+                        break
+                except xlrd.biffh.XLRDError:
+                    pass
+
+            if all_sheets_empty:
                 return JsonResponse({
                     'success': False,
                     'message': "Import %s was empty" % the_file.name

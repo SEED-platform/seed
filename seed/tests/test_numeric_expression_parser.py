@@ -37,7 +37,7 @@ class TestCaseFactory(type):
 def make_is_numeric_expression_method(value, expected):
     def run(self):
         result = is_numeric_expression(value)
-        self.assertEquals(bool(expected), bool(result))
+        self.assertEqual(bool(expected), bool(result))
     return run
 
 
@@ -112,7 +112,7 @@ def make_parse_expression_method(value, expected):
         parts = NUMERIC_EXPRESSION_REGEX.findall(value)
         result = parse_expression("field", parts)
         query_children = query_to_child_tuples(result)
-        self.assertEquals(expected, query_children)
+        self.assertEqual(expected, query_children)
     return run
 
 

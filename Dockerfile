@@ -6,6 +6,7 @@ FROM alpine:3.14
 
 RUN apk add --no-cache python3-dev \
         postgresql-dev \
+        coreutils \
         alpine-sdk \
         pcre \
         pcre-dev \
@@ -38,6 +39,8 @@ RUN apk add --no-cache python3-dev \
 ##   - create the uwsgi user and group to have id of 1000
 ##   - copy over python3 as python
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
+##   - coreutils is required due to an issue with our wait-for-it.sch script:
+##     https://github.com/vishnubob/wait-for-it/issues/71
 
 ### Install python requirements
 WORKDIR /seed
