@@ -172,7 +172,7 @@ class GreenAssessmentProperty(models.Model):
     # date property is expected to achieve certification/3rd party verification
     target_date = models.DateField(null=True, blank=True)
     # BEDES only (Eligible/Not eligible)
-    eligibility = models.NullBooleanField()
+    eligibility = models.BooleanField(null=True)
     # not BEDES/RESO.
     # optional expiration date
     _expiration_date = models.DateField(null=True, blank=True)

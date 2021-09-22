@@ -102,7 +102,7 @@ class ProjectPropertyView(TimeStampedModel):
     project = models.ForeignKey(
         'Project', on_delete=models.CASCADE, related_name='project_property_views'
     )
-    compliant = models.NullBooleanField(null=True, )
+    compliant = models.BooleanField(null=True)
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )
@@ -127,7 +127,7 @@ class ProjectTaxLotView(TimeStampedModel):
     project = models.ForeignKey(
         'Project', on_delete=models.CASCADE, related_name='project_taxlot_views'
     )
-    compliant = models.NullBooleanField(null=True, )
+    compliant = models.BooleanField(null=True)
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )
