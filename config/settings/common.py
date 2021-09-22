@@ -271,6 +271,7 @@ AUTH_PASSWORD_VALIDATORS = [
         }
     },
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Django Rest Framework
 REST_FRAMEWORK = {
