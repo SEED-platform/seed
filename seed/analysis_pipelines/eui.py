@@ -213,7 +213,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     Column.objects.get_or_create(
         is_extra_data=True,
         column_name="analysis_eui",
-        display_name="Analysis EUI",
+        display_name="Fractional EUI (kBtu/sqft)",
         organization=analysis.organization,
         table_name='PropertyState',
     )
