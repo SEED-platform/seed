@@ -134,7 +134,7 @@ class Analysis(models.Model):
             if eui_result is not None:
                 value = f'{eui_result:,.2f}'
 
-            return [{'name': 'EUI', 'value': value}]
+            return [{'name': 'Fractional EUI (kBtu/sqft)', 'value': f'{value} kBtu/sqft'}]
 
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
