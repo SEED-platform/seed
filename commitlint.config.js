@@ -10,7 +10,8 @@ module.exports = {
         'fix',
         'refactor',
         'style',
-        'test'
+        'test',
+        'build',
       ]
     ]
   }

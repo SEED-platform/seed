@@ -30,11 +30,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          # using `-v2` in key to clear old cache due to errors
+          # using `-v3` in key to clear old cache due to errors
           # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
-          key: ${{ runner.os }}-buildx-v2-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-v3-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-v2-
+            ${{ runner.os }}-buildx-v3-
       -
         name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
@@ -45,8 +45,12 @@ jobs:
           docker volume create --name=seed_media
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       -
-        name: Setup SEED
+        name: Migrate
         run: |
+          # verify no migrations need to be made...
+          docker exec seed_web python manage.py makemigrations --check --dry-run
+
+          # run migrations
           docker exec seed_web ./manage.py migrate
           docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
@@ -93,6 +97,10 @@ jobs:
         run: |
           docker exec seed_web ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
           docker exec seed_web python seed/tests/api/test_seed_host_api.py --noinput --nofile
+      -
+        name: Web container logs
+        if: ${{ always() }}
+        run: docker logs seed_web
   formatting:
     runs-on: ubuntu-latest
     strategy:

@@ -14,7 +14,7 @@ from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -144,11 +144,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'django_compressor_autoprefixer.AutoprefixerFilter',
-    'compressor.filters.cssmin.CSSMinFilter'
-]
+COMPRESS_FILTERS = {
+    'css': [
+        'compressor.filters.css_default.CssAbsoluteFilter',
+        'django_compressor_autoprefixer.AutoprefixerFilter',
+        'compressor.filters.cssmin.CSSMinFilter',
+    ]
+}
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'vendors')
 ]
@@ -269,6 +271,7 @@ AUTH_PASSWORD_VALIDATORS = [
         }
     },
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Django Rest Framework
 REST_FRAMEWORK = {
@@ -320,7 +323,10 @@ SWAGGER_SETTINGS = {
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 
-# Google reCAPTCHA env variable for self-registration
+# Google reCAPTCHA env variable for self-registration. SITE_KEY defaults
+# to the key registered for SEED. Override it needing to test.
+# https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+GOOGLE_RECAPTCHA_SITE_KEY = os.environ.get('GOOGLE_RECAPTCHA_SITE_KEY', '6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV')
 GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 
 # Certification

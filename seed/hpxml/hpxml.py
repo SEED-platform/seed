@@ -16,7 +16,7 @@ import probablepeople as pp
 import usaddress as usadd
 from lxml import etree, objectify
 from past.builtins import basestring
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 _log = logging.getLogger(__name__)
 

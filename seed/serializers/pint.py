@@ -9,7 +9,7 @@ import re
 
 from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
-from quantityfield import ureg
+from quantityfield.units import ureg
 from rest_framework import serializers
 
 # Update the registry's definition for year

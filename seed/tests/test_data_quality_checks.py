@@ -6,7 +6,7 @@
 """
 from seed.models.derived_columns import DerivedColumn
 from django.forms.models import model_to_dict
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.models import Column, DerivedColumnParameter, PropertyView
 from seed.models.data_quality import (
@@ -23,10 +23,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import DataMappingBaseTestCase, AssertDictSubsetMixin
 
 
-class DataQualityCheckTests(DataMappingBaseTestCase):
+class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
 
