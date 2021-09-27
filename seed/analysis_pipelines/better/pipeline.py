@@ -314,6 +314,23 @@ def _process_results(self, analysis_id):
     BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
     BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
     column_data_paths = [
+        # Combined Savings
+        ExtraDataColumnPath(
+            'better_cost_savings_combined',
+            'BETTER Potential Cost Savings (USD)',
+            'assessment.assessment_energy_use.cost_savings_combined'
+        ),
+        ExtraDataColumnPath(
+            'better_energy_savings_combined',
+            'BETTER Potential Energy Savings (kWh)',
+            'assessment.assessment_energy_use.energy_savings_combined'
+        ),
+        ExtraDataColumnPath(
+            'better_ghg_reductions_combined',
+            'BETTER Potential GHG Emissions Reduction (kgCO2e)',
+            'assessment.assessment_energy_use.ghg_reductions_combined'
+        ),
+        # Energy-specific Savings
         ExtraDataColumnPath(
             BETTER_VALID_MODEL_E_COL,
             'BETTER Valid Electricity Model',
@@ -393,6 +410,23 @@ def _process_results(self, analysis_id):
 
         electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])
         fuel_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_F_COL])
+
+        # create a message for the failed models
+        warning_messages = []
+        if not electricity_model_is_valid:
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption.')
+        if not fuel_model_is_valid:
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption.')
+        for warning_message in warning_messages:
+            AnalysisMessage.log_and_create(
+                logger,
+                AnalysisMessage.WARNING,
+                warning_message,
+                '',
+                analysis_id,
+                analysis_property_view.id,
+            )
+
         cleaned_results = {}
         # do some extra cleanup of the results:
         #  - round decimal places of floats
