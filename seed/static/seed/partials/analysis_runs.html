@@ -4,7 +4,7 @@
             <tr>
                 <th translate>Run ID</th>
                 <th translate>Property</th>
-                <th translate>Latest Message</th>
+                <th translate>Latest Messages</th>
                 <th translate>Output Files</th>
             </tr>
         </thead>
@@ -19,7 +19,13 @@
                         {$:: view.property_state.address_line_1 $}
                     </span>
                 </td>
-                <td>{$:: (messages | filter : {'analysis_property_view':view.id})[0]['user_message'] $}</td>
+                <td>
+                    <ul>
+                        <li ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
+                            {$:: message['user_message'] $}
+                        </li>
+                    </ul>
+                </td>
                 <td>
                     <span ng-repeat="file in view.output_files | filter:filter_params:strict">
                         <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa fa-download"></span></a>

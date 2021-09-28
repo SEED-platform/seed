@@ -34,8 +34,8 @@ from seed.analysis_pipelines.better.helpers import (
     _run_better_portfolio_analysis,
     _store_better_building_analysis_results,
     _store_better_portfolio_analysis_results,
-    _update_original_property_state,
 )
+from seed.analysis_pipelines.utils import get_json_path
 
 from seed.models import (
     Analysis,
@@ -311,7 +311,10 @@ def _process_results(self, analysis_id):
     ]
 
     # gather all columns to store
+    BETTER_VALID_MODEL_E_COL = 'better_valid_model_electricity'
+    BETTER_VALID_MODEL_F_COL = 'better_valid_model_fuel'
     column_data_paths = [
+        # Combined Savings
         ExtraDataColumnPath(
             'better_cost_savings_combined',
             'BETTER Potential Cost Savings (USD)',
@@ -326,6 +329,47 @@ def _process_results(self, analysis_id):
             'better_ghg_reductions_combined',
             'BETTER Potential GHG Emissions Reduction (kgCO2e)',
             'assessment.assessment_energy_use.ghg_reductions_combined'
+        ),
+        # Energy-specific Savings
+        ExtraDataColumnPath(
+            BETTER_VALID_MODEL_E_COL,
+            'BETTER Valid Electricity Model',
+            'assessment.assessment_energy_use.valid_model_e'
+        ),
+        ExtraDataColumnPath(
+            BETTER_VALID_MODEL_F_COL,
+            'BETTER Valid Fuel Model',
+            'assessment.assessment_energy_use.valid_model_f'
+        ),
+        ExtraDataColumnPath(
+            'better_cost_savings_electricity',
+            'BETTER Potential Electricity Cost Savings (USD)',
+            'assessment.assessment_energy_use.cost_savings_e'
+        ),
+        ExtraDataColumnPath(
+            'better_cost_savings_fuel',
+            'BETTER Potential Fuel Cost Savings (USD)',
+            'assessment.assessment_energy_use.cost_savings_f'
+        ),
+        ExtraDataColumnPath(
+            'better_energy_savings_electricity',
+            'BETTER Potential Electricity Energy Savings (kWh)',
+            'assessment.assessment_energy_use.energy_savings_e'
+        ),
+        ExtraDataColumnPath(
+            'better_energy_savings_fuel',
+            'BETTER Potential Fuel Energy Savings (kWh)',
+            'assessment.assessment_energy_use.energy_savings_f'
+        ),
+        ExtraDataColumnPath(
+            'better_ghg_reductions_electricity',
+            'BETTER Potential Electricity GHG Emissions Reduction (kgCO2e)',
+            'assessment.assessment_energy_use.ghg_reductions_e'
+        ),
+        ExtraDataColumnPath(
+            'better_ghg_reductions_fuel',
+            'BETTER Potential Fuel GHG Emissions Reduction (kgCO2e)',
+            'assessment.assessment_energy_use.ghg_reductions_f'
         ),
         ExtraDataColumnPath(
             # we will manually add this to the data later (it's not part of BETTER's results)
@@ -356,14 +400,51 @@ def _process_results(self, analysis_id):
     property_view_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     for analysis_property_view in analysis_property_views:
-        property_view = property_view_by_apv_id[analysis_property_view.id]
-        data = copy.deepcopy(analysis_property_view.parsed_results)
-        data.update({'better_seed_analysis_id': analysis_id})
-        _update_original_property_state(
-            property_view.state,
-            data,
-            column_data_paths
-        )
+        raw_better_results = copy.deepcopy(analysis_property_view.parsed_results)
+        raw_better_results.update({'better_seed_analysis_id': analysis_id})
+
+        simplified_results = {
+            data_path.column_name: get_json_path(data_path.json_path, raw_better_results)
+            for data_path in column_data_paths
+        }
+
+        electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])
+        fuel_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_F_COL])
+
+        # create a message for the failed models
+        warning_messages = []
+        if not electricity_model_is_valid:
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption.')
+        if not fuel_model_is_valid:
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption.')
+        for warning_message in warning_messages:
+            AnalysisMessage.log_and_create(
+                logger,
+                AnalysisMessage.WARNING,
+                warning_message,
+                '',
+                analysis_id,
+                analysis_property_view.id,
+            )
+
+        cleaned_results = {}
+        # do some extra cleanup of the results:
+        #  - round decimal places of floats
+        #  - for fuel-type specific fields, set values to null if the model for
+        #    that fuel type wasn't valid (e.g. if electricity model is invalid,
+        #    set "potential electricity savings" to null)
+        for col_name, value in simplified_results.items():
+            value = value if type(value) is not float else round(value, 2)
+            if col_name.endswith('_electricity') and col_name != BETTER_VALID_MODEL_E_COL:
+                cleaned_results[col_name] = value if electricity_model_is_valid else None
+            elif col_name.endswith('_fuel') and col_name != BETTER_VALID_MODEL_F_COL:
+                cleaned_results[col_name] = value if fuel_model_is_valid else None
+            else:
+                cleaned_results[col_name] = value
+
+        original_property_state = property_view_by_apv_id[analysis_property_view.id].state
+        original_property_state.extra_data.update(cleaned_results)
+        original_property_state.save()
 
 
 @shared_task(bind=True)
