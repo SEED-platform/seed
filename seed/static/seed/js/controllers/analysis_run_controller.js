@@ -25,7 +25,8 @@ angular.module('BE.seed.controller.analysis_run', [])
       view_payload,
       auth_payload
     ) {
-      $scope.org = organization_payload.organization;
+      // WARNING: $scope.org is used by "child" controller - analysis_details_controller
+      $scope.org = organization_payload;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
       $scope.messages = messages_payload.messages;

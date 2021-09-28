@@ -47,6 +47,10 @@ jobs:
       -
         name: Migrate
         run: |
+          # verify no migrations need to be made...
+          docker exec seed_web python manage.py makemigrations --check --dry-run
+
+          # run migrations
           docker exec seed_web ./manage.py migrate
           docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'

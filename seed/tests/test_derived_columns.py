@@ -136,7 +136,7 @@ recursive_st_func = lambda children: \
     | func_st(st.just('abs'), st.one_of(children), min_args=1, max_args=1)
 
 # strategy for generating complex / nested expressions WITHOUT parameters
-full_expression_no_params_st = st.recursive(atomic_no_params_st, recursive_st_func)
+full_expression_no_params_st = st.recursive(atomic_no_params_st, recursive_st_func, max_leaves=50)
 
 
 @st.composite
@@ -155,7 +155,8 @@ def full_expression_with_params_st(draw, parameters=st.dictionaries(parameter_na
     expression = draw(
         st.recursive(
             atomic_no_params_st | st.sampled_from(template_params),
-            recursive_st_func
+            recursive_st_func,
+            max_leaves=50,
         )
     )
 

@@ -34,7 +34,7 @@ urlpatterns = [
     url(
         (
             r'^accounts/setup/(?P<uidb64>[0-9A-Za-z_\-]+)/'
-            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
+            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,32})/$'
         ),
         signup,
         name='signup'
