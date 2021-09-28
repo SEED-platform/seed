@@ -64,6 +64,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+      // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = {'id': organization_payload.organization.id};
 
       // Detail Column List Profile

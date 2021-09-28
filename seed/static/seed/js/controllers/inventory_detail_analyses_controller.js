@@ -39,6 +39,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.view_id = $stateParams.view_id;
+      // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = organization_payload.organization;
       $scope.users = users_payload.users;
       $scope.analyses = analyses_payload.analyses;

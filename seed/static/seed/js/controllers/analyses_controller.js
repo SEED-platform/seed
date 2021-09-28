@@ -23,7 +23,7 @@ angular.module('BE.seed.controller.analyses', [])
       analyses_service,
       Notification,
     ) {
-      $scope.org = organization_payload.organization;
+      $scope.org = organization_payload;
       $scope.auth = auth_payload.auth;
       $scope.analyses = analyses_payload.analyses;
       $scope.users = users_payload.users;
