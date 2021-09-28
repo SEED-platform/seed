@@ -57,7 +57,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
 
           case 'BSyncr':
             $scope.new_analysis.configuration = {
-              model: null
+              model_type: null
             }
             break;
 
