@@ -197,6 +197,12 @@ angular.module('BE.seed.service.analyses', [])
                           })
                       }
                     })
+                    .catch(data => {
+                      // yikes, something went wrong. Let the caller know the status
+                      // probably changed and let's bail
+                      status_update_callback(id)
+                        .then(() => no_current_task_callback(id))
+                    })
                 }, POLLING_DELAY_MS)
               }
 
