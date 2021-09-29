@@ -6,13 +6,14 @@ import requests
 import polling
 
 from seed.analysis_pipelines.pipeline import AnalysisPipelineException
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 
 class BETTERClient:
 
-    HOST = "https://better-lbnl-development.herokuapp.com"
+    HOST = settings.BETTER_HOST
     API_URL = f'{HOST}/api/v1'
 
     def __init__(self, token):
