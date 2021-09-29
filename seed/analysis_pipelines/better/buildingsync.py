@@ -125,8 +125,8 @@ def _build_better_input(analysis_property_view, meters):
         E.BuildingSync(
             {
                 etree.QName(XSI_URI,
-                            'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd',
-                'version': '2.2.0'
+                            'schemaLocation'): 'http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd',
+                'version': '2.3.0'
             },
             E.Facilities(
                 E.Facility(
