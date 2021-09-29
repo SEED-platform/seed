@@ -129,12 +129,18 @@ class Analysis(models.Model):
 
         # EUI
         elif self.service == self.EUI:
-            eui_result = results.get('EUI')
+            eui_result = results.get('Fractional EUI (kBtu/sqft)')
             value = 'N/A'
             if eui_result is not None:
                 value = f'{eui_result:,.2f}'
+            coverage = results.get('Annual Coverage %')
+            if coverage is None:
+                coverage = 'N/A'
 
-            return [{'name': 'Fractional EUI (kBtu/sqft)', 'value': f'{value} kBtu/sqft'}]
+            return [
+                {'name': 'Fractional EUI', 'value': f'{value} kBtu/sqft'},
+                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
+            ]
 
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
