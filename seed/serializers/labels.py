@@ -41,6 +41,7 @@ class LabelSerializer(serializers.ModelSerializer):
             "organization_id",
             "super_organization",
             "is_applied",
+            "show_in_list",
         )
         extra_kwargs = {
             "super_organization": {"write_only": True},

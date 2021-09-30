@@ -25,7 +25,8 @@ angular.module('BE.seed.controller.analysis', [])
       views_payload,
       auth_payload
     ) {
-      $scope.org = organization_payload.organization;
+      // WARNING: $scope.org is used by "child" controller - analysis_details_controller
+      $scope.org = organization_payload;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
@@ -33,4 +34,12 @@ angular.module('BE.seed.controller.analysis', [])
       $scope.users = users_payload.users;
       $scope.views = views_payload.views;
       $scope.view_id = $stateParams.view_id;
+      $scope.original_views = views_payload.original_views;
+
+
+      $scope.has_children = function (value) {
+        if (typeof value == 'object') {
+          return true;
+        }
+      };
     }]);

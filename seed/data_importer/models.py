@@ -696,6 +696,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
     raw_property_state_to_filename = JSONField(default=dict, blank=True)
 
+    class Meta:
+        ordering = ('-modified', '-created',)
+
     def __str__(self):
         return '%s' % self.file.name
 
@@ -734,7 +737,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             temp_file.flush()
             temp_file.close()
             self.file.close()
-            self._local_file = open(temp_file.name, 'rU')
+            self._local_file = open(temp_file.name, 'r', newline=None)
 
         self._local_file.seek(0)
         return self._local_file
@@ -796,7 +799,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         if not hasattr(self, '_first_row_columns'):
             if self.cached_first_row:
                 self._first_row_columns = self.cached_first_row.split(ROW_DELIMITER)
+                _log.debug("Using cached first row columns.")
             else:
+                _log.debug("No first row columns property or cache was found!")
                 return None
         return self._first_row_columns
 

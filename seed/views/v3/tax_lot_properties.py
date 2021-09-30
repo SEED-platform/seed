@@ -17,7 +17,7 @@ from django.http import JsonResponse, HttpResponse
 
 from drf_yasg.utils import swagger_auto_schema
 
-from quantityfield import ureg
+from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
@@ -61,7 +61,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle_id", True, "Cycle ID"),
             AutoSchemaHelper.query_string_field(
                 "inventory_type",
                 False,
@@ -88,18 +87,12 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats.
         """
-        cycle_pk = request.query_params.get('cycle_id', None)
-        if not cycle_pk:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Must pass in cycle_id as query parameter'})
         org_id = self.get_organization(request)
-        if 'profile_id' not in request.data:
-            profile_id = None
-        else:
-            if request.data['profile_id'] == 'None' or request.data['profile_id'] == '':
-                profile_id = None
-            else:
-                profile_id = request.data['profile_id']
+        profile_id = None
+        column_profile = None
+        if 'profile_id' in request.data and str(request.data['profile_id']) not in ['None', '']:
+            profile_id = request.data['profile_id']
+            column_profile = ColumnListProfile.objects.get(id=profile_id)
 
         # get the class to operate on and the relationships
         view_klass_str = request.query_params.get('inventory_type', 'properties')
@@ -112,25 +105,23 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             profile_id,
             view_klass_str)
         column_name_mappings.update(add_column_name_mappings)
+
         select_related = ['state', 'cycle']
+        prefetch_related = ['labels']
         ids = request.data.get('ids', [])
-        filter_str = {'cycle': cycle_pk}
+        filter_str = {}
+        if ids:
+            filter_str['id__in'] = ids
         if hasattr(view_klass, 'property'):
             select_related.append('property')
-            prefetch_related = ['labels']
-            filter_str = {'property__organization_id': org_id}
-            if ids:
-                filter_str['id__in'] = ids
+            filter_str['property__organization_id'] = org_id
             # always export the labels and notes
             column_name_mappings['property_notes'] = 'Property Notes'
             column_name_mappings['property_labels'] = 'Property Labels'
 
         elif hasattr(view_klass, 'taxlot'):
             select_related.append('taxlot')
-            prefetch_related = ['labels']
-            filter_str = {'taxlot__organization_id': org_id}
-            if ids:
-                filter_str['id__in'] = ids
+            filter_str['taxlot__organization_id'] = org_id
             # always export the labels and notes
             column_name_mappings['taxlot_notes'] = 'Tax Lot Notes'
             column_name_mappings['taxlot_labels'] = 'Tax Lot Labels'
@@ -141,7 +132,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         # get the data in a dict which includes the related data
         data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
 
-        # add labels and notes
+        derived_columns = column_profile.derived_columns.all() if column_profile is not None else []
+        column_name_mappings.update({dc.name: dc.name for dc in derived_columns})
+
+        # add labels, notes, and derived columns
         include_notes = request.data.get('include_notes', True)
         for i, record in enumerate(model_views):
             label_string = []
@@ -161,6 +155,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             elif hasattr(record, 'taxlot'):
                 data[i]['taxlot_labels'] = ','.join(label_string)
                 data[i]['taxlot_notes'] = '\n----------\n'.join(note_string) if include_notes else '(excluded during export)'
+
+            # add derived columns
+            for derived_column in derived_columns:
+                data[i][derived_column.name] = derived_column.evaluate(inventory_state=record.state)
 
         # force the data into the same order as the IDs
         if ids:

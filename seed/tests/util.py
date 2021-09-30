@@ -18,6 +18,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DerivedColumn,
     Property,
     PropertyState,
     PropertyView,
@@ -45,6 +46,7 @@ from seed.utils.organizations import create_organization
 class DeleteModelsTestCase(TestCase):
     def _delete_models(self):
         # Order matters here
+        DerivedColumn.objects.all().delete()
         Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
         DataQualityCheck.objects.all().delete()
@@ -161,3 +163,14 @@ class FakeClient(object):
 
     def post(self, view_func, data, headers=None, **kwargs):
         return self._gen_req(view_func, data, headers, **kwargs)
+
+
+class AssertDictSubsetMixin:
+    def assertDictContainsSubset(self, subset, dictionary):
+        """Checks whether dictionary is a superset of subset
+
+        This is a necessary polyfill b/c assertDictContainsSubset was deprecated
+        and I believe it's much more readable compared to the implementation below
+        """
+        # source: https://stackoverflow.com/a/59777678
+        self.assertEqual(dictionary, dictionary | subset)

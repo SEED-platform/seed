@@ -19,18 +19,19 @@ angular.module('BE.seed.controller.new_member_modal', [])
       $translate
     ) {
       $scope.roles = [{
-        name: $translate.instant('Member'),
-        value: 'member'
-      }, {
         name: $translate.instant('Owner'),
         value: 'owner'
+      }, {
+        name: $translate.instant('Member'),
+        value: 'member'
       }, {
         name: $translate.instant('Viewer'),
         value: 'viewer'
       }];
-      $scope.user = {};
-      $scope.user.role = $scope.roles[0];
-      $scope.user.organization = organization;
+      $scope.user = {
+        organization,
+        role: $scope.roles[1]
+      };
 
       /**
        * adds a user to the org

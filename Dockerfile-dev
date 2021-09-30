@@ -1,19 +1,35 @@
-# Start with 2.6.0. note that the source code will be removed and re-copied to this container. The
-# version of SEED here is used to load in the core system packages and dependencies.
-FROM seedplatform/seed:2.6.0
+FROM alpine:3.14
 
-## Remove this line after updating the base image to support the new dependency versions. The line ensures that the
-# code is only this branch, not any remnants from the tagged container.
-RUN rm -rf /seed/
-
-### Install JavaScript requirements - do this first because they take awhile
-### and the dependencies will probably change slower than python packages.
-### README.md stops the no readme warning
-COPY ./package.json /seed/package.json
-COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./README.md /seed/README.md
-# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
+RUN apk add --no-cache python3-dev \
+        postgresql-dev \
+        coreutils \
+        alpine-sdk \
+        pcre \
+        pcre-dev \
+        libxslt-dev \
+        linux-headers \
+        libffi-dev \
+        bash \
+        bash-completion \
+        npm \
+        nginx \
+        openssl-dev \
+        geos \
+        gdal \
+        gcc \
+        musl-dev \
+        cargo && \
+    ln -sf /usr/bin/python3 /usr/bin/python && \
+    python -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    ln -sf /usr/bin/pip3 /usr/bin/pip && \
+    pip install --upgrade pip setuptools && \
+    pip install supervisor==4.2.2 && \
+    mkdir -p /var/log/supervisord/ && \
+    rm -r /root/.cache && \
+    addgroup -g 1000 uwsgi && \
+    adduser -G uwsgi -H -u 1000 -S uwsgi && \
+    mkdir -p /run/nginx
 
 ### Install python requirements
 WORKDIR /seed
@@ -26,6 +42,14 @@ RUN pip install remote-pdb
 # for live reloading celery
 RUN pip install watchdog[watchmedo]
 
+### Install JavaScript requirements - do this first because they take awhile
+### and the dependencies will probably change slower than python packages.
+### README.md stops the no readme warning
+COPY ./package.json /seed/package.json
+COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./README.md /seed/README.md
+# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
+RUN npm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed

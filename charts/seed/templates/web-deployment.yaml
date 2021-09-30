@@ -60,6 +60,8 @@ spec:
           value: "5000"
         - name: BSYNCR_SERVER_HOST
           value: bsyncr
+        - name: BETTER_HOST
+          value: https://better-lbnl-development.herokuapp.com
         - name: SENTRY_JS_DSN
           value: <enter-dsn>
         - name: SENTRY_RAVEN_DSN

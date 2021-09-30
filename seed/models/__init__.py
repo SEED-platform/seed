@@ -9,6 +9,7 @@
 # Import all the models in this folder
 from .analyses import *  # noqa
 from .cycles import *  # noqa
+from .derived_columns import *  # noqa
 from .models import *  # noqa
 from .tax_lot_properties import *  # noqa
 from .properties import *  # noqa
@@ -29,6 +30,7 @@ from .analysis_property_views import *  # noqa
 from .analysis_input_files import *  # noqa
 from .analysis_output_files import *  # noqa
 from .analysis_messages import *  # noqa
+from .postoffice import * # noqa
 
 from .certification import (    # noqa
     GreenAssessment,

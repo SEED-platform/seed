@@ -7,7 +7,7 @@
 
 from autoslug import AutoSlugField
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from seed.landing.models import SEEDUser as User
@@ -54,6 +54,9 @@ class Project(TimeStampedModel):
         'TaxLotView', through="ProjectTaxLotView", blank=True
     )
 
+    class Meta:
+        ordering = ('-modified', '-created',)
+
     @property
     def property_count(self):
         return self.property_views.count()
@@ -99,7 +102,7 @@ class ProjectPropertyView(TimeStampedModel):
     project = models.ForeignKey(
         'Project', on_delete=models.CASCADE, related_name='project_property_views'
     )
-    compliant = models.NullBooleanField(null=True, )
+    compliant = models.BooleanField(null=True)
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )
@@ -124,7 +127,7 @@ class ProjectTaxLotView(TimeStampedModel):
     project = models.ForeignKey(
         'Project', on_delete=models.CASCADE, related_name='project_taxlot_views'
     )
-    compliant = models.NullBooleanField(null=True, )
+    compliant = models.BooleanField(null=True)
     approved_date = models.DateField(
         _("approved_date"), null=True, blank=True
     )

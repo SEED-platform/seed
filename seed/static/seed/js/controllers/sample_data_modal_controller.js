@@ -40,16 +40,21 @@ angular.module('BE.seed.controller.sample_data_modal', [])
             name: 'Auto-Populate',
             profile_location: 'List View Profile',
             inventory_type: 'Property',
-            columns: []
+            columns: [],
+            derived_columns: []
           });
         }
 
+        // 1. Insert sample data
+        // 2. Get all columns
+        // 3. Get all properties
+        // 4. Find only populated columns, and save to column list profile Auto-Populate
         profilePromise.then(profile => {
           inventory_service.save_last_profile(profile.id, 'properties');
           inventory_service.save_last_cycle(cycle.id)
 
-          return inventory_service.get_property_columns().then(columns => {
-            return organization_service.insert_sample_data(organization.org_id).then(() => {
+          return organization_service.insert_sample_data(organization.org_id).then(() => {
+            return inventory_service.get_property_columns().then(columns => {
               return inventory_service.get_properties(1, undefined, cycle, -1).then(inventory => {
                 const visibleColumns = findPopulatedColumns(columns, inventory.results);
                 const profileId = profile.id;
@@ -57,13 +62,16 @@ angular.module('BE.seed.controller.sample_data_modal', [])
                 profile.columns = visibleColumns;
                 return inventory_service.update_column_list_profile(profileId, profile);
               });
-            }).catch(response => {
-              Notification.error('Error: Failed to insert sample data');
-              console.error(response.data);
             });
+          }).catch(response => {
+            let msg = 'Error: Failed to insert sample data';
+            if (response.data.message) {
+              msg = `${msg} (${response.data.message})`;
+            }
+            Notification.error(msg);
+            return Promise.reject();
           });
         }).then(() => {
-          inventory_service.save
           $uibModalInstance.close();
           $state.go('inventory_list', {inventory_type: 'properties'});
         }).finally(() => {
@@ -75,7 +83,7 @@ angular.module('BE.seed.controller.sample_data_modal', [])
         $uibModalInstance.dismiss();
       };
 
-      function notEmpty (value) {
+      function notEmpty(value) {
         return !_.isNil(value) && value !== '';
       }
 

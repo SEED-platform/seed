@@ -22,10 +22,10 @@
             <span>
                 <h2>
                     <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                        <i class="fa fa-building-o"></i><span translate>Property</span> :
                     </span>
                     <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                     </span>
                     <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
             </span>
@@ -33,49 +33,21 @@
     </div>
 </div>
 
-<div class="section_header_container">
-    <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="margin: 15px;">
-        <i class="fa fa-area-chart"></i> <span translate>New Analysis</span>
-    </button>
-</div>
-
-<div class="section">
-    <div class="section_content_container">
-        <div class="section_content">
-            <div class="table_list_container">
-                <table id="analyses-table" class="table table-striped table_highlight_first">
-                    <thead>
-                        <tr>
-                            <th translate>Run Id</th>
-                            <th translate>Analysis Name (User Defined)</th>
-                            <th translate>Actions</th>
-                            <th translate>Type</th>
-                            <th translate>Configuration</th>
-                            <th translate>Run Status</th>
-                            <th translate>Run Date</th>
-                            <th translate>Run Duration</th>
-                            <th translate>Run Author</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td style="width: 7%; min-width: unset"><a ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">{$:: analysis.views[0] $}</a></td>
-                            <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
-                            <td>
-                                <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
-                                <i class="glyphicon glyphicon-stop" title="Stop Analysis" aria-hidden="true" ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0" ng-disabled="['Pending Creation', 'Queued'].indexOf(analysis.status) >= 0" ng-click="stop_analysis(analysis.id)"></i>
-                                <i class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true" ng-click="delete_analysis(analysis.id)"></i>
-                            </td>
-                            <td>{$:: analysis.service $}</td>
-                            <td>{$:: analysis.configuration $}</td>
-                            <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
-                            <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
-                            <td>{$:: analysis | get_run_duration $}</td>
-                            <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
-                        </tr>
-                    </tbody>
-                </table>
+<div class="modal-body">
+    <uib-tabset class="modal-tabs">
+        <uib-tab ng-repeat="(type, analyses) in analyses_by_type" index="type">
+            <uib-tab-heading>
+                <b>{$:: type $}</b> <small>({$:: analyses.length $})</small>
+            </uib-tab-heading>
+            <div class="tab-content-cards">
+                <!-- NOTE: This is bad, using a controller created for someone else but it will work
+                     we should refactor this into a AnalysisCard component. -->
+                <div ng-repeat="analysis in analyses" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card">
+                </div>
             </div>
-        </div>
-    </div>
+        </uib-tab>
+        <button type="button" class="btn btn-info" ng-click="open_analysis_modal()" style="float: right;">
+            <i class="fa fa-area-chart"></i> <span translate>New Analysis</span>
+        </button>
+    </uib-tabset>
 </div>

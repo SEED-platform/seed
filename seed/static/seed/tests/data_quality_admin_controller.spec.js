@@ -33,10 +33,12 @@ describe('controller: data_quality_admin_controller', function () {
       related: false,
       table_name: 'PropertyState'
     }];
+    var derived_columns_payload = { derived_columns: [] };
     controller('data_quality_admin_controller', {
       $scope: data_quality_admin_controller_scope,
       columns: col_payload,
       used_columns: col_payload,
+      derived_columns_payload: derived_columns_payload,
       organization_payload: {},
       data_quality_rules_payload: {},
       auth_payload: {},

@@ -34,6 +34,7 @@ class Meter(models.Model):
     PROPANE = 21
     WOOD = 22
     COST = 23
+    ELECTRICITY_UNKNOWN = 24
 
     # Taken from EnergyStar Portfolio Manager
     ENERGY_TYPES = (
@@ -60,6 +61,7 @@ class Meter(models.Model):
         (PROPANE, 'Propane'),
         (WOOD, 'Wood'),
         (COST, 'Cost'),
+        (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
     )
 
     type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
@@ -67,11 +69,13 @@ class Meter(models.Model):
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2
     BUILDINGSYNC = 3
+    PORTFOLIO_MANAGER_DATA_REQUEST = 4
 
     SOURCES = (
         (PORTFOLIO_MANAGER, 'Portfolio Manager'),
         (GREENBUTTON, 'GreenButton'),
         (BUILDINGSYNC, 'BuildingSync'),
+        (PORTFOLIO_MANAGER_DATA_REQUEST, 'Portfolio Manager'),
     )
 
     is_virtual = models.BooleanField(default=False)
@@ -138,6 +142,16 @@ class Meter(models.Model):
 
 
 class MeterReading(models.Model):
+    """
+    A meter reading represents the actual usage entry for a given meter.
+
+    NOTE: SEED stores all meter readings in kBtu.  The raw usage reading is converted
+    on import to kBtu using the conversion_factor which is determined by the meter type and raw units on import,
+    therefore, the reading field of this model will always be in kBtu.
+
+    The original units however when being displayed to the user ie. (Property Detail Meters tab)
+    will contain the original units and meter readings.
+    """
     meter = models.ForeignKey(
         Meter,
         on_delete=models.CASCADE,
@@ -151,8 +165,10 @@ class MeterReading(models.Model):
 
     reading = models.FloatField(null=True)
 
-    # The following two fields are tracked for historical purposes
+    # This field is determined by the raw units of the meter entry upon import
     source_unit = models.CharField(max_length=255, null=True, blank=True)
+
+    # This field is determined by the meter type and raw units upon import
     conversion_factor = models.FloatField()
 
     class Meta:

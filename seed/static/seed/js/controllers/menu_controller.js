@@ -162,15 +162,19 @@ angular.module('BE.seed.controller.menu', [])
             organization: () => {
               return $scope.menu.user.organization;
             },
-            cycle: ['organization_service', function (organization_service) {
+            cycle: ['Notification', 'organization_service', function (Notification, organization_service) {
               return organization_service.get_organization($scope.menu.user.organization.org_id)
                 .then(response => {
+                  if (!response.organization.cycles.length) {
+                    Notification.error('Error: please create a cycle before Auto-Populating data');
+                    return;
+                  }
                   let lastCycleId = inventory_service.get_last_cycle();
                   let lastCycle;
                   if (typeof lastCycleId === 'number') {
                     lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId)
                   }
-                  if ((lastCycleId === undefined || !lastCycle) && response.organization.cycles.length) {
+                  if ((lastCycleId === undefined || !lastCycle)) {
                     lastCycle = response.organization.cycles[0];
                   }
                   return lastCycle;
@@ -190,6 +194,7 @@ angular.module('BE.seed.controller.menu', [])
       $scope.set_user_org = function (org) {
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
+        console.log($scope.menu.user.organization);
         $state.reload();
         init();
       };

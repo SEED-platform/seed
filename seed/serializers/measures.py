@@ -52,6 +52,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             'cost_material',
             'cost_capital_replacement',
             'cost_residual_value',
+            'useful_life',
         )
 
     def measure_id_name(self, obj):

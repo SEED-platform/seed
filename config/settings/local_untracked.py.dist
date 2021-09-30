@@ -39,6 +39,10 @@ MAPQUEST_API_KEY = os.environ.get('MAPQUEST_API_KEY', 'a-mapquest-api-key')
 # Keys for app users are attached to each organization.
 TESTING_MAPQUEST_API_KEY = os.environ.get('TESTING_MAPQUEST_API_KEY', '<your_key_here>')
 
+# These are the test keys
+GOOGLE_RECAPTCHA_SITE_KEY = os.environ.get('GOOGLE_RECAPTCHA_SITE_KEY', '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
+GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY', '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+
 # email through SES (django-ses)
 #EMAIL_BACKEND = 'django_ses.SESBackend'
 #AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')

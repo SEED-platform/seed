@@ -11,15 +11,15 @@ import os
 import re
 from io import StringIO, BytesIO
 
-from django.db.models import FieldDoesNotExist
-from quantityfield import ureg
+from django.core.exceptions import FieldDoesNotExist
+from quantityfield.units import ureg
 from lxml import etree
 import xmlschema
 
 from config.settings.common import BASE_DIR
 from seed.models.meters import Meter
 from seed.building_sync.mappings import (
-    BASE_MAPPING_V2_0,
+    BASE_MAPPING_V2,
     BUILDINGSYNC_URI,
     NAMESPACES,
     merge_mappings,
@@ -42,9 +42,14 @@ class ParsingError(Exception):
 
 class BuildingSync(object):
     BUILDINGSYNC_V2_0 = '2.0'
+    BUILDINGSYNC_V2_0_0 = '2.0.0'
+    BUILDINGSYNC_V2_1_0 = '2.1.0'
     BUILDINGSYNC_V2_2_0 = '2.2.0'
+    BUILDINGSYNC_V2_3_0 = '2.3.0'
     VERSION_MAPPINGS_DICT = {
-        BUILDINGSYNC_V2_0: BASE_MAPPING_V2_0,
+        BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2
     }
 
     def __init__(self):
@@ -179,9 +184,13 @@ class BuildingSync(object):
     @classmethod
     def get_schema(cls, version):
         schema_dir = os.path.join(BASE_DIR, 'seed', 'building_sync', 'schemas')
+        # TODO: refactor so we don't have to explicitly write schema version for
+        # ever new schema added.
         schema_files = {
             cls.BUILDINGSYNC_V2_0: 'BuildingSync_v2_0.xsd',
-            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd'
+            cls.BUILDINGSYNC_V2_1_0: 'BuildingSync_v2_1_0.xsd',
+            cls.BUILDINGSYNC_V2_2_0: 'BuildingSync_v2_2_0.xsd',
+            cls.BUILDINGSYNC_V2_3_0: 'BuildingSync_v2_3_0.xsd',
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
@@ -211,6 +220,10 @@ class BuildingSync(object):
             # process the scenario meters (aka resource uses)
             meters = {}
             for resource_use in scenario['resource_uses']:
+                if resource_use['type'] is None or resource_use['units'] is None:
+                    messages['warnings'].append(f'Skipping resource use {resource_use.get("source_id")} due to missing type or units')
+                    continue
+
                 meter = {
                     'source': Meter.BUILDINGSYNC,
                     'source_id': resource_use['source_id'],
@@ -224,16 +237,51 @@ class BuildingSync(object):
 
             # process the scenario meter readings
             for series_data in scenario['time_series']:
-                reading = {
+                meter_reading = {
                     'start_time': series_data['start_time'],
                     'end_time': series_data['end_time'],
                     'reading': series_data['reading'],
                     'source_id': series_data['source_id'],
                 }
-                reading['source_unit'] = meters[reading['source_id']].get('units')
+                meter_reading['source_unit'] = meters[meter_reading['source_id']].get('units')
 
                 # add reading to the meter
-                meters[reading['source_id']]['readings'].append(reading)
+                meters[meter_reading['source_id']]['readings'].append(meter_reading)
+
+                #
+                # Begin Audit Template weirdness
+                #
+
+                # Audit Template (AT) puts some meter reading data in AllResourceTotals
+                # It uses a UserDefinedField "Linked Time Series ID" to associate the
+                # reading with an auc:TimeSeries (which stores the other relevant info
+                # including start time, end time, etc)
+                for all_resource_total in scenario['audit_template_all_resource_totals']:
+                    if all_resource_total['linked_time_series_id'] == series_data['id']:
+                        # store this data in a separate "meter" -- we can't have two
+                        # readings for the same time period in SEED currently
+                        # NOTE: to future reader, this problem seems to arise from the
+                        # fact that SEED is unaware of the _type_ of reading,
+                        # e.g. see BuildingSync's ReadingType (point, median, average, peak, etc)
+
+                        # if the meter doesn't exist yet, copy it
+                        original_meter = meters[meter_reading['source_id']]
+                        other_meter_source_id = f'Site Energy Use {original_meter["source_id"]}'
+                        if other_meter_source_id not in meters:
+                            meters[other_meter_source_id] = {
+                                **original_meter,
+                                'source_id': other_meter_source_id,
+                                'readings': []
+                            }
+
+                        meters[other_meter_source_id]['readings'].append({
+                            **meter_reading,
+                            'reading': all_resource_total['site_energy_use']
+                        })
+
+                #
+                # End Audit Template weirdness
+                #
 
             # create scenario
             seed_scenario = {
@@ -251,6 +299,7 @@ class BuildingSync(object):
                 'annual_source_energy_use_intensity': scenario['annual_source_energy_use_intensity'],
                 'annual_electricity_energy': scenario['annual_electricity_energy'],
                 'annual_peak_demand': scenario['annual_peak_demand'],
+                'annual_peak_electricity_reduction': scenario['annual_peak_electricity_reduction'],
                 'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
                 'measures': [id['id'] for id in scenario['measure_ids']],
             }
@@ -364,14 +413,19 @@ class BuildingSync(object):
         if self.element_tree is None:
             raise ParsingError('A file must first be imported with import method')
 
-        # first check if it's a file form Audit Template Tool and infer the version
-        # Currently ATT doesn't include a schemaLocation so this is necessary
-        if self._is_from_audit_template_tool():
-            return self.BUILDINGSYNC_V2_0
-
         bsync_element = self.element_tree.getroot()
         if not bsync_element.tag.endswith('BuildingSync'):
             raise ParsingError('Expected BuildingSync element as root element in xml')
+
+        # first check for a version attribute in the buldingsync tag
+        if "version" in bsync_element.attrib:
+            return bsync_element.attrib["version"]
+
+        # second check if it's a file form Audit Template Tool
+        if self._is_from_audit_template_tool():
+
+            # it must be a 2.0 file as that was the last version which didn't require @version
+            return self.BUILDINGSYNC_V2_0
 
         # attempt to parse the version from the xsi:schemaLocation
         schemas = bsync_element.get('{http://www.w3.org/2001/XMLSchema-instance}schemaLocation', '').split()

@@ -17,6 +17,9 @@ CSRF_COOKIE_SECURE = False
 COMPRESS_ENABLED = compress
 COMPRESS_OFFLINE = compress
 
+# When running in dev mode and without nginx, specify the location of the media files.
+MEDIA_URL = '/media/'
+
 # override this in local_untracked.py
 DATABASES = {
     'default': {
@@ -67,20 +70,16 @@ LOGGING = {
 
 REQUIRE_UNIQUE_EMAIL = False
 
+# LBNL's BETTER tool host
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+
 ALLOWED_HOSTS = ['*']
 
-# use imp module to find the local_untracked file rather than a hard-coded path
-try:
-    import imp
-    import config.settings
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
 
-    local_untracked_exists = imp.find_module(
-        'local_untracked', config.settings.__path__
-    )
-except BaseException:
-    pass
-
-if 'local_untracked_exists' in locals():
-    from config.settings.local_untracked import *  # noqa
-else:
+local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
+if local_untracked_spec is None:
     raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
+else:
+    from config.settings.local_untracked import *  # noqa

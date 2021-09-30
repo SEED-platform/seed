@@ -57,6 +57,7 @@ def _get_default_display_meter_units():
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Electric - Unknown': 'kWh (thousand Watt-hours)',
         'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
@@ -146,6 +147,7 @@ class Organization(models.Model):
         'Electric - Grid': 'kWh (thousand Watt-hours)',
         'Electric - Solar': 'kWh (thousand Watt-hours)',
         'Electric - Wind': 'kWh (thousand Watt-hours)',
+        'Electric - Unknown': 'kWh (thousand Watt-hours)',
         'Fuel Oil (No. 1)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 2)': 'kBtu (thousand Btu)',
         'Fuel Oil (No. 4)': 'kBtu (thousand Btu)',
@@ -206,6 +208,9 @@ class Organization(models.Model):
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     comstock_enabled = models.BooleanField(default=False)
+
+    # API Token for communicating with BETTER
+    better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
