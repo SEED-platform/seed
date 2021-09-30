@@ -75,14 +75,14 @@ def _get_valid_meters(property_view_ids):
         # get all readings that started AND ended between end_time and a year prior
         meter_readings_by_meter = {}
         for meter_reading in MeterReading.objects.filter(
-                meter__property=property_view.property,
-                meter__type__in=VALID_METERS,
-                end_time__lte=end_time,
-                start_time__gte=end_time - TIME_PERIOD
-            ).order_by('start_time'):
-                if meter_reading.meter.id not in meter_readings_by_meter:
-                    meter_readings_by_meter[meter_reading.meter.id] = []
-                meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
+            meter__property=property_view.property,
+            meter__type__in=VALID_METERS,
+            end_time__lte=end_time,
+            start_time__gte=end_time - TIME_PERIOD
+        ).order_by('start_time'):
+            if meter_reading.meter.id not in meter_readings_by_meter:
+                meter_readings_by_meter[meter_reading.meter.id] = []
+            meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
 
         # ensure no overlapping readings per meter
         done = False
