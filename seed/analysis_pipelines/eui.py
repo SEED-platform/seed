@@ -7,7 +7,6 @@
 import datetime
 import logging
 from celery import chain, shared_task
-from django.db.models import Count
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -81,9 +80,9 @@ def _get_valid_meters(property_view_ids):
                 end_time__lte=end_time,
                 start_time__gte=end_time - TIME_PERIOD
             ).order_by('start_time'):
-            if meter_reading.meter.id not in meter_readings_by_meter:
-                meter_readings_by_meter[meter_reading.meter.id] = []
-            meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
+                if meter_reading.meter.id not in meter_readings_by_meter:
+                    meter_readings_by_meter[meter_reading.meter.id] = []
+                meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
 
         # ensure no overlapping readings per meter
         done = False
@@ -132,7 +131,6 @@ def _get_valid_meters(property_view_ids):
 def _calculate_eui(meter_readings, gross_floor_area):
     total_reading = 0
     total_time = 0
-    total_time_missing = 0
     for meter_id in meter_readings:
         total_reading += meter_readings[meter_id]['reading']
         total_time += meter_readings[meter_id]['time']
