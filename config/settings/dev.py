@@ -70,6 +70,9 @@ LOGGING = {
 
 REQUIRE_UNIQUE_EMAIL = False
 
+# LBNL's BETTER tool host
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
+
 ALLOWED_HOSTS = ['*']
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
