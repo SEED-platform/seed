@@ -1043,11 +1043,7 @@ class TestEuiPipeline(TestCase):
         })
 
     def test_calculate_eui(self):
-        meter_readings = {123: {'reading': 78, 'time': TIME_PERIOD.total_seconds()}}
-        gross_floor_area = 123
-        expected_eui = 0.6341
-        expected_coverage = 100
-        results = _calculate_eui(meter_readings, gross_floor_area)
+        results = _calculate_eui({123: {'reading': 78, 'time': TIME_PERIOD.total_seconds()}}, 123)
         self.assertEqual(results['eui'], 0.6341)
         self.assertEqual(results['reading'], 78)
         self.assertEqual(results['coverage'], 100)

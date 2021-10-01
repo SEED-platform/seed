@@ -68,7 +68,7 @@ def _get_valid_meters(property_view_ids):
                 meter__property=property_view.property,
                 meter__type__in=VALID_METERS
             ).order_by('end_time').last().end_time
-        except:
+        except Exception as e:
             invalid_meter.append(property_view.id)
             continue
 
