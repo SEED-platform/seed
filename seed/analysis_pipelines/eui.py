@@ -68,7 +68,7 @@ def _get_valid_meters(property_view_ids):
                 meter__property=property_view.property,
                 meter__type__in=VALID_METERS
             ).order_by('end_time').last().end_time
-        except MeterReading.DoesNotExist:
+        except:
             invalid_meter.append(property_view.id)
             continue
 
@@ -84,32 +84,32 @@ def _get_valid_meters(property_view_ids):
                 meter_readings_by_meter[meter_reading.meter.id] = []
             meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
 
-        # ensure no overlapping readings per meter
-        done = False
-        for meter_id in meter_readings_by_meter:
-            last_reading = None
-            for reading in meter_readings_by_meter[meter_id]:
-                if last_reading is not None:
-                    if last_reading.end_time < reading.start_time:
-                        overlapping_meter.append(property_view.id)
-                        done = True
-                        continue
-                last_reading = reading
-            if done:
-                continue
-
         # generate summary per meter
+        done = False
         readings_by_meter = {}
         for meter_id in meter_readings_by_meter:
+            last_reading = None
             total_time = 0
             total_reading = 0
             for reading in meter_readings_by_meter[meter_id]:
+
+                # ensure no overlapping readings per meter
+                if last_reading is not None:
+                    if last_reading.end_time > reading.start_time:
+                        overlapping_meter.append(property_view.id)
+                        done = True
+                        break
+
+                last_reading = reading
                 total_time += (reading.end_time - reading.start_time).total_seconds()
                 total_reading += reading.reading
+            if done:
+                continue
             readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading}
 
         # done with this property_view
-        meter_readings_by_property_view[property_view.id] = readings_by_meter
+        if readings_by_meter:
+            meter_readings_by_property_view[property_view.id] = readings_by_meter
 
     errors_by_property_view_id = {}
     for pid in invalid_area:
