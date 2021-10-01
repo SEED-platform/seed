@@ -44,19 +44,19 @@ def _split_reading(meter_reading):
     represent the start and end of the meter readings.
 
     (1) Reading fits in a single month
-    reading:      [###]      
+    reading:      [###]
     months:  |    |    |    |
-    result:       [###]      
+    result:       [###]
 
     (2) Reading straddles months
-    reading:   [#####]       
+    reading:   [#####]
     months:  |    |    |    |
-    result:  [###][###]      
+    result:  [###][###]
 
     (3) Reading straddles and spans months
-    reading:   [##########]  
+    reading:   [##########]
     months:  |    |    |    |
-    result:  [###][###][###] 
+    result:  [###][###][###]
 
     :param meter_reading: MeterReading | SimpleMeterReading
     :return: List[SimpleMeterReading], in sorted order by start_date
