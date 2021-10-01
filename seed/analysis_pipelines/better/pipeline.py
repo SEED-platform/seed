@@ -35,7 +35,12 @@ from seed.analysis_pipelines.better.helpers import (
     _store_better_building_analysis_results,
     _store_better_portfolio_analysis_results,
 )
-from seed.analysis_pipelines.utils import get_json_path
+from seed.analysis_pipelines.utils import (
+    aggregate_meter_readings,
+    get_json_path,
+    interpolate_monthly_readings,
+    reject_outliers,
+)
 
 from seed.models import (
     Analysis,
@@ -44,6 +49,7 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Meter,
+    MeterReading,
 )
 
 
@@ -66,6 +72,7 @@ def _validate_better_config(analysis):
         'savings_target',
         'benchmark_data',
         'portfolio_analysis',
+        'preprocess_meters',
     ]
 
     return [
@@ -139,6 +146,52 @@ class BETTERPipeline(AnalysisPipeline):
         ).apply_async()
 
 
+def get_meter_readings(property_id, preprocess_meters):
+    """Returns meters and readings which should meet BETTER's requirements
+
+    :param property_id: int
+    :param preprocess_meters: bool, if true aggregate and interpolate readings
+        into monthly readings. If false, don't do any preprocessing of the property's
+        meters and readings.
+    :return: List[dict], list of dictionaries of the form:
+        { 'meter_type': <Meter.type>, 'readings': List[SimpleMeterReading | MeterReading] }
+    """
+    selected_meters_and_readings = []
+    if preprocess_meters:
+        for meter_type in SEED_TO_BSYNC_RESOURCE_TYPE.keys():
+            meter_readings = MeterReading.objects.filter(meter__property_id=property_id, meter__type=meter_type)
+            if meter_readings.count() == 0:
+                continue
+            monthly_readings = aggregate_meter_readings(meter_readings)
+            monthly_readings = reject_outliers(monthly_readings)
+            monthly_readings = interpolate_monthly_readings(monthly_readings)
+            if len(monthly_readings) >= 12:
+                selected_meters_and_readings.append({
+                    'meter_type': meter_type,
+                    'readings': monthly_readings
+                })
+    else:
+        meters = (
+            Meter.objects
+            .annotate(readings_count=Count('meter_readings'))
+            .filter(
+                property_id=property_id,
+                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
+                readings_count__gte=12,
+            )
+        )
+        for meter in meters:
+            # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
+            readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+            if readings.count() >= 12:
+                selected_meters_and_readings.append({
+                    'meter_type': meter.type,
+                    'readings': readings,
+                })
+
+    return selected_meters_and_readings
+
+
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
 def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysis_id):
@@ -157,28 +210,24 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids_by_property_view_id.values())
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
-        meters = (
-            Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
-                property=analysis_property_view.property,
-                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
-                readings_count__gte=12,
-            )
+        selected_meters_and_readings = get_meter_readings(
+            analysis_property_view.property_id,
+            analysis.configuration.get('preprocess_meters', False)
         )
-        if meters.count() == 0:
+
+        if len(selected_meters_and_readings) == 0:
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.INFO,
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
-                user_message='Property not used in analysis: Property has no linked electricity or natural gas meters '
-                             'with 12 or more readings',
+                user_message='Property not included in analysis: Property has no meters'
+                             'meeting BETTER\'s requirements. See the analysis documentation for more info.',
                 debug_message=''
             )
             continue
 
-        better_doc, errors = _build_better_input(analysis_property_view, meters)
+        better_doc, errors = _build_better_input(analysis_property_view, selected_meters_and_readings)
         if errors:
             for error in errors:
                 AnalysisMessage.log_and_create(
