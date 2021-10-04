@@ -64,7 +64,14 @@
                                 </label>
                                 <input ng-model="new_analysis.configuration.min_model_r_squared" type="number" class="form-control" ng-init="new_analysis.configuration.min_model_r_squared=0.6" ng-value="0.6" step=".01" min="0" max="1">
                             </div>
-                            <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em">
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
+                                <label class="control-label sectionLabel text-muted">
+                                    Preprocess Meters
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will attempt to aggregate and interpolate your meter data into monthly readings for the analysis. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
+                                </label>
+                                <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
+                            </div>
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
                                 <label class="control-label sectionLabel text-muted">
                                     Run Portfolio Analysis
                                     <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>

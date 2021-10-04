@@ -54,13 +54,14 @@ SEED_TO_BSYNC_RESOURCE_TYPE = {
 }
 
 
-def _build_better_input(analysis_property_view, meters):
+def _build_better_input(analysis_property_view, meters_and_readings):
     """Constructs a BuildingSync document to be used as input for a BETTER analysis.
     The function returns a tuple, the first value being the XML document as a byte
     string. The second value is a list of error messages.
 
     :param analysis_property_view: AnalysisPropertyView
-    :param meter: Meter
+    :param meters_and_readings: list[dict], list of dictionaries of the
+        of the form {'meter_type': <Meter.type>, 'readings': list[SimpleMeterReading]}
     :returns: tuple(bytes, list[str])
     """
     errors = []
@@ -79,19 +80,6 @@ def _build_better_input(analysis_property_view, meters):
     if property_state.property_type not in BETTER_TO_BSYNC_PROPERTY_TYPE:
         errors.append(
             f"BETTER analysis requires the property's type must be one of the following: {', '.join(BETTER_TO_BSYNC_PROPERTY_TYPE.keys())}")
-
-    valid_meters_and_readings = []
-    for meter in meters:
-        readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
-        if readings.count() >= 12:
-            valid_meters_and_readings.append({
-                'meter': meter,
-                'readings': readings,
-            })
-    if len(valid_meters_and_readings) == 0:
-        errors.append(
-            'BETTER analysis requires at least one meter with 12 consecutive readings with values >= 1.0'
-        )
 
     if errors:
         return None, errors
@@ -181,12 +169,12 @@ def _build_better_input(analysis_property_view, meters):
                                         *[
                                             E.ResourceUse(
                                                 {'ID': f'ResourceUse-{meter_idx:03}'},
-                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter_and_readings['meter'].type]),
+                                                E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE[meter_and_readings['meter_type']]),
                                                 # SEED stores all meter readings as kBtu
                                                 E.ResourceUnits('kBtu'),
                                                 E.EndUse('All end uses')
                                             )
-                                            for meter_idx, meter_and_readings in enumerate(valid_meters_and_readings)
+                                            for meter_idx, meter_and_readings in enumerate(meters_and_readings)
                                         ]
                                     ),
                                     E.TimeSeriesData(
@@ -200,7 +188,7 @@ def _build_better_input(analysis_property_view, meters):
                                                 E.IntervalReading(str(reading.reading)),
                                                 E.ResourceUseID({'IDref': f'ResourceUse-{meter_idx:03}'}),
                                             )
-                                            for meter_idx, meter_and_readings in enumerate(valid_meters_and_readings) \
+                                            for meter_idx, meter_and_readings in enumerate(meters_and_readings) \
                                             for reading_idx, reading in enumerate(meter_and_readings['readings'])
                                         ]
                                     ),

@@ -71,6 +71,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               benchmark_data: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
+              preprocess_meters: false,
             }
             break;
         }
