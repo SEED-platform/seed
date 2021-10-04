@@ -4,9 +4,9 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import datetime
 import logging
 from celery import chain, shared_task
-from django.db.models import Count
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -26,109 +26,119 @@ from seed.models import (
 
 logger = logging.getLogger(__name__)
 
-ERROR_INSUFFICIENT_METER_READINGS = 0
-ERROR_INVALID_METER_READINGS = 1
+ERROR_INVALID_METER_READINGS = 0
+ERROR_OVERLAPPING_METER_READINGS = 1
 ERROR_NO_VALID_PROPERTIES = 2
 WARNING_SOME_INVALID_PROPERTIES = 3
 
 EUI_ANALYSIS_MESSAGES = {
-    ERROR_INVALID_GROSS_FLOOR_AREA: 'Property view skipped (invalid Gross Floor Area).',
-    ERROR_INSUFFICIENT_METER_READINGS: 'Property view skipped (no linked electricity meters with 12 or more readings).',
-    ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with 12 months of consecutive readings).',
+    ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
+    ERROR_OVERLAPPING_METER_READINGS: 'Property view skipped (meter has overlapping readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
 }
 
+VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND]
+TIME_PERIOD = datetime.timedelta(days=365)
+
 
 def _get_valid_meters(property_view_ids):
-    """Performs basic validation of the properties for running eGRID and returns any errors.
+    """Performs basic validation of the properties for running Average Annual CO2 and returns any errors.
 
     :param analysis: property_view_ids
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     invalid_area = []
-    invalid_meter_1 = []
-    invalid_meter_2 = []
+    invalid_meter = []
+    overlapping_meter = []
     meter_readings_by_property_view = {}
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
 
-        # ensure we have at least 1 meter with 12 readings
-        meters = (
-            Meter.objects
-            .annotate(readings_count=Count('meter_readings'))
-            .filter(
-                property=property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
-                readings_count__gte=12,
-            )
-        )
-        if meters.count() == 0:
-            invalid_meter_1.append(property_view.id)
+        # ensure we have Gross Floor Area on this property view's state
+        if property_view.state.gross_floor_area is None:
+            invalid_area.append(property_view.id)
             continue
 
-        # ensure one found meter has at least 12 consecutive monthly readings
-        meter_readings = []
-        for meter in meters:
-            previous_month = 0
-            streak = 0
-            for meter_reading in MeterReading.objects.filter(meter=meter).order_by('-start_time'):
-                current_month = meter_reading.start_time.month
-
-                # if previous month is wrong, start streak over
-                if previous_month != 0 and previous_month != current_month + 1:
-                    previous_month = 0
-                    streak = 0
-                    meter_readings = []
-                    continue
-
-                # readings are already normalized to kBtu on import so we only need the reading value
-                meter_readings.append(meter_reading.reading)
-                previous_month = meter_reading.start_time.month
-                streak = streak + 1
-
-                # just use the most recent 12 months found
-                if streak >= 12:
-                    break
-
-            # just use the first meter found
-            if streak >= 12:
-                break
-
-        if streak < 12:
-            invalid_meter_2.append(property_view.id)
+        # get the most recent electric meter reading's end_time
+        try:
+            end_time = MeterReading.objects.filter(
+                meter__property=property_view.property,
+                meter__type__in=VALID_METERS
+            ).order_by('end_time').last().end_time
+        except Exception:
+            invalid_meter.append(property_view.id)
             continue
-        meter_readings.reverse()
-        meter_readings_by_property_view[property_view.id] = meter_readings
+
+        # get all readings that started AND ended between end_time and a year prior
+        meter_readings_by_meter = {}
+        for meter_reading in MeterReading.objects.filter(
+            meter__property=property_view.property,
+            meter__type__in=VALID_METERS,
+            end_time__lte=end_time,
+            start_time__gte=end_time - TIME_PERIOD
+        ).order_by('start_time'):
+            if meter_reading.meter.id not in meter_readings_by_meter:
+                meter_readings_by_meter[meter_reading.meter.id] = []
+            meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
+
+        # generate summary per meter
+        done = False
+        readings_by_meter = {}
+        for meter_id in meter_readings_by_meter:
+            last_reading = None
+            total_time = 0
+            total_reading = 0
+            for reading in meter_readings_by_meter[meter_id]:
+
+                # ensure no overlapping readings per meter
+                if last_reading is not None:
+                    if last_reading.end_time > reading.start_time:
+                        overlapping_meter.append(property_view.id)
+                        done = True
+                        break
+
+                last_reading = reading
+                total_time += (reading.end_time - reading.start_time).total_seconds()
+                total_reading += reading.reading
+            if done:
+                continue
+            readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading}
+
+        # done with this property_view
+        if readings_by_meter:
+            meter_readings_by_property_view[property_view.id] = readings_by_meter
 
     errors_by_property_view_id = {}
     for pid in invalid_area:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
         errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA])
-    for pid in invalid_meter_1:
-        if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INSUFFICIENT_METER_READINGS])
-    for pid in invalid_meter_2:
+    for pid in invalid_meter:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
         errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
+    for pid in overlapping_meter:
+        if pid not in errors_by_property_view_id:
+            errors_by_property_view_id[pid] = []
+        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS])
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
-def _calculate_eui(meter_readings, gross_floor_area):
-    return round(sum(meter_readings) / gross_floor_area, 4)
+def _calculate_co2():
+    return {
+        'average': 0,
+        'reading': 0,
+        'coverage': 0
+    }
 
-
-class EUIPipeline(AnalysisPipeline):
+class CO2Pipeline(AnalysisPipeline):
 
     def _prepare_analysis(self, property_view_ids, start_analysis=True):
         # current implemtation will *always* start the analysis immediately
 
         meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters(property_view_ids)
-
         if not meter_readings_by_property_view:
             AnalysisMessage.log_and_create(
                 logger=logger,
@@ -170,8 +180,8 @@ class EUIPipeline(AnalysisPipeline):
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
 def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readings_by_property_view, errors_by_property_view_id, analysis_id):
-    pipeline = EUIPipeline(analysis_id)
-    pipeline.set_analysis_status_to_ready('Ready to run EUI analysis')
+    pipeline = CO2Pipeline(analysis_id)
+    pipeline.set_analysis_status_to_ready('Ready to run Average Annual CO2 analysis')
 
     # attach errors to respective analysis_property_views
     if errors_by_property_view_id:
@@ -198,43 +208,51 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, meter_readi
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)
 def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
-    pipeline = EUIPipeline(analysis_id)
+    pipeline = CO2Pipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
-    progress_data.step('Calculating EUI')
-
+    progress_data.step('Calculating Average Annual CO2')
     analysis = Analysis.objects.get(id=analysis_id)
 
+    # make sure we have the extra data columns we need
     Column.objects.get_or_create(
         is_extra_data=True,
-        column_name="analysis_eui",
-        display_name="Analysis EUI",
+        column_name='analysis_co2',
+        display_name='Average Annual CO2 (kgCO2e)',
+        organization=analysis.organization,
+        table_name='PropertyState',
+    )
+    Column.objects.get_or_create(
+        is_extra_data=True,
+        column_name='analysis_co2_coverage',
+        display_name='Average Annual CO2 Coverage (% of the year)',
         organization=analysis.organization,
         table_name='PropertyState',
     )
 
-    # for some reason the keys, which should be ids (ie integers), get turned into strings
-    # let's fix that here
+    # for some reason the keys, which should be ids (ie integers), get turned into strings... let's fix that here
     meter_readings_by_analysis_property_view = {int(key): value for key, value in meter_readings_by_analysis_property_view.items()}
-
     analysis_property_view_ids = list(meter_readings_by_analysis_property_view.keys())
+
     # prefetching property and cycle b/c .get_property_views() uses them (this is not "clean" but whatever)
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids).prefetch_related('property', 'cycle', 'property_state')
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
+    # create and save EUIs for each property view
     for analysis_property_view in analysis_property_views:
         area = analysis_property_view.property_state.gross_floor_area.magnitude
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
-        eui = _calculate_eui(meter_readings, area)
+        co2 = _calculate_co2(meter_readings, area)
 
         analysis_property_view.parsed_results = {
-            'EUI': eui,
-            'Total Yearly Meter Reading': sum(meter_readings),
-            'Gross Floor Area': area
+            'Average Annual CO2 (kgCO2e)': co2['average'],
+            'Annual Coverage %': co2['coverage'],
+            'Total Annual Meter Reading (kBtu)': co2['reading']
         }
         analysis_property_view.save()
 
         property_view = property_views_by_apv_id[analysis_property_view.id]
-        property_view.state.extra_data.update({'analysis_eui': eui})
+        property_view.state.extra_data.update({'analysis_co2': co2['average']})
+        property_view.state.extra_data.update({'analysis_co2_coverage': co2['coverage']})
         property_view.state.save()
 
     # all done!
