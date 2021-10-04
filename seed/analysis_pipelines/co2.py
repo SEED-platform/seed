@@ -126,7 +126,7 @@ def _get_valid_meters(property_view_ids):
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
-def _calculate_co2():
+def _calculate_co2(meter_readings):
     return {
         'average': 0,
         'reading': 0,
@@ -241,7 +241,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     for analysis_property_view in analysis_property_views:
         area = analysis_property_view.property_state.gross_floor_area.magnitude
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
-        co2 = _calculate_co2(meter_readings, area)
+        co2 = _calculate_co2(meter_readings)
 
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average'],
