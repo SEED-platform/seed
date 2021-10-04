@@ -42,7 +42,6 @@ class TestAnalysisUtils(TestCase):
     def test_split_reading_works_when_reading_straddles_two_months(self):
         # -- Setup
         # this reading starts in January and ends in February
-        # this reading starts in January, covers February, and ends in March
         # More specifically, this reading includes:
         # January:  17 days (~55%)
         # February: 15 days (~45%)
