@@ -22,13 +22,13 @@ class Analysis(models.Model):
     BSYNCR = 1
     BETTER = 2
     EUI = 3
-    EGRID = 4
+    CO2 = 4
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
         (EUI, 'EUI'),
-        (EGRID, 'eGRID')
+        (CO2, 'CO2')
     )
 
     PENDING_CREATION = 8
