@@ -145,6 +145,11 @@ def reject_outliers(meter_readings, reject=1):
     raw_values = [reading.reading for reading in meter_readings]
     avg = mean(raw_values)
     stdev = pstdev(raw_values)
+
+    # weird case, but avoids divide by zero
+    if stdev == 0:
+        return meter_readings
+
     filtered_readings = []
     for reading in meter_readings:
         zscore = (reading.reading - avg) / stdev
@@ -164,6 +169,9 @@ def interpolate_monthly_readings(meter_readings):
     :param meter_readings: List[SimpleMeterReading]
     :return: List[SimpleMeterReading]
     """
+    if len(meter_readings) == 0:
+        return []
+
     interpolated_readings = []
     current_reading_index = 0
     current_time = meter_readings[current_reading_index].start_time

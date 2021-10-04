@@ -100,9 +100,9 @@ class BETTERPipeline(AnalysisPipeline):
 
         # ping BETTER to verify the token is valid
         client = BETTERClient(organization.better_analysis_api_key)
-        _, errors = client.get_buildings()
-        if errors:
-            message = '; '.join(errors)
+        success = client.test_token()
+        if not success:
+            message = 'Failed to communicate with BETTER. Please verify organization token is valid and try again.'
             self.fail(message, logger)
             raise AnalysisPipelineException(message)
 
@@ -164,6 +164,8 @@ def get_meter_readings(property_id, preprocess_meters):
                 continue
             monthly_readings = aggregate_meter_readings(meter_readings)
             monthly_readings = reject_outliers(monthly_readings)
+            # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
+            monthly_readings = [reading for reading in monthly_readings if reading.reading >= 1.0]
             monthly_readings = interpolate_monthly_readings(monthly_readings)
             if len(monthly_readings) >= 12:
                 selected_meters_and_readings.append({
@@ -221,7 +223,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
                 type_=AnalysisMessage.INFO,
                 analysis_id=analysis.id,
                 analysis_property_view_id=analysis_property_view.id,
-                user_message='Property not included in analysis: Property has no meters'
+                user_message='Property not included in analysis: Property has no meters '
                              'meeting BETTER\'s requirements. See the analysis documentation for more info.',
                 debug_message=''
             )
