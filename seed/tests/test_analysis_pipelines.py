@@ -918,8 +918,20 @@ class TestBETTERPipeline(TestCase):
             )
 
     def test_build_better_input_returns_valid_bsync_document(self):
+        # Setup
+        meters = [
+            {
+                'meter_type': self.meter_nat.type,
+                'readings': self.meter_nat.meter_readings.all()
+            },
+            {
+                'meter_type': self.meter_elec.type,
+                'readings': self.meter_elec.meter_readings.all()
+            },
+        ]
+
         # Act
-        doc, errors = _build_better_input(self.analysis_property_view, [self.meter_nat, self.meter_elec])
+        doc, errors = _build_better_input(self.analysis_property_view, meters)
         tree = etree.parse(BytesIO(doc))
 
         # Assert
