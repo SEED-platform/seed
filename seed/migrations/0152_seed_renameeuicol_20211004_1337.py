@@ -14,7 +14,6 @@ def rename_eui_results_col(apps, schema_editor):
     Column.objects.filter(
         is_extra_data=True,
         column_name='analysis_eui',
-        display_name='Analysis EUI',
         table_name='PropertyState'
     ).update(display_name='Fractional EUI (kBtu/sqft)')
 
