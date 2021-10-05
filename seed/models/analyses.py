@@ -144,6 +144,21 @@ class Analysis(models.Model):
                 {'name': 'Annual Coverage', 'value': f'{coverage}%'}
             ]
 
+        # CO2
+        elif self.service == self.CO2:
+            eui_result = results.get('Average Annual CO2 (kgCO2e)')
+            value = 'N/A'
+            if eui_result is not None:
+                value = f'{eui_result:,.2f}'
+            coverage = results.get('Annual Coverage %')
+            if coverage is None:
+                coverage = 'N/A'
+
+            return [
+                {'name': 'Average Annual CO2', 'value': f'{value} kgCO2e'},
+                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
+            ]
+
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]
 
