@@ -36,7 +36,7 @@ from seed.analysis_pipelines.better.helpers import (
     _store_better_portfolio_analysis_results,
 )
 from seed.analysis_pipelines.utils import (
-    aggregate_meter_readings,
+    calendarize_meter_readings,
     get_json_path,
     interpolate_monthly_readings,
     reject_outliers,
@@ -162,7 +162,7 @@ def get_meter_readings(property_id, preprocess_meters):
             meter_readings = MeterReading.objects.filter(meter__property_id=property_id, meter__type=meter_type)
             if meter_readings.count() == 0:
                 continue
-            monthly_readings = aggregate_meter_readings(meter_readings)
+            monthly_readings = calendarize_meter_readings(meter_readings)
             monthly_readings = reject_outliers(monthly_readings)
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             monthly_readings = [reading for reading in monthly_readings if reading.reading >= 1.0]

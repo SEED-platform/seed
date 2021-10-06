@@ -108,7 +108,7 @@ def _split_reading(meter_reading):
     return split_readings
 
 
-def aggregate_meter_readings(meter_readings):
+def calendarize_meter_readings(meter_readings):
     """Aggregate readings into calendar months
 
     :param: meter_readings, QuerySet[MeterReading]
