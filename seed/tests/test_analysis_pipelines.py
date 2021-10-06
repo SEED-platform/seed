@@ -9,6 +9,9 @@ from io import BytesIO
 import json
 import logging
 from os import path
+
+from dateutil import relativedelta
+from seed.analysis_pipelines.utils import SimpleMeterReading
 from unittest.case import skip
 from unittest.mock import patch
 from zipfile import ZipFile
@@ -1030,7 +1033,11 @@ class TestEuiPipeline(TestCase):
         self.assertNotEqual(meter_readings_by_property_view, {})
 
     def test_calculate_eui(self):
-        results = _calculate_eui({123: {'reading': 78, 'time': TIME_PERIOD.total_seconds()}}, 123)
-        self.assertEqual(results['eui'], 0.6341)
-        self.assertEqual(results['reading'], 78)
+        reading_start_time = datetime(2020, 1, 1)
+        reading_end_time = reading_start_time + TIME_PERIOD
+        reading_amount = 78
+        reading = SimpleMeterReading(reading_start_time, reading_end_time, reading_amount)
+        results = _calculate_eui([reading], 123)
+        self.assertEqual(results['eui'], 0.63)
+        self.assertEqual(results['reading'], reading_amount)
         self.assertEqual(results['coverage'], 100)
