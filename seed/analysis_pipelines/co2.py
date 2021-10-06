@@ -83,88 +83,91 @@ CO2_RATES = {
         'RFCM': 542.84,  'RFCW': 487.24,  'RMPA': 567.12,  'SPNO': 488.69,  'SPSO': 456.55,  'SRMV': 367.15,
         'SRMW': 723.76,  'SRSO': 441.7,   'SRTV': 433.36,  'SRVC': 307.99
     }, 2020: {
-        'AZNM': 350.6,  'CAMX': 211.4,    'ERCT': 342.1,  'FRCC': 366.2,  'MROE': 535.3,  'MROW': 381.9,
-        'NEWE': 134.4,  'NWPP': 175.7,                    'NYLI': 235.9,  'NYUP': 180.1,  'RFCE': 274.5,
-        'RFCM': 609.5,  'RFCW': 485,      'RMPA': 514.4,  'SPNO': 457.5,  'SPSO': 285.6,  'SRMV': 419,
-        'SRMW': 606,    'SRSO': 332.3,    'SRTV': 513.9,  'SRVC': 291.6
+        'AZNM': 350.6,  'CAMX': 211.4,    'ERCT': 342.1,   'FRCC': 366.2,  'MROE': 535.3,  'MROW': 381.9,
+        'NEWE': 134.4,  'NWPP': 175.7,                     'NYLI': 235.9,  'NYUP': 180.1,  'RFCE': 274.5,
+        'RFCM': 609.5,  'RFCW': 485,      'RMPA': 514.4,   'SPNO': 457.5,  'SPSO': 285.6,  'SRMV': 419,
+        'SRMW': 606,    'SRSO': 332.3,    'SRTV': 513.9,   'SRVC': 291.6
     }, 2022: {
-        'AZNM': 410,    'CAMX': 215.4,    'ERCT': 340.2,  'FRCC': 375.2,  'MROE': 526.5,  'MROW': 392.6,
-        'NEWE': 146.3,  'NWPP': 224,                      'NYLI': 248.9,  'NYUP': 198.2,  'RFCE': 282.1,
-        'RFCM': 629.8,  'RFCW': 500.5,    'RMPA': 571.8,  'SPNO': 443.5,  'SPSO': 276,    'SRMV': 409.5,
-        'SRMW': 632.1,  'SRSO': 320.5,    'SRTV': 550.4,  'SRVC': 301.1
+        'AZNM': 410,    'CAMX': 215.4,    'ERCT': 340.2,   'FRCC': 375.2,  'MROE': 526.5,  'MROW': 392.6,
+        'NEWE': 146.3,  'NWPP': 224,                       'NYLI': 248.9,  'NYUP': 198.2,  'RFCE': 282.1,
+        'RFCM': 629.8,  'RFCW': 500.5,    'RMPA': 571.8,   'SPNO': 443.5,  'SPSO': 276,    'SRMV': 409.5,
+        'SRMW': 632.1,  'SRSO': 320.5,    'SRTV': 550.4,   'SRVC': 301.1
     }, 2024: {
-        'AZNM': 402.4,  'CAMX': 197.2,    'ERCT': 300.5,  'FRCC': 379.2,  'MROE': 529.5,  'MROW': 361.7,
-        'NEWE': 131.1,  'NWPP': 183.8,                    'NYLI': 182.1,  'NYUP': 146.9,  'RFCE': 250.7,
-        'RFCM': 519.3,  'RFCW': 460.4,    'RMPA': 567.2,  'SPNO': 246.9,  'SPSO': 160.2,  'SRMV': 357,
-        'SRMW': 547.2,  'SRSO': 325.5,    'SRTV': 484.2,  'SRVC': 299.7
+        'AZNM': 402.4,  'CAMX': 197.2,    'ERCT': 300.5,   'FRCC': 379.2,  'MROE': 529.5,  'MROW': 361.7,
+        'NEWE': 131.1,  'NWPP': 183.8,                     'NYLI': 182.1,  'NYUP': 146.9,  'RFCE': 250.7,
+        'RFCM': 519.3,  'RFCW': 460.4,    'RMPA': 567.2,   'SPNO': 246.9,  'SPSO': 160.2,  'SRMV': 357,
+        'SRMW': 547.2,  'SRSO': 325.5,    'SRTV': 484.2,   'SRVC': 299.7
     }, 2026: {
-        'AZNM': 387.2,  'CAMX': 178.9,    'ERCT': 300.5,  'FRCC': 397.2,  'MROE': 523.4,  'MROW': 335.3,
-        'NEWE': 106.9,  'NWPP': 169,                      'NYLI': 162.7,  'NYUP': 128.3,  'RFCE': 247,
-        'RFCM': 523.9,  'RFCW': 471.6,    'RMPA': 573.1,  'SPNO': 233.7,  'SPSO': 142.5,  'SRMV': 347.7,
-        'SRMW': 537.9,  'SRSO': 345.6,    'SRTV': 509.9,  'SRVC': 280.6
+        'AZNM': 387.2,  'CAMX': 178.9,    'ERCT': 300.5,   'FRCC': 397.2,  'MROE': 523.4,  'MROW': 335.3,
+        'NEWE': 106.9,  'NWPP': 169,                       'NYLI': 162.7,  'NYUP': 128.3,  'RFCE': 247,
+        'RFCM': 523.9,  'RFCW': 471.6,    'RMPA': 573.1,   'SPNO': 233.7,  'SPSO': 142.5,  'SRMV': 347.7,
+        'SRMW': 537.9,  'SRSO': 345.6,    'SRTV': 509.9,   'SRVC': 280.6
     }, 2028: {
-        'AZNM': 333,    'CAMX': 158.6,    'ERCT': 270.1,  'FRCC': 353.1,  'MROE': 477.6,  'MROW': 309.3,
-        'NEWE': 95.4,   'NWPP': 146.9,                    'NYLI': 138.5,  'NYUP': 105.7,  'RFCE': 235.8,
-        'RFCM': 476.8,  'RFCW': 457.5,    'RMPA': 532,    'SPNO': 226.4,  'SPSO': 133.2,  'SRMV': 327.9,
-        'SRMW': 472.1,  'SRSO': 262,      'SRTV': 500.2,  'SRVC': 257.6
+        'AZNM': 333,    'CAMX': 158.6,    'ERCT': 270.1,   'FRCC': 353.1,  'MROE': 477.6,  'MROW': 309.3,
+        'NEWE': 95.4,   'NWPP': 146.9,                     'NYLI': 138.5,  'NYUP': 105.7,  'RFCE': 235.8,
+        'RFCM': 476.8,  'RFCW': 457.5,    'RMPA': 532,     'SPNO': 226.4,  'SPSO': 133.2,  'SRMV': 327.9,
+        'SRMW': 472.1,  'SRSO': 262,      'SRTV': 500.2,   'SRVC': 257.6
     }, 2030: {
-        'AZNM': 299.5,  'CAMX': 149.3,    'ERCT': 206.7,  'FRCC': 287.3,  'MROE': 347.1,  'MROW': 195.6,
-        'NEWE': 80.3,   'NWPP': 136.2,                    'NYLI': 116.5,  'NYUP': 87.8,   'RFCE': 206.9,
-        'RFCM': 390.9,  'RFCW': 411.4,    'RMPA': 438,    'SPNO': 181.1,  'SPSO': 118.9,  'SRMV': 280.3,
-        'SRMW': 362.9,  'SRSO': 221.4,    'SRTV': 405.5,  'SRVC': 210.6
+        'AZNM': 299.5,  'CAMX': 149.3,    'ERCT': 206.7,   'FRCC': 287.3,  'MROE': 347.1,  'MROW': 195.6,
+        'NEWE': 80.3,   'NWPP': 136.2,                     'NYLI': 116.5,  'NYUP': 87.8,   'RFCE': 206.9,
+        'RFCM': 390.9,  'RFCW': 411.4,    'RMPA': 438,     'SPNO': 181.1,  'SPSO': 118.9,  'SRMV': 280.3,
+        'SRMW': 362.9,  'SRSO': 221.4,    'SRTV': 405.5,   'SRVC': 210.6
     }, 2032: {
-        'AZNM': 286.9,  'CAMX': 146.7,    'ERCT': 168,    'FRCC': 271.6,  'MROE': 302.6,  'MROW': 161.3,
-        'NEWE': 81,     'NWPP': 136.7,                    'NYLI': 113.9,  'NYUP': 87.4,   'RFCE': 204.9,
-        'RFCM': 371.6,  'RFCW': 385.9,    'RMPA': 413.1,  'SPNO': 161.3,  'SPSO': 86.6,   'SRMV': 268.4,
-        'SRMW': 379.6,  'SRSO': 205.2,    'SRTV': 377,    'SRVC': 202.1
+        'AZNM': 286.9,  'CAMX': 146.7,    'ERCT': 168,     'FRCC': 271.6,  'MROE': 302.6,  'MROW': 161.3,
+        'NEWE': 81,     'NWPP': 136.7,                     'NYLI': 113.9,  'NYUP': 87.4,   'RFCE': 204.9,
+        'RFCM': 371.6,  'RFCW': 385.9,    'RMPA': 413.1,   'SPNO': 161.3,  'SPSO': 86.6,   'SRMV': 268.4,
+        'SRMW': 379.6,  'SRSO': 205.2,    'SRTV': 377,     'SRVC': 202.1
     }, 2034: {
-        'AZNM': 277.9,  'CAMX': 139.5,    'ERCT': 157.1,  'FRCC': 275.5,  'MROE': 163.2,  'MROW': 144.8,
-        'NEWE': 69.3,   'NWPP': 135,                      'NYLI': 98.8,   'NYUP': 74.7,   'RFCE': 198.1,
-        'RFCM': 354.9,  'RFCW': 356.7,    'RMPA': 341,    'SPNO': 160.6,  'SPSO': 81.2,   'SRMV': 263.3,
-        'SRMW': 363.1,  'SRSO': 206.9,    'SRTV': 352.8,  'SRVC': 190.1
+        'AZNM': 277.9,  'CAMX': 139.5,    'ERCT': 157.1,   'FRCC': 275.5,  'MROE': 163.2,  'MROW': 144.8,
+        'NEWE': 69.3,   'NWPP': 135,                       'NYLI': 98.8,   'NYUP': 74.7,   'RFCE': 198.1,
+        'RFCM': 354.9,  'RFCW': 356.7,    'RMPA': 341,     'SPNO': 160.6,  'SPSO': 81.2,   'SRMV': 263.3,
+        'SRMW': 363.1,  'SRSO': 206.9,    'SRTV': 352.8,   'SRVC': 190.1
     }, 2036: {
-        'AZNM': 241.6,  'CAMX': 129.3,    'ERCT': 155.4,  'FRCC': 266.9,  'MROE': 157.4,  'MROW': 138.4,
-        'NEWE': 71.9,   'NWPP': 134.1,                    'NYLI': 106.9,  'NYUP': 81.7,   'RFCE': 202.1,
-        'RFCM': 335.9,  'RFCW': 329.1,    'RMPA': 287.9,  'SPNO': 155.4,  'SPSO': 71.8,   'SRMV': 252.2,
-        'SRMW': 345,    'SRSO': 206.2,    'SRTV': 324.9,  'SRVC': 187.2
+        'AZNM': 241.6,  'CAMX': 129.3,    'ERCT': 155.4,   'FRCC': 266.9,  'MROE': 157.4,  'MROW': 138.4,
+        'NEWE': 71.9,   'NWPP': 134.1,                     'NYLI': 106.9,  'NYUP': 81.7,   'RFCE': 202.1,
+        'RFCM': 335.9,  'RFCW': 329.1,    'RMPA': 287.9,   'SPNO': 155.4,  'SPSO': 71.8,   'SRMV': 252.2,
+        'SRMW': 345,    'SRSO': 206.2,    'SRTV': 324.9,   'SRVC': 187.2
     }, 2038: {
-        'AZNM': 207.3,  'CAMX': 111.7,    'ERCT': 140.1,  'FRCC': 258.4,  'MROE': 168.7,  'MROW': 137.6,
-        'NEWE': 66.3,   'NWPP': 123.3,                    'NYLI': 100.7,  'NYUP': 80.1,   'RFCE': 205.4,
-        'RFCM': 316.9,  'RFCW': 310,      'RMPA': 286,    'SPNO': 155.5,  'SPSO': 64.1,   'SRMV': 247,
-        'SRMW': 332.9,  'SRSO': 187.1,    'SRTV': 323.4,  'SRVC': 184.1
+        'AZNM': 207.3,  'CAMX': 111.7,    'ERCT': 140.1,   'FRCC': 258.4,  'MROE': 168.7,  'MROW': 137.6,
+        'NEWE': 66.3,   'NWPP': 123.3,                     'NYLI': 100.7,  'NYUP': 80.1,   'RFCE': 205.4,
+        'RFCM': 316.9,  'RFCW': 310,      'RMPA': 286,     'SPNO': 155.5,  'SPSO': 64.1,   'SRMV': 247,
+        'SRMW': 332.9,  'SRSO': 187.1,    'SRTV': 323.4,   'SRVC': 184.1
     }, 2040: {
-        'AZNM': 178.4,  'CAMX': 100.9,    'ERCT': 145.9,  'FRCC': 250.3,  'MROE': 159.9,  'MROW': 140.8,
-        'NEWE': 66.5,   'NWPP': 110.7,                    'NYLI': 93.9,   'NYUP': 74.1,   'RFCE': 198,
-        'RFCM': 289.3,  'RFCW': 281.8,    'RMPA': 284.8,  'SPNO': 153.6,  'SPSO': 59.7,   'SRMV': 239.8,
-        'SRMW': 281.7,  'SRSO': 183.6,    'SRTV': 307.2,  'SRVC': 178.4
+        'AZNM': 178.4,  'CAMX': 100.9,    'ERCT': 145.9,   'FRCC': 250.3,  'MROE': 159.9,  'MROW': 140.8,
+        'NEWE': 66.5,   'NWPP': 110.7,                     'NYLI': 93.9,   'NYUP': 74.1,   'RFCE': 198,
+        'RFCM': 289.3,  'RFCW': 281.8,    'RMPA': 284.8,   'SPNO': 153.6,  'SPSO': 59.7,   'SRMV': 239.8,
+        'SRMW': 281.7,  'SRSO': 183.6,    'SRTV': 307.2,   'SRVC': 178.4
     }, 2042: {
-        'AZNM': 180.9,  'CAMX': 93.9,     'ERCT': 127,    'FRCC': 227.1,  'MROE': 152.3,  'MROW': 120.6,
-        'NEWE': 57.4,   'NWPP': 107.2,                    'NYLI': 89,     'NYUP': 75.9,  'RFCE': 192,
-        'RFCM': 285.2,  'RFCW': 254.2,    'RMPA': 245.3,  'SPNO': 151.3,  'SPSO': 55.5,   'SRMV': 222.1,
-        'SRMW': 243.9,  'SRSO': 160.5,    'SRTV': 279,    'SRVC': 155.4
+        'AZNM': 180.9,  'CAMX': 93.9,     'ERCT': 127,     'FRCC': 227.1,  'MROE': 152.3,  'MROW': 120.6,
+        'NEWE': 57.4,   'NWPP': 107.2,                     'NYLI': 89,     'NYUP': 75.9,   'RFCE': 192,
+        'RFCM': 285.2,  'RFCW': 254.2,    'RMPA': 245.3,   'SPNO': 151.3,  'SPSO': 55.5,   'SRMV': 222.1,
+        'SRMW': 243.9,  'SRSO': 160.5,    'SRTV': 279,     'SRVC': 155.4
     }, 2044: {
-        'AZNM': 142.9,  'CAMX': 81.3,     'ERCT': 119.7,  'FRCC': 191.6,  'MROE': 121.2,  'MROW': 99.9,
-        'NEWE': 59,     'NWPP': 102.5,                    'NYLI': 86.9,   'NYUP': 77.7,   'RFCE': 186.7,
-        'RFCM': 287.9,  'RFCW': 237.1,    'RMPA': 238.4,  'SPNO': 116.6,  'SPSO': 46.7,   'SRMV': 205.6,
-        'SRMW': 209.3,  'SRSO': 143.8,    'SRTV': 259.1,  'SRVC': 147.8
+        'AZNM': 142.9,  'CAMX': 81.3,     'ERCT': 119.7,   'FRCC': 191.6,  'MROE': 121.2,  'MROW': 99.9,
+        'NEWE': 59,     'NWPP': 102.5,                     'NYLI': 86.9,   'NYUP': 77.7,   'RFCE': 186.7,
+        'RFCM': 287.9,  'RFCW': 237.1,    'RMPA': 238.4,   'SPNO': 116.6,  'SPSO': 46.7,   'SRMV': 205.6,
+        'SRMW': 209.3,  'SRSO': 143.8,    'SRTV': 259.1,   'SRVC': 147.8
     }, 2046: {
-        'AZNM': 135.6,  'CAMX': 76.2,     'ERCT': 104.8,  'FRCC': 191.8,  'MROE': 120.4,  'MROW': 97.8,
-        'NEWE': 58.4,   'NWPP': 90.8,                     'NYLI': 85.1,   'NYUP': 76.5,   'RFCE': 190.6,
-        'RFCM': 225.6,  'RFCW': 210.3,    'RMPA': 181,    'SPNO': 121,    'SPSO': 48.5,   'SRMV': 233.5,
+        'AZNM': 135.6,  'CAMX': 76.2,     'ERCT': 104.8,   'FRCC': 191.8,  'MROE': 120.4,  'MROW': 97.8,
+        'NEWE': 58.4,   'NWPP': 90.8,                      'NYLI': 85.1,   'NYUP': 76.5,   'RFCE': 190.6,
+        'RFCM': 225.6,  'RFCW': 210.3,    'RMPA': 181,     'SPNO': 121,    'SPSO': 48.5,   'SRMV': 233.5,
         'SRMW': 185.6,  'SRSO': 122.1,    'SRTV': 228.4,  'SRVC': 127.1
     }, 2048: {
-        'AZNM': 131.8,  'CAMX': 74.7,     'ERCT': 102.4,  'FRCC': 188.8,  'MROE': 134.6,  'MROW': 87.6,
-        'NEWE': 57.1,   'NWPP': 86,                       'NYLI': 91.1,   'NYUP': 81.5,   'RFCE': 169.8,
-        'RFCM': 201.6,  'RFCW': 212.4,    'RMPA': 161.5,  'SPNO': 129,    'SPSO': 57.5,   'SRMV': 232.6,
-        'SRMW': 184.5,  'SRSO': 125.7,    'SRTV': 207.8,  'SRVC': 120.7
+        'AZNM': 131.8,  'CAMX': 74.7,     'ERCT': 102.4,   'FRCC': 188.8,  'MROE': 134.6,  'MROW': 87.6,
+        'NEWE': 57.1,   'NWPP': 86,                        'NYLI': 91.1,   'NYUP': 81.5,   'RFCE': 169.8,
+        'RFCM': 201.6,  'RFCW': 212.4,    'RMPA': 161.5,   'SPNO': 129,    'SPSO': 57.5,   'SRMV': 232.6,
+        'SRMW': 184.5,  'SRSO': 125.7,    'SRTV': 207.8,   'SRVC': 120.7
     }, 2050: {
-        'AZNM': 125.7,  'CAMX': 68.8,     'ERCT': 87.7,   'FRCC': 178,    'MROE': 100.1,  'MROW': 78.9,
-        'NEWE': 58,     'NWPP': 66,                       'NYLI': 89.1,   'NYUP': 81.4,   'RFCE': 161.9,
-        'RFCM': 155.1,  'RFCW': 193,      'RMPA': 155.6,  'SPNO': 131.2,  'SPSO': 55.4,   'SRMV': 215.5,
-        'SRMW': 173.4,  'SRSO': 111.8,    'SRTV': 175.4,  'SRVC': 97.7
+        'AZNM': 125.7,  'CAMX': 68.8,     'ERCT': 87.7,    'FRCC': 178,    'MROE': 100.1,  'MROW': 78.9,
+        'NEWE': 58,     'NWPP': 66,                        'NYLI': 89.1,   'NYUP': 81.4,   'RFCE': 161.9,
+        'RFCM': 155.1,  'RFCW': 193,      'RMPA': 155.6,   'SPNO': 131.2,  'SPSO': 55.4,   'SRMV': 215.5,
+        'SRMW': 173.4,  'SRSO': 111.8,    'SRTV': 175.4,   'SRVC': 97.7
     }
 }
 
+
+def _get_co2_rate(reading):
+    return CO2_RATES[2007]['AZNM'];
 
 def _get_valid_meters(property_view_ids):
     """Performs basic validation of the properties for running Average Annual CO2 and returns any errors.
