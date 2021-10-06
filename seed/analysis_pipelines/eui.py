@@ -6,6 +6,8 @@
 """
 import datetime
 import logging
+
+from dateutil import relativedelta
 from celery import chain, shared_task
 
 from seed.analysis_pipelines.pipeline import (
@@ -14,6 +16,7 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
+from seed.analysis_pipelines.utils import SimpleMeterReading
 from seed.models import (
     Analysis,
     AnalysisMessage,
@@ -52,7 +55,6 @@ def _get_valid_meters(property_view_ids):
     """
     invalid_area = []
     invalid_meter = []
-    overlapping_meter = []
     meter_readings_by_property_view = {}
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
@@ -73,43 +75,17 @@ def _get_valid_meters(property_view_ids):
             continue
 
         # get all readings that started AND ended between end_time and a year prior
-        meter_readings_by_meter = {}
-        for meter_reading in MeterReading.objects.filter(
-            meter__property=property_view.property,
-            meter__type__in=VALID_METERS,
-            end_time__lte=end_time,
-            start_time__gte=end_time - TIME_PERIOD
-        ).order_by('start_time'):
-            if meter_reading.meter.id not in meter_readings_by_meter:
-                meter_readings_by_meter[meter_reading.meter.id] = []
-            meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
+        property_meter_readings = [
+            SimpleMeterReading(reading.start_time, reading.end_time, reading.reading)
+            for reading in MeterReading.objects.filter(
+                meter__property=property_view.property,
+                meter__type__in=VALID_METERS,
+                end_time__lte=end_time,
+                start_time__gte=end_time - TIME_PERIOD
+            ).order_by('start_time')
+        ]
 
-        # generate summary per meter
-        done = False
-        readings_by_meter = {}
-        for meter_id in meter_readings_by_meter:
-            last_reading = None
-            total_time = 0
-            total_reading = 0
-            for reading in meter_readings_by_meter[meter_id]:
-
-                # ensure no overlapping readings per meter
-                if last_reading is not None:
-                    if last_reading.end_time > reading.start_time:
-                        overlapping_meter.append(property_view.id)
-                        done = True
-                        break
-
-                last_reading = reading
-                total_time += (reading.end_time - reading.start_time).total_seconds()
-                total_reading += reading.reading
-            if done:
-                continue
-            readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading}
-
-        # done with this property_view
-        if readings_by_meter:
-            meter_readings_by_property_view[property_view.id] = readings_by_meter
+        meter_readings_by_property_view[property_view.id] = property_meter_readings
 
     errors_by_property_view_id = {}
     for pid in invalid_area:
@@ -120,24 +96,62 @@ def _get_valid_meters(property_view_ids):
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
         errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
-    for pid in overlapping_meter:
-        if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS])
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
+def _get_days_in_reading(meter_reading):
+    """Returns a list of datetime.datetime days that the reading covers/touches
+
+    :param meter_reading: List[SimpleMeterReading | MeterReading]
+    :return: List[datetime.datetime], days (at midnight, timezone unaware)
+    """
+    start = datetime.datetime(
+        meter_reading.start_time.year,
+        meter_reading.start_time.month,
+        meter_reading.start_time.day,
+    )
+    end = datetime.datetime(
+        meter_reading.end_time.year,
+        meter_reading.end_time.month,
+        meter_reading.end_time.day,
+    )
+
+    all_days = []
+    current_day = start
+    while current_day <= end:
+        all_days.append(current_day)
+        current_day += relativedelta.relativedelta(days=1)
+
+    return all_days
+
+
 def _calculate_eui(meter_readings, gross_floor_area):
+    """Calculate the total usage of the readings, EUI, and percent
+    of TIME_PERIOD covered by the readings.
+
+    :param meter_readings: List[SimpleMeterReading | MeterReading]
+    :param gross_floor_area: float
+    :return: dict, of the form:
+        {
+            'eui': float,
+            'reading': float, # total usage
+            'coverage': float # percent of TIME_PERIOD covered by the readings
+        }
+    """
     total_reading = 0
-    total_time = 0
-    for meter_id in meter_readings:
-        total_reading += meter_readings[meter_id]['reading']
-        total_time += meter_readings[meter_id]['time']
+    days_affected_by_readings = set()
+    for meter_reading in meter_readings:
+        total_reading += meter_reading.reading
+        for day in _get_days_in_reading(meter_reading):
+            days_affected_by_readings.add(day)
+
+    total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
+    fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
-        'eui': round(total_reading / gross_floor_area, 4),
-        'reading': total_reading,
-        'coverage': 100 - round(100 * (TIME_PERIOD.total_seconds() - total_time) / TIME_PERIOD.total_seconds())
+        'eui': round(total_reading / gross_floor_area, 2),
+        'reading': round(total_reading, 2),
+        'coverage': int(fraction_of_time_covered * 100)
     }
 
 
@@ -237,12 +251,18 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         table_name='PropertyState',
     )
 
-    # for some reason the keys, which should be ids (ie integers), get turned into strings... let's fix that here
-    meter_readings_by_analysis_property_view = {int(key): value for key, value in meter_readings_by_analysis_property_view.items()}
+    # fix the meter readings dict b/c celery messes with it when serializing
+    meter_readings_by_analysis_property_view = {
+        int(key): [SimpleMeterReading(*serialized_reading) for serialized_reading in serialized_readings]
+        for key, serialized_readings in meter_readings_by_analysis_property_view.items()
+    }
     analysis_property_view_ids = list(meter_readings_by_analysis_property_view.keys())
 
     # prefetching property and cycle b/c .get_property_views() uses them (this is not "clean" but whatever)
-    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids).prefetch_related('property', 'cycle', 'property_state')
+    analysis_property_views = (
+        AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
+        .prefetch_related('property', 'cycle', 'property_state')
+    )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     # create and save EUIs for each property view
