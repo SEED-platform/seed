@@ -60,7 +60,6 @@ from seed.analysis_pipelines.eui import (
     EUI_ANALYSIS_MESSAGES,
     ERROR_INVALID_GROSS_FLOOR_AREA,
     ERROR_INVALID_METER_READINGS,
-    ERROR_OVERLAPPING_METER_READINGS,
     TIME_PERIOD
 )
 from seed.building_sync.building_sync import BuildingSync

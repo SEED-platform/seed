@@ -31,14 +31,12 @@ logger = logging.getLogger(__name__)
 
 ERROR_INVALID_GROSS_FLOOR_AREA = 0
 ERROR_INVALID_METER_READINGS = 1
-ERROR_OVERLAPPING_METER_READINGS = 2
 ERROR_NO_VALID_PROPERTIES = 3
 WARNING_SOME_INVALID_PROPERTIES = 4
 
 EUI_ANALYSIS_MESSAGES = {
     ERROR_INVALID_GROSS_FLOOR_AREA: 'Property skipped (invalid Gross Floor Area).',
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
-    ERROR_OVERLAPPING_METER_READINGS: 'Property view skipped (meter has overlapping readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
 }
