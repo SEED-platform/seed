@@ -10,7 +10,6 @@ import json
 import logging
 from os import path
 
-from dateutil import relativedelta
 from seed.analysis_pipelines.utils import SimpleMeterReading
 from unittest.case import skip
 from unittest.mock import patch
