@@ -1030,30 +1030,6 @@ class TestEuiPipeline(TestCase):
         self.assertDictEqual(errors_by_property_view_id, {})
         self.assertNotEqual(meter_readings_by_property_view, {})
 
-    def test_overlapping_meters(self):
-        MeterReading.objects.filter(meter=self.meter).delete()
-        MeterReading.objects.create(
-            meter=self.meter,
-            start_time=make_aware(datetime(2020, 1, 1, 0, 0, 0), timezone=self.timezone_object),
-            end_time=make_aware(datetime(2020, 1, 28, 0, 0, 0), timezone=self.timezone_object),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
-        )
-        MeterReading.objects.create(
-            meter=self.meter,
-            start_time=make_aware(datetime(2020, 1, 27, 0, 0, 0), timezone=self.timezone_object),
-            end_time=make_aware(datetime(2020, 2, 28, 0, 0, 0), timezone=self.timezone_object),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
-        )
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
-        self.assertDictEqual(meter_readings_by_property_view, {})
-        self.assertDictEqual(errors_by_property_view_id, {
-            self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS]]
-        })
-
     def test_calculate_eui(self):
         results = _calculate_eui({123: {'reading': 78, 'time': TIME_PERIOD.total_seconds()}}, 123)
         self.assertEqual(results['eui'], 0.6341)
