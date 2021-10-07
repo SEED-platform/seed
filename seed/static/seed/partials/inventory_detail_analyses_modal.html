@@ -68,7 +68,7 @@
                             <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
                                 <label class="control-label sectionLabel text-muted">
                                     Preprocess Meters
-                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will attempt to aggregate and interpolate your meter data into monthly readings for the analysis. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
                                 </label>
                                 <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
                             </div>
