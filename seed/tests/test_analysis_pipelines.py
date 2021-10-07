@@ -9,6 +9,8 @@ from io import BytesIO
 import json
 import logging
 from os import path
+
+from seed.analysis_pipelines.utils import SimpleMeterReading
 from unittest.case import skip
 from unittest.mock import patch
 from zipfile import ZipFile
@@ -60,7 +62,6 @@ from seed.analysis_pipelines.eui import (
     EUI_ANALYSIS_MESSAGES,
     ERROR_INVALID_GROSS_FLOOR_AREA,
     ERROR_INVALID_METER_READINGS,
-    ERROR_OVERLAPPING_METER_READINGS,
     TIME_PERIOD
 )
 from seed.building_sync.building_sync import BuildingSync
@@ -1030,32 +1031,12 @@ class TestEuiPipeline(TestCase):
         self.assertDictEqual(errors_by_property_view_id, {})
         self.assertNotEqual(meter_readings_by_property_view, {})
 
-    def test_overlapping_meters(self):
-        MeterReading.objects.filter(meter=self.meter).delete()
-        MeterReading.objects.create(
-            meter=self.meter,
-            start_time=make_aware(datetime(2020, 1, 1, 0, 0, 0), timezone=self.timezone_object),
-            end_time=make_aware(datetime(2020, 1, 28, 0, 0, 0), timezone=self.timezone_object),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
-        )
-        MeterReading.objects.create(
-            meter=self.meter,
-            start_time=make_aware(datetime(2020, 1, 27, 0, 0, 0), timezone=self.timezone_object),
-            end_time=make_aware(datetime(2020, 2, 28, 0, 0, 0), timezone=self.timezone_object),
-            reading=12345,
-            source_unit='kWh',
-            conversion_factor=1.00
-        )
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
-        self.assertDictEqual(meter_readings_by_property_view, {})
-        self.assertDictEqual(errors_by_property_view_id, {
-            self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS]]
-        })
-
     def test_calculate_eui(self):
-        results = _calculate_eui({123: {'reading': 78, 'time': TIME_PERIOD.total_seconds()}}, 123)
-        self.assertEqual(results['eui'], 0.6341)
-        self.assertEqual(results['reading'], 78)
+        reading_start_time = datetime(2020, 1, 1)
+        reading_end_time = reading_start_time + TIME_PERIOD
+        reading_amount = 78
+        reading = SimpleMeterReading(reading_start_time, reading_end_time, reading_amount)
+        results = _calculate_eui([reading], 123)
+        self.assertEqual(results['eui'], 0.63)
+        self.assertEqual(results['reading'], reading_amount)
         self.assertEqual(results['coverage'], 100)
