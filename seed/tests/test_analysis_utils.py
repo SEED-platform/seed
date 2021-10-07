@@ -278,7 +278,7 @@ class TestAnalysisUtils(TestCase):
             SimpleMeterReading(
                 dt(2021, 2, 1),
                 dt(2021, 3, 1),
-                2,  # since the original reading covered 1/2 of month, we'd expect the month total to be doubled
+                2,
             )
         ]
         self.assertListEqual(expected, result)
@@ -344,22 +344,6 @@ class TestAnalysisUtils(TestCase):
             )
         ]
         self.assertListEqual(expected, result)
-
-    def test_calendarize_and_extrapolate_meter_readings_extrapolates_readings_when_months_are_incomplete(self):
-        # -- Setup
-        jan, feb, mar, apr = dt(2021, 1, 1), dt(2021, 2, 1), dt(2021, 3, 1), dt(2021, 4, 1)
-        original_readings = [
-            SimpleMeterReading(jan, feb, 1),
-            SimpleMeterReading(feb, mar, 2),
-            SimpleMeterReading(mar, apr, 3),
-        ]
-
-        # -- Act
-        result = calendarize_and_extrapolate_meter_readings(original_readings)
-
-        # -- Assert
-        # result should be the same as original readings
-        self.assertListEqual(original_readings, result)
 
     def test_interpolate_works_when_one_month_missing(self):
         # -- Setup
