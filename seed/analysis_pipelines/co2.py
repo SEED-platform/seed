@@ -30,19 +30,24 @@ ERROR_INVALID_METER_READINGS = 0
 ERROR_OVERLAPPING_METER_READINGS = 1
 ERROR_NO_VALID_PROPERTIES = 2
 WARNING_SOME_INVALID_PROPERTIES = 3
+ERROR_NO_REGION_CODE = 4
+ERROR_INVALID_REGION_CODE = 5
 
-EUI_ANALYSIS_MESSAGES = {
+CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
     ERROR_OVERLAPPING_METER_READINGS: 'Property view skipped (meter has overlapping readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
-    WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.'
+    WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
+    ERROR_NO_REGION_CODE: 'No valid region code.',
+    ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided region code.'
 }
 
 VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND]
 TIME_PERIOD = datetime.timedelta(days=365)
 
+EARLIEST_CO2_RATE = 2007
 CO2_RATES = {
-    2007: {
+    EARLIEST_CO2_RATE: {
         'AZNM': 570.57,  'CAMX': 309.98,  'ERCT': 570.18,  'FRCC': 555.85,  'MROE': 771.83,  'MROW': 785.61,
         'NEWE': 378.35,  'NWPP': 391.53,  'NYCW': 320.35,  'NYLI': 646.1,   'NYUP': 311.42,  'RFCE': 483.05,
         'RFCM': 753,     'RFCW': 707.43,  'RMPA': 868.69,  'SPNO': 820.02,  'SPSO': 739.88,  'SRMV': 457.13,
@@ -166,8 +171,14 @@ CO2_RATES = {
 }
 
 
-def _get_co2_rate(reading):
-    return CO2_RATES[2007]['AZNM'];
+def _get_co2_rate(year, region_code):
+    get_year = year
+    while get_year >= EARLIEST_CO2_RATE:
+        if get_year in CO2_RATES and region_code in CO2_RATES[get_year]:
+            return CO2_RATES[get_year][region_code]
+        get_year -= 1
+    return None
+
 
 def _get_valid_meters(property_view_ids):
     """Performs basic validation of the properties for running Average Annual CO2 and returns any errors.
@@ -230,7 +241,7 @@ def _get_valid_meters(property_view_ids):
                 total_reading += reading.reading
             if done:
                 continue
-            readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading}
+            readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading, 'year': meter_readings_by_meter[meter_id][0].start_time.year}
 
         # done with this property_view
         if readings_by_meter:
@@ -240,20 +251,21 @@ def _get_valid_meters(property_view_ids):
     for pid in invalid_area:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA])
+        errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA])
     for pid in invalid_meter:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
+        errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
     for pid in overlapping_meter:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(EUI_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS])
+        errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS])
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
-def _calculate_co2(meter_readings):
+def _calculate_co2(meter_readings, region_code):
+    logger.error(f'-=- meter_readings: {meter_readings}')
     return {
         'average': 0,
         'reading': 0,
@@ -272,13 +284,13 @@ class CO2Pipeline(AnalysisPipeline):
                 type_=AnalysisMessage.ERROR,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message=EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES],
+                user_message=CO2_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES],
                 debug_message=''
             )
             analysis = Analysis.objects.get(id=self._analysis_id)
             analysis.status = Analysis.FAILED
             analysis.save()
-            raise AnalysisPipelineException(EUI_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
+            raise AnalysisPipelineException(CO2_ANALYSIS_MESSAGES[ERROR_NO_VALID_PROPERTIES])
 
         if errors_by_property_view_id:
             AnalysisMessage.log_and_create(
@@ -286,7 +298,7 @@ class CO2Pipeline(AnalysisPipeline):
                 type_=AnalysisMessage.WARNING,
                 analysis_id=self._analysis_id,
                 analysis_property_view_id=None,
-                user_message=EUI_ANALYSIS_MESSAGES[WARNING_SOME_INVALID_PROPERTIES],
+                user_message=CO2_ANALYSIS_MESSAGES[WARNING_SOME_INVALID_PROPERTIES],
                 debug_message=''
             )
 
@@ -368,16 +380,41 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     for analysis_property_view in analysis_property_views:
         area = analysis_property_view.property_state.gross_floor_area.magnitude
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
-        co2 = _calculate_co2(meter_readings)
+        property_view = property_views_by_apv_id[analysis_property_view.id]
 
+        # get the region code
+        if 'region_code' not in property_view.state.extra_data:
+            logger.error(f'-=- property_view.state.extra_data: {property_view.state.extra_data}')
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis_id,
+                analysis_property_view_id=analysis_property_view.id,
+                user_message=CO2_ANALYSIS_MESSAGES[ERROR_NO_REGION_CODE],
+                debug_message=''
+            )
+            continue
+
+        # get the C02 rate
+        co2 = _calculate_co2(meter_readings, property_view.state.extra_data['region_code'])
+        if !co2:
+            AnalysisMessage.log_and_create(
+                logger=logger,
+                type_=AnalysisMessage.ERROR,
+                analysis_id=analysis_id,
+                analysis_property_view_id=analysis_property_view.id,
+                user_message=CO2_ANALYSIS_MESSAGES[ERROR_INVALID_REGION_CODE],
+                debug_message=''
+            )
+            continue
+
+        # save the results
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average'],
             'Annual Coverage %': co2['coverage'],
             'Total Annual Meter Reading (kBtu)': co2['reading']
         }
         analysis_property_view.save()
-
-        property_view = property_views_by_apv_id[analysis_property_view.id]
         property_view.state.extra_data.update({'analysis_co2': co2['average']})
         property_view.state.extra_data.update({'analysis_co2_coverage': co2['coverage']})
         property_view.state.save()
