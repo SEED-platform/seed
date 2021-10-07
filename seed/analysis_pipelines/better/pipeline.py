@@ -36,10 +36,8 @@ from seed.analysis_pipelines.better.helpers import (
     _store_better_portfolio_analysis_results,
 )
 from seed.analysis_pipelines.utils import (
-    calendarize_meter_readings,
+    calendarize_and_extrapolate_meter_readings,
     get_json_path,
-    interpolate_monthly_readings,
-    reject_outliers,
 )
 
 from seed.models import (
@@ -49,7 +47,6 @@ from seed.models import (
     AnalysisPropertyView,
     Column,
     Meter,
-    MeterReading,
 )
 
 
@@ -157,28 +154,31 @@ def get_meter_readings(property_id, preprocess_meters):
         { 'meter_type': <Meter.type>, 'readings': List[SimpleMeterReading | MeterReading] }
     """
     selected_meters_and_readings = []
+    meters = (
+        Meter.objects
+        .filter(
+            property_id=property_id,
+            type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
+        )
+    )
     if preprocess_meters:
-        for meter_type in SEED_TO_BSYNC_RESOURCE_TYPE.keys():
-            meter_readings = MeterReading.objects.filter(meter__property_id=property_id, meter__type=meter_type)
+        for meter in meters:
+            meter_readings = meter.meter_readings
             if meter_readings.count() == 0:
                 continue
-            monthly_readings = calendarize_meter_readings(meter_readings)
-            monthly_readings = reject_outliers(monthly_readings)
+            monthly_readings = calendarize_and_extrapolate_meter_readings(meter_readings.all())
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
             monthly_readings = [reading for reading in monthly_readings if reading.reading >= 1.0]
-            monthly_readings = interpolate_monthly_readings(monthly_readings)
             if len(monthly_readings) >= 12:
                 selected_meters_and_readings.append({
-                    'meter_type': meter_type,
+                    'meter_type': meter.type,
                     'readings': monthly_readings
                 })
     else:
         meters = (
-            Meter.objects
+            meters
             .annotate(readings_count=Count('meter_readings'))
             .filter(
-                property_id=property_id,
-                type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
                 readings_count__gte=12,
             )
         )

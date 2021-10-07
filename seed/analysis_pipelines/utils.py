@@ -1,3 +1,4 @@
+from calendar import monthrange
 from collections import defaultdict, namedtuple
 import datetime
 from statistics import mean, pstdev
@@ -29,11 +30,14 @@ def get_json_path(json_path, data):
 SimpleMeterReading = namedtuple('SimpleMeterReading', ['start_time', 'end_time', 'reading'])
 
 
-def _split_reading(meter_reading):
-    """Splits the meter reading into multiple readings, each representing a different
-    calendar month (i.e. starting and ending at beginning of consecutive months).
-    Another way to think of this method is that it "bins" an individual reading into
-    calendar months.
+def _split_reading(meter_reading, snap_intervals=True):
+    """Splits the meter reading into multiple readings. Readings are split at the
+    start of each calendar month. This method is used to calendarize meter readings.
+
+    If snap_intervals is enabled, all readings returned will begin and end on the
+    first of the month (e.g. January 01 to February 01)
+    If snap_intervals is not enabled, the original start and end are preserved in
+    the first and last readings (respectively)
 
     Because we have to estimate the reading value (ie energy usage) when a reading
     doesn't cleanly fit in a calendar month (e.g. when it straddles or spans months),
@@ -44,21 +48,25 @@ def _split_reading(meter_reading):
     represent the start and end of the meter readings.
 
     (1) Reading fits in a single month
-    reading:      [###]
-    months:  |    |    |    |
-    result:       [###]
+    input:                   [##]
+    months:            |    |    |    |
+    result (snapped):       [###]
+    result (no snap):        [##]
 
     (2) Reading straddles months
-    reading:   [#####]
-    months:  |    |    |    |
-    result:  [###][###]
+    input:               [#####]
+    months:            |    |    |    |
+    result (snapped):  [###][###]
+    result (no snap):    [#][##]
 
     (3) Reading straddles and spans months
-    reading:   [##########]
-    months:  |    |    |    |
-    result:  [###][###][###]
+    input:               [##########]
+    months:            |    |    |    |
+    result (snapped):  [###][###][###]
+    result (no snap):    [#][###][##]
 
     :param meter_reading: MeterReading | SimpleMeterReading
+    :param snap_intervals: bool
     :return: List[SimpleMeterReading], in sorted order by start_date
     """
     reading_unaware_start_time = datetime.datetime(
@@ -83,16 +91,17 @@ def _split_reading(meter_reading):
     last_month_affected = reading_last_month + relativedelta.relativedelta(months=1)
 
     # collect all consecutive months this reading "touches"
-    current_time = reading_first_month
+    current_month = reading_first_month
     months_affected = []
-    while current_time <= last_month_affected:
-        months_affected.append(current_time)
-        current_time += relativedelta.relativedelta(months=1)
+    while current_month < last_month_affected:
+        next_month = current_month + relativedelta.relativedelta(months=1)
+        months_affected.append((current_month, next_month))
+        current_month = next_month
 
     # For each month this reading affects create a new "reading" for that month
     split_readings = []
     meter_reading_delta = reading_unaware_end_time - reading_unaware_start_time
-    for month_start, month_end in zip(months_affected, months_affected[1:]):
+    for idx, (month_start, month_end) in enumerate(months_affected):
         # estimate the reading value for this month by calculating
         # the fraction of the original reading this month covers and multiplying
         # the "total" (ie original) reading by that fraction
@@ -101,9 +110,28 @@ def _split_reading(meter_reading):
         # overlap_delta is essentially the union of time covered by this month and
         # the time covered by the original reading
         overlap_delta = overlap_end - overlap_start
+
+        if overlap_delta.total_seconds() == 0:
+            # there can be no overlap if we are given a reading which ends
+            # on the first of a month and we're creating a reading for that month
+            # it ends on.
+            assert idx == len(months_affected) - 1, 'This should not occur, our assumptions were invalid. Please revisit this.'
+            continue
+
         fraction_of_reading_time = overlap_delta.total_seconds() / meter_reading_delta.total_seconds()
         month_reading = fraction_of_reading_time * meter_reading.reading
-        split_readings.append(SimpleMeterReading(month_start, month_end, month_reading))
+
+        # determine the start/end time we should report for this reading
+        reported_start_time, reported_end_time = month_start, month_end
+        if not snap_intervals:
+            if idx == 0:
+                # this is the first month included, use the original start time
+                reported_start_time = reading_unaware_start_time
+            if idx == len(months_affected) - 1:
+                # this is the last month included, use the original end time
+                reported_end_time = reading_unaware_end_time
+
+        split_readings.append(SimpleMeterReading(reported_start_time, reported_end_time, month_reading))
 
     return split_readings
 
@@ -111,13 +139,17 @@ def _split_reading(meter_reading):
 def calendarize_meter_readings(meter_readings):
     """Aggregate readings into calendar months
 
-    :param: meter_readings, QuerySet[MeterReading]
+    NOTE: It is OK to call this method with readings from multiple meters (we are
+    just aggregating/dispersing meter data into monthly bins)
+
+    :param: meter_readings, Iterable[SimpleMeterReading | MeterReading]
     :return: List[SimpleMeterReading]
     """
-    all_meter_readings = meter_readings.order_by('start_time')
+    all_meter_readings = sorted(meter_readings, key=lambda reading: reading.start_time)
     aggregated_readings_by_start_time = defaultdict(lambda: 0)
     for meter_reading in all_meter_readings:
-        for monthly_reading in _split_reading(meter_reading):
+        sr = _split_reading(meter_reading)
+        for monthly_reading in sr:
             aggregated_readings_by_start_time[monthly_reading.start_time] += monthly_reading.reading
 
     aggregated_readings_list = []
@@ -131,6 +163,70 @@ def calendarize_meter_readings(meter_readings):
         )
 
     return aggregated_readings_list
+
+
+SECONDS_IN_A_DAY = 86400
+
+
+def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshold=0.0):
+    """For each calendar month included in the readings, calculate the average
+    energy usage per unit time and use that average to calculate an estimated
+    usage for that entire month.
+
+    WARNING: This function should be called separately for each meter!
+        Explanation: if you have two meters reporting usage over the month of January,
+        this function will average these readings together for the month and the
+        reported usage could be significantly lower than what it was in reality.
+    WARNING: This function assumes meter_readings are not overlapping!
+
+    :param meter_readings: Iterable[SimpleMeterReading | MeterReading]
+    :param coverage_threshold: float, fraction of a month that must be covered
+        by the readings to be included.
+    :return: List[SimpleMeterReading]
+    """
+    split_meter_readings = []
+    for meter_reading in meter_readings:
+        # set snap_intervals to False so we can preserve the number of seconds
+        # in each split up reading
+        for split_reading in _split_reading(meter_reading, snap_intervals=False):
+            split_meter_readings.append(split_reading)
+
+    totals_by_month = defaultdict(lambda: {'total_usage': 0, 'total_seconds': 0})
+    for meter_reading in split_meter_readings:
+        start = meter_reading.start_time
+        month_start = datetime.datetime(start.year, start.month, 1)
+        totals_by_month[month_start]['total_usage'] += meter_reading.reading
+        totals_by_month[month_start]['total_seconds'] += (
+            meter_reading.end_time - meter_reading.start_time
+        ).total_seconds()
+
+    # calculate estimated total usage for each month
+    estimated_monthly_readings = []
+    for month_start, totals in totals_by_month.items():
+        (_, days_in_month) = monthrange(month_start.year, month_start.month)
+        seconds_in_month = days_in_month * SECONDS_IN_A_DAY
+
+        # WARNING: this bit assumes we have non-overlapping readings! Otherwise
+        # the fraction of month cannot be determined by "total seconds" of readings
+        # in the month!
+        fraction_of_month_covered = totals['total_seconds'] / seconds_in_month
+        if fraction_of_month_covered < coverage_threshold:
+            # we don't have enough data, skip this month
+            continue
+
+        average_usage_per_second = totals['total_usage'] / totals['total_seconds']
+
+        estimated_monthly_reading = average_usage_per_second * seconds_in_month
+        estimated_monthly_readings.append(
+            SimpleMeterReading(
+                month_start,
+                month_start + relativedelta.relativedelta(months=1),
+                estimated_monthly_reading
+            )
+        )
+
+    estimated_monthly_readings.sort(key=lambda reading: reading.start_time)
+    return estimated_monthly_readings
 
 
 def reject_outliers(meter_readings, reject=1):
