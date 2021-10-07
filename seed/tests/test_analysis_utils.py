@@ -326,7 +326,7 @@ class TestAnalysisUtils(TestCase):
                 dt(2021, 2, 12),
                 dt(2021, 2, 15),
                 1
-            ),            
+            ),
         ]
 
         # -- Act
