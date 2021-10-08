@@ -146,10 +146,10 @@ class Analysis(models.Model):
 
         # CO2
         elif self.service == self.CO2:
-            eui_result = results.get('Average Annual CO2 (kgCO2e)')
+            co2_result = results.get('Average Annual CO2 (kgCO2e)')
             value = 'N/A'
-            if eui_result is not None:
-                value = f'{eui_result:,.2f}'
+            if co2_result is not None:
+                value = f'{co2_result:.2e}'
             coverage = results.get('Annual Coverage %')
             if coverage is None:
                 coverage = 'N/A'

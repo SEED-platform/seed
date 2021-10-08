@@ -14,6 +14,10 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
+from seed.analysis_pipelines.utils import (
+    get_days_in_reading,
+    SimpleMeterReading
+)
 from seed.models import (
     Analysis,
     AnalysisMessage,
@@ -27,15 +31,13 @@ from seed.models import (
 logger = logging.getLogger(__name__)
 
 ERROR_INVALID_METER_READINGS = 0
-ERROR_OVERLAPPING_METER_READINGS = 1
-ERROR_NO_VALID_PROPERTIES = 2
-WARNING_SOME_INVALID_PROPERTIES = 3
-ERROR_NO_REGION_CODE = 4
-ERROR_INVALID_REGION_CODE = 5
+ERROR_NO_VALID_PROPERTIES = 1
+WARNING_SOME_INVALID_PROPERTIES = 2
+ERROR_NO_REGION_CODE = 3
+ERROR_INVALID_REGION_CODE = 4
 
 CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
-    ERROR_OVERLAPPING_METER_READINGS: 'Property view skipped (meter has overlapping readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
     ERROR_NO_REGION_CODE: 'No valid region code.',
@@ -180,22 +182,16 @@ def _get_co2_rate(year, region_code):
 
 
 def _get_valid_meters(property_view_ids):
-    """Performs basic validation of the properties for running Average Annual CO2 and returns any errors.
+    """Performs basic validation of the properties for running CO2 analysis and returns any errors.
 
     :param analysis: property_view_ids
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
     invalid_area = []
     invalid_meter = []
-    overlapping_meter = []
     meter_readings_by_property_view = {}
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
     for property_view in property_views:
-
-        # ensure we have Gross Floor Area on this property view's state
-        if property_view.state.gross_floor_area is None:
-            invalid_area.append(property_view.id)
-            continue
 
         # get the most recent electric meter reading's end_time
         try:
@@ -208,67 +204,47 @@ def _get_valid_meters(property_view_ids):
             continue
 
         # get all readings that started AND ended between end_time and a year prior
-        meter_readings_by_meter = {}
-        for meter_reading in MeterReading.objects.filter(
-            meter__property=property_view.property,
-            meter__type__in=VALID_METERS,
-            end_time__lte=end_time,
-            start_time__gte=end_time - TIME_PERIOD
-        ).order_by('start_time'):
-            if meter_reading.meter.id not in meter_readings_by_meter:
-                meter_readings_by_meter[meter_reading.meter.id] = []
-            meter_readings_by_meter[meter_reading.meter.id].append(meter_reading)
+        property_meter_readings = [
+            SimpleMeterReading(reading.start_time, reading.end_time, reading.reading)
+            for reading in MeterReading.objects.filter(
+                meter__property=property_view.property,
+                meter__type__in=VALID_METERS,
+                end_time__lte=end_time,
+                start_time__gte=end_time - TIME_PERIOD
+            ).order_by('start_time')
+        ]
 
-        # generate summary per meter
-        done = False
-        readings_by_meter = {}
-        for meter_id in meter_readings_by_meter:
-            last_reading = None
-            total_time = 0
-            total_reading = 0
-            for reading in meter_readings_by_meter[meter_id]:
-
-                # ensure no overlapping readings per meter
-                if last_reading is not None:
-                    if last_reading.end_time > reading.start_time:
-                        overlapping_meter.append(property_view.id)
-                        done = True
-                        break
-
-                last_reading = reading
-                total_time += (reading.end_time - reading.start_time).total_seconds()
-                total_reading += reading.reading
-            if done:
-                continue
-            readings_by_meter[meter_id] = {'time': total_time, 'reading': total_reading, 'year': meter_readings_by_meter[meter_id][0].start_time.year}
-
-        # done with this property_view
-        if readings_by_meter:
-            meter_readings_by_property_view[property_view.id] = readings_by_meter
+        meter_readings_by_property_view[property_view.id] = property_meter_readings
 
     errors_by_property_view_id = {}
-    for pid in invalid_area:
-        if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_INVALID_GROSS_FLOOR_AREA])
     for pid in invalid_meter:
         if pid not in errors_by_property_view_id:
             errors_by_property_view_id[pid] = []
         errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_INVALID_METER_READINGS])
-    for pid in overlapping_meter:
-        if pid not in errors_by_property_view_id:
-            errors_by_property_view_id[pid] = []
-        errors_by_property_view_id[pid].append(CO2_ANALYSIS_MESSAGES[ERROR_OVERLAPPING_METER_READINGS])
 
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
 def _calculate_co2(meter_readings, region_code):
-    logger.error(f'-=- meter_readings: {meter_readings}')
+    total_reading = 0
+    total_average = 0
+    total_rate = 0
+    days_affected_by_readings = set()
+    for meter_reading in meter_readings:
+        total_reading += meter_reading.reading
+        rate = _get_co2_rate(meter_reading.start_time.year, region_code)
+        total_rate += rate
+        total_average += (meter_reading.reading * rate)
+        for day in get_days_in_reading(meter_reading):
+            days_affected_by_readings.add(day)
+
+    total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
+    fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
-        'average': 0,
-        'reading': 0,
-        'coverage': 0
+        'average': round(total_average),
+        'reading': round(total_reading, 2),
+        'coverage': int(fraction_of_time_covered * 100),
+        'average_rate': round(total_rate / len(meter_readings), 2)
     }
 
 class CO2Pipeline(AnalysisPipeline):
@@ -367,17 +343,22 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         table_name='PropertyState',
     )
 
-    # for some reason the keys, which should be ids (ie integers), get turned into strings... let's fix that here
-    meter_readings_by_analysis_property_view = {int(key): value for key, value in meter_readings_by_analysis_property_view.items()}
+    # fix the meter readings dict b/c celery messes with it when serializing
+    meter_readings_by_analysis_property_view = {
+        int(key): [SimpleMeterReading(*serialized_reading) for serialized_reading in serialized_readings]
+        for key, serialized_readings in meter_readings_by_analysis_property_view.items()
+    }
     analysis_property_view_ids = list(meter_readings_by_analysis_property_view.keys())
 
     # prefetching property and cycle b/c .get_property_views() uses them (this is not "clean" but whatever)
-    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids).prefetch_related('property', 'cycle', 'property_state')
+    analysis_property_views = (
+        AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
+        .prefetch_related('property', 'cycle', 'property_state')
+    )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
     # create and save EUIs for each property view
     for analysis_property_view in analysis_property_views:
-        area = analysis_property_view.property_state.gross_floor_area.magnitude
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
         property_view = property_views_by_apv_id[analysis_property_view.id]
 
@@ -396,7 +377,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
 
         # get the C02 rate
         co2 = _calculate_co2(meter_readings, property_view.state.extra_data['region_code'])
-        if !co2:
+        if not co2:
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.ERROR,
@@ -408,6 +389,10 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             continue
 
         # save the results
+        analysis.configuration['region'] = property_view.state.extra_data['region_code']
+        analysis.configuration['average_co2_rate'] = co2['average_rate']
+        analysis.configuration['preprocess_meters'] = True
+        analysis.save()
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average'],
             'Annual Coverage %': co2['coverage'],

@@ -291,3 +291,29 @@ def interpolate_monthly_readings(meter_readings):
         current_time += relativedelta.relativedelta(months=1)
 
     return interpolated_readings
+
+
+def get_days_in_reading(meter_reading):
+    """Returns a list of datetime.datetime days that the reading covers/touches
+
+    :param meter_reading: List[SimpleMeterReading | MeterReading]
+    :return: List[datetime.datetime], days (at midnight, timezone unaware)
+    """
+    start = datetime.datetime(
+        meter_reading.start_time.year,
+        meter_reading.start_time.month,
+        meter_reading.start_time.day,
+    )
+    end = datetime.datetime(
+        meter_reading.end_time.year,
+        meter_reading.end_time.month,
+        meter_reading.end_time.day,
+    )
+
+    all_days = []
+    current_day = start
+    while current_day <= end:
+        all_days.append(current_day)
+        current_day += relativedelta.relativedelta(days=1)
+
+    return all_days

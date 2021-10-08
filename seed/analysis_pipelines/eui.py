@@ -7,7 +7,6 @@
 import datetime
 import logging
 
-from dateutil import relativedelta
 from celery import chain, shared_task
 
 from seed.analysis_pipelines.pipeline import (
@@ -16,7 +15,10 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
     analysis_pipeline_task
 )
-from seed.analysis_pipelines.utils import SimpleMeterReading
+from seed.analysis_pipelines.utils import (
+    get_days_in_reading,
+    SimpleMeterReading
+)
 from seed.models import (
     Analysis,
     AnalysisMessage,
@@ -98,32 +100,6 @@ def _get_valid_meters(property_view_ids):
     return meter_readings_by_property_view, errors_by_property_view_id
 
 
-def _get_days_in_reading(meter_reading):
-    """Returns a list of datetime.datetime days that the reading covers/touches
-
-    :param meter_reading: List[SimpleMeterReading | MeterReading]
-    :return: List[datetime.datetime], days (at midnight, timezone unaware)
-    """
-    start = datetime.datetime(
-        meter_reading.start_time.year,
-        meter_reading.start_time.month,
-        meter_reading.start_time.day,
-    )
-    end = datetime.datetime(
-        meter_reading.end_time.year,
-        meter_reading.end_time.month,
-        meter_reading.end_time.day,
-    )
-
-    all_days = []
-    current_day = start
-    while current_day <= end:
-        all_days.append(current_day)
-        current_day += relativedelta.relativedelta(days=1)
-
-    return all_days
-
-
 def _calculate_eui(meter_readings, gross_floor_area):
     """Calculate the total usage of the readings, EUI, and percent
     of TIME_PERIOD covered by the readings.
@@ -141,7 +117,7 @@ def _calculate_eui(meter_readings, gross_floor_area):
     days_affected_by_readings = set()
     for meter_reading in meter_readings:
         total_reading += meter_reading.reading
-        for day in _get_days_in_reading(meter_reading):
+        for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
 
     total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
