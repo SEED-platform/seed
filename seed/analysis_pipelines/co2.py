@@ -172,11 +172,10 @@ CO2_RATES = {
 
 
 def _get_co2_rate(year, region_code):
-    get_year = year
-    while get_year >= EARLIEST_CO2_RATE:
-        if get_year in CO2_RATES and region_code in CO2_RATES[get_year]:
-            return CO2_RATES[get_year][region_code]
-        get_year -= 1
+    while year >= EARLIEST_CO2_RATE:
+        if year in CO2_RATES and region_code in CO2_RATES[year]:
+            return CO2_RATES[year][region_code]
+        year -= 1
     return None
 
 
