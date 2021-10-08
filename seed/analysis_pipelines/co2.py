@@ -48,7 +48,7 @@ VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICI
 TIME_PERIOD = datetime.timedelta(days=365)
 
 EARLIEST_CO2_RATE = 2007
-CO2_RATES = {
+CO2_RATES = { # noqa: E241
     EARLIEST_CO2_RATE: {
         'AZNM': 570.57,  'CAMX': 309.98,  'ERCT': 570.18,  'FRCC': 555.85,  'MROE': 771.83,  'MROW': 785.61,
         'NEWE': 378.35,  'NWPP': 391.53,  'NYCW': 320.35,  'NYLI': 646.1,   'NYUP': 311.42,  'RFCE': 483.05,
@@ -187,7 +187,6 @@ def _get_valid_meters(property_view_ids):
     :param analysis: property_view_ids
     :returns: dictionary[id:str], dictionary of property_view_ids to error message
     """
-    invalid_area = []
     invalid_meter = []
     meter_readings_by_property_view = {}
     property_views = PropertyView.objects.filter(id__in=property_view_ids)
