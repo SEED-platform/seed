@@ -46,14 +46,16 @@ with open(args.infile) as csvfile:
             issue = repo.issue(row[0])
             labels = [l.name for l in issue.labels()]
 
+            # remove any of the labels that we are setting that may
+            # already be on the issue
             labels = list(set(labels) - set(priority_labels))
             labels = list(set(labels) - set(impact_labels))
             labels = list(set(labels) - set(estimate_impact))
 
+            # add the new labels to the list
             labels.append(priority_labels[int(row[3])-1])
             labels.append(impact_labels[int(row[4])-1])
             labels.append(points_map[int(row[5])])
 
-            # remove any of the labels that are already there
+            # save the labels to github
             issue.edit(labels=labels)
-            # grab the issue from github
