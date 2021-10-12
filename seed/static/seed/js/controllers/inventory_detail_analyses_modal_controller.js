@@ -62,7 +62,11 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             break;
 
           case 'EUI':
-            $scope.new_analysis.configuration = {}
+            $scope.new_analysis.configuration = {};
+            break;
+
+          case 'CO2':
+            $scope.new_analysis.configuration = {};
             break;
 
           default:
