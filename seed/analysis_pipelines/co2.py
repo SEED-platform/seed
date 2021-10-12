@@ -173,6 +173,7 @@ CO2_RATES = {
 }
 
 
+# currently only getting closest prior year
 def _get_co2_rate(year, region_code):
     while year >= EARLIEST_CO2_RATE:
         if year in CO2_RATES and region_code in CO2_RATES[year]:
@@ -225,18 +226,27 @@ def _get_valid_meters(property_view_ids):
 
 
 def _calculate_co2(meter_readings, region_code):
+    """Calculate CO2 emissions for the meter readings.
+    :param meter_readings: List[SimpleMeterReading | MeterReading], the `.reading`
+        value must be in kBtu!
+        Assumes the time span of meter_readings is less than or equal to TIME_PERIOD,
+        i.e. that they are supposed to be representative of a year.
+    :region_code: str, an eGRID Subregion Code
+    :return: dict
+    """
     total_reading = 0
     total_average = 0
     total_rate = 0
     days_affected_by_readings = set()
     for meter_reading in meter_readings:
-        total_reading += meter_reading.reading
+        reading = meter_reading.reading / 3.412  # convert from kBtu to kWh
+        total_reading += reading
         rate = _get_co2_rate(meter_reading.start_time.year, region_code)
         total_rate += rate
-        total_average += (meter_reading.reading * rate)
+        total_average += (reading * rate)
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
-
+    total_reading = total_reading / 3.412
     total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
     fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
@@ -357,14 +367,13 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
     )
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
 
-    # create and save EUIs for each property view
+    # create and save emissions for each property view
     for analysis_property_view in analysis_property_views:
         meter_readings = meter_readings_by_analysis_property_view[analysis_property_view.id]
         property_view = property_views_by_apv_id[analysis_property_view.id]
 
         # get the region code
         if 'region_code' not in property_view.state.extra_data:
-            logger.error(f'-=- property_view.state.extra_data: {property_view.state.extra_data}')
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.ERROR,
@@ -389,14 +398,10 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             continue
 
         # save the results
-        analysis.configuration['region'] = property_view.state.extra_data['region_code']
-        analysis.configuration['average_co2_rate'] = co2['average_rate']
-        analysis.configuration['preprocess_meters'] = True
-        analysis.save()
         analysis_property_view.parsed_results = {
             'Average Annual CO2 (kgCO2e)': co2['average'],
             'Annual Coverage %': co2['coverage'],
-            'Total Annual Meter Reading (kBtu)': co2['reading']
+            'Total Annual Meter Reading (kWh)': co2['reading']
         }
         analysis_property_view.save()
         property_view.state.extra_data.update({'analysis_co2': co2['average']})
