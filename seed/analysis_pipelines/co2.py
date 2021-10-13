@@ -50,7 +50,7 @@ TIME_PERIOD = datetime.timedelta(days=365)
 # These factors represent how much CO2e is emitted per MWh of electricity used
 # in a specific year and eGRID Subregion
 #
-# Sources: 
+# Sources:
 #  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-9b55886a63bf3970a5d1c55effeb291a3107e00091715e63448ac1983ef89559
 #  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-fd04e84984194976089ec4d90f103e6d68e641a596e2446447d05626057b38ad
 EARLIEST_CO2_RATE = 2007
