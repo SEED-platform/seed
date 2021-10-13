@@ -22,11 +22,13 @@ class Analysis(models.Model):
     BSYNCR = 1
     BETTER = 2
     EUI = 3
+    CO2 = 4
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
-        (EUI, 'EUI')
+        (EUI, 'EUI'),
+        (CO2, 'CO2')
     )
 
     PENDING_CREATION = 8
@@ -139,6 +141,21 @@ class Analysis(models.Model):
 
             return [
                 {'name': 'Fractional EUI', 'value': f'{value} kBtu/sqft'},
+                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
+            ]
+
+        # CO2
+        elif self.service == self.CO2:
+            co2_result = results.get('Average Annual CO2 (kgCO2e)')
+            value = 'N/A'
+            if co2_result is not None:
+                value = f'{co2_result:,.0f}'
+            coverage = results.get('Annual Coverage %')
+            if coverage is None:
+                coverage = 'N/A'
+
+            return [
+                {'name': 'Average Annual CO2', 'value': f'{value} kgCO2e'},
                 {'name': 'Annual Coverage', 'value': f'{coverage}%'}
             ]
 
