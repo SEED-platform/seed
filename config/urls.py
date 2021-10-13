@@ -39,13 +39,11 @@ urlpatterns = [
         name='password_reset_complete',
     ),
     url(
-        (
-            r'^accounts/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
-            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
-        ),
+        r'(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
         password_reset_confirm,
         name='password_reset_confirm'
     ),
+
     # Application
     url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
