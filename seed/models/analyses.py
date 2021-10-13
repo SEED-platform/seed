@@ -149,7 +149,7 @@ class Analysis(models.Model):
             co2_result = results.get('Average Annual CO2 (kgCO2e)')
             value = 'N/A'
             if co2_result is not None:
-                value = f'{co2_result:.2e}'
+                value = f'{co2_result:,.0f}'
             coverage = results.get('Annual Coverage %')
             if coverage is None:
                 coverage = 'N/A'

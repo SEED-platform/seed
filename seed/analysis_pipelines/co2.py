@@ -44,9 +44,15 @@ CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided region code.'
 }
 
-VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND]
+VALID_METERS = [Meter.ELECTRICITY_GRID]
 TIME_PERIOD = datetime.timedelta(days=365)
 
+# These factors represent how much CO2e is emitted per MWh of electricity used
+# in a specific year and eGRID Subregion
+#
+# Sources: 
+#  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-9b55886a63bf3970a5d1c55effeb291a3107e00091715e63448ac1983ef89559
+#  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-fd04e84984194976089ec4d90f103e6d68e641a596e2446447d05626057b38ad
 EARLIEST_CO2_RATE = 2007
 CO2_RATES = {
     EARLIEST_CO2_RATE: {
@@ -236,24 +242,20 @@ def _calculate_co2(meter_readings, region_code):
     """
     total_reading = 0
     total_average = 0
-    total_rate = 0
     days_affected_by_readings = set()
     for meter_reading in meter_readings:
-        reading = meter_reading.reading / 3.412  # convert from kBtu to kWh
-        total_reading += reading
+        reading_mwh = meter_reading.reading / 3.412 / 1000  # convert from kBtu to MWh
+        total_reading += reading_mwh
         rate = _get_co2_rate(meter_reading.start_time.year, region_code)
-        total_rate += rate
-        total_average += (reading * rate)
+        total_average += (reading_mwh * rate)
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
-    total_reading = total_reading / 3.412
     total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
     fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
-        'average': round(total_average),
-        'reading': round(total_reading, 2),
-        'coverage': int(fraction_of_time_covered * 100),
-        'average_rate': round(total_rate / len(meter_readings), 2)
+        'average_annual_kgco2e': round(total_average),
+        'total_annual_electricity_mwh': round(total_reading, 2),
+        'annual_coverage_percent': int(fraction_of_time_covered * 100),
     }
 
 
@@ -399,13 +401,13 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
 
         # save the results
         analysis_property_view.parsed_results = {
-            'Average Annual CO2 (kgCO2e)': co2['average'],
-            'Annual Coverage %': co2['coverage'],
-            'Total Annual Meter Reading (kWh)': co2['reading']
+            'Average Annual CO2 (kgCO2e)': co2['average_annual_kgco2e'],
+            'Annual Coverage %': co2['annual_coverage_percent'],
+            'Total Annual Meter Reading (MWh)': co2['total_annual_electricity_mwh']
         }
         analysis_property_view.save()
-        property_view.state.extra_data.update({'analysis_co2': co2['average']})
-        property_view.state.extra_data.update({'analysis_co2_coverage': co2['coverage']})
+        property_view.state.extra_data.update({'analysis_co2': co2['average_annual_kgco2e']})
+        property_view.state.extra_data.update({'analysis_co2_coverage': co2['annual_coverage_percent']})
         property_view.state.save()
 
     # all done!
