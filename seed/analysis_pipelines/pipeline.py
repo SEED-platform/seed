@@ -292,6 +292,7 @@ class AnalysisPipeline(abc.ABC):
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
             if locked_analysis.status is Analysis.PENDING_CREATION:
                 locked_analysis.status = Analysis.CREATING
+                locked_analysis.start_time = tz.now()
                 locked_analysis.save()
                 progress_data = ProgressData(
                     self._get_progress_data_key_prefix(locked_analysis),
@@ -405,7 +406,6 @@ class AnalysisPipeline(abc.ABC):
                 progress_data.finish_with_success(status_message)
 
                 locked_analysis.status = Analysis.READY
-                locked_analysis.start_time = tz.now()
                 locked_analysis.save()
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
