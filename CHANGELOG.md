@@ -1,3 +1,10 @@
+# SEED Version 2.12.1
+
+Minor patch to fix resetting passwords.
+
+Closed Issues:
+- Fixed [#2941]( https://github.com/SEED-platform/seed/issues/2941 ), Password reset error
+
 # SEED Version 2.12.0
 
 Date Range: 06/22/21 - 09/27/21
