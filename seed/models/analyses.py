@@ -4,6 +4,7 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from datetime import datetime
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
@@ -53,6 +54,7 @@ class Analysis(models.Model):
 
     name = models.CharField(max_length=255, blank=False, default=None)
     service = models.IntegerField(choices=SERVICE_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)

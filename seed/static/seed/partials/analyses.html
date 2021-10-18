@@ -18,6 +18,7 @@
                         <th translate>Number of Properties</th>
                         <th translate>Type</th>
                         <th translate>Configuration</th>
+                        <th translate>Created</th>
                         <th translate>Run Status</th>
                         <th translate>Run Date</th>
                         <th translate>Run Duration</th>
@@ -45,6 +46,7 @@
                                 <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
                             </ul>
                         </td>
+                        <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>
                         <td class="analysis-status {$ analysis.status.toLowerCase() $}">
                             <i
                                 class="fa fa-refresh fa-pulse fa-fw" style="padding-right: 0"
