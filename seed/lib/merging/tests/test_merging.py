@@ -72,6 +72,7 @@ class StateFieldsTest(TestCase):
                     ('city', 'city'),
                     ('conditioned_floor_area', 'conditioned_floor_area'),
                     ('custom_id_1', 'custom_id_1'),
+                    ('egrid_subregion_code', 'egrid_subregion_code'),
                     ('energy_alerts', 'energy_alerts'),
                     ('energy_score', 'energy_score'),
                     ('generation_date', 'generation_date'),

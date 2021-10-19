@@ -40,7 +40,7 @@ CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
-    ERROR_NO_REGION_CODE: 'Property is missing eGRID subregion code.',
+    ERROR_NO_REGION_CODE: 'Property is missing eGRID Subregion Code.',
     ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided eGRID subregion code.'
 }
 
@@ -381,7 +381,8 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         property_view = property_views_by_apv_id[analysis_property_view.id]
 
         # get the region code
-        if 'egrid_subregion' not in property_view.state.extra_data:
+        egrid_subregion_code = property_view.state.egrid_subregion_code
+        if not egrid_subregion_code:
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.ERROR,
@@ -394,7 +395,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
 
         # get the C02 rate
         try:
-            co2 = _calculate_co2(meter_readings, property_view.state.extra_data['egrid_subregion'])
+            co2 = _calculate_co2(meter_readings, egrid_subregion_code)
         except Exception as e:
             AnalysisMessage.log_and_create(
                 logger=logger,
