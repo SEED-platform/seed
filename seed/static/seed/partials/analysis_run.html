@@ -35,13 +35,13 @@
                     </div>
                     <div ng-repeat="file in view.output_files | filter:filter_params:strict">
                         <div ng-if="file.content_type == 'html'">
-                            <iframe class="analysis-results" scrolling="no" src="{$:: file.file $}" onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"></iframe>
+                            <iframe class="analysis-results" scrolling="no" ng-attr-src="{$:: file.file $}" onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"></iframe>
                             <div ng-repeat-end ng-if="!$last">
                                 <br />
                             </div>
                         </div>
                         <div ng-if="file.content_type == 'PNG'" style='width: 50%; min-width: 200px;'>
-                            <img src="{$:: file.file $}" style="width: 100%"></img>
+                            <img ng-attr-src="{$:: file.file $}" style="width: 100%"></img>
                             <div ng-repeat-end ng-if="!$last">
                                 <br />
                             </div>

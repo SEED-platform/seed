@@ -405,7 +405,6 @@ class AnalysisPipeline(abc.ABC):
                 progress_data.finish_with_success(status_message)
 
                 locked_analysis.status = Analysis.READY
-                locked_analysis.start_time = tz.now()
                 locked_analysis.save()
             else:
                 statuses = dict(Analysis.STATUS_TYPES)

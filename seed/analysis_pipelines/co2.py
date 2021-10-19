@@ -40,8 +40,8 @@ CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_METER_READINGS: 'Property view skipped (no linked electricity meters with readings).',
     ERROR_NO_VALID_PROPERTIES: 'Analysis found no valid properties.',
     WARNING_SOME_INVALID_PROPERTIES: 'Some properties failed to validate.',
-    ERROR_NO_REGION_CODE: 'No valid region code.',
-    ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided region code.'
+    ERROR_NO_REGION_CODE: 'Property is missing eGRID subregion code.',
+    ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided eGRID subregion code.'
 }
 
 VALID_METERS = [Meter.ELECTRICITY_GRID]
@@ -232,7 +232,10 @@ def _get_valid_meters(property_view_ids):
 
 
 def _calculate_co2(meter_readings, region_code):
-    """Calculate CO2 emissions for the meter readings.
+    """Calculate CO2 emissions for the meter readings. Raises an exception if it's
+    unable to calculate the emissions (e.g. unable to find eGRID region code for
+    a year)
+
     :param meter_readings: List[SimpleMeterReading | MeterReading], the `.reading`
         value must be in kBtu!
         Assumes the time span of meter_readings is less than or equal to TIME_PERIOD,
@@ -246,7 +249,10 @@ def _calculate_co2(meter_readings, region_code):
     for meter_reading in meter_readings:
         reading_mwh = meter_reading.reading / 3.412 / 1000  # convert from kBtu to MWh
         total_reading += reading_mwh
-        rate = _get_co2_rate(meter_reading.start_time.year, region_code)
+        year = meter_reading.start_time.year
+        rate = _get_co2_rate(year, region_code)
+        if rate is None:
+            raise Exception(f'Failed to find CO2 rate for {region_code} in {year}')
         total_average += (reading_mwh * rate)
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
@@ -375,7 +381,7 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
         property_view = property_views_by_apv_id[analysis_property_view.id]
 
         # get the region code
-        if 'region_code' not in property_view.state.extra_data:
+        if 'egrid_subregion' not in property_view.state.extra_data:
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.ERROR,
@@ -387,15 +393,17 @@ def _run_analysis(self, meter_readings_by_analysis_property_view, analysis_id):
             continue
 
         # get the C02 rate
-        co2 = _calculate_co2(meter_readings, property_view.state.extra_data['region_code'])
-        if not co2:
+        try:
+            co2 = _calculate_co2(meter_readings, property_view.state.extra_data['egrid_subregion'])
+        except Exception as e:
             AnalysisMessage.log_and_create(
                 logger=logger,
                 type_=AnalysisMessage.ERROR,
                 analysis_id=analysis_id,
                 analysis_property_view_id=analysis_property_view.id,
                 user_message=CO2_ANALYSIS_MESSAGES[ERROR_INVALID_REGION_CODE],
-                debug_message=''
+                debug_message='Failed to calculate CO2',
+                exception=e
             )
             continue
 
