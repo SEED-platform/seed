@@ -8,23 +8,38 @@ Setup
 
 Cluster
 ^^^^^^^
-
 In order to deploy the SEED platform on a Kubernetes you will need "cluster" which will be configured by your cloud service of choice.  Each installation will be slightly different depending on the service.
-Bellow are links to quick-start guides for provisioning a cluster and connecting.
+Below are links to quick-start guides for provisioning a cluster and connecting. These instructions are specifically for AWS, but after the Kubernetes cluster is launched, the helm commands can be used in
+the same way. 
 
 * Amazon Web Services (`AWS`_)
 * Google Cloud Platform (`GCP`_)
 * Azure (`AKS`_)
 
-.. _AWS: https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html
-.. _GCP: https://cloud.google.com/kubernetes-engine/docs/quickstart
-.. _AKS: https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster
+AWS CLI Configuration
+~~~~~~~~~~~~~~~~~~~~~
+Download and configure the AWS CLI with instructions: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html
+
+.. code-block:: console
+
+    aws configure
+    AWS Access Key ID [None]: <insert key> (from account)
+    AWS Secret Access Key [None]: <insert secret key> (from account)
+    Default region name [None]: us-east-1
+    Default output format [None]: json
 
 Kubectl
 ^^^^^^^
+Download and install Kubectl:
+
+- `Windows <https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows>`_
+- Mac (with Homebrew) :code:`brew install kubectl` 
+    ```
+    brew install kubectl
+    ```
 
 Kubectl is the main function in which you will be interfacing with your deployed application on your cluster.  This CLI is what connects you to your cluster that you have just provisioned.
-If your cloud service did not have you configure kubectl in your cluster setup, you can download it `here`_.  Once kubectl is installed and configured to your cluster
+If your cloud service did not have you configure kubectl in your cluster setup, you can download it `here <https://kubernetes.io/docs/tasks/tools/>`_.  Once kubectl is installed and configured to your cluster
 you can run some simple commands to ensure its working properly:
 
 .. code-block:: console
@@ -35,25 +50,39 @@ you can run some simple commands to ensure its working properly:
     #View pods, services and replicasets (will be empty until deploying an app)
     kubectl get all
 
-All of the common kubectl commands can be found in these `docs`_
+All of the common kubectl commands can be found in these `docs <https://kubernetes.io/docs/reference/kubectl/cheatsheet/>`_
 
-.. _docs: https://kubernetes.io/docs/reference/kubectl/cheatsheet/
-
-.. note:: For those unfamiliar with CLIs, there are a number of GUI applications that are able to deploy on your stack with ease.  One of which is Kubernetes native application called `Dashboard UI`_
-
-.. _here: https://kubernetes.io/docs/tasks/tools/
-.. _Dashboard UI: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+.. note:: For those unfamiliar with CLIs, there are a number of GUI applications that are able to deploy on your stack with ease.  One of which is Kubernetes native application called `Dashboard UI`_ or a third-party application called Octant :code:`brew install octant`.
 
 Helm
 ^^^^
 Helm organizes all of your Kubernetes deployment, service, and volume yml files into "charts" that can be deployed, managed, and published with simple commands.
 To install Helm:
 
-* `Windows`_
+* `Windows eksctl https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows`_
 * Mac (with Homebrew) :code:`brew install helm`
 
+EKS Control (AWS Specific)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+EKSCtl is a command line tool to manage Elastic Kubernetes clusters on AWS. If not using AWS, then disregard this section.
 
-.. _Windows: https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows
+* `Windows <https://www.stacksimplify.com/aws-eks/eks-cluster/install-aws-eksctl-kubectl-cli/#step-02-02-windows-10-install-and-configure-kubectl>`_
+* Mac (with Homebrew) :code:`brew install eksctl`
+
+To launch a cluster on using EKSCts, run the following command in the terminal (assuming adequate permissions for the user). Also make sure to replace items in the `<>` brackets.
+
+.. code-block:: yaml
+
+    eksctl create cluster \
+    --name <cluster-name> \
+    --version 1.21 \
+    --region us-east-1 \
+    --node-type m5.large \
+    --nodes 1 \
+    --nodes-min 1 \
+    --nodes-max 1 \
+    --managed \
+    --tags environment=<env-type, e.g., dev, prod>
 
 Charts
 ^^^^^^
@@ -67,7 +96,7 @@ Before deployment, the user **MUST** set these variables to their desired values
 
 web-deployment.yaml
 *******************
-This chart contains the deployment specification for the SEED web container.  Replace all the values in </>.
+This chart contains the deployment specification for the SEED web container.  Replace all the values in <>.
 
 .. code-block:: yaml
 
@@ -115,6 +144,8 @@ This chart contains the deployment specification for the SEED web container.  Re
         - name: SENTRY_RAVEN_DSN
           value: <enter-dsn>
         # Google self registration security - remove if not applicable
+        - name: GOOGLE_RECAPTCHA_SITE_KEY
+          value: <reCAPTCHA-site-key>
         - name: GOOGLE_RECAPTCHA_SECRET_KEY
           value: <reCAPTCHA-key>
         # Toggles the v2 version of the SEED API
@@ -129,26 +160,29 @@ This chart contains the deployment specification for the Celery container to con
 
 .. code-block:: yaml
 
-        - name: POSTGRES_PASSWORD
-          value: <super-secret-password> # must match db-postgres-deployment.yaml and web-celery-deployment.yaml
+    - name: POSTGRES_PASSWORD
+      value: <super-secret-password>  # must match db-postgres-deployment.yaml and web-celery-deployment.yaml
 
 bsyncr-deployment.yaml
 **************************
-This chart contains the deployment specification for the bsyncr analysis server.  Request a NOAA token from `this website`_.
-
-.. _this website: https://www.ncdc.noaa.gov/cdo-web/token
+This chart contains the deployment specification for the bsyncr analysis server.  Request a NOAA token from `this website <https://www.ncdc.noaa.gov/cdo-web/token>`_.
 
 .. code-block:: yaml
 
-          - name: NOAA_TOKEN
-            value: <token>
-
-.. _charts directory: https://github.com/SEED-platform/seed/tree/develop/charts
+    - name: NOAA_TOKEN
+      value: <token>
 
 Deployment
-^^^^^^^^^^
+----------
 Once you are connected to your cluster and have your settings configured with the environment variables of you choice in the charts, you are ready to deploy the app.
-This will be done using helm commands in the root of the charts directory.
+First, make sure that the correct context is selected which is needed if there is more than one cluster:
+
+.. code-block:: bash
+
+    kubectl config get-contexts
+    kubectl config use-context <context-name>
+
+Deploy the site using the helm commands in the root of the charts directory.
 
 * :code:`helm install --generate-name persistentvolumes`
 * :code:`helm install --generate-name seed`
@@ -158,13 +192,37 @@ You will be able to see SEED coming online with statuses like container creating
 * :code:`kubectl get all`
 
 Once all of the pods are running you will be able to hit the external ingress through the URL listed in the web service information. It should look something like
-:code:`service/web           LoadBalancer   10.100.154.227   <my-unique-url>   80:32291/TCP`
+
+.. code-block:: bash 
+  
+  service/web           LoadBalancer   10.100.154.227   <my-unique-url>   80:32291/TCP
+
+Managing Existing Clusters
+--------------------------
+
+Upgrade/Redeploy the Helm Stack
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To upgrade or dedeploy a helm chart, first find the helm release that you want to upgrade, then run the upgrade with the selected chart.
+
+.. code-block:: bash
+
+    helm list
+    helm upgrade <cluster-name> ./seed
+
+Managing the Kubernetes Cluster (AWS Specific)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Enable kubectl to talk to one of the created clusters by running the following command in the terminal after configuring the AWS credentials and cli.
+
+.. code-block:: bash
+
+    aws eks --region <aws-region> update-kubeconfig --name <cluster-name>
 
 Logging In
 ^^^^^^^^^^
 After a successful deployment in order to login you will need to create yourself as a user in the web container.  To do this, we will exec into the container and run some Django commands.
+* View all deployments and services, :code:`kubectl get all`
 * :code:`kubectl get pods`
-* :code:`kubectl exec -it pod/<my-pods-id> bash`
+* :code:`kubectl exec -it <pod-id> -- bash`
 
 Now that we are in the container, we can make a user.
 .. code-block:: bash
@@ -173,7 +231,24 @@ Now that we are in the container, we can make a user.
 
 You can now use these credentials to log in to the SEED website.
 
+Update web and web-celery
+^^^^^^^^^^^^^^^^^^^^^^^^^
+The command below will restart the pods and re-pull the docker images.
+
+.. code-block:: bash
+
+    kubectl rollout restart deployment web && kubectl rollout restart deployment web-celery
 
 
+Other Resources
+---------------
+Common kubectl actions can be found `here <https://kubernetes.io/docs/reference/kubectl/cheatsheet/>`_
 
 
+.. _AWS: https://docs.aws.amazon.com/eks/latest/userguide/create-cluster.html
+.. _GCP: https://cloud.google.com/kubernetes-engine/docs/quickstart
+.. _AKS: https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough#connect-to-the-cluster
+
+.. _Dashboard UI: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+
+.. _charts directory: https://github.com/SEED-platform/seed/tree/develop/charts
