@@ -111,3 +111,58 @@ do
 done
 
 send_slack_notification "[$ENVIRONMENT]-database-backup-run-completed"
+
+# The section below to the end is to clean out old S3 backups.
+# In general, keep
+#  - Last 90 nightly backups
+#  - Last 52 weeks of Monday morning backups
+#  - Last 10 years of monthly data
+
+# Last 90 days
+for i in {0..60}
+do 
+    ((keep[$(date +%Y%m%d -d "-$i day")]++))  
+done
+
+# Last 52 weeks of Monday morning backups
+for i in {0..52}
+do 
+    vali=$((i+1))
+    ((keep[$(date "+%Y%m%d" -d "monday-$vali week")]++))
+done
+
+# Last 10 years of monthly data on a monday
+for i in {0..120}; do
+    DW=$(($(date +%-W)-$(date -d $(date -d "$(date +%Y-%m-15) -$i month" +%Y-%m-01) +%-W)))
+    for (( AY=$(date -d "$(date +%Y-%m-15) -$i month" +%Y); AY < $(date +%Y); AY++ )); do
+        ((DW+=$(date -d $AY-12-31 +%W)))
+    done
+    ((keep[$(date +%Y%m%d -d "monday-$DW weeks")]++))
+done
+
+# Query S3 to find all the dates that exist
+mapfile s3dirs < <(aws s3 ls $S3_BUCKET | awk '{print $2}')
+
+# Iterate to find which backups need to be removed 
+for s3dir in "${s3dirs[@]}"
+do
+    date_found=false
+    for keepvalue in "${!keep[@]}"
+    do
+        val=${keepvalue:0:4}-${keepvalue:4:2}-${keepvalue:6:2}
+        if [ "${s3dir:0:10}" == "$val" ] ; then
+            echo "Found Backup, skipping"
+            date_found=true
+        fi
+    done
+
+    # This method can be quite destructive and delete any
+    # files that are in the date format. Be sure to 
+    # test this script before deploying in any production 
+    # environment. It will only remove directories that 
+    # have a DDDD-DD-DD format
+    if [ "$date_found" = false ] && [[ "${s3dir:0:10}" =~ ^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$ ]]; then
+        echo "Deleting no longer valid backup of ${s3dir:0:10}"
+        aws s3 rm $S3_BUCKET/${s3dir:0:10} --recursive
+    fi
+done
