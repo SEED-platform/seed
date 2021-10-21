@@ -160,9 +160,9 @@ do
     # files that are in the date format. Be sure to 
     # test this script before deploying in any production 
     # environment. It will only remove directories that 
-    # have a DDDD-DD-DD format
+    # have a YYYY-MM-DD format
     if [ "$date_found" = false ] && [[ "${s3dir:0:10}" =~ ^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$ ]]; then
-        echo "Deleting no longer valid backup of ${s3dir:0:10}"
+        echo "Deleting out of date backup of ${s3dir:0:10}"
         aws s3 rm $S3_BUCKET/${s3dir:0:10} --recursive
     fi
 done
