@@ -118,20 +118,21 @@ send_slack_notification "[$ENVIRONMENT]-database-backup-run-completed"
 #  - Last 52 weeks of Monday morning backups
 #  - Last 10 years of monthly data
 
-# Last 90 days
+# Daily - add dates in format "2021-10-22" to the keep array.
 for i in {0..60}
 do 
     ((keep[$(date +%Y%m%d -d "-$i day")]++))  
 done
 
-# Last 52 weeks of Monday morning backups
+# Last 52 weeks of Monday morning backups. "monday-i week" is method to get previous monday back i times.
 for i in {0..52}
 do 
     vali=$((i+1))
     ((keep[$(date "+%Y%m%d" -d "monday-$vali week")]++))
 done
 
-# Last 10 years of monthly data on a monday
+# Last 10 years of monthly data on a monday. This is the most confusing, need to first grab the 15th of each month back 120 times.
+# Then find the number of weeks back was the monday for the month of interest, then add that to the keep array.
 for i in {0..120}; do
     DW=$(($(date +%-W)-$(date -d $(date -d "$(date +%Y-%m-15) -$i month" +%Y-%m-01) +%-W)))
     for (( AY=$(date -d "$(date +%Y-%m-15) -$i month" +%Y); AY < $(date +%Y); AY++ )); do
@@ -140,7 +141,7 @@ for i in {0..120}; do
     ((keep[$(date +%Y%m%d -d "monday-$DW weeks")]++))
 done
 
-# Query S3 to find all the dates that exist
+# Query S3 to find all the dates that exist. Mapfile converts output or CRLF stdout to array in bash.
 mapfile s3dirs < <(aws s3 ls $S3_BUCKET | awk '{print $2}')
 
 # Iterate to find which backups need to be removed 
