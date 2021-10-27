@@ -4010,3 +4010,12 @@ iframe.analysis-results {
     width: 300px;
   }
 }
+
+// Inserts an fa-link in front of the element
+// Used in the inventory list to identify derived columns
+.derived-column-display-name::before {
+  font-family: 'FontAwesome';
+  content: "\f0c1";
+  margin: 0.5em 0 0 0.5em;
+  float: left;
+}

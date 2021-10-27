@@ -582,6 +582,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       };
       _.map($scope.columns, function (col) {
         var options = {};
+        // Modify cellTemplate
         if (_.isMatch(col, {column_name: 'property_footprint', table_name: 'PropertyState'})) {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip-html="grid.appScope.polygon(row.entity, \'PropertyState\')" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
         } else if (_.isMatch(col, {column_name: 'taxlot_footprint', table_name: 'TaxLotState'})) {
@@ -589,6 +590,13 @@ angular.module('BE.seed.controller.inventory_list', [])
         } else {
           col.cellTemplate = '<div class="ui-grid-cell-contents" uib-tooltip="{{COL_FIELD CUSTOM_FILTERS}}" tooltip-append-to-body="true" tooltip-popup-delay="500">{{COL_FIELD CUSTOM_FILTERS}}</div>';
         }
+
+        // Modify headerCellClass
+        if (col.is_derived_column) {
+          col.headerCellClass = 'derived-column-display-name'
+        }
+
+        // Modify misc
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
           options.filter = inventory_service.dateFilter();
@@ -606,6 +614,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.combinedFilter();
           options.sortingAlgorithm = naturalSort;
         }
+
         if (col.column_name === 'number_properties' && col.related) options.treeAggregationType = 'total';
         else if (col.related || col.is_extra_data) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
