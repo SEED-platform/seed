@@ -1669,6 +1669,9 @@ msgstr "Nombre de propriétés"
 msgid "Number of Tax Lots"
 msgstr "Nombre de lots d'impôt"
 
+msgid "Number of decimal places to display"
+msgstr "Nombre de décimales à afficher"
+
 msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
 msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</strong> propriété} other{<strong>#</strong> propriétés}} et {num_taxlots,plural,one{<strong>1</strong>lot d'impôt} other{<strong>#</strong> lots d'impôt}}?"
 
@@ -2314,9 +2317,6 @@ msgstr "Afficher/masquer les colonnes"
 
 msgid "Signature"
 msgstr "Signature"
-
-msgid "Significant figures for EUIs and areas"
-msgstr "Chiffres significatifs pour les IUE et les zones"
 
 msgid "Site EUI"
 msgstr "IUE site"

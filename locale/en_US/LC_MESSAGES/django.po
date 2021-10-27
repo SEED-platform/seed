@@ -1656,6 +1656,9 @@ msgstr "Number of Properties"
 msgid "Number of Tax Lots"
 msgstr "Number of Tax Lots"
 
+msgid "Number of decimal places to display"
+msgstr "Number of decimal places to display"
+
 msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
 msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}}?"
 
@@ -2294,9 +2297,6 @@ msgstr "Show/Hide Columns"
 
 msgid "Signature"
 msgstr "Signature"
-
-msgid "Significant figures for EUIs and areas"
-msgstr "Significant figures for EUIs and areas"
 
 msgid "Site EUI"
 msgstr "Site EUI"
