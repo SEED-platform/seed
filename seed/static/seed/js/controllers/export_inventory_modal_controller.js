@@ -23,18 +23,20 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
     inventory_type, 
     profile_id, 
     spinner_utility,
-    filter_header_string
+    filter_header_string,
   ) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
     $scope.inventory_type = inventory_type;
+    $scope.exporting = false
 
     $scope.export_selected = function (export_type) {
       var filename = $scope.export_name;
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
       spinner_utility.show()
+      $scope.exporting = true
       return $http.post('/api/v3/tax_lot_properties/export/', {
         ids: ids,
         filename: filename,
@@ -74,9 +76,11 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
 
     $scope.cancel = function () {
       $uibModalInstance.dismiss('cancel');
+      spinner_utility.hide()
     };
 
     $scope.close = function () {
       $uibModalInstance.close();
+      spinner_utility.hide()
     };
   }]);
