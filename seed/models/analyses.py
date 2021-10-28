@@ -53,6 +53,7 @@ class Analysis(models.Model):
 
     name = models.CharField(max_length=255, blank=False, default=None)
     service = models.IntegerField(choices=SERVICE_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
