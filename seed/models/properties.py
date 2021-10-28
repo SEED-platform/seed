@@ -194,6 +194,9 @@ class PropertyState(models.Model):
     # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
+    # EPA's eGRID Subregion Code (https://www.epa.gov/egrid)
+    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True)
+
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
@@ -590,6 +593,7 @@ class PropertyState(models.Model):
                     ps.analysis_end_time,
                     ps.analysis_state,
                     ps.analysis_state_message,
+                    ps.egrid_subregion_code,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
