@@ -76,11 +76,9 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
 
     $scope.cancel = function () {
       $uibModalInstance.dismiss('cancel');
-      spinner_utility.hide()
     };
 
     $scope.close = function () {
       $uibModalInstance.close();
-      spinner_utility.hide()
     };
   }]);
