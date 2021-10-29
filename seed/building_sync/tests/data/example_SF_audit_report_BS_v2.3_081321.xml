@@ -2,14 +2,14 @@
 <auc:BuildingSync version="2.3.0"
     xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019">
   <auc:Facilities>
-    <auc:Facility ID="Facility-69975053069040">
+    <auc:Facility ID="Facility-69909846256000">
       <auc:Sites>
-        <auc:Site ID="SiteType-69975053066820">
+        <auc:Site ID="SiteType-69909846253880">
           <auc:Buildings>
-            <auc:Building ID="BuildingType-69975053938360">
+            <auc:Building ID="BuildingType-69909846782100">
               <auc:PremisesName>Example San Francisco Audit Report </auc:PremisesName>
               <auc:PremisesNotes>Example San Francisco audit report building for import/export.  Input data entered may not necessarily be considered reflective of a typical building.  &#xd;
-This example is configured to import and export with BuildingSync version 2.1.0.  The building will also successfully convert to an Asset Score building for modeling.  </auc:PremisesNotes>
+This example is configured to import and export with BuildingSync version 2.3.0.  The building will also successfully convert to an Asset Score building for modeling.  </auc:PremisesNotes>
               <auc:PremisesIdentifiers>
                 <auc:PremisesIdentifier>
                   <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
@@ -69,46 +69,46 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               <auc:PercentOccupiedByOwner>20.0</auc:PercentOccupiedByOwner>
               <auc:PercentLeasedByOwner>80.0</auc:PercentLeasedByOwner>
               <auc:Sections>
-                <auc:Section ID="Section-69975055382620">
+                <auc:Section ID="Section-69909849031760">
                   <auc:SectionType>Whole building</auc:SectionType>
                   <auc:FootprintShape>L-Shape</auc:FootprintShape>
                   <auc:Sides>
                     <auc:Side>
-                      <auc:DoorID IDref="FenestrationSystemType-69975056258260"></auc:DoorID>
+                      <auc:DoorID IDref="FenestrationSystemType-69909850945460"></auc:DoorID>
                     </auc:Side>
                     <auc:Side>
-                      <auc:WallID IDref="WallSystemType-69975060331660"></auc:WallID>
+                      <auc:WallID IDref="WallSystemType-69909855759020"></auc:WallID>
                     </auc:Side>
                     <auc:Side>
-                      <auc:WindowID IDref="FenestrationSystemType-69975060562220"></auc:WindowID>
+                      <auc:WindowID IDref="FenestrationSystemType-69909855992840"></auc:WindowID>
                     </auc:Side>
                   </auc:Sides>
                   <auc:Roofs>
                     <auc:Roof>
-                      <auc:RoofID IDref="RoofSystemType-69975060023920">
+                      <auc:RoofID IDref="RoofSystemType-69909854273600">
                         <auc:RoofCondition>Good</auc:RoofCondition>
                       </auc:RoofID>
                     </auc:Roof>
                     <auc:Roof>
-                      <auc:RoofID IDref="RoofSystemType-69975060222760">
+                      <auc:RoofID IDref="RoofSystemType-69909855681240">
                         <auc:SkylightIDs>
-                          <auc:SkylightID IDref="FenestrationSystemType-69975060193200"></auc:SkylightID>
+                          <auc:SkylightID IDref="FenestrationSystemType-69909855625260"></auc:SkylightID>
                         </auc:SkylightIDs>
                       </auc:RoofID>
                     </auc:Roof>
                   </auc:Roofs>
                   <auc:ExteriorFloors>
                     <auc:ExteriorFloor>
-                      <auc:ExteriorFloorID IDref="ExteriorFloorSystemType-69975056597240"></auc:ExteriorFloorID>
+                      <auc:ExteriorFloorID IDref="ExteriorFloorSystemType-69909851364720"></auc:ExteriorFloorID>
                     </auc:ExteriorFloor>
                   </auc:ExteriorFloors>
                   <auc:Foundations>
                     <auc:Foundation>
-                      <auc:FoundationID IDref="FoundationSystemType-69975060452440"></auc:FoundationID>
+                      <auc:FoundationID IDref="FoundationSystemType-69909855891160"></auc:FoundationID>
                     </auc:Foundation>
                   </auc:Foundations>
                 </auc:Section>
-                <auc:Section ID="Section-69975055543440">
+                <auc:Section ID="Section-69909849304620">
                   <auc:SectionType>Space function</auc:SectionType>
                   <auc:OccupancyClassification>Office</auc:OccupancyClassification>
                   <auc:OccupancyLevels>
@@ -184,16 +184,16 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                   <auc:ThermalZones>
-                    <auc:ThermalZone ID="ThermalZoneType-69975058748240">
+                    <auc:ThermalZone ID="ThermalZoneType-69909852859200">
                       <auc:HVACScheduleIDs>
-                        <auc:HVACScheduleID IDref="ScheduleType-69975058684100"></auc:HVACScheduleID>
+                        <auc:HVACScheduleID IDref="ScheduleType-69909852801320"></auc:HVACScheduleID>
                       </auc:HVACScheduleIDs>
                       <auc:SetpointTemperatureHeating>72</auc:SetpointTemperatureHeating>
                       <auc:SetpointTemperatureCooling>78</auc:SetpointTemperatureCooling>
                     </auc:ThermalZone>
                   </auc:ThermalZones>
                 </auc:Section>
-                <auc:Section ID="Section-69975055935540">
+                <auc:Section ID="Section-69909850459820">
                   <auc:SectionType>Space function</auc:SectionType>
                   <auc:OccupancyClassification>Food service</auc:OccupancyClassification>
                   <auc:OccupancyLevels>
@@ -269,9 +269,9 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                   <auc:ThermalZones>
-                    <auc:ThermalZone ID="ThermalZoneType-69975059024420">
+                    <auc:ThermalZone ID="ThermalZoneType-69909853049060">
                       <auc:HVACScheduleIDs>
-                        <auc:HVACScheduleID IDref="ScheduleType-69975058986380"></auc:HVACScheduleID>
+                        <auc:HVACScheduleID IDref="ScheduleType-69909853019200"></auc:HVACScheduleID>
                       </auc:HVACScheduleIDs>
                       <auc:SetpointTemperatureHeating>70</auc:SetpointTemperatureHeating>
                       <auc:SetpointTemperatureCooling>75</auc:SetpointTemperatureCooling>
@@ -639,10 +639,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
       </auc:Sites>
       <auc:Systems>
         <auc:HVACSystems>
-          <auc:HVACSystem ID="HVACSystemType-69975050587280">
+          <auc:HVACSystem ID="HVACSystemType-69909945202520">
             <auc:Plants>
               <auc:HeatingPlants>
-                <auc:HeatingPlant ID="HeatingPlantType-69975053088880">
+                <auc:HeatingPlant ID="HeatingPlantType-69909952635980">
                   <auc:Boiler>
                     <auc:BoilerType>Hot water</auc:BoilerType>
                     <auc:DraftType>Unknown</auc:DraftType>
@@ -736,13 +736,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:HeatingPlant>
               </auc:HeatingPlants>
               <auc:CoolingPlants>
-                <auc:CoolingPlant ID="CoolingPlantType-69975051113740">
+                <auc:CoolingPlant ID="CoolingPlantType-69909946082420">
                   <auc:Chiller>
                     <auc:ChillerType>Vapor compression</auc:ChillerType>
                     <auc:ChillerCompressorDriver>Electric Motor</auc:ChillerCompressorDriver>
                     <auc:ChillerCompressorType>Screw</auc:ChillerCompressorType>
                     <auc:CondenserPlantIDs>
-                      <auc:CondenserPlantID IDref="CondenserPlantType-69975050573300"></auc:CondenserPlantID>
+                      <auc:CondenserPlantID IDref="CondenserPlantType-69909945165220"></auc:CondenserPlantID>
                     </auc:CondenserPlantIDs>
                     <auc:AnnualCoolingEfficiencyValue>2.5</auc:AnnualCoolingEfficiencyValue>
                     <auc:AnnualCoolingEfficiencyUnits>COP</auc:AnnualCoolingEfficiencyUnits>
@@ -829,7 +829,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:CoolingPlant>
               </auc:CoolingPlants>
               <auc:CondenserPlants>
-                <auc:CondenserPlant ID="CondenserPlantType-69975050573300">
+                <auc:CondenserPlant ID="CondenserPlantType-69909945165220">
                   <auc:WaterCooled>
                     <auc:WaterCooledCondenserType>Cooling tower</auc:WaterCooledCondenserType>
                     <auc:WaterCooledCondenserFlowControl>Fixed Flow</auc:WaterCooledCondenserFlowControl>
@@ -850,17 +850,17 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:Plants>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
           </auc:HVACSystem>
-          <auc:HVACSystem ID="HVACSystemType-69975058426400">
+          <auc:HVACSystem ID="HVACSystemType-69909938569040">
             <auc:HeatingAndCoolingSystems>
               <auc:ZoningSystemType>Multi zone</auc:ZoningSystemType>
               <auc:HeatingSources>
-                <auc:HeatingSource ID="HeatingSource-69975061158800">
+                <auc:HeatingSource ID="HeatingSource-69909839386840">
                   <auc:HeatingSourceType>
-                    <auc:SourceHeatingPlantID IDref="HeatingPlantType-69975053088880"></auc:SourceHeatingPlantID>
+                    <auc:SourceHeatingPlantID IDref="HeatingPlantType-69909952635980"></auc:SourceHeatingPlantID>
                   </auc:HeatingSourceType>
                   <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
                   <auc:UserDefinedFields>
@@ -932,9 +932,9 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:HeatingSource>
               </auc:HeatingSources>
               <auc:CoolingSources>
-                <auc:CoolingSource ID="CoolingSource-69975060467000">
+                <auc:CoolingSource ID="CoolingSource-69909838960100">
                   <auc:CoolingSourceType>
-                    <auc:CoolingPlantID IDref="CoolingPlantType-69975051113740"></auc:CoolingPlantID>
+                    <auc:CoolingPlantID IDref="CoolingPlantType-69909946082420"></auc:CoolingPlantID>
                   </auc:CoolingSourceType>
                   <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
                   <auc:UserDefinedFields>
@@ -986,23 +986,23 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:CoolingSource>
               </auc:CoolingSources>
               <auc:Deliveries>
-                <auc:Delivery ID="Delivery-69975058884780">
+                <auc:Delivery ID="Delivery-69909836378340">
                   <auc:DeliveryType>
                     <auc:CentralAirDistribution>
                       <auc:AirDeliveryType>Central fan</auc:AirDeliveryType>
                       <auc:TerminalUnit>VAV terminal box not fan powered with reheat</auc:TerminalUnit>
                       <auc:ReheatSource>Heating plant</auc:ReheatSource>
-                      <auc:ReheatPlantID IDref="HeatingPlantType-69975053088880"></auc:ReheatPlantID>
+                      <auc:ReheatPlantID IDref="HeatingPlantType-69909952635980"></auc:ReheatPlantID>
                     </auc:CentralAirDistribution>
                   </auc:DeliveryType>
-                  <auc:HeatingSourceID IDref="HeatingSource-69975061158800"></auc:HeatingSourceID>
-                  <auc:CoolingSourceID IDref="CoolingSource-69975060467000"></auc:CoolingSourceID>
+                  <auc:HeatingSourceID IDref="HeatingSource-69909839386840"></auc:HeatingSourceID>
+                  <auc:CoolingSourceID IDref="CoolingSource-69909838960100"></auc:CoolingSourceID>
                 </auc:Delivery>
-                <auc:Delivery ID="Delivery-69975059092140">
+                <auc:Delivery ID="Delivery-69909837101220">
                   <auc:DeliveryType>
                     <auc:ZoneEquipment>
                       <auc:FanBased>
-                        <auc:AirSideEconomizer ID="AirSideEconomizer-69975059167460">
+                        <auc:AirSideEconomizer ID="AirSideEconomizer-69909837118660">
                           <auc:AirSideEconomizerType>Dry bulb temperature</auc:AirSideEconomizerType>
                         </auc:AirSideEconomizer>
                         <auc:SupplyAirTemperatureResetControl>false</auc:SupplyAirTemperatureResetControl>
@@ -1010,13 +1010,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                       </auc:FanBased>
                     </auc:ZoneEquipment>
                   </auc:DeliveryType>
-                  <auc:HeatingSourceID IDref="HeatingSource-69975061158800"></auc:HeatingSourceID>
-                  <auc:CoolingSourceID IDref="CoolingSource-69975060467000"></auc:CoolingSourceID>
+                  <auc:HeatingSourceID IDref="HeatingSource-69909839386840"></auc:HeatingSourceID>
+                  <auc:CoolingSourceID IDref="CoolingSource-69909838960100"></auc:CoolingSourceID>
                 </auc:Delivery>
               </auc:Deliveries>
             </auc:HeatingAndCoolingSystems>
             <auc:OtherHVACSystems>
-              <auc:OtherHVACSystem ID="OtherHVACSystemType-69975059313240">
+              <auc:OtherHVACSystem ID="OtherHVACSystemType-69909837129700">
                 <auc:OtherHVACType>
                   <auc:MechanicalVentilation>
                     <auc:VentilationType>Energy recovery ventilator</auc:VentilationType>
@@ -1024,8 +1024,8 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   </auc:MechanicalVentilation>
                 </auc:OtherHVACType>
                 <auc:LinkedDeliveryIDs>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975058884780"></auc:LinkedDeliveryID>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975059092140"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909836378340"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909837101220"></auc:LinkedDeliveryID>
                 </auc:LinkedDeliveryIDs>
               </auc:OtherHVACSystem>
             </auc:OtherHVACSystems>
@@ -1035,10 +1035,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:HVACControlSystemTypes>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055543440">
+                <auc:LinkedSectionID IDref="Section-69909849304620">
                   <auc:FloorAreas>
                     <auc:FloorArea>
                       <auc:FloorAreaType>Common</auc:FloorAreaType>
@@ -1187,11 +1187,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:HVACSystem>
-          <auc:HVACSystem ID="HVACSystemType-69975099683820">
+          <auc:HVACSystem ID="HVACSystemType-69909840027600">
             <auc:HeatingAndCoolingSystems>
               <auc:ZoningSystemType>Single zone</auc:ZoningSystemType>
               <auc:HeatingSources>
-                <auc:HeatingSource ID="HeatingSource-69975108996220">
+                <auc:HeatingSource ID="HeatingSource-69909840796560">
                   <auc:HeatingSourceType>
                     <auc:Furnace></auc:Furnace>
                   </auc:HeatingSourceType>
@@ -1280,7 +1280,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:HeatingSource>
               </auc:HeatingSources>
               <auc:CoolingSources>
-                <auc:CoolingSource ID="CoolingSource-69975102188900">
+                <auc:CoolingSource ID="CoolingSource-69909840436420">
                   <auc:CoolingSourceType>
                     <auc:DX></auc:DX>
                   </auc:CoolingSourceType>
@@ -1349,16 +1349,16 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:CoolingSource>
               </auc:CoolingSources>
               <auc:Deliveries>
-                <auc:Delivery ID="Delivery-69975099967940">
+                <auc:Delivery ID="Delivery-69909840073400">
                   <auc:DeliveryType>
                     <auc:CentralAirDistribution>
                       <auc:AirDeliveryType>Local fan</auc:AirDeliveryType>
                     </auc:CentralAirDistribution>
                   </auc:DeliveryType>
-                  <auc:HeatingSourceID IDref="HeatingSource-69975108996220"></auc:HeatingSourceID>
-                  <auc:CoolingSourceID IDref="CoolingSource-69975102188900"></auc:CoolingSourceID>
+                  <auc:HeatingSourceID IDref="HeatingSource-69909840796560"></auc:HeatingSourceID>
+                  <auc:CoolingSourceID IDref="CoolingSource-69909840436420"></auc:CoolingSourceID>
                 </auc:Delivery>
-                <auc:Delivery ID="Delivery-69975100128380">
+                <auc:Delivery ID="Delivery-69909840090600">
                   <auc:DeliveryType>
                     <auc:ZoneEquipment>
                       <auc:FanBased>
@@ -1367,39 +1367,39 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                       </auc:FanBased>
                     </auc:ZoneEquipment>
                   </auc:DeliveryType>
-                  <auc:HeatingSourceID IDref="HeatingSource-69975108996220"></auc:HeatingSourceID>
-                  <auc:CoolingSourceID IDref="CoolingSource-69975102188900"></auc:CoolingSourceID>
+                  <auc:HeatingSourceID IDref="HeatingSource-69909840796560"></auc:HeatingSourceID>
+                  <auc:CoolingSourceID IDref="CoolingSource-69909840436420"></auc:CoolingSourceID>
                 </auc:Delivery>
               </auc:Deliveries>
             </auc:HeatingAndCoolingSystems>
             <auc:OtherHVACSystems>
-              <auc:OtherHVACSystem ID="OtherHVACSystemType-69975100510740">
+              <auc:OtherHVACSystem ID="OtherHVACSystemType-69909840118840">
                 <auc:OtherHVACType>
                   <auc:MechanicalVentilation>
                     <auc:DemandControlVentilation>false</auc:DemandControlVentilation>
                   </auc:MechanicalVentilation>
                 </auc:OtherHVACType>
                 <auc:LinkedDeliveryIDs>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975099967940"></auc:LinkedDeliveryID>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975100128380"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909840073400"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909840090600"></auc:LinkedDeliveryID>
                 </auc:LinkedDeliveryIDs>
               </auc:OtherHVACSystem>
-              <auc:OtherHVACSystem ID="OtherHVACSystemType-69975110024360">
+              <auc:OtherHVACSystem ID="OtherHVACSystemType-69909841212960">
                 <auc:OtherHVACType>
                   <auc:NaturalVentilation></auc:NaturalVentilation>
                 </auc:OtherHVACType>
                 <auc:LinkedDeliveryIDs>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975099967940"></auc:LinkedDeliveryID>
-                  <auc:LinkedDeliveryID IDref="Delivery-69975100128380"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909840073400"></auc:LinkedDeliveryID>
+                  <auc:LinkedDeliveryID IDref="Delivery-69909840090600"></auc:LinkedDeliveryID>
                 </auc:LinkedDeliveryIDs>
               </auc:OtherHVACSystem>
             </auc:OtherHVACSystems>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055935540">
+                <auc:LinkedSectionID IDref="Section-69909850459820">
                   <auc:FloorAreas>
                     <auc:FloorArea>
                       <auc:FloorAreaType>Common</auc:FloorAreaType>
@@ -1546,7 +1546,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:HVACSystem>
         </auc:HVACSystems>
         <auc:LightingSystems>
-          <auc:LightingSystem ID="LightingSystemType-69975056913860">
+          <auc:LightingSystem ID="LightingSystemType-69909851502500">
             <auc:LampType>
               <auc:LinearFluorescent>
                 <auc:LampLabel>T8</auc:LampLabel>
@@ -1587,10 +1587,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055543440">
+                <auc:LinkedSectionID IDref="Section-69909849304620">
                   <auc:FloorAreas>
                     <auc:FloorArea>
                       <auc:FloorAreaType>Common</auc:FloorAreaType>
@@ -1614,32 +1614,32 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 <auc:FieldValue>true</auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Lighting Power Density For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Lighting Power Density For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Common Areas Lighting Power Density For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Common Areas Lighting Power Density For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Tenant Areas Lighting Power Density For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Tenant Areas Lighting Power Density For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Quantity Of Luminaires For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Quantity Of Luminaires For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Common Areas Quantity Of Luminaires For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Common Areas Quantity Of Luminaires For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue>250</auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Tenant Areas Quantity Of Luminaires For Section-69975055543440</auc:FieldName>
+                <auc:FieldName>Tenant Areas Quantity Of Luminaires For Section-69909849304620</auc:FieldName>
                 <auc:FieldValue>1500</auc:FieldValue>
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:LightingSystem>
-          <auc:LightingSystem ID="LightingSystemType-69975057819080">
+          <auc:LightingSystem ID="LightingSystemType-69909852034000">
             <auc:LampType>
               <auc:SolidStateLighting>
                 <auc:LampLabel>LED</auc:LampLabel>
@@ -1684,10 +1684,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:Controls>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055935540">
+                <auc:LinkedSectionID IDref="Section-69909850459820">
                   <auc:FloorAreas>
                     <auc:FloorArea>
                       <auc:FloorAreaType>Common</auc:FloorAreaType>
@@ -1719,34 +1719,34 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 <auc:FieldValue>false</auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Lighting Power Density For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Lighting Power Density For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Common Areas Lighting Power Density For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Common Areas Lighting Power Density For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Tenant Areas Lighting Power Density For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Tenant Areas Lighting Power Density For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Quantity Of Luminaires For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Quantity Of Luminaires For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue></auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Common Areas Quantity Of Luminaires For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Common Areas Quantity Of Luminaires For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue>120</auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
-                <auc:FieldName>Tenant Areas Quantity Of Luminaires For Section-69975055935540</auc:FieldName>
+                <auc:FieldName>Tenant Areas Quantity Of Luminaires For Section-69909850459820</auc:FieldName>
                 <auc:FieldValue>360</auc:FieldValue>
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:LightingSystem>
         </auc:LightingSystems>
         <auc:DomesticHotWaterSystems>
-          <auc:DomesticHotWaterSystem ID="DomesticHotWaterSystemType-69975054571640">
+          <auc:DomesticHotWaterSystem ID="DomesticHotWaterSystemType-69909821570140">
             <auc:DomesticHotWaterType>
               <auc:Instantaneous>
                 <auc:InstantaneousWaterHeatingSource>
@@ -1763,10 +1763,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             <auc:Location>Mechanical Room</auc:Location>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055543440">
+                <auc:LinkedSectionID IDref="Section-69909849304620">
                   <auc:FloorAreas>
                     <auc:FloorArea>
                       <auc:FloorAreaType>Common</auc:FloorAreaType>
@@ -1808,91 +1808,6 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               <auc:UserDefinedField>
                 <auc:FieldName>Storage Tank Insulation Thickness Is Not Applicable</auc:FieldName>
                 <auc:FieldValue>true</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Tank Volume Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>true</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Water Heater Efficiency Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Water Heater Efficiency Type Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Year Installed Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-            </auc:UserDefinedFields>
-          </auc:DomesticHotWaterSystem>
-          <auc:DomesticHotWaterSystem ID="DomesticHotWaterSystemType-69975056164060">
-            <auc:DomesticHotWaterType>
-              <auc:StorageTank>
-                <auc:TankHeatingType>
-                  <auc:Direct>
-                    <auc:DirectTankHeatingSource>
-                      <auc:Combustion></auc:Combustion>
-                    </auc:DirectTankHeatingSource>
-                  </auc:Direct>
-                </auc:TankHeatingType>
-                <auc:StorageTankInsulationRValue>20.0</auc:StorageTankInsulationRValue>
-                <auc:StorageTankInsulationThickness>2.0</auc:StorageTankInsulationThickness>
-              </auc:StorageTank>
-            </auc:DomesticHotWaterType>
-            <auc:WaterHeaterEfficiencyType>Thermal Efficiency</auc:WaterHeaterEfficiencyType>
-            <auc:WaterHeaterEfficiency>60.0</auc:WaterHeaterEfficiency>
-            <auc:YearInstalled>2010</auc:YearInstalled>
-            <auc:PrimaryFuel>Electricity</auc:PrimaryFuel>
-            <auc:Location>Closet</auc:Location>
-            <auc:LinkedPremises>
-              <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
-              </auc:Building>
-              <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055935540">
-                  <auc:FloorAreas>
-                    <auc:FloorArea>
-                      <auc:FloorAreaType>Common</auc:FloorAreaType>
-                      <auc:FloorAreaPercentage>100</auc:FloorAreaPercentage>
-                    </auc:FloorArea>
-                    <auc:FloorArea>
-                      <auc:FloorAreaType>Tenant</auc:FloorAreaType>
-                      <auc:FloorAreaPercentage>100</auc:FloorAreaPercentage>
-                    </auc:FloorArea>
-                  </auc:FloorAreas>
-                </auc:LinkedSectionID>
-              </auc:Section>
-            </auc:LinkedPremises>
-            <auc:UserDefinedFields>
-              <auc:UserDefinedField>
-                <auc:FieldName>Draft Type Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>true</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Heating Plant ID Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>true</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Hot Water Distribution Type Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>true</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Location Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Primary Fuel Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Storage Tank Insulation R Value Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
-              </auc:UserDefinedField>
-              <auc:UserDefinedField>
-                <auc:FieldName>Storage Tank Insulation Thickness Is Not Applicable</auc:FieldName>
-                <auc:FieldValue>false</auc:FieldValue>
               </auc:UserDefinedField>
               <auc:UserDefinedField>
                 <auc:FieldName>Tank Volume Is Not Applicable</auc:FieldName>
@@ -1914,10 +1829,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:DomesticHotWaterSystem>
         </auc:DomesticHotWaterSystems>
         <auc:PumpSystems>
-          <auc:PumpSystem ID="PumpSystemType-69975050639660">
+          <auc:PumpSystem ID="PumpSystemType-69909945253600">
             <auc:PumpControlType>Constant Volume</auc:PumpControlType>
             <auc:LinkedSystemIDs>
-              <auc:LinkedSystemID IDref="CondenserPlantType-69975050573300"></auc:LinkedSystemID>
+              <auc:LinkedSystemID IDref="CondenserPlantType-69909945165220"></auc:LinkedSystemID>
             </auc:LinkedSystemIDs>
             <auc:UserDefinedFields>
               <auc:UserDefinedField>
@@ -1926,10 +1841,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:PumpSystem>
-          <auc:PumpSystem ID="PumpSystemType-69975051822720">
+          <auc:PumpSystem ID="PumpSystemType-69909948059580">
             <auc:PumpControlType>Constant Volume</auc:PumpControlType>
             <auc:LinkedSystemIDs>
-              <auc:LinkedSystemID IDref="CoolingPlantType-69975051113740"></auc:LinkedSystemID>
+              <auc:LinkedSystemID IDref="CoolingPlantType-69909946082420"></auc:LinkedSystemID>
             </auc:LinkedSystemIDs>
             <auc:UserDefinedFields>
               <auc:UserDefinedField>
@@ -1940,30 +1855,30 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:PumpSystem>
         </auc:PumpSystems>
         <auc:FanSystems>
-          <auc:FanSystem ID="FanSystemType-69975060026620">
+          <auc:FanSystem ID="FanSystemType-69909838505000">
             <auc:FanEfficiency>60.0</auc:FanEfficiency>
             <auc:FanControlType>Variable Volume</auc:FanControlType>
             <auc:LinkedSystemIDs>
-              <auc:LinkedSystemID IDref="HVACSystemType-69975058426400"></auc:LinkedSystemID>
+              <auc:LinkedSystemID IDref="HVACSystemType-69909938569040"></auc:LinkedSystemID>
             </auc:LinkedSystemIDs>
           </auc:FanSystem>
-          <auc:FanSystem ID="FanSystemType-69975101702580">
+          <auc:FanSystem ID="FanSystemType-69909840303160">
             <auc:FanControlType>Constant Volume</auc:FanControlType>
             <auc:LinkedSystemIDs>
-              <auc:LinkedSystemID IDref="HVACSystemType-69975099683820"></auc:LinkedSystemID>
+              <auc:LinkedSystemID IDref="HVACSystemType-69909840027600"></auc:LinkedSystemID>
             </auc:LinkedSystemIDs>
           </auc:FanSystem>
         </auc:FanSystems>
         <auc:MotorSystems>
-          <auc:MotorSystem ID="MotorSystemType-69975060078720">
+          <auc:MotorSystem ID="MotorSystemType-69909838838280">
             <auc:MotorEfficiency>60.0</auc:MotorEfficiency>
             <auc:LinkedSystemIDs>
-              <auc:LinkedSystemID IDref="HVACSystemType-69975058426400"></auc:LinkedSystemID>
+              <auc:LinkedSystemID IDref="HVACSystemType-69909938569040"></auc:LinkedSystemID>
             </auc:LinkedSystemIDs>
           </auc:MotorSystem>
         </auc:MotorSystems>
         <auc:WallSystems>
-          <auc:WallSystem ID="WallSystemType-69975060331660">
+          <auc:WallSystem ID="WallSystemType-69909855759020">
             <auc:ExteriorWallConstruction>Wood frame</auc:ExteriorWallConstruction>
             <auc:ExteriorWallFinish>Other</auc:ExteriorWallFinish>
             <auc:WallInsulations>
@@ -1974,7 +1889,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:WallSystem>
         </auc:WallSystems>
         <auc:RoofSystems>
-          <auc:RoofSystem ID="RoofSystemType-69975060023920">
+          <auc:RoofSystem ID="RoofSystemType-69909854273600">
             <auc:RoofConstruction>Built up</auc:RoofConstruction>
             <auc:BlueRoof>true</auc:BlueRoof>
             <auc:CoolRoof>true</auc:CoolRoof>
@@ -2000,10 +1915,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:RoofSystem>
-          <auc:RoofSystem ID="RoofSystemType-69975060222760"></auc:RoofSystem>
+          <auc:RoofSystem ID="RoofSystemType-69909855681240"></auc:RoofSystem>
         </auc:RoofSystems>
         <auc:FenestrationSystems>
-          <auc:FenestrationSystem ID="FenestrationSystemType-69975056258260">
+          <auc:FenestrationSystem ID="FenestrationSystemType-69909850945460">
             <auc:FenestrationType>
               <auc:Door></auc:Door>
             </auc:FenestrationType>
@@ -2014,7 +1929,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:FenestrationSystem>
-          <auc:FenestrationSystem ID="FenestrationSystemType-69975060193200">
+          <auc:FenestrationSystem ID="FenestrationSystemType-69909855625260">
             <auc:FenestrationType>
               <auc:Skylight></auc:Skylight>
             </auc:FenestrationType>
@@ -2023,7 +1938,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             <auc:SolarHeatGainCoefficient>0.4</auc:SolarHeatGainCoefficient>
             <auc:VisibleTransmittance>0.4</auc:VisibleTransmittance>
           </auc:FenestrationSystem>
-          <auc:FenestrationSystem ID="FenestrationSystemType-69975060562220">
+          <auc:FenestrationSystem ID="FenestrationSystemType-69909855992840">
             <auc:FenestrationType>
               <auc:Window></auc:Window>
             </auc:FenestrationType>
@@ -2039,13 +1954,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:FenestrationSystem>
         </auc:FenestrationSystems>
         <auc:ExteriorFloorSystems>
-          <auc:ExteriorFloorSystem ID="ExteriorFloorSystemType-69975056597240">
+          <auc:ExteriorFloorSystem ID="ExteriorFloorSystemType-69909851364720">
             <auc:ExteriorFloorRValue>19.0</auc:ExteriorFloorRValue>
             <auc:ExteriorFloorFramingMaterial>Wood</auc:ExteriorFloorFramingMaterial>
           </auc:ExteriorFloorSystem>
         </auc:ExteriorFloorSystems>
         <auc:FoundationSystems>
-          <auc:FoundationSystem ID="FoundationSystemType-69975060452440">
+          <auc:FoundationSystem ID="FoundationSystemType-69909855891160">
             <auc:GroundCouplings>
               <auc:GroundCoupling>
                 <auc:Basement>
@@ -2060,17 +1975,17 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
               <auc:UserDefinedField>
                 <auc:FieldName>Linked Wall ID</auc:FieldName>
-                <auc:FieldValue>WallSystemType-69975060331660</auc:FieldValue>
+                <auc:FieldValue>WallSystemType-69909855759020</auc:FieldValue>
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:FoundationSystem>
         </auc:FoundationSystems>
         <auc:CriticalITSystems>
-          <auc:CriticalITSystem ID="CriticalITSystemType-69975059093260">
+          <auc:CriticalITSystem ID="CriticalITSystemType-69909853120100">
             <auc:ITSystemType>Server</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2100,11 +2015,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:CriticalITSystem>
-          <auc:CriticalITSystem ID="CriticalITSystemType-69975059183100">
+          <auc:CriticalITSystem ID="CriticalITSystemType-69909853228780">
             <auc:ITSystemType>Other</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2122,11 +2037,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:CriticalITSystem>
-          <auc:CriticalITSystem ID="CriticalITSystemType-69975059257020">
+          <auc:CriticalITSystem ID="CriticalITSystemType-69909853285080">
             <auc:ITSystemType>Other</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2144,11 +2059,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:CriticalITSystem>
-          <auc:CriticalITSystem ID="CriticalITSystemType-69975059321220">
+          <auc:CriticalITSystem ID="CriticalITSystemType-69909853335360">
             <auc:ITSystemType>UPS</auc:ITSystemType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2164,11 +2079,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:CriticalITSystem>
         </auc:CriticalITSystems>
         <auc:PlugLoads>
-          <auc:PlugLoad ID="PlugElectricLoadType-69975059856040">
+          <auc:PlugLoad ID="PlugElectricLoadType-69909854000480">
             <auc:PlugLoadType>Broadcast Antenna</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2178,11 +2093,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:PlugLoad>
-          <auc:PlugLoad ID="PlugElectricLoadType-69975059879000">
+          <auc:PlugLoad ID="PlugElectricLoadType-69909854031220">
             <auc:PlugLoadType>Kitchen Equipment</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2196,11 +2111,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:PlugLoad>
-          <auc:PlugLoad ID="PlugElectricLoadType-69975059900720">
+          <auc:PlugLoad ID="PlugElectricLoadType-69909854064700">
             <auc:PlugLoadType>Other</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2214,11 +2129,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:PlugLoad>
-          <auc:PlugLoad ID="PlugElectricLoadType-69975059934460">
+          <auc:PlugLoad ID="PlugElectricLoadType-69909854191120">
             <auc:PlugLoadType>Signage Display</auc:PlugLoadType>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2230,36 +2145,36 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:PlugLoad>
         </auc:PlugLoads>
         <auc:ProcessLoads>
-          <auc:ProcessLoad ID="ProcessGasElectricLoadType-69975058569440">
+          <auc:ProcessLoad ID="ProcessGasElectricLoadType-69909852409060">
             <auc:ProcessLoadType>Miscellaneous Gas Load</auc:ProcessLoadType>
             <auc:WeightedAverageLoad>0.5</auc:WeightedAverageLoad>
             <auc:LinkedPremises>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055543440"></auc:LinkedSectionID>
+                <auc:LinkedSectionID IDref="Section-69909849304620"></auc:LinkedSectionID>
               </auc:Section>
             </auc:LinkedPremises>
           </auc:ProcessLoad>
-          <auc:ProcessLoad ID="ProcessGasElectricLoadType-69975058838960">
+          <auc:ProcessLoad ID="ProcessGasElectricLoadType-69909852889700">
             <auc:ProcessLoadType>Miscellaneous Gas Load</auc:ProcessLoadType>
             <auc:WeightedAverageLoad>0.4</auc:WeightedAverageLoad>
             <auc:LinkedPremises>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055935540"></auc:LinkedSectionID>
+                <auc:LinkedSectionID IDref="Section-69909850459820"></auc:LinkedSectionID>
               </auc:Section>
             </auc:LinkedPremises>
           </auc:ProcessLoad>
         </auc:ProcessLoads>
         <auc:ConveyanceSystems>
-          <auc:ConveyanceSystem ID="ConveyanceSystemType-69975056391480">
+          <auc:ConveyanceSystem ID="ConveyanceSystemType-69909851095180">
             <auc:ConveyanceSystemType>Elevator</auc:ConveyanceSystemType>
             <auc:Quantity>3</auc:Quantity>
             <auc:YearOfManufacture>2006</auc:YearOfManufacture>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
               <auc:Section>
-                <auc:LinkedSectionID IDref="Section-69975055543440"></auc:LinkedSectionID>
+                <auc:LinkedSectionID IDref="Section-69909849304620"></auc:LinkedSectionID>
               </auc:Section>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2271,13 +2186,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:ConveyanceSystem>
         </auc:ConveyanceSystems>
         <auc:OnsiteStorageTransmissionGenerationSystems>
-          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-69975059493780">
+          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-69909853460840">
             <auc:BackupGenerator>true</auc:BackupGenerator>
             <auc:DemandReduction>false</auc:DemandReduction>
             <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2303,13 +2218,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:UserDefinedField>
             </auc:UserDefinedFields>
           </auc:OnsiteStorageTransmissionGenerationSystem>
-          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-69975059626500">
+          <auc:OnsiteStorageTransmissionGenerationSystem ID="OnsiteStorageTransmissionGenerationSystemType-69909853699200">
             <auc:BackupGenerator>false</auc:BackupGenerator>
             <auc:DemandReduction>false</auc:DemandReduction>
             <auc:CapacityUnits>kBtu/hr</auc:CapacityUnits>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
             <auc:UserDefinedFields>
@@ -2333,18 +2248,18 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           </auc:OnsiteStorageTransmissionGenerationSystem>
         </auc:OnsiteStorageTransmissionGenerationSystems>
         <auc:AirInfiltrationSystems>
-          <auc:AirInfiltrationSystem ID="AirInfiltrationSystem-69975056180700">
+          <auc:AirInfiltrationSystem ID="AirInfiltrationSystem-69909850712440">
             <auc:Tightness>Very Leaky</auc:Tightness>
             <auc:LinkedPremises>
               <auc:Building>
-                <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
               </auc:Building>
             </auc:LinkedPremises>
           </auc:AirInfiltrationSystem>
         </auc:AirInfiltrationSystems>
       </auc:Systems>
       <auc:Schedules>
-        <auc:Schedule ID="ScheduleType-69975058684100">
+        <auc:Schedule ID="ScheduleType-69909852801320">
           <auc:ScheduleDetails>
             <auc:ScheduleDetail>
               <auc:DayType>Weekday</auc:DayType>
@@ -2353,7 +2268,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:ScheduleDetail>
           </auc:ScheduleDetails>
         </auc:Schedule>
-        <auc:Schedule ID="ScheduleType-69975058986380">
+        <auc:Schedule ID="ScheduleType-69909853019200">
           <auc:ScheduleDetails>
             <auc:ScheduleDetail>
               <auc:DayType>Saturday</auc:DayType>
@@ -2369,11 +2284,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
         </auc:Schedule>
       </auc:Schedules>
       <auc:Measures>
-        <auc:Measure ID="MeasureType-69975054405280">
+        <auc:Measure ID="MeasureType-69909845154300">
           <auc:SystemCategoryAffected>Heating System</auc:SystemCategoryAffected>
           <auc:LinkedPremises>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+              <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
             </auc:Building>
           </auc:LinkedPremises>
           <auc:TechnologyCategories>
@@ -2402,11 +2317,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
             </auc:UserDefinedField>
           </auc:UserDefinedFields>
         </auc:Measure>
-        <auc:Measure ID="MeasureType-69975100392020">
+        <auc:Measure ID="MeasureType-69909849351640">
           <auc:SystemCategoryAffected>Lighting</auc:SystemCategoryAffected>
           <auc:LinkedPremises>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+              <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
             </auc:Building>
           </auc:LinkedPremises>
           <auc:TechnologyCategories>
@@ -2437,9 +2352,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
         </auc:Measure>
       </auc:Measures>
       <auc:Reports>
-        <auc:Report ID="ReportType-69975060890480">
+        <auc:Report ID="ReportType-69909986821820">
           <auc:Scenarios>
-            <auc:Scenario ID="ScenarioType-69975101191220">
+            <auc:Scenario ID="ScenarioType-69909976065980">
+              <auc:ScenarioName>benchmark</auc:ScenarioName>
               <auc:ScenarioNotes></auc:ScenarioNotes>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
@@ -2451,7 +2367,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:Benchmark>
               </auc:ScenarioType>
               <auc:AllResourceTotals>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975101253340">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909985115000">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUseIntensity>89.0</auc:SiteEnergyUseIntensity>
@@ -2466,7 +2382,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2496,13 +2412,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975101670140">
+            <auc:Scenario ID="ScenarioType-69909985343680">
+              <auc:ScenarioName>current_building</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:CurrentBuilding></auc:CurrentBuilding>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975101734560">
+                <auc:ResourceUse ID="ResourceUseType-69909985411100">
                   <auc:SharedResourceSystem>Unknown</auc:SharedResourceSystem>
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
@@ -2514,18 +2431,19 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975102339440">
+            <auc:Scenario ID="ScenarioType-69909979554640">
+              <auc:ScenarioName>current_building_with_normalization</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:Normalization>Weather normalized</auc:Normalization>
               <auc:ScenarioType>
                 <auc:CurrentBuilding></auc:CurrentBuilding>
               </auc:ScenarioType>
               <auc:AllResourceTotals>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975102405980">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909979606640">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Source</auc:ResourceBoundary>
                   <auc:UserDefinedFields>
@@ -2538,17 +2456,18 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975102677160">
+            <auc:Scenario ID="ScenarioType-69909979696200">
+              <auc:ScenarioName>target</auc:ScenarioName>
               <auc:TemporalStatus>Target</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Target></auc:Target>
               </auc:ScenarioType>
               <auc:AllResourceTotals>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975102823320">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909979729940">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUseIntensity>80.0</auc:SiteEnergyUseIntensity>
@@ -2557,17 +2476,18 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975109355600">
+            <auc:Scenario ID="ScenarioType-69909937717840">
+              <auc:ScenarioName>Audit Template Annual Summary - Electricity</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975106441240">
+                <auc:ResourceUse ID="ResourceUseType-69909980009880">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
@@ -2576,7 +2496,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2586,13 +2506,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975109429720">
+            <auc:Scenario ID="ScenarioType-69909937754040">
+              <auc:ScenarioName>Audit Template Annual Summary - Fuel Oil #1</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975107740560">
+                <auc:ResourceUse ID="ResourceUseType-69909964194040">
                   <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>Gallons</auc:ResourceUnits>
@@ -2601,7 +2522,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2611,13 +2532,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975110442060">
+            <auc:Scenario ID="ScenarioType-69909964132060">
+              <auc:ScenarioName>Audit Template Energy Deliveries - Fuel Oil #1</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975109845200">
+                <auc:ResourceUse ID="ResourceUseType-69909963979840">
                   <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>Gallons</auc:ResourceUnits>
@@ -2625,32 +2547,32 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:ResourceUse>
               </auc:ResourceUses>
               <auc:TimeSeriesData>
-                <auc:TimeSeries ID="TimeSeriesType-69975110160860">
+                <auc:TimeSeries ID="TimeSeriesType-69909964091860">
                   <auc:ReadingType>Point</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Energy</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-09-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-09-02T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Day</auc:IntervalFrequency>
                   <auc:IntervalReading>500.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975109845200"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909963979840"></auc:ResourceUseID>
                 </auc:TimeSeries>
               </auc:TimeSeriesData>
               <auc:AllResourceTotals>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975110348080">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909964126860">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:EnergyCost>2500.0</auc:EnergyCost>
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975110160860</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909964091860</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2660,13 +2582,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975115564480">
+            <auc:Scenario ID="ScenarioType-69909943767940">
+              <auc:ScenarioName>Audit Template Energy Meter Readings - Electricity</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975110988740">
+                <auc:ResourceUse ID="ResourceUseType-69909940973380">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
@@ -2674,117 +2597,117 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:ResourceUse>
               </auc:ResourceUses>
               <auc:TimeSeriesData>
-                <auc:TimeSeries ID="TimeSeriesType-69975111356360">
+                <auc:TimeSeries ID="TimeSeriesType-69909941106620">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-01-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-02-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975111676700">
+                <auc:TimeSeries ID="TimeSeriesType-69909941205700">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-02-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-03-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975111902340">
+                <auc:TimeSeries ID="TimeSeriesType-69909941285760">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-03-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-04-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975112222760">
+                <auc:TimeSeries ID="TimeSeriesType-69909941384740">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-04-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-05-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975112632900">
+                <auc:TimeSeries ID="TimeSeriesType-69909941492600">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-05-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-06-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975114737580">
+                <auc:TimeSeries ID="TimeSeriesType-69909941570160">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-06-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-07-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975114964800">
+                <auc:TimeSeries ID="TimeSeriesType-69909941912520">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-07-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-08-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975115333160">
+                <auc:TimeSeries ID="TimeSeriesType-69909943030820">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-08-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-09-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975106608500">
+                <auc:TimeSeries ID="TimeSeriesType-69909943469880">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-09-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-10-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975107101540">
+                <auc:TimeSeries ID="TimeSeriesType-69909943518360">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-10-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-11-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975107200640">
+                <auc:TimeSeries ID="TimeSeriesType-69909943645780">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-11-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2016-12-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
-                <auc:TimeSeries ID="TimeSeriesType-69975107330320">
+                <auc:TimeSeries ID="TimeSeriesType-69909943715780">
                   <auc:ReadingType>Peak</auc:ReadingType>
                   <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
                   <auc:StartTimestamp>2016-12-01T00:00:00+00:00</auc:StartTimestamp>
                   <auc:EndTimestamp>2017-01-01T00:00:00+00:00</auc:EndTimestamp>
                   <auc:IntervalFrequency>Other</auc:IntervalFrequency>
                   <auc:IntervalReading>0.0</auc:IntervalReading>
-                  <auc:ResourceUseID IDref="ResourceUseType-69975110988740"></auc:ResourceUseID>
+                  <auc:ResourceUseID IDref="ResourceUseType-69909940973380"></auc:ResourceUseID>
                 </auc:TimeSeries>
               </auc:TimeSeriesData>
               <auc:AllResourceTotals>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975111486040">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941139480">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>366.35406494140625</auc:SiteEnergyUse>
@@ -2792,11 +2715,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975111356360</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941106620</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975111714420">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941238320">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>381.0082092285156</auc:SiteEnergyUse>
@@ -2804,11 +2727,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975111676700</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941205700</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975111992860">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941315180">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>322.3915710449219</auc:SiteEnergyUse>
@@ -2816,11 +2739,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975111902340</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941285760</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975112408800">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941415780">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>263.77490234375</auc:SiteEnergyUse>
@@ -2828,11 +2751,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975112222760</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941384740</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975114615660">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941533260">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>249.12075805664062</auc:SiteEnergyUse>
@@ -2840,11 +2763,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975112632900</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941492600</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975114845560">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909941604780">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>205.15826416015625</auc:SiteEnergyUse>
@@ -2852,11 +2775,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975114737580</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941570160</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975115097380">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943000500">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>212.4853515625</auc:SiteEnergyUse>
@@ -2864,11 +2787,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975114964800</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909941912520</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975115471060">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943447220">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>225.67410278320312</auc:SiteEnergyUse>
@@ -2876,11 +2799,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975115333160</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909943030820</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975107076000">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943484560">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>175.84994506835938</auc:SiteEnergyUse>
@@ -2888,11 +2811,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975106608500</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909943469880</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975107134420">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943564660">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>199.29660034179688</auc:SiteEnergyUse>
@@ -2900,11 +2823,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975107101540</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909943518360</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975107256000">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943687840">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>271.10198974609375</auc:SiteEnergyUse>
@@ -2912,11 +2835,11 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975107200640</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909943645780</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
-                <auc:AllResourceTotal ID="AllResourceTotalType-69975107399780">
+                <auc:AllResourceTotal ID="AllResourceTotalType-69909943759100">
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:SiteEnergyUse>293.083251953125</auc:SiteEnergyUse>
@@ -2924,14 +2847,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:UserDefinedFields>
                     <auc:UserDefinedField>
                       <auc:FieldName>Linked Time Series ID</auc:FieldName>
-                      <auc:FieldValue>TimeSeriesType-69975107330320</auc:FieldValue>
+                      <auc:FieldValue>TimeSeriesType-69909943715780</auc:FieldValue>
                     </auc:UserDefinedField>
                   </auc:UserDefinedFields>
                 </auc:AllResourceTotal>
               </auc:AllResourceTotals>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2941,25 +2864,26 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975115697520">
+            <auc:Scenario ID="ScenarioType-69909943858060">
+              <auc:ScenarioName>Audit Template Energy Supply Sources</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975115891460">
+                <auc:ResourceUse ID="ResourceUseType-69909940642500">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
                   <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
                   <auc:UtilityIDs>
-                    <auc:UtilityID IDref="UtilityType-69975115776780"></auc:UtilityID>
+                    <auc:UtilityID IDref="UtilityType-69909943919860"></auc:UtilityID>
                   </auc:UtilityIDs>
                 </auc:ResourceUse>
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -2969,13 +2893,14 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975116031200">
+            <auc:Scenario ID="ScenarioType-69909940756840">
+              <auc:ScenarioName>Audit Template Energy Uses</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975116117320">
+                <auc:ResourceUse ID="ResourceUseType-69909941989860">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
@@ -2983,7 +2908,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:EndUse>Cooling</auc:EndUse>
                   <auc:AnnualFuelUseNativeUnits>2000.0</auc:AnnualFuelUseNativeUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="ResourceUseType-69975116327100">
+                <auc:ResourceUse ID="ResourceUseType-69909942271180">
                   <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>Gallons</auc:ResourceUnits>
@@ -2991,7 +2916,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:EndUse>Heating</auc:EndUse>
                   <auc:AnnualFuelUseNativeUnits>480.0</auc:AnnualFuelUseNativeUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="ResourceUseType-69975116526740">
+                <auc:ResourceUse ID="ResourceUseType-69909942496220">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
@@ -2999,7 +2924,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:EndUse>Total lighting</auc:EndUse>
                   <auc:AnnualFuelUseNativeUnits>1000.0</auc:AnnualFuelUseNativeUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="ResourceUseType-69975116772300">
+                <auc:ResourceUse ID="ResourceUseType-69909942808020">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
@@ -3007,7 +2932,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                   <auc:EndUse>All end uses</auc:EndUse>
                   <auc:AnnualFuelUseNativeUnits>3000.0</auc:AnnualFuelUseNativeUnits>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="ResourceUseType-69975116906320">
+                <auc:ResourceUse ID="ResourceUseType-69909942954100">
                   <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>Gallons</auc:ResourceUnits>
@@ -3018,7 +2943,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -3028,19 +2953,20 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975117102320">
+            <auc:Scenario ID="ScenarioType-69909944388980">
+              <auc:ScenarioName>Audit Template Available Energy</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
                 <auc:Other></auc:Other>
               </auc:ScenarioType>
               <auc:ResourceUses>
-                <auc:ResourceUse ID="ResourceUseType-69975050051960">
+                <auc:ResourceUse ID="ResourceUseType-69909944487040">
                   <auc:EnergyResource>Electricity</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>kWh</auc:ResourceUnits>
                   <auc:EndUse>All end uses</auc:EndUse>
                 </auc:ResourceUse>
-                <auc:ResourceUse ID="ResourceUseType-69975050280560">
+                <auc:ResourceUse ID="ResourceUseType-69909944645960">
                   <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
                   <auc:ResourceBoundary>Site</auc:ResourceBoundary>
                   <auc:ResourceUnits>Gallons</auc:ResourceUnits>
@@ -3049,7 +2975,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ResourceUses>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -3059,13 +2985,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975110502220">
+            <auc:Scenario ID="ScenarioType-69909842623860">
               <auc:ScenarioName>HVAC Upgrade</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
-                <auc:PackageOfMeasures ID="PackageOfMeasures-69975110875080">
+                <auc:PackageOfMeasures ID="PackageOfMeasures-69909842644200">
                   <auc:MeasureIDs>
-                    <auc:MeasureID IDref="MeasureType-69975054405280"></auc:MeasureID>
+                    <auc:MeasureID IDref="MeasureType-69909845154300"></auc:MeasureID>
                   </auc:MeasureIDs>
                   <auc:AnnualSavingsCost>20000</auc:AnnualSavingsCost>
                   <auc:AnnualSavingsByFuels>
@@ -3073,22 +2999,6 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                       <auc:EnergyResource>Electricity</auc:EnergyResource>
                       <auc:ResourceUnits>kWh</auc:ResourceUnits>
                       <auc:AnnualSavingsNativeUnits>15000.0</auc:AnnualSavingsNativeUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>Natural gas</auc:EnergyResource>
-                      <auc:ResourceUnits>therms</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District chilled water</auc:EnergyResource>
-                      <auc:ResourceUnits>Ton-hour</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District hot water</auc:EnergyResource>
-                      <auc:ResourceUnits>therms</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District steam</auc:EnergyResource>
-                      <auc:ResourceUnits>Mlbs</auc:ResourceUnits>
                     </auc:AnnualSavingsByFuel>
                     <auc:AnnualSavingsByFuel>
                       <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
@@ -3197,7 +3107,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ScenarioType>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -3207,13 +3117,13 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                 </auc:UserDefinedField>
               </auc:UserDefinedFields>
             </auc:Scenario>
-            <auc:Scenario ID="ScenarioType-69975055418320">
+            <auc:Scenario ID="ScenarioType-69909845901660">
               <auc:ScenarioName>Lighting retrofit</auc:ScenarioName>
               <auc:TemporalStatus>Current</auc:TemporalStatus>
               <auc:ScenarioType>
-                <auc:PackageOfMeasures ID="PackageOfMeasures-69975055649400">
+                <auc:PackageOfMeasures ID="PackageOfMeasures-69909845949140">
                   <auc:MeasureIDs>
-                    <auc:MeasureID IDref="MeasureType-69975100392020"></auc:MeasureID>
+                    <auc:MeasureID IDref="MeasureType-69909849351640"></auc:MeasureID>
                   </auc:MeasureIDs>
                   <auc:AnnualSavingsCost>4000</auc:AnnualSavingsCost>
                   <auc:AnnualSavingsByFuels>
@@ -3221,22 +3131,6 @@ This example is configured to import and export with BuildingSync version 2.1.0.
                       <auc:EnergyResource>Electricity</auc:EnergyResource>
                       <auc:ResourceUnits>kWh</auc:ResourceUnits>
                       <auc:AnnualSavingsNativeUnits>9000.0</auc:AnnualSavingsNativeUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>Natural gas</auc:EnergyResource>
-                      <auc:ResourceUnits>therms</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District chilled water</auc:EnergyResource>
-                      <auc:ResourceUnits>Ton-hour</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District hot water</auc:EnergyResource>
-                      <auc:ResourceUnits>therms</auc:ResourceUnits>
-                    </auc:AnnualSavingsByFuel>
-                    <auc:AnnualSavingsByFuel>
-                      <auc:EnergyResource>District steam</auc:EnergyResource>
-                      <auc:ResourceUnits>Mlbs</auc:ResourceUnits>
                     </auc:AnnualSavingsByFuel>
                     <auc:AnnualSavingsByFuel>
                       <auc:EnergyResource>Fuel oil no 1</auc:EnergyResource>
@@ -3345,7 +3239,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               </auc:ScenarioType>
               <auc:LinkedPremises>
                 <auc:Building>
-                  <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+                  <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
                 </auc:Building>
               </auc:LinkedPremises>
               <auc:UserDefinedFields>
@@ -3371,18 +3265,18 @@ This example is configured to import and export with BuildingSync version 2.1.0.
           <auc:ASHRAEAuditLevel>Level 2: Energy Survey and Analysis</auc:ASHRAEAuditLevel>
           <auc:RetrocommissioningAudit>false</auc:RetrocommissioningAudit>
           <auc:Qualifications>
-            <auc:Qualification ID="Qualification-69975099435360">
+            <auc:Qualification ID="Qualification-69909980937840">
               <auc:AuditorQualification>Association of Energy Engineers Certified Energy Auditor (CEA)</auc:AuditorQualification>
               <auc:AuditorQualificationNumber>123456</auc:AuditorQualificationNumber>
               <auc:AuditorQualificationState>CA</auc:AuditorQualificationState>
               <auc:CertificationExpirationDate>2030-10-01</auc:CertificationExpirationDate>
-              <auc:CertifiedAuditTeamMemberContactID IDref="ContactType-69975098454320"></auc:CertifiedAuditTeamMemberContactID>
+              <auc:CertifiedAuditTeamMemberContactID IDref="ContactType-69909982440840"></auc:CertifiedAuditTeamMemberContactID>
             </auc:Qualification>
           </auc:Qualifications>
           <auc:Utilities>
-            <auc:Utility ID="UtilityType-69975115776780">
+            <auc:Utility ID="UtilityType-69909943919860">
               <auc:RateSchedules>
-                <auc:RateSchedule ID="RateSchedule-69975115794460">
+                <auc:RateSchedule ID="RateSchedule-69909943938640">
                   <auc:RateStructureName>monthly</auc:RateStructureName>
                 </auc:RateSchedule>
               </auc:RateSchedules>
@@ -3390,10 +3284,10 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               <auc:UtilityAccountNumber>123456</auc:UtilityAccountNumber>
             </auc:Utility>
           </auc:Utilities>
-          <auc:AuditorContactID IDref="ContactType-69975098454320"></auc:AuditorContactID>
+          <auc:AuditorContactID IDref="ContactType-69909982440840"></auc:AuditorContactID>
           <auc:LinkedPremisesOrSystem>
             <auc:Building>
-              <auc:LinkedBuildingID IDref="BuildingType-69975053938360"></auc:LinkedBuildingID>
+              <auc:LinkedBuildingID IDref="BuildingType-69909846782100"></auc:LinkedBuildingID>
             </auc:Building>
           </auc:LinkedPremisesOrSystem>
           <auc:UserDefinedFields>
@@ -3465,7 +3359,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
         </auc:Report>
       </auc:Reports>
       <auc:Contacts>
-        <auc:Contact ID="ContactType-69975098454320">
+        <auc:Contact ID="ContactType-69909982440840">
           <auc:ContactRoles>
             <auc:ContactRole>Energy Auditor</auc:ContactRole>
           </auc:ContactRoles>
@@ -3525,28 +3419,28 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               <auc:FieldValue>false</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Contact Role For ReportType-69975060890480</auc:FieldName>
+              <auc:FieldName>Contact Role For ReportType-69909986821820</auc:FieldName>
               <auc:FieldValue>Energy Auditor</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Contact Role For Qualification-69975099435360</auc:FieldName>
+              <auc:FieldName>Contact Role For Qualification-69909980937840</auc:FieldName>
               <auc:FieldValue>Energy Auditor</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Contributor Contact ID For Qualification-69975099435360</auc:FieldName>
-              <auc:FieldValue>ContactType-69975098454320</auc:FieldValue>
+              <auc:FieldName>Contributor Contact ID For Qualification-69909980937840</auc:FieldName>
+              <auc:FieldValue>ContactType-69909982440840</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Contributor Contact Role For Qualification-69975099435360</auc:FieldName>
+              <auc:FieldName>Contributor Contact Role For Qualification-69909980937840</auc:FieldName>
               <auc:FieldValue>Energy Auditor</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Other Qualification Type For Qualification-69975099435360</auc:FieldName>
+              <auc:FieldName>Other Qualification Type For Qualification-69909980937840</auc:FieldName>
               <auc:FieldValue></auc:FieldValue>
             </auc:UserDefinedField>
           </auc:UserDefinedFields>
         </auc:Contact>
-        <auc:Contact ID="ContactType-69975100547860">
+        <auc:Contact ID="ContactType-69909975110420">
           <auc:ContactRoles>
             <auc:ContactRole>Owner</auc:ContactRole>
           </auc:ContactRoles>
@@ -3606,7 +3500,7 @@ This example is configured to import and export with BuildingSync version 2.1.0.
               <auc:FieldValue>false</auc:FieldValue>
             </auc:UserDefinedField>
             <auc:UserDefinedField>
-              <auc:FieldName>Contact Role For ReportType-69975060890480</auc:FieldName>
+              <auc:FieldName>Contact Role For ReportType-69909986821820</auc:FieldName>
               <auc:FieldValue>Owner</auc:FieldValue>
             </auc:UserDefinedField>
           </auc:UserDefinedFields>
