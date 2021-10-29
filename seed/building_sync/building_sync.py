@@ -283,10 +283,21 @@ class BuildingSync(object):
                 # End Audit Template weirdness
                 #
 
+            # clean up the meters so that we only include ones with readings
+            meters_with_readings = []
+            for meter_id, meter in meters.items():
+                if meter['readings']:
+                    meters_with_readings.append(meter)
+                else:
+                    messages['warnings'].append(
+                        f'Skipping meter {meter_id} because it had no valid readings.'
+                    )
+
             # create scenario
             seed_scenario = {
                 'id': scenario['id'],
                 'name': scenario['name'],
+                'temporal_status': scenario['temporal_status'],
                 'reference_case': scenario['reference_case'],
                 'annual_site_energy_savings': scenario['annual_site_energy_savings'],
                 'annual_source_energy_savings': scenario['annual_source_energy_savings'],
@@ -302,9 +313,36 @@ class BuildingSync(object):
                 'annual_peak_electricity_reduction': scenario['annual_peak_electricity_reduction'],
                 'annual_natural_gas_energy': scenario['annual_natural_gas_energy'],
                 'measures': [id['id'] for id in scenario['measure_ids']],
+                'meters': meters_with_readings,
             }
 
-            seed_scenario['meters'] = list(meters.values())
+            #
+            # Begin Audit Template weirdness
+            #
+            # Audit Template (AT) BuildingSync files include scenarios we don't want
+            # in SEED. For example, "Audit Template Annual Summary - Electricity"
+            # which doesn't contain measures or meter data so we want to skip it.
+            # Note that it's OK to skip scenarios without measures b/c AT does not
+            # have Baseline scenarios (the type of scenario where it's OK to not
+            # have measures.
+            #
+
+            if (
+                self._is_from_audit_template_tool()
+                and not seed_scenario['measures']
+                and not seed_scenario['meters']
+            ):
+                # Skip this scenario!
+                messages['warnings'].append(
+                    f'Skipping Scenario {scenario["id"]} because it doesn\'t include '
+                    'measures or meter data.'
+                )
+                continue
+
+            #
+            # End Audit Template weirdness
+            #
+
             scenarios.append(seed_scenario)
 
         property_ = result['property']

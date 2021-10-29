@@ -212,14 +212,13 @@ class BuildingFile(models.Model):
             join.useful_life = m.get('useful_life')
             join.save()
 
+        scenario_temporal_status_map = {
+            status_name: status_enum
+            for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES
+        }
         # add in scenarios
         linked_meters = []
         for s in data.get('scenarios', []):
-            # measures = models.ManyToManyField(PropertyMeasure)
-
-            # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
-            #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
-
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
                 messages['warnings'].append('Skipping scenario because it does not have a name. ID = %s' % s.get('id'))
@@ -249,9 +248,10 @@ class BuildingFile(models.Model):
             scenario.annual_electricity_energy = s.get('annual_electricity_energy')
             scenario.annual_peak_demand = s.get('annual_peak_demand')
             scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
-
-            # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
-            #                                       default=TEMPORAL_STATUS_CURRENT)
+            scenario.temporal_status = scenario_temporal_status_map.get(
+                s.get('temporal_status'),
+                Scenario.TEMPORAL_STATUS_CURRENT
+            )
 
             if s.get('reference_case'):
                 ref_case = Scenario.objects.filter(

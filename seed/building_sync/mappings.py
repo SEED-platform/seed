@@ -707,6 +707,11 @@ BASE_MAPPING_V2 = {
                 'type': 'value',
                 'value': 'text'
             },
+            'temporal_status': {
+                'xpath': './auc:TemporalStatus',
+                'type': 'value',
+                'value': 'text'
+            },
             'reference_case': {
                 'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:ReferenceCase',
                 'type': 'value',
