@@ -662,10 +662,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 // If merges against existing exist, provide slightly different feedback
                 if ($scope.property_merges_against_existing + $scope.tax_lot_merges_against_existing > 0) {
                   $scope.step.number = 8;
-                  $state.go('dataset_list');
                 } else {
                   $scope.step.number = 10;
                 }
+                $state.go('dataset_list');
               });
             }, function (response) {
               handleSystemMatchingError(response.data);
