@@ -55,7 +55,7 @@ def collapse_unit(org, x):
         dimensionality = get_dimensionality(x)
         pint_spec = pint_specs[dimensionality]
         converted_value = x.to(pint_spec).magnitude
-        return round(converted_value, org.display_significant_figures)
+        return round(converted_value, org.display_decimal_places)
     elif isinstance(x, list):
         # recurse out to collapse a dict for eg. the `related` key that
         # contains properties when the pt_dict is for a taxlot and vice-versa

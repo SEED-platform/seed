@@ -18,7 +18,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     public_fields = SaveSettingsOrgFieldSerializer(many=True)
     display_units_eui = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_EUI)
     display_units_area = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_AREA)
-    display_significant_figures = serializers.IntegerField(min_value=0)
+    display_decimal_places = serializers.IntegerField(min_value=0)
     display_meter_units = serializers.JSONField()
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
     mapquest_api_key = serializers.CharField()

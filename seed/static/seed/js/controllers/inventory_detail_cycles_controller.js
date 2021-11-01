@@ -116,7 +116,7 @@ angular.module('BE.seed.controller.inventory_detail_cycles', [])
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a');
         } else if (dataType === 'eui' || dataType === 'area') {
-          return $filter('number')(value, $scope.organization.display_significant_figures);
+          return $filter('number')(value, $scope.organization.display_decimal_places);
         }
         return value;
       };
