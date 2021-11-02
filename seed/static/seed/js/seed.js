@@ -442,8 +442,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_messages_for_org($stateParams.analysis_id, user_service.get_organization().id);
           }],
-          organization_payload: ['user_service', function (user_service) {
-            return user_service.get_organization();
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }],
           users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
@@ -480,8 +480,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           view_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service, $stateParams) {
             return analyses_service.get_analysis_view_for_org($stateParams.analysis_id, $stateParams.run_id, user_service.get_organization().id);
           }],
-          organization_payload: ['user_service', function (user_service) {
-            return user_service.get_organization();
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
           }],
           users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
