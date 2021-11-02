@@ -6,7 +6,7 @@ from seed.building_sync.building_sync import BuildingSync
 
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
-DEFAULT_SCHEMA_VERSION = '2.0.0'
+DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
 DEFAULT_USE_CASE = 'SEED'
 
 
