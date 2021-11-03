@@ -1938,8 +1938,8 @@ msgstr "Property Detail Notes"
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
 
-msgid "Property Detail View Display Field"
-msgstr "Property Detail View Display Field"
+msgid "Property Display Field"
+msgstr "Property Display Field"
 
 msgid "Property Footprint"
 msgstr "Property Footprint"
@@ -2400,8 +2400,8 @@ msgstr "Tax Lots"
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
 
-msgid "Taxlot Detail View Display Field"
-msgstr "Taxlot Detail View Display Field"
+msgid "Taxlot Display Field"
+msgstr "Taxlot Display Field"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44
