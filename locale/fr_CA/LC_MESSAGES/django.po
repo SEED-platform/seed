@@ -1953,8 +1953,8 @@ msgstr "Notes de détail de la propriété"
 msgid "Property Detail Settings"
 msgstr "Paramètres de détail de la propriété"
 
-msgid "Property Detail View Display Field"
-msgstr "Champ d'affichage de la vue détaillée de la propriété"
+msgid "Property Display Field"
+msgstr "Champ d'affichage de la propriété"
 
 msgid "Property Footprint"
 msgstr "Empreinte de propriété"
@@ -2420,8 +2420,8 @@ msgstr "Lots d'impôt"
 msgid "Tax Lots List"
 msgstr "Liste des lots d'impôt"
 
-msgid "Taxlot Detail View Display Field"
-msgstr "Champ d'affichage de la vue détaillée du lot de taxes"
+msgid "Taxlot Display Field"
+msgstr "Champ d'affichage du lot de taxes"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44
