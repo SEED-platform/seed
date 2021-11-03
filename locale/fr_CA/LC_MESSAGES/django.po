@@ -162,9 +162,8 @@ msgstr "Admin"
 msgid "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
-#, fuzzy
 msgid "Analyses"
-msgstr "Analyses"
+msgstr "Analyses (bêta)"
 
 msgid "Analysis"
 msgstr "Analyse (bêta)"
@@ -1601,9 +1600,8 @@ msgstr "nom"
 msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
 
-#, fuzzy
 msgid "New Analysis"
-msgstr "Nouvelle analyse"
+msgstr "Nouvelle analyse (bêta)"
 
 msgid "New Note"
 msgstr "Nouvelle note"
