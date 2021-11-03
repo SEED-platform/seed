@@ -225,4 +225,30 @@
   "owner_city_state": "Colorado",
   "owner_postal_code": 80202,
   "organization_id": -1
+}, {
+  "jurisdiction_property_id": 123480,
+  "pm_parent_property_id": "5766980",
+  "pm_property_id": "5766980",
+  "property_type": "Office",
+  "property_name": "Odie Office",
+  "lot_number": "H-12351",
+  "address_line_1": "155830 SW Odie Way",
+  "city": "Boring",
+  "state": "Oregon",
+  "postal_code": 80401,
+  "year_built": 1975,
+  "latitude": 45.4441146,
+  "longitude": -122.383320,
+  "site_eui": 82.3,
+  "gross_floor_area": 296432,
+  "owner": "Econohomes2",
+  "owner_email": "econohomes2@gmail.com",
+  "owner_telephone": "555-555-5561",
+  "owner_address": "44166 S Shop Vac Alley",
+  "owner_city_state": "Colorado",
+  "owner_postal_code": 80202,
+  "organization_id": -1,
+  "extra_data": {
+    "Note": "Residential"
+  }
 }]
