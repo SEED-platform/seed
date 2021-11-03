@@ -8,6 +8,7 @@ angular.module('BE.seed.controller.analysis_run', [])
     '$scope',
     '$stateParams',
     '$state',
+    'organization_service',
     'analysis_payload',
     'organization_payload',
     'messages_payload',
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.analysis_run', [])
       $scope,
       $stateParams,
       $state,
+      organization_service,
       analysis_payload,
       organization_payload,
       messages_payload,
@@ -26,7 +28,7 @@ angular.module('BE.seed.controller.analysis_run', [])
       auth_payload
     ) {
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
-      $scope.org = organization_payload;
+      $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.analysis = analysis_payload.analysis;
       $scope.messages = messages_payload.messages;
@@ -48,5 +50,14 @@ angular.module('BE.seed.controller.analysis_run', [])
         if (typeof value == 'object') {
           return true;
         }
+      };
+
+      $scope.get_display_name = function (inventory_state) {
+        return organization_service.get_inventory_display_value(
+          $scope.org,
+          // NOTE: hardcoding 'property' b/c you can only run analyses on properties
+          'property',
+          inventory_state
+        )
       };
     }]);
