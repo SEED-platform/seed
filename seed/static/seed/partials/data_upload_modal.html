@@ -142,7 +142,6 @@
         <!--<div class="row">
             <div class="col-sm-8 col-sm-offset-2 green_button" sd-uploader sourcetype="Green Button Raw" sourceprog="" sourcever="" importrecord="dataset.id" buttontext="{$:: 'Upload Green Button Data' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="true" style="padding-top: 10px;"></div>
         </div>-->
-
     </div>
     <!-- Step 3 -->
     <div class="data_upload_steps" ng-switch-when="3">
@@ -150,16 +149,14 @@
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
+                There were errors and/or warnings for the file(s) uploaded.
+            </div>
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
             <div class="col-sm-12">
-                <p>There were one or more warnings for the file(s) uploaded.</p>
                 <div ng-repeat="file_issues in buildingsync_issues">
-                    <em>{$ file_issues.file $}</em>
-                    <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
-                        <h5>Use Case Warnings</h5>
-                        <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
-                    </div>
+                    <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
                 </div>
             </div>
         </div>
@@ -318,29 +315,14 @@
     <div class="data_upload_steps" ng-switch-when="12">
         <div class="row">
             <div class="col-sm-12">
-                <div>
-
-                    <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
-                    <span ng-if="step_12_buildingsync_validation_error">
-                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p>
-                        <div ng-repeat="file_issues in buildingsync_issues">
-                            <em>{$ file_issues.file $}</em>
-                            <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0" style="word-wrap: break-word;">
-                                <h5>Schema Errors</h5>
-                                <div ng-repeat="err in file_issues.schema_errors">{$ err.path $}: {$ err.message $}</div>
-                            </div>
-                            <div class="alert alert-danger" ng-if="file_issues.use_case_errors.length > 0" style="word-wrap: break-word;">
-                                <h5>Use Case Errors</h5>
-                                <div ng-repeat="err in file_issues.use_case_errors">{$ err $}</div>
-                            </div>
-                            <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
-                                <h5>Use Case Warnings</h5>
-                                <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
-                            </div>
-                        </div>
-                    </span>
-                </div>
+                <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
+                <span ng-if="step_12_buildingsync_validation_error">
+                    <div class="alert alert-danger">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
+                    <div ng-repeat="file_issues in buildingsync_issues">
+                        <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
+                    </div>
+                </span>
             </div>
         </div>
     </div>

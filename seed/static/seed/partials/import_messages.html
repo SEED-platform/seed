@@ -1,0 +1,34 @@
+<h4>{$ file_issues.file $}</h4>
+<uib-accordion>
+
+    <div uib-accordion-group ng-if="file_issues.schema_errors.length > 0" class="panel-danger" is-open="schema_errors[$index].open">
+        <uib-accordion-heading>
+            <b>Schema Errors</b> <small>({$:: file_issues.schema_errors.length $})</small>
+            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': schema_errors[$index].open, 'glyphicon-chevron-right': !schema_errors[$index].open}"></i>
+        </uib-accordion-heading>
+        <div class="clean-list">
+            <div ng-repeat="error in file_issues.schema_errors" class="row">{$ error $}</div>
+        </div>
+    </div>
+
+    <div uib-accordion-group ng-if="file_issues.use_case_errors.length > 0" class="panel-danger" is-open="use_case_errors[$index].open">
+        <uib-accordion-heading>
+            <b>Use Case Errors</b> <small>({$:: file_issues.use_case_errors.length $})</small>
+            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': use_case_errors[$index].open, 'glyphicon-chevron-right': !use_case_errors[$index].open}"></i>
+        </uib-accordion-heading>
+        <div class="clean-list">
+            <div ng-repeat="error in file_issues.use_case_errors" class="row">{$ error $}</div>
+        </div>
+    </div>
+
+    <div uib-accordion-group ng-if="file_issues.use_case_warnings.length > 0" class="panel-warning" is-open="use_case_warnings[$index].open">
+        <uib-accordion-heading>
+            <b>Use Case Warnings</b> <small>({$:: file_issues.use_case_warnings.length $})</small>
+            <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': use_case_warnings[$index].open, 'glyphicon-chevron-right': !use_case_warnings[$index].open}"></i>
+        </uib-accordion-heading>
+        <div class="clean-list">
+            <div ng-repeat="warn in file_issues.use_case_warnings" class="row">{$ warn $}</div>
+        </div>
+    </div>
+
+</uib-accordion>
