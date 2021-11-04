@@ -1622,7 +1622,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
 def _validate_use_cases(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
-    progress_data.step('validating data with Selection Tool')
+    progress_data.step('Validating data at buildingsync.net')
     try:
         found_version = 0
 
