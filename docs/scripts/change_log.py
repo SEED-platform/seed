@@ -110,6 +110,10 @@ for issue in repo.issues(state='closed'):
                 # these issues are noxt going to be reported
                 continue
 
+            if 'stale' in labels:
+                # issue closed due to staleness, it was not really addressed
+                continue
+
             if 'Feature' in labels:
                 # print('New feature found')
                 add_issue(closed_issues, naming_lookup['Feature'][False], issue)
