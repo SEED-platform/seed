@@ -163,7 +163,10 @@ msgid "An error occurred while processing the file. Please ensure that your file
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
 msgid "Analyses"
-msgstr "Analyses"
+msgstr "Analyses (bêta)"
+
+msgid "Analysis"
+msgstr "Analyse (bêta)"
 
 msgid "Analysis Name"
 msgstr "Nom de l'analyse"
@@ -1598,7 +1601,7 @@ msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
 
 msgid "New Analysis"
-msgstr "Nouvelle analyse"
+msgstr "Nouvelle analyse (bêta)"
 
 msgid "New Note"
 msgstr "Nouvelle note"
@@ -2119,6 +2122,9 @@ msgstr "Rangée 5"
 
 msgid "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
 msgstr "Les règles pour un seul champ doivent avoir le même type de données. Notez que certains types de données ne sont pas disponibles pour certaines vérifications de condition."
+
+msgid "Run Analysis"
+msgstr "Exécuter l'analyse (bêta)"
 
 msgid "Run Author"
 msgstr "Exécuter l'auteur"
