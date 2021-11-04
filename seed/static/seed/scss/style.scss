@@ -3919,6 +3919,36 @@ FAQ page
   }
 }
 
+.panel-body .clean-list {
+  margin: -15px 0;
+
+  & > .row {
+    margin: 0 -15px;
+    padding: 10px
+  }
+}
+
+.clean-list {
+  word-wrap: break-word;
+
+  & > .row {
+    padding: 5px;
+    margin: 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid rgba(255, 255, 255, .5);
+  }
+
+  & > .row:first-child {
+    border-radius: 10px 10px 0 0;
+    border-top: none;
+  }
+
+  & > .row:last-child {
+    border-radius: 0 0 10px 10px;
+    border-bottom: none;
+  }
+}
+
 .flex-centered {
   display: flex;
   align-items: center;
@@ -4009,4 +4039,13 @@ iframe.analysis-results {
   table {
     width: 300px;
   }
+}
+
+// Inserts an fa-link in front of the element
+// Used in the inventory list to identify derived columns
+.derived-column-display-name::before {
+  font-family: 'FontAwesome';
+  content: "\f0c1";
+  margin: 0.5em 0 0 0.5em;
+  float: left;
 }

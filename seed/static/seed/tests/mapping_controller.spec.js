@@ -240,7 +240,7 @@ describe('controller: mapping_controller', function () {
     const fake_organization_payload = {
       status: 'success',
       organization: {
-        display_significant_figures: 2,
+        display_decimal_places: 2,
         id: 1,
       }
     }

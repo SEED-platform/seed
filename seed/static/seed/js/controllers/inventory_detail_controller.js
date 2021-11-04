@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'matching_service',
     'pairing_service',
     'derived_columns_service',
+    'organization_service',
     'inventory_payload',
     'analyses_payload',
     'users_payload',
@@ -52,6 +53,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       matching_service,
       pairing_service,
       derived_columns_service,
+      organization_service,
       inventory_payload,
       analyses_payload,
       users_payload,
@@ -86,6 +88,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
+
+      $scope.inventory_display_name = organization_service.get_inventory_display_value(
+        $scope.organization,
+        $scope.inventory_type === 'properties' ? 'property' : 'taxlot',
+        $scope.item_state
+      );
 
       // item_parent is the property or the tax lot instead of the PropertyState / TaxLotState
       if ($scope.inventory_type === 'properties') {
@@ -731,22 +739,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a');
         } else if (dataType === 'eui' || dataType === 'area') {
-          return $filter('number')(value, $scope.organization.display_significant_figures);
+          return $filter('number')(value, $scope.organization.display_decimal_places);
         }
         return value;
-      };
-
-      $scope.inventory_display_name = function (property_type) {
-        let error = '';
-        let field = property_type == 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-        if (!(field in $scope.item_state)) {
-          error = field + ' does not exist';
-          field = 'address_line_1';
-        }
-        if (!$scope.item_state[field]) {
-          error += (error == '' ? '' : ' and default ') + field + ' is blank';
-        }
-        $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '(' + error + ') <i class="glyphicon glyphicon-question-sign" title="This can be changed from the organization settings page."></i>';
       };
 
       // evaluate all derived columns and store the results

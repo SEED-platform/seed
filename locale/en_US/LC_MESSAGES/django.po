@@ -162,7 +162,10 @@ msgid "An error occurred while processing the file. Please ensure that your file
 msgstr "An error occurred while processing the file. Please ensure that your file meets the required specifications."
 
 msgid "Analyses"
-msgstr "Analyses"
+msgstr "Analyses (beta)"
+
+msgid "Analysis"
+msgstr "Analysis (beta)"
 
 msgid "Analysis Name"
 msgstr "Analysis Name"
@@ -1585,7 +1588,7 @@ msgid "National Renewable Energy Laboratory"
 msgstr "National Renewable Energy Laboratory"
 
 msgid "New Analysis"
-msgstr "New Analysis"
+msgstr "New Analysis (beta)"
 
 msgid "New Note"
 msgstr "New Note"
@@ -1655,6 +1658,9 @@ msgstr "Number of Properties"
 
 msgid "Number of Tax Lots"
 msgstr "Number of Tax Lots"
+
+msgid "Number of decimal places to display"
+msgstr "Number of decimal places to display"
 
 msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
 msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</strong> property} other{<strong>#</strong> properties}} and {num_taxlots,plural,one{<strong>1</strong> tax lot} other{<strong>#</strong> tax lots}}?"
@@ -1935,8 +1941,8 @@ msgstr "Property Detail Notes"
 msgid "Property Detail Settings"
 msgstr "Property Detail Settings"
 
-msgid "Property Detail View Display Field"
-msgstr "Property Detail View Display Field"
+msgid "Property Display Field"
+msgstr "Property Display Field"
 
 msgid "Property Footprint"
 msgstr "Property Footprint"
@@ -2098,6 +2104,9 @@ msgstr "Row 5"
 
 msgid "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
 msgstr "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
+
+msgid "Run Analysis"
+msgstr "Run Analysis (beta)"
 
 msgid "Run Author"
 msgstr "Run Author"
@@ -2295,9 +2304,6 @@ msgstr "Show/Hide Columns"
 msgid "Signature"
 msgstr "Signature"
 
-msgid "Significant figures for EUIs and areas"
-msgstr "Significant figures for EUIs and areas"
-
 msgid "Site EUI"
 msgstr "Site EUI"
 
@@ -2400,8 +2406,8 @@ msgstr "Tax Lots"
 msgid "Tax Lots List"
 msgstr "Tax Lots List"
 
-msgid "Taxlot Detail View Display Field"
-msgstr "Taxlot Detail View Display Field"
+msgid "Taxlot Display Field"
+msgstr "Taxlot Display Field"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44

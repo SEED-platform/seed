@@ -62,17 +62,27 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
             break;
 
           case 'EUI':
-            $scope.new_analysis.configuration = {}
+            $scope.new_analysis.configuration = {};
             break;
 
-          default:
+          case 'CO2':
+            $scope.new_analysis.configuration = {};
+            break;
+
+          case 'BETTER':
             $scope.new_analysis.configuration = {
               savings_target: null,
               benchmark_data: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
+              preprocess_meters: false,
             }
             break;
+
+           default:
+            $log.error('Unknown analysis type.', $scope.new_analysis.service);
+            Notification.error('Unknown analysis type: ' + $scope.new_analysis.service);
+
         }
       }
 

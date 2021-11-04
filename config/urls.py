@@ -6,6 +6,7 @@
 """
 from django.conf import settings
 from django.conf.urls import include, url
+from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -38,14 +39,12 @@ urlpatterns = [
         password_reset_complete,
         name='password_reset_complete',
     ),
-    url(
-        (
-            r'^accounts/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
-            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
-        ),
+    path(
+        'accounts/password/reset/confirm/<uidb64>/<token>/',
         password_reset_confirm,
         name='password_reset_confirm'
     ),
+
     # Application
     url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
     url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),

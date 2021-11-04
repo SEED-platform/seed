@@ -561,7 +561,12 @@ class Column(models.Model):
             'table_name': 'TaxLotState',
             'display_name': 'District',
             'data_type': 'string',
-        }
+        }, {
+            'column_name': 'egrid_subregion_code',
+            'table_name': 'PropertyState',
+            'display_name': 'eGRID Subregion Code',
+            'data_type': 'string',
+        },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)

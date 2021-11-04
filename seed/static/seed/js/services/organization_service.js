@@ -219,5 +219,20 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       });
     };
 
+    /**
+     * Returns the display value for an inventory
+     * @param  {object} { property_display_field, taxlot_display_field }, organization object
+     * @param  {string} inventory_type 'property' or 'taxlot'
+     * @param  {object} inventory_state state object of the inventory
+     */
+    organization_factory.get_inventory_display_value = function ({ property_display_field, taxlot_display_field }, inventory_type, inventory_state) {
+      const field = inventory_type === 'property' ? property_display_field : taxlot_display_field;
+      if (field == null) {
+        throw Error(`Provided display field for type "${inventory_type}" is undefined`);
+      }
+
+      return inventory_state[field];
+    }
+
     return organization_factory;
   }]);

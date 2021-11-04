@@ -11,17 +11,32 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
   'columns',
   'inventory_type',
   'profile_id',
+  'spinner_utility',
   'filter_header_string',
-  function ($http, $scope, $uibModalInstance, user_service, ids, columns, inventory_type, profile_id, filter_header_string) {
+  function (
+    $http, 
+    $scope, 
+    $uibModalInstance, 
+    user_service, 
+    ids, 
+    columns, 
+    inventory_type, 
+    profile_id, 
+    spinner_utility,
+    filter_header_string,
+  ) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
     $scope.inventory_type = inventory_type;
+    $scope.exporting = false
 
     $scope.export_selected = function (export_type) {
       var filename = $scope.export_name;
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
+      spinner_utility.show()
+      $scope.exporting = true
       return $http.post('/api/v3/tax_lot_properties/export/', {
         ids: ids,
         filename: filename,
@@ -35,6 +50,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         },
         responseType: export_type === 'xlsx' ? 'arraybuffer' : undefined
       }).then(function (response) {
+        spinner_utility.hide()
         var blob_type = response.headers()['content-type'];
         var data;
         if (export_type === 'xlsx') {

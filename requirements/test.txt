@@ -24,6 +24,7 @@ pycodestyle==2.6.0
 Sphinx==2.3.1
 sphinxcontrib-spelling==4.3.0
 sphinx_rtd_theme==0.4.3
+docutils==0.17.1
 
 # property-based testing
 hypothesis==6.12.0

@@ -178,7 +178,9 @@ describe('controller: inventory_detail_controller', function () {
       organization_payload: {
         organization: {
           id: 1,
-          display_significant_figures: 2,
+          display_decimal_places: 2,
+          property_display_field: 'address_line_1',
+          taxlot_display_field: 'address_line_1',
         },
       },
       analyses_payload: {

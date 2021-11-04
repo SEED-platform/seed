@@ -665,6 +665,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                 } else {
                   $scope.step.number = 10;
                 }
+                $state.go('dataset_list');
               });
             }, function (response) {
               handleSystemMatchingError(response.data);

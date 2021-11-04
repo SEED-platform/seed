@@ -24,3 +24,8 @@ from seed.analysis_pipelines.eui import (  # noqa: F811, F401
     _finish_preparation,
     _run_analysis,
 )
+
+from seed.analysis_pipelines.co2 import (  # noqa: F811, F401
+    _finish_preparation,
+    _run_analysis,
+)

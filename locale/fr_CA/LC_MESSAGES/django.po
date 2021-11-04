@@ -163,7 +163,10 @@ msgid "An error occurred while processing the file. Please ensure that your file
 msgstr "Une erreur s'est produite lors du traitement du fichier. Assurez-vous que votre fichier respecte les spécifications requises."
 
 msgid "Analyses"
-msgstr "Analyses"
+msgstr "Analyses (bêta)"
+
+msgid "Analysis"
+msgstr "Analyse (bêta)"
 
 msgid "Analysis Name"
 msgstr "Nom de l'analyse"
@@ -1598,7 +1601,7 @@ msgid "National Renewable Energy Laboratory"
 msgstr "Laboratoire National Des Énergies Renouvelables"
 
 msgid "New Analysis"
-msgstr "Nouvelle analyse"
+msgstr "Nouvelle analyse (bêta)"
 
 msgid "New Note"
 msgstr "Nouvelle note"
@@ -1668,6 +1671,9 @@ msgstr "Nombre de propriétés"
 
 msgid "Number of Tax Lots"
 msgstr "Nombre de lots d'impôt"
+
+msgid "Number of decimal places to display"
+msgstr "Nombre de décimales à afficher"
 
 msgid "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
 msgstr "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1</strong> propriété} other{<strong>#</strong> propriétés}} et {num_taxlots,plural,one{<strong>1</strong>lot d'impôt} other{<strong>#</strong> lots d'impôt}}?"
@@ -1950,8 +1956,8 @@ msgstr "Notes de détail de la propriété"
 msgid "Property Detail Settings"
 msgstr "Paramètres de détail de la propriété"
 
-msgid "Property Detail View Display Field"
-msgstr "Champ d'affichage de la vue détaillée de la propriété"
+msgid "Property Display Field"
+msgstr "Champ d'affichage de la propriété"
 
 msgid "Property Footprint"
 msgstr "Empreinte de propriété"
@@ -2116,6 +2122,9 @@ msgstr "Rangée 5"
 
 msgid "Rules for a single field must have the same Data Type. Note that some Data Types are not available to certain Condition Checks."
 msgstr "Les règles pour un seul champ doivent avoir le même type de données. Notez que certains types de données ne sont pas disponibles pour certaines vérifications de condition."
+
+msgid "Run Analysis"
+msgstr "Exécuter l'analyse (bêta)"
 
 msgid "Run Author"
 msgstr "Exécuter l'auteur"
@@ -2315,9 +2324,6 @@ msgstr "Afficher/masquer les colonnes"
 msgid "Signature"
 msgstr "Signature"
 
-msgid "Significant figures for EUIs and areas"
-msgstr "Chiffres significatifs pour les IUE et les zones"
-
 msgid "Site EUI"
 msgstr "IUE site"
 
@@ -2420,8 +2426,8 @@ msgstr "Lots d'impôt"
 msgid "Tax Lots List"
 msgstr "Liste des lots d'impôt"
 
-msgid "Taxlot Detail View Display Field"
-msgstr "Champ d'affichage de la vue détaillée du lot de taxes"
+msgid "Taxlot Display Field"
+msgstr "Champ d'affichage du lot de taxes"
 
 #: src/django-tos-master/tos/models.py:43
 #: src/django-tos-master/tos/models.py:44

@@ -1,4 +1,4 @@
-# pip install --pre github3.py
+# pip install github3.py
 
 import argparse
 import csv
@@ -30,7 +30,7 @@ def add_issue_to_csv(issue):
     labels = [l.name for l in issue.labels()]
     ids_added.append(issue.number)
     line = []
-    line.append(issue.number)  # Github ID
+    line.append(int(issue.number))  # Github ID
     line.append(len(lines))  # Order
     line.append(issue.title)  # Title
     line.append("")  # category
@@ -100,6 +100,9 @@ if args.csv:
                 add_issue_to_csv(issue)
         except BaseException:
             pass
+
+    # sort the items by the first column
+    lines = sorted(lines, key=lambda x: (x[0]))
 
     # write out the lines
     with open('seed_issues.csv', 'w') as csv_file:

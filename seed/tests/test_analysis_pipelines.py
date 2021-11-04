@@ -9,6 +9,8 @@ from io import BytesIO
 import json
 import logging
 from os import path
+
+from seed.analysis_pipelines.utils import SimpleMeterReading
 from unittest.case import skip
 from unittest.mock import patch
 from zipfile import ZipFile
@@ -59,8 +61,8 @@ from seed.analysis_pipelines.eui import (
     _get_valid_meters,
     EUI_ANALYSIS_MESSAGES,
     ERROR_INVALID_GROSS_FLOOR_AREA,
-    ERROR_INSUFFICIENT_METER_READINGS,
-    ERROR_INVALID_METER_READINGS
+    ERROR_INVALID_METER_READINGS,
+    TIME_PERIOD
 )
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
@@ -629,7 +631,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(self.meter.meter_readings.count(), len(ts_elems))
 
         # throws exception if document is not valid
-        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_3_0)
+        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_4_0)
         schema.validate(tree)
 
     def test_build_bsyncr_input_returns_errors_if_state_missing_info(self):
@@ -918,8 +920,20 @@ class TestBETTERPipeline(TestCase):
             )
 
     def test_build_better_input_returns_valid_bsync_document(self):
+        # Setup
+        meters = [
+            {
+                'meter_type': self.meter_nat.type,
+                'readings': self.meter_nat.meter_readings.all()
+            },
+            {
+                'meter_type': self.meter_elec.type,
+                'readings': self.meter_elec.meter_readings.all()
+            },
+        ]
+
         # Act
-        doc, errors = _build_better_input(self.analysis_property_view, [self.meter_nat, self.meter_elec])
+        doc, errors = _build_better_input(self.analysis_property_view, meters)
         tree = etree.parse(BytesIO(doc))
 
         # Assert
@@ -967,6 +981,12 @@ class TestEuiPipeline(TestCase):
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID
         )
+        self.invalid_meter = Meter.objects.create(
+            property=self.test_property,
+            source=Meter.PORTFOLIO_MANAGER,
+            source_id="Source ID",
+            type=Meter.NATURAL_GAS
+        )
         self.timezone_object = pytztimezone(TIME_ZONE)
 
     def test_invalid_property_state(self):
@@ -980,36 +1000,10 @@ class TestEuiPipeline(TestCase):
         self.property_state.gross_floor_area = ureg.Quantity(float(10000), "foot ** 2")
         self.property_state.save()
 
-    def test_insufficient_meters(self):
-        MeterReading.objects.filter(meter=self.meter).delete()
-        for j in range(1, 12):
-            MeterReading.objects.create(
-                meter=self.meter,
-                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
-                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
-                reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
-            )
-        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id])
-        self.assertDictEqual(meter_readings_by_property_view, {})
-        self.assertDictEqual(errors_by_property_view_id, {
-            self.property_view.id: [EUI_ANALYSIS_MESSAGES[ERROR_INSUFFICIENT_METER_READINGS]]
-        })
-
     def test_invalid_meters(self):
-        MeterReading.objects.filter(meter=self.meter).delete()
-        for j in range(1, 12):
-            MeterReading.objects.create(
-                meter=self.meter,
-                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
-                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
-                reading=12345,
-                source_unit='kWh',
-                conversion_factor=1.00
-            )
+        MeterReading.objects.filter(meter=self.invalid_meter).delete()
         MeterReading.objects.create(
-            meter=self.meter,
+            meter=self.invalid_meter,
             start_time=make_aware(datetime(2021, 1, 1, 0, 0, 0), timezone=self.timezone_object),
             end_time=make_aware(datetime(2021, 1, 28, 0, 0, 0), timezone=self.timezone_object),
             reading=12345,
@@ -1038,7 +1032,11 @@ class TestEuiPipeline(TestCase):
         self.assertNotEqual(meter_readings_by_property_view, {})
 
     def test_calculate_eui(self):
-        meter_readings = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-        gross_floor_area = 123
-        expected_eui = 0.6341
-        self.assertEqual(_calculate_eui(meter_readings, gross_floor_area), expected_eui)
+        reading_start_time = datetime(2020, 1, 1)
+        reading_end_time = reading_start_time + TIME_PERIOD
+        reading_amount = 78
+        reading = SimpleMeterReading(reading_start_time, reading_end_time, reading_amount)
+        results = _calculate_eui([reading], 123)
+        self.assertEqual(results['eui'], 0.63)
+        self.assertEqual(results['reading'], reading_amount)
+        self.assertEqual(results['coverage'], 100)

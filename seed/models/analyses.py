@@ -22,11 +22,13 @@ class Analysis(models.Model):
     BSYNCR = 1
     BETTER = 2
     EUI = 3
+    CO2 = 4
 
     SERVICE_TYPES = (
         (BSYNCR, 'BSyncr'),
         (BETTER, 'BETTER'),
-        (EUI, 'EUI')
+        (EUI, 'EUI'),
+        (CO2, 'CO2')
     )
 
     PENDING_CREATION = 8
@@ -51,6 +53,7 @@ class Analysis(models.Model):
 
     name = models.CharField(max_length=255, blank=False, default=None)
     service = models.IntegerField(choices=SERVICE_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
@@ -129,12 +132,33 @@ class Analysis(models.Model):
 
         # EUI
         elif self.service == self.EUI:
-            eui_result = results.get('EUI')
+            eui_result = results.get('Fractional EUI (kBtu/sqft)')
             value = 'N/A'
             if eui_result is not None:
                 value = f'{eui_result:,.2f}'
+            coverage = results.get('Annual Coverage %')
+            if coverage is None:
+                coverage = 'N/A'
 
-            return [{'name': 'EUI', 'value': value}]
+            return [
+                {'name': 'Fractional EUI', 'value': f'{value} kBtu/sqft'},
+                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
+            ]
+
+        # CO2
+        elif self.service == self.CO2:
+            co2_result = results.get('Average Annual CO2 (kgCO2e)')
+            value = 'N/A'
+            if co2_result is not None:
+                value = f'{co2_result:,.0f}'
+            coverage = results.get('Annual Coverage %')
+            if coverage is None:
+                coverage = 'N/A'
+
+            return [
+                {'name': 'Average Annual CO2', 'value': f'{value} kgCO2e'},
+                {'name': 'Annual Coverage', 'value': f'{coverage}%'}
+            ]
 
         # Unexpected
         return [{'name': 'Unexpected Analysis Type', 'value': 'Oops!'}]

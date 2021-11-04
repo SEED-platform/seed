@@ -34,6 +34,8 @@ spec:
               value: super-secret-password
             - name: POSTGRES_USER
               value: seeduser
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
           image: timescale/timescaledb-postgis:latest-pg12
           imagePullPolicy: Always
           name: db-postrgres
@@ -50,7 +52,7 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           volumeMounts:
-            - mountPath: /var/lib/postgresql/data
+            - mountPath: /var/lib/postgresql/data/db-files
               name: seed-pgdata
             - mountPath: /seed-backups/backups
               name: seed-backups

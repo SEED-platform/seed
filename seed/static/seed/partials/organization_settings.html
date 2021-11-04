@@ -145,11 +145,11 @@
 
             <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <h3 translate>Significant figures for EUIs and areas</h3>
+                    <h3 translate>Number of decimal places to display</h3>
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
-                                <select class="form-control" ng-options="o.value as o.label for o in significant_figures_options" ng-model="org.display_significant_figures"></select>
+                                <select class="form-control" ng-options="o.value as o.label for o in decimal_places_options" ng-model="org.display_decimal_places"></select>
                             </div>
                         </div>
                     </form>
@@ -172,7 +172,7 @@
         <uib-tab index="2" heading="{$:: 'Default Display Fields' | translate $}">
             <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <h3 translate>Property Detail View Display Field</h3>
+                    <h3 translate>Property Display Field</h3>
                     <small>Determines which column field is used when displaying and identifying a property.  Defaults to "Address Line 1".</small>
                     <small>{$ all_columns $}</small>
                     <form class="form-horizontal" role="form">
@@ -187,7 +187,7 @@
 
             <div class="section_content_container">
                 <div class="section_content with_padding">
-                    <h3 translate>Taxlot Detail View Display Field</h3>
+                    <h3 translate>Taxlot Display Field</h3>
                     <small>Determines which column field is used when displaying and identifying a taxlot.  Defaults to "Address Line 1".</small>
                     <small>{$ all_columns $}</small>
                     <form class="form-horizontal" role="form">

@@ -717,7 +717,7 @@ angular.module('BE.seed.controller.mapping', [])
                 options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
                 options.filter = inventory_service.dateFilter();
               } else if (col.data_type === 'area' || col.data_type === 'eui') {
-                options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
+                options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
                 options.sortingAlgorithm = naturalSort;
               } else {
                 options.filter = inventory_service.combinedFilter();
