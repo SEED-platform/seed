@@ -11,6 +11,7 @@ class CustomChoicesField(serializers.ChoiceField):
     """Use this choices field when a model uses choices fields and you'd like
     the display value to be serialized rather than the coded value
     """
+
     def to_representation(self, obj):
         if obj == '' and self.allow_blank:
             return obj

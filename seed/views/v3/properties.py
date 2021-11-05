@@ -66,6 +66,7 @@ class PropertyViewFilterBackend(filters.DjangoFilterBackend):
 
     TODO: Add this to seed/filtersets.py or seed/filters.py
     """
+
     def get_filterset_class(self, view, queryset=None):
         return PropertyViewFilterSet
 

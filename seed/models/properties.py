@@ -129,7 +129,7 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property"""
-  
+
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
 

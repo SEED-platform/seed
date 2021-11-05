@@ -240,7 +240,7 @@ class TaxLotProperty(models.Model):
                 if 'updated' in filtered_fields:
                     related_dict[related_column_name_mapping['updated']] = related_view.property.updated
                 if 'created' in filtered_fields:
-                    related_dict[related_column_name_mapping['created']] = related_view.property.created              
+                    related_dict[related_column_name_mapping['created']] = related_view.property.created
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
                 if 'updated' in filtered_fields:

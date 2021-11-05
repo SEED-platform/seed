@@ -72,7 +72,7 @@ class Scenario(models.Model):
     hdd_base_temperature = models.FloatField(null=True)
     cdd = models.FloatField(null=True)
     cdd_base_temperature = models.FloatField(null=True)
-    
+
     measures = models.ManyToManyField(PropertyMeasure)
 
     def copy_initial_meters(self, source_scenario_id):

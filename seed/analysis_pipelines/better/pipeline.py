@@ -485,7 +485,7 @@ def _process_results(self, analysis_id):
         #    that fuel type wasn't valid (e.g. if electricity model is invalid,
         #    set "potential electricity savings" to null)
         for col_name, value in simplified_results.items():
-            value = value if type(value) is not float else round(value, 2)
+            value = value if not isinstance(value, float) else round(value, 2)
             if col_name.endswith('_electricity') and col_name != BETTER_VALID_MODEL_E_COL:
                 cleaned_results[col_name] = value if electricity_model_is_valid else None
             elif col_name.endswith('_fuel') and col_name != BETTER_VALID_MODEL_F_COL:

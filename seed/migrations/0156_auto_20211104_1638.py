@@ -24,7 +24,7 @@ def forwards(apps, schema_editor):
 
             if not columns.count():
                 # no column found (should not be the case)
-                continue 
+                continue
             elif columns.count() == 1:
                 # If the column exists, then just update the display_name and data_type if empty
                 c = columns.first()
@@ -80,4 +80,3 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(forwards),
     ]
-
