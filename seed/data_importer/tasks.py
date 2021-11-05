@@ -1137,39 +1137,17 @@ def geocode_and_match_buildings_task(file_pk):
     if import_file.cycle is None:
         _log.warn("Import file cycle is None; This should never happen in production")
 
-    post_geocode_tasks = None
-    if import_file.from_buildingsync:
-        source_type_dict = {
-            'Portfolio Raw': PORTFOLIO_RAW,
-            'Assessed Raw': ASSESSED_RAW,
-            'BuildingSync Raw': BUILDINGSYNC_RAW
-        }
-        source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
-
-        # get the properties and chunk them into tasks
-        qs = PropertyState.objects.filter(
-            import_file=import_file,
-            source_type=source_type,
-            data_state=DATA_STATE_MAPPING,
-        ).only('id').iterator()
-
-        id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-
-        post_geocode_tasks_count = len(id_chunks)
-        post_geocode_tasks = chord(
-            header=(_map_additional_models.si(ids, import_file.id, progress_data.key) for ids in id_chunks),
-            body=finish_mapping_additional_models.s(file_pk, progress_data.key))
-    else:
-        # Start, match, pair
-        post_geocode_tasks_count = 3
-        post_geocode_tasks = chord(
-            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
-            body=finish_matching.s(file_pk, progress_data.key),
-            interval=15)
+    # Start, match, pair
+    post_geocode_tasks_count = 3
+    post_geocode_tasks = celery_chain(
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
+        finish_matching_start_map_additional_models.s(file_pk, progress_data.key),
+    )
 
     geocoding_tasks_count = 1
     progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
     progress_data.save()
+
     celery_chain(_geocode_properties_or_tax_lots.s(file_pk, progress_data.key), post_geocode_tasks)()
 
     return progress_data.result()
@@ -1331,23 +1309,30 @@ def match_buildings(file_pk):
     progress_data.save()
 
     chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
-        finish_matching.s(file_pk, progress_data.key))
+        finish_matching_start_map_additional_models.s(file_pk, progress_data.key))
 
     return progress_data.result()
 
 
 @shared_task(ignore_result=True)
-def finish_matching(result, import_file_id, progress_key):
+def finish_matching_start_map_additional_models(result, import_file_id, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
-    if isinstance(result, list) and len(result) == 1:
-        import_file.matching_results_data = result[0]
-    else:
-        raise Exception('there are more than one results for matching_results, need to merge')
+    import_file.matching_results_data = result
     import_file.save()
+
+    # start mapping of additional data from the imported file
+    # get the properties and chunk them into tasks
+    if import_file.from_buildingsync:
+        qs = PropertyView.objects.filter(state__import_file_id=import_file.id).values_list('state_id', flat=True)
+        id_chunks = [[id for id in chunk] for chunk in batch(qs, 100)]
+        chord(
+            header=(_map_additional_models.si(ids, import_file.id, progress_data.key) for ids in id_chunks),
+            body=finish_mapping_additional_models.s(import_file.id, progress_data.key)
+        )()
 
     return progress_data.finish_with_success()
 

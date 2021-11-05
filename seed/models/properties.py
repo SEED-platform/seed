@@ -610,7 +610,7 @@ class PropertyState(models.Model):
 
         # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()]
+        building_files = [x for x in state1.building_files.all()] + [x for x in state2.building_files.all()]
         simulations = [x for x in Simulation.objects.filter(property_state=state2)]
         measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
 
