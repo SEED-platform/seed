@@ -1136,9 +1136,10 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         scenario = Scenario.objects.filter(property_state=ps)
         self.assertEqual(scenario.count(), 3)
 
-        # verify that there is only 1 false recommended measure that was explicitly defined
         pms = PropertyMeasure.objects.filter(property_state=ps, recommended=False)
         self.assertEqual(pms.count(), 1)
+        pms = PropertyMeasure.objects.filter(property_state=ps, recommended=True)
+        self.assertEqual(pms.count(), 70)
 
         meters = Meter.objects.filter(scenario__in=scenario)
         self.assertEqual(meters.count(), 6)
@@ -1212,8 +1213,8 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(scenario.count(), num_orig_scenarios + num_bsync_scenarios)
 
         num_orig_measures = 1
-        num_bsync_measures = 1
-        pms = PropertyMeasure.objects.filter(property_state=ps, recommended=False)
+        num_bsync_measures = 71
+        pms = PropertyMeasure.objects.filter(property_state=ps)
         self.assertEqual(pms.count(), num_orig_measures + num_bsync_measures)
 
         num_orig_meters = 1

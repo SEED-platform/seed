@@ -251,6 +251,11 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
 def merge_relationships(merged_state, state1, state2):
     """
     Merge together the old relationships with the new.
+
+    :param merged_state: PropertyState
+    :param state1: PropertyState
+    :param state2: PropertyState
+    :return: PropertyState, merged state
     """
     # we only handle merging property state relationships currently
     assert PropertyState == merged_state.__class__ == state1.__class__ == state2.__class__
@@ -258,20 +263,8 @@ def merge_relationships(merged_state, state1, state2):
     # TODO: get some items off of this property view - labels and eventually notes
 
     # collect the relationships
-    no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
     building_files = [x for x in state1.building_files.all()] + [x for x in state2.building_files.all()]
     simulations = [x for x in Simulation.objects.filter(property_state=state2)]
-    measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
-
-    # copy in the no measure scenarios
-    for new_s in no_measure_scenarios:
-        source_scenario_id = new_s.pk
-        new_s.pk = None
-        new_s.save()
-        merged_state.scenarios.add(new_s)
-
-        # copy meters
-        new_s.copy_initial_meters(source_scenario_id)
 
     for new_bf in building_files:
         # save the created and modified data from the original file
@@ -290,60 +283,121 @@ def merge_relationships(merged_state, state1, state2):
         new_sim.property_state = merged_state
         new_sim.save()
 
-    if len(measures) > 0:
-        measure_fields = [f.name for f in measures[0]._meta.fields]
-        measure_fields.remove('id')
-        measure_fields.remove('property_state')
+    merged_state = merge_measures_and_scenarios(merged_state, state1, state2)
 
-        new_items = []
+    return merged_state
 
-        # Create a list of scenarios and measures to reconstruct
-        # {
-        #   scenario_id_1: [ new_measure_id_1, new_measure_id_2 ],
-        #   scenario_id_2: [ new_measure_id_2, new_measure_id_3 ],  # measure ids can be repeated
-        # }
-        scenario_measure_map = {}
-        for measure in measures:
-            test_dict = model_to_dict(measure, fields=measure_fields)
 
-            if test_dict in new_items:
-                continue
-            else:
-                try:
-                    new_measure = copy.deepcopy(measure)
-                    # copy the created and modifed time
-                    new_measure.pk = None
-                    new_measure.property_state = merged_state
-                    new_measure.save()
+def merge_measures_and_scenarios(merged_state, state1, state2):
+    """Merge the measures and scenarios from state1 and state2 into merged_state.
+    Note that state2's data is given higher priority than state1.
 
-                    # grab the scenario that is attached to the orig measure and create a new connection
-                    for scenario in measure.scenario_set.all():
-                        if scenario.pk not in scenario_measure_map:
-                            scenario_measure_map[scenario.pk] = []
-                        scenario_measure_map[scenario.pk].append(new_measure.pk)
+    :param merged_state: PropertyState
+    :param state1: PropertyState
+    :param state2: PropertyState
+    :return" PropertyState, merged_state
+    """
+    def group_items(matching_fields, items):
+        """Groups items according to the matching_fields. Relative ordering of
+        items in the result are maintained.
 
-                except IntegrityError:
-                    _log.error(
-                        "Measure state_id, measure_id, application_sacle, and implementation_status already exists -- skipping for now")
+        :param matching_fields: list[str]
+        :param items: iterable
+        :return: dict, lists of items keyed by n-tuple of provided field name values
+        """
+        get_item_identifier = lambda item: tuple((getattr(item, field) for field in matching_fields))
+        grouped_items = defaultdict(list)
+        for item in items:
+            grouped_items[get_item_identifier(item)].append(item)
+        
+        return grouped_items
 
-            new_items.append(test_dict)
+    # find matching measures
+    measure_matching_fields = ['property_measure_name', 'measure_id']
+    base_measures = PropertyMeasure.objects.filter(property_state_id=state1.id)
+    incoming_measures = PropertyMeasure.objects.filter(property_state_id=state2.id)
+    grouped_measures = group_items(
+        measure_matching_fields,
+        # ordering is important! we're giving state2 data higher priority
+        list(base_measures) + list(incoming_measures)
+    )
 
-        # connect back up the scenario measures
-        for scenario_id, measure_list in scenario_measure_map.items():
+    # merge measures - ones towards the end of the list have higher priority
+    measure_merging_fields = [
+        f.name
+        for f in PropertyMeasure._meta.fields
+        if f.name not in ['id', 'property_state']
+    ]
+    scenarios_to_new_measures = defaultdict(list)
+    for _, measures_to_merge in grouped_measures.items():
+        merged_measure_dict = {}
+        scenarios_affected = set()
+        for measure in measures_to_merge:
+            merged_measure_dict.update(model_to_dict(measure, fields=measure_merging_fields))
+            for linked_scenario_id in measure.scenario_set.all().values_list('id', flat=True):
+                scenarios_affected.add(linked_scenario_id)
 
-            # create a new scenario from the old one
-            scenario = Scenario.objects.get(pk=scenario_id)
+        merged_measure_dict['measure_id'] = merged_measure_dict.pop('measure')
+        new_measure = PropertyMeasure.objects.create(
+            property_state=merged_state,
+            **merged_measure_dict
+        )
+        for scenario_affected in scenarios_affected:
+            scenarios_to_new_measures[scenario_affected].append(new_measure.id)
 
-            scenario.pk = None
-            scenario.property_state = merged_state
-            scenario.save()  # save to get new id
+    # find matching scenarios
+    scenario_matching_fields = ['name']
+    base_scenarios = Scenario.objects.filter(property_state_id=state1.id)
+    incoming_scenarios = Scenario.objects.filter(property_state_id=state2.id)
+    grouped_scenarios = group_items(
+        scenario_matching_fields,
+        # ordering is important! we're giving state2 data higher priority
+        list(base_scenarios) + list(incoming_scenarios),
+    )
 
-            scenario.copy_initial_meters(scenario_id)
+    # merge scenarios - ones towards the end of the list have higher priority
+    old_scenario_id_to_new_scenario = {}
+    scenario_merging_fields = [
+        f.name
+        for f in Scenario._meta.fields
+        if f.name not in ['id', 'property_state']
+    ]
+    for _, scenarios_to_merge in grouped_scenarios.items():
+        merged_scenario_dict = {}
+        scenarios_affected = set()
+        for scenario in scenarios_to_merge:
+            merged_scenario_dict.update(model_to_dict(scenario, fields=scenario_merging_fields))
+            scenarios_affected.add(scenario.id)
 
-            # get the measures
-            measures = PropertyMeasure.objects.filter(pk__in=measure_list)
-            for measure in measures:
-                scenario.measures.add(measure)
-            scenario.save()
+        merged_scenario_dict['reference_case_id'] = merged_scenario_dict.pop('reference_case')
+        new_scenario = Scenario.objects.create(
+            property_state=merged_state,
+            **merged_scenario_dict
+        )
+        for old_scenario in scenarios_to_merge:
+            old_scenario_id_to_new_scenario[old_scenario.id] = new_scenario
+
+        # add measures to the scenario
+        for scenario_affected in scenarios_affected:
+            new_measures = scenarios_to_new_measures.get(scenario_affected, [])
+            for new_measure in new_measures:
+                new_scenario.measures.add(new_measure)
+
+    # now that all scenarios have been created, we can update the reference_case
+    for new_scenario in set(old_scenario_id_to_new_scenario.values()):
+        old_reference_case_scenario_id = new_scenario.reference_case_id
+        if old_reference_case_scenario_id is None:
+            continue
+
+        new_reference_case_scenario = old_scenario_id_to_new_scenario.get(old_reference_case_scenario_id)
+        if new_reference_case_scenario is None:
+            raise Exception('WTF')
+        new_scenario.reference_case = new_reference_case_scenario
+        new_scenario.save()
+
+    # lastly, copy over the meter data
+    for old_scenario_id, new_scenario in old_scenario_id_to_new_scenario.items():
+        # TODO: make sure this is merging meters, not just dumping everything
+        new_scenario.copy_initial_meters(old_scenario_id) 
 
     return merged_state
