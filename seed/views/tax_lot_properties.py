@@ -227,7 +227,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         scenario_keys = (
             'id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings',
-            'annual_cost_savings', 'analysis_state', 'analysis_state_message', 'annual_electricity_savings',
+            'annual_cost_savings', 'annual_electricity_savings',
             'annual_natural_gas_savings', 'annual_site_energy', 'annual_source_energy', 'annual_natural_gas_energy',
             'annual_electricity_energy', 'annual_peak_demand', 'annual_site_energy_use_intensity',
             'annual_source_energy_use_intensity'

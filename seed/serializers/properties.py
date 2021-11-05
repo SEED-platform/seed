@@ -138,8 +138,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
-
+    
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
     gross_floor_area = PintQuantitySerializerField(allow_null=True)
@@ -155,9 +154,7 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
     release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-
+    
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField()
@@ -222,8 +219,7 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES, required=False)
-
+    
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
     organization_id = serializers.IntegerField(read_only=True)
@@ -233,9 +229,7 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
-    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
-    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
-
+    
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
     gross_floor_area = PintQuantitySerializerField(allow_null=True, required=False)

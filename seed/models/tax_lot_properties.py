@@ -90,8 +90,7 @@ class TaxLotProperty(models.Model):
                 continue
 
             # fix specific time stamps
-            if f.name in ['recent_sale_date', 'release_date', 'generation_date', 'analysis_start_time',
-                          'analysis_end_time']:
+            if f.name in ['recent_sale_date', 'release_date', 'generation_date']:
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()
@@ -241,11 +240,7 @@ class TaxLotProperty(models.Model):
                 if 'updated' in filtered_fields:
                     related_dict[related_column_name_mapping['updated']] = related_view.property.updated
                 if 'created' in filtered_fields:
-                    related_dict[related_column_name_mapping['created']] = related_view.property.created
-                # Replace the enumerations
-                if 'analysis_state' in filtered_fields:
-                    related_dict[
-                        related_column_name_mapping['analysis_state']] = related_view.state.get_analysis_state_display()
+                    related_dict[related_column_name_mapping['created']] = related_view.property.created              
             elif lookups['obj_class'] == 'PropertyView':
                 # Do not make these timestamps naive. They persist correctly.
                 if 'updated' in filtered_fields:
@@ -385,9 +380,6 @@ class TaxLotProperty(models.Model):
             if lookups['obj_class'] == 'PropertyView':
                 if 'campus' in filtered_fields:
                     obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
-                # Do not make these timestamps naive. They persist correctly.
-                if 'analysis_state' in filtered_fields:
-                    obj_dict[obj_column_name_mapping['analysis_state']] = obj.state.get_analysis_state_display()
 
             # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
             # Also, do not make these timestamps naive. They persist correctly.

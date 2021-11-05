@@ -94,7 +94,6 @@ class Column(models.Model):
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-        'analysis_state',
         'bounding_box',
         'centroid',
         'created',
@@ -139,10 +138,6 @@ class Column(models.Model):
 
     # These are columns that should not be offered as suggestions during mapping
     UNMAPPABLE_PROPERTY_FIELDS = [
-        'analysis_end_time',
-        'analysis_start_time',
-        'analysis_state',
-        'analysis_state_message',
         'campus',
         'created',
         'geocoding_confidence',
@@ -520,30 +515,6 @@ class Column(models.Model):
             'column_name': 'building_certification',
             'table_name': 'PropertyState',
             'display_name': 'Building Certification',
-            'data_type': 'string',
-        }, {
-            'column_name': 'analysis_start_time',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis Start Time',
-            'data_type': 'datetime',
-            # 'type': 'date',
-            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
-            'column_name': 'analysis_end_time',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis End Time',
-            'data_type': 'datetime',
-            # 'type': 'date',
-            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
-            'column_name': 'analysis_state',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis State',
-            'data_type': 'string',
-        }, {
-            'column_name': 'analysis_state_message',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis State Message',
             'data_type': 'string',
         }, {
             'column_name': 'number_properties',
