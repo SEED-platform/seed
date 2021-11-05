@@ -1800,6 +1800,24 @@ a:not([href]) {
   }
 }
 
+#auto-populate-body {
+  overflow: scroll;
+  height: 70vh;
+  position: relative;
+}
+.scroll-indicator {
+  width: calc(100% - 30px);
+  height: 100px;
+  background-image: linear-gradient(transparent, #fff);
+  position: fixed;
+  bottom: 66px;
+}
+.gradient-height {
+  width:calc(100% - 30px);
+  height:60px;
+  background: transparent;
+}
+
 #newCustomViewModal {
   .modal-body {
     padding-bottom: 0;
