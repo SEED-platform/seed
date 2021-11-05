@@ -1408,20 +1408,13 @@ def _map_additional_models(ids, file_pk, progress_key):
         if source_type == BUILDINGSYNC_RAW:
             # parse the rest of the models (scenarios, meters, etc) from the building file
             # and create the property and property view
-            building_file = property_state.building_files.get()
-            p_status, property_state, property_view, messages = building_file.process(
-                org.id, import_file.cycle)
+            building_files = property_state.building_files.filter(processed_auxiliary_data=False)
+            for building_file in building_files:
+                success, property_state, property_view, messages = building_file.process(
+                    org.id, import_file.cycle)
 
-            if not p_status or len(messages.get('errors', [])) > 0:
-                # something went wrong, save the messages and skip this file
-                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-                continue
-            elif len(messages.get('warnings', [])) > 0:
-                # non-fatal warnings, add the info and continue to save the file
-                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-
-            property_state.data_state = DATA_STATE_MATCHING
-            property_state.save()
+                if not success or messages.get('errors') or messages.get('warnings'):
+                    progress_data.add_file_info(os.path.basename(building_file.filename), messages)
 
     progress_data.step()
 
