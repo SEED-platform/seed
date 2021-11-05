@@ -651,7 +651,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                   // this only occurs in buildingsync, where we are not actually merging properties
                   // thus we will always end up at step 10
                   $scope.step_10_style = 'danger';
-                  $scope.step_10_file_message = 'Warning(s)/Error(s) occurred while processing the file(s):\n' + JSON.stringify(progress_data.file_info, null, 2);
+                  $scope.step_10_file_message = 'Warnings and/or errors occurred while processing the file(s).';
+                  $scope.match_issues = []
+                  for (let file_name in progress_data.file_info) {
+                    $scope.match_issues.push({
+                      'file': file_name,
+                      'errors': progress_data.file_info[file_name].errors,
+                      'warnings': progress_data.file_info[file_name].warnings
+                    });
+                  }
                 }
 
                 // Toggle a meter import button if the imported file also has a meters tab
