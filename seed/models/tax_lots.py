@@ -372,11 +372,6 @@ class TaxLotState(models.Model):
 
         return coparents, len(coparents)
 
-    @classmethod
-    def merge_relationships(cls, merged_state, state1, state2):
-        """Stub to implement if merging TaxLotState relationships is needed"""
-        return None
-
 
 class TaxLotView(models.Model):
     taxlot = models.ForeignKey(TaxLot, on_delete=models.CASCADE, related_name='views', null=True)
