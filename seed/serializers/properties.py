@@ -28,7 +28,6 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
-from seed.serializers.base import ChoiceField
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer

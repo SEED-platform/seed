@@ -21,7 +21,6 @@ from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
     PropertyView,
-    PropertyState,
     BuildingFile,
     Cycle,
     ColumnMappingProfile,

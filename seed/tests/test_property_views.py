@@ -458,14 +458,14 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 2)
 
         # check the analysis states
-        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk, 'Completed')
+        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk)
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 0)
 
-        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk, 'Not Started')
+        query_params = "?cycle={}&organization_id={}".format(self.cycle.pk, self.org.pk)
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
