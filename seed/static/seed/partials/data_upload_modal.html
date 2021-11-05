@@ -155,7 +155,7 @@
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
             <div class="col-sm-12">
-                <div ng-repeat="file_issues in buildingsync_issues">
+                <div ng-repeat="issues in buildingsync_issues">
                     <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
                 </div>
             </div>
@@ -299,10 +299,14 @@
             </div>
             <div class="alert alert-{$ step_10_style $}">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-show="step_10_file_message"><pre>{$ step_10_file_message $}</pre></span>
+                <span ng-show="step_10_file_message">{$ step_10_file_message $}</span>
                 <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
-            <div class="form-group col-sm-12"></div>
+            <div class="col-sm-12">
+                <div ng-repeat="issues in match_issues">
+                    <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Step 11: Save Mappings Permanently  -->
@@ -319,7 +323,7 @@
                 <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
                 <span ng-if="step_12_buildingsync_validation_error">
                     <div class="alert alert-danger">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
-                    <div ng-repeat="file_issues in buildingsync_issues">
+                    <div ng-repeat="issues in buildingsync_issues">
                         <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
                     </div>
                 </span>
