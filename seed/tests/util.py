@@ -173,4 +173,5 @@ class AssertDictSubsetMixin:
         and I believe it's much more readable compared to the implementation below
         """
         # source: https://stackoverflow.com/a/59777678
+        # Note that this only works in Python >= 3.9
         self.assertEqual(dictionary, dictionary | subset)

@@ -155,6 +155,7 @@ class ExpressionEvaluator:
 
 class InvalidExpression(Exception):
     """Raised when parsing an expression"""
+
     def __init__(self, expression, error_position=None):
         super().__init__()
         self.expression = expression

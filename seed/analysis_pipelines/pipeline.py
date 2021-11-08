@@ -254,6 +254,7 @@ class AnalysisPipeline(abc.ABC):
     AnalysisPipeline is an abstract class for defining workflows for preparing,
     running, and post processing analyses.
     """
+
     def __init__(self, analysis_id):
         self._analysis_id = analysis_id
 

@@ -64,9 +64,6 @@ class StateFieldsTest(TestCase):
 
         expected = (('address_line_1', 'address_line_1'),
                     ('address_line_2', 'address_line_2'),
-                    ('analysis_end_time', 'analysis_end_time'),
-                    ('analysis_start_time', 'analysis_start_time'),
-                    ('analysis_state_message', 'analysis_state_message'),
                     ('building_certification', 'building_certification'),
                     ('building_count', 'building_count'),
                     ('city', 'city'),

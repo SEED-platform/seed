@@ -149,14 +149,14 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         :param obj: str, list, dict[str, obj]
         :return: drf_yasg.openapi.Schema
         """
-        if type(obj) is str:
+        if isinstance(obj, str):
             openapi_type = cls._openapi_type(obj)
             return openapi.Schema(
                 type=openapi_type,
                 **kwargs
             )
 
-        if type(obj) is list:
+        if isinstance(obj, list):
             if len(obj) != 1:
                 raise Exception('List types must have exactly one element to specify the schema of `items`')
             return openapi.Schema(
@@ -165,7 +165,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
                 **kwargs
             )
 
-        if type(obj) is dict:
+        if isinstance(obj, dict):
             return openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
