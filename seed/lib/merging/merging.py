@@ -297,7 +297,7 @@ def merge_measures_and_scenarios(merged_state, state1, state2):
     :param state2: PropertyState
     :return" PropertyState, merged_state
     """
-    def group_items(matching_fields, items):
+    def group_matching_items(matching_fields, items):
         """Groups items according to the matching_fields. Relative ordering of
         items in the result are maintained.
 
@@ -306,17 +306,19 @@ def merge_measures_and_scenarios(merged_state, state1, state2):
         :return: dict, lists of items keyed by n-tuple of provided field name values
         """
         get_item_identifier = lambda item: tuple((getattr(item, field) for field in matching_fields))
-        grouped_items = defaultdict(list)
+        matching_items = defaultdict(list)
         for item in items:
-            grouped_items[get_item_identifier(item)].append(item)
-        
-        return grouped_items
+            matching_items[get_item_identifier(item)].append(item)
 
-    # find matching measures
+        return matching_items
+
+    #
+    # Group measures according to matching criteria, merge them, then add them to the new state
+    #
     measure_matching_fields = ['property_measure_name', 'measure_id']
     base_measures = PropertyMeasure.objects.filter(property_state_id=state1.id)
     incoming_measures = PropertyMeasure.objects.filter(property_state_id=state2.id)
-    grouped_measures = group_items(
+    grouped_measures = group_matching_items(
         measure_matching_fields,
         # ordering is important! we're giving state2 data higher priority
         list(base_measures) + list(incoming_measures)
@@ -345,11 +347,13 @@ def merge_measures_and_scenarios(merged_state, state1, state2):
         for scenario_affected in scenarios_affected:
             scenarios_to_new_measures[scenario_affected].append(new_measure.id)
 
-    # find matching scenarios
+    #
+    # Group scenarios according to matching criteria, merge them, then add them to the new state
+    #
     scenario_matching_fields = ['name']
     base_scenarios = Scenario.objects.filter(property_state_id=state1.id)
     incoming_scenarios = Scenario.objects.filter(property_state_id=state2.id)
-    grouped_scenarios = group_items(
+    grouped_scenarios = group_matching_items(
         scenario_matching_fields,
         # ordering is important! we're giving state2 data higher priority
         list(base_scenarios) + list(incoming_scenarios),
@@ -391,13 +395,12 @@ def merge_measures_and_scenarios(merged_state, state1, state2):
 
         new_reference_case_scenario = old_scenario_id_to_new_scenario.get(old_reference_case_scenario_id)
         if new_reference_case_scenario is None:
-            raise Exception('WTF')
+            raise Exception('Unable to find reference case scenario')
         new_scenario.reference_case = new_reference_case_scenario
         new_scenario.save()
 
     # lastly, copy over the meter data
     for old_scenario_id, new_scenario in old_scenario_id_to_new_scenario.items():
-        # TODO: make sure this is merging meters, not just dumping everything
         new_scenario.copy_initial_meters(old_scenario_id) 
 
     return merged_state
