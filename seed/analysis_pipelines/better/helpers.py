@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class BuildingAnalysis:
     """Used to track AnalysisPropertyViews and BETTER Building and Analysis IDs"""
+
     def __init__(self, analysis_property_view_id, better_building_id, better_analysis_id):
         self.analysis_property_view_id = analysis_property_view_id
         self.better_building_id = better_building_id
@@ -25,6 +26,7 @@ class BuildingAnalysis:
 
 class BETTERPipelineContext:
     """Datastructure to avoid multiple pass-through variables"""
+
     def __init__(self, analysis, progress_data, better_client):
         """
         :param analysis: Analysis

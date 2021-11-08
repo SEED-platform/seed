@@ -129,19 +129,6 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property"""
-    ANALYSIS_STATE_NOT_STARTED = 0
-    ANALYSIS_STATE_STARTED = 1
-    ANALYSIS_STATE_COMPLETED = 2
-    ANALYSIS_STATE_FAILED = 3
-    ANALYSIS_STATE_QUEUED = 4  # analysis queue was added after the others above.
-
-    ANALYSIS_STATE_TYPES = (
-        (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
-        (ANALYSIS_STATE_QUEUED, 'Queued'),
-        (ANALYSIS_STATE_STARTED, 'Started'),
-        (ANALYSIS_STATE_COMPLETED, 'Completed'),
-        (ANALYSIS_STATE_FAILED, 'Failed'),
-    )
 
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
@@ -227,13 +214,6 @@ class PropertyState(models.Model):
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
 
-    analysis_start_time = models.DateTimeField(null=True)
-    analysis_end_time = models.DateTimeField(null=True)
-    analysis_state = models.IntegerField(choices=ANALYSIS_STATE_TYPES,
-                                         default=ANALYSIS_STATE_NOT_STARTED,
-                                         null=True)
-    analysis_state_message = models.TextField(null=True)
-
     # Need to add another field eventually to define the source of the EUI's and other
     # reported fields. Ideally would have the ability to provide the same field from
     # multiple data sources. For example, site EUI (portfolio manager), site EUI (calculated),
@@ -283,7 +263,6 @@ class PropertyState(models.Model):
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
             ['import_file', 'data_state', 'source_type'],
-            ['analysis_state', 'organization'],
         ]
 
     def promote(self, cycle, property_id=None):
@@ -589,10 +568,6 @@ class PropertyState(models.Model):
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
-                    ps.analysis_start_time,
-                    ps.analysis_end_time,
-                    ps.analysis_state,
-                    ps.analysis_state_message,
                     ps.egrid_subregion_code,
                     ps.extra_data,
                     NULL
@@ -617,8 +592,7 @@ class PropertyState(models.Model):
                        'home_energy_score_id', 'generation_date', 'release_date',
                        'source_eui_weather_normalized', 'site_eui_weather_normalized',
                        'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
-                       'building_certification', 'analysis_start_time', 'analysis_end_time',
-                       'analysis_state', 'analysis_state_message', 'extra_data', ]
+                       'building_certification', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)

@@ -19,7 +19,7 @@ def get_json_path(json_path, data):
     for key in json_path:
         result = result.get(key, {})
 
-    if type(result) is dict and not result:
+    if isinstance(result, dict) and not result:
         # path was probably not valid in the data...
         return None
     else:
