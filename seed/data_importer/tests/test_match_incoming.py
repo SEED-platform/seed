@@ -1109,7 +1109,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             'no_default_data': False,
         }
         # Create a property which will match with the BuildingSync file
-        ps_orig = self.property_state_factory.get_property_state(**base_details)
+        self.property_state_factory.get_property_state(**base_details)
         # set import_file mapping done so that matching can occur.
         self.import_file_2.mapping_done = True
         self.import_file_2.save()

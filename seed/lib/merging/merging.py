@@ -6,10 +6,8 @@
 """
 import logging
 from collections import defaultdict
-import copy
 
 from django.forms.models import model_to_dict
-from django.db import IntegrityError
 
 from seed.models import (
     Column,
@@ -401,6 +399,6 @@ def merge_measures_and_scenarios(merged_state, state1, state2):
 
     # lastly, copy over the meter data
     for old_scenario_id, new_scenario in old_scenario_id_to_new_scenario.items():
-        new_scenario.copy_initial_meters(old_scenario_id) 
+        new_scenario.copy_initial_meters(old_scenario_id)
 
     return merged_state
