@@ -18,6 +18,15 @@
     "schema": ""
   },
   {
+    "display_name": "Address Line 1",
+    "to_field": "address_line_1",
+    "to_table_name": "PropertyState",
+    "from_field": "Street Address",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
     "display_name": "Address Line 2",
     "to_field": "address_line_2",
     "to_table_name": "PropertyState",
@@ -31,6 +40,15 @@
     "to_field": "address_line_2",
     "to_table_name": "PropertyState",
     "from_field": "address2",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Address Line 2",
+    "to_field": "address_line_2",
+    "to_table_name": "PropertyState",
+    "from_field": "Street Address 2",
     "units": "",
     "type": "string",
     "schema": ""
@@ -63,6 +81,33 @@
     "schema": ""
   },
   {
+    "display_name": "City",
+    "to_field": "city",
+    "to_table_name": "PropertyState",
+    "from_field": "City/Municipality",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Country",
+    "to_field": "country",
+    "to_table_name": "PropertyState",
+    "from_field": "Country",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Construction Status",
+    "to_field": "construction_status",
+    "to_table_name": "PropertyState",
+    "from_field": "Construction Status",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
     "display_name": "Created Date",
     "to_field": "created_date",
     "to_table_name": "PropertyState",
@@ -85,6 +130,15 @@
     "to_field": "ubid",
     "to_table_name": "PropertyState",
     "from_field": "UBID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Department",
+    "to_field": "department",
+    "to_table_name": "PropertyState",
+    "from_field": "Federal Agency/Department",
     "units": "",
     "type": "string",
     "schema": ""
@@ -150,6 +204,42 @@
     "from_field": "Property Floor Area (Buildings) (ft2)",
     "units": "ft**2",
     "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "GFA Units",
+    "to_field": "gfa_units",
+    "to_table_name": "PropertyState",
+    "from_field": "GFA Units",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "How Many Buildings?",
+    "to_field": "how_many_buildings?",
+    "to_table_name": "PropertyState",
+    "from_field": "How Many Buildings?",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Irrigated Area",
+    "to_field": "irrigated_area",
+    "to_table_name": "PropertyState",
+    "from_field": "Irrigated Area",
+    "units": "ft**2",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Irrigated Area Units",
+    "to_field": "irrigated_area_units",
+    "to_table_name": "PropertyState",
+    "from_field": "Irrigated Area Units",
+    "units": "",
+    "type": "string",
     "schema": ""
   },
   {
@@ -225,6 +315,15 @@
     "schema": ""
   },
   {
+    "display_name": "Occupancy (%)",
+    "to_field": "occupancy_(%)",
+    "to_table_name": "PropertyState",
+    "from_field": "Occupancy (%)",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
     "display_name": "Organization",
     "to_field": "organization",
     "to_table_name": "PropertyState",
@@ -273,6 +372,15 @@
     "display_name": "PM Property ID",
     "to_field": "pm_property_id",
     "to_table_name": "PropertyState",
+    "from_field": "Portfolio Manager ID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "PM Property ID",
+    "to_field": "pm_property_id",
+    "to_table_name": "PropertyState",
     "from_field": "Property Id",
     "units": "",
     "type": "string",
@@ -283,6 +391,15 @@
     "to_field": "pm_parent_property_id",
     "to_table_name": "PropertyState",
     "from_field": "Parent Property ID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Parent Property Name",
+    "to_field": "parent_property_name",
+    "to_table_name": "PropertyState",
+    "from_field": "Parent Property Name",
     "units": "",
     "type": "string",
     "schema": ""
@@ -355,6 +472,15 @@
     "to_field": "property_name",
     "to_table_name": "PropertyState",
     "from_field": "name",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Property Name",
+    "to_field": "property_name",
+    "to_table_name": "PropertyState",
+    "from_field": "Property Name",
     "units": "",
     "type": "string",
     "schema": ""
@@ -481,6 +607,15 @@
     "to_field": "use_description",
     "to_table_name": "PropertyState",
     "from_field": "Primary Property Type - Self Selected",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Use Description",
+    "to_field": "use_description",
+    "to_table_name": "PropertyState",
+    "from_field": "Property Type - Self-Selected",
     "units": "",
     "type": "string",
     "schema": ""
