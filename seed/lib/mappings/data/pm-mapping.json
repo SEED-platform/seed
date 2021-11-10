@@ -99,15 +99,6 @@
     "schema": ""
   },
   {
-    "display_name": "Created",
-    "to_field": "created",
-    "to_table_name": "PropertyState",
-    "from_field": "Created",
-    "units": "",
-    "type": "datetime",
-    "schema": ""
-  },
-  {
     "display_name": "Custom ID 1",
     "to_field": "custom_id_1",
     "to_table_name": "PropertyState",
