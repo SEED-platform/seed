@@ -1513,7 +1513,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             return promise;
           }],
           analyses_payload: ['inventory_service', 'analyses_service', '$stateParams', 'inventory_payload', function (inventory_service, analyses_service, $stateParams, inventory_payload) {
-            return analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id);
+            let type = 'property';
+            if ($stateParams.inventory_type === 'taxlots') type = 'taxlot';
+            return analyses_service.get_analyses_for_canonical_property(inventory_payload[type].id);
           }],
           columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
