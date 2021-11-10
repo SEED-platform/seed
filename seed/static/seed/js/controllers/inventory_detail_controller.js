@@ -246,10 +246,6 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       $scope.isDisabledField = function (name) {
         return _.includes([
-          'analysis_end_time',
-          'analysis_start_time',
-          'analysis_state',
-          'analysis_state_message',
           'geocoding_confidence',
           'campus',
           'created',

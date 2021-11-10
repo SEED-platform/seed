@@ -430,10 +430,8 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='123456')
         self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='987654 Long Street')
         self.property_view_factory.get_property_view(cycle=self.cycle, address_line_1='123 Main Street')
-        self.property_view_factory.get_property_view(cycle=self.cycle, address_line_1='Hamilton Road',
-                                                     analysis_state=PropertyState.ANALYSIS_STATE_QUEUED)
-        self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='long road',
-                                                     analysis_state=PropertyState.ANALYSIS_STATE_QUEUED)
+        self.property_view_factory.get_property_view(cycle=self.cycle, address_line_1='Hamilton Road')
+        self.property_view_factory.get_property_view(cycle=self.cycle, custom_id_1='long road')
 
         # Typically looks like this
         # http://localhost:8000/api/v3/properties/search?organization_id=265&cycle=219&identifier=09-IS
@@ -459,41 +457,15 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(len(results), 2)
 
-        # check the analysis states
-        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(self.cycle.pk, self.org.pk, 'Completed')
-        url = reverse('api:v3:properties-search') + query_params
-        response = self.client.get(url)
-        results = json.loads(response.content)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(len(results), 0)
-
-        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
-            self.cycle.pk, self.org.pk, 'Not Started'
-        )
-        url = reverse('api:v3:properties-search') + query_params
-        response = self.client.get(url)
-        results = json.loads(response.content)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(len(results), 3)
-
-        query_params = "?cycle={}&organization_id={}&analysis_state={}".format(
-            self.cycle.pk, self.org.pk, 'Queued'
+        # check the combination of both the identifier and the analysis state
+        query_params = "?cycle={}&organization_id={}&identifier={}".format(
+            self.cycle.pk, self.org.pk, 'Long'
         )
         url = reverse('api:v3:properties-search') + query_params
         response = self.client.get(url)
         results = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         self.assertEqual(len(results), 2)
-
-        # check the combination of both the identifier and the analysis state
-        query_params = "?cycle={}&organization_id={}&identifier={}&analysis_state={}".format(
-            self.cycle.pk, self.org.pk, 'Long', 'Queued'
-        )
-        url = reverse('api:v3:properties-search') + query_params
-        response = self.client.get(url)
-        results = json.loads(response.content)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(len(results), 1)
 
     def test_meters_exist(self):
         # Create a property set with meters
