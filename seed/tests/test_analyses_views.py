@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.core.files.uploadedfile import SimpleUploadedFile
 import json
 
@@ -24,7 +24,8 @@ from seed.utils.organizations import create_organization
 
 class TestAnalysesView(TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -32,103 +33,104 @@ class TestAnalysesView(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, self.org_user, _ = create_organization(self.user)
-        self.org_b, self.org_user, _ = create_organization(self.user)
-        self.client.login(**user_details)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, cls.org_user, _ = create_organization(cls.user)
+        cls.org_b, cls.org_user, _ = create_organization(cls.user)
+        cls.seed_client = Client()
+        cls.seed_client.login(**user_details)
 
-        cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        cycle_factory = FakeCycleFactory(organization=cls.org, user=cls.user)
         cycle_a = cycle_factory.get_cycle(name="Cycle A")
         cycle_b = cycle_factory.get_cycle(name="Cycle B")
 
-        property_factory = FakePropertyFactory(organization=self.org)
-        self.property_a = property_factory.get_property()
+        property_factory = FakePropertyFactory(organization=cls.org)
+        cls.property_a = property_factory.get_property()
         property_b = property_factory.get_property()
 
-        property_state_factory = FakePropertyStateFactory(organization=self.org)
+        property_state_factory = FakePropertyStateFactory(organization=cls.org)
         property_state_a = property_state_factory.get_property_state()
         property_state_b = property_state_factory.get_property_state()
         property_state_c = property_state_factory.get_property_state()
         property_state_d = property_state_factory.get_property_state()
 
         # create an analysis with two property views, each with the same property but a different cycle
-        self.analysis_a = Analysis.objects.create(
+        cls.analysis_a = Analysis.objects.create(
             name='test a',
             service=Analysis.BSYNCR,
             status=Analysis.CREATING,
-            user=self.user,
-            organization=self.org
+            user=cls.user,
+            organization=cls.org
         )
-        self.analysis_property_view_a = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a,
-            property=self.property_a,
+        cls.analysis_property_view_a = AnalysisPropertyView.objects.create(
+            analysis=cls.analysis_a,
+            property=cls.property_a,
             cycle=cycle_a,
             property_state=property_state_a
         )
-        self.analysis_property_view_b = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_a,
-            property=self.property_a,
+        cls.analysis_property_view_b = AnalysisPropertyView.objects.create(
+            analysis=cls.analysis_a,
+            property=cls.property_a,
             cycle=cycle_b,
             property_state=property_state_b
         )
 
         # create an analysis with two property views, each with the same cycle but a different property
-        self.analysis_b = Analysis.objects.create(
+        cls.analysis_b = Analysis.objects.create(
             name='test b',
             service=Analysis.BSYNCR,
             status=Analysis.READY,
-            user=self.user,
-            organization=self.org
+            user=cls.user,
+            organization=cls.org
         )
-        self.analysis_property_view_c = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b,
-            property=self.property_a,
+        cls.analysis_property_view_c = AnalysisPropertyView.objects.create(
+            analysis=cls.analysis_b,
+            property=cls.property_a,
             cycle=cycle_a,
             property_state=property_state_c
         )
-        self.analysis_property_view_d = AnalysisPropertyView.objects.create(
-            analysis=self.analysis_b,
+        cls.analysis_property_view_d = AnalysisPropertyView.objects.create(
+            analysis=cls.analysis_b,
             property=property_b,
             cycle=cycle_a,
             property_state=property_state_d
         )
 
         # create an analysis with no property views
-        self.analysis_c = Analysis.objects.create(
+        cls.analysis_c = Analysis.objects.create(
             name='test c',
             service=Analysis.BSYNCR,
             status=Analysis.QUEUED,
-            user=self.user,
-            organization=self.org
+            user=cls.user,
+            organization=cls.org
         )
 
         # create an analysis with a different organization
-        self.analysis_d = Analysis.objects.create(
+        cls.analysis_d = Analysis.objects.create(
             name='test d',
             service=Analysis.BSYNCR,
             status=Analysis.RUNNING,
-            user=self.user,
-            organization=self.org_b
+            user=cls.user,
+            organization=cls.org_b
         )
 
         # create an output file and add to 3 analysis property views
-        self.analysis_output_file_a = AnalysisOutputFile.objects.create(
+        cls.analysis_output_file_a = AnalysisOutputFile.objects.create(
             file=SimpleUploadedFile('test file a', b'test file a contents'),
             content_type=AnalysisOutputFile.BUILDINGSYNC
         )
-        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_a)
-        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_b)
-        self.analysis_output_file_a.analysis_property_views.add(self.analysis_property_view_c)
+        cls.analysis_output_file_a.analysis_property_views.add(cls.analysis_property_view_a)
+        cls.analysis_output_file_a.analysis_property_views.add(cls.analysis_property_view_b)
+        cls.analysis_output_file_a.analysis_property_views.add(cls.analysis_property_view_c)
 
         # create an output file and add to 1 analysis property view
-        self.analysis_output_file_b = AnalysisOutputFile.objects.create(
+        cls.analysis_output_file_b = AnalysisOutputFile.objects.create(
             file=SimpleUploadedFile('test file b', b'test file b contents'),
             content_type=AnalysisOutputFile.BUILDINGSYNC
         )
-        self.analysis_output_file_b.analysis_property_views.add(self.analysis_property_view_a)
+        cls.analysis_output_file_b.analysis_property_views.add(cls.analysis_property_view_a)
 
     def test_list_with_organization(self):
-        response = self.client.get('/api/v3/analyses/?organization_id=' + str(self.org.pk))
+        response = self.seed_client.get('/api/v3/analyses/?organization_id=' + str(self.org.pk))
         self.assertEqual(response.status_code, 200)
         result = json.loads(response.content)
         self.assertEqual(result['status'], 'success')
@@ -150,7 +152,7 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(analysis_c['cycles']), 0)
 
     def test_list_with_property(self):
-        response = self.client.get("".join([
+        response = self.seed_client.get("".join([
             '/api/v3/analyses/?organization_id=',
             str(self.org.pk),
             '&property_id=',
@@ -172,11 +174,11 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(analysis_b['cycles']), 1)
 
     def test_list_organization_missing(self):
-        response = self.client.get('/api/v3/analyses/')
+        response = self.seed_client.get('/api/v3/analyses/')
         self.assertEqual(response.status_code, 400)
 
     def test_retrieve_with_organization(self):
-        response = self.client.get("".join([
+        response = self.seed_client.get("".join([
             '/api/v3/analyses/',
             str(self.analysis_a.pk),
             '/?organization_id=',
@@ -190,11 +192,11 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(result['analysis']['cycles']), 2)
 
     def test_retrieve_organization_missing(self):
-        response = self.client.get('/api/v3/analyses/' + str(self.analysis_a.pk) + '/')
+        response = self.seed_client.get('/api/v3/analyses/' + str(self.analysis_a.pk) + '/')
         self.assertEqual(response.status_code, 400)
 
     def test_list_views(self):
-        response = self.client.get("".join([
+        response = self.seed_client.get("".join([
             '/api/v3/analyses/',
             str(self.analysis_a.pk),
             '/views/?organization_id=',
@@ -214,7 +216,7 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(view_b['output_files']), 1)
 
     def test_retrieve_view_with_output_file(self):
-        response = self.client.get("".join([
+        response = self.seed_client.get("".join([
             '/api/v3/analyses/',
             str(self.analysis_b.pk),
             '/views/',
@@ -229,7 +231,7 @@ class TestAnalysesView(TestCase):
         self.assertEqual(len(result['view']['output_files']), 1)
 
     def test_retrieve_view_with_no_output_file(self):
-        response = self.client.get("".join([
+        response = self.seed_client.get("".join([
             '/api/v3/analyses/',
             str(self.analysis_b.pk),
             '/views/',

@@ -18,7 +18,9 @@ from seed.utils.organizations import create_organization
 
 
 class TestAnalysisPropertyViews(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUp(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -26,15 +28,15 @@ class TestAnalysisPropertyViews(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org_a, _, _ = create_organization(self.user)
-        self.org_b, _, _ = create_organization(self.user)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org_a, _, _ = create_organization(cls.user)
+        cls.org_b, _, _ = create_organization(cls.user)
 
-        cycle_a = FakeCycleFactory(organization=self.org_a, user=self.user).get_cycle(name="Cycle Org A")
-        cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
+        cycle_a = FakeCycleFactory(organization=cls.org_a, user=cls.user).get_cycle(name="Cycle Org A")
+        cycle_b = FakeCycleFactory(organization=cls.org_b, user=cls.user).get_cycle(name="Cycle Org B")
 
-        self.analysis_a = (
-            FakeAnalysisFactory(organization=self.org_a, user=self.user)
+        cls.analysis_a = (
+            FakeAnalysisFactory(organization=cls.org_a, user=cls.user)
             .get_analysis(
                 name='Quite neat',
                 service=Analysis.BSYNCR,
@@ -42,8 +44,8 @@ class TestAnalysisPropertyViews(TestCase):
             )
         )
 
-        view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)
-        self.property_views_a = [
+        view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=cls.org_a, user=cls.user)
+        cls.property_views_a = [
             view_factory_a.get_property_view(
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
@@ -57,8 +59,8 @@ class TestAnalysisPropertyViews(TestCase):
             )
             for i in range(2)]
 
-        view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=self.org_b, user=self.user)
-        self.property_views_b = [
+        view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=cls.org_b, user=cls.user)
+        cls.property_views_b = [
             view_factory_b.get_property_view(
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(

@@ -19,7 +19,9 @@ from seed.utils.organizations import create_organization
 
 
 class TestAnalysisMessage(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -27,15 +29,15 @@ class TestAnalysisMessage(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user)
-        self.analysis = (
-            FakeAnalysisFactory(organization=self.org, user=self.user)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user)
+        cls.analysis = (
+            FakeAnalysisFactory(organization=cls.org, user=cls.user)
             .get_analysis()
         )
-        self.analysis_property_view = (
-            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user)
-            .get_analysis_property_view(analysis=self.analysis)
+        cls.analysis_property_view = (
+            FakeAnalysisPropertyViewFactory(organization=cls.org, user=cls.user)
+            .get_analysis_property_view(analysis=cls.analysis)
         )
 
     def test_log_and_create_logs_messages_and_creates_analysis_message(self):

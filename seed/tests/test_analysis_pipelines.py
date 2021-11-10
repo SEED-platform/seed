@@ -11,7 +11,6 @@ import logging
 from os import path
 
 from seed.analysis_pipelines.utils import SimpleMeterReading
-from unittest.case import skip
 from unittest.mock import patch
 from zipfile import ZipFile
 from lxml import etree
@@ -94,7 +93,9 @@ class MockCeleryTask:
 
 
 class TestAnalysisPipeline(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -102,10 +103,10 @@ class TestAnalysisPipeline(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user)
-        self.analysis = (
-            FakeAnalysisFactory(organization=self.org, user=self.user)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user)
+        cls.analysis = (
+            FakeAnalysisFactory(organization=cls.org, user=cls.user)
             .get_analysis()
         )
 
@@ -467,7 +468,9 @@ class TestAnalysisPipeline(TestCase):
 # override the BSYNCR_SERVER_HOST b/c otherwise the pipeline will not run (doesn't have to be valid b/c we mock requests)
 @override_settings(BSYNCR_SERVER_HOST='bogus.host.com')
 class TestBsyncrPipeline(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -475,18 +478,18 @@ class TestBsyncrPipeline(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user)
 
         property_state = (
-            FakePropertyStateFactory(organization=self.org).get_property_state(
+            FakePropertyStateFactory(organization=cls.org).get_property_state(
                 # fields required for analysis
                 latitude=39.76550841416409,
                 longitude=-104.97855661401148
             )
         )
-        self.analysis_property_view = (
-            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
+        cls.analysis_property_view = (
+            FakeAnalysisPropertyViewFactory(organization=cls.org, user=cls.user).get_analysis_property_view(
                 property_state=property_state,
                 # analysis args
                 name='Quite neat',
@@ -494,15 +497,15 @@ class TestBsyncrPipeline(TestCase):
             )
         )
 
-        self.meter = Meter.objects.create(
-            property=self.analysis_property_view.property,
+        cls.meter = Meter.objects.create(
+            property=cls.analysis_property_view.property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
         )
         tz_obj = pytztimezone(TIME_ZONE)
-        self.meter_reading = MeterReading.objects.create(
-            meter=self.meter,
+        cls.meter_reading = MeterReading.objects.create(
+            meter=cls.meter,
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=tz_obj),
             end_time=make_aware(datetime(2018, 1, 2, 0, 0, 0), timezone=tz_obj),
             reading=12345,
@@ -514,10 +517,10 @@ class TestBsyncrPipeline(TestCase):
         # Setup more properties with linked meters with 12 valid meter readings.
         # These properties, unmodified, should successfully run thorugh the bsyncr pipeline
         #
-        property_view_factory = FakePropertyViewFactory(organization=self.org)
-        self.good_property_views = []
-        self.num_good_property_views = 3
-        for i in range(self.num_good_property_views):
+        property_view_factory = FakePropertyViewFactory(organization=cls.org)
+        cls.good_property_views = []
+        cls.num_good_property_views = 3
+        for i in range(cls.num_good_property_views):
             pv = property_view_factory.get_property_view(
                 # fields required for analysis
                 latitude=39.76550841416409,
@@ -532,10 +535,10 @@ class TestBsyncrPipeline(TestCase):
                     "foot ** 2"
                 ),
             )
-            self.good_property_views.append(pv)
+            cls.good_property_views.append(pv)
 
-        self.analysis_b = (
-            FakeAnalysisFactory(organization=self.org, user=self.user)
+        cls.analysis_b = (
+            FakeAnalysisFactory(organization=cls.org, user=cls.user)
             .get_analysis(
                 name='Good Analysis',
                 service=Analysis.BSYNCR,
@@ -543,11 +546,11 @@ class TestBsyncrPipeline(TestCase):
             )
         )
 
-        self.good_meters = []
-        for i in range(self.num_good_property_views):
-            self.good_meters.append(
+        cls.good_meters = []
+        for i in range(cls.num_good_property_views):
+            cls.good_meters.append(
                 Meter.objects.create(
-                    property=self.good_property_views[i].property,
+                    property=cls.good_property_views[i].property,
                     source=Meter.PORTFOLIO_MANAGER,
                     source_id="Source ID",
                     type=Meter.ELECTRICITY_GRID,
@@ -556,7 +559,7 @@ class TestBsyncrPipeline(TestCase):
             tz_obj = pytztimezone(TIME_ZONE)
             for j in range(1, 13):
                 MeterReading.objects.create(
-                    meter=self.good_meters[i],
+                    meter=cls.good_meters[i],
                     start_time=make_aware(datetime(2019, j, 1, 0, 0, 0), timezone=tz_obj),
                     end_time=make_aware(datetime(2019, j, 28, 0, 0, 0), timezone=tz_obj),
                     reading=12345,
@@ -616,9 +619,6 @@ class TestBsyncrPipeline(TestCase):
 
         return _mock_request
 
-    # Skipping this test b/c of an unexpected error validating BuildingSync files
-    # See here for more info: https://github.com/SEED-platform/seed/pull/2901
-    @skip
     def test_build_bsyncr_input_returns_valid_bsync_document(self):
         # Act
         doc, errors = _build_bsyncr_input(self.analysis_property_view, self.meter)
@@ -851,7 +851,9 @@ class TestBsyncrPipeline(TestCase):
 
 
 class TestBETTERPipeline(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -859,11 +861,11 @@ class TestBETTERPipeline(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user)
 
         property_state = (
-            FakePropertyStateFactory(organization=self.org).get_property_state(
+            FakePropertyStateFactory(organization=cls.org).get_property_state(
                 # fields required for analysis
                 property_name="test",
                 postal_code="1234",
@@ -872,8 +874,8 @@ class TestBETTERPipeline(TestCase):
                 gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"),
             )
         )
-        self.analysis_property_view = (
-            FakeAnalysisPropertyViewFactory(organization=self.org, user=self.user).get_analysis_property_view(
+        cls.analysis_property_view = (
+            FakeAnalysisPropertyViewFactory(organization=cls.org, user=cls.user).get_analysis_property_view(
                 property_state=property_state,
                 # analysis args
                 name='Good Analysis',
@@ -886,15 +888,15 @@ class TestBETTERPipeline(TestCase):
             )
         )
 
-        self.meter_nat = Meter.objects.create(
-            property=self.analysis_property_view.property,
+        cls.meter_nat = Meter.objects.create(
+            property=cls.analysis_property_view.property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.NATURAL_GAS,
         )
 
-        self.meter_elec = Meter.objects.create(
-            property=self.analysis_property_view.property,
+        cls.meter_elec = Meter.objects.create(
+            property=cls.analysis_property_view.property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
@@ -902,7 +904,7 @@ class TestBETTERPipeline(TestCase):
         tz_obj = pytztimezone(TIME_ZONE)
         for j in range(1, 13):
             MeterReading.objects.create(
-                meter=self.meter_nat,
+                meter=cls.meter_nat,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
@@ -911,7 +913,7 @@ class TestBETTERPipeline(TestCase):
             )
 
             MeterReading.objects.create(
-                meter=self.meter_elec,
+                meter=cls.meter_elec,
                 start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=tz_obj),
                 end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=tz_obj),
                 reading=12345,
@@ -961,7 +963,9 @@ class TestBETTERPipeline(TestCase):
 
 
 class TestEuiPipeline(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUp(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -969,25 +973,25 @@ class TestEuiPipeline(TestCase):
             'first_name': 'Test',
             'last_name': 'User',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user)
-        self.cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle()
-        self.test_property = FakePropertyFactory(organization=self.org).get_property()
-        self.property_state = FakePropertyStateFactory(organization=self.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
-        self.property_view = FakePropertyViewFactory(organization=self.org, user=self.user).get_property_view(prprty=self.test_property, cycle=self.cycle, state=self.property_state)
-        self.meter = Meter.objects.create(
-            property=self.test_property,
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user)
+        cls.cycle = FakeCycleFactory(organization=cls.org, user=cls.user).get_cycle()
+        cls.test_property = FakePropertyFactory(organization=cls.org).get_property()
+        cls.property_state = FakePropertyStateFactory(organization=cls.org).get_property_state(gross_floor_area=ureg.Quantity(float(10000), "foot ** 2"))
+        cls.property_view = FakePropertyViewFactory(organization=cls.org, user=cls.user).get_property_view(prprty=cls.test_property, cycle=cls.cycle, state=cls.property_state)
+        cls.meter = Meter.objects.create(
+            property=cls.test_property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID
         )
-        self.invalid_meter = Meter.objects.create(
-            property=self.test_property,
+        cls.invalid_meter = Meter.objects.create(
+            property=cls.test_property,
             source=Meter.PORTFOLIO_MANAGER,
             source_id="Source ID",
             type=Meter.NATURAL_GAS
         )
-        self.timezone_object = pytztimezone(TIME_ZONE)
+        cls.timezone_object = pytztimezone(TIME_ZONE)
 
     def test_invalid_property_state(self):
         self.property_state.gross_floor_area = None

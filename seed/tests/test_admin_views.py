@@ -9,6 +9,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.test.client import Client
 from django.urls import reverse_lazy, reverse
 from django.test import TestCase
 from django.utils.encoding import force_bytes
@@ -23,31 +24,35 @@ User = get_user_model()
 
 class AdminViewsTest(TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         admin_user_details = {'username': 'admin@testserver',
                               'email': 'admin@testserver',
                               'password': 'admin_passS1'}
-        self.admin_user = User.objects.create_superuser(**admin_user_details)
-        self.client.login(**admin_user_details)
+        cls.admin_user = User.objects.create_superuser(**admin_user_details)
+        cls.seed_client = Client()
+        cls.seed_client.login(**admin_user_details)
 
         user_details = {'username': 'testuser@testserver',
                         'email': 'testuser@testserver',
                         'password': 'user_passS1'}
-        self.user = User.objects.create_user(**user_details)
+        cls.user = User.objects.create_user(**user_details)
 
         # for some reason we can't reverse api:v3:organizations-create
         # so we use -list b/c it's the same url but with different HTTP method
-        self.add_org_url = reverse_lazy('api:v3:organizations-list')
-        self.add_user_url = reverse_lazy('api:v3:user-list')
+        cls.add_org_url = reverse_lazy('api:v3:organizations-list')
+        cls.add_user_url = reverse_lazy('api:v3:user-list')
 
     def _post_json(self, url, data):
         """
         Handles posting a python object as json to a given url.
         """
         data_json = json.dumps(data)
-        res = self.client.post(url,
-                               data_json,
-                               content_type='application/json')
+        res = self.seed_client.post(
+            url,
+            data_json,
+            content_type='application/json'
+        )
         res.body = json.loads(res.content)
         return res
 
@@ -165,7 +170,7 @@ class AdminViewsTest(TestCase):
                 'email': 'new_user@testserver',
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
-        self.client.logout()  # stop being the admin user
+        self.seed_client.logout()  # stop being the admin user
         self.assertEqual(res.body['status'], 'success')  # to help debug fails
 
         user = User.objects.get(email=data['email'])
@@ -187,7 +192,7 @@ class AdminViewsTest(TestCase):
         self.assertTrue(data['email'] in msg.to)
 
         # actually go to that url to make sure it works
-        res = self.client.get(signup_url)
+        res = self.seed_client.get(signup_url)
         self.assertEqual(res.status_code, 302)
 
         # post the new password
@@ -198,7 +203,7 @@ class AdminViewsTest(TestCase):
             'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": 'set-password'
         })
-        res = self.client.post(set_password_url, data=password_post)
+        res = self.seed_client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)
@@ -215,7 +220,7 @@ class AdminViewsTest(TestCase):
                 'email': 'New_Lower_User@testserver.com',
                 'org_name': 'New Org'}
         res = self._post_json(self.add_user_url, data)
-        self.client.logout()  # stop being the admin user
+        self.seed_client.logout()  # stop being the admin user
         self.assertEqual(res.body['status'], 'success')  # to help debug fails
 
         user = User.objects.get(email=data['email'])
@@ -237,7 +242,7 @@ class AdminViewsTest(TestCase):
         self.assertTrue(data['email'] in msg.to)
 
         # Follow link to be redirected to new password page
-        res = self.client.get(signup_url, data)
+        res = self.seed_client.get(signup_url, data)
         self.assertEqual(res.status_code, 302)
 
         # post the new password
@@ -248,7 +253,7 @@ class AdminViewsTest(TestCase):
             'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": 'set-password'
         })
-        res = self.client.post(set_password_url, data=password_post)
+        res = self.seed_client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)
@@ -258,7 +263,7 @@ class AdminViewsTest(TestCase):
         self.assertEqual(user.username, data['email'].lower())
 
         # test that login works
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse('landing:login'),
             {'email': data['email'], 'password': 'newpassS3'}
         )

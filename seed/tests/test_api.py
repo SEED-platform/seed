@@ -50,7 +50,9 @@ class SchemaGenerationTests(TestCase):
 
 
 class TestApi(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUp(cls):
         user_details = {
             'username': 'test_user@demo.com',  # the username needs to be in the form of an email.
             'password': 'test_pass',
@@ -58,21 +60,21 @@ class TestApi(TestCase):
             'first_name': 'Jaqen',
             'last_name': 'H\'ghar'
         }
-        self.user = User.objects.create_user(**user_details)
-        self.user.generate_key()
-        self.org, _, _ = create_organization(self.user)
-        self.default_cycle = Cycle.objects.filter(organization_id=self.org).first()
-        self.cycle, _ = Cycle.objects.get_or_create(
+        cls.user = User.objects.create_user(**user_details)
+        cls.user.generate_key()
+        cls.org, _, _ = create_organization(cls.user)
+        cls.default_cycle = Cycle.objects.filter(organization_id=cls.org).first()
+        cls.cycle, _ = Cycle.objects.get_or_create(
             name='Test Hack Cycle 2015',
-            organization=self.org,
+            organization=cls.org,
             start=datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             end=datetime.datetime(2015, 12, 31, tzinfo=timezone.get_current_timezone()),
         )
         auth_string = base64.urlsafe_b64encode(bytes(
-            '{}:{}'.format(self.user.username, self.user.api_key), 'utf-8'
+            '{}:{}'.format(cls.user.username, cls.user.api_key), 'utf-8'
         ))
-        self.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
-        self.headers = {'Authorization': self.auth_string}
+        cls.auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
+        cls.headers = {'Authorization': cls.auth_string}
 
     def get_org_id(self, dict, username):
         """Return the org id from the passed dictionary and username"""

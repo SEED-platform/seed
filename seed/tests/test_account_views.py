@@ -6,6 +6,7 @@
 """
 import json
 from datetime import date
+from django.test.client import Client
 
 from django.urls import reverse_lazy, NoReverseMatch
 from django.test import TestCase
@@ -35,7 +36,8 @@ class AccountsViewTests(TestCase):
     Tests of the SEED accounts
     """
 
-    def setUp(self):
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -43,15 +45,16 @@ class AccountsViewTests(TestCase):
             'first_name': 'Johnny',
             'last_name': 'Energy',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user, "my org")
-        self.cycle = Cycle.objects.filter(organization=self.org).first()
-        self.client.login(**user_details)
-        self.fake_request = FakeRequest(user=self.user)
-        self.maxDiff = None
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user, "my org")
+        cls.cycle = Cycle.objects.filter(organization=cls.org).first()
+        cls.seed_client = Client()
+        cls.seed_client.login(**user_details)
+        cls.fake_request = FakeRequest(user=cls.user)
+        cls.maxDiff = None
 
         year = date.today().year - 1
-        self.cal_year_name = "{} Calendar Year".format(year)
+        cls.cal_year_name = "{} Calendar Year".format(year)
 
     def test_dict_org(self):
         """_dict_org turns our org structure into a json payload."""
@@ -188,7 +191,7 @@ class AccountsViewTests(TestCase):
 
     def test_get_organizations(self):
         """ tests accounts.get_organizations """
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:organizations-list'),
             content_type='application/json',
         )
@@ -210,14 +213,14 @@ class AccountsViewTests(TestCase):
     def test_get_organization_no_org(self):
         """test for error when no organization_id sent"""
         with self.assertRaises(NoReverseMatch):
-            self.client.get(
+            self.seed_client.get(
                 reverse_lazy('api:v3:organizations-detail'),
                 content_type='application/json',
             )
 
     def test_get_organization_std_case(self):
         """test normal case"""
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:organizations-detail', args=[self.org.id]),
             content_type='application/json',
         )
@@ -244,7 +247,7 @@ class AccountsViewTests(TestCase):
         )
         other_org, _, _ = create_organization(other_user, "not my org")
 
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:organizations-detail', args=[other_org.id]),
             content_type='application/json',
         )
@@ -257,7 +260,7 @@ class AccountsViewTests(TestCase):
 
     def test_get_organization_org_doesnt_exist(self):
         """test for the case where a user does not have access"""
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:organizations-detail', args=[self.org.id + 100]),
             content_type='application/json',
         )
@@ -274,7 +277,7 @@ class AccountsViewTests(TestCase):
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
-        resp = self.client.delete(
+        resp = self.seed_client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, u.id]),
         )
         self.assertDictEqual(
@@ -287,7 +290,7 @@ class AccountsViewTests(TestCase):
         """test removing a user"""
         self.assertEqual(self.org.users.count(), 1)
 
-        resp = self.client.delete(
+        resp = self.seed_client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, self.user.id]),
         )
         self.assertDictEqual(
@@ -303,7 +306,7 @@ class AccountsViewTests(TestCase):
         self.org.add_member(u, role=ROLE_MEMBER)
         self.assertEqual(self.org.users.count(), 2)
 
-        resp = self.client.delete(
+        resp = self.seed_client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, self.user.id]),
         )
         self.assertDictEqual(
@@ -318,7 +321,7 @@ class AccountsViewTests(TestCase):
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
-        resp = self.client.delete(
+        resp = self.seed_client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[self.org.id, 9999]),
         )
         self.assertDictEqual(
@@ -333,7 +336,7 @@ class AccountsViewTests(TestCase):
         u = User.objects.create(username='b@b.com', email='b@be.com')
         self.org.add_member(u)
 
-        resp = self.client.delete(
+        resp = self.seed_client.delete(
             reverse_lazy('api:v3:organization-users-remove', args=[9999, u.id]),
         )
         self.assertDictEqual(
@@ -361,7 +364,7 @@ class AccountsViewTests(TestCase):
             user_id=u.id, organization_id=self.org.id)
         self.assertEqual(ou.role_level, ROLE_VIEWER)
 
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy("api:v3:user-role", args=[u.id]) + '?organization_id=' + str(
                 self.org.id),
             data=json.dumps(
@@ -389,7 +392,7 @@ class AccountsViewTests(TestCase):
             user_id=self.user.id, organization_id=self.org.id)
         self.assertEqual(ou.role_level, ROLE_OWNER)
 
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy("api:v3:user-role",
                          args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
@@ -417,7 +420,7 @@ class AccountsViewTests(TestCase):
             user_id=self.user.id, organization_id=self.org.id)
         self.assertEqual(ou.role_level, ROLE_OWNER)
 
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy("api:v3:user-role",
                          args=[self.user.id]) + '?organization_id=' + str(self.org.id),
             data=json.dumps(
@@ -449,7 +452,7 @@ class AccountsViewTests(TestCase):
         post_data = {'organization_id': self.org.id,
                      'role': 'owner'}
         try:
-            self.client.put(
+            self.seed_client.put(
                 url,
                 data=json.dumps(post_data),
                 content_type='application/json'
@@ -466,7 +469,7 @@ class AccountsViewTests(TestCase):
         """ A malformed request should return error-containing json. """
         url = reverse_lazy('api:v3:organizations-save-settings', args=[self.org.id])
 
-        res = self.client.put(
+        res = self.seed_client.put(
             url,
             data={},
             content_type='application/json'
@@ -484,7 +487,7 @@ class AccountsViewTests(TestCase):
             }
         }
 
-        self.client.put(
+        self.seed_client.put(
             url,
             data=json.dumps(post_data),
             content_type='application/json'
@@ -495,7 +498,7 @@ class AccountsViewTests(TestCase):
 
     def test_get_shared_fields_none(self):
         url = reverse_lazy('api:v3:organizations-shared-fields', args=[self.org.pk])
-        res = self.client.get(url)
+        res = self.seed_client.get(url)
         response = json.loads(res.content)
         self.assertEqual(response, {'status': 'success', 'public_fields': []})
 
@@ -540,7 +543,7 @@ class AccountsViewTests(TestCase):
             }
         }
 
-        self.client.put(url, json.dumps(payload), content_type='application/json')
+        self.seed_client.put(url, json.dumps(payload), content_type='application/json')
 
         fields = Column.objects.filter(organization=self.org, shared_field_type=Column.SHARED_PUBLIC).values_list(
             'table_name', 'column_name')
@@ -558,7 +561,7 @@ class AccountsViewTests(TestCase):
     #         'category': CATEGORY_MISSING_MATCHING_FIELD,
     #         'severity': 0,
     #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     response = self.seed_client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
     #     self.assertEqual('success', json.loads(response.content)['status'])
     #
     # def test_get_data_quality_rules_values(self):
@@ -569,7 +572,7 @@ class AccountsViewTests(TestCase):
     #         'category': CATEGORY_MISSING_VALUES,
     #         'severity': 0,
     #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     response = self.seed_client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
     #     self.assertEqual('success', json.loads(response.content)['status'])
     #
     # def test_get_data_quality_rules_range(self):
@@ -579,7 +582,7 @@ class AccountsViewTests(TestCase):
     #         'field': 'address_line_1',
     #         'severity': 0,
     #     })
-    #     response = self.client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
+    #     response = self.seed_client.get(reverse_lazy('api:v2:organizations-data-quality-rules', args=[self.org.pk]))
     #     self.assertEqual('success', json.loads(response.content)['status'])
     #
     # def test_save_data_quality_rules(self):
@@ -615,7 +618,7 @@ class AccountsViewTests(TestCase):
     #         }
     #     }
     #
-    #     resp = self.client.put(
+    #     resp = self.seed_client.put(
     #         reverse_lazy('api:v2:organizations-save-data-quality-rules', args=[self.org.pk]),
     #         data=json.dumps(payload),
     #         content_type='application/json',
@@ -629,7 +632,7 @@ class AccountsViewTests(TestCase):
             'last_name': 'd',
             'email': 'some@hgg.com'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-detail', args=[self.user.pk]),
             json.dumps(user_data),
             content_type='application/json',
@@ -647,7 +650,7 @@ class AccountsViewTests(TestCase):
 
     def test_get_user_profile(self):
         """test for get_user_profile"""
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:user-detail', args=[self.user.pk]),
             content_type='application/json',
         )
@@ -661,11 +664,11 @@ class AccountsViewTests(TestCase):
                 'last_name': 'Energy'
 
             })
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy('api:v3:user-generate-api-key', args=[self.user.pk]),
             content_type='application/json',
         )
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:user-detail', args=[self.user.pk]),
             content_type='application/json',
         )
@@ -683,7 +686,7 @@ class AccountsViewTests(TestCase):
         """test for generate_api_key
             will pick up user.api_key when it's ready
         """
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy('api:v3:user-generate-api-key', args=[self.user.pk]),
             content_type='application/json',
         )
@@ -704,7 +707,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'new passwordD3',
             'password_2': 'new passwordD3'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -725,7 +728,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'new password',
             'password_2': 'new password'
         }
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -740,7 +743,7 @@ class AccountsViewTests(TestCase):
                 'detail': 'Method \"POST\" not allowed.',
             })
 
-        resp = self.client.get(
+        resp = self.seed_client.get(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             password_payload,
             content_type='application/json',
@@ -763,7 +766,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'new password',
             'password_2': 'new password'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -782,7 +785,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'new password',
             'password_2': 'non matching password'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -804,7 +807,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'new1234',
             'password_2': 'new1234'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -824,7 +827,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'newnewnew',
             'password_2': 'newnewnew'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -846,7 +849,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'NEWNEWNEW',
             'password_2': 'NEWNEWNEW'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -868,7 +871,7 @@ class AccountsViewTests(TestCase):
             'password_1': 'nNEWNEWNEW',
             'password_2': 'nNEWNEWNEW'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -889,7 +892,7 @@ class AccountsViewTests(TestCase):
             'password_1': '12345678',
             'password_2': '12345678'
         }
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-set-password', args=[self.user.pk]),
             json.dumps(password_payload),
             content_type='application/json',
@@ -909,7 +912,7 @@ class AccountsViewTests(TestCase):
             'sub_org_name': 'test',
             'sub_org_owner_email': self.user.email
         }
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy('api:v3:organizations-sub-org', args=[self.org.pk]),
             data=json.dumps(payload),
             content_type='application/json',
@@ -919,7 +922,9 @@ class AccountsViewTests(TestCase):
 
 
 class AuthViewTests(TestCase):
-    def setUp(self):
+
+    @classmethod
+    def setUpTestData(cls):
         user_details = {
             'username': 'test_user@demo.com',
             'password': 'test_pass',
@@ -927,14 +932,15 @@ class AuthViewTests(TestCase):
             'first_name': 'Johnny',
             'last_name': 'Energy',
         }
-        self.user = User.objects.create_user(**user_details)
-        self.org, _, _ = create_organization(self.user, "my org")
-        self.client.login(**user_details)
+        cls.user = User.objects.create_user(**user_details)
+        cls.org, _, _ = create_organization(cls.user, "my org")
+        cls.seed_client = Client()
+        cls.seed_client.login(**user_details)
 
     def test_is_authorized_base(self):
-        resp = self.client.get(reverse_lazy('api:v3:user-current'))
+        resp = self.seed_client.get(reverse_lazy('api:v3:user-current'))
         pk = json.loads(resp.content)['pk']
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy("api:v3:user-is-authorized", args=[pk]) + '?organization_id=' + str(
                 self.org.id),
             data=json.dumps({
@@ -960,7 +966,7 @@ class AuthViewTests(TestCase):
         other_org, _, _ = create_organization(other_user, "not my org")
         other_org.parent_org = self.org
         other_org.save()
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy('api:v3:user-is-authorized',
                          args=[self.user.id]) + '?organization_id=' + str(other_org.id),
             data=json.dumps({
@@ -984,7 +990,7 @@ class AuthViewTests(TestCase):
             email='tester@be.com',
         )
         other_org, _, _ = create_organization(other_user, "not my org")
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy("api:v3:user-is-authorized",
                          args=[self.user.pk]) + '?organization_id=' + str(other_org.id),
             data=json.dumps({
@@ -1001,7 +1007,7 @@ class AuthViewTests(TestCase):
 
     def test_is_authorized_org_DNE(self):
         """DNE == does not exist"""
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy("api:v3:user-is-authorized",
                          args=[self.user.pk]) + '?organization_id=' + '9999999',
             data=json.dumps({
@@ -1018,7 +1024,7 @@ class AuthViewTests(TestCase):
 
     def test_is_authorized_actions_DNE(self):
         """DNE == does not exist"""
-        resp = self.client.post(
+        resp = self.seed_client.post(
             reverse_lazy("api:v3:user-is-authorized",
                          args=[self.user.pk]) + '?organization_id=' + str(self.org.id),
             data=json.dumps({
@@ -1035,7 +1041,7 @@ class AuthViewTests(TestCase):
 
     def test_set_default_organization(self):
         """test seed.views.accounts.set_default_organization"""
-        resp = self.client.put(
+        resp = self.seed_client.put(
             reverse_lazy('api:v3:user-default-organization',
                          args=[self.user.id]) + f'?organization_id={self.org.pk}',
             content_type='application/json',
