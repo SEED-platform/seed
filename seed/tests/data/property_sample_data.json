@@ -188,6 +188,29 @@
     "Note": "Residential"
   }
 }, {
+  "jurisdiction_property_id": 123481,
+  "pm_parent_property_id": "5766981",
+  "pm_property_id": "5766981",
+  "property_type": "Office",
+  "property_name": "Campus Building 2",
+  "lot_number": "H-12351",
+  "address_line_1": "12535 S Campus Way",
+  "city": "Boring",
+  "state": "Oregon",
+  "postal_code": 80401,
+  "year_built": 1975,
+  "latitude": 45.4441146,
+  "longitude": -122.383320,
+  "site_eui": 82.3,
+  "gross_floor_area": 296432,
+  "owner": "Campus",
+  "owner_email": "campus2@gmail.com",
+  "owner_telephone": "555-555-5560",
+  "owner_address": "44166 S Campus Ave",
+  "owner_city_state": "Colorado",
+  "owner_postal_code": 80202,
+  "organization_id": -1
+}, {
   "jurisdiction_property_id": 123465,
   "pm_parent_property_id": "5766979",
   "pm_property_id": "5766979",
