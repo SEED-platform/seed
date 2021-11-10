@@ -54,15 +54,6 @@
     "schema": ""
   },
   {
-    "display_name": "Block Number",
-    "to_field": "block_number",
-    "to_table_name": "PropertyState",
-    "from_field": "Block Number",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "Building Certification",
     "to_field": "building_certification",
     "to_table_name": "PropertyState",
@@ -78,24 +69,6 @@
     "from_field": "Number of Buildings",
     "units": "",
     "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Campus",
-    "to_field": "campus",
-    "to_table_name": "PropertyState",
-    "from_field": "campus",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Campus",
-    "to_field": "campus",
-    "to_table_name": "PropertyState",
-    "from_field": "Campus",
-    "units": "",
-    "type": "boolean",
     "schema": ""
   },
   {
@@ -129,7 +102,7 @@
     "display_name": "Created",
     "to_field": "created",
     "to_table_name": "PropertyState",
-    "from_field": "created",
+    "from_field": "Created",
     "units": "",
     "type": "datetime",
     "schema": ""
@@ -139,15 +112,6 @@
     "to_field": "custom_id_1",
     "to_table_name": "PropertyState",
     "from_field": "Custom Property ID 1 - ID",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "District",
-    "to_field": "district",
-    "to_table_name": "PropertyState",
-    "from_field": "District",
     "units": "",
     "type": "string",
     "schema": ""
@@ -207,12 +171,21 @@
     "schema": ""
   },
   {
-    "display_name": "Generation Date",
+    "display_name": "PM Generation Date",
     "to_field": "generation_date",
     "to_table_name": "PropertyState",
     "from_field": "Generation Date",
     "units": "",
-    "type": "date",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "PM Generation Date",
+    "to_field": "generation_date",
+    "to_table_name": "PropertyState",
+    "from_field": "PM Generation Date",
+    "units": "",
+    "type": "string",
     "schema": ""
   },
   {
@@ -240,15 +213,6 @@
     "from_field": "Property Floor Area (Buildings) (ft2)",
     "units": "ft**2",
     "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Geocoding Confidence",
-    "to_field": "geocoding_confidence",
-    "to_table_name": "PropertyState",
-    "from_field": "Geocoding Confidence",
-    "units": "",
-    "type": "string",
     "schema": ""
   },
   {
@@ -414,7 +378,7 @@
     "schema": "bedes"
   },
   {
-    "display_name": "Owner City/Staet",
+    "display_name": "Owner City/State",
     "to_field": "owner_city_state",
     "to_table_name": "PropertyState",
     "from_field": "Owner City/State",
@@ -490,15 +454,6 @@
     "to_field": "pm_parent_property_id",
     "to_table_name": "PropertyState",
     "from_field": "Parent Property ID",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Parent Property Name",
-    "to_field": "parent_property_name",
-    "to_table_name": "PropertyState",
-    "from_field": "Parent Property Name",
     "units": "",
     "type": "string",
     "schema": ""
@@ -762,15 +717,6 @@
     "from_field": "Total GHG Emissions (MtCO2e)",
     "units": "MtCO2e",
     "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Updated",
-    "to_field": "updated",
-    "to_table_name": "PropertyState",
-    "from_field": "Updated",
-    "units": "",
-    "type": "string",
     "schema": ""
   },
   {
