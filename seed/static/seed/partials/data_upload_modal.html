@@ -149,8 +149,9 @@
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
-            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
-                There were errors and/or warnings for the file(s) uploaded.
+            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
+                <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
+                <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
             </div>
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
@@ -297,9 +298,10 @@
                     </div>
                 </ul>
             </div>
-            <div class="alert alert-{$ step_10_style $}">
+            <div class="alert alert-{$ step_10_style $}" style="display:flex;align-items:baseline;">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-show="step_10_file_message">{$ step_10_file_message $}</span>
+                <span ng-show="step_10_file_message" style="flex-grow:1">{$ step_10_file_message $}</span>
+                <button ng-show="step_10_file_message" type="button" class="btn btn-primary" ng-click="export_issues(match_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                 <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="col-sm-12">
@@ -322,7 +324,10 @@
                 <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                 <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
                 <span ng-if="step_12_buildingsync_validation_error">
-                    <div class="alert alert-danger">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
+                    <div class="alert alert-danger" style="display:flex;align-items:baseline;">
+                        <div style="flex-grow:1">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).
+                        <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                    </div>
                     <div ng-repeat="issues in buildingsync_issues">
                         <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
                     </div>

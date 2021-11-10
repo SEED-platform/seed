@@ -734,6 +734,29 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         });
       };
 
+      $scope.export_issues = function (issues) {
+        let data = ['File Name,Severity,Message'];
+        let allowed_severities = {
+          'warnings': 'Warning',
+          'use_case_warnings': 'Use Case Warning',
+          'errors': 'Error',
+          'use_case_errors': 'Use Case Error',
+          'schema_errors': 'Schema Error'
+        }
+        for (i in issues) {
+          for (severity in allowed_severities) {
+              for (issue in issues[i][severity]) {
+                data.push([
+                  '"' + issues[i].file + '"',
+                  allowed_severities[severity],
+                  '"' + issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ') + '"'
+                ].join(','));
+              }
+          }
+        }
+        saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'import_issues.csv');
+      };
+
       /**
        * init: ran upon the controller load
        */
