@@ -790,6 +790,7 @@ class FakeAnalysisFactory(BaseFake):
     """
     Factory Class for producing Analysis instances.
     """
+
     def __init__(self, organization=None, user=None):
         super().__init__()
         self.organization = organization
@@ -814,6 +815,7 @@ class FakeAnalysisPropertyViewFactory(BaseFake):
     """
     Factory Class for producing AnalysisPropertyView instances.
     """
+
     def __init__(self, organization=None, user=None, analysis=None):
         super().__init__()
         self.organization = organization

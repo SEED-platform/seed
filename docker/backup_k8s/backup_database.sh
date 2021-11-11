@@ -93,7 +93,7 @@ do
     send_slack_notification "[ERROR-$ENVIRONMENT]-PostgreSQL-backup-file-was-empty"
   else
     aws s3 cp $file $S3_BUCKET/$RUN_DATE/
-    send_slack_notification "[$ENVIRONMENT]-PostgreSQL-uploaded-to-s3"
+    send_slack_notification "[$ENVIRONMENT]-PostgreSQL-uploaded-to-s3://$S3_BUCKET/$RUN_DATE/$file"
   fi
 done
 
@@ -106,7 +106,7 @@ do
     send_slack_notification "[ERROR-$ENVIRONMENT]-Mediadata-backup-file-was-empty"
   else
     aws s3 cp $file $S3_BUCKET/$RUN_DATE/
-    send_slack_notification "[$ENVIRONMENT]-Mediadata-uploaded-to-s3"
+    send_slack_notification "[$ENVIRONMENT]-Mediadata-uploaded-to-s3://$S3_BUCKET/$RUN_DATE/$file"
   fi
 done
 
