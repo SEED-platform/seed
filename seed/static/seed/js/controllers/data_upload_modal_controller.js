@@ -518,6 +518,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           var result = JSON.parse(progress_data.message);
           $scope.buildingsync_valid = result.valid;
           $scope.buildingsync_issues = result.issues;
+          for (file in $scope.buildingsync_issues) {
+            let schema_errors = [];
+            for (i in $scope.buildingsync_issues[file].schema_errors) {
+              let error = $scope.buildingsync_issues[file].schema_errors[i];
+              schema_errors.push([error.message, error.path].join(' - '));
+             }
+             $scope.buildingsync_issues[file].schema_errors = schema_errors;
+          }
 
           // if validation failed, end the import flow here; otherwise continue
           if ($scope.buildingsync_valid !== true) {
