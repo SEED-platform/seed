@@ -90,15 +90,6 @@
     "schema": ""
   },
   {
-    "display_name": "Conditioned Floor Area",
-    "to_field": "conditioned_floor_area",
-    "to_table_name": "PropertyState",
-    "from_field": "Conditioned Floor Area",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "Custom ID 1",
     "to_field": "custom_id_1",
     "to_table_name": "PropertyState",
@@ -108,28 +99,10 @@
     "schema": ""
   },
   {
-    "display_name": "UBID",
-    "to_field": "ubid",
-    "to_table_name": "PropertyState",
-    "from_field": "UBID",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "eGrid Subregion Code",
     "to_field": "egrid_subregion_code",
     "to_table_name": "PropertyState",
-    "from_field": "eGrid Subregion Code",
-    "units": "",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Energy Alerts",
-    "to_field": "energy_alerts",
-    "to_table_name": "PropertyState",
-    "from_field": "Energy Alerts",
+    "from_field": "eGrid Subregion",
     "units": "",
     "type": "float",
     "schema": ""
@@ -162,24 +135,6 @@
     "schema": ""
   },
   {
-    "display_name": "PM Generation Date",
-    "to_field": "generation_date",
-    "to_table_name": "PropertyState",
-    "from_field": "Generation Date",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "PM Generation Date",
-    "to_field": "generation_date",
-    "to_table_name": "PropertyState",
-    "from_field": "PM Generation Date",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "Gross Floor Area",
     "to_field": "gross_floor_area",
     "to_table_name": "PropertyState",
@@ -207,55 +162,10 @@
     "schema": ""
   },
   {
-    "display_name": "Home Energy Score ID",
-    "to_field": "home_energy_score_id",
+    "display_name": "National Median ENERGY STAR Score",
+    "to_field": "national_median_energy_star_score",
     "to_table_name": "PropertyState",
-    "from_field": "Home Energy Score ID",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Jurisdiction Property Lot ID",
-    "to_field": "jurisdiction_property_lot_id",
-    "to_table_name": "PropertyState",
-    "from_field": "Jurisdiction Property Lot ID",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Latitude",
-    "to_field": "latitude",
-    "to_table_name": "PropertyState",
-    "from_field": "Latitude",
-    "units": "",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Latitude",
-    "to_field": "latitude",
-    "to_table_name": "PropertyState",
-    "from_field": "latitude",
-    "units": "",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Longitude",
-    "to_field": "longitude",
-    "to_table_name": "PropertyState",
-    "from_field": "longitude",
-    "units": "",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Longitude",
-    "to_field": "longitude",
-    "to_table_name": "PropertyState",
-    "from_field": "Longitude",
+    "from_field": "National Median ENERGY STAR Score",
     "units": "",
     "type": "float",
     "schema": ""
@@ -273,8 +183,26 @@
     "display_name": "National Median Site Energy Use",
     "to_field": "national_median_site_energy_use",
     "to_table_name": "PropertyState",
+    "from_field": "National Median Site Energy Use (kBtu)",
+    "units": "kBtu",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "National Median Site Energy Use",
+    "to_field": "national_median_site_energy_use",
+    "to_table_name": "PropertyState",
     "from_field": "medianSiteTotal",
     "units": "kBtu",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "National Median Site EUI",
+    "to_field": "national_median_site_eui",
+    "to_table_name": "PropertyState",
+    "from_field": "National Median Site EUI (kBtu/ft²)",
+    "units": "kBtu/ft2",
     "type": "float",
     "schema": ""
   },
@@ -300,7 +228,7 @@
     "display_name": "National Median Source Energy Use",
     "to_field": "national_median_source_energy_use",
     "to_table_name": "PropertyState",
-    "from_field": "medianSourceTotal",
+    "from_field": "National Median Source Energy Use (kBtu)",
     "units": "kBtu",
     "type": "float",
     "schema": ""
@@ -324,6 +252,15 @@
     "schema": ""
   },
   {
+    "display_name": "National Median Source EUI",
+    "to_field": "national_median_source_eui",
+    "to_table_name": "PropertyState",
+    "from_field": "National Median Source EUI (kBtu/ft²)",
+    "units": "kBtu/ft2",
+    "type": "float",
+    "schema": ""
+  },
+  {
     "display_name": "National Median Total GHG Emissions",
     "to_field": "national_median_total_ghg_emissions",
     "to_table_name": "PropertyState",
@@ -333,12 +270,12 @@
     "schema": ""
   },
   {
-    "display_name": "Occupied Floor Area",
-    "to_field": "occupied_floor_area",
+    "display_name": "National Median Total GHG Emissions",
+    "to_field": "national_median_total_ghg_emissions",
     "to_table_name": "PropertyState",
-    "from_field": "Occupied Floor Area",
-    "units": "",
-    "type": "string",
+    "from_field": "National Median Total GHG Emissions (Metric Tons CO2e)",
+    "units": "Metric Tons CO2e",
+    "type": "float",
     "schema": ""
   },
   {
@@ -346,60 +283,6 @@
     "to_field": "organization",
     "to_table_name": "PropertyState",
     "from_field": "Organization",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Owner",
-    "to_field": "owner",
-    "to_table_name": "PropertyState",
-    "from_field": "Owner",
-    "units": "",
-    "type": "string",
-    "schema": "bedes"
-  },
-  {
-    "display_name": "Owner Address",
-    "to_field": "owner_address",
-    "to_table_name": "PropertyState",
-    "from_field": "Owner Address",
-    "units": "",
-    "type": "string",
-    "schema": "bedes"
-  },
-  {
-    "display_name": "Owner City/State",
-    "to_field": "owner_city_state",
-    "to_table_name": "PropertyState",
-    "from_field": "Owner City/State",
-    "units": "",
-    "type": "string",
-    "schema": "bedes"
-  },
-  {
-    "display_name": "Owner Email",
-    "to_field": "owner_email",
-    "to_table_name": "PropertyState",
-    "from_field": "Email",
-    "units": "",
-    "type": "string",
-    "schema": "bedes"
-  },
-  {
-    "display_name": "Owner Postal Code",
-    "to_field": "owner_postal_code",
-    "to_table_name": "PropertyState",
-    "from_field": "Owner Postal Code",
-    "units": "",
-    "type": "string",
-    "schema": "bedes"
-  },
-  {
-    "display_name": "Owner Telephone",
-    "to_field": "owner_telephone",
-    "to_table_name": "PropertyState",
-    "from_field": "Phone",
     "units": "",
     "type": "string",
     "schema": ""
@@ -477,46 +360,10 @@
     "schema": ""
   },
   {
-    "display_name": "Property Floor Area (Buildings and Parking)",
-    "to_field": "property_floor_area_buildings_and_parking",
+    "display_name": "Property Data Administrator",
+    "to_field": "property_data_administrator",
     "to_table_name": "PropertyState",
-    "from_field": "propertyFloorAreaBuildingsAndParking",
-    "units": "ft2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Buildings and Parking)",
-    "to_field": "property_floor_area_buildings_and_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "Property Floor Area (Buildings and Parking) (ft2)",
-    "units": "ft2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Parking)",
-    "to_field": "property_floor_area_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "propertyFloorAreaParking",
-    "units": "ft2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Parking)",
-    "to_field": "property_floor_area_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "Parking - Gross Floor Area (ft2)",
-    "units": "ft2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Footprint",
-    "to_field": "property_footprint",
-    "to_table_name": "PropertyState",
-    "from_field": "Property Footprint",
+    "from_field": "Property Data Administrator",
     "units": "",
     "type": "string",
     "schema": ""
@@ -567,28 +414,19 @@
     "schema": ""
   },
   {
-    "display_name": "Recent Sale Date",
-    "to_field": "recent_sale_date",
+    "display_name": "Site Energy Use",
+    "to_field": "site_energy_use",
     "to_table_name": "PropertyState",
-    "from_field": "Recent Sale Date",
-    "units": "",
-    "type": "date",
-    "schema": ""
-  },
-  {
-    "display_name": "Release Date",
-    "to_field": "release_date",
-    "to_table_name": "PropertyState",
-    "from_field": "Release Date",
-    "units": "",
-    "type": "date",
+    "from_field": "siteTotal",
+    "units": "kBtu",
+    "type": "float",
     "schema": ""
   },
   {
     "display_name": "Site Energy Use",
     "to_field": "site_energy_use",
     "to_table_name": "PropertyState",
-    "from_field": "siteTotal",
+    "from_field": "Site Energy Use (kBtu)",
     "units": "kBtu",
     "type": "float",
     "schema": ""
@@ -612,10 +450,19 @@
     "schema": ""
   },
   {
-    "display_name": "Site EUI Modeled",
-    "to_field": "site_eui_modeled",
+    "display_name": "Site EUI",
+    "to_field": "site_eui",
     "to_table_name": "PropertyState",
-    "from_field": "Site EUI Modeled",
+    "from_field": "Site EUI (kBtu/ft²)",
+    "units": "kBtu/ft**2/year",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Site EUI",
+    "to_field": "site_eui",
+    "to_table_name": "PropertyState",
+    "from_field": "siteIntensity",
     "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
@@ -639,10 +486,28 @@
     "schema": ""
   },
   {
+    "display_name": "Source Energy Use",
+    "to_field": "source_energy_use",
+    "to_table_name": "PropertyState",
+    "from_field": "Source Energy Use (kBtu)",
+    "units": "kBtu",
+    "type": "float",
+    "schema": ""
+  },
+  {
     "display_name": "Source EUI",
     "to_field": "source_eui",
     "to_table_name": "PropertyState",
     "from_field": "Source EUI (kBtu/ft2)",
+    "units": "kBtu/ft**2/year",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "Source EUI",
+    "to_field": "source_eui",
+    "to_table_name": "PropertyState",
+    "from_field": "Source EUI (kBtu/ft²)",
     "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
@@ -666,12 +531,12 @@
     "schema": ""
   },
   {
-    "display_name": "Space Alerts",
-    "to_field": "space_alerts",
+    "display_name": "Source EUI Weather Normalized",
+    "to_field": "source_eui_weather_normalized",
     "to_table_name": "PropertyState",
-    "from_field": "Space Alerts",
-    "units": "",
-    "type": "string",
+    "from_field": "Weather Normalized Source EUI (kBtu/ft²)",
+    "units": "kBtu/ft**2/year",
+    "type": "float",
     "schema": ""
   },
   {
@@ -688,6 +553,15 @@
     "to_field": "state",
     "to_table_name": "PropertyState",
     "from_field": "state",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "State",
+    "to_field": "state",
+    "to_table_name": "PropertyState",
+    "from_field": "State",
     "units": "",
     "type": "string",
     "schema": ""
@@ -711,8 +585,44 @@
     "schema": ""
   },
   {
-    "display_name": "Use Description",
-    "to_field": "use_description",
+    "display_name": "Total GHG Emissions",
+    "to_field": "total_ghg_emissions",
+    "to_table_name": "PropertyState",
+    "from_field": "Total GHG Emissions (Metric Tons CO2e)",
+    "units": "MtCO2e",
+    "type": "float",
+    "schema": ""
+  },
+  {
+    "display_name": "UBID",
+    "to_field": "ubid",
+    "to_table_name": "PropertyState",
+    "from_field": "UBID",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "UBID",
+    "to_field": "ubid",
+    "to_table_name": "PropertyState",
+    "from_field": "ubid",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "UBID",
+    "to_field": "ubid",
+    "to_table_name": "PropertyState",
+    "from_field": "Unique Building Identifier (UBID)",
+    "units": "",
+    "type": "string",
+    "schema": ""
+  },
+  {
+    "display_name": "Property Type",
+    "to_field": "property_type",
     "to_table_name": "PropertyState",
     "from_field": "Primary Property Type - Self Selected",
     "units": "",
@@ -720,8 +630,8 @@
     "schema": ""
   },
   {
-    "display_name": "Use Description",
-    "to_field": "use_description",
+    "display_name": "Property Type",
+    "to_field": "property_type",
     "to_table_name": "PropertyState",
     "from_field": "Property Type - Self-Selected",
     "units": "",
@@ -729,8 +639,8 @@
     "schema": ""
   },
   {
-    "display_name": "Use Description",
-    "to_field": "use_description",
+    "display_name": "Property Type",
+    "to_field": "property_type",
     "to_table_name": "PropertyState",
     "from_field": "primaryFunction",
     "units": "",
@@ -753,15 +663,6 @@
     "from_field": "Year Built",
     "units": "",
     "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Year Ending",
-    "to_field": "year_ending",
-    "to_table_name": "PropertyState",
-    "from_field": "Year Ending",
-    "units": "",
-    "type": "date",
     "schema": ""
   }
 ]
