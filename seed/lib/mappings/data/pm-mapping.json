@@ -229,7 +229,7 @@
     "to_field": "national_median_site_eui",
     "to_table_name": "PropertyState",
     "from_field": "medianSiteIntensity",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2",
     "type": "float",
     "schema": ""
   },
@@ -238,7 +238,7 @@
     "to_field": "national_median_site_eui",
     "to_table_name": "PropertyState",
     "from_field": "National Median Site EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2",
     "type": "float",
     "schema": ""
   },
@@ -265,7 +265,7 @@
     "to_field": "national_median_source_eui",
     "to_table_name": "PropertyState",
     "from_field": "medianSourceIntensity",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2",
     "type": "float",
     "schema": ""
   },
@@ -274,7 +274,7 @@
     "to_field": "national_median_source_eui",
     "to_table_name": "PropertyState",
     "from_field": "National Median Source EUI (kBtu/ft2)",
-    "units": "kBtu/ft2",
+    "units": "kBtu/ft**2",
     "type": "float",
     "schema": ""
   },
