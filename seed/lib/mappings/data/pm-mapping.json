@@ -216,11 +216,11 @@
     "schema": ""
   },
   {
-    "display_name": "National Median ENERGY STAR Score",
-    "to_field": "national_median_energy_star_score",
+    "display_name": "National Median Site Energy Use",
+    "to_field": "national_median_site_energy_use",
     "to_table_name": "PropertyState",
-    "from_field": "National Median ENERGY STAR Score",
-    "units": "",
+    "from_field": "National Median Site Energy Use (kBtu)",
+    "units": "kBtu",
     "type": "float",
     "schema": ""
   },
