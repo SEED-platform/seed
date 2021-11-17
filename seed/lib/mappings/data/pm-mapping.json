@@ -57,7 +57,7 @@
     "display_name": "Building Count",
     "to_field": "building_count",
     "to_table_name": "PropertyState",
-    "from_field": "Number of Buildings",
+    "from_field": "How Many Buildings?",
     "units": "",
     "type": "float",
     "schema": ""
