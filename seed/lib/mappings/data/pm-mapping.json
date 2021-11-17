@@ -256,7 +256,7 @@
     "to_field": "national_median_total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "medianTotalGHGEmissions",
-    "units": "Metric Tons CO2e",
+    "units": "",
     "type": "float",
     "schema": ""
   },
@@ -265,7 +265,7 @@
     "to_field": "national_median_total_ghg_emissions",
     "to_table_name": "PropertyState",
     "from_field": "National Median Total GHG Emissions (Metric Tons CO2e)",
-    "units": "Metric Tons CO2e",
+    "units": "",
     "type": "float",
     "schema": ""
   },
@@ -505,7 +505,7 @@
   },
   {
     "display_name": "State Province",
-    "to_field": "state_province",
+    "to_field": "state",
     "to_table_name": "PropertyState",
     "from_field": "State/Province",
     "units": "",
@@ -514,7 +514,7 @@
   },
   {
     "display_name": "State Province",
-    "to_field": "state_province",
+    "to_field": "state",
     "to_table_name": "PropertyState",
     "from_field": "state",
     "units": "",
@@ -523,7 +523,7 @@
   },
   {
     "display_name": "State Province",
-    "to_field": "state_province",
+    "to_field": "state",
     "to_table_name": "PropertyState",
     "from_field": "State",
     "units": "",
