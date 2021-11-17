@@ -54,15 +54,6 @@
     "schema": ""
   },
   {
-    "display_name": "Building Certification",
-    "to_field": "building_certification",
-    "to_table_name": "PropertyState",
-    "from_field": "Third Party Certification",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "Building Count",
     "to_field": "building_count",
     "to_table_name": "PropertyState",
@@ -96,15 +87,6 @@
     "from_field": "City/Municipality",
     "units": "",
     "type": "string",
-    "schema": ""
-  },
-  {
-    "display_name": "Created Date",
-    "to_field": "created_date",
-    "to_table_name": "PropertyState",
-    "from_field": "createdDate",
-    "units": "",
-    "type": "date",
     "schema": ""
   },
   {
@@ -150,15 +132,6 @@
     "from_field": "score",
     "units": "",
     "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Generation Date",
-    "to_field": "generation_date",
-    "to_table_name": "PropertyState",
-    "from_field": "Generation Date",
-    "units": "",
-    "type": "date",
     "schema": ""
   },
   {
@@ -297,15 +270,6 @@
     "schema": ""
   },
   {
-    "display_name": "Organization",
-    "to_field": "organization",
-    "to_table_name": "PropertyState",
-    "from_field": "Organization",
-    "units": "",
-    "type": "string",
-    "schema": ""
-  },
-  {
     "display_name": "PM Property ID",
     "to_field": "pm_property_id",
     "to_table_name": "PropertyState",
@@ -387,42 +351,6 @@
     "schema": ""
   },
   {
-    "display_name": "Property Floor Area (Buildings and Parking)",
-    "to_field": "property_floor_area_buildings_and_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "propertyFloorAreaBuildingsAndParking",
-    "units": "ft**2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Buildings and Parking)",
-    "to_field": "property_floor_area_buildings_and_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "Property Floor Area (Buildings and Parking) (ft2)",
-    "units": "ft**2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Parking)",
-    "to_field": "property_floor_area_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "propertyFloorAreaParking",
-    "units": "ft**2",
-    "type": "float",
-    "schema": ""
-  },
-  {
-    "display_name": "Property Floor Area (Parking)",
-    "to_field": "property_floor_area_parking",
-    "to_table_name": "PropertyState",
-    "from_field": "Parking - Gross Floor Area (ft2)",
-    "units": "ft**2",
-    "type": "float",
-    "schema": ""
-  },
-  {
     "display_name": "Property Name",
     "to_field": "property_name",
     "to_table_name": "PropertyState",
@@ -465,15 +393,6 @@
     "from_field": "Release Date",
     "units": "",
     "type": "date",
-    "schema": ""
-  },
-  {
-    "display_name": "Site Energy Use",
-    "to_field": "site_energy_use",
-    "to_table_name": "PropertyState",
-    "from_field": "siteTotal",
-    "units": "kBtu",
-    "type": "float",
     "schema": ""
   },
   {
