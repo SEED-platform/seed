@@ -259,8 +259,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
     merges_within_file = 0
     priorities = Column.retrieve_priorities(org)
     total_ids = len(matched_id_groups)
-    batch = int(total_ids/5)
-    batches = [batch*i for i in range(5)]
+    batch = int(total_ids / 5)
+    batches = [batch * i for i in range(5)]
     idx = 0
     for ids in matched_id_groups:
         if len(ids) == 1:
@@ -277,7 +277,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
-        if idx in batches: progress_data.step("Merging Matched Properties")
+        if idx in batches: 
+            progress_data.step("Merging Matched Properties")
         idx += 1
 
     # Flag the soon to be promoted ID -States as having gone through matching
