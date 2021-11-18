@@ -258,11 +258,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
     # Collapse groups of matches found in the previous step into 1 -State per group
     merges_within_file = 0
     priorities = Column.retrieve_priorities(org)
-    total_ids = len(matched_id_groups)
-    batch = int(total_ids / 5)
-    batches = [batch * i for i in range(5)]
-    idx = 0
-    for ids in matched_id_groups:
+    batch_size = int(len(matched_id_groups) / 5)
+    for idx, ids in enumerate(matched_id_groups):
         if len(ids) == 1:
             # If there's only 1, no merging is needed, so just promote the ID.
             promoted_ids += ids
@@ -277,9 +274,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
-        if idx in batches:
+        if idx % batch_size == 0 and progress_data:
             progress_data.step("Merging Matched Properties")
-        idx += 1
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
