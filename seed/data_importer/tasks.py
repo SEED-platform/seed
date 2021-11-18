@@ -1161,7 +1161,7 @@ def geocode_and_match_buildings_task(file_pk):
             body=finish_mapping_additional_models.s(file_pk, progress_data.key))
     else:
         # Start, match, pair
-        post_geocode_tasks_count = 3
+        post_geocode_tasks_count = 9
         post_geocode_tasks = chord(
             header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
             body=finish_matching.s(file_pk, progress_data.key),
