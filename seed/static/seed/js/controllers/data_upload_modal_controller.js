@@ -518,6 +518,14 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           var result = JSON.parse(progress_data.message);
           $scope.buildingsync_valid = result.valid;
           $scope.buildingsync_issues = result.issues;
+          for (file in $scope.buildingsync_issues) {
+            let schema_errors = [];
+            for (i in $scope.buildingsync_issues[file].schema_errors) {
+              let error = $scope.buildingsync_issues[file].schema_errors[i];
+              schema_errors.push([error.message, error.path].join(' - '));
+             }
+             $scope.buildingsync_issues[file].schema_errors = schema_errors;
+          }
 
           // if validation failed, end the import flow here; otherwise continue
           if ($scope.buildingsync_valid !== true) {
@@ -732,6 +740,29 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           spinner_utility.hide();
           $scope.pm_buttons_enabled = true;
         });
+      };
+
+      $scope.export_issues = function (issues) {
+        let data = ['File Name,Severity,Message'];
+        let allowed_severities = {
+          'warnings': 'Warning',
+          'use_case_warnings': 'Use Case Warning',
+          'errors': 'Error',
+          'use_case_errors': 'Use Case Error',
+          'schema_errors': 'Schema Error'
+        }
+        for (i in issues) {
+          for (severity in allowed_severities) {
+              for (issue in issues[i][severity]) {
+                data.push([
+                  '"' + issues[i].file + '"',
+                  allowed_severities[severity],
+                  '"' + issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ') + '"'
+                ].join(','));
+              }
+          }
+        }
+        saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'import_issues.csv');
       };
 
       /**
