@@ -277,7 +277,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
-        if idx in batches: progress_data.step(f"Merging Matched Properties")
+        if idx in batches: progress_data.step("Merging Matched Properties")
         idx += 1
 
     # Flag the soon to be promoted ID -States as having gone through matching
