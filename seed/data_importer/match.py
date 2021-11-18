@@ -123,10 +123,11 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
-        promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(promoted_property_ids, org, PropertyState)
+        promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(promoted_property_ids, org, PropertyState, progress_data)
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
+        progress_data.step('Assigning Properties to Views')
         merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count, property_merges_between_existing_count = states_to_views(
             promoted_property_ids,
             org,
@@ -220,7 +221,7 @@ def filter_duplicate_states(unmatched_states):
     return canonical_state_ids, duplicate_count
 
 
-def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
+def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_data=None):
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
@@ -247,6 +248,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     )
 
     # Group IDs by -States that match each other
+    # This filter function takes a significant amount of time to complete
     matched_id_groups = StateClass.objects.\
         filter(id__in=unmatched_state_ids).\
         values(*column_names).\
@@ -256,6 +258,10 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     # Collapse groups of matches found in the previous step into 1 -State per group
     merges_within_file = 0
     priorities = Column.retrieve_priorities(org)
+    total_ids = len(matched_id_groups)
+    batch = int(total_ids/5)
+    batches = [batch*i for i in range(5)]
+    idx = 0
     for ids in matched_id_groups:
         if len(ids) == 1:
             # If there's only 1, no merging is needed, so just promote the ID.
@@ -271,6 +277,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
+        if idx in batches: progress_data.step(f"Merging Matched Properties")
+        idx += 1
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
