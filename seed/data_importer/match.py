@@ -132,7 +132,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
             promoted_property_ids,
             org,
             import_file.cycle,
-            PropertyState
+            PropertyState,
+            progress_data
         )
 
         # Look for links across Cycles
@@ -157,7 +158,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
             promoted_tax_lot_ids,
             org,
             import_file.cycle,
-            TaxLotState
+            TaxLotState,
+            progress_data
         )
 
         # Look for links across Cycles
@@ -284,7 +286,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
     return promoted_ids, merges_within_file
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass):
+def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=None):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -339,6 +341,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     unmatched_states = StateClass.objects.filter(pk__in=unmatched_state_ids).exclude(
         pk__in=Subquery(handled_states.values('id'))
     )
+    if progress_data: 
+        progress_data.step('Assigning Properties to Views')
 
     # For the remaining -States, search for a match within the -States that are attached to -Views.
     # If one match is found, pass that along.
@@ -346,7 +350,11 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
     # Otherwise, add current -State to be promoted as is.
     merged_between_existing_count = 0
     merge_state_pairs = []
-    for state in unmatched_states:
+    batch_size = int(len(unmatched_states) / 3)
+    for idx, state in enumerate(unmatched_states):
+        if idx % batch_size == 0 and progress_data:
+            progress_data.step('Assigning Properties to Views')
+
         matching_criteria = matching_filter_criteria(state, column_names)
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
@@ -364,6 +372,10 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
             merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
+    
+    if progress_data:
+        progress_data.step('Assigning Properties to Views')
+
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
@@ -391,6 +403,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
                 processed_views.append(created_view)
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
+    
+
 
     new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
@@ -401,6 +415,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass):
         data_state=DATA_STATE_MATCHING,
         merge_state=MERGE_STATE_MERGED
     )
+
 
     return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
 
