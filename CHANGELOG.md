@@ -1,3 +1,11 @@
+# SEED Version 2.12.4
+
+Date Range: 11/11/21 - 11/19/21
+
+Closed Issues and Features (Total: 2):
+- Fixed [#2822]( https://github.com/SEED-platform/seed/issues/2822 ), Create documentation for running BETTER analysis
+- Fixed [#3014]( https://github.com/SEED-platform/seed/issues/3014 ), Analysis: include Meter source 'Electric - Unknown' in analysis
+
 # SEED Version 2.12.3
 
 Date Range: 11/05/21 - 11/10/21
