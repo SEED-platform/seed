@@ -2,12 +2,8 @@
 
 Date Range: 11/11/21 - 11/19/21
 
-Closed Issues and Features (Total: 6):
-- Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
+Closed Issues and Features (Total: 2):
 - Fixed [#2822]( https://github.com/SEED-platform/seed/issues/2822 ), Create documentation for running BETTER analysis
-- Fixed [#2930]( https://github.com/SEED-platform/seed/issues/2930 ), BuildingSync: improve UI/UX for post-mapping messages
-- Fixed [#2958]( https://github.com/SEED-platform/seed/issues/2958 ), Improve progress data text when validating BuildingSync files
-- Fixed [#2999]( https://github.com/SEED-platform/seed/issues/2999 ), Bug: property details "notes" tab breaks links
 - Fixed [#3014]( https://github.com/SEED-platform/seed/issues/3014 ), Analysis: include Meter source 'Electric - Unknown' in analysis
 
 # SEED Version 2.12.3
