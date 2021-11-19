@@ -341,7 +341,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
     unmatched_states = StateClass.objects.filter(pk__in=unmatched_state_ids).exclude(
         pk__in=Subquery(handled_states.values('id'))
     )
-    if progress_data: 
+    if progress_data:
         progress_data.step('Assigning Properties to Views')
 
     # For the remaining -States, search for a match within the -States that are attached to -Views.
@@ -372,10 +372,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
             merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
-    
+
     if progress_data:
         progress_data.step('Assigning Properties to Views')
-
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
@@ -403,7 +402,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
                 processed_views.append(created_view)
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
-    
+
     new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
     StateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
