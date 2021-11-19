@@ -44,7 +44,7 @@ CO2_ANALYSIS_MESSAGES = {
     ERROR_INVALID_REGION_CODE: 'Could not find C02 rate for provided eGRID subregion code.'
 }
 
-VALID_METERS = [Meter.ELECTRICITY_GRID]
+VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_UNKNOWN]
 TIME_PERIOD = datetime.timedelta(days=365)
 
 # These factors represent how much CO2e is emitted per MWh of electricity used
