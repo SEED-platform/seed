@@ -412,7 +412,7 @@ Release Instructions
 
 To make a release do the following:
 
-1. Github admin user, on develop branch: update the ``package.json`` file with the most recent version number. Always use MAJOR.MINOR.RELEASE.
+1. Github admin user, on develop branch: update the ``package.json`` and ``npm-shrinkwrap.json`` files with the most recent version number. Always use MAJOR.MINOR.RELEASE.
 2. Update the ``docs/sources/migrations.rst`` file with any required actions.
 3. Run the ``docs/scripts/change_log.py`` script and add the changes to the CHANGELOG.md file for the range of time between last release and this release. Only add the *Closed Issues*. Also make sure that all the pull requests have a related Issue in order to be included in the change log.
 
