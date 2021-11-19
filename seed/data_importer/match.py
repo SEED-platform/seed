@@ -404,8 +404,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
     
-
-
     new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
     StateClass.objects.filter(pk__in=promoted_ids).exclude(merge_state=MERGE_STATE_MERGED).update(
@@ -415,7 +413,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
         data_state=DATA_STATE_MATCHING,
         merge_state=MERGE_STATE_MERGED
     )
-
 
     return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
 
