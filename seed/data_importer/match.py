@@ -127,7 +127,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
-        progress_data.step('Assigning Properties to Views')
         merged_property_views, property_duplicates_against_existing_count, property_new_count, property_merges_against_existing_count, property_merges_between_existing_count = states_to_views(
             promoted_property_ids,
             org,
@@ -153,7 +152,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key):
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
-        progress_data.step('Assigning Properties to Views')
         merged_linked_taxlot_views, tax_lot_duplicates_against_existing_count, tax_lot_new_count, tax_lot_merges_against_existing_count, tax_lot_merges_between_existing_count = states_to_views(
             promoted_tax_lot_ids,
             org,
@@ -277,6 +275,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
+
         if idx % batch_size == 0 and progress_data:
             progress_data.step("Merging Matched Properties")
 
@@ -341,8 +340,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
     unmatched_states = StateClass.objects.filter(pk__in=unmatched_state_ids).exclude(
         pk__in=Subquery(handled_states.values('id'))
     )
-    if progress_data:
-        progress_data.step('Assigning Properties to Views')
 
     # For the remaining -States, search for a match within the -States that are attached to -Views.
     # If one match is found, pass that along.
@@ -350,10 +347,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
     # Otherwise, add current -State to be promoted as is.
     merged_between_existing_count = 0
     merge_state_pairs = []
-    batch_size = int(len(unmatched_states) / 3)
+    batch_size = int(len(unmatched_states) / 5)
     for idx, state in enumerate(unmatched_states):
-        if idx % batch_size == 0 and progress_data:
-            progress_data.step('Assigning Properties to Views')
+
 
         matching_criteria = matching_filter_criteria(state, column_names)
         existing_state_matches = StateClass.objects.filter(
@@ -372,9 +368,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
             merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
-
-    if progress_data:
-        progress_data.step('Assigning Properties to Views')
+        
+        if idx % batch_size == 0 and progress_data:
+            progress_data.step('Assigning Properties to Views')
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
