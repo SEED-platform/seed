@@ -349,8 +349,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
     merge_state_pairs = []
     batch_size = int(len(unmatched_states) / 5)
     for idx, state in enumerate(unmatched_states):
-
-
         matching_criteria = matching_filter_criteria(state, column_names)
         existing_state_matches = StateClass.objects.filter(
             pk__in=Subquery(existing_cycle_views.values('state_id')),
@@ -368,7 +366,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
             merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
-        
+
         if idx % batch_size == 0 and progress_data:
             progress_data.step('Assigning Properties to Views')
 
