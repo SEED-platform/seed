@@ -276,7 +276,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, progress_dat
 
             promoted_ids.append(merge_state.id)
 
-        if idx % batch_size == 0 and progress_data:
+        if batch_size > 0 and idx % batch_size == 0 and progress_data:
             progress_data.step("Merging Matched Properties")
 
     # Flag the soon to be promoted ID -States as having gone through matching
@@ -367,7 +367,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, progress_data=N
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
-        if idx % batch_size == 0 and progress_data:
+        if batch_size > 0 and idx % batch_size == 0 and progress_data:
             progress_data.step('Assigning Properties to Views')
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
