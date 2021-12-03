@@ -5,7 +5,6 @@
 :author
 """
 from __future__ import absolute_import
-from datetime import datetime
 
 import sys
 
@@ -36,7 +35,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
-import logging
 
 
 logger = get_task_logger(__name__)
@@ -190,7 +188,6 @@ def _finish_delete(results, org_pk, prog_key):
 
 @shared_task
 def _finish_delete_column(results, column_id, prog_key):
-    logging.warning("Delete Organization Column 12 @ %s", datetime.now().strftime("%H:%M:%S"))
     # Delete all mappings from raw column names to the mapped column, then delete the mapped column
     column = Column.objects.get(id=column_id)
     ColumnMapping.objects.filter(column_mapped=column).delete()
@@ -326,9 +323,6 @@ def _finish_delete_cycle(cycle_id, prog_key):
 @lock_and_track
 def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes an extra_data column from all merged property/taxlot states."""
-    logging.warning("column_pk: %s", column_pk)
-    logging.warning("org_pk: %s", org_pk)
-    logging.warning("prog_key: %s", prog_key)
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
         func_name='delete_organization_column', unique_id=column_pk)
 
