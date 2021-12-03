@@ -5,6 +5,7 @@
 :author
 """
 from __future__ import absolute_import
+from datetime import datetime
 
 import sys
 
@@ -35,6 +36,8 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
+import logging
+
 
 logger = get_task_logger(__name__)
 
@@ -187,6 +190,7 @@ def _finish_delete(results, org_pk, prog_key):
 
 @shared_task
 def _finish_delete_column(results, column_id, prog_key):
+    logging.warning("Delete Organization Column 12 @ %s", datetime.now().strftime("%H:%M:%S"))
     # Delete all mappings from raw column names to the mapped column, then delete the mapped column
     column = Column.objects.get(id=column_id)
     ColumnMapping.objects.filter(column_mapped=column).delete()
@@ -322,49 +326,79 @@ def _finish_delete_cycle(cycle_id, prog_key):
 @lock_and_track
 def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes an extra_data column from all merged property/taxlot states."""
-
-    column = Column.objects.get(id=column_pk, organization_id=org_pk)
-
+    logging.warning("column_pk: %s", column_pk)
+    logging.warning("org_pk: %s", org_pk)
+    logging.warning("prog_key: %s", prog_key)
+    logging.warning("Delete Organization Column 1 @ %s", datetime.now().strftime("%H:%M:%S"))
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
         func_name='delete_organization_column', unique_id=column_pk)
 
+    logging.warning("Delete Organization Column 2 @ %s", datetime.now().strftime("%H:%M:%S"))
+    tasks = []
+    tasks.append(
+        _generate_tasks_to_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size))
+        )
+
+    logging.warning("Delete Organization Column 3 @ %s", datetime.now().strftime("%H:%M:%S"))
+    chord(tasks, interval=15)(_finish_delete_column.subtask([column_pk, progress_data.key]))
+
+    logging.warning("Delete Organization Column 4 @ %s", datetime.now().strftime("%H:%M:%S"))
+    return progress_data.result()
+
+@shared_task 
+def _generate_tasks_to_delete_organization_column(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
+    """ Find -States with column to be deleted """
+    logging.warning("column_pk: %s", column_pk)
+    logging.warning("org_pk: %s", org_pk)
+    logging.warning("prog_key: %s", prog_key)
+    column = Column.objects.get(id=column_pk, organization_id=org_pk)
+    logging.warning("Delete Organization Column 5 @ %s", datetime.now().strftime("%H:%M:%S"))
+
+
     ids = []
 
+    logging.warning("Delete Organization Column 6 @ %s", datetime.now().strftime("%H:%M:%S"))
     if column.table_name == 'PropertyState':
-        ids = list(
+        ids = (
             PropertyState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
-                                         extra_data__has_key=column.column_name).values_list('id', flat=True)
+                                        extra_data__has_key=column.column_name).values_list('id', flat=True)
         )
     elif column.table_name == 'TaxLotState':
-        ids = list(
+        ids = (
             TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
                                        extra_data__has_key=column.column_name).values_list('id', flat=True)
         )
 
+    """ Evaluate a queryset in a task allowing web processes to complete """
+    logging.warning("ids: %s", len(ids))
+    logging.warning("Delete Organization Column 7 @ %s", datetime.now().strftime("%H:%M:%S"))
+    progress_data = ProgressData.from_key(prog_key)
+    progress_data.step('Evaluating queryset. This may take several minutes.')
     total = len(ids)
-
-    # total is the number of records divided by the chunk size
+    # logging.warning("len(ids): %s", total)
     progress_data.total = total / float(chunk_size)
     progress_data.data['completed_records'] = 0
     progress_data.data['total_records'] = total
     progress_data.save()
+    logging.warning(progress_data.__dict__)
 
-    tasks = []
-    # we could also use .s instead of .subtask and not wrap the *args
+    logging.warning("Delete Organization Column 8 @ %s", datetime.now().strftime("%H:%M:%S"))
     for chunk_ids in batch(ids, chunk_size):
-        tasks.append(
-            _delete_organization_column_chunk.subtask(
-                (chunk_ids, column.column_name, column.table_name, progress_data.key)
-            )
+        _delete_organization_column_chunk(
+            chunk_ids, column.column_name, column.table_name, progress_data.key
         )
-    chord(tasks, interval=15)(_finish_delete_column.subtask([column.id, progress_data.key]))
-
-    return progress_data.result()
+    # for chunk_ids in batch(ids, chunk_size):
+    #     _delete_organization_column_chunk.subtask(
+    #         (chunk_ids, column.column_name, column.table_name, progress_data.key)
+    #     )
+    logging.warning("Delete Organization Column 9 @ %s", datetime.now().strftime("%H:%M:%S"))
 
 
 @shared_task
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
+    logging.warning("Delete Organization Column - delete_org_column_chunk @ %s", datetime.now().strftime("%H:%M:%S"))
+
     if table_name == 'PropertyState':
         states = PropertyState.objects.filter(id__in=chunk_ids)
     else:
@@ -375,7 +409,9 @@ def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_k
             del state.extra_data[column_name]
             state.save(update_fields=['extra_data', 'hash_object'])
 
+    logging.warning("Delete Organization Column 8 @ %s", datetime.now().strftime("%H:%M:%S"))
     progress_data = ProgressData.from_key(prog_key)
+    logging.warning("Delete Organization Column 9 @ %s", datetime.now().strftime("%H:%M:%S"))
     progress_data.step_with_counter()
 
 
