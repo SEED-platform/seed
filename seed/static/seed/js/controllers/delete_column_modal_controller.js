@@ -24,10 +24,9 @@ angular.module('BE.seed.controller.delete_column_modal', [])
       $scope.delete = function () {
         $scope.state = 'pending';
         columns_service.delete_column_for_org(organization_id, column.id).then(function (result) {
-          $scope.state = 'running';
-          $scope.startTime = moment();
+          $scope.state = 'evaluating';
           $scope.interval = $interval(function () {
-            $scope.updateTime();
+            $scope.state == 'running' ? $scope.updateTime() : $scope.setRunningState();
           }, 1000);
           $scope.updateTime();
           uploader_service.check_progress_loop(result.data.progress_key, 0, 1, function (response) {
@@ -61,6 +60,12 @@ angular.module('BE.seed.controller.delete_column_modal', [])
             return $scope.formatTime(moment.duration(diff / progress - diff));
           }
         }
+      };
+
+      $scope.setRunningState = function () {
+        $scope.eta = $scope.etaFn();
+        $scope.eta ? 
+          ($scope.state = 'running', $scope.startTime = moment()) : null
       };
 
       $scope.updateTime = function () {
