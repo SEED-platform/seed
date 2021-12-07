@@ -326,12 +326,11 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
         func_name='delete_organization_column', unique_id=column_pk)
 
-    tasks = []
-    tasks.append(
-        _generate_tasks_to_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size))
-    )
+    chain(
+        _generate_tasks_to_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)),
+        _finish_delete_column.subtask([column_pk, progress_data.key])
+    ).apply_async()
 
-    chord(tasks, interval=15)(_finish_delete_column.subtask([column_pk, progress_data.key]))
     return progress_data.result()
 
 
@@ -349,7 +348,6 @@ def _generate_tasks_to_delete_organization_column(column_pk, org_pk, prog_key, c
         ids = TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
                                          extra_data__has_key=column.column_name).values_list('id', flat=True)
 
-    """ Evaluate a queryset in a task allowing web processes to complete """
     progress_data = ProgressData.from_key(prog_key)
     total = len(ids)
     progress_data.total = total / float(chunk_size)
