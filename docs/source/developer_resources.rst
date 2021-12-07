@@ -362,50 +362,6 @@ Best Practices
 8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
 9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.
 
-Git Naming Conventions
-----------------------
-
-Commit messages should follow the format of
-
-.. code-block:: console
-
-    <type>[( optional scope )]: <subject>
-
-    [optional body]
-
-:code:`type` must be one of the following:
-
-- **docs**: Changes to the documentation (e.g. improving docstring, updating this file, etc)
-- **feat**: Adds a new feature
-- **fix**: A bug fix
-- **refactor**: Changes that don't fix a bug or add a new feature
-- **style**: Changes that don't affect the meaning of code (e.g. whitespace)
-- **test**: Adding or correcting tests
-
-:code:`scope` is optional for commit messages, and should indicate the general area of the application affected.
-
-:code:`subject` is a short description of the changes in imperative present tense (such as “add function to _”, not “added function”)
-
-Branches should be named as :code:`[<optional issue number> -]<type>/<scope>`, where :code:`scope` is the general scope affected, or if creating a feature branch, a shortened name of the feature being added. If :code:`scope` is more than one word, it should be separated by dashes.
-
-Pull Request titles should follow the format :code:`[# optional issue number] <type>[(optional scope)]: <subject>`, following the same conventions as commit messages.
-
-Commit examples:
-
-- :code:`feat(models): add date_modified field to MyModel`
-- :code:`refactor: change var to let/const in frontend`
-- :code:`docs: update release instructions`
-
-Branch examples:
-
-- :code:`1234-feat/buildingsync-v2.3-import`
-- :code:`5678-refactor/org-views-auth`
-- :code:`fix/error-mapping-pm-taxlots`
-
-Pull request examples:
-
-- :code:`#1234 feat(models): add date_modified to MyModel`
-- :code:`#4567 refactor: change var to let/const in frontend`
 
 Release Instructions
 --------------------
