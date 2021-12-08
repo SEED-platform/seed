@@ -327,7 +327,7 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
         func_name='delete_organization_column', unique_id=column_pk)
 
     chain(
-        _generate_tasks_to_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)),
+        _delete_organization_column_evaluate.subtask((column_pk, org_pk, progress_data.key, chunk_size)),
         _finish_delete_column.subtask([column_pk, progress_data.key])
     ).apply_async()
 
@@ -335,7 +335,7 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
 
 
 @shared_task
-def _generate_tasks_to_delete_organization_column(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
+def _delete_organization_column_evaluate(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
     """ Find -States with column to be deleted """
     column = Column.objects.get(id=column_pk, organization_id=org_pk)
 
@@ -361,7 +361,6 @@ def _generate_tasks_to_delete_organization_column(column_pk, org_pk, prog_key, c
         )
 
 
-@shared_task
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
 
