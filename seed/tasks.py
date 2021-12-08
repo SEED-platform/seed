@@ -361,6 +361,7 @@ def _delete_organization_column_evaluate(column_pk, org_pk, prog_key, chunk_size
         )
 
 
+@shared_task
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
 
