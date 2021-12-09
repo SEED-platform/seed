@@ -186,8 +186,7 @@ def _finish_delete(results, org_pk, prog_key):
     return progress_data.finish_with_success()
 
 
-@shared_task
-def _finish_delete_column(results, column_id, prog_key):
+def _finish_delete_column(column_id, prog_key):
     # Delete all mappings from raw column names to the mapped column, then delete the mapped column
     column = Column.objects.get(id=column_id)
     ColumnMapping.objects.filter(column_mapped=column).delete()
@@ -326,10 +325,7 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
         func_name='delete_organization_column', unique_id=column_pk)
 
-    chain(
-        _delete_organization_column_evaluate.subtask((column_pk, org_pk, progress_data.key, chunk_size)),
-        _finish_delete_column.subtask([column_pk, progress_data.key])
-    ).apply_async()
+    _delete_organization_column_evaluate.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
 
     return progress_data.result()
 
@@ -352,16 +348,17 @@ def _delete_organization_column_evaluate(column_pk, org_pk, prog_key, chunk_size
     total = len(ids)
     progress_data.total = total / float(chunk_size)
     progress_data.data['completed_records'] = 0
-    progress_data.data['total_records'] = total
+    progress_data.data['total_records'] = total + 1
     progress_data.save()
 
     for chunk_ids in batch(ids, chunk_size):
         _delete_organization_column_chunk(
             chunk_ids, column.column_name, column.table_name, progress_data.key
         )
+        
+    _finish_delete_column(column_pk, progress_data.key)
 
 
-@shared_task
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
 
