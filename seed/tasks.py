@@ -325,13 +325,13 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
         func_name='delete_organization_column', unique_id=column_pk)
 
-    _delete_organization_column_task.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
+    _evaluate_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
 
     return progress_data.result()
 
 
 @shared_task
-def _delete_organization_column_task(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
+def _evaluate_delete_organization_column(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
     """ Find -States with column to be deleted """
     column = Column.objects.get(id=column_pk, organization_id=org_pk)
 
