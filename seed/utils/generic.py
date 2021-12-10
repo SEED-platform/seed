@@ -15,7 +15,6 @@ from django.db import IntegrityError
 from past.builtins import basestring
 
 
-
 class MarkdownPackageDebugFilter(logging.Filter):
     def filter(self, record):
         if 'markdown.extensions.headerid' in record.msg:

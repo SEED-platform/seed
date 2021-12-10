@@ -74,7 +74,6 @@ fi
 echo "Backup up SEED database using pg_dump"
 echo "Running: pg_dump -h ${DB_HOST} -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)"
 pg_dump -h ${DB_HOST} -U ${DB_USERNAME} -Fc ${DB_NAME} > $(file_name)
-docker volume export seed_media | gzip junk.tar.gz
 
 # Backup the media directory (uploads, especially buildingsync). In docker-land this is
 # just a container volume which needs to been mapped to this pod in the k8s CronJob.
