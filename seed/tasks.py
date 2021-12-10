@@ -346,9 +346,9 @@ def _evaluate_delete_organization_column(column_pk, org_pk, prog_key, chunk_size
 
     progress_data = ProgressData.from_key(prog_key)
     total = len(ids)
-    progress_data.total = total / float(chunk_size)
+    progress_data.total = total / float(chunk_size) + 1
     progress_data.data['completed_records'] = 0
-    progress_data.data['total_records'] = total + 1
+    progress_data.data['total_records'] = total
     progress_data.save()
 
     for chunk_ids in batch(ids, chunk_size):
