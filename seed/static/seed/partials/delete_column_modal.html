@@ -13,6 +13,10 @@
             <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
             <p>Please wait, scanning for affected records...</p>
         </div>
+        <div ng-switch-when="evaluating">
+            <uib-progressbar class="progress-striped active" value="100" type="info"></uib-progressbar>
+            <p>Please wait, evaulating affected records. This may take several minutes...</p>
+        </div>
         <div ng-switch-when="running">
             <uib-progressbar class="progress-striped active" value="progressBar.progress" type="success"><span class="status-text">{$ progressBar.status_message $}</span></uib-progressbar>
             <table class="time-table">
@@ -29,7 +33,7 @@
         <div ng-switch-when="done">{$ result $}</div>
     </div>
 </div>
-<div class="modal-footer" ng-if="state !== 'pending' && state !== 'running'">
+<div class="modal-footer" ng-if="state !== 'pending' && state !== 'running' && state !== 'evaluating'">
     <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="state !== 'done'" ng-disabled="state === 'running'">Cancel</button>
     <button type="button" class="btn btn-info" ng-click="delete()" ng-if="state !== 'done'" ng-disabled="state === 'running'" autofocus>Delete</button>
     <button type="button" class="btn btn-info" ng-click="refresh()" ng-if="state === 'done'" autofocus>Refresh</button>
