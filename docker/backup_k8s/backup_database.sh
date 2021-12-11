@@ -90,10 +90,11 @@ do
   echo "Backing up $file to $S3_BUCKET/$RUN_DATE/"
   if [ ! -s $file ]; then
     # the file is empty, send an error
-    send_slack_notification "[ERROR-$ENVIRONMENT]-PostgreSQL-backup-file-was-empty"
+    send_slack_notification "[ERROR-$ENVIRONMENT]-PostgreSQL-backup-file-was-empty-or-missing"
   else
+    # can't pass spaces to slack notifications, for now
     aws s3 cp $file $S3_BUCKET/$RUN_DATE/
-    send_slack_notification "[$ENVIRONMENT]-PostgreSQL-uploaded-to-s3://$S3_BUCKET/$RUN_DATE/$file"
+    send_slack_notification "[$ENVIRONMENT]-PostgreSQL-uploaded-to-$S3_BUCKET/$RUN_DATE/$(basename $file)"
   fi
 done
 
@@ -103,10 +104,11 @@ do
   
   if [ ! -s $file ]; then
     # the file is empty, send an error
-    send_slack_notification "[ERROR-$ENVIRONMENT]-Mediadata-backup-file-was-empty"
+    send_slack_notification "[ERROR-$ENVIRONMENT]-Mediadata-backup-file-was-empty-or-missing"
   else
+    # can't pass spaces to slack notifications, for now
     aws s3 cp $file $S3_BUCKET/$RUN_DATE/
-    send_slack_notification "[$ENVIRONMENT]-Mediadata-uploaded-to-s3://$S3_BUCKET/$RUN_DATE/$file"
+    send_slack_notification "[$ENVIRONMENT]-Mediadata-uploaded-to-$S3_BUCKET/$RUN_DATE/$(basename $file)"
   fi
 done
 
