@@ -13,7 +13,6 @@ from past.builtins import basestring
 import pint
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
@@ -397,14 +396,6 @@ def get_upload_details(request):
         'upload_path': '/api/v3/upload/'
     }
     return JsonResponse(ret)
-
-
-class MappingResultsPayloadSerializer(serializers.Serializer):
-    q = serializers.CharField(max_length=100)
-    order_by = serializers.CharField(max_length=100)
-    filter_params = JSONField()
-    page = serializers.IntegerField()
-    number_per_page = serializers.IntegerField()
 
 
 class MappingResultsPropertySerializer(serializers.Serializer):

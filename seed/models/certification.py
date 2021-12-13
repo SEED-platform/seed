@@ -16,7 +16,6 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.contrib.postgres.fields import JSONField
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
@@ -177,7 +176,7 @@ class GreenAssessmentProperty(models.Model):
     # optional expiration date
     _expiration_date = models.DateField(null=True, blank=True)
     # Allow for use defined fields
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
 
     @property
     def expiration_date(self):

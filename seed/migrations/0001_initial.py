@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import django.contrib.postgres.fields.jsonb
 import django_extensions.db.fields
 import autoslug.fields
 import django.utils.timezone
@@ -87,8 +86,8 @@ class Migration(migrations.Migration):
                 ('match_type', models.IntegerField(blank=True, null=True, db_index=True, choices=[(1, b'System Match'), (2, b'User Match'), (3, b'Possible Match')])),
                 ('confidence', models.FloatField(db_index=True, null=True, blank=True)),
                 ('source_type', models.IntegerField(blank=True, null=True, db_index=True, choices=[(0, b'Assessed Raw'), (2, b'Assessed'), (1, b'Portfolio Raw'), (3, b'Portfolio'), (4, b'BuildingSnapshot'), (5, b'Green Button Raw')])),
-                ('extra_data', django.contrib.postgres.fields.jsonb.JSONField(default={}, null=True, blank=True)),
-                ('extra_data_sources', django.contrib.postgres.fields.jsonb.JSONField(default={}, null=True, blank=True)),
+                ('extra_data', models.JSONField(default={}, null=True, blank=True)),
+                ('extra_data_sources', models.JSONField(default={}, null=True, blank=True)),
                 ('address_line_1_source', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='+', blank=True, to='seed.BuildingSnapshot', null=True)),
                 ('address_line_2_source', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='+', blank=True, to='seed.BuildingSnapshot', null=True)),
             ],
@@ -157,7 +156,7 @@ class Migration(migrations.Migration):
             name='CustomBuildingHeaders',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('building_headers', django.contrib.postgres.fields.jsonb.JSONField(default={}, null=True, blank=True)),
+                ('building_headers', models.JSONField(default={}, null=True, blank=True)),
                 ('super_organization', models.ForeignKey(on_delete=models.deletion.CASCADE, related_name='custom_headers', verbose_name='SeedOrg', blank=True, to='orgs.Organization', null=True)),
             ],
             options={
