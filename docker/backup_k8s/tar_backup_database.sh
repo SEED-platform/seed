@@ -4,6 +4,8 @@
 # uploads it when SEED is running in a docker container. This is to be used
 # in conjunction with k8s and a CronJob task.
 
+DB_USERNAME=$1
+
 send_slack_notification(){
     if [ ! -z ${APP_SLACK_WEBHOOK} ]; then
         payload='payload={"text": "'$1'"}'
@@ -54,28 +56,31 @@ apk add --no-cache \
 LATEST_DIR="$(aws s3 ls seed-dev1-backups | sort | tail -n 1 | awk -F' ' '{print $2}')"
 
 # if backup.tar already exists, for go rest of script
-if aws s3 ls  $S3_BUCKET/$LATEST_DIR | grep "d"; then
+if aws s3 ls  $S3_BUCKET/$LATEST_DIR | grep "backup.tar"; then
     echo "There's already a backup for $LATEST_DIR"; 
-    exit 1
+    exit 0
 
 fi
 
+# work in the scratch volume for storage
+cd /scratch
+
 # Download latest S3 backup
-aws s3 cp $S3_BUCKET/$LATEST_DIR ./backup  --recursive --exclude "*" --include "*.dump" --dryrun
+aws s3 cp $S3_BUCKET/$LATEST_DIR . --recursive --exclude "*" --include "*.dump"
 
 # Start postgres
 su postgres -c "initdb"
 su postgres -c "pg_ctl start"
 
 # Restore db 
-ls .backup
-pg_restore -t tmp_db -f ./backup/seed_*.dump 
+su postgres -c "createuser ${DB_USERNAME}"
+su postgres -c "pg_restore -v -C -d postgres ./seed*.dump"
 
 # Stop postgres
 su postgres -c "pg_ctl stop"
 
 # tar db
-tar -cf backup.tar var/lib/postgresql/data
+tar -czf backup.tar /var/lib/postgresql/data
 
 # push tared db to s3
 aws s3 cp backup.tar $S3_BUCKET/$LATEST_DIR
