@@ -12,7 +12,6 @@ import re
 from os import path
 
 from django.contrib.gis.db import models as geomodels
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.dispatch import receiver
@@ -82,7 +81,7 @@ class TaxLotState(models.Model):
     postal_code = models.CharField(max_length=255, null=True, blank=True)
     number_properties = models.IntegerField(null=True, blank=True)
 
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     # taxlots can now have lat/long and polygons, points.
