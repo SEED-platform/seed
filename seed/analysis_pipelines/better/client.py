@@ -19,13 +19,12 @@ class BETTERClient:
     def __init__(self, token):
         self._token = f'Token {token}'
 
-    def test_token(self):
+    def token_is_valid(self):
         """Returns true if token is valid
 
         :return: bool
         """
-        # TODO: get BETTER to create a "token" endpoint for testing
-        url = f'{self.API_URL}/weathers/'
+        url = f'{self.API_URL}/verify_token'
         headers = {
             'accept': 'application/json',
             'Authorization': self._token,
@@ -33,7 +32,7 @@ class BETTERClient:
 
         try:
             response = requests.request("GET", url, headers=headers)
-            return response.status_code != 401
+            return response.status_code == 200
         except Exception:
             return False
 
