@@ -87,6 +87,8 @@ from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
+import logging
+
 _log = get_task_logger(__name__)
 
 STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
@@ -1124,6 +1126,9 @@ def geocode_and_match_buildings_task(file_pk):
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
+    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
+    sub_progress_data.delete()
+
 
     if import_file.matching_done:
         _log.debug('Matching is already done')
@@ -1163,16 +1168,22 @@ def geocode_and_match_buildings_task(file_pk):
         # Start, match, pair
         post_geocode_tasks_count = 3
         post_geocode_tasks = chord(
-            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
+            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
             body=finish_matching.s(file_pk, progress_data.key),
             interval=15)
 
     geocoding_tasks_count = 1
     progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
     progress_data.save()
-    celery_chain(_geocode_properties_or_tax_lots.s(file_pk, progress_data.key), post_geocode_tasks)()
-
-    return progress_data.result()
+    sub_progress_data.total = 100
+    sub_progress_data.save()
+    
+    celery_chain(
+        _geocode_properties_or_tax_lots.s(file_pk, progress_data.key), 
+        post_geocode_tasks)()
+    logging.warning('>>> initial: progress_data %s', progress_data.result())
+    logging.warning('>>> initial: sub_progress_data %s', sub_progress_data.result())
+    return {'progress_data':progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
 def geocode_buildings_task(file_pk):
