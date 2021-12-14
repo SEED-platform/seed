@@ -86,7 +86,10 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
     if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key) # ross
+        sub_progress_data = ProgressData.from_key(sub_progress_key) 
+        sub_progress_data.delete()
+        sub_progress_data.total = 100
+        sub_progress_data.save()
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
@@ -122,12 +125,17 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start Properties filter_duplicate_states")
         promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
-            incoming_properties
+            incoming_properties,
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
-        promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(promoted_property_ids, org, PropertyState)
+        promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(
+            promoted_property_ids, 
+            org, 
+            PropertyState,
+            sub_progress_key
+        )
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start Properties states_to_views')
@@ -141,7 +149,11 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
         # Look for links across Cycles
         log_debug('Start Properties link_views')
-        merged_linked_property_views = link_views(merged_property_views, PropertyView)
+        merged_linked_property_views = link_views(
+            merged_property_views, 
+            PropertyView,
+            sub_progress_key
+        )
 
     if incoming_tax_lots.exists():
         # Within the ImportFile, filter out the duplicates.
@@ -169,8 +181,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
-    pair_new_states(merged_linked_property_views, merged_linked_taxlot_views)
-    log_debug('End pair_new_states')
+    pair_new_states(merged_linked_property_views, merged_linked_taxlot_views, sub_progress_key)
+
 
     return {
         'import_file_records': import_file.num_rows,
@@ -219,13 +231,14 @@ def filter_duplicate_states(unmatched_states):
         for ids
         in ids_grouped_by_hash
     ]
+    
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
     return canonical_state_ids, duplicate_count
 
 
-def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
+def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key=None):
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
@@ -236,6 +249,12 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     :return: promoted_ids: list
     """
     column_names = matching_criteria_column_names(org.id, StateClass.__name__)
+
+    if sub_progress_key:
+        sub_progress_data = ProgressData.from_key(sub_progress_key)
+        sub_progress_data.delete()
+        sub_progress_data.total = 100
+        sub_progress_data.save()
 
     # IDs of -States with all matching criteria equal to None are intially promoted
     # as they're not eligible for matching.
@@ -261,7 +280,8 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
     # Collapse groups of matches found in the previous step into 1 -State per group
     merges_within_file = 0
     priorities = Column.retrieve_priorities(org)
-    for ids in matched_id_groups:
+    batch_size = int(len(matched_id_groups) / 100) + (len(matched_id_groups) % 100 > 0)
+    for idx, ids in enumerate(matched_id_groups):
         if len(ids) == 1:
             # If there's only 1, no merging is needed, so just promote the ID.
             promoted_ids += ids
@@ -276,6 +296,11 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass):
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
+        if batch_size > 0 and idx % batch_size == 0 and sub_progress_data:
+            sub_progress_data.step('1. Inclusive Match and Merge')
+
+    if sub_progress_data:
+        sub_progress_data.finish_with_success()
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
@@ -305,7 +330,11 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     """
     table_name = StateClass.__name__
 
-    sub_progress_data = ProgressData.from_key(sub_progress_key) # ross
+    if sub_progress_key:
+        sub_progress_data = ProgressData.from_key(sub_progress_key)
+        sub_progress_data.delete()
+        sub_progress_data.total = 100
+        sub_progress_data.save()
 
     if table_name == 'PropertyState':
         ViewClass = PropertyView
@@ -368,10 +397,13 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
         
         if batch_size > 0 and idx % batch_size == 0:
-            sub_progress_data.step('unmatched_states')
+            sub_progress_data.step('2.1 Unmatched States')
             logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
 
     sub_progress_data.finish_with_success()
+    sub_progress_data.delete()
+    sub_progress_data.total = 100
+    sub_progress_data.save()
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
     priorities = Column.retrieve_priorities(org.pk)
@@ -380,9 +412,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     merged_state_ids = []
     try:
         with transaction.atomic():
-            logging.warning('>>> merge_state_pairs')
-
-            for state_pair in merge_state_pairs:
+            batch_size = int(len(merge_state_pairs) / 100) + (len(merge_state_pairs) % 100 > 0)
+            for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
                 existing_view = ViewClass.objects.get(state_id=existing_state.id)
 
@@ -393,17 +424,27 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
                 processed_views.append(existing_view)
                 merged_state_ids.append(merged_state.id)
-            
-            logging.warning('>>> promote_states')
+                if batch_size > 0 and idx % batch_size == 0:
+                    sub_progress_data.step('2.2 Merge State Pairs')
+            sub_progress_data.finish_with_success()     
 
-            for state in promote_states:
+            sub_progress_data.delete()     
+            sub_progress_data.total = 100
+            sub_progress_data.save()
+
+            batch_size = int(len(promote_states) / 100) + (len(promote_states) % 100 > 0)
+            for idx, state in enumerate(promote_states):
                 promoted_ids.append(state.id)
                 created_view = state.promote(cycle)
                 processed_views.append(created_view)
+                if batch_size > 0 and idx % batch_size == 0:
+                    sub_progress_data.step('2.3 Promote States')
+            sub_progress_data.finish_with_success()     
+            
+
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
 
-    logging.warning('>>> promote_states_done')
     
 
     new_count = len(promoted_ids)
@@ -419,26 +460,39 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
 
 
-def link_views(merged_views, ViewClass):
+def link_views(merged_views, ViewClass, sub_progress_key=None):
     """
     Run each of the given -Views through a linking round.
 
     For details on the actual linking logic, please refer to the the
     match_merge_link() method.
     """
+
+    if sub_progress_key:
+        sub_progress_data = ProgressData.from_key(sub_progress_key)
+        sub_progress_data.delete()
+        sub_progress_data.total = 100
+        sub_progress_data.save()
+
     if ViewClass == PropertyView:
         state_class_name = "PropertyState"
     else:
         state_class_name = "TaxLotState"
 
     processed_views = []
-    for view in merged_views:
+
+    batch_size = int(len(merged_views) / 100) + (len(merged_views) % 100 > 0)
+    for idx, view in enumerate(merged_views):
         _merge_count, _link_count, view_id = match_merge_link(view.id, state_class_name)
 
         if view_id is not None:
             processed_views.append(ViewClass.objects.get(pk=view_id))
         else:
             processed_views.append(view)
+        if batch_size > 0 and idx % batch_size == 0 and sub_progress_data:
+            sub_progress_data.step('3. Merge Views')
+    if sub_progress_data:
+        sub_progress_data.finish_with_success()
 
     return processed_views
 
