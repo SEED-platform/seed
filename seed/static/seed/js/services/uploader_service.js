@@ -98,6 +98,8 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
+      console.log('check progress loop')
+      console.log('progress_bar_obj', progress_bar_obj)
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
           const right_now = Date.now();
@@ -124,6 +126,136 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           }
         }, 750);
       }, failure_fn);
+    };
+
+    uploader_factory.check_progress_loop_ross = function (progress_argument, sub_progress_argument, success_fn, failure_fn) {
+      const {progress_key, offset, multiplier, progress_bar_obj} = progress_argument
+      const {sub_progress_key, sub_offset, sub_multiplier, sub_progress_bar_obj} = sub_progress_argument
+      console.log('check progress loop ross')
+      console.log('progress_bar_obj',progress_bar_obj)
+      console.log('sub_progress_bar_obj', sub_progress_bar_obj)
+
+      // functional a
+      // uploader_factory.check_progress(progress_key)
+      //   .then(function (data) {run_checks(data)}, failure_fn)
+
+      const main = uploader_factory.check_progress(progress_key)
+      const sub = uploader_factory.check_progress(sub_progress_key)
+
+      Promise.all([main, sub]).then((values) => {run_checks(values)})
+      
+      function run_checks(data) {
+        $timeout(function () {
+          progress_argument = update_progress(data[0])
+          sub_progress_argument = update_progress2(data[1])
+          if (data[0].progress < 100) {
+            console.log('progress less than 100')
+            uploader_factory.check_progress_loop_ross(progress_argument, sub_progress_argument, success_fn, failure_fn);
+          } else {
+            success_fn(data[0]);
+          }
+          
+        }, 750);
+      };
+
+      function update_progress(data) {
+        const right_now = Date.now();
+          progress_bar_obj.progress_last_checked = right_now;
+
+          const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+          const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+          if (updating_progress) {
+            progress_bar_obj.progress_last_updated = right_now;
+          }
+
+          if (data.total_records) {
+            progress_bar_obj.total_records = data.total_records;
+          }
+          if (data.completed_records) {
+            progress_bar_obj.completed_records = data.completed_records;
+          }
+          progress_bar_obj.progress = new_progress_value;
+          progress_bar_obj.status_message = data.status_message;
+
+          return {
+            'progress_key': progress_key,
+            'offset': offset,
+            'multiplier': multiplier,
+            'progress_bar_obj': progress_bar_obj
+          }
+
+      }
+      function update_progress2(data) {
+        const right_now = Date.now();
+          sub_progress_bar_obj.progress_last_checked = right_now;
+
+          const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+          const updating_progress = new_progress_value != sub_progress_bar_obj.progress || sub_progress_bar_obj.status_message != data.status_message;
+          if (updating_progress) {
+            sub_progress_bar_obj.progress_last_updated = right_now;
+          }
+
+          if (data.total_records) {
+            sub_progress_bar_obj.total_records = data.total_records;
+          }
+          if (data.completed_records) {
+            sub_progress_bar_obj.completed_records = data.completed_records;
+          }
+          sub_progress_bar_obj.progress = new_progress_value;
+          sub_progress_bar_obj.status_message = data.status_message;
+
+          return {
+            'sub_progress_key': sub_progress_key,
+            'sub_offset': sub_offset,
+            'sub_multiplier': sub_multiplier,
+            'sub_progress_bar_obj': sub_progress_bar_obj
+          }
+
+      }
+
+      // functional A
+      // function run_checks(data) {
+      //   $timeout(function () {
+      //     const right_now = Date.now();
+      //     progress_bar_obj.progress_last_checked = right_now;
+
+      //     const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+      //     const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+      //     if (updating_progress) {
+      //       progress_bar_obj.progress_last_updated = right_now;
+      //     }
+
+      //     if (data.total_records) {
+      //       progress_bar_obj.total_records = data.total_records;
+      //     }
+      //     if (data.completed_records) {
+      //       progress_bar_obj.completed_records = data.completed_records;
+      //     }
+      //     progress_bar_obj.progress = new_progress_value;
+      //     progress_bar_obj.status_message = data.status_message;
+
+      //     const progress_argument = {
+      //       'progress_key': progress_key,
+      //       'offset': offset,
+      //       'multiplier': multiplier,
+      //       'progress_bar_obj': progress_bar_obj
+      //     }
+      //     const sub_progress_argument = {
+      //       'sub_progress_key': sub_progress_key,
+      //       'sub_offset': sub_offset,
+      //       'sub_multiplier': sub_multiplier,
+      //       'sub_progress_bar_obj': sub_progress_bar_obj
+      //     }
+      //     if (data.progress < 100) {
+      //       console.log('progress less than 100')
+      //       uploader_factory.check_progress_loop_ross(progress_argument, sub_progress_argument, success_fn, failure_fn);
+      //     } else {
+      //       success_fn(data);
+      //     }
+          
+      //   }, 750);
+      // };
+
     };
 
     uploader_factory.pm_meters_preview = function (file_id, org_id) {
