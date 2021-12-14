@@ -123,6 +123,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         progress_last_updated: null,
         progress_last_checked: null
       };
+      $scope.sub_uploader = {
+        invalid_extension_alert: false,
+        invalid_geojson_extension_alert: false,
+        invalid_xml_extension_alert: false,
+        invalid_xml_zip_extension_alert: false,
+        in_progress: false,
+        progress: 0,
+        complete: false,
+        status_message: '',
+        progress_last_updated: null,
+        progress_last_checked: null
+      };
 
       /**
        * Tell the backend that the mapping is done and start the next step
@@ -604,9 +616,11 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * find_matches: finds matches for buildings within an import file
        */
       $scope.find_matches = function () {
+        console.log('find matches 1')
+
         matching_service.start_system_matching($scope.dataset.import_file_id).then(function (data) {
           $scope.step_10_mapquest_api_error = false;
-
+          
           // helper function to set scope parameters for when the task fails
           const handleSystemMatchingError = function (data) {
             $scope.uploader.complete = true;
@@ -614,16 +628,30 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.progress = 0;
             $scope.step.number = 10;
             $scope.step_10_style = 'danger';
-            $scope.step_10_error_message = data.message;
-            $scope.step_10_title = data.message;
+            $scope.step_10_error_message = data.progress_data.message;
+            $scope.step_10_title = data.progress_data.message;
           };
 
-          if (_.includes(['error', 'warning'], data.status)) {
+          if (_.includes(['error', 'warning'], data.progress_data.status)) {
             handleSystemMatchingError(data);
           } else {
-            uploader_service.check_progress_loop(data.progress_key, data.progress, 1, function (progress_data) {
+            console.log('find matches 2')
+            const progress_argument = {
+              'progress_key': data.progress_data.progress_key,
+              'offset': data.progress_data.progress,
+              'multiplier': 1,
+              'progress_bar_obj':$scope.uploader
+            }
+            const sub_progress_argument = {
+              'sub_progress_key': data.sub_progress_data.progress_key,
+              'sub_offset': data.sub_progress_data.progress,
+              'sub_multiplier': 1,
+              'sub_progress_bar_obj':$scope.sub_uploader
+            }
+            uploader_service.check_progress_loop_ross(progress_argument, sub_progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
+                console.log('find matches 3')
 
                 $scope.property_initial_incoming = result_data.properties.initial_incoming;
                 $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;
@@ -688,7 +716,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               if ($scope.step_10_error_message.includes('MapQuest')) {
                 $scope.step_10_mapquest_api_error = true;
               }
-            }, $scope.uploader);
+            });
           }
         });
       };
