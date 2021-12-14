@@ -86,7 +86,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
     if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key) 
+        sub_progress_data = ProgressData.from_key(sub_progress_key)
         sub_progress_data.delete()
         sub_progress_data.total = 100
         sub_progress_data.save()
@@ -131,8 +131,8 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
         promoted_property_ids, property_merges_within_file_count = inclusive_match_and_merge(
-            promoted_property_ids, 
-            org, 
+            promoted_property_ids,
+            org,
             PropertyState,
             sub_progress_key
         )
@@ -150,7 +150,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # Look for links across Cycles
         log_debug('Start Properties link_views')
         merged_linked_property_views = link_views(
-            merged_property_views, 
+            merged_property_views,
             PropertyView,
             sub_progress_key
         )
@@ -182,7 +182,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
     pair_new_states(merged_linked_property_views, merged_linked_taxlot_views, sub_progress_key)
-
 
     return {
         'import_file_records': import_file.num_rows,
@@ -231,7 +230,7 @@ def filter_duplicate_states(unmatched_states):
         for ids
         in ids_grouped_by_hash
     ]
-    
+
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
@@ -308,7 +307,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     return promoted_ids, merges_within_file
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key = None):
+def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key=None):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -395,7 +394,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             merge_state_pairs.append((existing_state_matches.first(), state))
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
-        
+
         if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('2.1 Unmatched States')
             logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
@@ -426,9 +425,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('2.2 Merge State Pairs')
-            sub_progress_data.finish_with_success()     
+            sub_progress_data.finish_with_success()
 
-            sub_progress_data.delete()     
+            sub_progress_data.delete()
             sub_progress_data.total = 100
             sub_progress_data.save()
 
@@ -439,13 +438,10 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 processed_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('2.3 Promote States')
-            sub_progress_data.finish_with_success()     
-            
+            sub_progress_data.finish_with_success()
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
-
-    
 
     new_count = len(promoted_ids)
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge

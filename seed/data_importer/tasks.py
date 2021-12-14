@@ -1129,7 +1129,6 @@ def geocode_and_match_buildings_task(file_pk):
     sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
     sub_progress_data.delete()
 
-
     if import_file.matching_done:
         _log.debug('Matching is already done')
         return progress_data.finish_with_warning('matching already complete')
@@ -1177,13 +1176,13 @@ def geocode_and_match_buildings_task(file_pk):
     progress_data.save()
     sub_progress_data.total = 100
     sub_progress_data.save()
-    
+
     celery_chain(
-        _geocode_properties_or_tax_lots.s(file_pk, progress_data.key, sub_progress_data.key), 
+        _geocode_properties_or_tax_lots.s(file_pk, progress_data.key, sub_progress_data.key),
         post_geocode_tasks)()
     logging.warning('>>> initial: progress_data %s', progress_data.result())
     logging.warning('>>> initial: sub_progress_data %s', sub_progress_data.result())
-    return {'progress_data':progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
+    return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
 def geocode_buildings_task(file_pk):
@@ -1234,7 +1233,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
         except MapQuestAPIKeyError as e:
             progress_data.finish_with_error(str(e), traceback.format_exc())
             raise e
-            
+
     if sub_progress_data:
         sub_progress_data.step('Geocoding')
         sub_progress_data.finish_with_success()
@@ -1503,7 +1502,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
     if not merged_property_views and not merged_taxlot_views:
         return
 
-    sub_progress_data = ProgressData.from_key(sub_progress_key) 
+    sub_progress_data = ProgressData.from_key(sub_progress_key)
     sub_progress_data.delete()
     sub_progress_data.total = 12
     sub_progress_data.save()
@@ -1659,7 +1658,6 @@ def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key
         m2m_join.save()
 
     sub_progress_data.finish_with_success()
-    
 
     return
 
