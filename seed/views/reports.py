@@ -35,7 +35,7 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from xlsxwriter import Workbook
 
 
-class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
+class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
 
