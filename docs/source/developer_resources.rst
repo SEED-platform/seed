@@ -38,6 +38,9 @@ Python type hints are beginning to be added to the SEED codebase. The benefits a
 eliminating some accidental typing mistakes to prevent bugs as well as a better IDE
 experience.
 
+Usage
+*****
+
 SEED does not require exhaustive type annotations, but it is recommended you add them if you
 create any new functions or refactor any existing code where it might be beneficial
 and not require a ton of additional effort.
@@ -45,6 +48,13 @@ and not require a ton of additional effort.
 When applicable, we recommend you use `built-in collection types <https://docs.python.org/3/whatsnew/3.9.html#type-hinting-generics-in-standard-collections>`_
 such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized types
 from the :code:`typing` module.
+
+Common gotchas:
+- if trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
+- If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
+
+Type Checking
+*************
 
 CI currently runs static type checking on the codebase using `mypy <http://mypy-lang.org/>`_. For
 your own IDE, we recommend the following extensions:
