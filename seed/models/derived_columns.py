@@ -221,7 +221,7 @@ class DerivedColumn(models.Model):
                 'expression': str(e)
             })
 
-    def save(self, *args, **kwargs) -> DerivedColumn:
+    def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
 
@@ -262,7 +262,7 @@ class DerivedColumn(models.Model):
 
         return params
 
-    def evaluate(self, inventory_state: Union[None, PropertyState] = None, parameters: Union[None, dict[str, float]] = None):
+    def evaluate(self, inventory_state: Union[None, PropertyState, TaxLotState] = None, parameters: Union[None, dict[str, float]] = None):
         """Evaluate the expression. Caller must provide `parameters`, `inventory_state`,
         or both. Values from the inventory take priority over the parameters dict.
         Values that cannot be coerced into floats (from the inventory or params dict)
