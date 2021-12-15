@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from copy import copy
+import copy
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -289,7 +289,7 @@ class DerivedColumn(models.Model):
             tmp_params = self.get_parameter_values(inventory_state)
             inventory_parameters = _cast_params_to_floats(tmp_params)
 
-        merged_parameters = copy(parameters)
+        merged_parameters = copy.copy(parameters)
         merged_parameters.update(inventory_parameters)
         merged_parameters = _cast_params_to_floats(merged_parameters)
 
