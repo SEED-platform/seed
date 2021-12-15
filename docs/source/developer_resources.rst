@@ -50,8 +50,9 @@ such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized t
 from the :code:`typing` module.
 
 Common gotchas:
-- if trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
+- If trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
 - If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
+- If you're wasting time trying to please the type checker, feel free to throw :code:`# type: ignore` on the problematic line (or at the top of the file to ignore all issues for that file)
 
 Type Checking
 *************
