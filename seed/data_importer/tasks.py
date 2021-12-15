@@ -1182,6 +1182,7 @@ def geocode_and_match_buildings_task(file_pk):
         post_geocode_tasks)()
     logging.warning('>>> initial: progress_data %s', progress_data.result())
     logging.warning('>>> initial: sub_progress_data %s', sub_progress_data.result())
+
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
@@ -1210,7 +1211,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
         sub_progress_data.save()
 
     progress_data.step('Geocoding')
-    if sub_progress_data:
+    if sub_progress_key:
         sub_progress_data.step('Geocoding')
 
     property_state_qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
@@ -1222,7 +1223,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
             progress_data.finish_with_error(str(e), traceback.format_exc())
             raise e
 
-    if sub_progress_data:
+    if sub_progress_key:
         sub_progress_data.step('Geocoding')
 
     tax_lot_state_qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
@@ -1234,7 +1235,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
             progress_data.finish_with_error(str(e), traceback.format_exc())
             raise e
 
-    if sub_progress_data:
+    if sub_progress_key:
         sub_progress_data.step('Geocoding')
         sub_progress_data.finish_with_success()
 
