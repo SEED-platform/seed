@@ -11,10 +11,7 @@ import logging
 import math
 import tempfile
 
-try:
-    from urllib import unquote  # python2.x
-except ImportError:
-    from urllib.parse import unquote  # python3.x
+from urllib.parse import unquote
 
 from django.contrib.auth.models import User
 from django.urls import reverse
