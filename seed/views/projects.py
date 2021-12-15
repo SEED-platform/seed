@@ -64,7 +64,7 @@ STATUS_LOOKUP = {
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}
 
 
-class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  # type: ignore
     serializer_class = ProjectSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)

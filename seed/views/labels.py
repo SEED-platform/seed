@@ -37,7 +37,7 @@ from seed.utils.api import drf_api_endpoint
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  # type: ignore
     """API endpoint for viewing and creating labels.
 
             Returns::

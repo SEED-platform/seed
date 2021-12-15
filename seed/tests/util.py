@@ -129,7 +129,7 @@ class FakeRequest(object):
     META = {'REMOTE_ADDR': '127.0.0.1'}
     path = 'fake_login_path'
     body = None
-    GET = POST = {}
+    GET = POST = {}  # type: ignore
 
     def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
