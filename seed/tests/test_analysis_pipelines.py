@@ -618,7 +618,7 @@ class TestBsyncrPipeline(TestCase):
 
     # Skipping this test b/c of an unexpected error validating BuildingSync files
     # See here for more info: https://github.com/SEED-platform/seed/pull/2901
-    @skip
+    @skip('See https://github.com/SEED-platform/seed/pull/2901')
     def test_build_bsyncr_input_returns_valid_bsync_document(self):
         # Act
         doc, errors = _build_bsyncr_input(self.analysis_property_view, self.meter)
