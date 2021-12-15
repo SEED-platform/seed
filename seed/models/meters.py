@@ -64,7 +64,7 @@ class Meter(models.Model):
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
     )
 
-    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
+    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
 
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2
