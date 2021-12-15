@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
-import django.contrib.postgres.fields.jsonb
 from django.db import migrations, models
 import django.db.models.deletion
 
@@ -24,7 +23,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=255, verbose_name='name')),
                 ('note_type', models.IntegerField(choices=[(0, b'Note'), (1, b'Log')], default=0, null=True)),
                 ('text', models.TextField()),
-                ('log_data', django.contrib.postgres.fields.jsonb.JSONField(default=dict, null=True)),
+                ('log_data', models.JSONField(default=dict, null=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('updated', models.DateTimeField(auto_now=True)),
                 ('organization', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='notes', to='orgs.Organization')),

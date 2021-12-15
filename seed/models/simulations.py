@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import logging
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 # from seed.models.measures import Measure
@@ -27,7 +26,7 @@ class Simulation(models.Model):
     # currently only one simulation result object for each PropertyState
     property_state = models.OneToOneField("PropertyState", on_delete=models.CASCADE, primary_key=True, )
     scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='simulations', null=True)
-    data = JSONField(default=dict, blank=True)
+    data = models.JSONField(default=dict, blank=True)
 
 
 class ResultFile(models.Model):

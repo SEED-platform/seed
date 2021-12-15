@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import django.contrib.postgres.fields.jsonb
 
 
 class Migration(migrations.Migration):
@@ -86,7 +85,7 @@ class Migration(migrations.Migration):
                 ('energy_alerts', models.TextField(blank=True, null=True)),
                 ('space_alerts', models.TextField(blank=True, null=True)),
                 ('building_certification', models.CharField(blank=True, max_length=255, null=True)),
-                ('extra_data', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default={})),
+                ('extra_data', models.JSONField(blank=True, default={})),
             ],
         ),
         migrations.CreateModel(
@@ -127,7 +126,7 @@ class Migration(migrations.Migration):
                 ('state', models.CharField(blank=True, max_length=255, null=True)),
                 ('postal_code', models.CharField(blank=True, max_length=255, null=True)),
                 ('number_properties', models.IntegerField(blank=True, null=True)),
-                ('extra_data', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default={})),
+                ('extra_data', models.JSONField(blank=True, default={})),
             ],
         ),
         migrations.CreateModel(
