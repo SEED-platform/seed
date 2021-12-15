@@ -648,7 +648,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               'sub_multiplier': 1,
               'sub_progress_bar_obj':$scope.sub_uploader
             }
-            uploader_service.check_progress_loop_ross(progress_argument, sub_progress_argument, function (progress_data) {
+            uploader_service.check_progress_loop_ross(progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
                 console.log('find matches 3')
@@ -716,7 +716,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               if ($scope.step_10_error_message.includes('MapQuest')) {
                 $scope.step_10_mapquest_api_error = true;
               }
-            });
+            }, sub_progress_argument);
           }
         });
       };
