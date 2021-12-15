@@ -31,6 +31,33 @@ To run flake locally call:
 
     tox -e flake8
 
+Python Type Hints
+^^^^^^^^^^^^^^^^^
+
+Python type hints are beginning to be added to the SEED codebase. The benefits are
+eliminating some accidental typing mistakes to prevent bugs as well as a better IDE
+experience.
+
+SEED does not require exhaustive type annotations, but it is recommended you add them if you
+create any new functions or refactor any existing code where it might be beneficial
+and not require a ton of additional effort.
+
+When applicable, we recommend you use `built-in collection types <https://docs.python.org/3/whatsnew/3.9.html#type-hinting-generics-in-standard-collections>`_
+such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized types
+from the :code:`typing` module.
+
+CI currently runs static type checking on the codebase using mypy. For
+your own IDE, we recommend the following extensions:
+
+- VSCode: Pylance (uses Microsoft's Pyright type checking)
+
+To run the same typechecking applied in CI (i.e. using mypy) you can run the following
+
+.. code-block:: console
+
+    tox -e mypy
+
+
 Django Notes
 ------------
 
