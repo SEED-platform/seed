@@ -298,7 +298,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('1. Inclusive Match and Merge')
 
-    if sub_progress_data:
+    if sub_progress_key:
         sub_progress_data.finish_with_success()
 
     # Flag the soon to be promoted ID -States as having gone through matching
@@ -398,11 +398,11 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('2.1 Unmatched States')
             logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
-
-    sub_progress_data.finish_with_success()
-    sub_progress_data.delete()
-    sub_progress_data.total = 100
-    sub_progress_data.save()
+    if sub_progress_key:
+        sub_progress_data.finish_with_success()
+        sub_progress_data.delete()
+        sub_progress_data.total = 100
+        sub_progress_data.save()
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
     priorities = Column.retrieve_priorities(org.pk)
@@ -425,11 +425,11 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
                     sub_progress_data.step('2.2 Merge State Pairs')
-            sub_progress_data.finish_with_success()
-
-            sub_progress_data.delete()
-            sub_progress_data.total = 100
-            sub_progress_data.save()
+            if sub_progress_key:
+                sub_progress_data.finish_with_success()
+                sub_progress_data.delete()
+                sub_progress_data.total = 100
+                sub_progress_data.save()
 
             batch_size = int(len(promote_states) / 100) + (len(promote_states) % 100 > 0)
             for idx, state in enumerate(promote_states):
@@ -438,7 +438,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 processed_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
                     sub_progress_data.step('2.3 Promote States')
-            sub_progress_data.finish_with_success()
+            if sub_progress_key:
+                sub_progress_data.finish_with_success()
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
@@ -487,7 +488,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
             processed_views.append(view)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('3. Merge Views')
-    if sub_progress_data:
+    if sub_progress_key:
         sub_progress_data.finish_with_success()
 
     return processed_views
