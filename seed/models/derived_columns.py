@@ -115,7 +115,7 @@ class ExpressionEvaluator:
             """
             self.params = params
 
-    def __init__(self, expression: str, validate: bool=True):
+    def __init__(self, expression: str, validate: bool = True):
         """Construct an expression evaluator.
 
         :param expression: str
@@ -142,7 +142,7 @@ class ExpressionEvaluator:
 
         return True
 
-    def evaluate(self, parameters: Union[None, dict[str, float]]=None) -> float:
+    def evaluate(self, parameters: Union[None, dict[str, float]] = None) -> float:
         """Evaluate the expression with the provided parameters
 
         :param parameters: dict, keys are parameter names and values are values
@@ -152,7 +152,7 @@ class ExpressionEvaluator:
             parameters = {}
 
         self._transformer.set_params(parameters)
-        return self._parser.parse(self._expression) # type: ignore[return-value]
+        return self._parser.parse(self._expression)  # type: ignore[return-value]
 
 
 class InvalidExpression(Exception):
@@ -262,7 +262,7 @@ class DerivedColumn(models.Model):
 
         return params
 
-    def evaluate(self, inventory_state: Union[None, PropertyState]=None, parameters: Union[None, dict[str, float]]=None):
+    def evaluate(self, inventory_state: Union[None, PropertyState] = None, parameters: Union[None, dict[str, float]] = None):
         """Evaluate the expression. Caller must provide `parameters`, `inventory_state`,
         or both. Values from the inventory take priority over the parameters dict.
         Values that cannot be coerced into floats (from the inventory or params dict)
