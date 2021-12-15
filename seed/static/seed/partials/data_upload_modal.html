@@ -213,8 +213,6 @@
                 </div>
                 <!-- Sub progress bar -->
                 <div class="progress_bar_container" id="sub_progress_bar_container">
-                    <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
-                        <strong>{$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="sub_uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ sub_uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ sub_uploader.status_message ? ': ' + sub_uploader.status_message : '' $}</div>
                 </div>

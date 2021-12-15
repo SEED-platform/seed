@@ -128,29 +128,37 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       }, failure_fn);
     };
 
-    uploader_factory.check_progress_loop_ross = function (progress_argument, sub_progress_argument, success_fn, failure_fn) {
+    uploader_factory.check_progress_loop_ross = function (progress_argument, success_fn, failure_fn, sub_progress_argument=null) {
       const {progress_key, offset, multiplier, progress_bar_obj} = progress_argument
-      const {sub_progress_key, sub_offset, sub_multiplier, sub_progress_bar_obj} = sub_progress_argument
-      console.log('check progress loop ross')
-      console.log('progress_bar_obj',progress_bar_obj)
-      console.log('sub_progress_bar_obj', sub_progress_bar_obj)
-
-      // functional a
-      // uploader_factory.check_progress(progress_key)
-      //   .then(function (data) {run_checks(data)}, failure_fn)
+      let sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier;
+      if (sub_progress_argument) {
+        sub_progress_key = sub_progress_argument['sub_progress_key']
+        sub_progress_bar_obj = sub_progress_argument['sub_progress_bar_obj']
+        sub_offset = sub_progress_argument['sub_offset']
+        sub_multiplier = sub_progress_argument['sub_multiplier']
+      } 
 
       const main = uploader_factory.check_progress(progress_key)
-      const sub = uploader_factory.check_progress(sub_progress_key)
+      let progress_list = [main]
+      if (sub_progress_argument) {
+        progress_list.push(uploader_factory.check_progress(sub_progress_key))
+      }
 
-      Promise.all([main, sub]).then((values) => {run_checks(values)})
+      Promise.all(progress_list).then((values) => {run_checks(values)})
       
       function run_checks(data) {
         $timeout(function () {
           progress_argument = update_progress(data[0])
-          sub_progress_argument = update_progress2(data[1])
+          if (data.length > 1) {
+            sub_progress_argument = update_progress2(data[1])
+          }
           if (data[0].progress < 100) {
             console.log('progress less than 100')
-            uploader_factory.check_progress_loop_ross(progress_argument, sub_progress_argument, success_fn, failure_fn);
+            if (data.length > 1) {
+              uploader_factory.check_progress_loop_ross(progress_argument, success_fn, failure_fn, sub_progress_argument)
+            } else {
+              uploader_factory.check_progress_loop_ross(progress_argument, success_fn, failure_fn)
+            }
           } else {
             success_fn(data[0]);
           }
