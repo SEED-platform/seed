@@ -111,9 +111,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         params={"organization_id": organization_id},
         json=payload
     )
-    # ROSS
     result = check_progress(main_url, header, result.json()['progress_data']['progress_key'])
-    # result = check_progress(main_url, header, result.json()['progress_key'])
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched records
