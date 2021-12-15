@@ -534,11 +534,6 @@ class ImportRecord(NotDeletableModel):
     def SUMMARY_ANALYSIS_QUEUED_KEY(cls, pk):
         return 'SUMMARY_ANALYSIS_QUEUED%s' % pk
 
-    @property
-    def form(self, data=None):
-        from seed.data_importer import ImportRecordForm
-        return ImportRecordForm(data, instance=self)
-
     def prefixed_pk(self, pk, max_len_before_prefix=(SOURCE_FACILITY_ID_MAX_LEN - len('IMP1234-'))):
         """This is a total hack to support prefixing until source_facility_id
         is turned into a proper pk.  Prefixes a given pk with the import_record"""
