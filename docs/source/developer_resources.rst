@@ -46,10 +46,10 @@ When applicable, we recommend you use `built-in collection types <https://docs.p
 such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized types
 from the :code:`typing` module.
 
-CI currently runs static type checking on the codebase using mypy. For
+CI currently runs static type checking on the codebase using `mypy <http://mypy-lang.org/>`_. For
 your own IDE, we recommend the following extensions:
 
-- VSCode: Pylance (uses Microsoft's Pyright type checking)
+- VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
 
 To run the same typechecking applied in CI (i.e. using mypy) you can run the following
 
