@@ -46,6 +46,7 @@ from seed.utils.match import (
     match_merge_link,
     matching_filter_criteria,
     matching_criteria_column_names,
+    update_sub_progress_total,
 )
 from seed.utils.merge import merge_states_with_views
 
@@ -85,11 +86,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
-    if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.delete()
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+    update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
     org = import_file.import_record.super_organization
@@ -249,11 +246,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     """
     column_names = matching_criteria_column_names(org.id, StateClass.__name__)
 
-    if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.delete()
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     # IDs of -States with all matching criteria equal to None are intially promoted
     # as they're not eligible for matching.
@@ -329,11 +322,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     """
     table_name = StateClass.__name__
 
-    if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.delete()
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     if table_name == 'PropertyState':
         ViewClass = PropertyView
@@ -398,11 +387,9 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('2.1 Unmatched States')
             logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
-    if sub_progress_key:
-        sub_progress_data.finish_with_success()
-        sub_progress_data.delete()
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
     priorities = Column.retrieve_priorities(org.pk)
@@ -425,11 +412,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
                     sub_progress_data.step('2.2 Merge State Pairs')
-            if sub_progress_key:
-                sub_progress_data.finish_with_success()
-                sub_progress_data.delete()
-                sub_progress_data.total = 100
-                sub_progress_data.save()
+
+            sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
             batch_size = int(len(promote_states) / 100) + (len(promote_states) % 100 > 0)
             for idx, state in enumerate(promote_states):
@@ -464,12 +448,8 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
     For details on the actual linking logic, please refer to the the
     match_merge_link() method.
     """
-
-    if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.delete()
-        sub_progress_data.total = 100
-        sub_progress_data.save()
+    
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     if ViewClass == PropertyView:
         state_class_name = "PropertyState"
