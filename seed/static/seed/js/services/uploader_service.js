@@ -130,13 +130,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
 
     uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument=null) {
       const {progress_key, offset, multiplier, progress_bar_obj} = progress_argument
-      let sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier;
-      if (sub_progress_argument) {
-        sub_progress_key = sub_progress_argument['sub_progress_key']
-        sub_progress_bar_obj = sub_progress_argument['sub_progress_bar_obj']
-        sub_offset = sub_progress_argument['sub_offset']
-        sub_multiplier = sub_progress_argument['sub_multiplier']
-      } 
+      const {sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier} = sub_progress_argument ? sub_progress_argument : null 
 
       const main = uploader_factory.check_progress(progress_key)
       let progress_list = [main]
