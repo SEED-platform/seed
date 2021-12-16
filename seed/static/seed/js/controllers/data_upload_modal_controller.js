@@ -635,10 +635,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
               'progress_bar_obj':$scope.uploader
             }
             const sub_progress_argument = {
-              'sub_progress_key': data.sub_progress_data.progress_key,
-              'sub_offset': data.sub_progress_data.progress,
-              'sub_multiplier': 1,
-              'sub_progress_bar_obj':$scope.sub_uploader
+              'progress_key': data.sub_progress_data.progress_key,
+              'offset': data.sub_progress_data.progress,
+              'multiplier': 1,
+              'progress_bar_obj':$scope.sub_uploader
             }
             uploader_service.check_progress_loop_main_sub(progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
