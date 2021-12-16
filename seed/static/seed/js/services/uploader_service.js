@@ -129,8 +129,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     };
 
     uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument=null) {
-      const {progress_key, offset, multiplier, progress_bar_obj} = progress_argument
-      const {sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier} = sub_progress_argument ? sub_progress_argument : null 
+      const {progress_key} = progress_argument
+      const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null 
+      // const {sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier} = sub_progress_argument ? sub_progress_argument : null 
 
       const main = uploader_factory.check_progress(progress_key)
       let progress_list = [main]
@@ -142,9 +143,9 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       
       function run_checks(data) {
         $timeout(function () {
-          progress_argument = update_progress(data[0])
+          progress_argument = update_progress_new(data[0], progress_argument)
           if (data.length > 1) {
-            sub_progress_argument = update_progress2(data[1])
+            sub_progress_argument = update_progress_new(data[1], sub_progress_argument)
           }
           if (data[0].progress < 100) {
             console.log('progress less than 100')
@@ -160,9 +161,12 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         }, 750);
       };
 
-      function update_progress(data) {
+      function update_progress_new(data, progress_arg) {
+        console.log('>>>>> RUNNING UPDATE PROGRESS NEW')
+        let {progress_key, offset, multiplier, progress_bar_obj} = progress_arg
+
         const right_now = Date.now();
-          progress_bar_obj.progress_last_checked = right_now;
+        progress_bar_obj.progress_last_checked = right_now;
 
           const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
           const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
@@ -179,41 +183,64 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           progress_bar_obj.progress = new_progress_value;
           progress_bar_obj.status_message = data.status_message;
 
-          return {
-            'progress_key': progress_key,
-            'offset': offset,
-            'multiplier': multiplier,
-            'progress_bar_obj': progress_bar_obj
-          }
+          return progress_arg
+      }      
+      
+      // function update_progress(data) {
+      //   const right_now = Date.now();
+      //     progress_bar_obj.progress_last_checked = right_now;
 
-      }
-      function update_progress2(data) {
-        const right_now = Date.now();
-          sub_progress_bar_obj.progress_last_checked = right_now;
+      //     const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+      //     const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+      //     if (updating_progress) {
+      //       progress_bar_obj.progress_last_updated = right_now;
+      //     }
 
-          const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
-          const updating_progress = new_progress_value != sub_progress_bar_obj.progress || sub_progress_bar_obj.status_message != data.status_message;
-          if (updating_progress) {
-            sub_progress_bar_obj.progress_last_updated = right_now;
-          }
+      //     if (data.total_records) {
+      //       progress_bar_obj.total_records = data.total_records;
+      //     }
+      //     if (data.completed_records) {
+      //       progress_bar_obj.completed_records = data.completed_records;
+      //     }
+      //     progress_bar_obj.progress = new_progress_value;
+      //     progress_bar_obj.status_message = data.status_message;
 
-          if (data.total_records) {
-            sub_progress_bar_obj.total_records = data.total_records;
-          }
-          if (data.completed_records) {
-            sub_progress_bar_obj.completed_records = data.completed_records;
-          }
-          sub_progress_bar_obj.progress = new_progress_value;
-          sub_progress_bar_obj.status_message = data.status_message;
+      //     return {
+      //       'progress_key': progress_key,
+      //       'offset': offset,
+      //       'multiplier': multiplier,
+      //       'progress_bar_obj': progress_bar_obj
+      //     }
 
-          return {
-            'sub_progress_key': sub_progress_key,
-            'sub_offset': sub_offset,
-            'sub_multiplier': sub_multiplier,
-            'sub_progress_bar_obj': sub_progress_bar_obj
-          }
+      // }
 
-      }
+      // function update_progress2(data) {
+      //   const right_now = Date.now();
+      //     sub_progress_bar_obj.progress_last_checked = right_now;
+
+      //     const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+      //     const updating_progress = new_progress_value != sub_progress_bar_obj.progress || sub_progress_bar_obj.status_message != data.status_message;
+      //     if (updating_progress) {
+      //       sub_progress_bar_obj.progress_last_updated = right_now;
+      //     }
+
+      //     if (data.total_records) {
+      //       sub_progress_bar_obj.total_records = data.total_records;
+      //     }
+      //     if (data.completed_records) {
+      //       sub_progress_bar_obj.completed_records = data.completed_records;
+      //     }
+      //     sub_progress_bar_obj.progress = new_progress_value;
+      //     sub_progress_bar_obj.status_message = data.status_message;
+
+      //     return {
+      //       // 'sub_progress_key': sub_progress_key,
+      //       'sub_offset': sub_offset,
+      //       'sub_multiplier': sub_multiplier,
+      //       'sub_progress_bar_obj': sub_progress_bar_obj
+      //     }
+
+      // }
 
       // functional A
       // function run_checks(data) {
@@ -243,7 +270,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       //       'progress_bar_obj': progress_bar_obj
       //     }
       //     const sub_progress_argument = {
-      //       'sub_progress_key': sub_progress_key,
+            // 'sub_progress_key': sub_progress_key,
       //       'sub_offset': sub_offset,
       //       'sub_multiplier': sub_multiplier,
       //       'sub_progress_bar_obj': sub_progress_bar_obj
