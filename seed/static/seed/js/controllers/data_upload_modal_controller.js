@@ -124,16 +124,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         progress_last_checked: null
       };
       $scope.sub_uploader = {
-        invalid_extension_alert: false,
-        invalid_geojson_extension_alert: false,
-        invalid_xml_extension_alert: false,
-        invalid_xml_zip_extension_alert: false,
-        in_progress: false,
         progress: 0,
-        complete: false,
         status_message: '',
-        progress_last_updated: null,
-        progress_last_checked: null
       };
 
       /**
