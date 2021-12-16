@@ -433,10 +433,11 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
     return summary
 
 
-def update_sub_progress_total(total, sub_progress_key=None):
+def update_sub_progress_total(total, sub_progress_key=None, finish=False):
     if sub_progress_key:
         sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.finish_with_success()
+        if finish:
+            sub_progress_data.finish_with_success()
         sub_progress_data.delete()
         sub_progress_data.total = total
         sub_progress_data.save()
