@@ -86,6 +86,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
+    logging.warning('>>> START')
     update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
@@ -388,7 +389,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             sub_progress_data.step('2.1 Unmatched States')
             logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
 
-    sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+    sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
     # Process -States into -Views either directly (promoted_ids) or post-merge (merge_state_pairs).
     _log.debug("There are %s merge_state_pairs and %s promote_states" % (len(merge_state_pairs), promote_states.count()))
@@ -413,7 +414,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
                     sub_progress_data.step('2.2 Merge State Pairs')
 
-            sub_progress_data = update_sub_progress_total(100, sub_progress_key)
+            sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
             batch_size = int(len(promote_states) / 100) + (len(promote_states) % 100 > 0)
             for idx, state in enumerate(promote_states):
@@ -448,7 +449,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
     For details on the actual linking logic, please refer to the the
     match_merge_link() method.
     """
-    
+
     sub_progress_data = update_sub_progress_total(100, sub_progress_key)
 
     if ViewClass == PropertyView:
