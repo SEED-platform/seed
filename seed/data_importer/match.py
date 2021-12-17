@@ -121,7 +121,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         log_debug("Start Properties filter_duplicate_states")
         promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
             incoming_properties,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
@@ -130,7 +130,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             promoted_property_ids,
             org,
             PropertyState,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
@@ -140,7 +140,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             org,
             import_file.cycle,
             PropertyState,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Look for links across Cycles
@@ -148,7 +148,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         merged_linked_property_views = link_views(
             merged_property_views,
             PropertyView,
-            sub_progress_key
+            sub_progress_key,
         )
 
     if incoming_tax_lots.exists():
@@ -156,16 +156,16 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         log_debug("Start TaxLots filter_duplicate_states")
         promoted_tax_lot_ids, tax_lot_duplicates_within_file_count = filter_duplicate_states(
             incoming_tax_lots,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start TaxLots inclusive_match_and_merge')
         promoted_tax_lot_ids, tax_lot_merges_within_file_count = inclusive_match_and_merge(
-            promoted_tax_lot_ids, 
-            org, 
+            promoted_tax_lot_ids,
+            org,
             TaxLotState,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
@@ -175,23 +175,23 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             org,
             import_file.cycle,
             TaxLotState,
-            sub_progress_key
+            sub_progress_key,
         )
 
         # Look for links across Cycles
         log_debug('Start TaxLots link_views')
         merged_linked_taxlot_views = link_views(
-            merged_linked_taxlot_views, 
+            merged_linked_taxlot_views,
             TaxLotView,
-            sub_progress_key
+            sub_progress_key,
         )
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
     pair_new_states(
-        merged_linked_property_views, 
-        merged_linked_taxlot_views, 
-        sub_progress_key
+        merged_linked_property_views,
+        merged_linked_taxlot_views,
+        sub_progress_key,
     )
 
     return {
@@ -230,7 +230,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key=None):
     :return: canonical_state_ids, duplicate_count
     """
     sub_progress_data = update_sub_progress_total(4, sub_progress_key)
-    if sub_progress_key: 
+    if sub_progress_key:
         sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
 
     ids_grouped_by_hash = unmatched_states.\
@@ -238,7 +238,7 @@ def filter_duplicate_states(unmatched_states, sub_progress_key=None):
         annotate(duplicate_sets=ArrayAgg('id')).\
         values_list('duplicate_sets', flat=True)
 
-    if sub_progress_key: 
+    if sub_progress_key:
         sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     # For consistency, take the first member of each of the duplicate sets
     canonical_state_ids = [
@@ -246,12 +246,12 @@ def filter_duplicate_states(unmatched_states, sub_progress_key=None):
         for ids
         in ids_grouped_by_hash
     ]
-    if sub_progress_key: 
+    if sub_progress_key:
         sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
-    if sub_progress_key: 
+    if sub_progress_key:
         sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
         sub_progress_data.finish_with_success()
     return canonical_state_ids, duplicate_count
