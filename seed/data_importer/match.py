@@ -489,7 +489,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
         else:
             processed_views.append(view)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('Matching Data (6/6): Merge Views')
+            sub_progress_data.step('Matching Data (6/6): Merging Views')
     if sub_progress_key:
         sub_progress_data.finish_with_success()
 
