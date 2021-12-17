@@ -63,7 +63,6 @@ def upload_file(upload_header, organization_id, upload_filepath, main_url, uploa
 
 
 def check_status(result_out, part_msg, log, piid_flag=None):
-    print('checkign status')
     """Checks the status of the API endpoint and makes the appropriate print outs."""
     passed = '\033[1;32m...passed\033[1;0m'
     failed = '\033[1;31m...failed\033[1;0m'
