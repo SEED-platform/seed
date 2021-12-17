@@ -287,7 +287,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
             promoted_ids.append(merge_state.id)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('1. Inclusive Match and Merge')
+            sub_progress_data.step('Matching Data (1/5): Inclusive Match and Merge')
 
     if sub_progress_key:
         sub_progress_data.finish_with_success()
@@ -383,7 +383,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('2.1 Unmatched States')
+            sub_progress_data.step('Matching Data (2/5) Unmatched States')
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
@@ -408,7 +408,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 processed_views.append(existing_view)
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-                    sub_progress_data.step('2.2 Merge State Pairs')
+                    sub_progress_data.step('Matching Data (3/5) Merge State Pairs')
 
             sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
@@ -418,7 +418,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 created_view = state.promote(cycle)
                 processed_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-                    sub_progress_data.step('2.3 Promote States')
+                    sub_progress_data.step('Matching Data (4/5) Promote States')
             if sub_progress_key:
                 sub_progress_data.finish_with_success()
 
@@ -464,7 +464,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
         else:
             processed_views.append(view)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('3. Merge Views')
+            sub_progress_data.step('Matching Data (5/5) Merge Views')
     if sub_progress_key:
         sub_progress_data.finish_with_success()
 

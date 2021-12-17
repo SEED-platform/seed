@@ -1959,6 +1959,11 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
     padding: 5px 0 0 5px;
   }
 }
+.sub_progress {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 10px;
+  margin-top: 10px;
+}
 
 .btn-sm, .btn-xs {
   font-size: 13px;
