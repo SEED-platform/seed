@@ -98,8 +98,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      *   is set with the progress
      */
     uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
-      console.log('check progress loop')
-      console.log('progress_bar_obj', progress_bar_obj)
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
           const right_now = Date.now();
@@ -131,7 +129,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument=null) {
       const {progress_key} = progress_argument
       const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null 
-      // const {sub_progress_key, sub_progress_bar_obj, sub_offset, sub_multiplier} = sub_progress_argument ? sub_progress_argument : null 
 
       const main = uploader_factory.check_progress(progress_key)
       let progress_list = [main]

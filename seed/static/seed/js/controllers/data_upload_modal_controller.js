@@ -608,7 +608,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * find_matches: finds matches for buildings within an import file
        */
       $scope.find_matches = function () {
-        console.log('find matches 1')
 
         matching_service.start_system_matching($scope.dataset.import_file_id).then(function (data) {
           $scope.step_10_mapquest_api_error = false;
@@ -627,7 +626,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           if (_.includes(['error', 'warning'], data.progress_data.status)) {
             handleSystemMatchingError(data);
           } else {
-            console.log('find matches 2')
             const progress_argument = {
               'progress_key': data.progress_data.progress_key,
               'offset': data.progress_data.progress,
@@ -643,7 +641,6 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             uploader_service.check_progress_loop_main_sub(progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
-                console.log('find matches 3')
 
                 $scope.property_initial_incoming = result_data.properties.initial_incoming;
                 $scope.property_duplicates_against_existing = result_data.properties.duplicates_against_existing;
