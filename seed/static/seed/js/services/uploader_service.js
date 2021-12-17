@@ -130,11 +130,8 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       const {progress_key} = progress_argument
       const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null 
 
-      const main = uploader_factory.check_progress(progress_key)
-      let progress_list = [main]
-      if (sub_progress_argument) {
-        progress_list.push(uploader_factory.check_progress(sub_progress_key))
-      }
+      let progress_list = [uploader_factory.check_progress(progress_key)]
+      sub_progress_argument && progress_list.push(uploader_factory.check_progress(sub_progress_key))
 
       Promise.all(progress_list).then((values) => {check_and_update_progress(values)})
       
