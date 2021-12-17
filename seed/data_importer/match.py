@@ -86,7 +86,6 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
 
     import_file = ImportFile.objects.get(pk=file_pk)
     progress_data = ProgressData.from_key(progress_key)
-    logging.warning('>>> START')
     update_sub_progress_total(100, sub_progress_key)
 
     # Don't query the org table here, just get the organization from the import_record
@@ -387,7 +386,6 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
             sub_progress_data.step('2.1 Unmatched States')
-            logging.warning('>>> sub_progress_data.data[progress]: %s', sub_progress_data.data['progress'])
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 

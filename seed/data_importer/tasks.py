@@ -1180,8 +1180,6 @@ def geocode_and_match_buildings_task(file_pk):
     celery_chain(
         _geocode_properties_or_tax_lots.s(file_pk, progress_data.key, sub_progress_data.key),
         post_geocode_tasks)()
-    logging.warning('>>> initial: progress_data %s', progress_data.result())
-    logging.warning('>>> initial: sub_progress_data %s', sub_progress_data.result())
 
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
