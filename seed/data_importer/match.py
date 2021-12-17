@@ -155,12 +155,18 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start TaxLots filter_duplicate_states")
         promoted_tax_lot_ids, tax_lot_duplicates_within_file_count = filter_duplicate_states(
-            incoming_tax_lots
+            incoming_tax_lots,
+            sub_progress_key
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start TaxLots inclusive_match_and_merge')
-        promoted_tax_lot_ids, tax_lot_merges_within_file_count = inclusive_match_and_merge(promoted_tax_lot_ids, org, TaxLotState)
+        promoted_tax_lot_ids, tax_lot_merges_within_file_count = inclusive_match_and_merge(
+            promoted_tax_lot_ids, 
+            org, 
+            TaxLotState,
+            sub_progress_key
+        )
 
         # Filter Cycle-wide duplicates then merge and/or assign -States to -Views
         log_debug('Start TaxLots states_to_views')
@@ -168,16 +174,25 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             promoted_tax_lot_ids,
             org,
             import_file.cycle,
-            TaxLotState
+            TaxLotState,
+            sub_progress_key
         )
 
         # Look for links across Cycles
         log_debug('Start TaxLots link_views')
-        merged_linked_taxlot_views = link_views(merged_linked_taxlot_views, TaxLotView)
+        merged_linked_taxlot_views = link_views(
+            merged_linked_taxlot_views, 
+            TaxLotView,
+            sub_progress_key
+        )
 
     log_debug('Start pair_new_states')
     progress_data.step('Pairing data')
-    pair_new_states(merged_linked_property_views, merged_linked_taxlot_views, sub_progress_key)
+    pair_new_states(
+        merged_linked_property_views, 
+        merged_linked_taxlot_views, 
+        sub_progress_key
+    )
 
     return {
         'import_file_records': import_file.num_rows,
