@@ -121,6 +121,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
         log_debug("Start Properties filter_duplicate_states")
         promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
             incoming_properties,
+            sub_progress_key
         )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
@@ -197,7 +198,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     }
 
 
-def filter_duplicate_states(unmatched_states):
+def filter_duplicate_states(unmatched_states, sub_progress_key=None):
     """
     Takes a QuerySet of -States and flags then separates exact duplicates. This
     method returns two items:
@@ -213,22 +214,31 @@ def filter_duplicate_states(unmatched_states):
     :param unmatched_states: QS
     :return: canonical_state_ids, duplicate_count
     """
+    sub_progress_data = update_sub_progress_total(4, sub_progress_key)
+    if sub_progress_key: 
+        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
 
     ids_grouped_by_hash = unmatched_states.\
         values('hash_object').\
         annotate(duplicate_sets=ArrayAgg('id')).\
         values_list('duplicate_sets', flat=True)
 
+    if sub_progress_key: 
+        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     # For consistency, take the first member of each of the duplicate sets
     canonical_state_ids = [
         ids.pop(ids.index(min(ids)))
         for ids
         in ids_grouped_by_hash
     ]
-
+    if sub_progress_key: 
+        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
+    if sub_progress_key: 
+        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+        sub_progress_data.finish_with_success()
     return canonical_state_ids, duplicate_count
 
 
@@ -287,7 +297,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
 
             promoted_ids.append(merge_state.id)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('Matching Data (1/5): Inclusive Match and Merge')
+            sub_progress_data.step('Matching Data (2/6): Inclusive Matching and Merging')
 
     if sub_progress_key:
         sub_progress_data.finish_with_success()
@@ -383,7 +393,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('Matching Data (2/5) Unmatched States')
+            sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
@@ -408,7 +418,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 processed_views.append(existing_view)
                 merged_state_ids.append(merged_state.id)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-                    sub_progress_data.step('Matching Data (3/5) Merge State Pairs')
+                    sub_progress_data.step('Matching Data (4/6): Merging State Pairs')
 
             sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
@@ -418,7 +428,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
                 created_view = state.promote(cycle)
                 processed_views.append(created_view)
                 if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-                    sub_progress_data.step('Matching Data (4/5) Promote States')
+                    sub_progress_data.step('Matching Data (5/6): Promoting States')
             if sub_progress_key:
                 sub_progress_data.finish_with_success()
 
@@ -464,7 +474,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
         else:
             processed_views.append(view)
         if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
-            sub_progress_data.step('Matching Data (5/5) Merge Views')
+            sub_progress_data.step('Matching Data (6/6): Merge Views')
     if sub_progress_key:
         sub_progress_data.finish_with_success()
 
