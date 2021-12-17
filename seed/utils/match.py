@@ -442,6 +442,3 @@ def update_sub_progress_total(total, sub_progress_key=None, finish=False):
         sub_progress_data.total = total
         sub_progress_data.save()
         return sub_progress_data
-
-
-
