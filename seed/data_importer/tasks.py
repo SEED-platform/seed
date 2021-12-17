@@ -84,6 +84,7 @@ from seed.models.data_quality import (
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings, MapQuestAPIKeyError
 from seed.utils.ubid import decode_unique_ids
+from seed.utils.match import update_sub_progress_total
 
 # from seed.utils.cprofile import cprofile
 
@@ -1200,11 +1201,7 @@ def geocode_buildings_task(file_pk):
 @shared_task
 def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None):
     progress_data = ProgressData.from_key(progress_key)
-    if sub_progress_key:
-        sub_progress_data = ProgressData.from_key(sub_progress_key)
-        sub_progress_data.delete()
-        sub_progress_data.total = 3
-        sub_progress_data.save()
+    sub_progress_data = update_sub_progress_total(3, sub_progress_key)
 
     progress_data.step('Geocoding')
     if sub_progress_key:
