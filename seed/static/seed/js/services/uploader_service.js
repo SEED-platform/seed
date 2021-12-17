@@ -140,8 +140,8 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           progress_argument = update_progress_bar_obj(data[0], progress_argument)
           if (data[0].progress < 100) {
             data.length > 1 ? (
-              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument),
-              sub_progress_argument = update_progress_bar_obj(data[1], sub_progress_argument)
+              sub_progress_argument = update_progress_bar_obj(data[1], sub_progress_argument),
+              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument)
               ) :
               uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn)
           } else {

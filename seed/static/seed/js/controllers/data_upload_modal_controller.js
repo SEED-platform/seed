@@ -611,7 +611,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
 
         matching_service.start_system_matching($scope.dataset.import_file_id).then(function (data) {
           $scope.step_10_mapquest_api_error = false;
-          
+
           // helper function to set scope parameters for when the task fails
           const handleSystemMatchingError = function (data) {
             $scope.uploader.complete = true;
