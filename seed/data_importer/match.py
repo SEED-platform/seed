@@ -50,8 +50,6 @@ from seed.utils.match import (
 )
 from seed.utils.merge import merge_states_with_views
 
-import logging
-
 _log = get_task_logger(__name__)
 
 

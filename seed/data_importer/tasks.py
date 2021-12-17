@@ -87,8 +87,6 @@ from seed.utils.ubid import decode_unique_ids
 
 # from seed.utils.cprofile import cprofile
 
-import logging
-
 _log = get_task_logger(__name__)
 
 STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
