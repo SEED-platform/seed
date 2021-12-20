@@ -99,22 +99,26 @@
 
 <div class="inventory-list-tab-container">
     <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
-        <span ng-if="::inventory_type === 'properties'">
-            <i class="fa fa-building-o"></i>
-            <span translate="NUMBER_OF_PROPERTIES" translate-values="{ num: (total | number: 0) }"></span>
-        </span>
-
-        <span ng-if="::inventory_type === 'taxlots'">
-            <i class="fa fa-map-o"></i>
-            <span translate="NUMBER_OF_TAXLOTS" translate-values="{ num: (total | number: 0) }"></span>
-        </span>
+        {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+        <button
+            ng-click="load_inventory(inventory_pagination.page - 1)"
+            ng-disabled="!inventory_pagination.has_previous"
+            class="btn btn-default btn-sm">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+        <button
+            ng-click="load_inventory(inventory_pagination.page + 1)"
+            ng-disabled="!inventory_pagination.has_next"
+            class="btn btn-default btn-sm">
+            <i class="fa fa-chevron-right"></i>
+        </button>
     </div>
-    <ul class="nav nav-tabs" style="margin-bottom:1px;">
-        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property">
-            <a ui-sref="inventory_list(::{inventory_type: 'properties'})" translate>View by Property</a>
+    <ul class="nav nav-tabs" style="margin-bottom:1px; pointer-events: none;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
+            <a ui-sref="inventory_list_beta(::{inventory_type: 'properties'})" translate>View by Property</a>
         </li>
-        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot">
-            <a ui-sref="inventory_list(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
+            <a ui-sref="inventory_list_beta(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
         </li>
     </ul>
 </div>

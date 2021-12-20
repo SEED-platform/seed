@@ -480,7 +480,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         modalInstance.result.then(function () {
           // dialog was closed with 'Merge' button.
           $scope.selectedOrder = [];
-          refresh_objects();
+          $scope.load_inventory(1);
         });
       };
 
@@ -773,17 +773,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           fn = inventory_service.get_taxlots;
         }
         return fn(page, chunk, $scope.cycle.selected_cycle, _.get($scope, 'currentProfile.id')).then(function (data) {
-          $scope.progress = {
-            current: data.pagination.end,
-            total: data.pagination.total,
-            percent: Math.round(data.pagination.end / data.pagination.total * 100)
-          };
-          if (data.pagination.has_next) {
-            return fetch(page + 1, chunk).then(function (data2) {
-              return data.results.concat(data2);
-            });
-          }
-          return data.results;
+          return data;
         });
       };
 
@@ -831,30 +821,23 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         })
       }
 
-      var refresh_objects = function () {
-        var page = 1;
-        var chunk = 5000;
-        $scope.progress = {};
-        var modalInstance = $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/inventory_loading_modal.html',
-          backdrop: 'static',
-          windowClass: 'inventory-progress-modal',
-          scope: $scope
-        });
-        // console.time('fetch');
-        return fetch(page, chunk).then(function (data) {
-          // console.timeEnd('fetch');
-          processData(data);
+      $scope.load_inventory = function (page) {
+        const page_size = 100;
+        spinner_utility.show()
+        return fetch(page, page_size).then(function (data) {
+          $scope.inventory_pagination = data.pagination;
+          processData(data.results);
           $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
           modalInstance.close();
           evaluateDerivedColumns();
+          spinner_utility.hide()
         });
       };
 
       $scope.update_cycle = function (cycle) {
         inventory_service.save_last_cycle(cycle.id);
         $scope.cycle.selected_cycle = cycle;
-        refresh_objects();
+        $scope.load_inventory(1);
       };
 
       $scope.filters_exist = function () {
@@ -921,7 +904,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
         modalInstance.result.then(function (/*result*/) {
           // dialog was closed with 'Close' button.
-          refresh_objects();
+          $scope.load_inventory(1);
         });
       };
 
@@ -946,7 +929,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
 
         modalInstance.result.then(function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
           else if (result.delete_state === 'success') {
             var selectedRows = $scope.gridApi.selection.getSelectedRows();
             var selectedChildRows = _.remove(selectedRows, function (row) {
@@ -994,7 +977,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             }
           }
         }, function (result) {
-          if (_.includes(['fail', 'incomplete'], result.delete_state)) refresh_objects();
+          if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
         });
       };
 
@@ -1284,7 +1267,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           });
 
           // Load the initial data
-          refresh_objects();
+          $scope.load_inventory(1);
         }
       };
     }]);
