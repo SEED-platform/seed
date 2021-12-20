@@ -19,10 +19,7 @@ from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
-try:
-    from urllib import quote  # python2.x
-except ImportError:
-    from urllib.parse import quote  # python3.x
+from urllib.parse import quote
 
 _log = logging.getLogger(__name__)
 

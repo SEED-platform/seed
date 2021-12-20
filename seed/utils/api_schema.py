@@ -6,8 +6,6 @@ from drf_yasg.utils import swagger_auto_schema
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):
-    # overrides the serialization of existing endpoints
-    overwrite_params = []
 
     # Used to easily build out example values displayed on Swagger page.
     openapi_types = {
@@ -177,14 +175,6 @@ class AutoSchemaHelper(SwaggerAutoSchema):
             )
 
         raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
-
-    def add_manual_parameters(self, parameters):
-        manual_params = self.manual_fields.get((self.method, self.view.action), [])
-
-        if (self.method, self.view.action) in self.overwrite_params:
-            return manual_params
-        # I think this should add to existing parameters, but haven't been able to confirm.
-        return parameters + manual_params
 
 
 # this is a commonly used swagger decorator so moved here for DRYness

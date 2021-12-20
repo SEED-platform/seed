@@ -105,14 +105,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tox_env: [flake8, docs]
+        tox_env: [flake8, docs, mypy]
     steps:
       -
         uses: actions/checkout@v2
       -
         uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: '3.9'
       -
         name: Install deps
         run: |

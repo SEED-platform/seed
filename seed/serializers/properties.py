@@ -339,7 +339,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyView
-        validators = []
+        validators = []  # type: ignore[var-annotated]
         fields = ('id', 'state', 'property', 'cycle',
                   'changed_fields', 'date_edited',
                   'certifications', 'filename', 'history',
