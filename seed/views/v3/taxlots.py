@@ -147,8 +147,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.serialize(taxlot_views, show_columns,
-                                                   columns_from_database)
+        related_results = TaxLotProperty.serialize(
+            taxlot_views,
+            show_columns,
+            columns_from_database,
+            include_related=request.query_params.get('include_related', True)
+        )
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -192,7 +196,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'profile_id',
                 required=False,
                 description='The ID of the column profile to use'
-            )
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                'include_related',
+                required=False,
+                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
+            ),
         ]
     )
     @api_endpoint_class

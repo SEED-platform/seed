@@ -262,8 +262,7 @@ class TaxLotProperty(models.Model):
                 obj_dict[obj_column_name_mapping['created']] = obj.state.created
 
             # All the related tax lot states.
-            if include_related:
-                obj_dict['related'] = join_map.get(obj.pk, [])
+            obj_dict['related'] = join_map.get(obj.pk, [])
 
             # remove the measures from this view for now
             if obj_dict.get('measures'):
