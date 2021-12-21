@@ -147,8 +147,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.get_related(taxlot_views, show_columns,
-                                                     columns_from_database)
+        related_results = TaxLotProperty.serialize(taxlot_views, show_columns,
+                                                   columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
