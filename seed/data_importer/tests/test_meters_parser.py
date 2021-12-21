@@ -29,6 +29,8 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
 )
 from seed.utils.organizations import create_organization
+from pathlib import Path
+from seed.lib.mcm import reader
 
 
 class ThermalConversionTests(TestCase):
@@ -86,6 +88,32 @@ class MeterUtilTests(TestCase):
         )
 
         self.tz_obj = timezone(TIME_ZONE)
+
+    def test_parse_meter_preprocess_raw_pm_data_request(self):
+        with open(Path(__file__).resolve().parent / "data/example-pm-data-request-with-meters.xlsx") as meters_file:
+            parser = reader.MCMParser(meters_file, sheet_name='Monthly Usage')
+    
+        raw_meter_data = MetersParser.preprocess_raw_pm_data_request(parser.data)
+        self.assertEqual(raw_meter_data, [
+            {
+                'Start Date': '2016-01-01 00:00:00',
+                'End Date': '2016-02-01 00:00:00',
+                'Portfolio Manager ID': '4544232', 
+                'Portfolio Manager Meter ID': 'Unknown', 
+                'Meter Type': 'Electric - Grid', 
+                'Usage/Quantity': '85887.1', 
+                'Usage Units': 'kBtu (thousand Btu)'
+            },
+            {
+                'Start Date': '2016-02-01 00:00:00', 
+                'End Date': '2016-03-01 00:00:00', 
+                'Portfolio Manager ID': '4544232', 
+                'Portfolio Manager Meter ID': 'Unknown', 
+                'Meter Type': 'Electric - Grid', 
+                'Usage/Quantity': '175697.3', 
+                'Usage Units': 'kBtu (thousand Btu)'
+            }
+        ])
 
     def test_parse_meter_details_splits_monthly_info_into_meter_data_and_readings_even_with_DST_changing(self):
         raw_meters = [
