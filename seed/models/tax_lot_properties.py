@@ -148,47 +148,32 @@ class TaxLotProperty(models.Model):
             return []
 
         if object_list[0].__class__.__name__ == 'PropertyView':
-            lookups = {
-                'audit_log_class': apps.get_model('seed', 'PropertyAuditLog'),
-                'view_class': apps.get_model('seed', 'PropertyView'),
-                'obj_class': 'PropertyView',
-                'obj_query_in': 'property_view_id__in',
-                'obj_state_id': 'property_state_id',
-                'obj_view_id': 'property_view_id',
-                'obj_id': 'property_id',
-                'centroid': 'centroid',
-                'bounding_box': 'bounding_box',
-                'long_lat': 'long_lat',
-                'related_audit_log_class': apps.get_model('seed', 'TaxLotAuditLog'),
-                'related_class': 'TaxLotView',
-                'related_query_in': 'taxlot_view_id__in',
-                'select_related': 'taxlot',
-                'related_view': 'taxlot_view',
-                'related_view_class': apps.get_model('seed', 'TaxLotView'),
-                'related_view_id': 'taxlot_view_id',
-                'related_state_id': 'taxlot_state_id',
-            }
+            this_cls, this_lower = 'Property', 'property'
+            related_cls, related_lower = 'TaxLot', 'taxlot'
         else:
-            lookups = {
-                'audit_log_class': apps.get_model('seed', 'TaxLotAuditLog'),
-                'view_class': apps.get_model('seed', 'TaxLotView'),
-                'obj_class': 'TaxLotView',
-                'obj_query_in': 'taxlot_view_id__in',
-                'obj_state_id': 'taxlot_state_id',
-                'obj_view_id': 'taxlot_view_id',
-                'obj_id': 'taxlot_id',
-                'centroid': 'centroid',
-                'bounding_box': 'bounding_box',
-                'long_lat': 'long_lat',
-                'related_audit_log_class': apps.get_model('seed', 'PropertyAuditLog'),
-                'related_class': 'PropertyView',
-                'related_query_in': 'property_view_id__in',
-                'select_related': 'property',
-                'related_view': 'property_view',
-                'related_view_class': apps.get_model('seed', 'PropertyView'),
-                'related_view_id': 'property_view_id',
-                'related_state_id': 'property_state_id',
-            }
+            this_cls, this_lower = 'TaxLot', 'taxlot'
+            related_cls, related_lower = 'Property', 'property'
+
+        lookups = {
+            'audit_log_class': apps.get_model('seed', f'{this_cls}AuditLog'),
+            'view_class': apps.get_model('seed', f'{this_cls}View'),
+            'obj_class': f'{this_cls}View',
+            'obj_query_in': f'{this_lower}_view_id__in',
+            'obj_state_id': f'{this_lower}_state_id',
+            'obj_view_id': f'{this_lower}_view_id',
+            'obj_id': f'{this_lower}_id',
+            'centroid': 'centroid',
+            'bounding_box': 'bounding_box',
+            'long_lat': 'long_lat',
+            'related_audit_log_class': apps.get_model('seed', f'{related_cls}AuditLog'),
+            'related_class': f'{related_cls}View',
+            'related_query_in': f'{related_lower}_view_id__in',
+            'select_related': f'{related_lower}',
+            'related_view': f'{related_lower}_view',
+            'related_view_class': apps.get_model('seed', f'{related_cls}View'),
+            'related_view_id': f'{related_lower}_view_id',
+            'related_state_id': f'{related_lower}_state_id',
+        }
 
         ids = [obj.pk for obj in object_list]
 
