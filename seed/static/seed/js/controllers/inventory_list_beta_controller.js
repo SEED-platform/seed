@@ -765,14 +765,22 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       var fetch = function (page, chunk) {
-        // console.log('Fetching page ' + page + ' (chunk size ' + chunk + ')');
         var fn;
         if ($scope.inventory_type === 'properties') {
           fn = inventory_service.get_properties;
         } else if ($scope.inventory_type === 'taxlots') {
           fn = inventory_service.get_taxlots;
         }
-        return fn(page, chunk, $scope.cycle.selected_cycle, _.get($scope, 'currentProfile.id')).then(function (data) {
+        return fn(
+          page,
+          chunk,
+          $scope.cycle.selected_cycle,
+          _.get($scope, 'currentProfile.id'),
+          undefined,
+          true,
+          $scope.organization.id,
+          false,
+        ).then(function (data) {
           return data;
         });
       };

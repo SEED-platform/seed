@@ -147,11 +147,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
+        include_related = (
+            str(request.query_params.get('include_related', 'true')).lower() == 'true'
+        )
         related_results = TaxLotProperty.serialize(
             taxlot_views,
             show_columns,
             columns_from_database,
-            include_related=request.query_params.get('include_related', True)
+            include_related,
         )
 
         # collapse units here so we're only doing the last page; we're already a
@@ -268,6 +271,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'per_page',
                 required=False,
                 description='The number of items per page to return'
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                'include_related',
+                required=False,
+                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(

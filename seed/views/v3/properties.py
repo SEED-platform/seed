@@ -211,11 +211,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
+        include_related = (
+            str(request.query_params.get('include_related', 'true')).lower() == 'true'
+        )
         related_results = TaxLotProperty.serialize(
             property_views,
             show_columns,
             columns_from_database,
-            include_related=request.query_params.get('include_related', True)
+            include_related
         )
 
         # collapse units here so we're only doing the last page; we're already a
@@ -455,6 +458,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'page',
                 required=False,
                 description='Page to fetch'
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                'include_related',
+                required=False,
+                description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(
