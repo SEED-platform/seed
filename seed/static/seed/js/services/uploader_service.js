@@ -86,6 +86,27 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
         else return response.data;
       });
     };
+
+    function update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj }) {
+      const right_now = Date.now();
+      progress_bar_obj.progress_last_checked = right_now;
+
+      const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
+      const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
+      if (updating_progress) {
+        progress_bar_obj.progress_last_updated = right_now;
+      }
+
+      if (data.total_records) {
+        progress_bar_obj.total_records = data.total_records;
+      }
+      if (data.completed_records) {
+        progress_bar_obj.completed_records = data.completed_records;
+      }
+      progress_bar_obj.progress = new_progress_value;
+      progress_bar_obj.status_message = data.status_message;
+    }
+
     /**
      * check_progress_loop: check loop to update the progress bar
      *
@@ -100,23 +121,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
-          const right_now = Date.now();
-          progress_bar_obj.progress_last_checked = right_now;
-
-          const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
-          const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
-          if (updating_progress) {
-            progress_bar_obj.progress_last_updated = right_now;
-          }
-
-          if (data.total_records) {
-            progress_bar_obj.total_records = data.total_records;
-          }
-          if (data.completed_records) {
-            progress_bar_obj.completed_records = data.completed_records;
-          }
-          progress_bar_obj.progress = new_progress_value;
-          progress_bar_obj.status_message = data.status_message;
+          update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj })
           if (data.progress < 100) {
             uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj);
           } else {
@@ -137,10 +142,10 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       
       function check_and_update_progress(data) {
         $timeout(function () {
-          progress_argument = update_progress_bar_obj(data[0], progress_argument)
+          update_progress_bar_obj(data[0], progress_argument)
           if (data[0].progress < 100) {
             data.length > 1 ? (
-              sub_progress_argument = update_progress_bar_obj(data[1], sub_progress_argument),
+              update_progress_bar_obj(data[1], sub_progress_argument),
               uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument)
               ) :
               uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn)
@@ -150,30 +155,6 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           
         }, 750);
       };
-
-      function update_progress_bar_obj(data, progress_arg) {
-        let {offset, multiplier, progress_bar_obj} = progress_arg
-
-        const right_now = Date.now();
-        progress_bar_obj.progress_last_checked = right_now;
-
-          const new_progress_value = _.clamp((data.progress * multiplier) + offset, 0, 100);
-          const updating_progress = new_progress_value != progress_bar_obj.progress || progress_bar_obj.status_message != data.status_message;
-          if (updating_progress) {
-            progress_bar_obj.progress_last_updated = right_now;
-          }
-
-          if (data.total_records) {
-            progress_bar_obj.total_records = data.total_records;
-          }
-          if (data.completed_records) {
-            progress_bar_obj.completed_records = data.completed_records;
-          }
-          progress_bar_obj.progress = new_progress_value;
-          progress_bar_obj.status_message = data.status_message;
-
-          return progress_arg
-      }      
     };
 
     uploader_factory.pm_meters_preview = function (file_id, org_id) {

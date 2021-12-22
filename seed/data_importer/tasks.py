@@ -1333,6 +1333,8 @@ def match_buildings(file_pk):
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
+    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
+    sub_progress_data.delete()
 
     if import_file.matching_done:
         _log.debug('Matching is already done')
@@ -1349,8 +1351,10 @@ def match_buildings(file_pk):
     # Start, match, pair
     progress_data.total = 3
     progress_data.save()
+    sub_progress_data.total = 100
+    sub_progress_data.save()
 
-    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key, sub_progress_data.key), interval=15)(
         finish_matching.s(file_pk, progress_data.key))
 
     return progress_data.result()

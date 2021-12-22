@@ -9,6 +9,7 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 
 import datetime as dt
+import math
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
 
@@ -59,7 +60,7 @@ def log_debug(message):
 
 @shared_task
 @lock_and_track
-def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key=None):
+def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_progress_key):
     """
     Match incoming the properties and taxlots. Then, search for links for them.
 
@@ -213,7 +214,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     }
 
 
-def filter_duplicate_states(unmatched_states, sub_progress_key=None):
+def filter_duplicate_states(unmatched_states, sub_progress_key):
     """
     Takes a QuerySet of -States and flags then separates exact duplicates. This
     method returns two items:
@@ -230,34 +231,30 @@ def filter_duplicate_states(unmatched_states, sub_progress_key=None):
     :return: canonical_state_ids, duplicate_count
     """
     sub_progress_data = update_sub_progress_total(4, sub_progress_key)
-    if sub_progress_key:
-        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+    sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
 
     ids_grouped_by_hash = unmatched_states.\
         values('hash_object').\
         annotate(duplicate_sets=ArrayAgg('id')).\
         values_list('duplicate_sets', flat=True)
 
-    if sub_progress_key:
-        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+    sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     # For consistency, take the first member of each of the duplicate sets
     canonical_state_ids = [
         ids.pop(ids.index(min(ids)))
         for ids
         in ids_grouped_by_hash
     ]
-    if sub_progress_key:
-        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+    sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
     duplicate_state_ids = reduce(lambda x, y: x + y, ids_grouped_by_hash)
     duplicate_count = unmatched_states.filter(pk__in=duplicate_state_ids).update(data_state=DATA_STATE_DELETE)
 
-    if sub_progress_key:
-        sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
-        sub_progress_data.finish_with_success()
+    sub_progress_data.step('Matching Data (1/6): Filtering Duplicate States')
+    sub_progress_data.finish_with_success()
     return canonical_state_ids, duplicate_count
 
 
-def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key=None):
+def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress_key):
     """
     Takes a list of unmatched_state_ids, combines matches of the corresponding
     -States, and returns a set of IDs of the remaining -States.
@@ -295,7 +292,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     # Collapse groups of matches found in the previous step into 1 -State per group
     merges_within_file = 0
     priorities = Column.retrieve_priorities(org)
-    batch_size = int(len(matched_id_groups) / 100) + (len(matched_id_groups) % 100 > 0)
+    batch_size = math.ceil(len(matched_id_groups) / 100)
     for idx, ids in enumerate(matched_id_groups):
         if len(ids) == 1:
             # If there's only 1, no merging is needed, so just promote the ID.
@@ -311,11 +308,10 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
                 merge_state = save_state_match(merge_state, newer_state, priorities)
 
             promoted_ids.append(merge_state.id)
-        if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+        if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (2/6): Inclusive Matching and Merging')
 
-    if sub_progress_key:
-        sub_progress_data.finish_with_success()
+    sub_progress_data.finish_with_success()
 
     # Flag the soon to be promoted ID -States as having gone through matching
     StateClass.objects.filter(pk__in=promoted_ids).update(data_state=DATA_STATE_MATCHING)
@@ -323,7 +319,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     return promoted_ids, merges_within_file
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key=None):
+def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -387,7 +383,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     # Otherwise, add current -State to be promoted as is.
     merged_between_existing_count = 0
     merge_state_pairs = []
-    batch_size = int(len(unmatched_states) / 100) + (len(unmatched_states) % 100 > 0)
+    batch_size = math.ceil(len(unmatched_states) / 100)
     for idx, state in enumerate(unmatched_states):
         matching_criteria = matching_filter_criteria(state, column_names)
         existing_state_matches = StateClass.objects.filter(
@@ -407,7 +403,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         else:
             promote_states = promote_states | StateClass.objects.filter(pk=state.id)
 
-        if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+        if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (3/6): Merging Unmatched States')
 
     sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
@@ -420,7 +416,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     merged_state_ids = []
     try:
         with transaction.atomic():
-            batch_size = int(len(merge_state_pairs) / 100) + (len(merge_state_pairs) % 100 > 0)
+            batch_size = math.ceil(len(merge_state_pairs) / 100)
             for idx, state_pair in enumerate(merge_state_pairs):
                 existing_state, newer_state = state_pair
                 existing_view = ViewClass.objects.get(state_id=existing_state.id)
@@ -432,20 +428,19 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
 
                 processed_views.append(existing_view)
                 merged_state_ids.append(merged_state.id)
-                if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+                if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('Matching Data (4/6): Merging State Pairs')
 
             sub_progress_data = update_sub_progress_total(100, sub_progress_key, finish=True)
 
-            batch_size = int(len(promote_states) / 100) + (len(promote_states) % 100 > 0)
+            batch_size = math.ceil(len(promote_states) / 100)
             for idx, state in enumerate(promote_states):
                 promoted_ids.append(state.id)
                 created_view = state.promote(cycle)
                 processed_views.append(created_view)
-                if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+                if batch_size > 0 and idx % batch_size == 0:
                     sub_progress_data.step('Matching Data (5/6): Promoting States')
-            if sub_progress_key:
-                sub_progress_data.finish_with_success()
+            sub_progress_data.finish_with_success()
 
     except IntegrityError as e:
         raise IntegrityError("Could not merge results with error: %s" % (e))
@@ -463,7 +458,7 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     return list(set(processed_views)), duplicate_count, new_count, matched_count, merged_between_existing_count
 
 
-def link_views(merged_views, ViewClass, sub_progress_key=None):
+def link_views(merged_views, ViewClass, sub_progress_key):
     """
     Run each of the given -Views through a linking round.
 
@@ -480,7 +475,7 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
 
     processed_views = []
 
-    batch_size = int(len(merged_views) / 100) + (len(merged_views) % 100 > 0)
+    batch_size = math.ceil(len(merged_views) / 100)
     for idx, view in enumerate(merged_views):
         _merge_count, _link_count, view_id = match_merge_link(view.id, state_class_name)
 
@@ -488,10 +483,9 @@ def link_views(merged_views, ViewClass, sub_progress_key=None):
             processed_views.append(ViewClass.objects.get(pk=view_id))
         else:
             processed_views.append(view)
-        if batch_size > 0 and idx % batch_size == 0 and sub_progress_key:
+        if batch_size > 0 and idx % batch_size == 0:
             sub_progress_data.step('Matching Data (6/6): Merging Views')
-    if sub_progress_key:
-        sub_progress_data.finish_with_success()
+    sub_progress_data.finish_with_success()
 
     return processed_views
 
