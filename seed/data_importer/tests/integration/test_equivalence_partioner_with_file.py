@@ -14,6 +14,7 @@ from seed.data_importer import tasks, match
 from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
 )
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ASSESSED_RAW,
     Column,
@@ -48,8 +49,11 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
 
     def test_equivalence(self):
         all_unmatched_properties = self.import_file.find_unmatched_property_states()
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
+        sub_progress_data.save()
         unmatched_property_ids, duplicate_property_count = match.filter_duplicate_states(
-            all_unmatched_properties
+            all_unmatched_properties,
+            sub_progress_data.key,
         )
         partitioner = EquivalencePartitioner.make_propertystate_equivalence()
 

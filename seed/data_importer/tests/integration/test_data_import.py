@@ -449,9 +449,10 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.assertEqual(ps.count(), 1)
 
         # !! we should have warnings for our file because of the bad measure names !!
-        self.assertNotEqual({}, progress_info.get('file_info', {}))
-        self.assertIn(self.import_file.uploaded_filename, list(progress_info['file_info'].keys()))
-        self.assertNotEqual([], progress_info['file_info'][self.import_file.uploaded_filename].get('warnings', []))
+        self.assertNotEqual({}, progress_info.get('progress_data', {}))
+        self.assertNotEqual({}, progress_info['progress_data'].get('file_info', {}))
+        self.assertIn(self.import_file.uploaded_filename, list(progress_info['progress_data']['file_info'].keys()))
+        self.assertNotEqual([], progress_info['progress_data']['file_info'][self.import_file.uploaded_filename].get('warnings', []))
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):

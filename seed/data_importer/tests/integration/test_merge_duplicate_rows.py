@@ -19,6 +19,7 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW,
 )
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Column,
     PropertyState,
@@ -198,7 +199,9 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(hashes), 9)
         self.assertEqual(len(set(hashes)), 4)
 
-        unique_property_states, _ = match.filter_duplicate_states(ps)
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
+        sub_progress_data.save()
+        unique_property_states, _ = match.filter_duplicate_states(ps, sub_progress_data.key)
         self.assertEqual(len(unique_property_states), 4)
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)

@@ -200,16 +200,22 @@
         <div class="row">
             <div class="form-group col-sm-12">
                 <div class="progress_bar_container">
-                    <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
-                        <strong>{$ dataset.filename $}</strong></div>
+                    <div class="progress_bar_copy_top"><strong>{$:: 'Finding inventory matches for' | translate $}
+                        {$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+                    <div class="progress_bar_copy_bottom"><strong>{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</strong></div>
                     <!-- Show a hint that SEED is still working when the progress data hasn't been updated in 1 minute -->
                     <div ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
                          class="progress_bar_copy_bottom">
                         <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
                         SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
                     </div>
+                </div>
+                <!-- Sub progress bar -->
+                <div class="progress_bar_container sub_progress">
+                    <div class="progress_bar_copy_top">Sub Progress: </div>
+                    <uib-progressbar class="progress-striped active" value="sub_uploader.progress" type="success"></uib-progressbar>
+                    <div class="progress_bar_copy_bottom">{$ sub_uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ sub_uploader.status_message ? ': ' + sub_uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>
