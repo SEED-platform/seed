@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 
 class PasswordBaseCharacterQuantityValidator(object):
-    TYPE = None
+    TYPE = ''
     RE = re.compile(r'')
 
     def __init__(self, quantity=1):
