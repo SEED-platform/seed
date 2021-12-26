@@ -12,6 +12,7 @@ from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
 
+
 from seed.models import (
     Column,
     Cycle,
@@ -22,6 +23,7 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.utils.merge import merge_states_with_views
 from seed.utils.properties import properties_across_cycles
 from seed.utils.taxlots import taxlots_across_cycles
@@ -429,3 +431,14 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             transaction.set_rollback(True)
 
     return summary
+
+
+def update_sub_progress_total(total, sub_progress_key=None, finish=False):
+    if sub_progress_key:
+        sub_progress_data = ProgressData.from_key(sub_progress_key)
+        if finish:
+            sub_progress_data.finish_with_success()
+        sub_progress_data.delete()
+        sub_progress_data.total = total
+        sub_progress_data.save()
+        return sub_progress_data

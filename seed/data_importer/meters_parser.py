@@ -463,9 +463,10 @@ class MetersParser(object):
             return []
 
         TYPE_AND_UNITS_REGEX = re.compile(r'(?P<meter_type>.*)\s+\((?P<units>.*)\)')
+        meter_type_lookup = dict(Meter.ENERGY_TYPES)
         METER_TYPE_MAPPING = {
-            'Electricity Use': 'Electric - Unknown',
-            'Natural Gas Use': 'Natural Gas',
+            'Electricity Use (Grid)': meter_type_lookup[Meter.ELECTRICITY_GRID],
+            'Natural Gas Use': meter_type_lookup[Meter.NATURAL_GAS],
         }
         METER_UNITS_MAPPING = {
             'kBtu': 'kBtu (thousand Btu)',
