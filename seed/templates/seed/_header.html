@@ -2,7 +2,7 @@
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
             <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-                {$ menu.user.organization.name $} <span class="caret"></span>
+                <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs">
                 <li ng-if="!menu.user.organizations.length" style="text-align: center;">
@@ -20,19 +20,23 @@
                 <i class="fa fa-plus"></i>
                 <span class="sr-only" translate>Toggle Dropdown</span>
             </button>
-            <ul uib-dropdown-menu class="dropdown-menu pull-right" role="menu" aria-labelledby="btnCreateNew">
+            <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
                 <li class="dropdown-header" translate>Create a new...</li>
-                <li class="dropdown-header" translate> Test </li>
-                {% comment %} <li class="dropdown-header" >{$ ross $} </li> {% endcomment %}
-                <li><a ui-sref="organization_settings(::{organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Settings</a></li>
-                <li><a ui-sref="organization_sharing(::{organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Sharing</a></li>
-                <li><a ui-sref="organization_column_settings(::{organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Column Settings</a></li>
-                <li><a ui-sref="organization_data_quality(::{organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Data Quality</a></li>
-                <li><a ui-sref="organization_cycles(::{organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Cycles</a></li>
-                <li><a ui-sref="organization_labels(::{organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Labels</a></li>
-                <li><a ui-sref="organization_members(::{organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
-                <li><a ui-sref="organization_settings(::{organization_id: menu.user.organization.id})" translate>More</a></li>
-                <li>abc {$ menu.user.organization $} def</li>
+                <li class="divider"></li>
+                <li ng-show="menu.user.organization.user_role !== 'viewer'">
+                    <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" translate>Data Set</a>
+                </li>
+                <li class="dropdown-header" translate>Organization Settings</li>
+                <li class="divider"></li>
+                <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Settings</a></li>
+                <li><a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Sharing</a></li>
+                <li><a ui-sref="organization_column_settings({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Column Settings</a></li>
+                <li><a ui-sref="organization_data_quality({organization_id: menu.user.organization.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Data Quality</a></li>
+                <li><a ui-sref="organization_cycles({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Cycles</a></li>
+                <li><a ui-sref="organization_labels({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Labels</a></li>
+                <li><a ui-sref="organization_members({organization_id: menu.user.organization.id})" ui-sref-active="active" translate>Members</a></li>
+                <li><a ui-sref="organization_settings({organization_id: menu.user.organization.id})" translate>More</a></li>
+                <li> ORG ID: {$ menu.user.organization.id $} </li>
                         {% comment %} <a ui-sref="organization_settings(::{organization_id: org.id})" ng-if="::auth.requires_owner" ui-sref-active="active" translate>Settings</a>
                         <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>
                         <a ui-sref="organization_column_settings(::{organization_id: org.id, inventory_type: 'properties'})" ng-if="::auth.requires_owner" ng-class="::{active: state.name === 'organization_column_settings'}" translate>Column Settings</a>
@@ -45,14 +49,10 @@
                         <a ui-sref="organization_email_templates(::{organization_id: org.id})" ui-sref-active="active" translate>Email Templates</a>
                         <a ui-sref="organization_derived_columns(::{organization_id: org.id, inventory_type: 'properties'})" ui-sref-active="active" translate>Derived Columns</a> {% endcomment %}
 
-                <li class="divider"></li>
                 <!--<li>
                     <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
                 </li>
                 <li class="divider" ng-show="menu.user.organization.user_role !== 'viewer'"></li>-->
-                <li ng-show="menu.user.organization.user_role !== 'viewer'">
-                    <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" translate>Data Set</a>
-                </li>
             </ul>
         </div>
     </div>
