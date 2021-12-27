@@ -1248,7 +1248,7 @@ class Column(models.Model):
         return columns
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type=None, only_used=False):
+    def retrieve_all(org_id, inventory_type=None, only_used=False) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
         database assigned to the organization. It will then go through and cleanup the names to ensure that
@@ -1257,8 +1257,6 @@ class Column(models.Model):
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
-
-        :return: dict
         """
         from seed.serializers.columns import ColumnSerializer
 

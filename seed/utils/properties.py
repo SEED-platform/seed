@@ -184,7 +184,7 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
             .filter(property__organization_id=org_id, cycle_id=cycle_id) \
             .order_by('id')
 
-        related_results = TaxLotProperty.get_related(property_views, show_columns, columns_from_database)
+        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 
         org = Organization.objects.get(pk=org_id)
         unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]

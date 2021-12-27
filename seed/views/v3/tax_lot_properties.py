@@ -130,7 +130,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+        data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
 
         derived_columns = column_profile.derived_columns.all() if column_profile is not None else []
         column_name_mappings.update({dc.name: dc.name for dc in derived_columns})
