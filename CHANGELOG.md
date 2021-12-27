@@ -3,7 +3,6 @@
 Date Range: 11/20/21 - 12/27/21
 
 Closed Issues and Features (Total: 17):
-- Fixed [#2585]( https://github.com/SEED-platform/seed/issues/2585 ), New feature notification on latest page visit after release
 - Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
 - Fixed [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
 - Fixed [#2890]( https://github.com/SEED-platform/seed/issues/2890 ), Update deprecated JSONFields
