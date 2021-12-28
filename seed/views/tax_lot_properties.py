@@ -147,7 +147,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+        data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
 
         # add labels and notes
         for i, record in enumerate(model_views):

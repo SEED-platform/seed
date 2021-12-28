@@ -88,10 +88,10 @@ else:
 
 # API is now used basic auth with base64 encoding.
 # NOTE: The header only accepts lower case usernames.
-auth_string = base64.urlsafe_b64encode(bytes(
+encoded_credentials = base64.urlsafe_b64encode(bytes(
     '{}:{}'.format(username.lower(), api_key), 'utf-8'
 ))
-auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
+auth_string = 'Basic {}'.format(encoded_credentials.decode('utf-8'))
 header = {
     'Authorization': auth_string,
     # "Content-Type": "application/json"

@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from seed.landing.models import SEEDUser as User
@@ -59,11 +58,11 @@ class Analysis(models.Model):
     status = models.IntegerField(default=PENDING_CREATION, choices=STATUS_TYPES)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    configuration = JSONField(default=dict, blank=True)
+    configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
     # that are applicable to the entire analysis (ie all properties involved).
     # For property-specific results, use the AnalysisPropertyView's parsed_results
-    parsed_results = JSONField(default=dict, blank=True)
+    parsed_results = models.JSONField(default=dict, blank=True)
 
     def get_property_view_info(self, property_id=None):
         if property_id is not None:

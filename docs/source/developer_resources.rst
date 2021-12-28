@@ -31,6 +31,44 @@ To run flake locally call:
 
     tox -e flake8
 
+Python Type Hints
+^^^^^^^^^^^^^^^^^
+
+Python type hints are beginning to be added to the SEED codebase. The benefits are
+eliminating some accidental typing mistakes to prevent bugs as well as a better IDE
+experience.
+
+Usage
+*****
+
+SEED does not require exhaustive type annotations, but it is recommended you add them if you
+create any new functions or refactor any existing code where it might be beneficial
+and not require a ton of additional effort.
+
+When applicable, we recommend you use `built-in collection types <https://docs.python.org/3/whatsnew/3.9.html#type-hinting-generics-in-standard-collections>`_
+such as :code:`list`, :code:`dict` or :code:`tuple` instead of the capitalized types
+from the :code:`typing` module.
+
+Common gotchas:
+- If trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
+- If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
+- If you're wasting time trying to please the type checker, feel free to throw :code:`# type: ignore` on the problematic line (or at the top of the file to ignore all issues for that file)
+
+Type Checking
+*************
+
+CI currently runs static type checking on the codebase using `mypy <http://mypy-lang.org/>`_. For
+your own IDE, we recommend the following extensions:
+
+- VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
+
+To run the same typechecking applied in CI (i.e. using mypy) you can run the following
+
+.. code-block:: console
+
+    tox -e mypy
+
+
 Django Notes
 ------------
 
@@ -362,50 +400,6 @@ Best Practices
 8. Use the “DO NOT MERGE” label for Pull Requests that should not be merged
 9. When PR has been reviewed and approved, move the ticket/issue to the 'Ready to Deploy to Dev' box in the GitHub project tracker.
 
-Git Naming Conventions
-----------------------
-
-Commit messages should follow the format of
-
-.. code-block:: console
-
-    <type>[( optional scope )]: <subject>
-
-    [optional body]
-
-:code:`type` must be one of the following:
-
-- **docs**: Changes to the documentation (e.g. improving docstring, updating this file, etc)
-- **feat**: Adds a new feature
-- **fix**: A bug fix
-- **refactor**: Changes that don't fix a bug or add a new feature
-- **style**: Changes that don't affect the meaning of code (e.g. whitespace)
-- **test**: Adding or correcting tests
-
-:code:`scope` is optional for commit messages, and should indicate the general area of the application affected.
-
-:code:`subject` is a short description of the changes in imperative present tense (such as “add function to _”, not “added function”)
-
-Branches should be named as :code:`[<optional issue number> -]<type>/<scope>`, where :code:`scope` is the general scope affected, or if creating a feature branch, a shortened name of the feature being added. If :code:`scope` is more than one word, it should be separated by dashes.
-
-Pull Request titles should follow the format :code:`[# optional issue number] <type>[(optional scope)]: <subject>`, following the same conventions as commit messages.
-
-Commit examples:
-
-- :code:`feat(models): add date_modified field to MyModel`
-- :code:`refactor: change var to let/const in frontend`
-- :code:`docs: update release instructions`
-
-Branch examples:
-
-- :code:`1234-feat/buildingsync-v2.3-import`
-- :code:`5678-refactor/org-views-auth`
-- :code:`fix/error-mapping-pm-taxlots`
-
-Pull request examples:
-
-- :code:`#1234 feat(models): add date_modified to MyModel`
-- :code:`#4567 refactor: change var to let/const in frontend`
 
 Release Instructions
 --------------------

@@ -11,13 +11,9 @@ import logging
 import math
 import tempfile
 
-try:
-    from urllib import unquote  # python2.x
-except ImportError:
-    from urllib.parse import unquote  # python3.x
+from urllib.parse import unquote
 
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.urls import reverse
 from django.db import models
 from django.db.models import Q
@@ -538,11 +534,6 @@ class ImportRecord(NotDeletableModel):
     def SUMMARY_ANALYSIS_QUEUED_KEY(cls, pk):
         return 'SUMMARY_ANALYSIS_QUEUED%s' % pk
 
-    @property
-    def form(self, data=None):
-        from seed.data_importer import ImportRecordForm
-        return ImportRecordForm(data, instance=self)
-
     def prefixed_pk(self, pk, max_len_before_prefix=(SOURCE_FACILITY_ID_MAX_LEN - len('IMP1234-'))):
         """This is a total hack to support prefixing until source_facility_id
         is turned into a proper pk.  Prefixes a given pk with the import_record"""
@@ -675,7 +666,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     mapping_error_messages = models.TextField(blank=True, null=True)
     matching_completion = models.IntegerField(blank=True, null=True)
     matching_done = models.BooleanField(default=False)
-    matching_results_data = JSONField(default=dict, blank=True)
+    matching_results_data = models.JSONField(default=dict, blank=True)
     num_coercion_errors = models.IntegerField(blank=True, null=True, default=0)
     num_coercions_total = models.IntegerField(blank=True, null=True, default=0)
     num_columns = models.IntegerField(blank=True, null=True)
@@ -694,7 +685,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     # program version is in format 'x.y[.z]'
     source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
     # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
-    raw_property_state_to_filename = JSONField(default=dict, blank=True)
+    raw_property_state_to_filename = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ('-modified', '-created',)

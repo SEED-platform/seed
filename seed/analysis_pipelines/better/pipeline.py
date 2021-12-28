@@ -97,8 +97,7 @@ class BETTERPipeline(AnalysisPipeline):
 
         # ping BETTER to verify the token is valid
         client = BETTERClient(organization.better_analysis_api_key)
-        success = client.test_token()
-        if not success:
+        if not client.token_is_valid():
             message = 'Failed to communicate with BETTER. Please verify organization token is valid and try again.'
             self.fail(message, logger)
             raise AnalysisPipelineException(message)
