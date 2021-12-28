@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 # encoding: utf-8
-from django.conf.urls import url, include
+from django.conf.urls import re_path, include
 
 from rest_framework import routers
 
@@ -102,23 +102,23 @@ taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
 
 
 urlpatterns = [
-    url(r'^', include(api_v3_router.urls)),
-    url(r'^', include(data_quality_checks_router.urls)),
-    url(
+    re_path(r'^', include(api_v3_router.urls)),
+    re_path(r'^', include(data_quality_checks_router.urls)),
+    re_path(
         r'^labels_property/$',
         LabelInventoryViewSet.as_view(),
         {'inventory_type': 'property'},
     ),
-    url(
+    re_path(
         r'^labels_taxlot/$',
         LabelInventoryViewSet.as_view(),
         {'inventory_type': 'taxlot'},
     ),
-    url(r'^', include(organizations_router.urls)),
-    url(r'^', include(analysis_views_router.urls)),
-    url(r'^', include(analysis_messages_router.urls)),
-    url(r'^', include(analysis_view_messages_router.urls)),
-    url(r'^', include(properties_router.urls)),
-    url(r'^', include(taxlots_router.urls)),
-    url(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
+    re_path(r'^', include(organizations_router.urls)),
+    re_path(r'^', include(analysis_views_router.urls)),
+    re_path(r'^', include(analysis_messages_router.urls)),
+    re_path(r'^', include(analysis_view_messages_router.urls)),
+    re_path(r'^', include(properties_router.urls)),
+    re_path(r'^', include(taxlots_router.urls)),
+    re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
 ]
