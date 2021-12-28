@@ -2,8 +2,10 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from datetime import datetime
 import os
 from collections import namedtuple
+from typing import Any
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
@@ -57,6 +59,60 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
+
+
+class FilterException(Exception):
+    pass
+
+
+def build_view_filters(filters: dict[str, str], columns: list[dict]) -> dict[str, Any]:
+    """Build a query dictionary usable for `*View.filter(...)`. Specifically:
+
+    - Ignore any filter that doesn't have a corresponding column
+    - Handle cases for extra data
+    - Convert filtering values into their proper types (e.g. str -> int)
+    """
+    data_type_parsers = {
+        'number': float,
+        'float': float,
+        'integer': int,
+        'string': str,
+        'geometry': str,
+        'datetime': datetime.fromisoformat,
+        'date': datetime.fromisoformat,
+        'boolean': lambda v: v.lower() == 'true',
+        'area': float,
+        'eui': float,
+    }
+
+    columns_by_name = {
+        c['column_name']: c
+        for c in columns
+    }
+
+    new_filters = {}
+
+    for filter_expression, filter_value in filters.items():
+        column_name, _, _ = filter_expression.partition('__')
+        column = columns_by_name.get(column_name)
+        if column is None:
+            continue
+
+        new_filter_expression = None
+        if column['is_extra_data']:
+            new_filter_expression = f'state__extra_data__{filter_expression}'
+        else:
+            new_filter_expression = f'state__{filter_expression}'
+
+        parser = data_type_parsers.get(column['data_type'], str)
+        try:
+            new_filter_value = parser(filter_value)
+        except Exception:
+            raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+
+        new_filters[new_filter_expression] = new_filter_value
+
+    return new_filters
 
 
 class PropertyViewFilterBackend(filters.DjangoFilterBackend):
@@ -143,6 +199,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
+        org = Organization.objects.get(id=org_id)
 
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -161,16 +218,33 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'results': []
                 })
 
+        order_by = request.query_params.getlist('order_by', ['id'])
+
+        property_views_list = property_views_list = (
+            PropertyView.objects.select_related('property', 'state', 'cycle')
+            .filter(property__organization_id=org_id, cycle=cycle)
+            .order_by(*order_by)  # TODO: test adding .only(*fields['PropertyState'])
+        )
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        try:
+            filters = build_view_filters(request.query_params, columns_from_database)
+        except FilterException as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if filters:
+            property_views_list = property_views_list.filter(**filters)
+
         # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
         if 'property_view_ids' in request.data and request.data['property_view_ids']:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(id__in=request.data['property_view_ids'],
-                        property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
-        else:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
+            property_views_list = property_views_list.filter(id__in=request.data['property_view_ids'])
 
         paginator = Paginator(property_views_list, per_page)
 
@@ -184,11 +258,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
 
-        org = Organization.objects.get(pk=org_id)
-
-        # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
-
         # This uses an old method of returning the show_columns. There is a new method that
         # is prefered in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
@@ -200,7 +269,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             try:
                 profile = ColumnListProfile.objects.get(
-                    organization=org,
+                    organization_id=org_id,
                     id=profile_id,
                     profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_PROPERTY
