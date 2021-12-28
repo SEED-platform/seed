@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.menu', [])
     '$uibModal',
     '$log',
     'urls',
+    'auth_service',
     'organization_service',
     'user_service',
     'dataset_service',
@@ -26,6 +27,7 @@ angular.module('BE.seed.controller.menu', [])
       $uibModal,
       $log,
       urls,
+      auth_service,
       organization_service,
       user_service,
       dataset_service,
@@ -198,6 +200,21 @@ angular.module('BE.seed.controller.menu', [])
         $state.reload();
         init();
       };
+      // set authorization and organization data to $scope
+      set_auth = function (org_id) {
+        auth_service.is_authorized(org_id, ['requires_owner'])
+          .then(function (data) {
+            $scope.auth = data.auth.requires_owner ? data.auth : 'not authorized'
+          }, function (data) {
+            $scope.auth = data.message;
+          })
+      };
+      set_org = function (org_id) {
+        organization_service.get_organization(org_id)
+          .then(function(data) {
+            $scope.org = data.organization
+          })
+      };
 
       //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
       //      This isn't the best solution but most expedient. This approach should be refactored later by
@@ -238,6 +255,8 @@ angular.module('BE.seed.controller.menu', [])
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+            set_auth($scope.menu.user.organization.id)
+            set_org($scope.menu.user.organization.id)
           }).catch(function (error) {
             // user does not have an org
             $rootScope.route_load_error = true;
