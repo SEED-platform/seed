@@ -27,7 +27,7 @@ django-pint==0.6
 djangorestframework==3.12.2
 # Django-post-office dependency needs to be installed via github b/c
 # with pypi version Celery fails to auto discover post_office tasks
--e git+https://github.com/ui/django-post_office.git@v3.5.2#egg=django-post_office
+-e git+https://github.com/ui/django-post_office.git@v3.6.0#egg=django-post_office
 drf-yasg==1.20.0
 django-filter==2.4.0
 drf-nested-routers==0.91
