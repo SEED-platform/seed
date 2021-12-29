@@ -5,11 +5,12 @@
 from datetime import datetime
 import os
 from collections import namedtuple
-from typing import Any
+from typing import Any, Callable
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
+from django.http.request import QueryDict
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -65,14 +66,17 @@ class FilterException(Exception):
     pass
 
 
-def build_view_filters(filters: dict[str, str], columns: list[dict]) -> dict[str, Any]:
+def build_view_filters_and_sorts(
+    filters: QueryDict,
+    columns: list[dict],
+) -> tuple[dict[str, Any], list[str]]:
     """Build a query dictionary usable for `*View.filter(...)`. Specifically:
 
     - Ignore any filter that doesn't have a corresponding column
     - Handle cases for extra data
     - Convert filtering values into their proper types (e.g. str -> int)
     """
-    data_type_parsers = {
+    data_type_parsers: dict[str, Callable] = {
         'number': float,
         'float': float,
         'integer': int,
@@ -99,7 +103,11 @@ def build_view_filters(filters: dict[str, str], columns: list[dict]) -> dict[str
             continue
 
         new_filter_expression = None
-        if column['is_extra_data']:
+        if column_name == 'campus':
+            # campus is the only column found on the canonical property (TaxLots don't have this column)
+            # all other columns are found in the state
+            new_filter_expression = f'property__{filter_expression}'
+        elif column['is_extra_data']:
             new_filter_expression = f'state__extra_data__{filter_expression}'
         else:
             new_filter_expression = f'state__{filter_expression}'
@@ -112,7 +120,20 @@ def build_view_filters(filters: dict[str, str], columns: list[dict]) -> dict[str
 
         new_filters[new_filter_expression] = new_filter_value
 
-    return new_filters
+    order_by = []
+    for sort_expression in filters.getlist('order_by', ['id']):
+        column_name = sort_expression.lstrip('-')
+        direction = '-' if sort_expression.startswith('-') else ''
+        if column_name == 'id':
+            order_by.append(sort_expression)
+        elif column_name in columns_by_name:
+            column = columns_by_name[column_name]
+            if column['is_extra_data']:
+                order_by.append(f'{direction}state__extra_data__{column_name}')
+            else:
+                order_by.append(f'{direction}state__{column_name}')
+
+    return new_filters, order_by
 
 
 class PropertyViewFilterBackend(filters.DjangoFilterBackend):
@@ -218,18 +239,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'results': []
                 })
 
-        order_by = request.query_params.getlist('order_by', ['id'])
-
         property_views_list = property_views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(property__organization_id=org_id, cycle=cycle)
-            .order_by(*order_by)  # TODO: test adding .only(*fields['PropertyState'])
         )
 
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
         try:
-            filters = build_view_filters(request.query_params, columns_from_database)
+            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -241,6 +259,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         if filters:
             property_views_list = property_views_list.filter(**filters)
+        if order_by:
+            property_views_list = property_views_list.order_by(*order_by)
 
         # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
         if 'property_view_ids' in request.data and request.data['property_view_ids']:

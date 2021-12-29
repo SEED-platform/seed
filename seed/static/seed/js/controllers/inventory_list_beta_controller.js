@@ -118,6 +118,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       $scope.restoring = false;
 
+      // stores columns that have filtering and/or sorting applied
+      $scope.column_filters = []
+      $scope.column_sorts = []
+
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
       $scope.build_labels = function() {
@@ -599,20 +603,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         // Modify misc
         if (col.data_type === 'datetime') {
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
-          options.filter = inventory_service.dateFilter();
-        } else if (col.data_type === 'date') {
-          options.filter = inventory_service.dateFilter();
         } else if (col.data_type === 'eui' || col.data_type === 'area') {
-          options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-          options.sortingAlgorithm = naturalSort;
         } else if (col.data_type === 'float' || col.is_derived_column) {
-          options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-          options.sortingAlgorithm = naturalSort;
-        } else {
-          options.filter = inventory_service.combinedFilter();
-          options.sortingAlgorithm = naturalSort;
         }
 
         if (col.column_name === 'number_properties' && col.related) options.treeAggregationType = 'total';
@@ -771,6 +765,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         } else if ($scope.inventory_type === 'taxlots') {
           fn = inventory_service.get_taxlots;
         }
+
         return fn(
           page,
           chunk,
@@ -780,6 +775,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           true,
           $scope.organization.id,
           false,
+          $scope.column_filters,
+          $scope.column_sorts,
         ).then(function (data) {
           return data;
         });
@@ -1133,14 +1130,90 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
-      var saveGridSettings = function () {
+      // https://regexr.com/3j1tq
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+(?:\\\.\d+)?)$/;
+      const parseFilter = function (expression) {
+        // parses an expression string into an object containing operator and value
+        const filterData = expression.match(combinedRegex);
+        if (filterData) {
+          if (!_.isUndefined(filterData[2])) {
+            // Numeric Equality
+            operator = filterData[1];
+            value = Number(filterData[2].replace('\\.', '.'));
+            if (operator === '!') {
+              return {operator: 'ne', value};
+            } else {
+              return {operator: 'exact', value};
+            }
+          } else if (!_.isUndefined(filterData[4])) {
+            // Text Equality
+            operator = filterData[3];
+            value = filterData[4];
+            if (operator === '!') {
+              return {operator: 'ne', value};
+            } else {
+              return {operator: 'exact', value};
+            }
+          } else {
+            // Numeric Comparison
+            operator = filterData[5];
+            value = Number(filterData[6].replace('\\.', '.'));
+            switch (operator) {
+              case '<':
+                return {operator: 'lt', value};
+              case '<=':
+                return {operator: 'lte', value};
+              case '>':
+                return {operator: 'gt', value};
+              case '>=':
+                return {operator: 'gte', value};
+            }
+          }
+        } else {
+          // Case-insensitive Contains
+          return {operator: 'icontains', value: expression}
+        }
+      }
+
+      var updateColumnFilterSort = function () {
         if (!$scope.restoring) {
           var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
-            return _.keys(col.sort).length + (_.get(col, 'filters[0].term', '') || '').length > 0;
+            return _.keys(col.sort).filter(key => key != 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
           });
+
           inventory_service.saveGridSettings(localStorageKey + '.sort', {
             columns: columns
           });
+
+          $scope.column_filters = []
+          $scope.column_sorts = []
+          // parse the filters and sorts
+          for (const column of columns) {
+            const {name, filters, sort} = column;
+            // remove the column id at the end of the name
+            const column_name = name.split("_").slice(0, -1).join("_");
+
+            for (const filter of filters) {
+              if (_.isEmpty(filter)) {
+                continue
+              }
+
+              // a filter can contain many comma-separated filters
+              const subFilters = _.map(_.split(filter.term, ','), _.trim);
+              for (const subFilter of subFilters) {
+                if (subFilter) {
+                  const {operator, value} = parseFilter(subFilter)
+                  $scope.column_filters.push({column_name, operator, value})
+                }
+              }
+            }
+
+            if (sort.direction) {
+              // remove the column id at the end of the name
+              const column_name = name.split("_").slice(0, -1).join("_");
+              $scope.column_sorts.push({column_name, direction: sort.direction});
+            }
+          }
         }
       };
 
@@ -1177,6 +1250,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         saveTreeView: false,
         saveVisible: false,
         saveWidths: false,
+        useExternalFiltering: true,
+        useExternalSorting: true,
         columnDefs: $scope.columns,
         onRegisterApi: function (gridApi) {
           $scope.gridApi = gridApi;
@@ -1213,8 +1288,14 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             saveSettings();
           });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
-          gridApi.core.on.filterChanged($scope, _.debounce(saveGridSettings, 150));
-          gridApi.core.on.sortChanged($scope, _.debounce(saveGridSettings, 150));
+          gridApi.core.on.filterChanged($scope, _.debounce(() => {
+            updateColumnFilterSort();
+            $scope.load_inventory(1);
+          }, 1000));
+          gridApi.core.on.sortChanged($scope, _.debounce(() => {
+            updateColumnFilterSort();
+            $scope.load_inventory(1);
+          }, 1000));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
 
           var selectionChanged = function () {

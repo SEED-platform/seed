@@ -20,14 +20,45 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null, include_related = true) {
+    const format_column_filters = function (column_filters) {
+      // turn column filter objects into usable query parameters
+      if (!column_filters) {
+        return {};
+      }
+
+      const filters = {};
+      for (const {column_name, operator, value} of column_filters) {
+        filters[`${column_name}__${operator}`] = value;
+      }
+
+      return filters
+    }
+
+    const format_column_sorts = function (column_sorts) {
+      // turn column sort objects into usable query parameter
+      if (!column_sorts) {
+        return [];
+      }
+
+      const sorts = [];
+      for (const {column_name, direction} of column_sorts) {
+        const direction_operator = direction == 'desc' ? '-' : ''
+        sorts.push(`${direction_operator}${column_name}`);
+      }
+
+      return {order_by: sorts};
+    }
+
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999,
-        include_related: include_related
+        include_related: include_related,
+        ...format_column_sorts(column_sorts),
+        ...format_column_filters(column_filters),
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -253,14 +284,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null, include_related = true) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
         page: page,
         per_page: per_page || 999999999,
-        include_related: include_related
+        include_related: include_related,
+        ...format_column_sorts(column_sorts),
+        ...format_column_filters(column_filters),
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
