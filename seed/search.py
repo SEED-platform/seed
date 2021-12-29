@@ -397,7 +397,31 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
-    Specifically:
+    Filters are specified in a similar format as Django queries, as `column_name`
+    or `column_name__lookup`, where `column_name` is a valid Column.column_name,
+    and `__lookup` (which is optional) is any valid Django field lookup:
+      https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
+
+    One special lookup which is not provided by Django is `__ne` which negates
+    the filter expression.
+
+    Query string examples:
+    - `?city=Denver` - inventory where City is Denver
+    - `?city__ne=Denver` - inventory where City is NOT Denver
+    - `?site_eui__gte=100` - inventory where Site EUI >= 100
+    - `?city=Denver&site_eui__gte=100` - inventory where City is Denver AND Site EUI >= 100
+    - `?my_custom_column__lt=1000` - inventory where the extra data field `my_custom_column` < 1000
+
+    Sorts are specified with the `order_by` parameter, with any valid Column.column_name
+    as the value. By default the column is sorted in ascending order, columns prefixed
+    with `-` will be sorted in descending order.
+
+    Query string examples:
+    - `?order_by=site_eui` - sort by Site EUI in ascending order
+    - `?order_by=-site_eui` - sort by Site EUI in descending order
+    - `?order_by=city&order_by=site_eui` - sort by City, then Site EUI
+
+    This function basically does the following:
     - Ignore any filter/sort that doesn't have a corresponding column
     - Handle cases for extra data
     - Convert filtering values into their proper types (e.g. str -> int)
