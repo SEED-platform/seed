@@ -66,7 +66,7 @@ django-braces==1.14.0
 # Use forked jwt-oauth2 b/c the published version broke when updating to Django 3.x
 # See: https://docs.djangoproject.com/en/dev/releases/3.0/#removed-private-python-2-compatibility-apis
 # jwt-oauth2>=0.1.1
--e git+https://github.com/SEED-platform/jwt-oauth2.git@0490b817b9b74b7363c4b39fc0a175f58a14c967#egg=jwt-oauth2
+-e git+https://github.com/SEED-platform/jwt-oauth2.git@9726367db36b332c84fb1288a7df32196509c06d#egg=jwt-oauth2
 django-oauth-toolkit==1.2.0
 
 future==0.18.2
