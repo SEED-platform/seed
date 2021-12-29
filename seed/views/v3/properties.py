@@ -2,15 +2,12 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from datetime import datetime
 import os
 from collections import namedtuple
-from typing import Any, Callable
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
-from django.http.request import QueryDict
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -34,6 +31,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
+from seed.search import build_view_filters_and_sorts, FilterException
 from seed.serializers.pint import (PintJSONEncoder,
                                    apply_display_unit_preferences)
 from seed.serializers.properties import (PropertySerializer,
@@ -60,80 +58,6 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
-
-
-class FilterException(Exception):
-    pass
-
-
-def build_view_filters_and_sorts(
-    filters: QueryDict,
-    columns: list[dict],
-) -> tuple[dict[str, Any], list[str]]:
-    """Build a query dictionary usable for `*View.filter(...)`. Specifically:
-
-    - Ignore any filter that doesn't have a corresponding column
-    - Handle cases for extra data
-    - Convert filtering values into their proper types (e.g. str -> int)
-    """
-    data_type_parsers: dict[str, Callable] = {
-        'number': float,
-        'float': float,
-        'integer': int,
-        'string': str,
-        'geometry': str,
-        'datetime': datetime.fromisoformat,
-        'date': datetime.fromisoformat,
-        'boolean': lambda v: v.lower() == 'true',
-        'area': float,
-        'eui': float,
-    }
-
-    columns_by_name = {
-        c['column_name']: c
-        for c in columns
-    }
-
-    new_filters = {}
-
-    for filter_expression, filter_value in filters.items():
-        column_name, _, _ = filter_expression.partition('__')
-        column = columns_by_name.get(column_name)
-        if column is None:
-            continue
-
-        new_filter_expression = None
-        if column_name == 'campus':
-            # campus is the only column found on the canonical property (TaxLots don't have this column)
-            # all other columns are found in the state
-            new_filter_expression = f'property__{filter_expression}'
-        elif column['is_extra_data']:
-            new_filter_expression = f'state__extra_data__{filter_expression}'
-        else:
-            new_filter_expression = f'state__{filter_expression}'
-
-        parser = data_type_parsers.get(column['data_type'], str)
-        try:
-            new_filter_value = parser(filter_value)
-        except Exception:
-            raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
-
-        new_filters[new_filter_expression] = new_filter_value
-
-    order_by = []
-    for sort_expression in filters.getlist('order_by', ['id']):
-        column_name = sort_expression.lstrip('-')
-        direction = '-' if sort_expression.startswith('-') else ''
-        if column_name == 'id':
-            order_by.append(sort_expression)
-        elif column_name in columns_by_name:
-            column = columns_by_name[column_name]
-            if column['is_extra_data']:
-                order_by.append(f'{direction}state__extra_data__{column_name}')
-            else:
-                order_by.append(f'{direction}state__{column_name}')
-
-    return new_filters, order_by
 
 
 class PropertyViewFilterBackend(filters.DjangoFilterBackend):
@@ -257,10 +181,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if filters:
-            property_views_list = property_views_list.filter(**filters)
-        if order_by:
-            property_views_list = property_views_list.order_by(*order_by)
+        property_views_list = property_views_list.filter(filters).order_by(*order_by)
 
         # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
         if 'property_view_ids' in request.data and request.data['property_view_ids']:
