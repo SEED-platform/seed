@@ -1136,8 +1136,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
-      // https://regexr.com/3j1tq
-      const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+(?:\\\.\d+)?)$/;
+      // https://regexr.com/6cka2
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\\\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
       const parseFilter = function (expression) {
         // parses an expression string into an object containing operator and value
         const filterData = expression.match(combinedRegex);
@@ -1160,10 +1160,24 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             } else {
               return {operator: 'exact', value};
             }
-          } else {
+          } else if (!_.isUndefined(filterData[7])) {
             // Numeric Comparison
             operator = filterData[5];
             value = Number(filterData[6].replace('\\.', '.'));
+            switch (operator) {
+              case '<':
+                return {operator: 'lt', value};
+              case '<=':
+                return {operator: 'lte', value};
+              case '>':
+                return {operator: 'gt', value};
+              case '>=':
+                return {operator: 'gte', value};
+            }
+          } else {
+            // Date Comparison
+            operator = filterData[5];
+            value = filterData[8];
             switch (operator) {
               case '<':
                 return {operator: 'lt', value};
