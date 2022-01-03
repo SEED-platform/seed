@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.conf.urls import url, include
+from django.conf.urls import re_path, include
 from rest_framework import routers
 
 from seed.api.base.views import test_view_with_arg, TestReverseViewSet
@@ -75,76 +75,76 @@ api_v2_router.register(r'users', UserViewSet, basename="users")
 
 urlpatterns = [
     # v2 api
-    url(r'^', include(api_v2_router.urls)),
+    re_path(r'^', include(api_v2_router.urls)),
     # ajax routes
-    url(r'^version/$', version, name='version'),
+    re_path(r'^version/$', version, name='version'),
     # data uploader related things
-    url(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
-    url(r'^schema/$', get_api_schema, name='schema'),
-    url(
+    re_path(r'get_upload_details/$', get_upload_details, name='get_upload_details'),
+    re_path(r'^schema/$', get_api_schema, name='schema'),
+    re_path(
         r'projects/(?P<pk>\w+)/add/$',
         ProjectViewSet.as_view({'put': 'add'}),
         name='projects-add-inventory'
     ),
-    url(
+    re_path(
         r'projects/(?P<pk>\w+)/remove/$',
         ProjectViewSet.as_view({'put': 'remove'}),
         name='projects-remove-inventory'
     ),
-    url(
+    re_path(
         r'projects/(?P<pk>\w+)/update/$',
         ProjectViewSet.as_view({'put': 'update_details'}),
         name='projects-update'
     ),
-    url(
+    re_path(
         r'projects/(?P<pk>\w+)/move/$',
         ProjectViewSet.as_view({'put': 'move'}),
         name='projects-move'
     ),
-    url(
+    re_path(
         r'projects/(?P<pk>\w+)/copy/$',
         ProjectViewSet.as_view({'put': 'copy'}),
         name='projects-copy'
     ),
-    url(
+    re_path(
         r'labels-property/$',
         UpdateInventoryLabelsAPIView.as_view(),
         {'inventory_type': 'property'},
         name="property-labels",
     ),
-    url(
+    re_path(
         r'labels-taxlot/$',
         UpdateInventoryLabelsAPIView.as_view(),
         {'inventory_type': 'taxlot'},
         name="taxlot-labels",
     ),
-    url(
+    re_path(
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,
         name='testviewarg'
     ),
-    url(
+    re_path(
         r'^export_reports_data/$',
         Report.as_view({'get': 'export_reports_data'}),
         name='export_reports_data'
     ),
-    url(
+    re_path(
         r'^get_property_report_data/$',
         Report.as_view({'get': 'get_property_report_data'}),
         name='property_report_data'
     ),
-    url(
+    re_path(
         r'^get_aggregated_property_report_data/$',
         Report.as_view({'get': 'get_aggregated_property_report_data'}),
         name='aggregated_property_report_data'
     ),
-    # url(
+    # re_path(
     #     r'^property/',
     #     UpdateInventoryLabelsAPIView.as_view(),
     #     {'inventory_type': 'property'},
     #     name="property_labels",
     # ),
-    # url(
+    # re_path(
     #     r'^taxlot/$',
     #     UpdateInventoryLabelsAPIView.as_view(),
     #     {'inventory_type': 'taxlot'},

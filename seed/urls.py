@@ -5,12 +5,12 @@
 :author
 """
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 
 from seed.views.main import (
     home,
 )
 
 urlpatterns = [
-    url(r'^$', home, name='home'),
+    re_path(r'^$', home, name='home'),
 ]

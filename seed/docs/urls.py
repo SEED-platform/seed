@@ -5,12 +5,12 @@
 :author
 """
 
-from django.conf.urls import url
+from django.conf.urls import re_path
 
 from seed.docs.views import (
     faq_page
 )
 
 urlpatterns = [
-    url(r'^$', faq_page, name='documentation'),
+    re_path(r'^$', faq_page, name='documentation'),
 ]
