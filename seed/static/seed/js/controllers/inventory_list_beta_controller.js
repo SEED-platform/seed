@@ -829,14 +829,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.load_inventory = function (page) {
         const page_size = 100;
         spinner_utility.show()
-        return fetch(page, page_size).then(function (data) {
-          $scope.inventory_pagination = data.pagination;
-          processData(data.results);
-          $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
-          modalInstance.close();
-          evaluateDerivedColumns();
-          spinner_utility.hide()
-        });
+        return fetch(page, page_size)
+          .then(function (data) {
+            if (data.status === 'error') {
+              Notification.error(data.message);
+              spinner_utility.hide();
+              return;
+            }
+            $scope.inventory_pagination = data.pagination;
+            processData(data.results);
+            $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
+            modalInstance.close();
+            evaluateDerivedColumns();
+            spinner_utility.hide()
+          });
       };
 
       $scope.update_cycle = function (cycle) {

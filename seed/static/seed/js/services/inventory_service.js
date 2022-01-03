@@ -84,7 +84,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).then(function (response) {
           return response.data;
         });
-      }).catch(_.constant('Error fetching cycles'));
+      }).catch(function (response) {
+        if (response.data.message) {
+          return response.data
+        }
+        throw response
+      });
     };
 
     inventory_service.properties_cycle = function (profile_id, cycle_ids) {
@@ -319,7 +324,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).then(function (response) {
           return response.data;
         });
-      }).catch(_.constant('Error fetching cycles'));
+      }).catch(function (response) {
+        if (response.data.message) {
+          return response.data
+        }
+        throw response
+      });
     };
 
     inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
