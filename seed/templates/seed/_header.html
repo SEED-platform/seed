@@ -21,11 +21,6 @@
                 <span class="sr-only" translate>Toggle Dropdown</span>
             </button>
             <ul uib-dropdown-menu class="dropdown-menu pull-right justify-left" role="menu" aria-labelledby="btnCreateNew">
-                <li class="dropdown-header" translate>Create a new...</li>
-                <li class="divider"></li>
-                <li ng-show="menu.user.organization.user_role !== 'viewer'">
-                    <a data-toggle="modal" data-target="#dataUploadModal" ng-click="open_data_upload_modal()" translate>Data Set</a>
-                </li>
                 <li class="dropdown-header" translate>Organization Settings</li>
                 <li class="divider"></li>
                 <li><a ui-sref="organization_settings({organization_id: org.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Settings</a></li>
