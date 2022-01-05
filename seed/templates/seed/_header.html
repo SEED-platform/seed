@@ -1,16 +1,14 @@
 <div class="header">
+    <div class="hover-org-container" ng-if="show_org_id" style="{$ hover_style $}">
+        <span class='hover-org-id'> 
+            ID: {$ hover_org_id $}
+        </span>
+    </div>
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
             <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled" (mouseover)="hover_org()">
                 <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
             </button>
-            {% comment %} <span 
-                class="hover-org-id-header" 
-                ng-if="show_org_id"
-                style="top: {$ ypos $}; left:50px;"
-            >
-                ID: {$ hover_org_id $}
-            </span> {% endcomment %}
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs" ng-mousemove="track_mouse($event)">
                 <li ng-if="!menu.user.organizations.length" style="text-align: center;">
                     <span class="glyphicon glyphicon-refresh spinning"></span> <span translate>Loading...</span>
@@ -25,10 +23,7 @@
                         {$ org.name $}
                         <i class="fa fa-check" ng-show="org.id == menu.user.organization.id"></i>
                     </a>
-
-                    {% comment %} <span class="hover-org-id" ng-if="hover_org_id == org.id && show_org_id">Organization ID: {$ hover_org_id $}</span> {% endcomment %}
                 </li>
-                <li ng-if="hover_org_id" class="hover-org-id-bottom" >Organization ID: {$ hover_org_id $}</li>
             </ul>
         </div>
         <div class="btn-group" uib-dropdown ng-hide="menu.user.organization.user_role === 'viewer'">
