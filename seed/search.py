@@ -7,11 +7,15 @@
 Search methods pertaining to buildings.
 
 """
+from __future__ import annotations
+
 from datetime import datetime
 import json
 import logging
 import operator
-from typing import Callable, Union
+from typing import Any, Callable, Union
+from dataclasses import dataclass
+from enum import Enum
 
 from functools import reduce
 
@@ -309,6 +313,52 @@ class FilterException(Exception):
     pass
 
 
+class QueryFilterOperator(Enum):
+    EQUAL = 'exact'
+    LT = 'lt'
+    LTE = 'lte'
+    GT = 'gt'
+    GTE = 'gte'
+    CONTAINS = 'icontains'
+
+
+@dataclass
+class QueryFilter:
+    field_name: str
+    operator: Union[QueryFilterOperator, None]
+    is_negated: bool
+
+    @classmethod
+    def parse(cls, filter: str) -> QueryFilter:
+        """Parse a filter string into a QueryFilter
+
+        :param filter: string in the format <field_name>, or <field_name>__<lookup_expression>
+        """
+        field_name, _, lookup = filter.partition('__')
+        is_negated = lookup == 'ne'
+        operator = None
+        if lookup and not is_negated:
+            try:
+                operator = QueryFilterOperator(lookup)
+            except ValueError:
+                valid_lookups = [op.value for op in list(QueryFilterOperator)]
+                raise FilterException(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}')
+
+        return cls(field_name, operator, is_negated)
+
+    def to_q(self, value: Any) -> Q:
+        if self.operator:
+            expression = f'{self.field_name}__{self.operator.value}'
+        else:
+            expression = self.field_name
+        q_dict = {expression: value}
+
+        if self.is_negated:
+            return ~Q(**q_dict)
+        else:
+            return Q(**q_dict)
+
+
 def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> Q:
     """Parse a filter expression into a Q object
 
@@ -321,7 +371,7 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
     :param columns_by_name: mapping of Column.column_name to dict representation of Column
     :return: query object
     """
-    data_type_parsers: dict[str, Callable] = {
+    DATA_TYPE_PARSERS: dict[str, Callable] = {
         'number': float,
         'float': float,
         'integer': int,
@@ -334,38 +384,28 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
         'eui': float,
     }
 
-    column_name, _, _ = filter_expression.partition('__')
-    column = columns_by_name.get(column_name)
+    filter = QueryFilter.parse(filter_expression)
+    column = columns_by_name.get(filter.field_name)
     if column is None:
         return Q()
 
-    # users indicate negation with a trailing `__ne` (which is not a real Django filter)
-    # so we need to remove it if found
-    is_negated = filter_expression.endswith('__ne')
-    if is_negated:
-        filter_expression, _, _ = filter_expression.rpartition('__ne')
-
-    new_filter_expression = None
-    if column_name == 'campus':
+    updated_filter = None
+    if filter.field_name == 'campus':
         # campus is the only column found on the canonical property (TaxLots don't have this column)
         # all other columns are found in the state
-        new_filter_expression = f'property__{filter_expression}'
+        updated_filter = QueryFilter(f'property__{filter.field_name}', filter.operator, filter.is_negated)
     elif column['is_extra_data']:
-        new_filter_expression = f'state__extra_data__{filter_expression}'
+        updated_filter = QueryFilter(f'state__extra_data__{filter.field_name}', filter.operator, filter.is_negated)
     else:
-        new_filter_expression = f'state__{filter_expression}'
+        updated_filter = QueryFilter(f'state__{filter.field_name}', filter.operator, filter.is_negated)
 
-    parser = data_type_parsers.get(column['data_type'], str)
+    parser = DATA_TYPE_PARSERS.get(column['data_type'], str)
     try:
         new_filter_value = parser(filter_value)
     except Exception:
-        raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+        raise FilterException(f'Invalid data type for "{filter.field_name}". Expected a valid {column["data_type"]} value.')
 
-    new_filter_dict = {new_filter_expression: new_filter_value}
-    if is_negated:
-        return ~Q(**new_filter_dict)
-    else:
-        return Q(**new_filter_dict)
+    return updated_filter.to_q(new_filter_value)
 
 
 def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> Union[None, str]:
