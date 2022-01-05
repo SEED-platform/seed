@@ -6,7 +6,7 @@
     </div>
     <div class="add_menu_container">
         <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
-            <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled" (mouseover)="hover_org()">
+            <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
                 <span style="color:gray">Current Organization:</span> {$ menu.user.organization.name $} <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="btnUserOrgs" ng-mousemove="track_mouse($event)">
