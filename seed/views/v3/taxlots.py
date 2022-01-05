@@ -6,6 +6,7 @@ from collections import namedtuple
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Subquery
+from django.db.utils import DataError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
@@ -107,7 +108,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
         try:
-            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+            filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -117,7 +118,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        taxlot_views_list = taxlot_views_list.filter(filters).order_by(*order_by)
+        taxlot_views_list = taxlot_views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
         # Return taxlot views limited to the 'taxlot_view_ids' list.  Otherwise, if selected is empty, return all
         if 'taxlot_view_ids' in request.data and request.data['taxlot_view_ids']:
@@ -134,6 +135,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         except EmptyPage:
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
+        except DataError as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is preferred in v2.1 API with the ProfileIdMixin.

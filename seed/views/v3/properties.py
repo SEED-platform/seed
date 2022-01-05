@@ -7,6 +7,7 @@ from collections import namedtuple
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
+from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -163,7 +164,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'results': []
                 })
 
-        property_views_list = property_views_list = (
+        property_views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(property__organization_id=org_id, cycle=cycle)
         )
@@ -171,7 +172,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
         try:
-            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+            filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -181,7 +182,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        property_views_list = property_views_list.filter(filters).order_by(*order_by)
+        property_views_list = property_views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
         # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
         if 'property_view_ids' in request.data and request.data['property_view_ids']:
@@ -198,6 +199,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except EmptyPage:
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
+        except DataError as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is prefered in v2.1 API with the ProfileIdMixin.

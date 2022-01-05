@@ -19,7 +19,9 @@ from enum import Enum
 
 from functools import reduce
 
+from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Cast, Replace
 from django.http.request import RawPostDataException, QueryDict
 from past.builtins import basestring
 
@@ -359,7 +361,42 @@ class QueryFilter:
             return Q(**q_dict)
 
 
-def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> Q:
+def _build_extra_data_filter_and_annotations(filter: QueryFilter, data_type: str) -> tuple[QueryFilter, dict]:
+    field_name = filter.field_name
+    full_field_name = f'state__extra_data__{field_name}'
+    text_field_name = f'_{field_name}_to_text'
+    cleaned_field_name = f'_{field_name}_cleaned'
+    final_field_name = f'_{field_name}_final'
+
+    annotations = {
+        text_field_name: Cast(full_field_name, output_field=models.TextField()),
+        cleaned_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+    }
+    if data_type == 'integer':
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.IntegerField())
+        })
+    elif data_type in ['number', 'float', 'area', 'eui']:
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.FloatField())
+        })
+    elif data_type in ['date', 'datetime']:
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.DateTimeField())
+        })
+    elif data_type == 'boolean':
+        annotations.update({
+            final_field_name: Cast(cleaned_field_name, output_field=models.BooleanField())
+        })
+    else:
+        # treat it as a string
+        cleaned_value = annotations.pop(cleaned_field_name)
+        annotations[final_field_name] = cleaned_value
+
+    return QueryFilter(final_field_name, filter.operator, filter.is_negated), annotations
+
+
+def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, dict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -387,15 +424,16 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
     filter = QueryFilter.parse(filter_expression)
     column = columns_by_name.get(filter.field_name)
     if column is None:
-        return Q()
+        return Q(), {}
 
     updated_filter = None
+    annotations = {}
     if filter.field_name == 'campus':
         # campus is the only column found on the canonical property (TaxLots don't have this column)
         # all other columns are found in the state
         updated_filter = QueryFilter(f'property__{filter.field_name}', filter.operator, filter.is_negated)
     elif column['is_extra_data']:
-        updated_filter = QueryFilter(f'state__extra_data__{filter.field_name}', filter.operator, filter.is_negated)
+        updated_filter, annotations = _build_extra_data_filter_and_annotations(filter, column['data_type'])
     else:
         updated_filter = QueryFilter(f'state__{filter.field_name}', filter.operator, filter.is_negated)
 
@@ -405,7 +443,7 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
     except Exception:
         raise FilterException(f'Invalid data type for "{filter.field_name}". Expected a valid {column["data_type"]} value.')
 
-    return updated_filter.to_q(new_filter_value)
+    return updated_filter.to_q(new_filter_value), annotations
 
 
 def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> Union[None, str]:
@@ -433,7 +471,7 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
         return None
 
 
-def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, list[str]]:
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, dict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
@@ -468,7 +506,7 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
 
     :param filters: QueryDict from a request
     :param columns: list of all valid Columns in dict format
-    :return: filters and sorts
+    :return: filters, annotations and sorts
     """
     columns_by_name = {
         c['column_name']: c
@@ -476,8 +514,11 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
     }
 
     new_filters = Q()
+    annotations = {}
     for filter_expression, filter_value in filters.items():
-        new_filters &= _parse_view_filter(filter_expression, filter_value, columns_by_name)
+        parsed_filters, parsed_annotations = _parse_view_filter(filter_expression, filter_value, columns_by_name)
+        new_filters &= parsed_filters
+        annotations.update(parsed_annotations)
 
     order_by = []
     for sort_expression in filters.getlist('order_by', ['id']):
@@ -485,4 +526,4 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
         if parsed_sort is not None:
             order_by.append(parsed_sort)
 
-    return new_filters, order_by
+    return new_filters, annotations, order_by

@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from datetime import datetime
 
+from django.db import models
 from django.db.models import Q
+from django.db.models.functions import Cast, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
 
@@ -41,7 +43,7 @@ class TestInventoryViewSearchParsers(TestCase):
         for test_case in test_cases:
             # -- Act
             columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-            filters, _ = build_view_filters_and_sorts(test_case.input, columns)
+            filters, _, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
             self.assertEqual(
@@ -55,7 +57,8 @@ class TestInventoryViewSearchParsers(TestCase):
         class TestCase:
             name: str
             input: QueryDict
-            expected: Q
+            expected_filter: Q
+            expected_annotations: dict
 
         # -- Setup
         # create some extra data columns
@@ -79,20 +82,42 @@ class TestInventoryViewSearchParsers(TestCase):
             Column.objects.create(**col)
 
         test_cases = [
-            TestCase('extra_data column with string data_type', QueryDict('test_string=hello'), Q(state__extra_data__test_string='hello')),
-            TestCase('extra_data column with number data_type', QueryDict('test_number=12.3'), Q(state__extra_data__test_number=12.3)),
+            TestCase(
+                'extra_data column with string data_type',
+                QueryDict('test_string=hello'),
+                Q(_test_string_final='hello'),
+                {
+                    '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
+                    '_test_string_final': Replace('_test_string_to_text', models.Value('"'), output_field=models.TextField()),
+                }
+            ),
+            TestCase(
+                'extra_data column with number data_type',
+                QueryDict('test_number=12.3'),
+                Q(_test_number_final=12.3),
+                {
+                    '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
+                    '_test_number_cleaned': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
+                }
+            ),
         ]
 
         for test_case in test_cases:
             # -- Act
             columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-            filters, _ = build_view_filters_and_sorts(test_case.input, columns)
+            filters, annotations, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
             self.assertEqual(
                 filters,
-                test_case.expected,
-                f'Failed "{test_case.name}"; actual: {filters}; expected: {test_case.expected}'
+                test_case.expected_filter,
+                f'Failed "{test_case.name}"; actual: {filters}; expected: {test_case.expected_filter}'
+            )
+            self.assertEqual(
+                repr(annotations),
+                repr(test_case.expected_annotations),
+                f'Failed "{test_case.name}"; actual: {annotations}; expected: {test_case.expected_annotations}'
             )
 
     def test_parse_filters_returns_empty_q_object_for_invalid_columns(self):
@@ -101,7 +126,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-        filters, _ = build_view_filters_and_sorts(query_dict, columns)
+        filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
         self.assertEqual(filters, Q())
@@ -112,7 +137,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-        filters, _ = build_view_filters_and_sorts(query_dict, columns)
+        filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
         expected = (
@@ -142,7 +167,7 @@ class TestInventoryViewSearchParsers(TestCase):
         for test_case in test_cases:
             # -- Act
             columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-            filters, _ = build_view_filters_and_sorts(test_case.input, columns)
+            filters, _, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
             self.assertEqual(
@@ -157,7 +182,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-        filters, _ = build_view_filters_and_sorts(query_dict, columns)
+        filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
         self.assertEqual(filters, ~Q(state__city='Denver'))
@@ -200,7 +225,7 @@ class TestInventoryViewSearchParsers(TestCase):
         # -- Act
         for test_case in test_cases:
             columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-            _, order_by = build_view_filters_and_sorts(test_case.input, columns)
+            _, _, order_by = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
             self.assertEqual(
