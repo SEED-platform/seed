@@ -223,8 +223,8 @@ angular.module('BE.seed.controller.menu', [])
         $scope.show_org_id = false
       }
       $scope.track_mouse = function(e) {
-        let xpos = `${e.view.window.innerWidth-e.clientX-105}px`
-        let ypos = `${e.clientY-25}px`
+        let xpos = `${e.view.window.innerWidth - e.clientX - 105}px`
+        let ypos = `${e.clientY - 25}px`
         $scope.hover_style = `right: ${xpos}; top: ${ypos};`
       }
 
