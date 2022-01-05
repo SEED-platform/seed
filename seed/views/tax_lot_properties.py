@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -147,7 +147,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+        data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
 
         # add labels and notes
         for i, record in enumerate(model_views):

@@ -55,7 +55,7 @@ celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
 * Running tests: See [Testing Notes][developer-testing-notes]
 
 ### Copyright
-Copyright ©  2014 - 2021, The Regents of the University of California, through
+Copyright ©  2014 - 2022, The Regents of the University of California, through
 Lawrence Berkeley National Laboratory (subject to receipt of any required
 approvals from the U.S. Department of Energy) and contributors. All rights
 reserved.

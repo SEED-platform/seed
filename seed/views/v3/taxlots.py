@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from collections import namedtuple
@@ -22,6 +22,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          Note, PropertyView, StatusLabel, TaxLot,
                          TaxLotAuditLog, TaxLotProperty, TaxLotState,
                          TaxLotView)
+from seed.search import build_view_filters_and_sorts, FilterException
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
@@ -79,6 +80,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             return JsonResponse(
                 {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
                 status=status.HTTP_400_BAD_REQUEST)
+        org = Organization.objects.get(id=org_id)
 
         if cycle_id:
             cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
@@ -97,16 +99,29 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                     'results': []
                 })
 
+        taxlot_views_list = (
+            TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
+            .filter(taxlot__organization_id=org_id, cycle=cycle)
+        )
+
+        # Retrieve all the columns that are in the db for this organization
+        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+        try:
+            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+        except FilterException as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        taxlot_views_list = taxlot_views_list.filter(filters).order_by(*order_by)
+
         # Return taxlot views limited to the 'taxlot_view_ids' list.  Otherwise, if selected is empty, return all
         if 'taxlot_view_ids' in request.data and request.data['taxlot_view_ids']:
-            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-                .filter(id__in=request.data['taxlot_view_ids'], taxlot__organization_id=org_id,
-                        cycle=cycle) \
-                .order_by('id')
-        else:
-            taxlot_views_list = TaxLotView.objects.select_related('taxlot', 'state', 'cycle') \
-                .filter(taxlot__organization_id=org_id, cycle=cycle) \
-                .order_by('id')
+            taxlot_views_list = taxlot_views_list.filter(id__in=request.data['taxlot_view_ids'])
 
         paginator = Paginator(taxlot_views_list, per_page)
 
@@ -119,11 +134,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         except EmptyPage:
             taxlot_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
-
-        org = Organization.objects.get(pk=org_id)
-
-        # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is preferred in v2.1 API with the ProfileIdMixin.
@@ -147,8 +157,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.get_related(taxlot_views, show_columns,
-                                                     columns_from_database)
+        include_related = (
+            str(request.query_params.get('include_related', 'true')).lower() == 'true'
+        )
+        related_results = TaxLotProperty.serialize(
+            taxlot_views,
+            show_columns,
+            columns_from_database,
+            include_related,
+        )
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
@@ -192,7 +209,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'profile_id',
                 required=False,
                 description='The ID of the column profile to use'
-            )
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                'include_related',
+                required=False,
+                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
+            ),
         ]
     )
     @api_endpoint_class
@@ -259,6 +281,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 'per_page',
                 required=False,
                 description='The number of items per page to return'
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                'include_related',
+                required=False,
+                description='If False, related data (i.e. Property data) is not added to the response (default is True)'
             ),
         ],
         request_body=AutoSchemaHelper.schema_factory(

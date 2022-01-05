@@ -1,20 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 
 Search methods pertaining to buildings.
 
 """
+from datetime import datetime
 import json
 import logging
 import operator
+from typing import Callable, Union
 
 from functools import reduce
 
 from django.db.models import Q
-from django.http.request import RawPostDataException
+from django.http.request import RawPostDataException, QueryDict
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
@@ -301,3 +303,146 @@ def inventory_search_filter_sort(inventory_type, params, user):
         )
 
     return inventory
+
+
+class FilterException(Exception):
+    pass
+
+
+def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> Q:
+    """Parse a filter expression into a Q object
+
+    :param filter_expression: should be a valid Column.column_name, with an optional
+                              Django field lookup suffix (e.g. `__gt`, `__icontains`, etc)
+                              https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
+                              One custom field lookup suffix is allowed, `__ne`,
+                              which negates the expression (i.e. column_name != filter_value)
+    :param filter_value: the value evaluated against the filter_expression
+    :param columns_by_name: mapping of Column.column_name to dict representation of Column
+    :return: query object
+    """
+    data_type_parsers: dict[str, Callable] = {
+        'number': float,
+        'float': float,
+        'integer': int,
+        'string': str,
+        'geometry': str,
+        'datetime': datetime.fromisoformat,
+        'date': datetime.fromisoformat,
+        'boolean': lambda v: v.lower() == 'true',
+        'area': float,
+        'eui': float,
+    }
+
+    column_name, _, _ = filter_expression.partition('__')
+    column = columns_by_name.get(column_name)
+    if column is None:
+        return Q()
+
+    # users indicate negation with a trailing `__ne` (which is not a real Django filter)
+    # so we need to remove it if found
+    is_negated = filter_expression.endswith('__ne')
+    if is_negated:
+        filter_expression, _, _ = filter_expression.rpartition('__ne')
+
+    new_filter_expression = None
+    if column_name == 'campus':
+        # campus is the only column found on the canonical property (TaxLots don't have this column)
+        # all other columns are found in the state
+        new_filter_expression = f'property__{filter_expression}'
+    elif column['is_extra_data']:
+        new_filter_expression = f'state__extra_data__{filter_expression}'
+    else:
+        new_filter_expression = f'state__{filter_expression}'
+
+    parser = data_type_parsers.get(column['data_type'], str)
+    try:
+        new_filter_value = parser(filter_value)
+    except Exception:
+        raise FilterException(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+
+    new_filter_dict = {new_filter_expression: new_filter_value}
+    if is_negated:
+        return ~Q(**new_filter_dict)
+    else:
+        return Q(**new_filter_dict)
+
+
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> Union[None, str]:
+    """Parse a sort expression
+
+    :param sort_expression: should be a valid Column.column_name. Optionally prefixed
+                            with '-' to indicate descending order.
+    :param columns_by_name: mapping of Column.column_name to dict representation of Column
+    :return: the parsed sort expression or None if not valid
+    """
+    column_name = sort_expression.lstrip('-')
+    direction = '-' if sort_expression.startswith('-') else ''
+    if column_name == 'id':
+        return sort_expression
+    elif column_name == 'campus':
+        # campus is the only column which is found exclusively on the Property, not the state
+        return f'property__{sort_expression}'
+    elif column_name in columns_by_name:
+        column = columns_by_name[column_name]
+        if column['is_extra_data']:
+            return f'{direction}state__extra_data__{column_name}'
+        else:
+            return f'{direction}state__{column_name}'
+    else:
+        return None
+
+
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, list[str]]:
+    """Build a query object usable for `*View.filter(...)` as well as a list of
+    column names for usable for `*View.order_by(...)`.
+
+    Filters are specified in a similar format as Django queries, as `column_name`
+    or `column_name__lookup`, where `column_name` is a valid Column.column_name,
+    and `__lookup` (which is optional) is any valid Django field lookup:
+      https://docs.djangoproject.com/en/4.0/topics/db/queries/#field-lookups
+
+    One special lookup which is not provided by Django is `__ne` which negates
+    the filter expression.
+
+    Query string examples:
+    - `?city=Denver` - inventory where City is Denver
+    - `?city__ne=Denver` - inventory where City is NOT Denver
+    - `?site_eui__gte=100` - inventory where Site EUI >= 100
+    - `?city=Denver&site_eui__gte=100` - inventory where City is Denver AND Site EUI >= 100
+    - `?my_custom_column__lt=1000` - inventory where the extra data field `my_custom_column` < 1000
+
+    Sorts are specified with the `order_by` parameter, with any valid Column.column_name
+    as the value. By default the column is sorted in ascending order, columns prefixed
+    with `-` will be sorted in descending order.
+
+    Query string examples:
+    - `?order_by=site_eui` - sort by Site EUI in ascending order
+    - `?order_by=-site_eui` - sort by Site EUI in descending order
+    - `?order_by=city&order_by=site_eui` - sort by City, then Site EUI
+
+    This function basically does the following:
+    - Ignore any filter/sort that doesn't have a corresponding column
+    - Handle cases for extra data
+    - Convert filtering values into their proper types (e.g. str -> int)
+
+    :param filters: QueryDict from a request
+    :param columns: list of all valid Columns in dict format
+    :return: filters and sorts
+    """
+    columns_by_name = {
+        c['column_name']: c
+        for c in columns
+    }
+
+    new_filters = Q()
+    for filter_expression, filter_value in filters.items():
+        new_filters &= _parse_view_filter(filter_expression, filter_value, columns_by_name)
+
+    order_by = []
+    for sort_expression in filters.getlist('order_by', ['id']):
+        parsed_sort = _parse_view_sort(sort_expression, columns_by_name)
+        if parsed_sort is not None:
+            order_by.append(parsed_sort)
+
+    return new_filters, order_by
