@@ -367,25 +367,19 @@ a:not([href]) {
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
 
-      // .hover-org-id-header {
-      //   position: absolute;
-      //   background: rgba(255, 255, 255, 0.7);
-      //   color: black;
-      //   // left: 10rem;
-      //   // top: 3rem;
-      //   z-index: 100000;
-      //   padding:3px;
-      //   border: 1px solid black; 
-      //   border-radius: 3px;
-      //   text-align: right;
-      //   justify-content: right;
-      // }
-      .hover-org-id-bottom {
-        text-align: right;
-        padding-right: 1rem;
+      .hover-org-container {
+        position: absolute;
+        background: none;
+        z-index: 10000;
+        width: 100px;
+      }
+      .hover-org-id {
         font-size: 10px;
-        border-top: 1px solid rgb(185, 184, 184);
-        color:gray;
+        background:rgba(255, 255, 255, 0.8);
+        border: 1px solid gray;
+        border-radius: 3px;
+        color: gray;
+        padding:2px;
       }
 
       .logo_container {
