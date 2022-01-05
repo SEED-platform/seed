@@ -41,7 +41,7 @@
                 <li><a ui-sref="organization_cycles({organization_id: org.id})" ng-if="org.is_parent && auth.requires_owner" ui-sref-active="active" translate>Cycles</a></li>
                 <li><a ui-sref="organization_labels({organization_id: org.id})" ng-if="auth.requires_owner" ui-sref-active="active" translate>Labels</a></li>
                 <li><a ui-sref="organization_members({organization_id: org.id})" ui-sref-active="active" translate>Members</a></li>
-                <li><a ui-sref="organization_settings({organization_id: org.id})" translate>More...</a></li>
+                <li><a ui-sref="organization_members({organization_id: org.id})" translate>More...</a></li>
 
                 <!--<li>
                     <a data-toggle="modal" data-target="#newProjectModalIndex" ng-click="open_create_project_modal()">Project</a>
