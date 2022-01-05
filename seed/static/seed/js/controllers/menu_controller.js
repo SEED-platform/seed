@@ -216,26 +216,17 @@ angular.module('BE.seed.controller.menu', [])
           })
       };
       $scope.mouseover_org = function(org_id) {
-        console.log('>>> Organization ID: ', org_id)
-        console.log('>>> Mouse Over')
         $scope.show_org_id = true
         $scope.hover_org_id = org_id
       };
       $scope.mouseout_org = function() {
-        console.log('<<< Mouse Out')
         $scope.show_org_id = false
-
       }
       $scope.track_mouse = function(e) {
-        $scope.xpos = `${e.clientX-260}px`
-        $scope.ypos = `${e.clientY}px`
-        console.log($scope.xpos)
-        console.log($scope.ypos)
-        $scope.xxpos = '10rem;'
-        $scope.hover_style = {'left': e.clientX, 'top': e.clientY}
+        let xpos = `${e.view.window.innerWidth-e.clientX-105}px`
+        let ypos = `${e.clientY-25}px`
+        $scope.hover_style = `right: ${xpos}; top: ${ypos};`
       }
-
-
 
       //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
       //      This isn't the best solution but most expedient. This approach should be refactored later by
