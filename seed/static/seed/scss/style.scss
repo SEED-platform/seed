@@ -373,6 +373,7 @@ a:not([href]) {
         z-index: 10000;
         width: 100px;
       }
+
       .hover-org-id {
         font-size: 10px;
         background:rgba(255, 255, 255, 0.8);
@@ -381,10 +382,7 @@ a:not([href]) {
         color: gray;
         padding:2px;
       }
-      .active {
-        background-color: $gray_lightest;
-        text-decoration: none;
-      }
+
       .logo_container {
 
         .logo {
@@ -465,6 +463,11 @@ a:not([href]) {
                 color: #000;
                 font-weight: bold;
                 text-align: center;
+              }
+
+              .active {
+                background-color: $gray_lightest;
+                text-decoration: none;
               }
 
               a {
