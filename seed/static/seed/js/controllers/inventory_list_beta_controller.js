@@ -122,6 +122,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.column_filters = []
       $scope.column_sorts = []
 
+      // remove editing on the filter list input
+      let findFiltersListAttempts = 0;
+      const findFiltersList = setInterval(() => {
+        let filterListInput = document.getElementById('filters-list').getElementsByTagName('input')[0];
+        if (filterListInput) {
+          filterListInput.readOnly = true;
+          clearInterval(findFiltersList);
+        }
+        findFiltersListAttempts++;
+        if (findFiltersListAttempts > 10) {
+          clearInterval(findFiltersList);
+        }
+      }, 1000);
+
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
       $scope.build_labels = function() {
@@ -1166,18 +1180,18 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             operator = filterData[1];
             value = Number(filterData[2].replace('\\.', '.'));
             if (operator === '!') {
-              return {operator: 'ne', value};
+              return {string: 'is not', operator: 'ne', value};
             } else {
-              return {operator: 'exact', value};
+              return {string: 'is', operator: 'exact', value};
             }
           } else if (!_.isUndefined(filterData[4])) {
             // Text Equality
             operator = filterData[3];
             value = filterData[4];
             if (operator === '!') {
-              return {operator: 'ne', value};
+              return {string: 'is not', operator: 'ne', value};
             } else {
-              return {operator: 'exact', value};
+              return {string: 'is', operator: 'exact', value};
             }
           } else if (!_.isUndefined(filterData[7])) {
             // Numeric Comparison
@@ -1185,13 +1199,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             value = Number(filterData[6].replace('\\.', '.'));
             switch (operator) {
               case '<':
-                return {operator: 'lt', value};
+                return {string: '<', operator: 'lt', value};
               case '<=':
-                return {operator: 'lte', value};
+                return {string: '<=', operator: 'lte', value};
               case '>':
-                return {operator: 'gt', value};
+                return {string: '>', operator: 'gt', value};
               case '>=':
-                return {operator: 'gte', value};
+                return {string: '>=', operator: 'gte', value};
             }
           } else {
             // Date Comparison
@@ -1199,20 +1213,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             value = filterData[8];
             switch (operator) {
               case '<':
-                return {operator: 'lt', value};
+                return {string: '<', operator: 'lt', value};
               case '<=':
-                return {operator: 'lte', value};
+                return {string: '<=', operator: 'lte', value};
               case '>':
-                return {operator: 'gt', value};
+                return {string: '>', operator: 'gt', value};
               case '>=':
-                return {operator: 'gte', value};
+                return {string: '>=', operator: 'gte', value};
             }
           }
         } else {
           // Case-insensitive Contains
-          return {operator: 'icontains', value: expression}
+          return {string: 'contains', operator: 'icontains', value: expression};
         }
-      }
+      };
 
       var updateColumnFilterSort = function () {
         if (!$scope.restoring) {
@@ -1241,8 +1255,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               const subFilters = _.map(_.split(filter.term, ','), _.trim);
               for (const subFilter of subFilters) {
                 if (subFilter) {
-                  const {operator, value} = parseFilter(subFilter)
-                  $scope.column_filters.push({column_name, operator, value})
+                  const {string, operator, value} = parseFilter(subFilter)
+                  const display = [column_name, string, value].join(' ')
+                  $scope.column_filters.push({column_name, operator, value, display})
                 }
               }
             }

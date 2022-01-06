@@ -62,8 +62,7 @@
         <div class="row">
             <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="selected_labels" min-length="1" placeholder="{$:: 'No filters added.' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
-                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder=" " replace-spaces-with-dashes="false" readonly>
                 </tags-input>
                 <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
             </div>
