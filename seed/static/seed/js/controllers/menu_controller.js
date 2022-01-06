@@ -194,6 +194,7 @@ angular.module('BE.seed.controller.menu', [])
        * @param {obj} org
        */
       $scope.set_user_org = function (org) {
+        $scope.mouseout_org()
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
         console.log($scope.menu.user.organization);
