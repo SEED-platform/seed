@@ -415,7 +415,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, dict]:
+def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, AnnotationDict]:
     """Parse a filter expression into a Q object
 
     :param filter_expression: should be a valid Column.column_name, with an optional
@@ -472,7 +472,7 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
                             with '-' to indicate descending order.
     :param columns_by_name: mapping of Column.column_name to dict representation of Column
-    :return: the parsed sort expression or None if not valid
+    :return: the parsed sort expression or None if not valid followed by a dictionary of annotations
     """
     column_name = sort_expression.lstrip('-')
     direction = '-' if sort_expression.startswith('-') else ''
