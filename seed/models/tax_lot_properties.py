@@ -1,14 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from __future__ import unicode_literals
+from __future__ import unicode_literals, annotations
 
 import logging
 from collections import defaultdict
 from itertools import chain
+from typing import Sequence, Union, TYPE_CHECKING
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
@@ -23,6 +24,10 @@ from seed.utils.geocode import (
     long_lat_wkt,
 )
 from seed.utils.ubid import centroid_wkt
+
+if TYPE_CHECKING:
+    from seed.models.properties import PropertyView
+    from seed.models.tax_lots import TaxLotView
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +119,13 @@ class TaxLotProperty(models.Model):
         return data
 
     @classmethod
-    def get_related(cls, object_list, show_columns, columns_from_database):
+    def serialize(
+        cls,
+        object_list: Union[Sequence[PropertyView], Sequence[TaxLotView]],
+        show_columns: list[int],
+        columns_from_database: list[dict],
+        include_related: bool = True,
+    ) -> list[dict]:
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
         with the related TaxLotView or PropertyView.
@@ -126,64 +137,150 @@ class TaxLotProperty(models.Model):
         Property/TaxLot viewset.  In the future this should become a serializer. For now it is
         here so that we can use this method to create the data for exporting to CSV on the backend.
 
-        :param object_list: list
-        :param show_columns: list, columns (as defined by backend), Pass None to default to all columns excluding extra
-                             data
-        :param columns_from_database: list, columns from the database as list of dict
-        :return: list
+        :param object_list:
+        :param show_columns: columns (as defined by backend), Pass None to default
+                             to all columns excluding extra data
+        :param columns_from_database: columns from the database as list of dict
+        :param include_related: if False, the related data is NOT included (i.e.
+                                only the object_list is serialized) - optional (default is True)
         """
-        results = []
-
         if len(object_list) == 0:
-            return results
-
-        Note = apps.get_model('seed', 'Note')
+            return []
 
         if object_list[0].__class__.__name__ == 'PropertyView':
-            lookups = {
-                'audit_log_class': apps.get_model('seed', 'PropertyAuditLog'),
-                'view_class': apps.get_model('seed', 'PropertyView'),
-                'obj_class': 'PropertyView',
-                'obj_query_in': 'property_view_id__in',
-                'obj_state_id': 'property_state_id',
-                'obj_view_id': 'property_view_id',
-                'obj_id': 'property_id',
-                'centroid': 'centroid',
-                'bounding_box': 'bounding_box',
-                'long_lat': 'long_lat',
-                'related_audit_log_class': apps.get_model('seed', 'TaxLotAuditLog'),
-                'related_class': 'TaxLotView',
-                'related_query_in': 'taxlot_view_id__in',
-                'select_related': 'taxlot',
-                'related_view': 'taxlot_view',
-                'related_view_class': apps.get_model('seed', 'TaxLotView'),
-                'related_view_id': 'taxlot_view_id',
-                'related_state_id': 'taxlot_state_id',
-            }
+            this_cls, this_lower = 'Property', 'property'
+            related_cls, related_lower = 'TaxLot', 'taxlot'
         else:
-            lookups = {
-                'audit_log_class': apps.get_model('seed', 'TaxLotAuditLog'),
-                'view_class': apps.get_model('seed', 'TaxLotView'),
-                'obj_class': 'TaxLotView',
-                'obj_query_in': 'taxlot_view_id__in',
-                'obj_state_id': 'taxlot_state_id',
-                'obj_view_id': 'taxlot_view_id',
-                'obj_id': 'taxlot_id',
-                'centroid': 'centroid',
-                'bounding_box': 'bounding_box',
-                'long_lat': 'long_lat',
-                'related_audit_log_class': apps.get_model('seed', 'PropertyAuditLog'),
-                'related_class': 'PropertyView',
-                'related_query_in': 'property_view_id__in',
-                'select_related': 'property',
-                'related_view': 'property_view',
-                'related_view_class': apps.get_model('seed', 'PropertyView'),
-                'related_view_id': 'property_view_id',
-                'related_state_id': 'property_state_id',
-            }
+            this_cls, this_lower = 'TaxLot', 'taxlot'
+            related_cls, related_lower = 'Property', 'property'
 
-        # Ids of views to look up in m2m
+        lookups = {
+            'audit_log_class': apps.get_model('seed', f'{this_cls}AuditLog'),
+            'view_class': apps.get_model('seed', f'{this_cls}View'),
+            'obj_class': f'{this_cls}View',
+            'obj_query_in': f'{this_lower}_view_id__in',
+            'obj_state_id': f'{this_lower}_state_id',
+            'obj_view_id': f'{this_lower}_view_id',
+            'obj_id': f'{this_lower}_id',
+            'centroid': 'centroid',
+            'bounding_box': 'bounding_box',
+            'long_lat': 'long_lat',
+            'related_audit_log_class': apps.get_model('seed', f'{related_cls}AuditLog'),
+            'related_class': f'{related_cls}View',
+            'related_query_in': f'{related_lower}_view_id__in',
+            'select_related': f'{related_lower}',
+            'related_view': f'{related_lower}_view',
+            'related_view_class': apps.get_model('seed', f'{related_cls}View'),
+            'related_view_id': f'{related_lower}_view_id',
+            'related_state_id': f'{related_lower}_state_id',
+        }
+
         ids = [obj.pk for obj in object_list]
+
+        # gather note counts
+        Note = apps.get_model('seed', 'Note')
+        obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
+                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
+
+        # determine merge statuses
+        states_qs = lookups['view_class'].objects.filter(id__in=ids)
+        merged_state_ids = lookups['audit_log_class'].objects.filter(
+            name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
+            state_id__in=models.Subquery(states_qs.values('state_id'))
+        ).values_list('state_id', flat=True)
+
+        # gather all columns - separate the 'related' columns
+        related_columns = []
+        obj_columns = []
+        obj_column_name_mapping = {}
+        for column in columns_from_database:
+            if column['related']:
+                related_columns.append(column)
+            else:
+                obj_columns.append(column)
+                obj_column_name_mapping[column['column_name']] = column['name']
+
+        # gather the _shown_ columns
+        if show_columns is None:
+            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
+        else:
+            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
+                                   and col['id'] in show_columns])
+            filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
+                                              and col['id'] in show_columns])
+
+        # get the related data
+        join_map = {}
+        if include_related:
+            join_map = cls.get_related(ids, show_columns, related_columns, lookups)
+
+        # serialize everything
+        results = []
+        for obj in object_list:
+            # Each object in the response is built from the state data, with related data added on.
+            obj_dict = TaxLotProperty.model_to_dict_with_mapping(
+                obj.state,
+                obj_column_name_mapping,
+                fields=filtered_fields,
+                exclude=['extra_data']
+            )
+
+            # Only add extra data columns if a settings profile was used
+            if show_columns is not None:
+                obj_dict.update(
+                    TaxLotProperty.extra_data_to_dict_with_mapping(
+                        obj.state.extra_data,
+                        obj_column_name_mapping,
+                        fields=filtered_extra_data_fields
+                    ).items()
+                )
+
+            # Use property_id instead of default (state_id)
+            obj_dict['id'] = getattr(obj, lookups['obj_id'])
+            obj_dict['notes_count'] = obj_note_counts.get(obj.id, 0)
+
+            obj_dict[lookups['obj_state_id']] = obj.state.id
+            obj_dict[lookups['obj_view_id']] = obj.id
+
+            obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
+
+            # bring in GIS data
+            obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
+            obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
+            obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
+
+            # store the property / taxlot data to the object dictionary as well. This is hacky.
+            if lookups['obj_class'] == 'PropertyView':
+                if 'campus' in filtered_fields:
+                    obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
+
+            # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
+            # Also, do not make these timestamps naive. They persist correctly.
+            if 'updated' in filtered_fields:
+                obj_dict[obj_column_name_mapping['updated']] = obj.state.updated
+            if 'created' in filtered_fields:
+                obj_dict[obj_column_name_mapping['created']] = obj.state.created
+
+            # All the related tax lot states.
+            obj_dict['related'] = join_map.get(obj.pk, [])
+
+            # remove the measures from this view for now
+            if obj_dict.get('measures'):
+                del obj_dict['measures']
+
+            results.append(obj_dict)
+
+        return results
+
+    @classmethod
+    def get_related(
+        cls,
+        ids: list[int],
+        show_columns: Union[list[int], None],
+        related_columns: list[dict],
+        lookups: dict
+    ) -> dict[int, list[dict]]:
+        # Ids of views to look up in m2m
         joins = TaxLotProperty.objects.filter(**{lookups['obj_query_in']: ids}).select_related(lookups['related_view'])
 
         # Get all ids of related views on these joins
@@ -193,18 +290,7 @@ class TaxLotProperty(models.Model):
         related_views = apps.get_model('seed', lookups['related_class']).objects.select_related(
             lookups['select_related'], 'state', 'cycle').filter(pk__in=related_ids)
 
-        # bunch of work to get only the column names that are requested in the show_columns field
-        related_columns = []
-        related_column_name_mapping = {}
-        obj_columns = []
-        obj_column_name_mapping = {}
-        for column in columns_from_database:
-            if column['related']:
-                related_columns.append(column)
-                related_column_name_mapping[column['column_name']] = column['name']
-            else:
-                obj_columns.append(column)
-                obj_column_name_mapping[column['column_name']] = column['name']
+        related_column_name_mapping = {col['column_name']: col['name'] for col in related_columns}
 
         related_map = {}
 
@@ -276,6 +362,7 @@ class TaxLotProperty(models.Model):
             for name, pth in tuple_prop_to_jurisdiction_tl:
                 prop_to_jurisdiction_tl[name].append(pth)
 
+        Note = apps.get_model('seed', 'Note')
         join_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['related_query_in']: related_ids})
                             .values_list(lookups['related_view_id']).order_by().annotate(Count(lookups['related_view_id']))}
 
@@ -287,7 +374,7 @@ class TaxLotProperty(models.Model):
         ).values_list('state_id', flat=True)
 
         # A mapping of object's view pk to a list of related state info for a related view
-        join_map = {}
+        join_map: dict[int, list[dict]] = {}
         for join in joins:
             # Another taxlot specific view
             if lookups['obj_class'] == 'TaxLotView':
@@ -326,75 +413,4 @@ class TaxLotProperty(models.Model):
             except KeyError:
                 join_map[getattr(join, lookups['obj_view_id'])] = [join_dict]
 
-        if show_columns is None:
-            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']])
-        else:
-            filtered_fields = set([col['column_name'] for col in obj_columns if not col['is_extra_data']
-                                   and col['id'] in show_columns])
-            filtered_extra_data_fields = set([col['column_name'] for col in obj_columns if col['is_extra_data']
-                                              and col['id'] in show_columns])
-
-        obj_note_counts = {x[0]: x[1] for x in Note.objects.filter(**{lookups['obj_query_in']: ids})
-                           .values_list(lookups['obj_view_id']).order_by().annotate(Count(lookups['obj_view_id']))}
-
-        states_qs = lookups['view_class'].objects.filter(id__in=ids)
-        merged_state_ids = lookups['audit_log_class'].objects.filter(
-            name__in=['Manual Match', 'System Match', 'Merge current state in migration'],
-            state_id__in=models.Subquery(states_qs.values('state_id'))
-        ).values_list('state_id', flat=True)
-
-        for obj in object_list:
-            # Each object in the response is built from the state data, with related data added on.
-            obj_dict = TaxLotProperty.model_to_dict_with_mapping(
-                obj.state,
-                obj_column_name_mapping,
-                fields=filtered_fields,
-                exclude=['extra_data']
-            )
-
-            # Only add extra data columns if a settings profile was used
-            if show_columns is not None:
-                obj_dict.update(
-                    TaxLotProperty.extra_data_to_dict_with_mapping(
-                        obj.state.extra_data,
-                        obj_column_name_mapping,
-                        fields=filtered_extra_data_fields
-                    ).items()
-                )
-
-            # Use property_id instead of default (state_id)
-            obj_dict['id'] = getattr(obj, lookups['obj_id'])
-            obj_dict['notes_count'] = obj_note_counts.get(obj.id, 0)
-
-            obj_dict[lookups['obj_state_id']] = obj.state.id
-            obj_dict[lookups['obj_view_id']] = obj.id
-
-            obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
-
-            # bring in GIS data
-            obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
-            obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
-            obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
-
-            # store the property / taxlot data to the object dictionary as well. This is hacky.
-            if lookups['obj_class'] == 'PropertyView':
-                if 'campus' in filtered_fields:
-                    obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
-
-            # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
-            # Also, do not make these timestamps naive. They persist correctly.
-            if 'updated' in filtered_fields:
-                obj_dict[obj_column_name_mapping['updated']] = obj.state.updated
-            if 'created' in filtered_fields:
-                obj_dict[obj_column_name_mapping['created']] = obj.state.created
-
-            # All the related tax lot states.
-            obj_dict['related'] = join_map.get(obj.pk, [])
-
-            # remove the measures from this view for now
-            if obj_dict.get('measures'):
-                del obj_dict['measures']
-
-            results.append(obj_dict)
-
-        return results
+        return join_map
