@@ -169,12 +169,21 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         include_related = (
             str(request.query_params.get('include_related', 'true')).lower() == 'true'
         )
-        related_results = TaxLotProperty.serialize(
-            taxlot_views,
-            show_columns,
-            columns_from_database,
-            include_related,
-        )
+        try:
+            related_results = TaxLotProperty.serialize(
+                taxlot_views,
+                show_columns,
+                columns_from_database,
+                include_related,
+            )
+        except DataError as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
