@@ -8,8 +8,9 @@ from django.http.request import QueryDict
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column
+from seed.models import Column, PropertyView
 from seed.search import FilterException, build_view_filters_and_sorts
+from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 
 
@@ -19,6 +20,7 @@ class TestInventoryViewSearchParsers(TestCase):
     def setUpTestData(cls):
         cls.fake_user = User.objects.create(username='test')
         cls.fake_org, _, _ = create_organization(cls.fake_user)
+        cls.property_view_factory = FakePropertyViewFactory(organization=cls.fake_org)
 
     def test_parse_filters_works_for_canonical_columns(self):
         @dataclass
@@ -83,19 +85,19 @@ class TestInventoryViewSearchParsers(TestCase):
 
         test_cases = [
             TestCase(
-                'extra_data column with string data_type',
-                QueryDict('test_string=hello'),
-                Q(_test_string_final='hello'),
-                {
+                name='extra_data column with string data_type',
+                input=QueryDict('test_string=hello'),
+                expected_filter=Q(_test_string_final='hello'),
+                expected_annotations={
                     '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
                     '_test_string_final': Replace('_test_string_to_text', models.Value('"'), output_field=models.TextField()),
                 }
             ),
             TestCase(
-                'extra_data column with number data_type',
-                QueryDict('test_number=12.3'),
-                Q(_test_number_final=12.3),
-                {
+                name='extra_data column with number data_type',
+                input=QueryDict('test_number=12.3'),
+                expected_filter=Q(_test_number_final=12.3),
+                expected_annotations={
                     '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
                     '_test_number_cleaned': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
                     '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
@@ -202,34 +204,124 @@ class TestInventoryViewSearchParsers(TestCase):
         class TestCase:
             name: str
             input: QueryDict
-            expected: list[str]
+            expected_order_by: list[str]
+            expected_annotations: dict
 
         # -- Setup
-        # create an extra data column
-        Column.objects.create(
-            column_name='test_column',
-            data_type='string',
-            is_extra_data=True,
-            table_name='PropertyState',
-            organization=self.fake_org,
-        )
+        # create some extra data columns
+        extra_data_columns = [
+            {
+                'column_name': 'test_string',
+                'data_type': 'string',
+                'is_extra_data': True,
+                'table_name': 'PropertyState',
+                'organization': self.fake_org,
+            },
+            {
+                'column_name': 'test_number',
+                'data_type': 'number',
+                'is_extra_data': True,
+                'table_name': 'PropertyState',
+                'organization': self.fake_org,
+            }
+        ]
+        for col in extra_data_columns:
+            Column.objects.create(**col)
 
         test_cases = [
-            TestCase('order_by canonical column', QueryDict('order_by=site_eui'), ['state__site_eui']),
-            TestCase('order_by extra data column', QueryDict('order_by=test_column'), ['state__extra_data__test_column']),
-            TestCase('order_by multiple columns', QueryDict('order_by=city&order_by=site_eui'), ['state__city', 'state__site_eui']),
-            TestCase('order_by defaults to id', QueryDict(''), ['id']),
-            TestCase('order_by can handle descending operator', QueryDict('order_by=-site_eui'), ['-state__site_eui']),
+            TestCase(
+                name='order_by canonical column',
+                input=QueryDict('order_by=site_eui'),
+                expected_order_by=['state__site_eui'],
+                expected_annotations={}
+            ),
+            TestCase(
+                name='order_by extra data string column',
+                input=QueryDict('order_by=test_string'),
+                expected_order_by=['_test_string_final'],
+                expected_annotations={
+                    '_test_string_to_text': Cast('state__extra_data__test_string', output_field=models.TextField()),
+                    '_test_string_final': Replace('_test_string_to_text', models.Value('"'), output_field=models.TextField()),
+                }
+            ),
+            TestCase(
+                name='order_by extra data number column',
+                input=QueryDict('order_by=test_number'),
+                expected_order_by=['_test_number_final'],
+                expected_annotations={
+                    '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
+                    '_test_number_cleaned': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
+                }
+            ),
+            TestCase(
+                name='order_by multiple columns',
+                input=QueryDict('order_by=city&order_by=site_eui'),
+                expected_order_by=['state__city', 'state__site_eui'],
+                expected_annotations={}
+            ),
+            TestCase(
+                name='order_by defaults to id',
+                input=QueryDict(''),
+                expected_order_by=['id'],
+                expected_annotations={}
+            ),
+            TestCase(
+                name='order_by can handle descending operator',
+                input=QueryDict('order_by=-site_eui'),
+                expected_order_by=['-state__site_eui'],
+                expected_annotations={},
+            ),
         ]
 
         # -- Act
         for test_case in test_cases:
             columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
-            _, _, order_by = build_view_filters_and_sorts(test_case.input, columns)
+            _, annotations, order_by = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
             self.assertEqual(
                 order_by,
-                test_case.expected,
-                f'Failed "{test_case.name}"; actual: {order_by}; expected: {test_case.expected}'
+                test_case.expected_order_by,
+                f'Failed "{test_case.name}"; actual: {order_by}; expected: {test_case.expected_order_by}'
             )
+            self.assertEqual(
+                repr(annotations),
+                repr(test_case.expected_annotations),
+                f'Failed "{test_case.name}"; actual: {annotations}; expected: {test_case.expected_annotations}'
+            )
+
+    def test_filter_and_sorts_parser_annotations_works(self):
+        # -- Setup
+        # create extra data column with a number type
+        Column.objects.create(
+            column_name='test_number',
+            data_type='number',
+            is_extra_data=True,
+            table_name='PropertyState',
+            organization=self.fake_org,
+        )
+
+        # create two properties containing the extra data, but stored as a string!
+        self.property_view_factory.get_property_view(
+            extra_data={'test_number': '9'}
+        )
+        self.property_view_factory.get_property_view(
+            extra_data={'test_number': '10'}
+        )
+
+        # just to prove that we can't do numeric filtering on these string values in extra data
+        # i.e. the whole reason we are making these annotations which cast the
+        # extra_data values
+        uncast_property_views = PropertyView.objects.filter(state__extra_data__test_number__gte=10)
+        self.assertEqual(uncast_property_views.count(), 0)
+
+        # -- Act
+        input = QueryDict('test_number__gte=10')
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        filters, annotations, _ = build_view_filters_and_sorts(input, columns)
+        cast_property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+
+        # -- Assert
+        # we should only get one property view -- the one whose test_number is 10
+        self.assertEqual(cast_property_views.count(), 1)

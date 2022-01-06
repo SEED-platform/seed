@@ -361,15 +361,34 @@ class QueryFilter:
             return Q(**q_dict)
 
 
-def _build_extra_data_filter_and_annotations(filter: QueryFilter, data_type: str) -> tuple[QueryFilter, dict]:
-    field_name = filter.field_name
-    full_field_name = f'state__extra_data__{field_name}'
-    text_field_name = f'_{field_name}_to_text'
-    cleaned_field_name = f'_{field_name}_cleaned'
-    final_field_name = f'_{field_name}_final'
+# represents a dictionary usable with a QuerySet annotation:
+#   `QuerySet.annotation(**AnnotationDict)`
+AnnotationDict = dict[str, models.Func]
 
-    annotations = {
+
+def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str, AnnotationDict]:
+    """Creates a dictionary of annotations which will cast the extra data column_name
+    into the provided data_type, for usage like: `*View.annotate(**annotations)`
+
+    Why is this necessary? In some cases, extra_data only stores string values.
+    This means anytime you try to filter numeric values in extra data, it won't
+    behave as expected. Thus we cast extra data to the defined column data_type
+    at query time to make sure our filters and sorts will work.
+
+    :param column_name: the Column.column_name for a Column which is extra_data
+    :param data_type: the Column.data_type for the column
+    :returns: the annotated field name which contains the casted result, along with
+              a dict of annotations
+    """
+    full_field_name = f'state__extra_data__{column_name}'
+    text_field_name = f'_{column_name}_to_text'
+    cleaned_field_name = f'_{column_name}_cleaned'
+    final_field_name = f'_{column_name}_final'
+
+    annotations: AnnotationDict = {
         text_field_name: Cast(full_field_name, output_field=models.TextField()),
+        # after casting a json field to text, the resulting value will be wrapped
+        # in double quotes which need to be removed
         cleaned_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
     }
     if data_type == 'integer':
@@ -393,7 +412,7 @@ def _build_extra_data_filter_and_annotations(filter: QueryFilter, data_type: str
         cleaned_value = annotations.pop(cleaned_field_name)
         annotations[final_field_name] = cleaned_value
 
-    return QueryFilter(final_field_name, filter.operator, filter.is_negated), annotations
+    return final_field_name, annotations
 
 
 def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_name: dict[str, dict]) -> tuple[Q, dict]:
@@ -427,13 +446,14 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
         return Q(), {}
 
     updated_filter = None
-    annotations = {}
+    annotations: AnnotationDict = {}
     if filter.field_name == 'campus':
         # campus is the only column found on the canonical property (TaxLots don't have this column)
         # all other columns are found in the state
         updated_filter = QueryFilter(f'property__{filter.field_name}', filter.operator, filter.is_negated)
     elif column['is_extra_data']:
-        updated_filter, annotations = _build_extra_data_filter_and_annotations(filter, column['data_type'])
+        new_field_name, annotations = _build_extra_data_annotations(column['column_name'], column['data_type'])
+        updated_filter = QueryFilter(new_field_name, filter.operator, filter.is_negated)
     else:
         updated_filter = QueryFilter(f'state__{filter.field_name}', filter.operator, filter.is_negated)
 
@@ -446,7 +466,7 @@ def _parse_view_filter(filter_expression: str, filter_value: str, columns_by_nam
     return updated_filter.to_q(new_filter_value), annotations
 
 
-def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> Union[None, str]:
+def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> tuple[Union[None, str], AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -457,21 +477,22 @@ def _parse_view_sort(sort_expression: str, columns_by_name: dict[str, dict]) -> 
     column_name = sort_expression.lstrip('-')
     direction = '-' if sort_expression.startswith('-') else ''
     if column_name == 'id':
-        return sort_expression
+        return sort_expression, {}
     elif column_name == 'campus':
         # campus is the only column which is found exclusively on the Property, not the state
-        return f'property__{sort_expression}'
+        return f'property__{sort_expression}', {}
     elif column_name in columns_by_name:
         column = columns_by_name[column_name]
         if column['is_extra_data']:
-            return f'{direction}state__extra_data__{column_name}'
+            new_field_name, annotations = _build_extra_data_annotations(column_name, column['data_type'])
+            return f'{direction}{new_field_name}', annotations
         else:
-            return f'{direction}state__{column_name}'
+            return f'{direction}state__{column_name}', {}
     else:
-        return None
+        return None, {}
 
 
-def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, dict, list[str]]:
+def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
 
@@ -522,8 +543,9 @@ def build_view_filters_and_sorts(filters: QueryDict, columns: list[dict]) -> tup
 
     order_by = []
     for sort_expression in filters.getlist('order_by', ['id']):
-        parsed_sort = _parse_view_sort(sort_expression, columns_by_name)
+        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name)
         if parsed_sort is not None:
             order_by.append(parsed_sort)
+            annotations.update(parsed_annotations)
 
     return new_filters, annotations, order_by
