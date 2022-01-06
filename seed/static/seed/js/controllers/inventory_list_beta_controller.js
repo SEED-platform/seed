@@ -1048,6 +1048,25 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
       };
 
+      $scope.model_actions = 'none';
+      elSelectActions = document.getElementById('select-actions');
+      $scope.run_action = function () {
+        switch (elSelectActions.value) {
+          case 'open_merge_modal': $scope.open_merge_modal(); break;
+          case 'open_delete_modal': $scope.open_delete_modal(); break;
+          case 'open_export_modal': $scope.open_export_modal(); break;
+          case 'open_update_labels_modal': $scope.open_update_labels_modal(); break;
+          case 'run_data_quality_check': $scope.run_data_quality_check(); break;
+          case 'open_postoffice_modal': $scope.open_postoffice_modal(); break;
+          case 'open_analyses_modal': $scope.open_analyses_modal(); break;
+          case 'open_geocode_modal': $scope.open_geocode_modal(); break;
+          case 'open_ubid_modal': $scope.open_ubid_modal(); break;
+          case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
+          default: console.error('Unknown action!', elSelectActions.value, 'Update "run_action()"');
+        }
+        $scope.model_actions = 'none';
+      };
+
       $scope.open_analyses_modal = function () {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
