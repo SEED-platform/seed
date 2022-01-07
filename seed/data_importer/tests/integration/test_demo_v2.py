@@ -10,6 +10,7 @@ import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -98,14 +99,14 @@ class TestDemoV2(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
         self.import_file_tax_lot.file = SimpleUploadedFile(
             name=tax_lot_filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_tax_lot.save()
 
         filepath = osp.join(osp.dirname(__file__), '..', 'data', property_filename)
         self.import_file_property.file = SimpleUploadedFile(
             name=property_filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_property.save()
 

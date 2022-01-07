@@ -702,6 +702,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
             pass
             # If we're deleting.
 
+    def __del__(self):
+        if hasattr(self, '_local_file'):
+            self._local_file.close()
+
     @property
     def from_portfolio_manager(self):
         return self._strcmp(self.source_program, 'PortfolioManager')

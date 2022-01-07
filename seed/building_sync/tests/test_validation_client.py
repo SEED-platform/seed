@@ -29,6 +29,10 @@ class TestValidationClient(TestCase):
         self.single_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml'))
         self.zip_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip'))
 
+    def tearDown(self) -> None:
+        self.single_file.close()
+        self.zip_file.close()
+
     def test_validation_single_file_ok(self):
         good_body = {
             'success': True,
