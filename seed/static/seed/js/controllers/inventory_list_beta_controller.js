@@ -122,7 +122,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.column_filters = []
       $scope.column_sorts = []
 
-      // remove editing on the filter list input
+      // remove editing on the filter list input (ngTagsInput doesn't support readonly yet)
       let findFiltersListAttempts = 0;
       const findFiltersList = setInterval(() => {
         let filterListInput = document.getElementById('filters-list').getElementsByTagName('input')[0];
@@ -1169,6 +1169,33 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
+      const operatorLookup = {
+        'ne': '!',
+        'exact': '=',
+        'lt': '<',
+        'lte': '<=',
+        'gt': '<',
+        'gte': '<=',
+        'icontains': ''
+      };
+
+      $scope.delete_filter = function (filterToDelete) {
+        const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
+        if (!column || column.filters.size < 1) {
+          return false;
+        }
+        let newTerm = [];
+        for (i in $scope.column_filters) {
+          filter = $scope.column_filters[i];
+          if (filter.name != filterToDelete.name || filter == filterToDelete) {
+            continue;
+          }
+          newTerm.push(operatorLookup[filter.operator] + filter.value);
+        }
+        column.filters[0].term = newTerm.join(', ');
+        return false;
+      };
+
       // https://regexr.com/6cka2
       const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\\\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
       const parseFilter = function (expression) {
@@ -1257,7 +1284,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
                 if (subFilter) {
                   const {string, operator, value} = parseFilter(subFilter)
                   const display = [column_name, string, value].join(' ')
-                  $scope.column_filters.push({column_name, operator, value, display})
+                  $scope.column_filters.push({name, column_name, operator, value, display})
                 }
               }
             }
