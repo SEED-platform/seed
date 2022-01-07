@@ -21,7 +21,7 @@ from functools import reduce
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, Replace
+from django.db.models.functions import Cast, Replace, NullIf
 from django.http.request import RawPostDataException, QueryDict
 from past.builtins import basestring
 
@@ -382,6 +382,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     """
     full_field_name = f'state__extra_data__{column_name}'
     text_field_name = f'_{column_name}_to_text'
+    stripped_field_name = f'_{column_name}_stripped'
     cleaned_field_name = f'_{column_name}_cleaned'
     final_field_name = f'_{column_name}_final'
 
@@ -389,7 +390,8 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         text_field_name: Cast(full_field_name, output_field=models.TextField()),
         # after casting a json field to text, the resulting value will be wrapped
         # in double quotes which need to be removed
-        cleaned_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+        stripped_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+        cleaned_field_name: NullIf(stripped_field_name, models.Value('null'), output_field=models.TextField())
     }
     if data_type == 'integer':
         annotations.update({
@@ -408,9 +410,11 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
             final_field_name: Cast(cleaned_field_name, output_field=models.BooleanField())
         })
     else:
-        # treat it as a string
-        cleaned_value = annotations.pop(cleaned_field_name)
-        annotations[final_field_name] = cleaned_value
+        # treat it as a string (just cast to text and strip)
+        annotations = {
+            text_field_name: Cast(full_field_name, output_field=models.TextField()),
+            final_field_name: Replace(text_field_name, models.Value('"'), output_field=models.TextField()),
+        }
 
     return final_field_name, annotations
 

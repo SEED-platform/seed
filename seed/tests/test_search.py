@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, Replace
+from django.db.models.functions import Cast, Replace, NullIf
 from django.http.request import QueryDict
 from django.test import TestCase
 
@@ -99,7 +99,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_filter=Q(_test_number_final=12.3),
                 expected_annotations={
                     '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
-                    '_test_number_cleaned': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_stripped': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_cleaned': NullIf('_test_number_stripped', models.Value('null'), output_field=models.TextField()),
                     '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
                 }
             ),
@@ -250,7 +251,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_order_by=['_test_number_final'],
                 expected_annotations={
                     '_test_number_to_text': Cast('state__extra_data__test_number', output_field=models.TextField()),
-                    '_test_number_cleaned': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_stripped': Replace('_test_number_to_text', models.Value('"'), output_field=models.TextField()),
+                    '_test_number_cleaned': NullIf('_test_number_stripped', models.Value('null'), output_field=models.TextField()),
                     '_test_number_final': Cast('_test_number_cleaned', output_field=models.FloatField()),
                 }
             ),
@@ -325,3 +327,33 @@ class TestInventoryViewSearchParsers(TestCase):
         # -- Assert
         # we should only get one property view -- the one whose test_number is 10
         self.assertEqual(cast_property_views.count(), 1)
+
+    def test_filter_and_sorts_parser_annotations_can_handle_null_values(self):
+        """The database will complain if we try to cast the string 'null' (from extra data)
+        into any type other than string. This test verifies we can handle the case
+        where a property has a json null.
+        """
+
+        # -- Setup
+        # create extra data column with a number type
+        Column.objects.create(
+            column_name='test_number',
+            data_type='number',
+            is_extra_data=True,
+            table_name='PropertyState',
+            organization=self.fake_org,
+        )
+
+        self.property_view_factory.get_property_view(
+            extra_data={'test_number': None}
+        )
+
+        # -- Act
+        input = QueryDict('test_number=10')
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        filters, annotations, _ = build_view_filters_and_sorts(input, columns)
+        cast_property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+
+        # -- Assert
+        # evaluate the queryset -- no exception should be raised!
+        list(cast_property_views)
