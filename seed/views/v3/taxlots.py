@@ -3,6 +3,7 @@
 :author
 """
 from collections import namedtuple
+from typing import Optional
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Subquery
@@ -153,6 +154,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is preferred in v2.1 API with the ProfileIdMixin.
+        show_columns: Optional[list[int]] = None
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
