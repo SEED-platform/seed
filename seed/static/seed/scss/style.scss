@@ -367,6 +367,22 @@ a:not([href]) {
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
 
+      .hover-org-container {
+        position: absolute;
+        background: none;
+        z-index: 10000;
+        width: 100px;
+      }
+
+      .hover-org-id {
+        font-size: 10px;
+        background:rgba(255, 255, 255, 0.8);
+        border: 1px solid gray;
+        border-radius: 3px;
+        color: gray;
+        padding:2px;
+      }
+
       .logo_container {
 
         .logo {
@@ -427,6 +443,10 @@ a:not([href]) {
             }
           }
 
+          ul.justify-left a {
+            text-align: left;
+          }
+          
           ul.dropdown-menu {
 
             text-align: center;
@@ -443,6 +463,11 @@ a:not([href]) {
                 color: #000;
                 font-weight: bold;
                 text-align: center;
+              }
+
+              .active {
+                background-color: $gray_lightest;
+                text-decoration: none;
               }
 
               a {
