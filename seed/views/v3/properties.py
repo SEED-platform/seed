@@ -16,6 +16,7 @@ from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
@@ -133,7 +134,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             safe=False,
         )
 
-    def _get_filtered_results(self, request, profile_id):
+    def _get_filtered_results(self, request: Request, profile_id: int):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = self.get_organization(request)
@@ -170,7 +171,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
 
         # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        columns_from_database = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type='property',
+            only_used=False,
+            include_related=False
+        )
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
@@ -203,6 +209,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(
                 {
                     'status': 'error',
+                    'recommended_action': 'update_column_settings',
                     'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -244,6 +251,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(
                 {
                     'status': 'error',
+                    'recommended_action': 'update_column_settings',
                     'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
                 },
                 status=status.HTTP_400_BAD_REQUEST

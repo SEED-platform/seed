@@ -832,7 +832,15 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         return fetch(page, page_size)
           .then(function (data) {
             if (data.status === 'error') {
-              Notification.error(data.message);
+              let message = data.message
+              if (data.recommended_action === 'update_column_settings') {
+                const columnSettingsUrl = $state.href(
+                  'organization_column_settings',
+                  {organization_id: $scope.organization.id, inventory_type: $scope.inventory_type}
+                )
+                message = `${message}<br><a href="${columnSettingsUrl}">Click here to update your column settings</a>`
+              }
+              Notification.error({message, delay: 15000});
               spinner_utility.hide();
               return;
             }

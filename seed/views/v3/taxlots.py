@@ -13,6 +13,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
@@ -70,7 +71,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         # TODO: refactor to avoid passing request here
         return get_labels(request, labels, super_organization, 'taxlot_view')
 
-    def _get_filtered_results(self, request, profile_id):
+    def _get_filtered_results(self, request: Request, profile_id: int):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = self.get_organization(request)
@@ -106,7 +107,12 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         )
 
         # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'taxlot', False)
+        columns_from_database = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type='taxlot',
+            only_used=False,
+            include_related=False
+        )
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
@@ -139,6 +145,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             return JsonResponse(
                 {
                     'status': 'error',
+                    'recommended_action': 'update_column_settings',
                     'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -180,6 +187,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             return JsonResponse(
                 {
                     'status': 'error',
+                    'recommended_action': 'update_column_settings',
                     'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
                 },
                 status=status.HTTP_400_BAD_REQUEST

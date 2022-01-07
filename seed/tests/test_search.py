@@ -44,7 +44,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         for test_case in test_cases:
             # -- Act
-            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
             filters, _, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
@@ -108,7 +108,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         for test_case in test_cases:
             # -- Act
-            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
             filters, annotations, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
@@ -128,7 +128,7 @@ class TestInventoryViewSearchParsers(TestCase):
         query_dict = QueryDict('this_column_does_not_exits=123')
 
         # -- Act
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
@@ -139,7 +139,7 @@ class TestInventoryViewSearchParsers(TestCase):
         query_dict = QueryDict('city=Denver&site_eui=100&gross_floor_area=200')
 
         # -- Act
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
@@ -169,7 +169,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         for test_case in test_cases:
             # -- Act
-            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
             filters, _, _ = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
@@ -184,7 +184,7 @@ class TestInventoryViewSearchParsers(TestCase):
         query_dict = QueryDict('city__ne=Denver')
 
         # -- Act
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, _, _ = build_view_filters_and_sorts(query_dict, columns)
 
         # -- Assert
@@ -196,7 +196,7 @@ class TestInventoryViewSearchParsers(TestCase):
         query_dict = QueryDict('site_eui=hello')
 
         # -- Act, Assert
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         with self.assertRaises(FilterException):
             build_view_filters_and_sorts(query_dict, columns)
 
@@ -278,7 +278,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         for test_case in test_cases:
-            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+            columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
             _, annotations, order_by = build_view_filters_and_sorts(test_case.input, columns)
 
             # -- Assert
@@ -320,7 +320,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         input = QueryDict('test_number__gte=10')
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, annotations, _ = build_view_filters_and_sorts(input, columns)
         cast_property_views = PropertyView.objects.annotate(**annotations).filter(filters)
 
@@ -350,7 +350,7 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Act
         input = QueryDict('test_number=10')
-        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False)
+        columns = Column.retrieve_all(self.fake_org, 'property', only_used=False, include_related=False)
         filters, annotations, _ = build_view_filters_and_sorts(input, columns)
         cast_property_views = PropertyView.objects.annotate(**annotations).filter(filters)
 
