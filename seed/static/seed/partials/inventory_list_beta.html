@@ -28,7 +28,7 @@
             <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
                 <option value="none" selected="selected"></option>
                 <optgroup label="{$:: 'Selected ' + (inventory_type==='properties' ? 'Properties' : 'Taxlots') | translate $}">
-                    <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge Selected</option>
+                    <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
                     <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
                     <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
                     <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
