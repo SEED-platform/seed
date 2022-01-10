@@ -48,7 +48,8 @@ POST_OFFICE = {
     'BACKENDS': {
         'default': EMAIL_BACKEND,
         'post_office_backend': EMAIL_BACKEND,
-    }
+    },
+    'CELERY_ENABLED': True,
 }
 
 # PostgreSQL DB config
