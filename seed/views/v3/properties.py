@@ -171,12 +171,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             .filter(property__organization_id=org_id, cycle=cycle)
         )
 
+        include_related = (
+            str(request.query_params.get('include_related', 'true')).lower() == 'true'
+        )
+
         # Retrieve all the columns that are in the db for this organization
         columns_from_database = Column.retrieve_all(
             org_id=org_id,
             inventory_type='property',
             only_used=False,
-            include_related=False
+            include_related=include_related
         )
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
@@ -239,9 +243,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        include_related = (
-            str(request.query_params.get('include_related', 'true')).lower() == 'true'
-        )
         try:
             related_results = TaxLotProperty.serialize(
                 property_views,
