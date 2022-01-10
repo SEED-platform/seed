@@ -116,7 +116,28 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       };
 
-      $scope.restoring = false;
+      // restore_response is a state tracker for avoiding multiple reloads
+      // of the inventory data when initializing the page.
+      // The problem occurs due to retriggering of data reload, summarized by this issue: 
+      // https://github.com/angular-ui/ui-grid/issues/5280
+      // Note that this implementation can _still_ result in an unwanted race condition
+      // but for the most part seems to avoid it without arbitrary wait timers
+      const RESTORE_NOT_STARTED = 'not started'
+      const RESTORE_SETTINGS = 'restoring settings'
+      const RESTORE_SETTINGS_DONE = 'restore settings done'
+      const RESTORE_COMPLETE = 'restore done'
+      $scope.restore_status = RESTORE_NOT_STARTED;
+      $scope.$watch('restore_status', function () {
+        // Load the initial data for the page
+        // this only happens ONCE (after the ui-grid's saveState.restore has completed)
+        if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
+          updateColumnFilterSort();
+          $scope.load_inventory(1)
+            .then(function () {
+              $scope.restore_status = RESTORE_COMPLETE;
+            });
+        }
+      })
 
       // stores columns that have filtering and/or sorting applied
       $scope.column_filters = []
@@ -853,7 +874,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             $scope.inventory_pagination = data.pagination;
             processData(data.results);
             $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
-            modalInstance.close();
             evaluateDerivedColumns();
             spinner_utility.hide()
           });
@@ -1256,27 +1276,26 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       var updateColumnFilterSort = function () {
-        if (!$scope.restoring) {
-          var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
-            return _.keys(col.sort).filter(key => key != 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
-          });
+        var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
+          return _.keys(col.sort).filter(key => key != 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
+        });
 
-          inventory_service.saveGridSettings(localStorageKey + '.sort', {
-            columns: columns
-          });
+        inventory_service.saveGridSettings(localStorageKey + '.sort', {
+          columns: columns
+        });
 
-          $scope.column_filters = []
-          $scope.column_sorts = []
-          // parse the filters and sorts
-          for (const column of columns) {
-            const {name, filters, sort} = column;
-            // remove the column id at the end of the name
-            const column_name = name.split("_").slice(0, -1).join("_");
+        $scope.column_filters = []
+        $scope.column_sorts = []
+        // parse the filters and sorts
+        for (const column of columns) {
+          const {name, filters, sort} = column;
+          // remove the column id at the end of the name
+          const column_name = name.split("_").slice(0, -1).join("_");
 
-            for (const filter of filters) {
-              if (_.isEmpty(filter)) {
-                continue
-              }
+          for (const filter of filters) {
+            if (_.isEmpty(filter)) {
+              continue
+            }
 
               // a filter can contain many comma-separated filters
               const subFilters = _.map(_.split(filter.term, ','), _.trim);
@@ -1288,26 +1307,28 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
                 }
               }
             }
+          }
 
-            if (sort.direction) {
-              // remove the column id at the end of the name
-              const column_name = name.split("_").slice(0, -1).join("_");
-              $scope.column_sorts.push({column_name, direction: sort.direction});
-            }
+          if (sort.direction) {
+            // remove the column id at the end of the name
+            const column_name = name.split("_").slice(0, -1).join("_");
+            $scope.column_sorts.push({column_name, direction: sort.direction});
           }
         }
       };
 
       var restoreGridSettings = function () {
-        $scope.restoring = true;
+        $scope.restore_status = RESTORE_SETTINGS;
         var state = inventory_service.loadGridSettings(localStorageKey + '.sort');
         if (!_.isNull(state)) {
           state = JSON.parse(state);
-          $scope.gridApi.saveState.restore($scope, state);
+          $scope.gridApi.saveState.restore($scope, state)
+            .then(function () {
+              $scope.restore_status = RESTORE_SETTINGS_DONE;
+            });
+        } else {
+          $scope.restore_status = RESTORE_SETTINGS_DONE;
         }
-        _.defer(function () {
-          $scope.restoring = false;
-        });
       };
 
       $scope.gridOptions = {
@@ -1370,12 +1391,16 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
           gridApi.core.on.filterChanged($scope, _.debounce(() => {
-            updateColumnFilterSort();
-            $scope.load_inventory(1);
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
           }, 1000));
           gridApi.core.on.sortChanged($scope, _.debounce(() => {
-            updateColumnFilterSort();
-            $scope.load_inventory(1);
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
           }, 1000));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
 
@@ -1435,9 +1460,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           _.defer(function () {
             restoreGridSettings();
           });
-
-          // Load the initial data
-          $scope.load_inventory(1);
         }
       };
     }]);
