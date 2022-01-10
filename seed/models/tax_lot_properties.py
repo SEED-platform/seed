@@ -9,7 +9,7 @@ from __future__ import unicode_literals, annotations
 import logging
 from collections import defaultdict
 from itertools import chain
-from typing import Sequence, Union, TYPE_CHECKING
+from typing import Sequence, Union, TYPE_CHECKING, Optional
 
 from django.apps import apps
 from django.contrib.gis.db.models import GeometryField
@@ -122,7 +122,7 @@ class TaxLotProperty(models.Model):
     def serialize(
         cls,
         object_list: Union[Sequence[PropertyView], Sequence[TaxLotView]],
-        show_columns: list[int],
+        show_columns: Optional[list[int]],
         columns_from_database: list[dict],
         include_related: bool = True,
     ) -> list[dict]:
