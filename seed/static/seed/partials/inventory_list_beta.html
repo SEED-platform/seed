@@ -46,11 +46,11 @@
     </div>
     <form name="listControlsForm" class="form-inline column" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
         <div class="row">
-            <label for="sort-list">{$:: 'Sorting By' | translate $}:</label>
+            <label for="sort-list">{$:: 'Sorting By (in order)' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="sort-list" class="ti-input-sm tags-input-style grow" ng-model="column_sorts" display-property="display" placeholder=" " replace-spaces-with-dashes="false" on-tag-removing="delete_sort($tag)">
+                <tags-input id="sort-list" class="ti-input-sm tags-input-style grow" ng-model="column_sorts" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_sort($tag)">
                 </tags-input>
-                <span ng-click="gridApi.grid.resetColumnSorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa fa-lg fa-trash"></i></span>
+                <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa fa-lg fa-trash"></i></span>
             </div>
         </div>
         <div class="row">
@@ -70,7 +70,7 @@
         <div class="row">
             <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
             <div class="input-group input-group-sm grow">
-                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder=" " replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
+                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
                 </tags-input>
                 <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
             </div>

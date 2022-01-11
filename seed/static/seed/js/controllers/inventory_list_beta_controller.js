@@ -894,15 +894,17 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.filters_exist = function () {
-        return !!_.find($scope.gridApi.grid.columns, function (col) {
-          return !_.isEmpty(col.filter.term);
-        });
+        return !$scope.column_filters.length;
       };
 
       $scope.sorts_exist = function () {
-        return !!_.find($scope.gridApi.grid.columns, function (col) {
-          return !_.isEmpty(col.filter.term);
-        });
+        return !$scope.column_sorts.length;
+      };
+
+      // it appears resetColumnSorting() doesn't trigger on.sortChanged so we do it manually
+      $scope.reset_column_sorting = function () {
+        $scope.gridApi.grid.resetColumnSorting();
+        $scope.gridApi.core.raise.sortChanged();
       };
 
       var get_labels = function () {
@@ -1231,21 +1233,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.delete_sort = function (sortToDelete) {
-        const column = $scope.gridApi.grid.getColumn(sortToDelete.name);
-        console.log(column);
-        if (!column || column.filters.size < 1) {
-          return false;
-        }
-        let newTerm = [];
-        for (i in $scope.column_filters) {
-          filter = $scope.column_filters[i];
-          if (filter.name != filterToDelete.name || filter == filterToDelete) {
-            continue;
-          }
-          newTerm.push(operatorLookup[filter.operator] + filter.value);
-        }
-        column.filters[0].term = newTerm.join(', ');
-        return false;
+        $scope.gridApi.grid.getColumn(sortToDelete.name).unsort();
+        return true;
       };
 
       // https://regexr.com/6cka2
@@ -1344,9 +1333,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           if (sort.direction) { 
             // remove the column id at the end of the name
             const column_name = name.split("_").slice(0, -1).join("_");
-            console.log(sort);
             const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
-            $scope.column_sorts.push({column_name, direction: sort.direction, display});
+            $scope.column_sorts.push({name, column_name, direction: sort.direction, display, priority: sort.priority});
+            $scope.column_sorts.sort((a, b) => (a.priority > b.priority) ? true : false);
           }
         }
       };
