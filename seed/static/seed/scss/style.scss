@@ -2775,11 +2775,6 @@ gs-input .tags .tag-item .remove-button {
     margin-bottom: 0;
   }
 
-  .btn-group {
-    display: flex;
-    margin-left: 10px;
-  }
-
   & + .buildingListControls {
     padding-top: 0;
   }
@@ -2811,15 +2806,29 @@ gs-input .tags .tag-item .remove-button {
       white-space: nowrap;
       margin: 0 10px 0 0;
     }
+
+    .btn-group {
+      display: flex;
+      margin-left: 10px;
+    }
+
+    .tags {
+      min-width: 50% !important;
+    }
   }
 
   .grow {
     flex-grow: 1;
     width: 100%;
   }
+}
 
-  .tags {
-    min-width: 50% !important;
+#filters-list, #sort-list {
+
+  .tags.focused {
+    border: 1px solid #ccc !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
   }
 }
 

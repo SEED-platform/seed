@@ -68,6 +68,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
       $scope.selectedOrder = [];
+      $scope.columnDisplayByName = {};
+      for (i in all_columns) {
+        $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
+      };
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -143,19 +147,23 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.column_filters = []
       $scope.column_sorts = []
 
-      // remove editing on the filter list input (ngTagsInput doesn't support readonly yet)
+      // remove editing on list inputs (ngTagsInput doesn't support readonly yet)
       let findFiltersListAttempts = 0;
-      const findFiltersList = setInterval(() => {
-        let filterListInput = document.getElementById('filters-list').getElementsByTagName('input')[0];
-        if (filterListInput) {
-          filterListInput.readOnly = true;
-          clearInterval(findFiltersList);
-        }
-        findFiltersListAttempts++;
-        if (findFiltersListAttempts > 10) {
-          clearInterval(findFiltersList);
-        }
-      }, 1000);
+      findList = {};
+      for (const elementId of ['filters-list', 'sort-list']) {
+        findList[elementId] = {'attempts': 0};
+        findList[elementId].interval = setInterval(() => {
+          let listInput = document.getElementById(elementId).getElementsByTagName('input')[0];
+          if (listInput) {
+            listInput.readOnly = true;
+            clearInterval(findList[elementId].interval);
+          }
+          findList[elementId].attempts++;
+          if (findList[elementId].attempts > 10) {
+            clearInterval(findList[elementId].interval);
+          }
+        }, 1000);
+      }
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
@@ -891,6 +899,12 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
       };
 
+      $scope.sorts_exist = function () {
+        return !!_.find($scope.gridApi.grid.columns, function (col) {
+          return !_.isEmpty(col.filter.term);
+        });
+      };
+
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           updateApplicableLabels(current_labels);
@@ -1190,7 +1204,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       const operatorLookup = {
-        'ne': '!',
+        'ne': '!=',
         'exact': '=',
         'lt': '<',
         'lte': '<=',
@@ -1201,6 +1215,24 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       $scope.delete_filter = function (filterToDelete) {
         const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
+        if (!column || column.filters.size < 1) {
+          return false;
+        }
+        let newTerm = [];
+        for (i in $scope.column_filters) {
+          filter = $scope.column_filters[i];
+          if (filter.name != filterToDelete.name || filter == filterToDelete) {
+            continue;
+          }
+          newTerm.push(operatorLookup[filter.operator] + filter.value);
+        }
+        column.filters[0].term = newTerm.join(', ');
+        return false;
+      };
+
+      $scope.delete_sort = function (sortToDelete) {
+        const column = $scope.gridApi.grid.getColumn(sortToDelete.name);
+        console.log(column);
         if (!column || column.filters.size < 1) {
           return false;
         }
@@ -1297,22 +1329,24 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               continue
             }
 
-              // a filter can contain many comma-separated filters
-              const subFilters = _.map(_.split(filter.term, ','), _.trim);
-              for (const subFilter of subFilters) {
-                if (subFilter) {
-                  const {string, operator, value} = parseFilter(subFilter)
-                  const display = [column_name, string, value].join(' ')
-                  $scope.column_filters.push({name, column_name, operator, value, display})
-                }
+            // a filter can contain many comma-separated filters
+            const subFilters = _.map(_.split(filter.term, ','), _.trim);
+            for (const subFilter of subFilters) {
+              if (subFilter) {
+                const {string, operator, value} = parseFilter(subFilter)
+                var index = all_columns.findIndex(p => p.name == column_name);
+                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                $scope.column_filters.push({name, column_name, operator, value, display})
               }
             }
           }
 
-          if (sort.direction) {
+          if (sort.direction) { 
             // remove the column id at the end of the name
             const column_name = name.split("_").slice(0, -1).join("_");
-            $scope.column_sorts.push({column_name, direction: sort.direction});
+            console.log(sort);
+            const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+            $scope.column_sorts.push({column_name, direction: sort.direction, display});
           }
         }
       };
