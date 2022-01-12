@@ -4,9 +4,11 @@
 """
 import os
 from collections import namedtuple
+from typing import Optional
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
+from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -15,6 +17,7 @@ from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
@@ -132,7 +135,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             safe=False,
         )
 
-    def _get_filtered_results(self, request, profile_id):
+    def _get_filtered_results(self, request: Request, profile_id: int):
         page = request.query_params.get('page', 1)
         per_page = request.query_params.get('per_page', 1)
         org_id = self.get_organization(request)
@@ -163,15 +166,24 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     'results': []
                 })
 
-        property_views_list = property_views_list = (
+        property_views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(property__organization_id=org_id, cycle=cycle)
         )
 
+        include_related = (
+            str(request.query_params.get('include_related', 'true')).lower() == 'true'
+        )
+
         # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
+        columns_from_database = Column.retrieve_all(
+            org_id=org_id,
+            inventory_type='property',
+            only_used=False,
+            include_related=include_related
+        )
         try:
-            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
+            filters, annotations, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
         except FilterException as e:
             return JsonResponse(
                 {
@@ -181,7 +193,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        property_views_list = property_views_list.filter(filters).order_by(*order_by)
+        property_views_list = property_views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
         # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
         if 'property_view_ids' in request.data and request.data['property_view_ids']:
@@ -198,9 +210,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except EmptyPage:
             property_views = paginator.page(paginator.num_pages)
             page = paginator.num_pages
+        except DataError as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'recommended_action': 'update_column_settings',
+                    'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # This uses an old method of returning the show_columns. There is a new method that
         # is prefered in v2.1 API with the ProfileIdMixin.
+        show_columns: Optional[list[int]] = None
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -221,15 +243,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        include_related = (
-            str(request.query_params.get('include_related', 'true')).lower() == 'true'
-        )
-        related_results = TaxLotProperty.serialize(
-            property_views,
-            show_columns,
-            columns_from_database,
-            include_related
-        )
+        try:
+            related_results = TaxLotProperty.serialize(
+                property_views,
+                show_columns,
+                columns_from_database,
+                include_related
+            )
+        except DataError as e:
+            return JsonResponse(
+                {
+                    'status': 'error',
+                    'recommended_action': 'update_column_settings',
+                    'message': f'Error filtering - your data might not match the column settings data type: {str(e)}'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset
