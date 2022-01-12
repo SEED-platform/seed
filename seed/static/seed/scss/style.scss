@@ -2825,6 +2825,10 @@ gs-input .tags .tag-item .remove-button {
 
 #filters-list, #sort-list {
 
+  .tags, .tags .input {
+    cursor: default !important;
+  }
+
   .tags.focused {
     border: 1px solid #ccc !important;
     -webkit-box-shadow: none !important;
