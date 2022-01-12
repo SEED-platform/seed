@@ -38,8 +38,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_constructor(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -55,8 +55,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_constructor_diff_ns(self):
         filename = path.join(path.dirname(__file__), 'data', 'ex_1_different_namespace.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -72,8 +72,8 @@ class TestBuildingFiles(TestCase):
     def test_buildingsync_constructor_single_scenario(self):
         # test having only 1 measure and 1 scenario
         filename = path.join(path.dirname(__file__), 'data', 'test_single_scenario.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -88,8 +88,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_bricr_import(self):
         filename = path.join(path.dirname(__file__), 'data', 'buildingsync_v2_0_bricr_workflow.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -113,8 +113,8 @@ class TestBuildingFiles(TestCase):
     def test_buildingsync_audit_template_import(self):
         audit_template_filename = 'example_SF_audit_report_BS_v2.3_081321.xml'
         filename = path.join(path.dirname(__file__), 'data', audit_template_filename)
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,

@@ -7,6 +7,7 @@ import os
 from config.settings.common import TIME_ZONE
 
 from datetime import datetime
+import pathlib
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
@@ -90,7 +91,10 @@ class MeterUsageImportTest(TestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -201,7 +205,10 @@ class MeterUsageImportTest(TestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -238,7 +245,10 @@ class MeterUsageImportTest(TestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -659,7 +669,10 @@ class MeterUsageImportTest(TestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -748,7 +761,10 @@ class MeterUsageImportTest(TestCase):
             import_record=dup_import_record,
             source_type="PM Meter Usage",
             uploaded_filename=dup_filename,
-            file=SimpleUploadedFile(name=dup_filename, content=open(dup_filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=dup_filename,
+                content=pathlib.Path(dup_filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -863,7 +879,10 @@ class MeterUsageImportAdjustedScenarioTest(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 

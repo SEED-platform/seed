@@ -3,6 +3,7 @@
 
 import json
 import os
+import pathlib
 
 from config.settings.common import TIME_ZONE
 
@@ -71,7 +72,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}
         )
@@ -235,7 +239,10 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}
         )

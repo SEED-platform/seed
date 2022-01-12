@@ -79,8 +79,8 @@ author = 'The Regents of the University of California, through Lawrence Berkeley
 # built documents.
 #
 # Grab the version from the package.json file
-f = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../package.json"))
-data = json.load(f)
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../package.json")) as f:
+    data = json.load(f)
 
 version = data['version']
 # The full version, including alpha/beta/rc tags.

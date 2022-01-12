@@ -10,6 +10,8 @@ from datetime import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import get_current_timezone
+import pathlib
+
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (FAKE_EXTRA_DATA, FAKE_MAPPINGS,
@@ -82,7 +84,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -113,7 +118,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -183,7 +191,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -279,7 +290,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -501,7 +515,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -521,7 +538,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -541,7 +561,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -561,7 +584,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -583,7 +609,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             uploaded_filename=filename,
             mapping_done=True,
             source_type="Assessed Raw",
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -616,7 +645,7 @@ class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -713,7 +742,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         filepath = os.path.join(data_importer_data_dir, filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
         tasks.save_raw_data(self.import_file.pk)
@@ -727,7 +756,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         filepath = os.path.join(data_importer_data_dir, filename_2)
         self.import_file_2.file = SimpleUploadedFile(
             name=filename_2,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_2.save()
 
