@@ -5,7 +5,6 @@
 import os
 from collections import namedtuple
 
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -20,20 +19,16 @@ from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
-                         BuildingFile, Column, ColumnListProfile,
-                         ColumnListProfileColumn, ColumnMappingProfile, Cycle,
+                         MERGE_STATE_NEW,
+                         BuildingFile, Column, ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
-from seed.search import build_view_filters_and_sorts, FilterException
-from seed.serializers.pint import (PintJSONEncoder,
-                                   apply_display_unit_preferences)
+from seed.serializers.pint import (PintJSONEncoder)
 from seed.serializers.properties import (PropertySerializer,
                                          PropertyStateSerializer,
                                          PropertyViewAsStateSerializer,
