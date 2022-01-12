@@ -3,30 +3,22 @@
 :author
 """
 from collections import namedtuple
-from typing import Optional
 
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Subquery
-from django.db.utils import DataError
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
-from rest_framework.request import Request
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_TAXLOT, Column,
-                         ColumnListProfile, ColumnListProfileColumn, Cycle,
+                         MERGE_STATE_NEW,
                          Note, PropertyView, StatusLabel, TaxLot,
                          TaxLotAuditLog, TaxLotProperty, TaxLotState,
                          TaxLotView)
-from seed.search import build_view_filters_and_sorts, FilterException
-from seed.serializers.pint import apply_display_unit_preferences
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
                                       TaxLotViewSerializer,
