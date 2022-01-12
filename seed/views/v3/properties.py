@@ -4,8 +4,10 @@
 """
 import os
 from collections import namedtuple
+from typing import Optional
 
 from django.db.models import Q, Subquery
+from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
@@ -14,6 +16,7 @@ from rest_framework import status, viewsets, generics
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
+from rest_framework.request import Request
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
@@ -127,7 +130,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
             safe=False,
         )
-
 
     def _move_relationships(self, old_state, new_state):
         """

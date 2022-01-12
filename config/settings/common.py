@@ -122,7 +122,8 @@ POST_OFFICE = {
     'BACKENDS': {
         'default': 'smtp.EmailBackend',
         'post_office_backend': 'django.core.mail.backends.console.EmailBackend',
-    }
+    },
+    'CELERY_ENABLED': True,
 }
 
 

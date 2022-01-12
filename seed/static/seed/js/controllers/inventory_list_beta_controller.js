@@ -68,6 +68,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
       $scope.selectedOrder = [];
+      $scope.columnDisplayByName = {};
+      for (i in all_columns) {
+        $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
+      };
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -116,25 +120,50 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       };
 
-      $scope.restoring = false;
+      // restore_response is a state tracker for avoiding multiple reloads
+      // of the inventory data when initializing the page.
+      // The problem occurs due to retriggering of data reload, summarized by this issue: 
+      // https://github.com/angular-ui/ui-grid/issues/5280
+      // Note that this implementation can _still_ result in an unwanted race condition
+      // but for the most part seems to avoid it without arbitrary wait timers
+      const RESTORE_NOT_STARTED = 'not started'
+      const RESTORE_SETTINGS = 'restoring settings'
+      const RESTORE_SETTINGS_DONE = 'restore settings done'
+      const RESTORE_COMPLETE = 'restore done'
+      $scope.restore_status = RESTORE_NOT_STARTED;
+      $scope.$watch('restore_status', function () {
+        // Load the initial data for the page
+        // this only happens ONCE (after the ui-grid's saveState.restore has completed)
+        if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
+          updateColumnFilterSort();
+          $scope.load_inventory(1)
+            .then(function () {
+              $scope.restore_status = RESTORE_COMPLETE;
+            });
+        }
+      })
 
       // stores columns that have filtering and/or sorting applied
       $scope.column_filters = []
       $scope.column_sorts = []
 
-      // remove editing on the filter list input (ngTagsInput doesn't support readonly yet)
+      // remove editing on list inputs (ngTagsInput doesn't support readonly yet)
       let findFiltersListAttempts = 0;
-      const findFiltersList = setInterval(() => {
-        let filterListInput = document.getElementById('filters-list').getElementsByTagName('input')[0];
-        if (filterListInput) {
-          filterListInput.readOnly = true;
-          clearInterval(findFiltersList);
-        }
-        findFiltersListAttempts++;
-        if (findFiltersListAttempts > 10) {
-          clearInterval(findFiltersList);
-        }
-      }, 1000);
+      findList = {};
+      for (const elementId of ['filters-list', 'sort-list']) {
+        findList[elementId] = {'attempts': 0};
+        findList[elementId].interval = setInterval(() => {
+          let listInput = document.getElementById(elementId).getElementsByTagName('input')[0];
+          if (listInput) {
+            listInput.readOnly = true;
+            clearInterval(findList[elementId].interval);
+          }
+          findList[elementId].attempts++;
+          if (findList[elementId].attempts > 10) {
+            clearInterval(findList[elementId].interval);
+          }
+        }, 1000);
+      }
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
@@ -846,14 +875,21 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         return fetch(page, page_size)
           .then(function (data) {
             if (data.status === 'error') {
-              Notification.error(data.message);
+              let message = data.message
+              if (data.recommended_action === 'update_column_settings') {
+                const columnSettingsUrl = $state.href(
+                  'organization_column_settings',
+                  {organization_id: $scope.organization.id, inventory_type: $scope.inventory_type}
+                )
+                message = `${message}<br><a href="${columnSettingsUrl}">Click here to update your column settings</a>`
+              }
+              Notification.error({message, delay: 15000});
               spinner_utility.hide();
               return;
             }
             $scope.inventory_pagination = data.pagination;
             processData(data.results);
             $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
-            modalInstance.close();
             evaluateDerivedColumns();
             spinner_utility.hide()
           });
@@ -866,9 +902,17 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.filters_exist = function () {
-        return !!_.find($scope.gridApi.grid.columns, function (col) {
-          return !_.isEmpty(col.filter.term);
-        });
+        return !$scope.column_filters.length;
+      };
+
+      $scope.sorts_exist = function () {
+        return !$scope.column_sorts.length;
+      };
+
+      // it appears resetColumnSorting() doesn't trigger on.sortChanged so we do it manually
+      $scope.reset_column_sorting = function () {
+        $scope.gridApi.grid.resetColumnSorting();
+        $scope.gridApi.core.raise.sortChanged();
       };
 
       var get_labels = function () {
@@ -1170,7 +1214,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       const operatorLookup = {
-        'ne': '!',
+        'ne': '!=',
         'exact': '=',
         'lt': '<',
         'lte': '<=',
@@ -1194,6 +1238,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
         column.filters[0].term = newTerm.join(', ');
         return false;
+      };
+
+      $scope.delete_sort = function (sortToDelete) {
+        $scope.gridApi.grid.getColumn(sortToDelete.name).unsort();
+        return true;
       };
 
       // https://regexr.com/6cka2
@@ -1256,58 +1305,61 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       var updateColumnFilterSort = function () {
-        if (!$scope.restoring) {
-          var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
-            return _.keys(col.sort).filter(key => key != 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
-          });
+        var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
+          return _.keys(col.sort).filter(key => key != 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0;
+        });
 
-          inventory_service.saveGridSettings(localStorageKey + '.sort', {
-            columns: columns
-          });
+        inventory_service.saveGridSettings(localStorageKey + '.sort', {
+          columns: columns
+        });
 
-          $scope.column_filters = []
-          $scope.column_sorts = []
-          // parse the filters and sorts
-          for (const column of columns) {
-            const {name, filters, sort} = column;
+        $scope.column_filters = []
+        $scope.column_sorts = []
+        // parse the filters and sorts
+        for (const column of columns) {
+          const {name, filters, sort} = column;
+          // remove the column id at the end of the name
+          const column_name = name.split("_").slice(0, -1).join("_");
+
+          for (const filter of filters) {
+            if (_.isEmpty(filter)) {
+              continue
+            }
+
+            // a filter can contain many comma-separated filters
+            const subFilters = _.map(_.split(filter.term, ','), _.trim);
+            for (const subFilter of subFilters) {
+              if (subFilter) {
+                const {string, operator, value} = parseFilter(subFilter)
+                var index = all_columns.findIndex(p => p.name == column_name);
+                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                $scope.column_filters.push({name, column_name, operator, value, display})
+              }
+            }
+          }
+
+          if (sort.direction) { 
             // remove the column id at the end of the name
             const column_name = name.split("_").slice(0, -1).join("_");
-
-            for (const filter of filters) {
-              if (_.isEmpty(filter)) {
-                continue
-              }
-
-              // a filter can contain many comma-separated filters
-              const subFilters = _.map(_.split(filter.term, ','), _.trim);
-              for (const subFilter of subFilters) {
-                if (subFilter) {
-                  const {string, operator, value} = parseFilter(subFilter)
-                  const display = [column_name, string, value].join(' ')
-                  $scope.column_filters.push({name, column_name, operator, value, display})
-                }
-              }
-            }
-
-            if (sort.direction) {
-              // remove the column id at the end of the name
-              const column_name = name.split("_").slice(0, -1).join("_");
-              $scope.column_sorts.push({column_name, direction: sort.direction});
-            }
+            const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+            $scope.column_sorts.push({name, column_name, direction: sort.direction, display, priority: sort.priority});
+            $scope.column_sorts.sort((a, b) => (a.priority > b.priority) ? true : false);
           }
         }
       };
 
       var restoreGridSettings = function () {
-        $scope.restoring = true;
+        $scope.restore_status = RESTORE_SETTINGS;
         var state = inventory_service.loadGridSettings(localStorageKey + '.sort');
         if (!_.isNull(state)) {
           state = JSON.parse(state);
-          $scope.gridApi.saveState.restore($scope, state);
+          $scope.gridApi.saveState.restore($scope, state)
+            .then(function () {
+              $scope.restore_status = RESTORE_SETTINGS_DONE;
+            });
+        } else {
+          $scope.restore_status = RESTORE_SETTINGS_DONE;
         }
-        _.defer(function () {
-          $scope.restoring = false;
-        });
       };
 
       $scope.gridOptions = {
@@ -1370,12 +1422,16 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           });
           gridApi.core.on.columnVisibilityChanged($scope, saveSettings);
           gridApi.core.on.filterChanged($scope, _.debounce(() => {
-            updateColumnFilterSort();
-            $scope.load_inventory(1);
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
           }, 1000));
           gridApi.core.on.sortChanged($scope, _.debounce(() => {
-            updateColumnFilterSort();
-            $scope.load_inventory(1);
+            if ($scope.restore_status === RESTORE_COMPLETE) {
+              updateColumnFilterSort();
+              $scope.load_inventory(1);
+            }
           }, 1000));
           gridApi.pinning.on.columnPinned($scope, saveSettings);
 
@@ -1435,9 +1491,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           _.defer(function () {
             restoreGridSettings();
           });
-
-          // Load the initial data
-          $scope.load_inventory(1);
         }
       };
     }]);

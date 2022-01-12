@@ -11,6 +11,7 @@ import logging
 import os.path as osp
 
 from quantityfield.units import ureg
+import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -273,7 +274,7 @@ class TestDuplicateFileHeaders(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

@@ -399,7 +399,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                                 STR_TO_CLASS[table](organization=map_model_obj.organization),
                                 include_extra_data=False):
                             # Skip this object as it has no data...
-                            _log.warn(
+                            _log.warning(
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
 
@@ -1138,7 +1138,7 @@ def geocode_and_match_buildings_task(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("Import file cycle is None; This should never happen in production")
+        _log.warning("Import file cycle is None; This should never happen in production")
 
     post_geocode_tasks = None
     if import_file.from_buildingsync:
@@ -1261,7 +1261,7 @@ def map_additional_models(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("This should never happen in production")
+        _log.warning("This should never happen in production")
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -1346,7 +1346,7 @@ def match_buildings(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn('This should never happen in production')
+        _log.warning('This should never happen in production')
 
     # Start, match, pair
     progress_data.total = 3

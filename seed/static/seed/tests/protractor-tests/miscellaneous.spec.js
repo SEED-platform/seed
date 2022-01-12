@@ -221,12 +221,12 @@ describe('When I do miscellaneous things', function () {
 
     //check labels -
     $('[ng-click="clear_labels()"]').click();
-    $('#tagsInput').click();
+    $('#tags-input').click();
     $$('.suggestion-item.selected').first().click();
 
     expect(rows.count()).toBe(3);
     $('[uib-btn-radio="\'and\'"]').click();
-    $('#tagsInput').click();
+    $('#tags-input').click();
     $$('.suggestion-item.selected').first().click();
 
     expect(rows.count()).toBe(2);

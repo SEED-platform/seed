@@ -21,6 +21,7 @@ from django.utils.timezone import (
 )
 
 from pytz import timezone
+import pathlib
 
 from seed.landing.models import SEEDUser as User
 from seed.data_importer.models import (
@@ -482,7 +483,10 @@ class PropertyViewTests(DataMappingBaseTestCase):
             import_record=import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": property_1.id}  # this is how target property is specified
         )
@@ -657,7 +661,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
@@ -689,7 +696,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
@@ -722,7 +732,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=pm_filename,
-            file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=pm_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
         )
         pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
@@ -739,7 +752,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=gb_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
@@ -780,7 +796,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=gb_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
@@ -798,7 +817,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=gb_overlapping_filename,
-            file=SimpleUploadedFile(name=gb_overlapping_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=gb_overlapping_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_2.id}  # this is how target property is specified
         )
@@ -892,7 +914,10 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=pm_filename,
-            file=SimpleUploadedFile(name=pm_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=pm_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
         )
         pm_import_url = reverse("api:v3:import_files-start-save-data", args=[pm_import_file.id])
@@ -905,8 +930,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         # For second Property, add BuildingSync file containing 6 meters
         bs_filename = "buildingsync_v2_0_bricr_workflow.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/../building_sync/tests/data/" + bs_filename
-        bs_file = open(filepath, 'rb')
-        uploaded_file = SimpleUploadedFile(bs_file.name, bs_file.read())
+        uploaded_file = SimpleUploadedFile(filepath, pathlib.Path(filepath).read_bytes())
         bs_buildingfile = BuildingFile.objects.create(
             file=uploaded_file,
             filename=bs_filename,
@@ -1000,7 +1024,10 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=gb_filename,
-            file=SimpleUploadedFile(name=gb_filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=gb_filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle,
             matching_results_data={"property_id": self.property_1.id}  # this is how target property is specified
         )
@@ -1254,7 +1281,10 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -1397,7 +1427,10 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
