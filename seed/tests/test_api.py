@@ -10,6 +10,7 @@ import json
 import os
 import time
 from unittest import skip
+import pathlib
 
 from django.urls import reverse_lazy, reverse
 from django.test import TestCase
@@ -350,7 +351,7 @@ class TestApi(TestCase):
         fsysparams = {
             'import_record': data_set_id,
             'source_type': 'Assessed Raw',
-            'file': open(raw_building_file, 'rb')
+            'file': pathlib.Path(raw_building_file).read_bytes()
         }
 
         # upload data and check response

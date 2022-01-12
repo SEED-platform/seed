@@ -11,6 +11,7 @@ import os.path as osp
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone as tz
+import pathlib
 from quantityfield.units import ureg
 
 from seed.data_importer import tasks, match
@@ -51,7 +52,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

@@ -11,6 +11,7 @@ from functools import reduce
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
+import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile
@@ -45,7 +46,7 @@ class TestMatching(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
