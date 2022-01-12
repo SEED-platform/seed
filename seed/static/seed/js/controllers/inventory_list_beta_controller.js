@@ -1213,6 +1213,17 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
+      optgroupSelectActionsEl = document.getElementById('optgroup-select-actions');
+      $scope.update_selected_display = function () {
+        let type = $scope.inventory_type === 'properties' ? 'Properties' : 'Taxlots';
+        message = [$translate.instant('Selected ' + type)];
+        message.push(' (', $scope.selectedCount, ' ', $translate.instant('selected'), ')');
+        message = message.join('');
+        optgroupSelectActionsEl.label = message;
+        return message;
+      };
+      $scope.selected_display = $scope.update_selected_display();
+
       const operatorLookup = {
         'ne': '!=',
         'exact': '=',
@@ -1452,6 +1463,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               // console.log('Added ', added);
               $scope.selectedOrder.push(added[0]);
             }
+            $scope.update_selected_display();
           };
 
           var selectAllChanged = function () {
@@ -1472,6 +1484,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               $scope.selectedCount = allSelected.length;
               $scope.selectedParentCount = parentsSelectedIds.length;
             }
+            $scope.update_selected_display();
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
