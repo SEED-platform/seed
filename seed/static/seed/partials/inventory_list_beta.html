@@ -83,9 +83,7 @@
     <div class="item-count">
         {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
         <i ng-if="selectedCount > 0">
-            <span>({$ selected_display $}</span>
-            <span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span>
-            <span>)</span>
+            <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span><span>)</span>
         </i>
         <button
             ng-click="load_inventory(inventory_pagination.page - 1)"
