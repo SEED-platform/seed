@@ -23,6 +23,9 @@ msgstr "# of Records"
 msgid "(field must contain this text)"
 msgstr "(field must contain this text)"
 
+msgid "(from table below)"
+msgstr "(from table below)"
+
 msgid "(no address 1)"
 msgstr "(no address 1)"
 
@@ -568,6 +571,9 @@ msgstr "Cross-Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Current Column Mapping Profile"
 
+msgid "Current Filters"
+msgstr "Current Filters"
+
 msgid "Current Name"
 msgstr "Current Name"
 
@@ -690,6 +696,9 @@ msgstr "Deadline"
 
 msgid "Deadline:"
 msgstr "Deadline:"
+
+msgid "Decode UBID/ULID"
+msgstr "Decode UBID/ULID"
 
 msgid "Default Display Fields"
 msgstr "Default Display Fields"
@@ -1494,6 +1503,9 @@ msgstr "Member Role"
 msgid "Members"
 msgstr "Members"
 
+msgid "Merge"
+msgstr "Merge"
+
 msgid "Merge Protection"
 msgstr "Merge Protection"
 
@@ -1618,6 +1630,9 @@ msgstr "No Data"
 
 msgid "No action was taken"
 msgstr "No action was taken"
+
+msgid "No filters added."
+msgstr "No filters added."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "No labels available. Add a label above to get started."
@@ -2239,6 +2254,12 @@ msgstr "Select the type of file(s) you would like to add to"
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
 
+msgid "Selected Properties"
+msgstr "Selected Properties"
+
+msgid "Selected Taxlots"
+msgstr "Selected Taxlots"
+
 msgid "Selecting Fields to Share"
 msgstr "Selecting Fields to Share"
 
@@ -2321,6 +2342,9 @@ msgstr "Snapshot projects are useful when you want to freeze the building data a
 
 msgid "Sorry!"
 msgstr "Sorry!"
+
+msgid "Sorting By (in order)"
+msgstr "Sorting By (in order)"
 
 msgid "Source EUI"
 msgstr "Source EUI"

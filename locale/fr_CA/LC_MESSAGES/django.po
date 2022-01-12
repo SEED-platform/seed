@@ -24,6 +24,9 @@ msgstr "# d'Enregistrements"
 msgid "(field must contain this text)"
 msgstr "(le champ doit contenir ce texte)"
 
+msgid "(from table below)"
+msgstr "(à partir du tableau ci-dessous)"
+
 msgid "(no address 1)"
 msgstr "(pas d'adresse 1)"
 
@@ -576,6 +579,9 @@ msgstr "Entre les Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Profil de mappage de colonne actuel"
 
+msgid "Current Filters"
+msgstr "Filtres Actuel"
+
 msgid "Current Name"
 msgstr "Nom Actuel"
 
@@ -698,6 +704,9 @@ msgstr "Date limite"
 
 msgid "Deadline:"
 msgstr "Date limite:"
+
+msgid "Decode UBID/ULID"
+msgstr "Décoder UBID/ULID"
 
 msgid "Default Display Fields"
 msgstr "Champs d'affichage par défaut"
@@ -1507,6 +1516,9 @@ msgstr "Rôle de membre"
 msgid "Members"
 msgstr "Membres"
 
+msgid "Merge"
+msgstr "Fusionner"
+
 msgid "Merge Protection"
 msgstr "Protection contre les fusions"
 
@@ -1631,6 +1643,9 @@ msgstr "Pas de données"
 
 msgid "No action was taken"
 msgstr "Aucune action n'a été prise"
+
+msgid "No filters added."
+msgstr "Aucun filtre ajouté."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour commencer."
@@ -2259,6 +2274,12 @@ msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
 msgid "Select which columns to include in the list:"
 msgstr "Sélectionnez les colonnes à inclure dans la liste:"
 
+msgid "Selected Properties"
+msgstr "Propriétés Sélectionnées"
+
+msgid "Selected Taxlots"
+msgstr "Lots d'impôt Sélectionnés"
+
 msgid "Selecting Fields to Share"
 msgstr "Sélection des champs à partager"
 
@@ -2341,6 +2362,9 @@ msgstr "Les projets Snapshot sont utiles lorsque vous souhaitez geler les donné
 
 msgid "Sorry!"
 msgstr "Désolée!"
+
+msgid "Sorting By (in order)"
+msgstr "Trier Par (dans l'ordre)"
 
 msgid "Source EUI"
 msgstr "IUE source"

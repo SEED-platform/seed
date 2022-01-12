@@ -68,6 +68,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.selectedCount = 0;
       $scope.selectedParentCount = 0;
       $scope.selectedOrder = [];
+      $scope.columnDisplayByName = {};
+      for (i in all_columns) {
+        $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
+      };
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -142,6 +146,24 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       // stores columns that have filtering and/or sorting applied
       $scope.column_filters = []
       $scope.column_sorts = []
+
+      // remove editing on list inputs (ngTagsInput doesn't support readonly yet)
+      let findFiltersListAttempts = 0;
+      findList = {};
+      for (const elementId of ['filters-list', 'sort-list']) {
+        findList[elementId] = {'attempts': 0};
+        findList[elementId].interval = setInterval(() => {
+          let listInput = document.getElementById(elementId).getElementsByTagName('input')[0];
+          if (listInput) {
+            listInput.readOnly = true;
+            clearInterval(findList[elementId].interval);
+          }
+          findList[elementId].attempts++;
+          if (findList[elementId].attempts > 10) {
+            clearInterval(findList[elementId].interval);
+          }
+        }, 1000);
+      }
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
@@ -880,9 +902,17 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       $scope.filters_exist = function () {
-        return !!_.find($scope.gridApi.grid.columns, function (col) {
-          return !_.isEmpty(col.filter.term);
-        });
+        return !$scope.column_filters.length;
+      };
+
+      $scope.sorts_exist = function () {
+        return !$scope.column_sorts.length;
+      };
+
+      // it appears resetColumnSorting() doesn't trigger on.sortChanged so we do it manually
+      $scope.reset_column_sorting = function () {
+        $scope.gridApi.grid.resetColumnSorting();
+        $scope.gridApi.core.raise.sortChanged();
       };
 
       var get_labels = function () {
@@ -1076,6 +1106,25 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
       };
 
+      $scope.model_actions = 'none';
+      elSelectActions = document.getElementById('select-actions');
+      $scope.run_action = function () {
+        switch (elSelectActions.value) {
+          case 'open_merge_modal': $scope.open_merge_modal(); break;
+          case 'open_delete_modal': $scope.open_delete_modal(); break;
+          case 'open_export_modal': $scope.open_export_modal(); break;
+          case 'open_update_labels_modal': $scope.open_update_labels_modal(); break;
+          case 'run_data_quality_check': $scope.run_data_quality_check(); break;
+          case 'open_postoffice_modal': $scope.open_postoffice_modal(); break;
+          case 'open_analyses_modal': $scope.open_analyses_modal(); break;
+          case 'open_geocode_modal': $scope.open_geocode_modal(); break;
+          case 'open_ubid_modal': $scope.open_ubid_modal(); break;
+          case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
+          default: console.error('Unknown action!', elSelectActions.value, 'Update "run_action()"');
+        }
+        $scope.model_actions = 'none';
+      };
+
       $scope.open_analyses_modal = function () {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
@@ -1164,6 +1213,38 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
+      const operatorLookup = {
+        'ne': '!=',
+        'exact': '=',
+        'lt': '<',
+        'lte': '<=',
+        'gt': '<',
+        'gte': '<=',
+        'icontains': ''
+      };
+
+      $scope.delete_filter = function (filterToDelete) {
+        const column = $scope.gridApi.grid.getColumn(filterToDelete.name);
+        if (!column || column.filters.size < 1) {
+          return false;
+        }
+        let newTerm = [];
+        for (i in $scope.column_filters) {
+          filter = $scope.column_filters[i];
+          if (filter.name != filterToDelete.name || filter == filterToDelete) {
+            continue;
+          }
+          newTerm.push(operatorLookup[filter.operator] + filter.value);
+        }
+        column.filters[0].term = newTerm.join(', ');
+        return false;
+      };
+
+      $scope.delete_sort = function (sortToDelete) {
+        $scope.gridApi.grid.getColumn(sortToDelete.name).unsort();
+        return true;
+      };
+
       // https://regexr.com/6cka2
       const combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\\\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
       const parseFilter = function (expression) {
@@ -1175,18 +1256,18 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             operator = filterData[1];
             value = Number(filterData[2].replace('\\.', '.'));
             if (operator === '!') {
-              return {operator: 'ne', value};
+              return {string: 'is not', operator: 'ne', value};
             } else {
-              return {operator: 'exact', value};
+              return {string: 'is', operator: 'exact', value};
             }
           } else if (!_.isUndefined(filterData[4])) {
             // Text Equality
             operator = filterData[3];
             value = filterData[4];
             if (operator === '!') {
-              return {operator: 'ne', value};
+              return {string: 'is not', operator: 'ne', value};
             } else {
-              return {operator: 'exact', value};
+              return {string: 'is', operator: 'exact', value};
             }
           } else if (!_.isUndefined(filterData[7])) {
             // Numeric Comparison
@@ -1194,13 +1275,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             value = Number(filterData[6].replace('\\.', '.'));
             switch (operator) {
               case '<':
-                return {operator: 'lt', value};
+                return {string: '<', operator: 'lt', value};
               case '<=':
-                return {operator: 'lte', value};
+                return {string: '<=', operator: 'lte', value};
               case '>':
-                return {operator: 'gt', value};
+                return {string: '>', operator: 'gt', value};
               case '>=':
-                return {operator: 'gte', value};
+                return {string: '>=', operator: 'gte', value};
             }
           } else {
             // Date Comparison
@@ -1208,20 +1289,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             value = filterData[8];
             switch (operator) {
               case '<':
-                return {operator: 'lt', value};
+                return {string: '<', operator: 'lt', value};
               case '<=':
-                return {operator: 'lte', value};
+                return {string: '<=', operator: 'lte', value};
               case '>':
-                return {operator: 'gt', value};
+                return {string: '>', operator: 'gt', value};
               case '>=':
-                return {operator: 'gte', value};
+                return {string: '>=', operator: 'gte', value};
             }
           }
         } else {
           // Case-insensitive Contains
-          return {operator: 'icontains', value: expression}
+          return {string: 'contains', operator: 'icontains', value: expression};
         }
-      }
+      };
 
       var updateColumnFilterSort = function () {
         var columns = _.filter($scope.gridApi.saveState.save().columns, function (col) {
@@ -1249,16 +1330,20 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             const subFilters = _.map(_.split(filter.term, ','), _.trim);
             for (const subFilter of subFilters) {
               if (subFilter) {
-                const {operator, value} = parseFilter(subFilter)
-                $scope.column_filters.push({column_name, operator, value})
+                const {string, operator, value} = parseFilter(subFilter)
+                var index = all_columns.findIndex(p => p.name == column_name);
+                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                $scope.column_filters.push({name, column_name, operator, value, display})
               }
             }
           }
 
-          if (sort.direction) {
+          if (sort.direction) { 
             // remove the column id at the end of the name
             const column_name = name.split("_").slice(0, -1).join("_");
-            $scope.column_sorts.push({column_name, direction: sort.direction});
+            const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+            $scope.column_sorts.push({name, column_name, direction: sort.direction, display, priority: sort.priority});
+            $scope.column_sorts.sort((a, b) => (a.priority > b.priority) ? true : false);
           }
         }
       };
