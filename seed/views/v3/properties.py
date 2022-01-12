@@ -51,6 +51,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
                                    update_result_with_master)
+from seed.utils.filter_state import _get_filtered_results
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -132,124 +133,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             safe=False,
         )
 
-    def _get_filtered_results(self, request, profile_id):
-        page = request.query_params.get('page', 1)
-        per_page = request.query_params.get('per_page', 1)
-        org_id = self.get_organization(request)
-        cycle_id = request.query_params.get('cycle')
-        # check if there is a query paramater for the profile_id. If so, then use that one
-        profile_id = request.query_params.get('profile_id', profile_id)
-
-        if not org_id:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-        org = Organization.objects.get(id=org_id)
-
-        if cycle_id:
-            cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
-        else:
-            cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
-            if cycle:
-                cycle = cycle.first()
-            else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Could not locate cycle',
-                    'pagination': {
-                        'total': 0
-                    },
-                    'cycle_id': None,
-                    'results': []
-                })
-
-        property_views_list = property_views_list = (
-            PropertyView.objects.select_related('property', 'state', 'cycle')
-            .filter(property__organization_id=org_id, cycle=cycle)
-        )
-
-        # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
-        try:
-            filters, order_by = build_view_filters_and_sorts(request.query_params, columns_from_database)
-        except FilterException as e:
-            return JsonResponse(
-                {
-                    'status': 'error',
-                    'message': f'Error filtering: {str(e)}'
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        property_views_list = property_views_list.filter(filters).order_by(*order_by)
-
-        # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
-        if 'property_view_ids' in request.data and request.data['property_view_ids']:
-            property_views_list = property_views_list.filter(id__in=request.data['property_view_ids'])
-
-        paginator = Paginator(property_views_list, per_page)
-
-        try:
-            property_views = paginator.page(page)
-            page = int(page)
-        except PageNotAnInteger:
-            property_views = paginator.page(1)
-            page = 1
-        except EmptyPage:
-            property_views = paginator.page(paginator.num_pages)
-            page = paginator.num_pages
-
-        # This uses an old method of returning the show_columns. There is a new method that
-        # is prefered in v2.1 API with the ProfileIdMixin.
-        if profile_id is None:
-            show_columns = None
-        elif profile_id == -1:
-            show_columns = list(Column.objects.filter(
-                organization_id=org_id
-            ).values_list('id', flat=True))
-        else:
-            try:
-                profile = ColumnListProfile.objects.get(
-                    organization_id=org_id,
-                    id=profile_id,
-                    profile_location=VIEW_LIST,
-                    inventory_type=VIEW_LIST_PROPERTY
-                )
-                show_columns = list(ColumnListProfileColumn.objects.filter(
-                    column_list_profile_id=profile.id
-                ).values_list('column_id', flat=True))
-            except ColumnListProfile.DoesNotExist:
-                show_columns = None
-
-        include_related = (
-            str(request.query_params.get('include_related', 'true')).lower() == 'true'
-        )
-        related_results = TaxLotProperty.serialize(
-            property_views,
-            show_columns,
-            columns_from_database,
-            include_related
-        )
-
-        # collapse units here so we're only doing the last page; we're already a
-        # realized list by now and not a lazy queryset
-        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
-
-        response = {
-            'pagination': {
-                'page': page,
-                'start': paginator.page(page).start_index(),
-                'end': paginator.page(page).end_index(),
-                'num_pages': paginator.num_pages,
-                'has_next': paginator.page(page).has_next(),
-                'has_previous': paginator.page(page).has_previous(),
-                'total': paginator.count
-            },
-            'cycle_id': cycle.id,
-            'results': unit_collapsed_results
-        }
-
-        return JsonResponse(response)
 
     def _move_relationships(self, old_state, new_state):
         """
@@ -412,7 +295,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         List all the properties	with all columns
         """
-        return self._get_filtered_results(request, profile_id=-1)
+        return _get_filtered_results(request, 'property', profile_id=-1)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -507,7 +390,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 except TypeError:
                     pass
 
-        return self._get_filtered_results(request, profile_id=profile_id)
+        return _get_filtered_results(request, 'property', profile_id=profile_id)
+
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
