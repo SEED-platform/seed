@@ -1109,6 +1109,31 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.model_actions = 'none';
       elSelectActions = document.getElementById('select-actions');
       $scope.run_action = function () {
+        let selectedPropertyViewIds = [];
+        let selectedTaxlotViewIds = [];
+
+        // if it appears everything selected, get the full set of ids...
+        if ($scope.selectedCount == $scope.inventory_pagination.total) {
+          let ids = []; // todo: hit filter endpoint and get full list of IDs
+          if ($scope.inventory_type === 'properties') {
+            selectedPropertyViewIds = ids;
+          } else {
+            selectedTaxlotViewIds = ids;
+          }
+
+        // ... otherwise use what's selected in grid
+        } else {
+          selectedPropertyViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+            if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
+            return !_.has(row, '$$treeLevel');
+          }), 'property_view_id');
+          selectedTaxlotViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+            if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
+            return !_.has(row, '$$treeLevel');
+          }), 'taxlot_view_id');
+        }
+        
+        // todo: update each function to take list of ids instead of making it's own
         switch (elSelectActions.value) {
           case 'open_merge_modal': $scope.open_merge_modal(); break;
           case 'open_delete_modal': $scope.open_delete_modal(); break;
@@ -1120,7 +1145,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           case 'open_geocode_modal': $scope.open_geocode_modal(); break;
           case 'open_ubid_modal': $scope.open_ubid_modal(); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
-          default: console.error('Unknown action!', elSelectActions.value, 'Update "run_action()"');
+          case 'select_all': $scope.select_all(); break;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
         }
         $scope.model_actions = 'none';
       };
@@ -1213,16 +1239,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
-      optgroupSelectActionsEl = document.getElementById('optgroup-select-actions');
+      $scope.selected_display = '';
       $scope.update_selected_display = function () {
-        let type = $scope.inventory_type === 'properties' ? 'Properties' : 'Taxlots';
-        message = [$translate.instant('Selected ' + type)];
-        message.push(' (', $scope.selectedCount, ' ', $translate.instant('selected'), ')');
-        message = message.join('');
-        optgroupSelectActionsEl.label = message;
-        return message;
+        $scope.selected_display = [$scope.selectedCount, $translate.instant('selected')].join(' ');
       };
-      $scope.selected_display = $scope.update_selected_display();
+      $scope.update_selected_display();
 
       const operatorLookup = {
         'ne': '!=',
@@ -1373,6 +1394,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
       };
 
+      $scope.select_all = function () {
+        // select all rows to visibly support everything has been selected
+        $scope.gridApi.selection.selectAllRows();
+        $scope.selectedCount = $scope.inventory_pagination.total;
+        $scope.update_selected_display();
+      };
+
       $scope.gridOptions = {
         data: 'data',
         enableFiltering: true,
@@ -1466,7 +1494,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             $scope.update_selected_display();
           };
 
-          var selectAllChanged = function () {
+          var selectPageChanged = function () {
             var allSelected = $scope.gridApi.selection.getSelectedRows();
 
             if (!allSelected.length) {
@@ -1488,7 +1516,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           };
 
           gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
-          gridApi.selection.on.rowSelectionChangedBatch($scope, selectAllChanged);
+          gridApi.selection.on.rowSelectionChangedBatch($scope, selectPageChanged);
 
           gridApi.core.on.rowsRendered($scope, _.debounce(function () {
             $scope.$apply(function () {
