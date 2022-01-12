@@ -9,13 +9,14 @@ from django.http import JsonResponse
 from rest_framework import status
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY,VIEW_LIST_TAXLOT,
-                         Column, ColumnListProfile, ColumnListProfileColumn, 
+from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
+                         Column, ColumnListProfile, ColumnListProfileColumn,
                          Cycle, PropertyView,
                          )
 from seed.search import build_view_filters_and_sorts, FilterException
 from seed.models import TaxLotProperty, TaxLotView
 from seed.serializers.pint import (apply_display_unit_preferences)
+
 
 def _get_filtered_results(request, state_type, profile_id):
     page = request.query_params.get('page', 1)
