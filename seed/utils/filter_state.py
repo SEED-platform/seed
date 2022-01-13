@@ -16,9 +16,11 @@ from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
 from seed.models import TaxLotProperty, TaxLotView
 from seed.search import build_view_filters_and_sorts, FilterException
 from seed.serializers.pint import (apply_display_unit_preferences)
+from typing import Sequence, Union, TYPE_CHECKING, Optional, Literal
 
 
-def _get_filtered_results(request: Request, profile_id: int, state_type: str = 'property'):
+
+def _get_filtered_results(request: Request, profile_id: int, state_type: Union[Literal['property'], Literal['taxlot'], None] = 'property'):
     page = request.query_params.get('page', 1)
     per_page = request.query_params.get('per_page', 1)
     org_id = request.query_params.get('organization_id')
