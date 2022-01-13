@@ -10,7 +10,7 @@ from django.http import JsonResponse
 from rest_framework import status, viewsets, generics
 from rest_framework.request import Request
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY,
+from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
                         Column, ColumnListProfile,
                          ColumnListProfileColumn,  Cycle,
                          PropertyView)
@@ -55,6 +55,12 @@ def _get_filtered_results(request: Request, profile_id: int, state_type: str='pr
                 PropertyView.objects.select_related('property', 'state', 'cycle')
                 .filter(property__organization_id=org_id, cycle=cycle)
             )
+        elif state_type == 'taxlot':
+            views_list = (
+                TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
+                .filter(taxlot__organization_id=org_id, cycle=cycle)
+            )
+
 
         include_related = (
             str(request.query_params.get('include_related', 'true')).lower() == 'true'
@@ -109,6 +115,8 @@ def _get_filtered_results(request: Request, profile_id: int, state_type: str='pr
         # is prefered in v2.1 API with the ProfileIdMixin.
         if state_type == 'property':
             view_list_state = VIEW_LIST_PROPERTY
+        if state_type == 'taxlot':
+            view_list_state = VIEW_LIST_TAXLOT
 
         show_columns: Optional[list[int]] = None
         if profile_id is None:
