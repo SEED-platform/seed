@@ -115,7 +115,7 @@ def _get_filtered_results(request: Request, profile_id: int, state_type: str='pr
         # is prefered in v2.1 API with the ProfileIdMixin.
         if state_type == 'property':
             view_list_state = VIEW_LIST_PROPERTY
-        if state_type == 'taxlot':
+        elif state_type == 'taxlot':
             view_list_state = VIEW_LIST_TAXLOT
 
         show_columns: Optional[list[int]] = None
