@@ -102,7 +102,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         List all the properties
         """
-        return _get_filtered_results(request, profile_id=-1, state_type='taxlot')
+        return _get_filtered_results(request, 'taxlot', profile_id=-1)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -193,7 +193,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             else:
                 profile_id = request.data['profile_id']
 
-        return _get_filtered_results(request, profile_id=profile_id, state_type='taxlot')
+        return _get_filtered_results(request, 'taxlot', profile_id=profile_id)
 
     @swagger_auto_schema(
         manual_parameters=[

@@ -2,7 +2,6 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from typing import Optional
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
@@ -16,11 +15,10 @@ from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
 from seed.models import TaxLotProperty, TaxLotView
 from seed.search import build_view_filters_and_sorts, FilterException
 from seed.serializers.pint import (apply_display_unit_preferences)
-from typing import Sequence, Union, TYPE_CHECKING, Optional, Literal
+from typing import Union, Optional, Literal
 
 
-
-def _get_filtered_results(request: Request, profile_id: int, state_type: Union[Literal['property'], Literal['taxlot'], None] = 'property'):
+def _get_filtered_results(request: Request, state_type: Union[Literal['property'], Literal['taxlot'], None], profile_id: int):
     page = request.query_params.get('page', 1)
     per_page = request.query_params.get('per_page', 1)
     org_id = request.query_params.get('organization_id')
