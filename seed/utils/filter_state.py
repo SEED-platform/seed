@@ -5,7 +5,7 @@
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.request import Request
 from seed.lib.superperms.orgs.models import Organization
@@ -15,10 +15,10 @@ from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
 from seed.models import TaxLotProperty, TaxLotView
 from seed.search import build_view_filters_and_sorts, FilterException
 from seed.serializers.pint import (apply_display_unit_preferences)
-from typing import Union, Optional, Literal
+from typing import Optional, Literal
 
 
-def _get_filtered_results(request: Request, state_type: Union[Literal['property'], Literal['taxlot'], None], profile_id: int):
+def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
     page = request.query_params.get('page', 1)
     per_page = request.query_params.get('per_page', 1)
     org_id = request.query_params.get('organization_id')
@@ -49,12 +49,12 @@ def _get_filtered_results(request: Request, state_type: Union[Literal['property'
                 'results': []
             })
 
-    if state_type == 'property':
+    if inventory_type == 'property':
         views_list = (
             PropertyView.objects.select_related('property', 'state', 'cycle')
             .filter(property__organization_id=org_id, cycle=cycle)
         )
-    elif state_type == 'taxlot':
+    elif inventory_type == 'taxlot':
         views_list = (
             TaxLotView.objects.select_related('taxlot', 'state', 'cycle')
             .filter(taxlot__organization_id=org_id, cycle=cycle)
@@ -67,7 +67,7 @@ def _get_filtered_results(request: Request, state_type: Union[Literal['property'
     # Retrieve all the columns that are in the db for this organization
     columns_from_database = Column.retrieve_all(
         org_id=org_id,
-        inventory_type=state_type,
+        inventory_type=inventory_type,
         only_used=False,
         include_related=include_related
     )
@@ -85,8 +85,8 @@ def _get_filtered_results(request: Request, state_type: Union[Literal['property'
     views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
     # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
-    if f'{state_type}_view_ids' in request.data and request.data[f'{state_type}_view_ids']:
-        views_list = views_list.filter(id__in=request.data[f'{state_type}_view_ids'])
+    if f'{inventory_type}_view_ids' in request.data and request.data[f'{inventory_type}_view_ids']:
+        views_list = views_list.filter(id__in=request.data[f'{inventory_type}_view_ids'])
 
     paginator = Paginator(views_list, per_page)
 
@@ -111,10 +111,10 @@ def _get_filtered_results(request: Request, state_type: Union[Literal['property'
 
     # This uses an old method of returning the show_columns. There is a new method that
     # is prefered in v2.1 API with the ProfileIdMixin.
-    if state_type == 'property':
-        view_list_state = VIEW_LIST_PROPERTY
-    elif state_type == 'taxlot':
-        view_list_state = VIEW_LIST_TAXLOT
+    if inventory_type == 'property':
+        profile_inventory_type = VIEW_LIST_PROPERTY
+    elif inventory_type == 'taxlot':
+        profile_inventory_type = VIEW_LIST_TAXLOT
 
     show_columns: Optional[list[int]] = None
     if profile_id is None:
@@ -129,7 +129,7 @@ def _get_filtered_results(request: Request, state_type: Union[Literal['property'
                 organization_id=org_id,
                 id=profile_id,
                 profile_location=VIEW_LIST,
-                inventory_type=view_list_state
+                inventory_type=profile_inventory_type
             )
             show_columns = list(ColumnListProfileColumn.objects.filter(
                 column_list_profile_id=profile.id

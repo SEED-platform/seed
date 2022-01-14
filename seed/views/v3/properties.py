@@ -47,7 +47,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
                                    update_result_with_master)
-from seed.utils.filter_state import _get_filtered_results
+from seed.utils.filter_state import get_filtered_results
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -290,7 +290,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         List all the properties	with all columns
         """
-        return _get_filtered_results(request, 'property', profile_id=-1)
+        return get_filtered_results(request, 'property', profile_id=-1)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -385,7 +385,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 except TypeError:
                     pass
 
-        return _get_filtered_results(request, 'property', profile_id=profile_id)
+        return get_filtered_results(request, 'property', profile_id=profile_id)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],

@@ -32,7 +32,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    update_result_with_master)
 from seed.utils.taxlots import taxlots_across_cycles
-from seed.utils.filter_state import _get_filtered_results
+from seed.utils.filter_state import get_filtered_results
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
@@ -102,7 +102,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         List all the properties
         """
-        return _get_filtered_results(request, 'taxlot', profile_id=-1)
+        return get_filtered_results(request, 'taxlot', profile_id=-1)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -193,7 +193,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             else:
                 profile_id = request.data['profile_id']
 
-        return _get_filtered_results(request, 'taxlot', profile_id=profile_id)
+        return get_filtered_results(request, 'taxlot', profile_id=profile_id)
 
     @swagger_auto_schema(
         manual_parameters=[
