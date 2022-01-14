@@ -47,7 +47,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
                                    update_result_with_master)
-from seed.utils.filter_state import get_filtered_results
+from seed.utils.inventory_filter import get_filtered_results
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.

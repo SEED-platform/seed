@@ -32,7 +32,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    update_result_with_master)
 from seed.utils.taxlots import taxlots_across_cycles
-from seed.utils.filter_state import get_filtered_results
+from seed.utils.inventory_filter import get_filtered_results
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
