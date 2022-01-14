@@ -38,16 +38,16 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
         cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
         if cycle:
             cycle = cycle.first()
-        else:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Could not locate cycle',
-                'pagination': {
-                    'total': 0
-                },
-                'cycle_id': None,
-                'results': []
-            })
+    if not cycle:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Could not locate cycle',
+            'pagination': {
+                'total': 0
+            },
+            'cycle_id': None,
+            'results': []
+        })
 
     if inventory_type == 'property':
         views_list = (
