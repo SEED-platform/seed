@@ -630,7 +630,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
+            property=prprty, cycle=self.cycle, state=state, id=1
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
@@ -640,7 +640,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state
+            property=prprty, cycle=self.cycle, state=state, id=2
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
