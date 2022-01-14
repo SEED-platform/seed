@@ -630,22 +630,22 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state, id=1
+            property=prprty, cycle=self.cycle, state=state, id=1001
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state, id=55
+            property=prprty, cycle=self.cycle, state=state, id=1004
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state, id=2
+            property=prprty, cycle=self.cycle, state=state, id=1003
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state, id=10
+            property=prprty, cycle=self.cycle, state=state, id=1002
         )
 
         column_name_mappings = {}
@@ -662,7 +662,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         result = response.json()
         results = result['results']
         self.assertEqual(len(results), 4)
-        self.assertEqual(results, [1, 2, 10, 55])
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
 
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
