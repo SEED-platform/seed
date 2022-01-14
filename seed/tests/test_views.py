@@ -626,6 +626,44 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertNotIn(column_name_mappings['number of secret gadgets'], results)
         self.assertNotIn(column_name_mappings['paint color'], results)
 
+    def test_get_properties_select_all(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=55
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=10
+        )
+
+        column_name_mappings = {}
+        for c in Column.retrieve_all(self.org.pk, 'property'):
+            if not c['related']:
+                column_name_mappings[c['column_name']] = c['name']
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'true',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1, 2, 10, 55])
+
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
             self.org,
