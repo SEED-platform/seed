@@ -88,7 +88,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if f'{inventory_type}_view_ids' in request.data and request.data[f'{inventory_type}_view_ids']:
         views_list = views_list.filter(id__in=request.data[f'{inventory_type}_view_ids'])
 
-    if request.query_params.get('ids_only'):
+    if request.query_params.get('ids_only') == 'true':
         id_list = [view.id for view in views_list]
         return JsonResponse({
             'results': id_list
