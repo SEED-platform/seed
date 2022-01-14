@@ -88,6 +88,12 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if f'{inventory_type}_view_ids' in request.data and request.data[f'{inventory_type}_view_ids']:
         views_list = views_list.filter(id__in=request.data[f'{inventory_type}_view_ids'])
 
+    if request.query_params.get('ids_only'):
+        id_list = [view.id for view in views_list]
+        return { 
+            'results': id_list 
+            }
+
     paginator = Paginator(views_list, per_page)
 
     try:
