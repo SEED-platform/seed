@@ -90,9 +90,9 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     if request.query_params.get('ids_only'):
         id_list = [view.id for view in views_list]
-        return {
+        return JsonResponse({
             'results': id_list
-        }
+        })
 
     paginator = Paginator(views_list, per_page)
 
