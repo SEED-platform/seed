@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -51,7 +51,7 @@ def taxlots_across_cycles(org_id, profile_id, cycle_ids=[]):
             .filter(taxlot__organization_id=org_id, cycle_id=cycle_id) \
             .order_by('id')
 
-        related_results = TaxLotProperty.get_related(taxlot_views, show_columns, columns_from_database)
+        related_results = TaxLotProperty.serialize(taxlot_views, show_columns, columns_from_database)
 
         org = Organization.objects.get(pk=org_id)
         unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]

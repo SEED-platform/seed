@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -14,6 +14,7 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 """
 
 # Imports from Django
+from typing import Any
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
@@ -56,7 +57,7 @@ class UpdateWithoutPatchModelMixin(object):
         return UpdateModelMixin.perform_update(self, serializer)
 
 
-class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):
+class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]
     """Viewset class customized with SEED standard attributes.
 
     Attributes:
@@ -66,12 +67,12 @@ class SEEDOrgModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin, Mo
             SessionAuthentication and SEEDAuthentication.
     """
     renderer_classes = RENDERER_CLASSES
-    parser_classes = PARSER_CLASSES
+    parser_classes: 'tuple[Any, ...]' = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 
 
-class SEEDOrgReadOnlyModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,
+class SEEDOrgReadOnlyModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetMixin,  # type: ignore[misc]
                                   ReadOnlyModelViewSet):
     """Viewset class customized with SEED standard attributes.
 
@@ -82,7 +83,7 @@ class SEEDOrgReadOnlyModelViewSet(DecoratorMixin(drf_api_endpoint), OrgQuerySetM
             SessionAuthentication and SEEDAuthentication.
     """
     renderer_classes = RENDERER_CLASSES
-    parser_classes = PARSER_CLASSES
+    parser_classes: 'tuple[Any, ...]' = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 

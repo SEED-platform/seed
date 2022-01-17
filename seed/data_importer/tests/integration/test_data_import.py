@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import copy
@@ -17,6 +17,7 @@ from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
+import pathlib
 
 from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
@@ -66,7 +67,7 @@ class TestDataImport(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -169,7 +170,7 @@ class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -212,7 +213,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/zip"
         )
         self.import_file.save()
@@ -337,11 +338,14 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/xml"
         )
         self.import_file.uploaded_filename = filename
         self.import_file.save()
+
+    def tearDown(self) -> None:
+        self.import_file.file.close()
 
     def test_save_raw_data_xml(self):
         # -- Act
@@ -415,7 +419,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/xml"
         )
         self.import_file.uploaded_filename = filename
@@ -449,9 +453,10 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
         self.assertEqual(ps.count(), 1)
 
         # !! we should have warnings for our file because of the bad measure names !!
-        self.assertNotEqual({}, progress_info.get('file_info', {}))
-        self.assertIn(self.import_file.uploaded_filename, list(progress_info['file_info'].keys()))
-        self.assertNotEqual([], progress_info['file_info'][self.import_file.uploaded_filename].get('warnings', []))
+        self.assertNotEqual({}, progress_info.get('progress_data', {}))
+        self.assertNotEqual({}, progress_info['progress_data'].get('file_info', {}))
+        self.assertIn(self.import_file.uploaded_filename, list(progress_info['progress_data']['file_info'].keys()))
+        self.assertNotEqual([], progress_info['progress_data']['file_info'][self.import_file.uploaded_filename].get('warnings', []))
 
 
 class TestMappingExampleData(DataMappingBaseTestCase):
@@ -466,7 +471,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -539,7 +544,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -578,7 +583,7 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -618,7 +623,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -711,7 +716,7 @@ class TestPostalCode(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

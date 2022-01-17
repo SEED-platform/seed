@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -129,7 +129,7 @@ class FakeRequest(object):
     META = {'REMOTE_ADDR': '127.0.0.1'}
     path = 'fake_login_path'
     body = None
-    GET = POST = {}
+    GET = POST = {}  # type: ignore
 
     def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:

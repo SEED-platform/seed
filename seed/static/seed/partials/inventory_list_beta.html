@@ -1,0 +1,113 @@
+<div class="page_header_container" ng-cloak>
+    <div class="page_header">
+        <div class="left page_action_container"></div>
+        <div class="page_title">
+            <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}</h1>
+        </div>
+        <div class="right page_action_container page_action_btn"></div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
+</div>
+
+<div class="inventory-list-controls columns">
+    <div class="column no-shrink">
+        <div class="row">
+            <label>{$:: 'Cycle' | translate $}:</label>
+            <select class="form-control input-sm grow" ng-model="cycle.selected_cycle" ng-change="update_cycle(cycle.selected_cycle)" ng-options="option.name for option in ::cycle.cycles track by option.id">
+            </select>
+        </div>
+        <div class="row">
+            <label>{$:: 'Column List Profile' | translate $}:</label>
+            <select class="form-control input-sm grow" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+        </div>
+        <div class="row">
+            <label>{$:: 'Actions' | translate $}:</label>
+            <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
+                <option value="none" selected="selected"></option>
+                <optgroup label="{$:: 'Selected ' + (inventory_type==='properties' ? 'Properties' : 'Taxlots') | translate $}">
+                    <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
+                    <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
+                    <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
+                    <option value="open_update_labels_modal" ng-disabled="selectedCount === 0" translate>Add/Remove Labels</option>
+                    <option value="run_data_quality_check" ng-disabled="selectedCount === 0" translate>Data Quality Check</option>
+                    <option value="open_postoffice_modal" ng-disabled="selectedCount === 0" translate>Email</option>
+                    <option value="open_analyses_modal" ng-disabled="selectedCount === 0" translate>Run Analysis</option>
+                    <option value="open_geocode_modal" ng-disabled="selectedCount === 0" translate>Geocode</option>
+                    <option value="open_ubid_modal" ng-disabled="selectedCount === 0" translate>Decode UBID/ULID</option>
+                </optgroup>
+                <optgroup label="{$:: 'Options' | translate $}">
+                    <option value="open_show_populated_columns_modal" ng-disabled="data.length === 0" translate>Only Show Populated Columns</option>
+                </optgroup>
+            </select>
+        </div>
+    </div>
+    <form name="listControlsForm" class="form-inline column" role="form" ng-submit="submitNewLabelForm(newLabelForm.$valid)" novalidate>
+        <div class="row">
+            <label for="sort-list">{$:: 'Sorting By (in order)' | translate $}:</label>
+            <div class="input-group input-group-sm grow">
+                <tags-input id="sort-list" class="ti-input-sm tags-input-style grow" ng-model="column_sorts" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_sort($tag)">
+                </tags-input>
+                <span ng-click="reset_column_sorting()" class="btn btn-default btn-sm input-group-addon" ng-disabled="sorts_exist()"><i class="fa fa-lg fa-trash"></i></span>
+            </div>
+        </div>
+        <div class="row">
+            <label for="tags-input">{$:: 'Filter By Label' | translate $}:</label>
+            <div class="input-group input-group-sm grow">
+                <tags-input id="tags-input" class="remove-editing ti-input-sm tags-input-style grow" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                    <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
+                </tags-input>
+                <span ng-click="clear_labels()" class="btn btn-default btn-sm input-group-addon" ng-disabled="!selected_labels.length"><i class="fa fa-lg fa-trash"></i></span>
+            </div>
+            <div class="btn-group">
+                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'and'}" ng-click="labelLogicUpdated('and')" ng-disabled="!labels.length" translate>AND</span>
+                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'or'}" ng-click="labelLogicUpdated('or')" ng-disabled="!labels.length" translate>OR</span>
+                <span class="btn btn-default btn-sm" ng-class="{active: labelLogic === 'exclude'}" ng-click="labelLogicUpdated('exclude')" ng-disabled="!labels.length" translate>EXCLUDE</span>
+            </div>
+        </div>
+        <div class="row">
+            <label for="filters-list">{$:: 'Current Filters' | translate $}:</label>
+            <div class="input-group input-group-sm grow">
+                <tags-input id="filters-list" class="ti-input-sm tags-input-style grow" ng-model="column_filters" display-property="display" placeholder="(from table below)" replace-spaces-with-dashes="false" on-tag-removing="delete_filter($tag)">
+                </tags-input>
+                <span ng-click="gridApi.grid.clearAllFilters()" class="btn btn-default btn-sm input-group-addon" ng-disabled="filters_exist()"><i class="fa fa-lg fa-trash"></i></span>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="inventory-list-tab-container">
+    <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
+        {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+        <button
+            ng-click="load_inventory(inventory_pagination.page - 1)"
+            ng-disabled="!inventory_pagination.has_previous"
+            class="btn btn-default btn-sm">
+            <i class="fa fa-chevron-left"></i>
+        </button>
+        <button
+            ng-click="load_inventory(inventory_pagination.page + 1)"
+            ng-disabled="!inventory_pagination.has_next"
+            class="btn btn-default btn-sm">
+            <i class="fa fa-chevron-right"></i>
+        </button>
+    </div>
+    <ul class="nav nav-tabs" style="margin-bottom:1px; pointer-events: none;">
+        <li ng-class="::{active: inventory_type==='properties'}" heading="View by Property" style="pointer-events: all;">
+            <a ui-sref="inventory_list_beta(::{inventory_type: 'properties'})" translate>View by Property</a>
+        </li>
+        <li ng-class="::{active: inventory_type==='taxlots'}" heading="View by Tax Lot" style="pointer-events: all;">
+            <a ui-sref="inventory_list_beta(::{inventory_type: 'taxlots'})" translate>View by Tax Lot</a>
+        </li>
+    </ul>
+</div>
+
+<div class="section_content_container" ng-cloak style="clear:both; overflow:hidden;">
+    <div class="section_content">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-exporter ui-grid-move-columns ui-grid-pinning ui-grid-resize-columns ui-grid-save-state ui-grid-selection ui-grid-tree-view></div>
+        </div>
+    </div>
+</div>

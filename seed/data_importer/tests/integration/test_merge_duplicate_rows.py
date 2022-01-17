@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -11,6 +11,7 @@ import os.path as osp
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone as tz
+import pathlib
 from quantityfield.units import ureg
 
 from seed.data_importer import tasks, match
@@ -19,6 +20,7 @@ from seed.data_importer.tests.util import (
     FAKE_MAPPINGS,
     FAKE_ROW,
 )
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Column,
     PropertyState,
@@ -50,7 +52,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -198,7 +200,9 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
         self.assertEqual(len(hashes), 9)
         self.assertEqual(len(set(hashes)), 4)
 
-        unique_property_states, _ = match.filter_duplicate_states(ps)
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
+        sub_progress_data.save()
+        unique_property_states, _ = match.filter_duplicate_states(ps, sub_progress_data.key)
         self.assertEqual(len(unique_property_states), 4)
 
         tasks.geocode_and_match_buildings_task(self.import_file.id)

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -9,6 +9,7 @@ from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+import pathlib
 
 from seed.models import User
 from seed.models.building_file import BuildingFile
@@ -33,8 +34,7 @@ class TestBuildingFiles(TestCase):
 
     def test_hpxml_constructor(self):
         filename = path.join(path.dirname(__file__), 'data', 'audit.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        simple_uploaded_file = SimpleUploadedFile(filename, pathlib.Path(filename).read_bytes())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,

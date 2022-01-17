@@ -1,13 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
@@ -40,7 +41,7 @@ class TestCaseB(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

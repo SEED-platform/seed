@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -12,6 +12,7 @@ from seed.data_importer.match import (
     filter_duplicate_states,
     save_state_match,
 )
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_DELETE,
@@ -1028,7 +1029,9 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
             )
 
         props = self.import_file.find_unmatched_property_states()
-        uniq_state_ids, dup_state_count = filter_duplicate_states(props)
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
+        sub_progress_data.save()
+        uniq_state_ids, dup_state_count = filter_duplicate_states(props, sub_progress_data.key)
 
         # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
         self.assertEqual(len(uniq_state_ids), 6)

@@ -1,14 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import pre_delete
 
@@ -185,7 +184,7 @@ class Organization(models.Model):
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = JSONField(default=_get_default_display_meter_units)
+    display_meter_units = models.JSONField(default=_get_default_display_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -9,6 +9,7 @@ from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+import pathlib
 
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -36,7 +37,7 @@ class TestTasks(TestCase):
         )
         self.import_file.file = SimpleUploadedFile(
             name='portfolio-manager-sample.csv',
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

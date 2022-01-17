@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime as dt
@@ -111,7 +111,7 @@ def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, f
         params={"organization_id": organization_id},
         json=payload
     )
-    result = check_progress(main_url, header, result.json()['progress_key'])
+    result = check_progress(main_url, header, result.json()['progress_data']['progress_key'])
     check_status(result, partmsg, log)
 
     # Check number of matched and unmatched records

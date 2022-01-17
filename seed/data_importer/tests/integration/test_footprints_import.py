@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import datetime
@@ -11,6 +11,7 @@ import os.path as osp
 from django.contrib.gis.geos import Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
+import pathlib
 
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -98,14 +99,14 @@ class TestDemoV2(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
         self.import_file_tax_lot.file = SimpleUploadedFile(
             name=tax_lot_filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_tax_lot.save()
 
         filepath = osp.join(osp.dirname(__file__), '..', 'data', property_filename)
         self.import_file_property.file = SimpleUploadedFile(
             name=property_filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_property.save()
 
@@ -190,7 +191,7 @@ class TestDemoV2(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', tax_lot_filename)
         new_import_file_tax_lot.file = SimpleUploadedFile(
             name=tax_lot_filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         new_import_file_tax_lot.save()
 

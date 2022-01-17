@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -14,7 +14,6 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
-from django.contrib.postgres.fields import JSONField
 from django.db import (
     models,
     transaction,
@@ -250,7 +249,7 @@ class PropertyState(models.Model):
     source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 

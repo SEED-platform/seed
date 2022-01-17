@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -84,7 +84,7 @@ MIDDLEWARE = (
 
 ROOT_URLCONF = 'config.urls'
 
-INSTALLED_APPS = (
+DJANGO_CORE_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.flatpages',
@@ -122,7 +122,8 @@ POST_OFFICE = {
     'BACKENDS': {
         'default': 'smtp.EmailBackend',
         'post_office_backend': 'django.core.mail.backends.console.EmailBackend',
-    }
+    },
+    'CELERY_ENABLED': True,
 }
 
 
@@ -131,7 +132,7 @@ POST_OFFICE = {
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + DJANGO_CORE_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (

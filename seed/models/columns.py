@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -10,6 +10,7 @@ import csv
 import logging
 import os.path
 from collections import OrderedDict
+from typing import Literal, Optional
 
 from django.apps import apps
 from django.db import IntegrityError
@@ -1248,7 +1249,12 @@ class Column(models.Model):
         return columns
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type=None, only_used=False):
+    def retrieve_all(
+        org_id: int,
+        inventory_type: Optional[Literal['property', 'taxlot']] = None,
+        only_used: bool = False,
+        include_related: bool = True,
+    ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
         database assigned to the organization. It will then go through and cleanup the names to ensure that
@@ -1257,8 +1263,7 @@ class Column(models.Model):
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
-
-        :return: dict
+        :param include_related: Include related columns (e.g. if inventory type is Property, include Taxlot columns)
         """
         from seed.serializers.columns import ColumnSerializer
 
@@ -1295,11 +1300,16 @@ class Column(models.Model):
                     new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
                         new_c['table_name']]
 
-            # only add the column if it is in a ColumnMapping object
+            include_column = True
             if only_used:
-                if ColumnMapping.objects.filter(column_mapped=c).exists():
-                    columns.append(new_c)
-            else:
+                # only add the column if it is in a ColumnMapping object
+                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c).exists()
+            if not include_related:
+                # only add the column if it is not a related column
+                is_not_related = not new_c['related']
+                include_column = include_column and is_not_related
+
+            if include_column:
                 columns.append(new_c)
 
         # import json

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import base64
@@ -10,6 +10,7 @@ import json
 import os
 import time
 from unittest import skip
+import pathlib
 
 from django.urls import reverse_lazy, reverse
 from django.test import TestCase
@@ -350,7 +351,7 @@ class TestApi(TestCase):
         fsysparams = {
             'import_record': data_set_id,
             'source_type': 'Assessed Raw',
-            'file': open(raw_building_file, 'rb')
+            'file': pathlib.Path(raw_building_file).read_bytes()
         }
 
         # upload data and check response
