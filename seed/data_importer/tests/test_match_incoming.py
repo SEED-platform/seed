@@ -1146,7 +1146,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
     def test_match_buildingsync_works_when_there_are_existing_different_scenarios_and_meters(self):
         """If a BuildingSync file is merged into an existing property with scenarios and meters
-        that differ from the ones in the file, we expect the final property to have the old and new scenarios and meters"""
+        that differ from the ones in the file, we expect the final property to have only the new scenarios and meters"""
         # -- Setup
         # make address_line_1 the only matching criteria
         (
@@ -1206,18 +1206,15 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.count(), 1)
         pv = PropertyView.objects.all().first()
 
-        num_orig_scenarios = 1
         num_bsync_scenarios = 3
         ps = pv.state
         scenario = Scenario.objects.filter(property_state=ps)
-        self.assertEqual(scenario.count(), num_orig_scenarios + num_bsync_scenarios)
+        self.assertEqual(scenario.count(), num_bsync_scenarios)
 
-        num_orig_measures = 1
         num_bsync_measures = 71
         pms = PropertyMeasure.objects.filter(property_state=ps)
-        self.assertEqual(pms.count(), num_orig_measures + num_bsync_measures)
+        self.assertEqual(pms.count(), num_bsync_measures)
 
-        num_orig_meters = 1
         num_bsync_meters = 6
         meters = Meter.objects.filter(scenario__in=scenario)
-        self.assertEqual(meters.count(), num_orig_meters + num_bsync_meters)
+        self.assertEqual(meters.count(), num_bsync_meters)
