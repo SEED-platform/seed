@@ -6,6 +6,7 @@
 """
 import json
 from datetime import datetime
+from weakref import ProxyType
 
 from django.urls import reverse, reverse_lazy
 from django.test import TestCase
@@ -627,10 +628,10 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertNotIn(column_name_mappings['paint color'], results)
 
     def test_get_properties_select_all(self):
-        state = self.property_state_factory.get_property_state()
+        state1 = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
         PropertyView.objects.create(
-            property=prprty, cycle=self.cycle, state=state, id=1001
+            property=prprty, cycle=self.cycle, state=state1, id=1001
         )
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
@@ -663,6 +664,27 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         results = result['results']
         self.assertEqual(len(results), 4)
         self.assertEqual(results, [1001, 1002, 1003, 1004])
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'not_true'
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
 
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
