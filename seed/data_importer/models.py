@@ -111,15 +111,9 @@ class ImportRecord(NotDeletableModel):
     is_imported_live = models.BooleanField(default=False)
     keep_missing_buildings = models.BooleanField(default=True)
     status = models.IntegerField(default=0, choices=IMPORT_STATUSES)
-    import_completed_at = models.DateTimeField(blank=True, null=True)
-    merge_completed_at = models.DateTimeField(blank=True, null=True)
-    mcm_version = models.IntegerField(blank=True, null=True)
     super_organization = models.ForeignKey(
         SuperOrganization, on_delete=models.CASCADE, blank=True, null=True, related_name='import_records'
     )
-
-    # destination_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
-    # source_taxonomy = models.ForeignKey('lin.Taxonomy', blank=True, null=True)
 
     def __str__(self):
         return 'ImportRecord %s: %s, started at %s' % (self.pk, self.name, self.start_time)
@@ -534,112 +528,6 @@ class ImportRecord(NotDeletableModel):
     def SUMMARY_ANALYSIS_QUEUED_KEY(cls, pk):
         return 'SUMMARY_ANALYSIS_QUEUED%s' % pk
 
-    def prefixed_pk(self, pk, max_len_before_prefix=(SOURCE_FACILITY_ID_MAX_LEN - len('IMP1234-'))):
-        """This is a total hack to support prefixing until source_facility_id
-        is turned into a proper pk.  Prefixes a given pk with the import_record"""
-        if len('%s' % pk) > max_len_before_prefix:
-            m = hashlib.md5()
-            m.update(pk)
-            digest = m.hexdigest()
-            # TODO: precompute this if condition based on md5 alg and SFID MAX LEN
-            if len(digest) > max_len_before_prefix:
-                digest = digest[:max_len_before_prefix]
-            transformed_pk = digest
-        else:
-            transformed_pk = pk
-        return 'IMP%s-%s' % (self.pk, transformed_pk)
-
-    @property
-    def to_json(self):
-        try:
-            last_modified_by = ''
-            try:
-                if self.last_modified_by:
-                    last_modified_by = self.last_modified_by.email or ''
-            except User.DoesNotExist:
-                pass
-            return json.dumps({
-                'name': self.name,
-                'app': self.app,
-                'last_modified_time_ago': timesince(self.updated_at).split(',')[0],
-                'last_modified_seconds_ago': -1 * (
-                    self.updated_at - timezone.now()).total_seconds(),
-                'last_modified_by': last_modified_by,
-                'notes': self.notes,
-                'merge_analysis_done': self.merge_analysis_done,
-                'merge_analysis_active': self.merge_analysis_active,
-                'merge_analysis_queued': self.merge_analysis_queued,
-                'premerge_analysis_done': self.premerge_analysis_done,
-                'premerge_analysis_active': self.premerge_analysis_active,
-                'premerge_analysis_queued': self.premerge_analysis_queued,
-                'matching_active': self.matching_active,
-                'matching_done': self.matching_done,
-                'is_imported_live': self.is_imported_live,
-                'num_files': self.num_files,
-                'keep_missing_buildings': self.keep_missing_buildings,
-                'dashboard_url': self.dashboard_url,
-                'delete_url': self.delete_url,
-                'search_url': self.search_url,
-                'status_url': self.status_url,
-                'display_as_in_progress': self.display_as_in_progress,
-                'worksheet_url': self.worksheet_url,
-                'is_not_in_progress': self.is_not_in_progress,
-                'save_import_meta_url': self.save_import_meta_url,
-                'percent_files_ready_to_merge': self.percent_files_ready_to_merge,
-                'status': self.status,
-                'status_text': self.IMPORT_STATUSES[self.status][1],
-                'status_percent': round(self.status_percent, 0),
-                'status_numerator': self.status_numerator,
-                'status_denominator': self.status_denominator,
-                'status_is_live': self.status_is_live,
-                'is_mapping_or_cleaning': self.is_mapping_or_cleaning,
-                'num_buildings_imported_total': self.num_buildings_imported_total,
-            })
-        except BaseException:
-            from traceback import print_exc
-            print_exc()
-            return {}
-
-    # TODO #239: This is not used. Should we enable it again, why?
-    @property
-    def worksheet_progress_json(self):
-        progresses = []
-        some_file_has_mapping_active = not get_cache_state(self.MAPPING_ACTIVE_KEY, False)
-        try:
-            for f in self.files:
-                progresses.append({
-                    'pk': f.pk,
-                    'filename': f.filename_only,
-                    'delete_url': reverse('%s:delete_file' % self.app_namespace, args=(f.pk,)),
-                    'mapping_url': reverse('%s:mapping' % self.app_namespace, args=(f.pk,)),
-                    'cleaning_url': reverse('%s:cleaning' % self.app_namespace, args=(f.pk,)),
-                    'matching_url': reverse('%s:matching' % self.app_namespace, args=(f.pk,)),
-                    'num_columns': f.num_columns,
-                    'num_rows': f.num_rows,
-                    'num_mapping_complete': f.num_mapping_complete,
-                    'num_mapping_total': f.num_mapping_total,
-                    'num_mapping_remaining': f.num_mapping_remaining,
-                    'mapping_active': f.mapping_active,
-                    'some_file_has_mapping_active': some_file_has_mapping_active,
-                    'coercion_mapping_active': f.coercion_mapping_active,
-                    'cleaning_progress_pct': round(f.cleaning_progress_pct, 1),
-                    'num_cleaning_remaining': f.num_cleaning_remaining,
-                    'num_cleaning_complete': f.num_cleaning_complete,
-                    'num_cleaning_total': f.num_cleaning_total,
-                    'export_ready': f.export_ready,
-                    'export_generation_pct_complete': int(round(f.export_generation_pct_complete)),
-                    'export_url': f.export_url,
-                    'worksheet_url': self.worksheet_url,
-                    'generate_url': f.generate_url,
-                    'premerge_progress_url': f.premerge_progress_url,
-                    'merge_progress_url': f.merge_progress_url,
-                    'force_restart_cleaning_url': f.force_restart_cleaning_url,
-                })
-        except BaseException:
-            from traceback import print_exc
-            print_exc()
-        return json.dumps(progresses)
-
 
 class ImportFile(NotDeletableModel, TimeStampedModel):
     import_record = models.ForeignKey(ImportRecord, on_delete=models.CASCADE)
@@ -651,9 +539,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     # extension.
     uploaded_filename = models.CharField(blank=True, max_length=255)
     file_size_in_bytes = models.IntegerField(blank=True, null=True)
-    export_file = models.FileField(
-        upload_to='data_imports/exports', blank=True, null=True
-    )
+
     cached_first_row = models.TextField(blank=True, null=True)
     # Save a list of the final column mapping names that were used for this file.
     # This should really be a many-to-many with the column/ColumnMapping table.
@@ -681,9 +567,9 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     raw_save_completion = models.IntegerField(blank=True, null=True)
     source_type = models.CharField(null=True, blank=True, max_length=63)
     # program names should match a value in common.mapper.Programs
-    source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
+    source_program = models.CharField(blank=True, max_length=80)
     # program version is in format 'x.y[.z]'
-    source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
+    source_program_version = models.CharField(blank=True, max_length=40)
     # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
     raw_property_state_to_filename = models.JSONField(default=dict, blank=True)
 
@@ -1009,37 +895,6 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def SAVE_COUNTER_CACHE_KEY(self):
         return 'SAVE_COUNTER_KEY%s' % self.pk
-
-    @property
-    def EXPORT_READY_CACHE_KEY(self):
-        return 'EXPORT_READY%s' % self.pk
-
-    @property
-    def EXPORT_PCT_COMPLETE_CACHE_KEY(self):
-        return 'EXPORT_PCT_COMPLETE%s' % self.pk
-
-    @property
-    def EXPORT_QUEUED_CACHE_KEY(self):
-        return 'EXPORT_QUEUED%s' % self.pk
-
-    @property
-    def export_ready(self):
-        return get_cache_state(self.EXPORT_READY_CACHE_KEY,
-                               True) and self.export_file is not None and self.export_file != ''
-
-    @property
-    def export_generation_pct_complete(self):
-        return get_cache_state(self.EXPORT_PCT_COMPLETE_CACHE_KEY, False)
-
-    @property
-    def export_url(self):
-        ns = self.import_record.app_namespace
-        return reverse('%s:download_export' % ns, args=(self.pk,))
-
-    @property
-    def generate_url(self):
-        ns = self.import_record.app_namespace
-        return reverse('%s:prepare_export' % ns, args=(self.pk,))
 
     @property
     def merge_progress_url(self):
