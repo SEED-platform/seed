@@ -892,7 +892,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
             evaluateDerivedColumns();
             $scope.gridApi.selection.clearSelectedRows();
-            $scope.selectionChanged();
+            $scope.update_selected_display();
             spinner_utility.hide();
           });
       };
