@@ -662,6 +662,15 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(len(results), 4)
         self.assertEqual(results, [1001, 1002, 1003, 1004])
 
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'ids_only', 'TrUE',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
+
         response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
             'organization_id', self.org.pk,
             'page', 1,
