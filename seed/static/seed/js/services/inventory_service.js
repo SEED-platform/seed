@@ -49,7 +49,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return {order_by: sorts};
     }
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
@@ -57,6 +57,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         page: page,
         per_page: per_page || 999999999,
         include_related: include_related,
+        ids_only: ids_only,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters),
       };
@@ -289,7 +290,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
@@ -297,6 +298,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         page: page,
         per_page: per_page || 999999999,
         include_related: include_related,
+        ids_only: ids_only,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters),
       };
