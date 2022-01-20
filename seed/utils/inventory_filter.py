@@ -23,7 +23,7 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
     cycle_id = request.query_params.get('cycle')
-    ids_only = request.query_params.get('ids_only') == 'true'
+    ids_only = request.query_params.get('ids_only', 'false').lower() == 'true'
     # check if there is a query paramater for the profile_id. If so, then use that one
     profile_id = request.query_params.get('profile_id', profile_id)
 
