@@ -697,7 +697,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'ids_only', 'true'
         ), data={}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        result = response.json() 
+        result = response.json()
         self.assertEqual(result['success'], False)
         self.assertEqual(result['message'], 'Cannot pass query parameter "ids_only" with "per_page" or "page"')
 
@@ -715,7 +715,6 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             'ids_only', 'true'
         ), data={}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
-
 
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(

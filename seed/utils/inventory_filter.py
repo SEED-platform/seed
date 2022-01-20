@@ -52,8 +52,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     if ids_only and (per_page or page):
         return JsonResponse({
-                'success': False,
-                'message': 'Cannot pass query parameter "ids_only" with "per_page" or "page"'
+            'success': False,
+            'message': 'Cannot pass query parameter "ids_only" with "per_page" or "page"'
         }, status=status.HTTP_400_BAD_REQUEST)
 
     page = page or 1
