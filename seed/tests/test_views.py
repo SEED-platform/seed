@@ -653,10 +653,8 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
             'organization_id', self.org.pk,
-            'page', 1,
-            'per_page', 999999999,
             'ids_only', 'true',
         ), data={}, content_type='application/json')
         result = response.json()
@@ -684,6 +682,40 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         results = result['results'][0]
         self.assertEqual(len(result['results']), 4)
         self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+    def test_get_properties_wrong_query_params(self):
+        state1 = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state1, id=1001
+        )
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        result = response.json() 
+        self.assertEqual(result['success'], False)
+        self.assertEqual(result['message'], 'Cannot pass query parameter "ids_only" with "per_page" or "page"')
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 9999,
+            'per_page', 1,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 'dog',
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
 
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
