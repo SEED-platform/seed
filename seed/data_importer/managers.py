@@ -12,3 +12,7 @@ class NotDeletedManager(models.Manager):
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).exclude(deleted=True)
+
+    def get_all(self, *args, **kwargs):
+        """method to actually return all fields so we can do database/filesystem cleanup"""
+        return super().get_queryset(*args, **kwargs)

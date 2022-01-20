@@ -13,12 +13,10 @@ import tempfile
 
 from urllib.parse import unquote
 
-from django.contrib.auth.models import User
 from django.urls import reverse
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.timesince import timesince
 from django_extensions.db.models import TimeStampedModel
 
 from config.utils import de_camel_case
