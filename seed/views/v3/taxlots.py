@@ -165,6 +165,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 required=False,
                 description='If False, related data (i.e. Property data) is not added to the response (default is True)'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                'ids_only',
+                required=False,
+                description='Function will return a list of tax lot ids instead of tax lot objects'
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {

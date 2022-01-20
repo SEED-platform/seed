@@ -352,6 +352,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 required=False,
                 description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                'ids_only',
+                required=False,
+                description='Function will return a list of property ids instead of property objects'
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
