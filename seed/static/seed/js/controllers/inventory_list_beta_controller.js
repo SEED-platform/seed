@@ -403,14 +403,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
        including creating a new label or applying to/removing from a building.
        When the modal is closed, and refresh labels.
        */
-      $scope.open_update_labels_modal = function () {
+      $scope.open_update_labels_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/update_item_labels_modal.html',
           controller: 'update_item_labels_modal_controller',
           resolve: {
             inventory_ids: function () {
-              var view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
+              return selectedViewIds;
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -427,22 +426,16 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
        Opens the postoffice modal for sending emails.
        'property_state_id's/'taxlot_state_id's for selected rows are stored as part of the resolver
       */
-      $scope.open_postoffice_modal = function () {
+      $scope.open_postoffice_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl:  urls.static_url + 'seed/partials/postoffice_modal.html',
           controller: 'postoffice_modal_controller',
           resolve: {
             property_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_state_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_states: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_state_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             },
             inventory_type: function () {
               return $scope.inventory_type;
@@ -451,8 +444,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
       };
 
-      $scope.open_merge_modal = function () {
+      $scope.open_merge_modal = function (selectedViewIds) {
         spinner_utility.show();
+        selectedViewIds.reverse();
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/merge_modal.html',
           controller: 'merge_modal_controller',
@@ -471,9 +465,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             },
             data: function () {
               const viewIdProp = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-              const selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                return row.$$treeLevel === 0;
-              }), viewIdProp).reverse();
               var data = new Array(selectedViewIds.length);
 
               if ($scope.inventory_type === 'properties') {
@@ -503,15 +494,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             },
             has_meters: function () {
               if ($scope.inventory_type === 'properties') {
-                const selected_property_view_ids = _.map(
-                  _.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                    return row.$$treeLevel === 0;
-                  }),
-                  'property_view_id'
-                ).reverse();
-
                 return inventory_service.properties_meters_exist(
-                  selected_property_view_ids
+                  selectedViewIds
                 ).then(function (has_meters) {
                   return has_meters;
                 });
@@ -580,18 +564,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         return cache[record.id];
       };
 
-      $scope.run_data_quality_check = function () {
+      $scope.run_data_quality_check = function (selectedViewIds) {
         spinner_utility.show();
 
-        var property_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'property_view_id');
-
-        var taxlot_view_ids = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-          if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-          return !_.has(row, '$$treeLevel');
-        }), 'taxlot_view_id');
+        var property_view_ids = $scope.inventory_type === 'properties' ? selectedViewIds : [];
+        var taxlot_view_ids = $scope.inventory_type === 'taxlots' ?  selectedViewIds : [];
 
         data_quality_service.start_data_quality_checks(property_view_ids, taxlot_view_ids).then(function (response) {
           data_quality_service.data_quality_checks_status(response.progress_key).then(function (result) {
@@ -926,43 +903,31 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       processData();
 
-      $scope.open_ubid_modal = function () {
+      $scope.open_ubid_modal = function (selectedViewIds) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/ubid_modal.html',
           controller: 'ubid_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
           }
         });
       };
 
-      $scope.open_geocode_modal = function () {
+      $scope.open_geocode_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/geocode_modal.html',
           controller: 'geocode_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             },
             org_id: function () {
               return $scope.organization.id;
@@ -979,22 +944,16 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         });
       };
 
-      $scope.open_delete_modal = function () {
+      $scope.open_delete_modal = function (selectedViewIds) {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_modal.html',
           controller: 'delete_modal_controller',
           resolve: {
             property_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             },
             taxlot_view_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'taxlot_view_id');
+              return $scope.inventory_type === 'taxlots' ? selectedViewIds : [];
             }
           }
         });
@@ -1063,20 +1022,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         $scope.gridApi.core.handleWindowResize();
       };
 
-      $scope.open_export_modal = function () {
+      $scope.open_export_modal = function (selectedViewIds) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
           resolve: {
             ids: function () {
-              var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
-              var visibleRowIds = _.map($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), function (row) {
-                return row.entity[viewId];
-              });
-              var selectedRowIds = _.map($scope.gridApi.selection.getSelectedRows(), viewId);
-              return _.filter(visibleRowIds, function (id) {
-                return _.includes(selectedRowIds, id);
-              });
+              return selectedViewIds;
             },
             filter_header_string: function () {
               if ($scope.selected_labels.length) {
@@ -1111,41 +1063,28 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $scope.model_actions = 'none';
       elSelectActions = document.getElementById('select-actions');
       $scope.run_action = function () {
-        let selectedPropertyViewIds = [];
-        let selectedTaxlotViewIds = [];
+        let selectedViewIds = [];
 
         // if it appears everything selected, get the full set of ids...
         if ($scope.selectedCount == $scope.inventory_pagination.total) {
-          let ids = []; // todo: hit filter endpoint and get full list of IDs
-          if ($scope.inventory_type === 'properties') {
-            selectedPropertyViewIds = ids;
-          } else {
-            selectedTaxlotViewIds = ids;
-          }
+          selectedViewIds = []; // todo: hit filter endpoint and get full list of IDs
 
         // ... otherwise use what's selected in grid
         } else {
-          selectedPropertyViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-            if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-            return !_.has(row, '$$treeLevel');
-          }), 'property_view_id');
-          selectedTaxlotViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-            if ($scope.inventory_type === 'taxlots') return row.$$treeLevel === 0;
-            return !_.has(row, '$$treeLevel');
-          }), 'taxlot_view_id');
+          let view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
+          selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
         }
         
-        // todo: update each function to take list of ids instead of making it's own
         switch (elSelectActions.value) {
-          case 'open_merge_modal': $scope.open_merge_modal(); break;
-          case 'open_delete_modal': $scope.open_delete_modal(); break;
-          case 'open_export_modal': $scope.open_export_modal(); break;
-          case 'open_update_labels_modal': $scope.open_update_labels_modal(); break;
-          case 'run_data_quality_check': $scope.run_data_quality_check(); break;
-          case 'open_postoffice_modal': $scope.open_postoffice_modal(); break;
-          case 'open_analyses_modal': $scope.open_analyses_modal(); break;
-          case 'open_geocode_modal': $scope.open_geocode_modal(); break;
-          case 'open_ubid_modal': $scope.open_ubid_modal(); break;
+          case 'open_merge_modal': $scope.open_merge_modal(selectedViewIds); break;
+          case 'open_delete_modal': $scope.open_delete_modal(selectedViewIds); break;
+          case 'open_export_modal': $scope.open_export_modal(selectedViewIds); break;
+          case 'open_update_labels_modal': $scope.open_update_labels_modal(selectedViewIds); break;
+          case 'run_data_quality_check': $scope.run_data_quality_check(selectedViewIds); break;
+          case 'open_postoffice_modal': $scope.open_postoffice_modal(selectedViewIds); break;
+          case 'open_analyses_modal': $scope.open_analyses_modal(selectedViewIds); break;
+          case 'open_geocode_modal': $scope.open_geocode_modal(selectedViewIds); break;
+          case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
           default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
@@ -1153,16 +1092,13 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         $scope.model_actions = 'none';
       };
 
-      $scope.open_analyses_modal = function () {
+      $scope.open_analyses_modal = function (selectedViewIds) {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
             inventory_ids: function () {
-              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
-                if ($scope.inventory_type === 'properties') return row.$$treeLevel === 0;
-                return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              return $scope.inventory_type === 'properties' ? selectedViewIds : [];
             }
           }
         });
