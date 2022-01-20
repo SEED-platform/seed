@@ -19,10 +19,11 @@ from typing import Optional, Literal
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:
-    page = request.query_params.get('page', 1)
-    per_page = request.query_params.get('per_page', 1)
+    page = request.query_params.get('page')
+    per_page = request.query_params.get('per_page')
     org_id = request.query_params.get('organization_id')
     cycle_id = request.query_params.get('cycle')
+    ids_only = request.query_params.get('ids_only') == 'true'
     # check if there is a query paramater for the profile_id. If so, then use that one
     profile_id = request.query_params.get('profile_id', profile_id)
 
@@ -48,6 +49,15 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
             'cycle_id': None,
             'results': []
         })
+
+    if ids_only and (per_page or page):
+        return JsonResponse({
+                'success': False,
+                'message': 'Cannot pass query parameter "ids_only" with "per_page" or "page"'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    page = page or 1
+    per_page = per_page or 1
 
     if inventory_type == 'property':
         views_list = (
@@ -88,8 +98,8 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
     if f'{inventory_type}_view_ids' in request.data and request.data[f'{inventory_type}_view_ids']:
         views_list = views_list.filter(id__in=request.data[f'{inventory_type}_view_ids'])
 
-    if request.query_params.get('ids_only') == 'true':
-        id_list = views_list.values_list('id', flat=True)
+    if ids_only:
+        id_list = list(views_list.values_list('id', flat=True))
         return JsonResponse({
             'results': id_list
         })
