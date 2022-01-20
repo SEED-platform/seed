@@ -626,6 +626,105 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertNotIn(column_name_mappings['number of secret gadgets'], results)
         self.assertNotIn(column_name_mappings['paint color'], results)
 
+    def test_get_properties_select_all(self):
+        state1 = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state1, id=1001
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1004
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1003
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1002
+        )
+
+        column_name_mappings = {}
+        for c in Column.retrieve_all(self.org.pk, 'property'):
+            if not c['related']:
+                column_name_mappings[c['column_name']] = c['name']
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'ids_only', 'true',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'ids_only', 'TrUE',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'not_true'
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+    def test_get_properties_wrong_query_params(self):
+        state1 = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state1, id=1001
+        )
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        result = response.json()
+        self.assertEqual(result['success'], False)
+        self.assertEqual(result['message'], 'Cannot pass query parameter "ids_only" with "per_page" or "page"')
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 9999,
+            'per_page', 1,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 'dog',
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
             self.org,
