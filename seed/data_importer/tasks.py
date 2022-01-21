@@ -1138,14 +1138,14 @@ def geocode_and_match_buildings_task(file_pk):
         _log.warn("Import file cycle is None; This should never happen in production")
 
     # get the properties and chunk them into tasks
-    qs = (
+    property_states = (
         PropertyState.objects.filter(import_file_id=file_pk)
         .exclude(data_state=DATA_STATE_IMPORT)
         .only('id')
         .iterator()
     )
 
-    id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
 
     progress_data.total = (
         1  # geocoding
