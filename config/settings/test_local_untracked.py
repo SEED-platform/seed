@@ -38,8 +38,8 @@ DATABASES = {
 EAGER = os.environ.get('task_always_eager', 'True') == 'True'
 if EAGER:
     CELERY_BROKER_BACKEND = 'memory'
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
+    task_always_eager = True
+    task_eager_propagates = True
 else:
     print("Using redis database")
     CACHES = {
@@ -50,20 +50,20 @@ else:
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://%s/%s' % (
+    broker_url = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
-    result_backend = CELERY_BROKER_URL
-    CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-    CELERY_TASK_QUEUES = (
+    result_backend = broker_url
+    task_default_queue = 'seed-local'
+    task_queues = (
         Queue(
-            CELERY_TASK_DEFAULT_QUEUE,
-            Exchange(CELERY_TASK_DEFAULT_QUEUE),
-            routing_key=CELERY_TASK_DEFAULT_QUEUE
+            task_default_queue,
+            Exchange(task_default_queue),
+            routing_key=task_default_queue
         ),
     )
-    CELERY_TASK_ALWAYS_EAGER = False
-    CELERY_TASK_EAGER_PROPAGATES = False
+    task_always_eager = False
+    task_eager_propagates = False
 
 
 INTERNAL_IPS = ('127.0.0.1',)

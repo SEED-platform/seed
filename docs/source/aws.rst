@@ -152,7 +152,7 @@ Cache and Message Broker
 
 The SEED project relies on `redis`_ for both cache and message brokering, and
 is available as an AWS `ElastiCache`_ service.
-``local_untracked.py`` should be updated with the ``CACHES`` and ``CELERY_BROKER_URL``
+``local_untracked.py`` should be updated with the ``CACHES`` and ``broker_url``
 settings.
 
 .. _ElastiCache: https://aws.amazon.com/elasticache/
@@ -169,7 +169,7 @@ settings.
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
+    broker_url = 'redis://seed-core-cache.ntmprk.0001.usw2.cache.amazonaws.com:6379/1'
 
 Running Celery the Background Task Worker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -95,16 +95,16 @@ CACHES = {
     }
 }
 
-CELERY_BROKER_URL = 'redis://%s/%s' % (
+broker_url = 'redis://%s/%s' % (
     CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
 )
-result_backend = CELERY_BROKER_URL
-CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-CELERY_TASK_QUEUES = (
+result_backend = broker_url
+task_default_queue = 'seed-local'
+task_queues = (
     Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
+        task_default_queue,
+        Exchange(task_default_queue),
+        routing_key=task_default_queue
     ),
 )
 
@@ -121,18 +121,18 @@ CELERY_TASK_QUEUES = (
 #    }
 #}
 #
-#CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+#broker_url = 'redis://:%s@%s/%s' % (
 #    CACHES['default']['OPTIONS']['PASSWORD'],
 #    CACHES['default']['LOCATION'],
 #    CACHES['default']['OPTIONS']['DB']
 #)
-#result_backend = CELERY_BROKER_URL
-#CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-#CELERY_TASK_QUEUES = (
+#result_backend = broker_url
+#task_default_queue = 'seed-local'
+#task_queues = (
 #    Queue(
-#        CELERY_TASK_DEFAULT_QUEUE,
-#        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-#        routing_key=CELERY_TASK_DEFAULT_QUEUE
+#        task_default_queue,
+#        Exchange(task_default_queue),
+#        routing_key=task_default_queue
 #    ),
 #)
 

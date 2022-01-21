@@ -12,7 +12,7 @@ Docker then you will not need to do this.
 
 .. code-block:: python
 
-    result_backend = CELERY_BROKER_URL
+    result_backend = broker_url
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
 the CACHES configuration option. Your final configuration should look like the following in your
@@ -32,18 +32,18 @@ local_untracked.py file
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
+    broker_url = 'redis://:%s@%s/%s' % (
         CACHES['default']['OPTIONS']['PASSWORD'],
         CACHES['default']['LOCATION'],
         CACHES['default']['OPTIONS']['DB']
     )
-    result_backend = CELERY_BROKER_URL
-    CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
-    CELERY_TASK_QUEUES = (
+    result_backend = broker_url
+    task_default_queue = 'seed-local'
+    task_queues = (
         Queue(
-            CELERY_TASK_DEFAULT_QUEUE,
-            Exchange(CELERY_TASK_DEFAULT_QUEUE),
-            routing_key=CELERY_TASK_DEFAULT_QUEUE
+            task_default_queue,
+            Exchange(task_default_queue),
+            routing_key=task_default_queue
         ),
     )
 

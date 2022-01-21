@@ -221,12 +221,12 @@ APPEND_SLASH = True
 register('seed_json', CeleryDatetimeSerializer.seed_dumps,
          CeleryDatetimeSerializer.seed_loads,
          content_type='application/json', content_encoding='utf-8')
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
+worker_max_tasks_per_child = 1
 accept_content = ['seed_json', 'pickle']
 task_serializer = 'seed_json'
 result_serializer = 'seed_json'
 result_expires = 86400  # 24 hours
-CELERY_TASK_COMPRESSION = 'gzip'
+task_compression = 'gzip'
 
 # hmm, we are logging outside the context of the app?
 LOG_FILE = os.path.join(BASE_DIR, '../logs/py.log/')

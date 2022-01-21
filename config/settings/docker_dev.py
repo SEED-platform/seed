@@ -66,8 +66,8 @@ if SEED_TESTING:
     ]
 
     CELERY_BROKER_BACKEND = 'memory'
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
+    task_always_eager = True
+    task_eager_propagates = True
     # this celery log level is currently not overridden.
     CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
@@ -86,26 +86,26 @@ else:
     }
     if 'REDIS_PASSWORD' in os.environ:
         CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
+        broker_url = 'redis://:{}@{}/{}'.format(
             CACHES['default']['OPTIONS']['PASSWORD'],
             CACHES['default']['LOCATION'],
             CACHES['default']['OPTIONS']['DB']
         )
     else:
-        CELERY_BROKER_URL = 'redis://{}/{}'.format(
+        broker_url = 'redis://{}/{}'.format(
             CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
         )
 
-    CELERY_BROKER_TRANSPORT = 'redis'
-    result_backend = CELERY_BROKER_URL
+    broker_transport = 'redis'
+    result_backend = broker_url
 
-CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
+task_default_queue = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py
-CELERY_TASK_QUEUES = (
+task_queues = (
     Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
+        task_default_queue,
+        Exchange(task_default_queue),
+        routing_key=task_default_queue
     ),
 )
 
