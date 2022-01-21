@@ -37,7 +37,7 @@ DATABASES = {
 
 EAGER = os.environ.get('task_always_eager', 'True') == 'True'
 if EAGER:
-    CELERY_BROKER_BACKEND = 'memory'
+    broker_backend = 'memory'
     task_always_eager = True
     task_eager_propagates = True
 else:
