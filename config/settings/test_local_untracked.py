@@ -35,7 +35,7 @@ DATABASES = {
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
 # 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
 
-EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
+EAGER = os.environ.get('task_always_eager', 'True') == 'True'
 if EAGER:
     CELERY_BROKER_BACKEND = 'memory'
     CELERY_TASK_ALWAYS_EAGER = True
@@ -53,7 +53,7 @@ else:
     CELERY_BROKER_URL = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    result_backend = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
         Queue(

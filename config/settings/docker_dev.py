@@ -97,7 +97,7 @@ else:
         )
 
     CELERY_BROKER_TRANSPORT = 'redis'
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    result_backend = CELERY_BROKER_URL
 
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py
