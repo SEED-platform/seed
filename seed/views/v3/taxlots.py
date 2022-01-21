@@ -32,7 +32,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    update_result_with_master)
 from seed.utils.taxlots import taxlots_across_cycles
-from seed.utils.filter_state import get_filtered_results
+from seed.utils.inventory_filter import get_filtered_results
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
@@ -165,6 +165,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 required=False,
                 description='If False, related data (i.e. Property data) is not added to the response (default is True)'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                'ids_only',
+                required=False,
+                description='Function will return a list of tax lot ids instead of tax lot objects'
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {

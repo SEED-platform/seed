@@ -47,7 +47,7 @@ from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
                                    update_result_with_master)
-from seed.utils.filter_state import get_filtered_results
+from seed.utils.inventory_filter import get_filtered_results
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -352,6 +352,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 required=False,
                 description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                'ids_only',
+                required=False,
+                description='Function will return a list of property ids instead of property objects'
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
