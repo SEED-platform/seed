@@ -12,6 +12,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
     '$state',
     '$stateParams',
     '$q',
+    '$http',
     'inventory_service',
     'label_service',
     'data_quality_service',
@@ -42,6 +43,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       $state,
       $stateParams,
       $q,
+      $http,
       inventory_service,
       label_service,
       data_quality_service,
@@ -1067,7 +1069,18 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
         // if it appears everything selected, get the full set of ids...
         if ($scope.selectedCount == $scope.inventory_pagination.total) {
-          selectedViewIds = []; // todo: hit filter endpoint and get full list of IDs
+          selectedViewIds = [];
+
+          $http.post('/api/v3/properties/filter/', {}, {
+            params: {
+              organization_id: $scope.organization.org_id,
+              ids_only: true
+            }
+          }).then(function (response) {
+            console.log('2', response);
+            return response;
+          });
+          console.log('1');
 
         // ... otherwise use what's selected in grid
         } else {
