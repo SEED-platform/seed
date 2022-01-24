@@ -1,6 +1,6 @@
 # Instructions:
 #   Get a token from github's settings (https://github.com/settings/tokens)
-#   Install github3 using pip (pip install --pre github3.py)
+#   Install github3 using pip (pip install github3.py)
 #
 # Example:
 #   python change_log.py -k abcdefghijklmnopqrstuvwxyz -s 2020-12-29
@@ -107,11 +107,15 @@ for issue in repo.issues(state='closed'):
                 continue
 
             if 'Not Reproducible' in labels:
-                # these issues are noxt going to be reported
+                # these issues are not going to be reported
                 continue
 
             if 'stale' in labels:
                 # issue closed due to staleness, it was not really addressed
+                continue
+
+	    if 'Milestone' in labels:
+                # these are milestone tracking tickets and should not show up in changelog
                 continue
 
             if 'Feature' in labels:

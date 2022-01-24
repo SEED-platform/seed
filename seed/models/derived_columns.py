@@ -1,10 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from copy import copy
+from __future__ import annotations
+import copy
+from typing import Any, Union
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -20,7 +22,7 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 
 
-def _cast_params_to_floats(params):
+def _cast_params_to_floats(params: dict[str, Any]) -> dict[str, float]:
     """Helper to turn dict values to floats or remove them if non-numeric
 
     :param params: dict{str: <value>}
@@ -113,7 +115,7 @@ class ExpressionEvaluator:
             """
             self.params = params
 
-    def __init__(self, expression, validate=True):
+    def __init__(self, expression: str, validate: bool = True):
         """Construct an expression evaluator.
 
         :param expression: str
@@ -127,7 +129,7 @@ class ExpressionEvaluator:
         self._parser = Lark(self.EXPRESSION_GRAMMAR, parser='lalr', transformer=self._transformer)
 
     @classmethod
-    def is_valid(cls, expression):
+    def is_valid(cls, expression: str) -> bool:
         """Validate the expression. Raises an InvalidExpression exception if invalid
 
         :param expression: str
@@ -140,7 +142,7 @@ class ExpressionEvaluator:
 
         return True
 
-    def evaluate(self, parameters=None):
+    def evaluate(self, parameters: Union[None, dict[str, float]] = None) -> float:
         """Evaluate the expression with the provided parameters
 
         :param parameters: dict, keys are parameter names and values are values
@@ -150,7 +152,7 @@ class ExpressionEvaluator:
             parameters = {}
 
         self._transformer.set_params(parameters)
-        return self._parser.parse(self._expression)
+        return self._parser.parse(self._expression)  # type: ignore[return-value]
 
 
 class InvalidExpression(Exception):
@@ -223,7 +225,7 @@ class DerivedColumn(models.Model):
         self.full_clean()
         return super().save(*args, **kwargs)
 
-    def get_parameter_values(self, inventory_state):
+    def get_parameter_values(self, inventory_state: Union[PropertyState, TaxLotState]) -> dict[str, Any]:
         """Construct a dictionary of column values keyed by expression parameter
         names. Note that no cleaning / validation is done to the values, they are
         straight from the database, or if a column is not found for the inventory
@@ -239,8 +241,6 @@ class DerivedColumn(models.Model):
                 ...
             }
         """
-        assert isinstance(inventory_state, self.INVENTORY_TYPE_TO_CLASS[self.inventory_type])
-
         if not hasattr(self, '_cached_column_parameters'):
             self._cached_column_parameters = (
                 DerivedColumnParameter.objects
@@ -262,7 +262,7 @@ class DerivedColumn(models.Model):
 
         return params
 
-    def evaluate(self, inventory_state=None, parameters=None):
+    def evaluate(self, inventory_state: Union[None, PropertyState, TaxLotState] = None, parameters: Union[None, dict[str, float]] = None):
         """Evaluate the expression. Caller must provide `parameters`, `inventory_state`,
         or both. Values from the inventory take priority over the parameters dict.
         Values that cannot be coerced into floats (from the inventory or params dict)
@@ -289,7 +289,7 @@ class DerivedColumn(models.Model):
             tmp_params = self.get_parameter_values(inventory_state)
             inventory_parameters = _cast_params_to_floats(tmp_params)
 
-        merged_parameters = copy(parameters)
+        merged_parameters = copy.copy(parameters)
         merged_parameters.update(inventory_parameters)
         merged_parameters = _cast_params_to_floats(merged_parameters)
 

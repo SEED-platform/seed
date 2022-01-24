@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -84,6 +84,7 @@ from seed.models.data_quality import (
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import geocode_buildings, MapQuestAPIKeyError
 from seed.utils.ubid import decode_unique_ids
+from seed.utils.match import update_sub_progress_total
 
 # from seed.utils.cprofile import cprofile
 
@@ -398,7 +399,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                                 STR_TO_CLASS[table](organization=map_model_obj.organization),
                                 include_extra_data=False):
                             # Skip this object as it has no data...
-                            _log.warn(
+                            _log.warning(
                                 "Skipping property or taxlot during mapping because it is identical to another row")
                             continue
 
@@ -1124,6 +1125,8 @@ def geocode_and_match_buildings_task(file_pk):
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
+    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
+    sub_progress_data.delete()
 
     if import_file.matching_done:
         _log.debug('Matching is already done')
@@ -1135,7 +1138,7 @@ def geocode_and_match_buildings_task(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("Import file cycle is None; This should never happen in production")
+        _log.warning("Import file cycle is None; This should never happen in production")
 
     # get the properties and chunk them into tasks
     property_states = (
@@ -1158,11 +1161,14 @@ def geocode_and_match_buildings_task(file_pk):
     celery_chain(
         _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
         group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
-        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key),
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
         finish_matching.s(file_pk, progress_data.key),
     )()
 
-    return progress_data.result()
+    sub_progress_data.total = 100
+    sub_progress_data.save()
+
+    return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
 
 def geocode_buildings_task(file_pk):
@@ -1181,9 +1187,14 @@ def geocode_buildings_task(file_pk):
 
 
 @shared_task
-def _geocode_properties_or_tax_lots(file_pk, progress_key):
+def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None):
     progress_data = ProgressData.from_key(progress_key)
+    sub_progress_data = update_sub_progress_total(3, sub_progress_key)
+
     progress_data.step('Geocoding')
+    if sub_progress_key:
+        sub_progress_data.step('Geocoding')
+
     property_state_qs = PropertyState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
     if property_state_qs:
         decode_unique_ids(property_state_qs)
@@ -1193,6 +1204,9 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key):
             progress_data.finish_with_error(str(e), traceback.format_exc())
             raise e
 
+    if sub_progress_key:
+        sub_progress_data.step('Geocoding')
+
     tax_lot_state_qs = TaxLotState.objects.filter(import_file_id=file_pk).exclude(data_state=DATA_STATE_IMPORT)
     if tax_lot_state_qs:
         decode_unique_ids(tax_lot_state_qs)
@@ -1201,6 +1215,10 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key):
         except MapQuestAPIKeyError as e:
             progress_data.finish_with_error(str(e), traceback.format_exc())
             raise e
+
+    if sub_progress_key:
+        sub_progress_data.step('Geocoding')
+        sub_progress_data.finish_with_success()
 
 
 def map_additional_models(file_pk):
@@ -1231,7 +1249,7 @@ def map_additional_models(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn("This should never happen in production")
+        _log.warning("This should never happen in production")
 
     source_type_dict = {
         'Portfolio Raw': PORTFOLIO_RAW,
@@ -1303,6 +1321,8 @@ def match_buildings(file_pk):
 
     progress_data = ProgressData(func_name='match_buildings', unique_id=file_pk)
     progress_data.delete()
+    sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=file_pk)
+    sub_progress_data.delete()
 
     if import_file.matching_done:
         _log.debug('Matching is already done')
@@ -1314,13 +1334,15 @@ def match_buildings(file_pk):
             'Import file is not complete. Retry after mapping is complete', )
 
     if import_file.cycle is None:
-        _log.warn('This should never happen in production')
+        _log.warning('This should never happen in production')
 
     # Start, match, pair
     progress_data.total = 3
     progress_data.save()
+    sub_progress_data.total = 100
+    sub_progress_data.save()
 
-    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key), interval=15)(
+    chord(match_and_link_incoming_properties_and_taxlots.s(file_pk, progress_data.key, sub_progress_data.key), interval=15)(
         finish_matching.s(file_pk, progress_data.key))
 
     return progress_data.result()
@@ -1448,7 +1470,7 @@ def list_canonical_property_states(org_id):
     return PropertyState.objects.filter(pk__in=ids)
 
 
-def pair_new_states(merged_property_views, merged_taxlot_views):
+def pair_new_states(merged_property_views, merged_taxlot_views, sub_progress_key):
     """
     Pair new states from lists of property views and tax lot views
 
@@ -1458,6 +1480,11 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     """
     if not merged_property_views and not merged_taxlot_views:
         return
+
+    sub_progress_data = ProgressData.from_key(sub_progress_key)
+    sub_progress_data.delete()
+    sub_progress_data.total = 12
+    sub_progress_data.save()
 
     # Not sure what the below cycle code does.
     # Commented out during Python3 upgrade.
@@ -1479,20 +1506,23 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
         ('pm_property_id',),
         ('jurisdiction_property_id',),
     ]
-
+    sub_progress_data.step('Pairing Data')
     tax_comparison_fields = sorted(list(set(chain.from_iterable(tax_cmp_fmt))))
     prop_comparison_fields = sorted(list(set(chain.from_iterable(prop_cmp_fmt))))
 
+    sub_progress_data.step('Pairing Data')
     tax_comparison_field_names = list(map(lambda s: "state__{}".format(s), tax_comparison_fields))
     prop_comparison_field_names = list(map(lambda s: "state__{}".format(s), prop_comparison_fields))
 
     # This is a not so nice hack. but it's the only special case/field
     # that isn't on the join to the State.
+    sub_progress_data.step('Pairing Data')
     tax_comparison_fields.insert(0, 'pk')
     prop_comparison_fields.insert(0, 'pk')
     tax_comparison_field_names.insert(0, 'pk')
     prop_comparison_field_names.insert(0, 'pk')
 
+    sub_progress_data.step('Pairing Data')
     view = next(chain(merged_property_views, merged_taxlot_views))
     cycle = view.cycle
     org = view.state.organization
@@ -1500,6 +1530,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     global taxlot_m2m_keygen
     global property_m2m_keygen
 
+    sub_progress_data.step('Pairing Data')
     taxlot_m2m_keygen = EquivalencePartitioner(tax_cmp_fmt, ['jurisdiction_tax_lot_id'])
     property_m2m_keygen = EquivalencePartitioner(prop_cmp_fmt,
                                                  ['pm_property_id', 'jurisdiction_property_id'])
@@ -1509,10 +1540,12 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     taxlot_views = TaxLotView.objects.filter(state__organization=org, cycle=cycle).values_list(
         *tax_comparison_field_names)
 
+    sub_progress_data.step('Pairing Data')
     # For each of the view objects, make an
     prop_type = namedtuple('Prop', prop_comparison_fields)
     taxlot_type = namedtuple('TL', tax_comparison_fields)
 
+    sub_progress_data.step('Pairing Data')
     # Makes object with field_name->val attributes on them.
     property_objects = [prop_type(*attr) for attr in property_views]
     taxlot_objects = [taxlot_type(*attr) for attr in taxlot_views]
@@ -1526,12 +1559,14 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # property_keys = {property_m2m_keygen.calculate_comparison_key(p): p.pk for p in property_objects}
     # taxlot_keys = [taxlot_m2m_keygen.calculate_comparison_key(tl): tl.pk for tl in taxlot_objects}
 
+    sub_progress_data.step('Pairing Data')
     # Calculate a key for each of the split fields.
     property_keys_orig = dict(
         [(property_m2m_keygen.calculate_comparison_key(p), p.pk) for p in property_objects])
 
     # property_keys = copy.deepcopy(property_keys_orig)
 
+    sub_progress_data.step('Pairing Data')
     # Do this inelegant step to make sure we are correctly splitting.
     property_keys = collections.defaultdict(list)
     for k in property_keys_orig:
@@ -1549,6 +1584,7 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
     # property_comparison_keys = {property_m2m_keygen.calculate_comparison_key_key(p): p.pk for p in property_objects}
     # property_canonical_keys = {property_m2m_keygen.calculate_canonical_key(p): p.pk for p in property_objects}
 
+    sub_progress_data.step('Pairing Data')
     possible_merges = []  # List of prop.id, tl.id merges.
 
     for pv in merged_property_views:
@@ -1569,12 +1605,14 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
                 if property_m2m_keygen.calculate_key_equivalence(pv_key, tlk):
                     possible_merges.append((property_keys[pv_key], taxlot_keys[tlk]))
 
+    sub_progress_data.step('Pairing Data')
     for tlv in merged_taxlot_views:
         tlv_key = taxlot_m2m_keygen.calculate_comparison_key(tlv.state)
         for pv_key in property_keys:
             if property_m2m_keygen.calculate_key_equivalence(tlv_key, pv_key):
                 possible_merges.append((property_keys[pv_key], taxlot_keys[tlv_key]))
 
+    sub_progress_data.step('Pairing Data')
     for m2m in set(possible_merges):
         pv_pk, tlv_pk = m2m
 
@@ -1597,6 +1635,8 @@ def pair_new_states(merged_property_views, merged_taxlot_views):
             primary=is_primary
         )
         m2m_join.save()
+
+    sub_progress_data.finish_with_success()
 
     return
 

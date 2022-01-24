@@ -36,6 +36,7 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
 # NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
 SEED_TO_BSYNC_RESOURCE_TYPE = {
     Meter.ELECTRICITY_GRID: 'Electricity',
+    Meter.ELECTRICITY_UNKNOWN: 'Electricity',
     Meter.NATURAL_GAS: 'Natural gas',
     Meter.DIESEL: 'Diesel',
     Meter.PROPANE: 'Propane',

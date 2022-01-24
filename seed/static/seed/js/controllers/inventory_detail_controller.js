@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail', [])
@@ -106,13 +106,15 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
-      $scope.analysis = analyses_payload.analyses.sort(function(a, b) {
-        let key_a = new Date(a.end_time);
-        let key_b = new Date(b.end_time);
-        if (key_a > key_b) return -1;
-        if (key_a < key_b) return 1;
-        return 0;
-      })[0];
+      if (analyses_payload.analyses) {
+        $scope.analysis = analyses_payload.analyses.sort(function(a, b) {
+          let key_a = new Date(a.end_time);
+          let key_b = new Date(b.end_time);
+          if (key_a > key_b) return -1;
+          if (key_a < key_b) return 1;
+          return 0;
+        })[0];
+      }
       $scope.users = users_payload.users;
 
       // Flag columns whose values have changed between imports and edits.

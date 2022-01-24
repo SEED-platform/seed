@@ -1,12 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from collections import namedtuple
 
-from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 
@@ -37,7 +36,7 @@ class AnalysisPropertyView(models.Model):
     # parsed_results can contain any results gathered from the resulting file(s)
     # that are applicable to this specific property.
     # For results not specific to the property, use the Analysis's parsed_results
-    parsed_results = JSONField(default=dict, blank=True)
+    parsed_results = models.JSONField(default=dict, blank=True)
 
     @classmethod
     def batch_create(cls, analysis_id, property_view_ids):

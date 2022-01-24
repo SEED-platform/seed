@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.notes', [])
@@ -20,7 +20,9 @@ angular.module('BE.seed.controller.notes', [])
       $scope.urls = urls;
 
       $scope.inventory_name = note_service.inventory_display_name(inventory_type === 'properties' ? 'property' : 'taxlot', organization_payload.organization, inventory_payload.state);
-
+      
+      $scope.inventory =  {view_id: view_id}
+      
       $scope.close = function () {
         if ($uibModalInstance) {
           $uibModalInstance.close($scope.notes.length);

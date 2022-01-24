@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from collections import defaultdict
@@ -35,7 +35,7 @@ from seed.utils.generic import median, round_down_hundred_thousand
 from xlsxwriter import Workbook
 
 
-class Report(DecoratorMixin(drf_api_endpoint), ViewSet):
+class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
 

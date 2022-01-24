@@ -1,7 +1,7 @@
 <div class="modal-header">
     <h4 class="modal-title" translate>Auto-Populate Data</h4>
 </div>
-<div class="modal-body">
+<div class="modal-body" id="auto-populate-body">
     <h5><em>Auto-Populate Data</em> will insert sample records in your organization viewable from the Inventory Tab. The provided data demonstrates the following advanced capabilities of the SEED Platform:</h5>
     <ul class="auto-populate-list">
         <li><strong>Meter Data</strong>
@@ -52,9 +52,17 @@
                 <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>]. Click the <em>Actions</em> drop down box at the top left of the screen.  Click <em>Run Analysis</em> in the drop down menu.  <em>Name</em> your analysis and enter <em>Type</em> as <em>BSyncr</em>. <em>Create Analysis</em></li>
             </ul>
         </li>
+        <li><strong>BETTER Analysis</strong>
+            <ul>
+                <li>PM Property ID: <code>5766981</code></li>
+                <li><em>Go To Detail Page</em> [<i class="ui-grid-icon-info-circled" style="color: #337ab7"></i>]. Click the <em>Actions</em> drop down box at the top left of the screen.  Click <em>Run Analysis</em> in the drop down menu.  <em>Name</em> your analysis and enter <em>Type</em> as <em>BETTER</em>. <em>Create Analysis</em></li>
+            </ul>
+        </li>
     </ul>
     <div ng-if="hasData" uib-alert class="alert-danger">Auto-Populate is only intended for organizations with no properties or tax lots. To continue you must first remove pre-existing data</div>
     <uib-progressbar ng-if="inProgress" class="progress-striped active" value="100" type="info" style="margin-top: 30px;"></uib-progressbar>
+    <div class='gradient-height'></div>
+    <div class='scroll-indicator'></div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="inProgress">Cancel</button>

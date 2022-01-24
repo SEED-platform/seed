@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -16,7 +16,6 @@ import datetime
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.contrib.postgres.fields import JSONField
 from past.builtins import basestring
 
 from seed.lib.superperms.orgs.models import Organization
@@ -177,7 +176,7 @@ class GreenAssessmentProperty(models.Model):
     # optional expiration date
     _expiration_date = models.DateField(null=True, blank=True)
     # Allow for use defined fields
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
 
     @property
     def expiration_date(self):

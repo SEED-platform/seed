@@ -1,3 +1,44 @@
+# SEED Version 2.13.0 Prerelease 1
+
+Date Range: 11/20/21 - 12/27/21
+
+Closed Issues and Features (Total: 17):
+- Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
+- Fixed [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
+- Fixed [#2890]( https://github.com/SEED-platform/seed/issues/2890 ), Update deprecated JSONFields
+- Fixed [#2902]( https://github.com/SEED-platform/seed/issues/2902 ), XMLSchema fails to fetch gbXML Schema
+- Fixed [#2930]( https://github.com/SEED-platform/seed/issues/2930 ), BuildingSync: improve UI/UX for post-mapping messages
+- Fixed [#2958]( https://github.com/SEED-platform/seed/issues/2958 ), Improve progress data text when validating BuildingSync files
+- Fixed [#2960]( https://github.com/SEED-platform/seed/issues/2960 ), BuildingSync: allow users to export warnings/errors when importing data
+- Fixed [#2999]( https://github.com/SEED-platform/seed/issues/2999 ), Bug: property details "notes" tab breaks links
+- Fixed [#3018]( https://github.com/SEED-platform/seed/issues/3018 ), Delete column timeout
+- Fixed [#3027]( https://github.com/SEED-platform/seed/issues/3027 ), Configure OEP k8s
+- Fixed [#3028]( https://github.com/SEED-platform/seed/issues/3028 ), Fix: electricity meter import from ESPM custom report
+- Fixed [#3034]( https://github.com/SEED-platform/seed/issues/3034 ), RFC: begin using python 3 type hints in codebase
+- Fixed [#3039]( https://github.com/SEED-platform/seed/issues/3039 ), Create new inventory list
+- Fixed [#3040]( https://github.com/SEED-platform/seed/issues/3040 ), Refactor list API to make adding related data
+
+# SEED Version 2.12.4
+
+Date Range: 11/11/21 - 11/19/21
+
+Closed Issues and Features (Total: 2):
+- Fixed [#2822]( https://github.com/SEED-platform/seed/issues/2822 ), Create documentation for running BETTER analysis
+- Fixed [#3014]( https://github.com/SEED-platform/seed/issues/3014 ), Analysis: include Meter source 'Electric - Unknown' in analysis
+
+# SEED Version 2.12.3
+
+Date Range: 11/05/21 - 11/10/21
+
+Closed Issues and Features (Total: 7):
+- Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
+- Fixed [#2930]( https://github.com/SEED-platform/seed/issues/2930 ), BuildingSync: improve UI/UX for post-mapping messages
+- Fixed [#2945]( https://github.com/SEED-platform/seed/issues/2945 ), Deprecate PropertyState's analysis_state field
+- Fixed [#2958]( https://github.com/SEED-platform/seed/issues/2958 ), Improve progress data text when validating BuildingSync files
+- Fixed [#2997]( https://github.com/SEED-platform/seed/issues/2997 ), CO2 Analysis -- eGRID Subregion Code not picked up by program
+- Fixed [#2999]( https://github.com/SEED-platform/seed/issues/2999 ), Bug: property details "notes" tab breaks links
+- Fixed [#3001]( https://github.com/SEED-platform/seed/issues/3001 ), Tax Lot Inventory List View -- clicking on "i" to get to Detail view generates erro
+
 # SEED Version 2.12.2
 
 Date Range: 09/28/21 - 11/04/21

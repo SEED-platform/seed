@@ -5,7 +5,9 @@
 # script that is copied into this container for use by helm/k8s batch/CronJob.
 
 # docker build -t seedplatform/seed-backup-k8s .
-# docker push seedplatform/seed-backup-k8s:latest
+# tag this as needed, latest is automaticallly pulled by helm at the moment.
+# docker tag seedplatform/seed-backup-k8s:latest seedplatform/seed-backup-k8s:{tag}
+# docker push seedplatform/seed-backup-k8s:{tag}
 
 FROM ubuntu:20.04
 

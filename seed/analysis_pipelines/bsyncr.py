@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from tempfile import TemporaryFile, TemporaryDirectory
@@ -147,7 +147,7 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
             .annotate(readings_count=Count('meter_readings'))
             .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
+                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
                 readings_count__gte=12,
             )
         )

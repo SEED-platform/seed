@@ -149,8 +149,9 @@
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
             translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
-            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
-                There were errors and/or warnings for the file(s) uploaded.
+            <div class="alert alert-danger" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0" style="display:flex;align-items:baseline;">
+                <div style="flex-grow:1">There were errors and/or warnings for the file(s) uploaded.</div>
+                <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
             </div>
         </div>
         <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
@@ -199,16 +200,22 @@
         <div class="row">
             <div class="form-group col-sm-12">
                 <div class="progress_bar_container">
-                    <div class="progress_bar_copy_top">{$:: 'Finding inventory matches for' | translate $}
-                        <strong>{$ dataset.filename $}</strong></div>
+                    <div class="progress_bar_copy_top"><strong>{$:: 'Finding inventory matches for' | translate $}
+                        {$ dataset.filename $}</strong></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-                    <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+                    <div class="progress_bar_copy_bottom"><strong>{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</strong></div>
                     <!-- Show a hint that SEED is still working when the progress data hasn't been updated in 1 minute -->
                     <div ng-if="uploader.progress_last_updated != null && uploader.progress_last_checked != null && (uploader.progress_last_checked - uploader.progress_last_updated) / 1000 > 60"
                          class="progress_bar_copy_bottom">
                         <i class="fa fa-spinner fa-pulse fa-fw" style="padding-right: 0"></i>
                         SEED is still working. Please do not refresh or leave this page. (Last updated at {$ uploader.progress_last_checked | date:'hh:mm a' $})
                     </div>
+                </div>
+                <!-- Sub progress bar -->
+                <div class="progress_bar_container sub_progress">
+                    <div class="progress_bar_copy_top">Sub Progress: </div>
+                    <uib-progressbar class="progress-striped active" value="sub_uploader.progress" type="success"></uib-progressbar>
+                    <div class="progress_bar_copy_bottom">{$ sub_uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ sub_uploader.status_message ? ': ' + sub_uploader.status_message : '' $}</div>
                 </div>
             </div>
         </div>
@@ -297,9 +304,10 @@
                     </div>
                 </ul>
             </div>
-            <div class="alert alert-{$ step_10_style $}">
+            <div class="alert alert-{$ step_10_style $}" style="display:flex;align-items:baseline;">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-show="step_10_file_message">{$ step_10_file_message $}</span>
+                <span ng-show="step_10_file_message" style="flex-grow:1">{$ step_10_file_message $}</span>
+                <button ng-show="step_10_file_message" type="button" class="btn btn-primary" ng-click="export_issues(match_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                 <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="col-sm-12">
@@ -322,7 +330,10 @@
                 <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
                 <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
                 <span ng-if="step_12_buildingsync_validation_error">
-                    <div class="alert alert-danger">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
+                    <div class="alert alert-danger" style="display:flex;align-items:center;">
+                        <div style="flex-grow:1" class="pad-right-20">BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</div>
+                        <button type="button" class="btn btn-primary" ng-click="export_issues(buildingsync_issues)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                    </div>
                     <div ng-repeat="issues in buildingsync_issues">
                         <ng-include src="::urls.static_url + 'seed/partials/import_messages.html'"></ng-include>
                     </div>

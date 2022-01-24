@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
@@ -37,7 +37,7 @@ from seed.utils.api import drf_api_endpoint
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 
 
-class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+class LabelViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  # type: ignore[misc]
     """API endpoint for viewing and creating labels.
 
             Returns::

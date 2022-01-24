@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -1510,7 +1510,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
 
         # Interval Data
-        filename = 'PM Meter Data 12.xlsx'
+        filename = 'PM Meter Data.xlsx'  # contians meter data for bsyncr and BETTER
         filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
 
         import_meterdata = ImportFile.objects.create(

@@ -1,6 +1,6 @@
 {
   "name": "seed",
-  "version": "2.12.2",
+  "version": "2.13.0-pr1",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE",
   "directories": {
@@ -17,14 +17,11 @@
     "node": ">=8.10.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "~11.0.0",
-    "@commitlint/config-conventional": "~11.0.0",
     "autoprefixer": "~9.7.6",
     "eslint": "~6.8.0",
     "eslint-plugin-angular": "~4.0.1",
     "eslint-plugin-lodash": "~7.1.0",
     "eslint-plugin-protractor": "~2.1.1",
-    "husky": "~4.3.0",
     "lodash": "~4.17.15",
     "postcss-cli": "~7.1.1",
     "protractor": "~5.4.4",
@@ -39,10 +36,5 @@
   "browserslist": [
     "last 3 versions",
     "ie >= 10"
-  ],
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS || (printf 'Also see SEED’s resources on commit messages:\nhttps://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst#git-naming-conventions\n\n'; false)"
-    }
-  }
+  ]
 }

@@ -367,6 +367,22 @@ a:not([href]) {
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
 
+      .hover-org-container {
+        position: absolute;
+        background: none;
+        z-index: 10000;
+        width: 100px;
+      }
+
+      .hover-org-id {
+        font-size: 10px;
+        background:rgba(255, 255, 255, 0.8);
+        border: 1px solid gray;
+        border-radius: 3px;
+        color: gray;
+        padding:2px;
+      }
+
       .logo_container {
 
         .logo {
@@ -427,6 +443,10 @@ a:not([href]) {
             }
           }
 
+          ul.justify-left a {
+            text-align: left;
+          }
+          
           ul.dropdown-menu {
 
             text-align: center;
@@ -443,6 +463,11 @@ a:not([href]) {
                 color: #000;
                 font-weight: bold;
                 text-align: center;
+              }
+
+              .active {
+                background-color: $gray_lightest;
+                text-decoration: none;
               }
 
               a {
@@ -1800,6 +1825,24 @@ a:not([href]) {
   }
 }
 
+#auto-populate-body {
+  overflow: scroll;
+  height: 70vh;
+  position: relative;
+}
+.scroll-indicator {
+  width: calc(100% - 30px);
+  height: 100px;
+  background-image: linear-gradient(transparent, #fff);
+  position: fixed;
+  bottom: 66px;
+}
+.gradient-height {
+  width:calc(100% - 30px);
+  height:60px;
+  background: transparent;
+}
+
 #newCustomViewModal {
   .modal-body {
     padding-bottom: 0;
@@ -1940,6 +1983,11 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   .progress_bar_copy_bottom {
     padding: 5px 0 0 5px;
   }
+}
+.sub_progress {
+  border-top: 1px solid #e5e5e5;
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .btn-sm, .btn-xs {
@@ -2729,6 +2777,62 @@ gs-input .tags .tag-item .remove-button {
 
   & + .buildingListControls {
     padding-top: 0;
+  }
+
+  &.columns {
+    display: flex;
+    column-gap: 10px;
+    align-items: start;
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      flex-grow: 1;
+
+      &.no-shrink {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin: 0 !important;
+
+    label {
+      white-space: nowrap;
+      margin: 0 10px 0 0;
+    }
+
+    .btn-group {
+      display: flex;
+      margin-left: 10px;
+    }
+
+    .tags {
+      min-width: 50% !important;
+    }
+  }
+
+  .grow {
+    flex-grow: 1;
+    width: 100%;
+  }
+}
+
+#filters-list, #sort-list {
+
+  .tags, .tags .input {
+    cursor: default !important;
+  }
+
+  .tags.focused {
+    border: 1px solid #ccc !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
   }
 }
 

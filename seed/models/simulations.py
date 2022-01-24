@@ -1,14 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
 
 import logging
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 # from seed.models.measures import Measure
@@ -27,7 +26,7 @@ class Simulation(models.Model):
     # currently only one simulation result object for each PropertyState
     property_state = models.OneToOneField("PropertyState", on_delete=models.CASCADE, primary_key=True, )
     scenario = models.ForeignKey('Scenario', on_delete=models.CASCADE, related_name='simulations', null=True)
-    data = JSONField(default=dict, blank=True)
+    data = models.JSONField(default=dict, blank=True)
 
 
 class ResultFile(models.Model):

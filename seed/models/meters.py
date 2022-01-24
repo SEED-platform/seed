@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
 
 from django.db import (
@@ -64,7 +64,7 @@ class Meter(models.Model):
         (ELECTRICITY_UNKNOWN, 'Electric - Unknown'),
     )
 
-    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))
+    type_lookup = dict((reversed(type) for type in ENERGY_TYPES))  # type: ignore
 
     PORTFOLIO_MANAGER = 1
     GREENBUTTON = 2

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -40,8 +40,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -57,8 +57,8 @@ class TestBuildingFiles(TestCase):
 
     def test_buildingsync_constructor_diff_ns(self):
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_different_namespace.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -74,8 +74,8 @@ class TestBuildingFiles(TestCase):
     def test_buildingsync_constructor_single_scenario(self):
         # test having only 1 measure and 1 scenario
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'test_single_scenario.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -115,8 +115,8 @@ class TestBuildingFiles(TestCase):
     def test_buildingsync_bricr_update_retains_scenarios(self):
         # -- Setup
         filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,
@@ -163,8 +163,8 @@ class TestBuildingFiles(TestCase):
 
     def test_hpxml_constructor(self):
         filename = path.join(BASE_DIR, 'seed', 'hpxml', 'tests', 'data', 'audit.xml')
-        file = open(filename, 'rb')
-        simple_uploaded_file = SimpleUploadedFile(file.name, file.read())
+        with open(filename, 'rb') as f:
+            simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
         bf = BuildingFile.objects.create(
             file=simple_uploaded_file,

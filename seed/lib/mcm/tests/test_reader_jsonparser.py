@@ -14,6 +14,9 @@ class JSONParserTest(TestCase):
         self.file = open(file_path, "r", encoding="utf-8")
         self.parser = GeoJSONParser(self.file)
 
+    def tearDown(self) -> None:
+        self.file.close()
+
     def test_it_has_a_data_property(self):
         expectation = [
             {
