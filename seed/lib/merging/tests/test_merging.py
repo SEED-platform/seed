@@ -484,7 +484,7 @@ class MergeRelationshipsTest(TestCase):
         ps1 = self.property_state_factory.get_property_state()
         ps2 = self.property_state_factory.get_property_state()
 
-        s1 = Scenario.objects.create(name='Scenario 1', property_state=ps1)
+        Scenario.objects.create(name='Scenario 1', property_state=ps1)
         s2 = Scenario.objects.create(name='Scenario 2', property_state=ps2)
 
         merged_state = PropertyState.objects.create(organization=self.org)
@@ -498,13 +498,12 @@ class MergeRelationshipsTest(TestCase):
         self.assertEqual(merged_scenarios.count(), 1)
         self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)
 
-
     def test_old_property_state_has_scenario(self):
         # -- Setup
         ps1 = self.property_state_factory.get_property_state()
         ps2 = self.property_state_factory.get_property_state()
 
-        s1 = Scenario.objects.create(name='Scenario 1', property_state=ps1)
+        Scenario.objects.create(name='Scenario 1', property_state=ps1)
 
         merged_state = PropertyState.objects.create(organization=self.org)
 
@@ -533,4 +532,3 @@ class MergeRelationshipsTest(TestCase):
         merged_scenarios = Scenario.objects.filter(property_state=merged_state)
         self.assertEqual(merged_scenarios.count(), 1)
         self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)
-
