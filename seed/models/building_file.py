@@ -331,34 +331,18 @@ class BuildingFile(models.Model):
                     meter_type = None
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
 
-                for mr in valid_readings:
-                    # NOTE: This is really slow and a hack! Refactor this!
-                    # How we (as of writing) batch insert readings elsewhere: https://github.com/SEED-platform/seed/blob/6a31f3d369af1348afccb14c33ff9b4925cb711b/seed/data_importer/tasks.py#L849
-                    # More info: basically we can't update existing meter readings b/c
-                    # of our current unique_together. Whenever we try to update an instance
-                    # Django creates a WHERE clause that only selects based on the primary key (which is start_time)
-                    # which results in IntegrityErrors. Using a QuerySet's update method gets around this issue
-                    # if we filter on all of the fields we have a unique constraint on...
-                    defaults = {
-                        'reading': float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
-                        'source_unit': mr.get('source_unit'),
-                        'conversion_factor': meter_conversions.get(mr.get('source_unit'), 1.00),
-                    }
-                    num_updated = MeterReading.objects.filter(
-                        meter_id=meter.id,
+                valid_reading_models = {
+                    MeterReading(
                         start_time=mr.get('start_time'),
                         end_time=mr.get('end_time'),
-                    ).update(**defaults)
-                    assert num_updated == 0 or num_updated == 1
-                    if num_updated == 0:
-                        # create the reading
-                        new_values = {
-                            'meter_id': meter.id,
-                            'start_time': mr.get('start_time'),
-                            'end_time': mr.get('end_time'),
-                        }
-                        new_values.update(defaults)
-                        MeterReading.objects.create(**new_values)
+                        reading=float(mr.get('reading', 0)) * meter_conversions.get(mr.get('source_unit'), 1.00),
+                        source_unit=mr.get('source_unit'),
+                        meter_id=meter.id,
+                        conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
+                    )
+                    for mr in valid_readings
+                }
+                MeterReading.objects.bulk_create(valid_reading_models)
 
         # merge or create the property state's view
         if property_view:

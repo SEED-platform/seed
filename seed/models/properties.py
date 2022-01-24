@@ -601,6 +601,9 @@ class PropertyState(models.Model):
     def merge_relationships(cls, merged_state, state1, state2):
         """
         Merge together the old relationships with the new.
+
+        :param merged_state: empty state to fill with merged state
+        :param state1
         """
         from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure

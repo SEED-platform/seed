@@ -479,7 +479,7 @@ class MergeRelationshipsTest(TestCase):
         self.assertEqual(Meter.objects.count(), 0)
         self.assertEqual(MeterReading.objects.count(), 0)
 
-    def test_transfers_unique_scenarios(self):
+    def test_both_have_scenarios(self):
         # -- Setup
         ps1 = self.property_state_factory.get_property_state()
         ps2 = self.property_state_factory.get_property_state()
@@ -493,341 +493,44 @@ class MergeRelationshipsTest(TestCase):
         merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
 
         # -- Assert
-        # both scenarios should have been transferred to the merged_state
+        # Only scenario should remain
         merged_scenarios = Scenario.objects.filter(property_state=merged_state)
         self.assertEqual(merged_scenarios.count(), 1)
         self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)
 
-    def test_updates_simple_fields_of_matching_scenarios(self):
+
+    def test_old_property_state_has_scenario(self):
         # -- Setup
         ps1 = self.property_state_factory.get_property_state()
         ps2 = self.property_state_factory.get_property_state()
 
-        SCENARIO_NAME = 'My Scenario'
-        Scenario.objects.create(name=SCENARIO_NAME, description='Description 1', property_state=ps1)
-        s2 = Scenario.objects.create(name=SCENARIO_NAME, description='Description 2', property_state=ps2)
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # the two scenarios should get merged into one b/c they match
-        # the merge should prioritize the second property state scenario's description
-        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(merged_scenarios.count(), 1)
-        self.assertEqual(merged_scenarios[0].description, s2.description)
-
-    def test_updates_reference_case_of_matching_scenarios(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        SCENARIO_NAME = 'My Scenario'
-        s1_ref_scenario = Scenario.objects.create(name='Reference 1', property_state=ps1)
-        Scenario.objects.create(
-            name=SCENARIO_NAME,
-            property_state=ps1,
-            reference_case=s1_ref_scenario
-        )
-
-        s2_ref_scenario = Scenario.objects.create(name='Reference 2', property_state=ps2)
-        Scenario.objects.create(
-            name=SCENARIO_NAME,
-            property_state=ps2,
-            reference_case=s2_ref_scenario
-        )
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # the matching scenarios should get merged from state 2's reference case
-        scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(scenarios.count(), 2)
-        merged_scenario = scenarios.get(name=SCENARIO_NAME)
-        reference_scenario = merged_scenario.reference_case
-        self.assertEqual(reference_scenario.name, s2_ref_scenario.name)
-
-    def test_transfers_unique_property_measures(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create 4 _unique_ property measures (uniqueness is name + measure tuple)
-        PM_NAME_1 = 'My PropertyMeasure 1'
-        PM_NAME_2 = 'My PropertyMeasure 2'
-        PropertyMeasure.objects.create(
-            property_measure_name=PM_NAME_1,
-            measure=self.measure_1,
-            property_state=ps1,
-        )
-        PropertyMeasure.objects.create(
-            property_measure_name=PM_NAME_1,
-            measure=self.measure_2,
-            property_state=ps1,
-        )
-        PropertyMeasure.objects.create(
-            property_measure_name=PM_NAME_2,
-            measure=self.measure_1,
-            property_state=ps2,
-        )
-        PropertyMeasure.objects.create(
-            property_measure_name=PM_NAME_2,
-            measure=self.measure_2,
-            property_state=ps2,
-        )
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # all property measures should have been transferred to the merged_state
-        merged_property_measures = PropertyMeasure.objects.filter(property_state=merged_state)
-        self.assertEqual(merged_property_measures.count(), 2)
-        self.assertEqual(merged_property_measures.filter(property_measure_name=PM_NAME_2).count(), 2)
-        self.assertEqual(merged_property_measures.filter(measure=self.measure_1).count(), 1)
-        self.assertEqual(merged_property_measures.filter(measure=self.measure_2).count(), 1)
-
-    def test_updates_simple_fields_of_matching_property_measures(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create 2 matching property measures
-        base_pm_data = {
-            'property_measure_name': 'My PropertyMeasure',
-            'measure': self.measure_1,
-        }
-        PropertyMeasure.objects.create(
-            description='Description 1',
-            property_state=ps1,
-            **base_pm_data,
-        )
-        pm2 = PropertyMeasure.objects.create(
-            description='Description 2',
-            property_state=ps2,
-            **base_pm_data,
-        )
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # we expect the propert measures to be merged
-        # the merged property measure should pull data from state 2's property measure
-        merged_property_measures = PropertyMeasure.objects.filter(property_state=merged_state)
-        self.assertEqual(merged_property_measures.count(), 1)
-        self.assertEqual(merged_property_measures[0].description, pm2.description)
-
-    def test_scenario_with_merged_measures(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create 2 matching property measures, link one to a scenario
-        base_pm_data = {
-            'property_measure_name': 'My PropertyMeasure',
-            'measure': self.measure_1,
-        }
-        pm1 = PropertyMeasure.objects.create(
-            property_state=ps1,
-            description='Description 1',
-            **base_pm_data,
-        )
-        pm2 = PropertyMeasure.objects.create(
-            property_state=ps2,
-            description='Description 2',
-            **base_pm_data,
-        )
-
-        s1 = Scenario.objects.create(name='My Scenario', property_state=ps1)
-        s1.measures.add(pm1)
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # we expect the property measures to get merged and look like the pm2
-        # we expect the scenario which originally referenced pm1 to now reference the merged property measure
-        scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(scenarios.count(), 0)
-
-    def test_merge_scenarios_and_measures(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create 2 matching property measures and 2 matching scenarios
-        base_pm_data = {
-            'property_measure_name': 'My PropertyMeasure',
-            'measure': self.measure_1,
-        }
-        pm1 = PropertyMeasure.objects.create(
-            property_state=ps1,
-            description='Description 1',
-            **base_pm_data,
-        )
-        pm2 = PropertyMeasure.objects.create(
-            property_state=ps2,
-            description='Description 2',
-            **base_pm_data,
-        )
-
-        base_scenario_data = {
-            'name': 'My Scenario'
-        }
-        s1 = Scenario.objects.create(property_state=ps1, description='Description 1', **base_scenario_data)
-        s1.measures.add(pm1)
-        s2 = Scenario.objects.create(property_state=ps2, description='Description 2', **base_scenario_data)
-        s2.measures.add(pm2)
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # we expect the scenarios to get merged and look like state 2's
-        scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(scenarios.count(), 1)
-        merged_scenario = scenarios[0]
-        self.assertEqual(merged_scenario.description, s2.description)
-
-        # we expect the measures to get merged and look like state 2's
-        self.assertEqual(merged_scenario.measures.count(), 1)
-        self.assertEqual(merged_scenario.measures.all()[0].description, pm2.description)
-
-    def test_keeps_unique_measures_when_merging_scenarios(self):
-        """e.g. User adds a new measure to the scenario"""
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create 2 unique property measures and 2 matching scenarios
-        pm1 = PropertyMeasure.objects.create(
-            property_state=ps1,
-            property_measure_name='Measure 1',
-            measure=self.measure_1,
-        )
-        pm2 = PropertyMeasure.objects.create(
-            property_state=ps2,
-            property_measure_name='Measure 2',
-            measure=self.measure_2,
-        )
-
-        base_scenario_data = {
-            'name': 'My Scenario'
-        }
-        s1 = Scenario.objects.create(property_state=ps1, **base_scenario_data)
-        s1.measures.add(pm1)
-        s2 = Scenario.objects.create(property_state=ps2, **base_scenario_data)
-        s2.measures.add(pm2)
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # we expect the scenarios to get merged
-        scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(scenarios.count(), 1)
-
-        # we expect all measures to be kept since they're unique
-        merged_scenario = scenarios[0]
-        self.assertEqual(merged_scenario.measures.count(), 1)
-
-    def test_transfers_unique_scenario_meters(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create unique scenarios and meters
         s1 = Scenario.objects.create(name='Scenario 1', property_state=ps1)
+
+        merged_state = PropertyState.objects.create(organization=self.org)
+
+        # -- Act
+        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
+
+        # -- Assert
+        # Only scenario 2 should remain
+        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
+        self.assertEqual(merged_scenarios.count(), 0)
+
+    def test_new_property_state_has_scenario(self):
+        # -- Setup
+        ps1 = self.property_state_factory.get_property_state()
+        ps2 = self.property_state_factory.get_property_state()
+
         s2 = Scenario.objects.create(name='Scenario 2', property_state=ps2)
 
-        Meter.objects.create(scenario=s1, source_id='Source 1')
-        Meter.objects.create(scenario=s2, source_id='Source 2')
-
         merged_state = PropertyState.objects.create(organization=self.org)
 
         # -- Act
         merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
 
         # -- Assert
-        # both scenarios should have been transferred to the merged_state
+        # Only scenario 2 should remain
         merged_scenarios = Scenario.objects.filter(property_state=merged_state)
         self.assertEqual(merged_scenarios.count(), 1)
-        # both meters should have been transferred
-        self.assertEqual(merged_scenarios[0].meter_set.count(), 1)
+        self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)
 
-    def test_transfers_unique_meters_when_merging_scenarios(self):
-        # -- Setup
-        ps1 = self.property_state_factory.get_property_state()
-        ps2 = self.property_state_factory.get_property_state()
-
-        # create matching scenarios and unique meters
-        base_scenario_data = {
-            'name': 'My Scenario'
-        }
-        s1 = Scenario.objects.create(property_state=ps1, **base_scenario_data)
-        s2 = Scenario.objects.create(property_state=ps2, **base_scenario_data)
-
-        Meter.objects.create(scenario=s1, source_id='Source 1')
-        Meter.objects.create(scenario=s2, source_id='Source 2')
-
-        merged_state = PropertyState.objects.create(organization=self.org)
-
-        # -- Act
-        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # -- Assert
-        # we expect the scenarios to be merged
-        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
-        self.assertEqual(merged_scenarios.count(), 1)
-        # both meters should have been transferred
-        self.assertEqual(merged_scenarios[0].meter_set.count(), 1)
-
-    def test_merges_matching_meters_when_merging_scenarios(self):
-        pass
-        # TODO: this test will fail -- fix this?
-        # # -- Setup
-        # ps1 = self.property_state_factory.get_property_state()
-        # ps2 = self.property_state_factory.get_property_state()
-
-        # # create matching scenarios and matching meters
-        # # NOTE: meters are considered to match if they point to the same scenario and have the same source_id
-        # # since the scenarios are getting merged, they'll end up pointing to the same scenario
-        # base_scenario_data = {
-        #     'name': 'My Scenario'
-        # }
-        # s1 = Scenario.objects.create(property_state=ps1, **base_scenario_data)
-        # s2 = Scenario.objects.create(property_state=ps2, **base_scenario_data)
-
-        # base_meter_data = {
-        #     'source_id': 'My Source'
-        # }
-        # Meter.objects.create(scenario=s1, **base_meter_data)
-        # Meter.objects.create(scenario=s2, **base_meter_data)
-
-        # merged_state = PropertyState.objects.create(organization=self.org)
-
-        # # -- Act
-        # merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
-
-        # # -- Assert
-        # # we expect the scenarios to be merged
-        # merged_scenarios = Scenario.objects.filter(property_state=merged_state)
-        # self.assertEqual(merged_scenarios.count(), 1)
-        # # we expect the meters to be merged
-        # self.assertEqual(merged_scenarios[0].meter_set.count(), 1)
