@@ -183,7 +183,7 @@ project directory, ``celery`` can be started:
 
 .. code-block:: console
 
-    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 2 -B --events --maxtasksperchild=1000
+    DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l info -c 2 -B --events --max-tasks-per-child=1000
 
 .. _Celery: http://www.celeryproject.org/
 

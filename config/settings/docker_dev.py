@@ -65,7 +65,7 @@ if SEED_TESTING:
         # '--nologcapture',
     ]
 
-    broker_backend = 'memory'
+    CELERY_BROKER_BACKEND = 'memory'
     task_always_eager = True
     task_eager_propagates = True
     # this celery log level is currently not overridden.
@@ -97,7 +97,7 @@ else:
         )
 
     broker_transport = 'redis'
-    result_backend = broker_url
+    CELERY_BROKER_BACKEND = broker_url
 
 task_default_queue = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py

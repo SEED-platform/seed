@@ -98,7 +98,7 @@ CACHES = {
 broker_url = 'redis://%s/%s' % (
     CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
 )
-result_backend = broker_url
+CELERY_BROKER_BACKEND = broker_url
 task_default_queue = 'seed-local'
 task_queues = (
     Queue(
@@ -126,7 +126,7 @@ task_queues = (
 #    CACHES['default']['LOCATION'],
 #    CACHES['default']['OPTIONS']['DB']
 #)
-#result_backend = broker_url
+#CELERY_BROKER_BACKEND = broker_url
 #task_default_queue = 'seed-local'
 #task_queues = (
 #    Queue(

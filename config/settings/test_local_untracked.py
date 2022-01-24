@@ -37,7 +37,7 @@ DATABASES = {
 
 EAGER = os.environ.get('task_always_eager', 'True') == 'True'
 if EAGER:
-    broker_backend = 'memory'
+    CELERY_BROKER_BACKEND = 'memory'
     task_always_eager = True
     task_eager_propagates = True
 else:
@@ -53,7 +53,7 @@ else:
     broker_url = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
-    result_backend = broker_url
+    CELERY_BROKER_BACKEND = broker_url
     task_default_queue = 'seed-local'
     task_queues = (
         Queue(
