@@ -9,7 +9,7 @@ django-crispy-forms==1.8.1
 psycopg2-binary==2.8.4
 
 # background process management
-celery==4.4.7
+celery==5.2.2
 django-redis-cache==3.0.0
 django-compressor==2.4.1
 django-compressor-autoprefixer==0.1.0
