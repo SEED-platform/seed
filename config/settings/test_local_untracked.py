@@ -35,7 +35,7 @@ DATABASES = {
 # with AWS ElastiCache redis, the LOCATION setting looks something like:
 # 'xx-yy-zzrr0aax9a.ntmprk.0001.usw2.cache.amazonaws.com:6379'
 
-EAGER = os.environ.get('task_always_eager', 'True') == 'True'
+EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
 if EAGER:
     result_backend = 'memory'
     task_always_eager = True
