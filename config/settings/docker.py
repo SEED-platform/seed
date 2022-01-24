@@ -77,7 +77,7 @@ if 'REDIS_PASSWORD' in os.environ:
             'TIMEOUT': 300
         }
     }
-    broker_url = 'redis://:%s@%s/%s' % (
+    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
         CACHES['default']['OPTIONS']['PASSWORD'],
         CACHES['default']['LOCATION'],
         CACHES['default']['OPTIONS']['DB']
@@ -93,12 +93,12 @@ else:
             'TIMEOUT': 300
         }
     }
-    broker_url = 'redis://%s/%s' % (
+    CELERY_BROKER_URL = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
 
 broker_transport = 'redis'
-CELERY_BROKER_BACKEND = broker_url
+result_backend = CELERY_BROKER_URL
 task_default_queue = 'seed-docker'
 task_queues = (
     Queue(

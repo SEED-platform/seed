@@ -95,10 +95,10 @@ CACHES = {
     }
 }
 
-broker_url = 'redis://%s/%s' % (
+CELERY_BROKER_URL = 'redis://%s/%s' % (
     CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
 )
-CELERY_BROKER_BACKEND = broker_url
+result_backend = CELERY_BROKER_URL
 task_default_queue = 'seed-local'
 task_queues = (
     Queue(
@@ -121,12 +121,12 @@ task_queues = (
 #    }
 #}
 #
-#broker_url = 'redis://:%s@%s/%s' % (
+#CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
 #    CACHES['default']['OPTIONS']['PASSWORD'],
 #    CACHES['default']['LOCATION'],
 #    CACHES['default']['OPTIONS']['DB']
 #)
-#CELERY_BROKER_BACKEND = broker_url
+#result_backend = CELERY_BROKER_URL
 #task_default_queue = 'seed-local'
 #task_queues = (
 #    Queue(

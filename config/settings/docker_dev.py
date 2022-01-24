@@ -65,7 +65,7 @@ if SEED_TESTING:
         # '--nologcapture',
     ]
 
-    CELERY_BROKER_BACKEND = 'memory'
+    result_backend = 'memory'
     task_always_eager = True
     task_eager_propagates = True
     # this celery log level is currently not overridden.
@@ -86,18 +86,18 @@ else:
     }
     if 'REDIS_PASSWORD' in os.environ:
         CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        broker_url = 'redis://:{}@{}/{}'.format(
+        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
             CACHES['default']['OPTIONS']['PASSWORD'],
             CACHES['default']['LOCATION'],
             CACHES['default']['OPTIONS']['DB']
         )
     else:
-        broker_url = 'redis://{}/{}'.format(
+        CELERY_BROKER_URL = 'redis://{}/{}'.format(
             CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
         )
 
     broker_transport = 'redis'
-    CELERY_BROKER_BACKEND = broker_url
+    result_backend = CELERY_BROKER_URL
 
 task_default_queue = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py

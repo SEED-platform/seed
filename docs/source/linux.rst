@@ -133,7 +133,7 @@ The SEED project relies on `redis`_ for both cache and message brokering, and
 is available as an AWS `ElastiCache`_ service or with the ``redis-server``
 Linux package. (``sudo apt install redis-server``)
 
-``local_untracked.py`` should be updated with the ``CACHES`` and ``broker_url``
+``local_untracked.py`` should be updated with the ``CACHES`` and ``CELERY_BROKER_URL``
 settings.
 
 .. _ElastiCache: https://aws.amazon.com/elasticache/
@@ -151,7 +151,7 @@ settings.
             'TIMEOUT': 300
         }
     }
-    broker_url = 'redis://127.0.0.1:6379/1'
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
 
 Creating the initial user
@@ -328,7 +328,7 @@ local_untracked.py
             'TIMEOUT': 300
         }
     }
-    broker_url = 'redis://127.0.0.1:6379/1'
+    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
 
     # SMTP config
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
