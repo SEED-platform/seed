@@ -86,18 +86,18 @@ else:
     }
     if 'REDIS_PASSWORD' in os.environ:
         CACHES['OPTIONS']['PASSWORD'] = os.environ.get('REDIS_PASSWORD')
-        CELERY_BROKER_URL = 'redis://:{}@{}/{}'.format(
+        broker_url = 'redis://:{}@{}/{}'.format(
             CACHES['default']['OPTIONS']['PASSWORD'],
             CACHES['default']['LOCATION'],
             CACHES['default']['OPTIONS']['DB']
         )
     else:
-        CELERY_BROKER_URL = 'redis://{}/{}'.format(
+        broker_url = 'redis://{}/{}'.format(
             CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
         )
 
     CELERY_BROKER_TRANSPORT = 'redis'
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_RESULT_BACKEND = broker_url
 
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py

@@ -265,7 +265,7 @@ Edit `local_untracked.py`. Open the file you created in your favorite editor. Th
 
 You may want to comment out the AWS settings.
 
-For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
+For Redis, edit the `CACHES` and `broker_url` values to look like this:
 
 .. code-block:: python
 
@@ -277,7 +277,7 @@ For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+    broker_url = 'redis://127.0.0.1:6379/1'
 
 MapQuest API Key
 ----------------

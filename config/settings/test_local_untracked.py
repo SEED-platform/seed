@@ -50,10 +50,10 @@ else:
             'TIMEOUT': 300
         }
     }
-    CELERY_BROKER_URL = 'redis://%s/%s' % (
+    broker_url = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_RESULT_BACKEND = broker_url
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
         Queue(
