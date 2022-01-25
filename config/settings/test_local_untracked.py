@@ -53,7 +53,7 @@ else:
     broker_url = 'redis://%s/%s' % (
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
-    CELERY_RESULT_BACKEND = broker_url
+    result_backend = broker_url
     task_default_queue = 'seed-local'
     task_queues = (
         Queue(
