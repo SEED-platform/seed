@@ -39,7 +39,7 @@ EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
 if EAGER:
     CELERY_BROKER_BACKEND = 'memory'
     CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
+    task_eager_propagates = True
 else:
     print("Using redis database")
     CACHES = {
@@ -63,7 +63,7 @@ else:
         ),
     )
     CELERY_TASK_ALWAYS_EAGER = False
-    CELERY_TASK_EAGER_PROPAGATES = False
+    task_eager_propagates = False
 
 
 INTERNAL_IPS = ('127.0.0.1',)
