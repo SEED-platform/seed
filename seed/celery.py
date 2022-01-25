@@ -31,7 +31,7 @@ class Celery(celery.Celery):
             pass
 
 
-app = Celery('seed')
+app = Celery('seed', broker='redis://db-redis:6379/')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks(lambda: settings.SEED_CORE_APPS + ('seed.analysis_pipelines',))
 
