@@ -39,7 +39,7 @@ local_untracked.py file
     )
     CELERY_RESULT_BACKEND = broker_url
     task_default_queue = 'seed-local'
-    CELERY_TASK_QUEUES = (
+    task_queues = (
         Queue(
             task_default_queue,
             Exchange(task_default_queue),

@@ -100,7 +100,7 @@ else:
 broker_transport = 'redis'
 CELERY_RESULT_BACKEND = broker_url
 task_default_queue = 'seed-docker'
-CELERY_TASK_QUEUES = (
+task_queues = (
     Queue(
         task_default_queue,
         Exchange(task_default_queue),

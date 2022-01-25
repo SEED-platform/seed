@@ -101,7 +101,7 @@ else:
 
 task_default_queue = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py
-CELERY_TASK_QUEUES = (
+task_queues = (
     Queue(
         task_default_queue,
         Exchange(task_default_queue),
