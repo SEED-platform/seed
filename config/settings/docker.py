@@ -97,7 +97,7 @@ else:
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
 
-CELERY_BROKER_TRANSPORT = 'redis'
+broker_transport = 'redis'
 CELERY_RESULT_BACKEND = broker_url
 CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
 CELERY_TASK_QUEUES = (
