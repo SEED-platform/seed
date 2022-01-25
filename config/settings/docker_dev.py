@@ -99,13 +99,13 @@ else:
     broker_transport = 'redis'
     CELERY_RESULT_BACKEND = broker_url
 
-CELERY_TASK_DEFAULT_QUEUE = 'seed-docker'
+task_default_queue = 'seed-docker'
 # note - Queue and Exchange objects are imported in common.py
 CELERY_TASK_QUEUES = (
     Queue(
-        CELERY_TASK_DEFAULT_QUEUE,
-        Exchange(CELERY_TASK_DEFAULT_QUEUE),
-        routing_key=CELERY_TASK_DEFAULT_QUEUE
+        task_default_queue,
+        Exchange(task_default_queue),
+        routing_key=task_default_queue
     ),
 )
 

@@ -54,12 +54,12 @@ else:
         CACHES['default']['LOCATION'], CACHES['default']['OPTIONS']['DB']
     )
     CELERY_RESULT_BACKEND = broker_url
-    CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
+    task_default_queue = 'seed-local'
     CELERY_TASK_QUEUES = (
         Queue(
-            CELERY_TASK_DEFAULT_QUEUE,
-            Exchange(CELERY_TASK_DEFAULT_QUEUE),
-            routing_key=CELERY_TASK_DEFAULT_QUEUE
+            task_default_queue,
+            Exchange(task_default_queue),
+            routing_key=task_default_queue
         ),
     )
     CELERY_TASK_ALWAYS_EAGER = False
