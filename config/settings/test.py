@@ -28,7 +28,7 @@ DATABASES = {
 
 # These celery variables can be overriden by the local_untracked values
 CELERY_BROKER_BACKEND = 'memory'
-CELERY_TASK_ALWAYS_EAGER = True
+NOT_A_VARIABLE = True
 task_eager_propagates = True
 # this celery log level is currently not overridden.
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']

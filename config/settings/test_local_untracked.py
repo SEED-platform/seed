@@ -38,7 +38,7 @@ DATABASES = {
 EAGER = os.environ.get('CELERY_ALWAYS_EAGER', 'True') == 'True'
 if EAGER:
     CELERY_BROKER_BACKEND = 'memory'
-    CELERY_TASK_ALWAYS_EAGER = True
+    NOT_A_VARIABLE = True
     task_eager_propagates = True
 else:
     print("Using redis database")
@@ -62,7 +62,7 @@ else:
             routing_key=task_default_queue
         ),
     )
-    CELERY_TASK_ALWAYS_EAGER = False
+    NOT_A_VARIABLE = False
     task_eager_propagates = False
 
 
