@@ -1064,11 +1064,15 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       $scope.model_actions = 'none';
       elSelectActions = document.getElementById('select-actions');
-      $scope.run_action = function () {
+      $scope.run_action = function (viewIds = []) {
         let selectedViewIds = [];
 
-        // if it appears everything selected, get the full set of ids...
-        if ($scope.selectedCount == $scope.inventory_pagination.total) {
+        // was the function called with a list of ids?
+        if (viewIds.length > 0) {
+          selectedViewIds = viewIds;
+
+        // if it appears everything selected, only get the full set of ids...
+        } else if ($scope.selectedCount == $scope.inventory_pagination.total) {
           selectedViewIds = [];
 
           $http.post('/api/v3/properties/filter/', {}, {
@@ -1077,12 +1081,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               ids_only: true
             }
           }).then(function (response) {
-            console.log('2', response);
-            return response;
+            $scope.run_action(response.data.results);
           });
-          console.log('1');
+          return;
 
-        // ... otherwise use what's selected in grid
+        // ... otherwise use what's selected in the grid
         } else {
           let view_id_prop = ($scope.inventory_type === 'taxlots') ? 'taxlot_view_id' : 'property_view_id';
           selectedViewIds = _.map(_.filter($scope.gridApi.selection.getSelectedRows(), {$$treeLevel: 0}), view_id_prop);
