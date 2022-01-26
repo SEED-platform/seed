@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.20.0
+      - python-requests/2.22.0
     method: GET
     uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%223001+Brighton+Blvd%2C+suite+2693%2C+Denver%2C+Colorado%2C+80216%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
   response:
@@ -25,7 +25,7 @@ interactions:
       Content-Type:
       - text/plain
       Date:
-      - Sat, 12 Oct 2019 17:07:20 GMT
+      - Tue, 25 Jan 2022 16:45:39 GMT
       Strict-Transport-Security:
       - max-age=0
     status:

@@ -9,16 +9,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.20.0
+      - python-requests/2.22.0
     method: GET
     uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%223001+Brighton+Blvd%2C+suite+2693%2C+Denver%2C+Colorado%2C+80216%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
   response:
     body:
-      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2022 MapQuest,
         Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
-        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"3001
+        2022 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"3001
         Brighton Blvd, suite 2693, Denver, Colorado, 80216"},"locations":[{"street":"3001
-        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r11913793|p227333290|n14782249","unknownInput":"","type":"s","latLng":{"lat":39.764984,"lng":-104.985765},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764984,-104.985765|marker-sm-50318A-1&scalebar=true&zoom=15&rand=1744074029"}]}]}'
+        Brighton Blvd, SUITE 2693","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80216-5014","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"L","linkId":"r51694442|p203945262|n253616579","unknownInput":"","type":"s","latLng":{"lat":39.764909,"lng":-104.985856},"displayLatLng":{"lat":39.765251,"lng":-104.986138},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.764909,-104.985856|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-1278874397"}]}]}'
     headers:
       Access-Control-Allow-Methods:
       - OPTIONS,GET,POST
@@ -27,25 +27,23 @@ interactions:
       Cache-Control:
       - no-cache, must-revalidate
       Content-Length:
-      - '1131'
+      - '1133'
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Sat, 12 Oct 2019 17:07:33 GMT
+      - Tue, 25 Jan 2022 16:45:52 GMT
       Expires:
       - Mon, 20 Dec 1998 01:00:00 GMT
       GeocodeTransactionCount:
       - '1'
       Last-Modified:
-      - Sat, 12 Oct 2019 17:07:33 GMT
+      - Tue, 25 Jan 2022 16:45:52 GMT
       Pragma:
       - no-cache
       ReverseGeocodeTransactionCount:
       - '0'
-      Server:
-      - Apache-Coyote/1.1
       Set-Cookie:
-      - JSESSIONID=2F8C6752B324184B8F055E8E25A86DB6; Path=/; HttpOnly; Secure
+      - JSESSIONID=FB9FF3109C279A97089EAFC68F2130D2; Path=/; HttpOnly; Secure
       Strict-Transport-Security:
       - max-age=0
       status:
@@ -54,7 +52,7 @@ interactions:
       - '1.0'
     status:
       code: 200
-      message: OK
+      message: ''
 - request:
     body: null
     headers:
@@ -65,16 +63,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.20.0
+      - python-requests/2.22.0
     method: GET
     uri: https://www.mapquestapi.com/geocoding/v1/batch?inFormat=json&json=%7B%22locations%22%3A+%5B%7B%22street%22%3A+%222020+Lawrence+St%2C+unit+A%2C+Denver%2C+Colorado%2C+80205%22%7D%5D%7D&maxResults=2&outFormat=json&thumbMaps=false
   response:
     body:
-      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2019 MapQuest,
+      string: '{"info":{"statuscode":0,"copyright":{"text":"\u00A9 2022 MapQuest,
         Inc.","imageUrl":"http://api.mqcdn.com/res/mqlogo.gif","imageAltText":"\u00A9
-        2019 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"2020
+        2022 MapQuest, Inc."},"messages":[]},"options":{"maxResults":-1,"thumbMaps":true,"ignoreLatLngInput":false},"results":[{"providedLocation":{"street":"2020
         Lawrence St, unit A, Denver, Colorado, 80205"},"locations":[{"street":"2020
-        Lawrence St, UNIT A","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80205-2031","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"R","linkId":"r11588406|p216664175|n14303986","unknownInput":"","type":"s","latLng":{"lat":39.752603,"lng":-104.991315},"displayLatLng":{"lat":39.752396,"lng":-104.991046},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.752603,-104.991315|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-1293091998"}]}]}'
+        Lawrence St, UNIT A","adminArea6":"","adminArea6Type":"Neighborhood","adminArea5":"Denver","adminArea5Type":"City","adminArea4":"Denver","adminArea4Type":"County","adminArea3":"CO","adminArea3Type":"State","adminArea1":"US","adminArea1Type":"Country","postalCode":"80205-2031","geocodeQualityCode":"P1AAA","geocodeQuality":"POINT","dragPoint":false,"sideOfStreet":"R","linkId":"r52326395|p224177736|n254415010","unknownInput":"","type":"s","latLng":{"lat":39.752599,"lng":-104.99132},"displayLatLng":{"lat":39.75251,"lng":-104.991205},"mapUrl":"http://www.mapquestapi.com/staticmap/v5/map?key=key&type=map&size=225,160&locations=39.752599,-104.99132|marker-sm-50318A-1&scalebar=true&zoom=15&rand=-1041635719"}]}]}'
     headers:
       Access-Control-Allow-Methods:
       - OPTIONS,GET,POST
@@ -83,25 +81,23 @@ interactions:
       Cache-Control:
       - no-cache, must-revalidate
       Content-Length:
-      - '1120'
+      - '1118'
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Sat, 12 Oct 2019 17:07:33 GMT
+      - Tue, 25 Jan 2022 16:45:53 GMT
       Expires:
       - Mon, 20 Dec 1998 01:00:00 GMT
       GeocodeTransactionCount:
       - '1'
       Last-Modified:
-      - Sat, 12 Oct 2019 17:07:33 GMT
+      - Tue, 25 Jan 2022 16:45:53 GMT
       Pragma:
       - no-cache
       ReverseGeocodeTransactionCount:
       - '0'
-      Server:
-      - Apache-Coyote/1.1
       Set-Cookie:
-      - JSESSIONID=FE91620792FF7382973214CB91EB0F3A; Path=/; HttpOnly; Secure
+      - JSESSIONID=FAD2578B08634331ADF23934C38AC06D; Path=/; HttpOnly; Secure
       Strict-Transport-Security:
       - max-age=0
       status:
@@ -110,5 +106,5 @@ interactions:
       - '1.0'
     status:
       code: 200
-      message: OK
+      message: ''
 version: 1
