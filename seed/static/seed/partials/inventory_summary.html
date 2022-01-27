@@ -59,3 +59,37 @@
         </div>
     </div>
 </div>
+
+<div class="section column_settings_count">
+    <div class="section_content_container">
+        <div class="section_content container-fluid">
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <table class="zebra">
+                        <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Count</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="item in column_settings_count">
+                            <td>{$item.column_settings$}</td>
+                            <td>{$item.count$}</td>
+                        </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="content_block row" style="padding:20px 20px 10px 20px">
+                <div class="col-md-12">
+                    <div class="row">
+                        <div id="chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

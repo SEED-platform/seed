@@ -91,6 +91,14 @@ angular.module('BE.seed.controller.inventory_summary', [])
               }
             ];
 
+            column_settings_count = data["column_settings fields and counts"];
+            $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => {
+                return {
+                  column_settings: key,
+                  count: value
+                }
+            });
+
             draw_charts();
             modalInstance.close()
           })
