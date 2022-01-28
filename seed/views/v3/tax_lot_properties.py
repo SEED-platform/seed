@@ -11,6 +11,7 @@ import csv
 import datetime
 import io
 from collections import OrderedDict
+import logging
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
@@ -87,6 +88,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats.
         """
+        logging.warning('>>> EXPORT PROPERTIES')
         org_id = self.get_organization(request)
         profile_id = None
         column_profile = None
