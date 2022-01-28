@@ -602,7 +602,8 @@ class PropertyState(models.Model):
         Merge together the old relationships with the new.
 
         :param merged_state: empty state to fill with merged state
-        :param state1
+        :param state1: *State
+        :param state2: *State - given priority over state1
         """
         from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure
