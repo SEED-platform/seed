@@ -171,7 +171,7 @@ class GeocodeAddresses(TestCase):
             self.assertEqual(-104.986138, refreshed_property.longitude)
             self.assertEqual(39.765251, refreshed_property.latitude)
 
-            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_tax_lot))
+            self.assertEqual('POINT (-104.991205 39.75251)', long_lat_wkt(refreshed_tax_lot))
             self.assertEqual('High (P1AAA)', refreshed_tax_lot.geocoding_confidence)
 
     def test_geocode_properties_with_custom_fields(self):
@@ -638,10 +638,10 @@ class GeocodeAddresses(TestCase):
 
             refreshed_updated_property = PropertyState.objects.get(pk=refreshed_property.id)
 
-            self.assertEqual('POINT (-104.991046 39.752396)', long_lat_wkt(refreshed_updated_property))
+            self.assertEqual('POINT (-104.991205 39.75251)', long_lat_wkt(refreshed_updated_property))
             self.assertEqual('High (P1AAA)', refreshed_updated_property.geocoding_confidence)
-            self.assertEqual(-104.991046, refreshed_updated_property.longitude)
-            self.assertEqual(39.752396, refreshed_updated_property.latitude)
+            self.assertEqual(-104.991205, refreshed_updated_property.longitude)
+            self.assertEqual(39.75251, refreshed_updated_property.latitude)
 
     def test_geocoded_fields_are_changed_appropriately_if_a_user_manually_updates_latitude_or_longitude_of_ungeocoded_property(self):
         property_details = self.property_state_factory.get_details()
