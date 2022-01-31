@@ -1989,7 +1989,9 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   padding-top: 10px;
   margin-top: 10px;
 }
-
+.export_progress {
+  padding: 0 20px 0 20px;
+}
 .btn-sm, .btn-xs {
   font-size: 13px;
 }
