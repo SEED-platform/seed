@@ -1013,6 +1013,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
+          backdrop: 'static',
           resolve: {
             ids: function () {
               var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
