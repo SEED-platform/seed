@@ -81,8 +81,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                         '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
         ),
-)
-
+    )
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
