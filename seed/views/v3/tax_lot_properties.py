@@ -11,7 +11,6 @@ import csv
 import datetime
 import io
 from collections import OrderedDict
-import logging
 import math
 
 import xlsxwriter
@@ -83,6 +82,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
         ),
 )
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -111,7 +111,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
         progress_key = progress_data.key
         progress_data = update_sub_progress_total(100, progress_key)
-        
+
         profile_id = None
         column_profile = None
         if 'profile_id' in request.data and str(request.data['profile_id']) not in ['None', '']:
@@ -186,7 +186,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             # add derived columns
             for derived_column in derived_columns:
                 data[i][derived_column.name] = derived_column.evaluate(inventory_state=record.state)
-            
+
             if batch_size > 0 and i % batch_size == 0:
                 progress_data.step('Exporting Inventory...')
 
