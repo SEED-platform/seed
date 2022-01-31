@@ -12,6 +12,7 @@ import datetime
 import io
 from collections import OrderedDict
 import logging
+import math
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
@@ -25,6 +26,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     PropertyView,
     TaxLotProperty,
@@ -46,6 +48,7 @@ from seed.serializers.tax_lot_properties import (
 )
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.match import update_sub_progress_total
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
@@ -79,7 +82,22 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                         '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
         ),
-    )
+)
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['GET'])
+    def start_export(self, request):
+        """
+        Download a collection of the TaxLot and Properties in multiple formats.
+        """
+        org_id = self.get_organization(request)
+
+        progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
+        progress_key = progress_data.key
+        progress_data = update_sub_progress_total(100, progress_key)
+        return progress_data.result()
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
@@ -88,8 +106,12 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats.
         """
-        logging.warning('>>> EXPORT PROPERTIES')
         org_id = self.get_organization(request)
+
+        progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
+        progress_key = progress_data.key
+        progress_data = update_sub_progress_total(100, progress_key)
+        
         profile_id = None
         column_profile = None
         if 'profile_id' in request.data and str(request.data['profile_id']) not in ['None', '']:
@@ -132,13 +154,16 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
+        progress_data.step('Exporting Inventory...')
         data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
 
         derived_columns = column_profile.derived_columns.all() if column_profile is not None else []
         column_name_mappings.update({dc.name: dc.name for dc in derived_columns})
+        progress_data.step('Exporting Inventory...')
 
         # add labels, notes, and derived columns
         include_notes = request.data.get('include_notes', True)
+        batch_size = math.ceil(len(model_views) / 98)
         for i, record in enumerate(model_views):
             label_string = []
             note_string = []
@@ -161,6 +186,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             # add derived columns
             for derived_column in derived_columns:
                 data[i][derived_column.name] = derived_column.evaluate(inventory_state=record.state)
+            
+            if batch_size > 0 and i % batch_size == 0:
+                progress_data.step('Exporting Inventory...')
 
         # force the data into the same order as the IDs
         if ids:
@@ -170,11 +198,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             else:
                 view_id_str = 'taxlot_view_id'
             data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
-
         export_type = request.data.get('export_type', 'csv')
 
         filename = request.data.get('filename', f"ExportedData.{export_type}")
-
+        progress_data.finish_with_success()
         if export_type == "csv":
             return self._csv_response(filename, data, column_name_mappings)
         elif export_type == "geojson":
