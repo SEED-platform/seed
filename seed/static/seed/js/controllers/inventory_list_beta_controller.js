@@ -870,9 +870,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             processData(data.results);
             $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
             evaluateDerivedColumns();
-            $scope.gridApi.selection.clearSelectedRows();
-            $scope.selectedCount = 0;
-            $scope.update_selected_display();
+            $scope.select_none();
             spinner_utility.hide();
           });
       };
@@ -1105,6 +1103,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           case 'open_ubid_modal': $scope.open_ubid_modal(selectedViewIds); break;
           case 'open_show_populated_columns_modal': $scope.open_show_populated_columns_modal(); break;
           case 'select_all': $scope.select_all(); break;
+          case 'select_none': $scope.select_none(); break;
           default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
         }
         $scope.model_actions = 'none';
@@ -1354,6 +1353,12 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
         $scope.selectedCount = $scope.inventory_pagination.total;
+        $scope.update_selected_display();
+      };
+
+      $scope.select_none = function () {
+        $scope.gridApi.selection.clearSelectedRows();
+        $scope.selectedCount = 0;
         $scope.update_selected_display();
       };
 
