@@ -47,7 +47,6 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
           organization_id: user_service.get_organization().id,
         }
       }).then(data => {
-        let progress_key = data.data.progress_key
         uploader_service.check_progress_loop(data.data.progress_key, 0, 1, 
           function () { }, 
           function () { }, 
@@ -66,8 +65,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
           },
           responseType: export_type === 'xlsx' ? 'arraybuffer' : undefined
         })
-      })
-      .then(function (response) {
+      }).then(function (response) {
         var blob_type = response.headers()['content-type'];
         var data;
         if (export_type === 'xlsx') {
