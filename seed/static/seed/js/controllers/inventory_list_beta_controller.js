@@ -871,6 +871,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
             evaluateDerivedColumns();
             $scope.gridApi.selection.clearSelectedRows();
+            $scope.selectedCount = 0;
             $scope.update_selected_display();
             spinner_utility.hide();
           });
@@ -1007,6 +1008,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
                 return !_.has(row, '$$treeLevel') && _.includes(result.property_states, row.property_state_id);
               });
             }
+          $scope.load_inventory(1);
           }
         }, function (result) {
           if (_.includes(['fail', 'incomplete'], result.delete_state)) $scope.load_inventory(1);
