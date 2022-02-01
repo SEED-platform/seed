@@ -85,21 +85,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @action(detail=False, methods=['GET'])
-    def start_export(self, request):
-        """
-        Download a collection of the TaxLot and Properties in multiple formats.
-        """
-        org_id = self.get_organization(request)
-
-        progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
-        progress_key = progress_data.key
-        progress_data = update_sub_progress_total(100, progress_key)
-        return progress_data.result()
-
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class('requires_member')
     @action(detail=False, methods=['POST'])
     def export(self, request):
         """
@@ -207,6 +192,21 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             return self._json_response(filename, data, column_name_mappings)
         elif export_type == "xlsx":
             return self._spreadsheet_response(filename, data, column_name_mappings)
+    
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['GET'])
+    def start_export(self, request):
+        """
+        Generate a ProgressData object that will be used to monitor property and tax lot exports
+        """
+        org_id = self.get_organization(request)
+
+        progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
+        progress_key = progress_data.key
+        progress_data = update_sub_progress_total(100, progress_key)
+        return progress_data.result()
 
     def _csv_response(self, filename, data, column_name_mappings):
         response = HttpResponse(content_type='text/csv')
