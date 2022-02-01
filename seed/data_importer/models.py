@@ -16,7 +16,6 @@ from urllib.parse import unquote
 from django.urls import reverse
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 from config.utils import de_camel_case
@@ -498,7 +497,6 @@ class ImportRecord(NotDeletableModel):
         self.merge_analysis_done = True
         self.merge_analysis_active = False
         self.is_imported_live = True
-        self.import_completed_at = timezone.now()
         self.save()
 
     def mark_merge_started(self):
