@@ -11,7 +11,7 @@ services:
   db-postgres:
     container_name: seed_postgres
     volumes:
-      - ref_seed_pgdata:/var/lib/postgresql/data
+      - ref_seed_pgdata:/var/lib/postgresql/data/pgdata
   web:
     container_name: seed_web
     image: seedplatform/seed:dev

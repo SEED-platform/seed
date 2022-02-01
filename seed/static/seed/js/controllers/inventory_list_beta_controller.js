@@ -1075,14 +1075,15 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         } else if ($scope.selectedCount == $scope.inventory_pagination.total) {
           selectedViewIds = [];
 
-          $http.post('/api/v3/properties/filter/', {}, {
-            params: {
-              organization_id: $scope.organization.org_id,
-              ids_only: true
-            }
-          }).then(function (response) {
-            $scope.run_action(response.data.results);
-          });
+          if ($scope.inventory_type === 'properties') {
+            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+              $scope.run_action(inventory_data.results);
+            });
+          } else if ($scope.inventory_type === 'taxlots') {
+            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+              $scope.run_action(inventory_data.results);
+            });
+          }
           return;
 
         // ... otherwise use what's selected in the grid
