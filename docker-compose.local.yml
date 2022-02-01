@@ -20,7 +20,7 @@ services:
       - POSTGRES_PASSWORD
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - seed_pgdata:/var/lib/postgresql/data/pgdta
+      - seed_pgdata:/var/lib/postgresql/data
       - $HOME/seed-backups:/backups
     ports:
       - "5432:5432"

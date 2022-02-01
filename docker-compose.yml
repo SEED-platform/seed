@@ -11,7 +11,7 @@ services:
       - POSTGRES_PASSWORD=super-secret-password
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
-      - seed_pgdata:/var/lib/postgresql/data/pgdata
+      - seed_pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     logging:
