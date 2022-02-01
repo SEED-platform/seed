@@ -48,8 +48,8 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
         }
       }).then(data => {
         uploader_service.check_progress_loop(data.data.progress_key, 0, 1, 
-          function () { undefined }, 
-          function () { undefined }, 
+          function () { }, 
+          function () { }, 
           $scope.exporter_progress)
       })
       return $http.post('/api/v3/tax_lot_properties/export/', {
