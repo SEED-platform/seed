@@ -85,11 +85,7 @@ class Command(BaseCommand):
             self.stdout.write('Not renaming, will not continue, exiting')
             exit()
 
-        # now go through and find the deleted=True and remove the records. Since
-        # ImportFile is a NonDeletableModel, we've added a new method in the
-        # model manager to return the default queryset with the deleted bool
-        # selected. A typical filter doesn't work because the deleted field is on
-        # an inherited model.
+        # now go through and find the deleted=True and remove the records
         if org_id:
             files = ImportFile.objects.get_all().filter(deleted=True, import_record__super_organization=org_id).exclude(file__exact='')
         else:
