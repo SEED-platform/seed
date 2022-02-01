@@ -24,8 +24,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # In local dev and production the files are in the media/uploads folder.
-        # Folder has: 4491 files
-        # Database has: 7306 files
         #
         # Steps to process
         #   1. The database has various paths of all the files as we have been
