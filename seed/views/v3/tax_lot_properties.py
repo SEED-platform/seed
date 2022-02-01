@@ -192,7 +192,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             return self._json_response(filename, data, column_name_mappings)
         elif export_type == "xlsx":
             return self._spreadsheet_response(filename, data, column_name_mappings)
-    
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
