@@ -48,7 +48,7 @@
               <auc:Address>
                 <auc:StreetAddressDetail>
                   <auc:Simplified>
-                    <auc:StreetAddress>123 Main St</auc:StreetAddress>
+                    <auc:StreetAddress>456 Main St</auc:StreetAddress>
                   </auc:Simplified>
                 </auc:StreetAddressDetail>
                 <auc:City>San Francisco</auc:City>
