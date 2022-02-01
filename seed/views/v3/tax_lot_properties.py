@@ -91,11 +91,11 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Download a collection of the TaxLot and Properties in multiple formats.
         """
         org_id = self.get_organization(request)
-        
+
         if request.data['progress_key']:
             progress_key = request.data['progress_key']
             progress_data = ProgressData.from_key(progress_key)
-        else: 
+        else:
             progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
             progress_key = progress_data.key
         progress_data = update_sub_progress_total(100, progress_key)
