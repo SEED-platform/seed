@@ -135,13 +135,15 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
         """
         Process the building file that was uploaded and create the correct models for the object
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
         :param property_view: Existing property view of the building file that will be updated from merging the property_view.state
+        :param promote_property_state: If no property_view is provided and this is True, it will promote the property state to a canonical property
+            WARNING: it is the caller's responsibility to link created Meters to canonical properties if they choose not to promote the property state!
         :return: list, [status, (PropertyState|None), (PropertyView|None), messages]
         """
 
@@ -378,11 +380,10 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view:
+        elif not property_view and promote_property_state:
             property_view = property_state.promote(cycle)
         else:
-            # invalid arguments, must pass both or neither
-            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+            return True, property_state, None, messages
 
         for meter in linked_meters:
             meter.property = property_view.property
