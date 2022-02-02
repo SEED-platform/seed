@@ -92,7 +92,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
 
-        if request.data['progress_key']:
+        if request.data.get('progress_key'):
             progress_key = request.data['progress_key']
             progress_data = ProgressData.from_key(progress_key)
         else:
