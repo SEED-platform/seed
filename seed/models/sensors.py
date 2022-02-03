@@ -21,3 +21,16 @@ class Sensor(models.Model):
     units = models.CharField(max_length=63)
 
     column_name = models.CharField(unique=True, max_length=255)
+
+
+class SensorReading(models.Model):
+    reading = models.FloatField(null=True)
+    timestamp = models.DateTimeField()
+    sensor = models.ForeignKey(
+        Sensor,
+        on_delete=models.CASCADE,
+        related_name='sensor_readings',
+    )
+
+    class Meta:
+        unique_together = ('timestamp', 'sensor')

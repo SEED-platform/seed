@@ -40,4 +40,17 @@
             </li>
         </ul>
     </div>
+    <div>
+        Sensors
+        <ul>
+            <li ng-repeat="row in data">
+                {$:: row.timestamp $}
+                <ul>
+                    <li ng-repeat="reading in row.readings">
+                        {$:: reading.sensor $}: {$:: reading.value $}
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
 </div>
