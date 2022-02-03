@@ -22,7 +22,7 @@ from math import ceil
 import zipfile
 import tempfile
 
-from celery import chord, shared_task
+from celery import chord, shared_task, group
 from celery import chain as celery_chain
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
@@ -1140,45 +1140,33 @@ def geocode_and_match_buildings_task(file_pk):
     if import_file.cycle is None:
         _log.warning("Import file cycle is None; This should never happen in production")
 
-    post_geocode_tasks = None
-    if import_file.from_buildingsync:
-        source_type_dict = {
-            'Portfolio Raw': PORTFOLIO_RAW,
-            'Assessed Raw': ASSESSED_RAW,
-            'BuildingSync Raw': BUILDINGSYNC_RAW
-        }
-        source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    # get the properties and chunk them into tasks
+    property_states = (
+        PropertyState.objects.filter(import_file_id=file_pk)
+        .exclude(data_state=DATA_STATE_IMPORT)
+        .only('id')
+        .iterator()
+    )
 
-        # get the properties and chunk them into tasks
-        qs = PropertyState.objects.filter(
-            import_file=import_file,
-            source_type=source_type,
-            data_state=DATA_STATE_MAPPING,
-        ).only('id').iterator()
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
 
-        id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-
-        post_geocode_tasks_count = len(id_chunks)
-        post_geocode_tasks = chord(
-            header=(_map_additional_models.si(ids, import_file.id, progress_data.key) for ids in id_chunks),
-            body=finish_mapping_additional_models.s(file_pk, progress_data.key))
-    else:
-        # Start, match, pair
-        post_geocode_tasks_count = 3
-        post_geocode_tasks = chord(
-            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
-            body=finish_matching.s(file_pk, progress_data.key),
-            interval=15)
-
-    geocoding_tasks_count = 1
-    progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
+    progress_data.total = (
+        1  # geocoding
+        + len(id_chunks)  # map additional models tasks
+        + 2  # match and link
+        + 1  # finish
+    )
     progress_data.save()
-    sub_progress_data.total = 100
-    sub_progress_data.save()
 
     celery_chain(
-        _geocode_properties_or_tax_lots.s(file_pk, progress_data.key, sub_progress_data.key),
-        post_geocode_tasks)()
+        _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
+        group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
+        finish_matching.s(file_pk, progress_data.key),
+    )()
+
+    sub_progress_data.total = 100
+    sub_progress_data.save()
 
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
@@ -1367,10 +1355,7 @@ def finish_matching(result, import_file_id, progress_key):
     import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
-    if isinstance(result, list) and len(result) == 1:
-        import_file.matching_results_data = result[0]
-    else:
-        raise Exception('there are more than one results for matching_results, need to merge')
+    import_file.matching_results_data = result
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -1446,21 +1431,17 @@ def _map_additional_models(ids, file_pk, progress_key):
     for property_state in property_states:
         if source_type == BUILDINGSYNC_RAW:
             # parse the rest of the models (scenarios, meters, etc) from the building file
-            # and create the property and property view
+            # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
+            # b/c that will be handled in the match/merge/linking later on
             building_file = property_state.building_files.get()
-            p_status, property_state, property_view, messages = building_file.process(
-                org.id, import_file.cycle)
+            success, property_state, _, messages = building_file.process(
+                org.id,
+                import_file.cycle,
+                promote_property_state=False
+            )
 
-            if not p_status or len(messages.get('errors', [])) > 0:
-                # something went wrong, save the messages and skip this file
+            if not success or messages.get('errors') or messages.get('warnings'):
                 progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-                continue
-            elif len(messages.get('warnings', [])) > 0:
-                # non-fatal warnings, add the info and continue to save the file
-                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-
-            property_state.data_state = DATA_STATE_MATCHING
-            property_state.save()
 
     progress_data.step()
 

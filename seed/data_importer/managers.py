@@ -12,3 +12,8 @@ class NotDeletedManager(models.Manager):
 
     def get_queryset(self, *args, **kwargs):
         return super().get_queryset(*args, **kwargs).exclude(deleted=True)
+
+    def get_all(self, *args, **kwargs):
+        """Method to return ALL ImportFiles, including the ones where `deleted == True` which are normally excluded.
+        This is used for database/filesystem cleanup."""
+        return super().get_queryset(*args, **kwargs)

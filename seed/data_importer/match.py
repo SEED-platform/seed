@@ -118,12 +118,22 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
     tax_lot_initial_incoming_count = incoming_tax_lots.count()
 
     if incoming_properties.exists():
+        # If importing BuildingSync, we will not just skip duplicates like we normally
+        # do. Since we don't skip them, they will eventually get merged into their "duplicate".
+        # We do this b/c though the property data might be the same, the Scenarios, Measures,
+        # or Meters might have been updated. The merging flow is able to "transfer"
+        # this data, while skipping duplicates cannot.
+        merge_duplicates = import_file.from_buildingsync
+
         # Within the ImportFile, filter out the duplicates.
         log_debug("Start Properties filter_duplicate_states")
-        promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
-            incoming_properties,
-            sub_progress_key,
-        )
+        if merge_duplicates:
+            promoted_property_ids, property_duplicates_within_file_count = incoming_properties.values_list('id', flat=True), 0
+        else:
+            promoted_property_ids, property_duplicates_within_file_count = filter_duplicate_states(
+                incoming_properties,
+                sub_progress_key,
+            )
 
         # Within the ImportFile, merge -States together based on user defined matching_criteria
         log_debug('Start Properties inclusive_match_and_merge')
@@ -142,6 +152,7 @@ def match_and_link_incoming_properties_and_taxlots(file_pk, progress_key, sub_pr
             import_file.cycle,
             PropertyState,
             sub_progress_key,
+            merge_duplicates,
         )
 
         # Look for links across Cycles
@@ -319,7 +330,7 @@ def inclusive_match_and_merge(unmatched_state_ids, org, StateClass, sub_progress
     return promoted_ids, merges_within_file
 
 
-def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key):
+def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_key, merge_duplicates=False):
     """
     The purpose of this method is to take incoming -States and, apply them to a
     -View. In the process of doing so, -States could be flagged for "deletion"
@@ -337,6 +348,8 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
     :param org: Organization object
     :param cycle: Cycle object
     :param StateClass: PropertyState or TaxLotState
+    :param merge_duplicates: bool, if True, we keep the duplicates and merge them
+        instead of skipping them. This is used when importing BuildingSync files.
     :return: processed_views, duplicate_count, new + matched counts
     """
     table_name = StateClass.__name__
@@ -354,12 +367,16 @@ def states_to_views(unmatched_state_ids, org, cycle, StateClass, sub_progress_ke
         pk__in=Subquery(existing_cycle_views.values('state_id'))
     )
 
-    # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
-    duplicate_states = StateClass.objects.filter(
-        pk__in=unmatched_state_ids,
-        hash_object__in=Subquery(existing_states.values('hash_object'))
-    )
-    duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
+    if merge_duplicates:
+        duplicate_states = StateClass.objects.none()
+        duplicate_count = 0
+    else:
+        # Apply DATA_STATE_DELETE to incoming duplicate -States of existing -States in Cycle
+        duplicate_states = StateClass.objects.filter(
+            pk__in=unmatched_state_ids,
+            hash_object__in=Subquery(existing_states.values('hash_object'))
+        )
+        duplicate_count = duplicate_states.update(data_state=DATA_STATE_DELETE)
 
     column_names = matching_criteria_column_names(org.id, table_name)
 
