@@ -32,25 +32,41 @@
     </div>
 </div>
 <div class="section_content_container" ng-cloak>
-    <div>
-        Sensors
-        <ul>
-            <li ng-repeat="sensor in sensor_selections">
-                {$:: sensor.label $}
-            </li>
-        </ul>
+    <div class="inventory-list-controls">
+        <div class="form-group" style="margin-left: 3px;">
+            <label>{$:: 'Interval' | translate $}:</label>
+            <div style="display: inline-block;">
+                <select class="form-control"
+                    ng-model="interval.selected"
+                    ng-change="refresh_readings()"
+                    ng-options="option for option in interval.options"
+                    style="margin-left: 10px;">
+                </select>
+            </div>
+        </div>
+        <div class="form-group" uib-dropdown is-open="sensors_options.isopen" auto-close="outsideClick" on-toggle="sensor_selection_toggled(open)" style="margin-top: 15px;">
+            <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                Filter Sensors <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" uib-dropdown-menu style="padding: 0px;">
+                <li ng-repeat="sensor in sensor_selections">
+                    <div>
+                        <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                            {$:: sensor.label $}<input type="checkbox" ng-model="sensor.selected" name="sensor.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                        </label>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
-    <div>
-        Sensors
-        <ul>
-            <li ng-repeat="row in data">
-                {$:: row.timestamp $}
-                <ul>
-                    <li ng-repeat="reading in row.readings">
-                        {$:: reading.sensor $}: {$:: reading.value $}
-                    </li>
-                </ul>
-            </li>
-        </ul>
+
+    
+    <div class="section_content" ng-show="has_readings">
+        <div id="grid-container">
+            <div ui-grid="gridOptions" ui-grid-resize-columns></div>
+        </div>
+    </div>
+    <div ng-hide="has_readings">
+        <div class="jumbotron text-center" translate>No Data</div>
     </div>
 </div>
