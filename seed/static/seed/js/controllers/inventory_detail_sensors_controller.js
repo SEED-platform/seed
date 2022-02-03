@@ -4,6 +4,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
     '$stateParams',
     'inventory_payload',
     'sensors',
+    'property_sensor_usage',
     'spinner_utility',
     'organization_payload',
     function (
@@ -11,6 +12,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $stateParams,
       inventory_payload,
       sensors,
+      property_sensor_usage,
       spinner_utility,
       organization_payload,
     ) {
@@ -18,6 +20,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+      $scope.property_sensor_usage = property_sensor_usage;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -36,6 +39,24 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           };
         });
       };
+
+      $scope.data = property_sensor_usage.readings.map(reading => {
+          readings = _.omit(reading, "timestamp");
+          readings_by_sensor = Object.keys(readings).map(function(key) {
+            return {
+              sensor: key,
+              value: readings[key]
+            }
+          });
+        
+          return {
+          timestamp: reading["timestamp"],
+          readings: readings_by_sensor
+        }
+      });
+
+      console.log($scope.data)
+
 
       var sorted_sensors = _.sortBy(sensors, ['id']);
       resetSelections();

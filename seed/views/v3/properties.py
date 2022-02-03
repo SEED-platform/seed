@@ -43,6 +43,7 @@ from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.sensors import PropertySensorReadingsExporter
 from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
@@ -214,6 +215,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         scenario_ids = [s.id for s in property_view.state.scenarios.all()]
 
         exporter = PropertyMeterReadingsExporter(property_id, org_id, excluded_meter_ids, scenario_ids=scenario_ids)
+
+        return exporter.readings_and_column_defs(interval)
+
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def sensor_usage(self, request, pk):
+        """
+        Retrieves sensor usage information
+        """
+        body = dict(request.data)
+        interval = body['interval']
+        excluded_sensor_ids = body['excluded_sensor_ids']
+        org_id = self.get_organization(request)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids)
 
         return exporter.readings_and_column_defs(interval)
 
