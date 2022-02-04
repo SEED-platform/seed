@@ -74,12 +74,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 'ids': ['integer'],
                 'filename': 'string',
                 'export_type': 'string',
-                'profile_id': 'integer'
+                'profile_id': 'integer',
+                'proress_key': 'string',
             },
             description='- ids: (View) IDs for records to be exported\n'
                         '- filename: desired filename including extension (defaulting to \'ExportedData.{export_type}\')\n'
                         '- export_types: \'csv\', \'geojson\', \'xlsx\' (defaulting to \'csv\')\n'
                         '- profile_id: Column List Profile ID to use for customizing fields included in export'
+                        '- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created.'
         ),
     )
     @api_endpoint_class
