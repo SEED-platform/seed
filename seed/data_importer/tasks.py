@@ -42,6 +42,7 @@ from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots,
 )
 from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.sensor_parser import SensorsParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -63,10 +64,12 @@ from seed.models import (
     Column,
     ColumnMapping,
     Meter,
+    Property,
     PropertyState,
     PropertyView,
     TaxLotView,
     TaxLotState,
+    Sensor,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
@@ -740,6 +743,11 @@ def finish_raw_save(results, file_pk, progress_key):
 
         new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
         finished_progress_data = progress_data.finish_with_success(new_summary)
+    elif import_file.source_type == "SensorMetaData":
+        import_file.cycle_id = None
+
+        new_summary = _append_sensor_import_results_to_summary(results)
+        finished_progress_data = progress_data.finish_with_success(new_summary)
     else:
         finished_progress_data = progress_data.finish_with_success()
 
@@ -819,6 +827,57 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
         tasks.append(_save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key))
 
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+@shared_task
+def _save_sensor_data_create_tasks(file_pk, progress_key):
+    """
+    Create GreenButton import tasks. Notably, 1 GreenButton import contains
+    data for 1 Property and 1 energy type. Subsequently, this means 1
+    GreenButton import contains MeterReadings for only 1 Meter.
+
+    By first getting or creating the single Meter for this file's MeterReadings,
+    the ID of this Meter can be passed to the individual tasks that will
+    actually create the readings.
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    org_id = import_file.cycle.organization.id
+    property_id = import_file.matching_results_data['property_id']
+    sensor_property = Property.objects.get(id=property_id)
+
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
+    import_file.save()
+
+    parser = SensorsParser.factory(
+        import_file.local_file,
+        org_id,
+        property_id=property_id
+    )
+    sensor_data = parser.get_validated_sensors()
+
+    sensors = []
+    for sensor_datum in sensor_data:
+        s, _ = Sensor.objects.get_or_create(**{
+            "column_name": sensor_datum["column_name"]
+        })
+        s.sensor_property = sensor_property
+        s.display_name =  sensor_datum["display_name"]
+        s.location_identifier = sensor_datum["location_identifier"]
+        s.description = sensor_datum["description"]
+        s.sensor_type = sensor_datum["type"]
+        s.units = sensor_datum["units"]
+
+        s.save()
+        sensors.append(s)
+
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.total = 0
+    progress_data.save()
+
+    return finish_raw_save(sensors, file_pk, progress_data.key)
 
 
 @shared_task
@@ -1027,6 +1086,20 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     return incoming_summary
 
 
+def _append_sensor_import_results_to_summary(import_results):
+    return [
+        {
+            "display_name": sensor.display_name,
+            "type": sensor.sensor_type,
+            "location_identifier": sensor.location_identifier,
+            "units": sensor.units,
+            "column_name": sensor.column_name,
+            "description": sensor.description,
+        }
+        for sensor in import_results
+    ]
+
+
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1105,6 +1178,8 @@ def save_raw_data(file_pk):
             _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
         elif import_file.source_type == 'GreenButton':
             _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
+        elif import_file.source_type == 'SensorMetaData':
+            _save_sensor_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
             _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
     except StopIteration:
