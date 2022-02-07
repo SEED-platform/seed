@@ -2253,8 +2253,14 @@ msgstr "Sécurité"
 msgid "SeedOrg"
 msgstr "SeedOrg"
 
+msgid "Select All"
+msgstr "Tout sélectionner"
+
 msgid "Select All Columns"
 msgstr "Sélectionnez toutes les colonnes"
+
+msgid "Select None"
+msgstr "Sélectionnez Aucun"
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
@@ -2505,8 +2511,7 @@ msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une applica
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "Les actions suivantes ont des effets destructeurs, veuillez lire tous les avertissements après avoir cliqué sur une option."
 
-msgid ""
-"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
 msgstr "Voici une liste des champs que nous utilisons pour faire correspondre les propriétés/lots d'impôt entre différents fichiers importés. Le plus de données que vous avez dans ces quatre domaines, le mieux notre système correspondra automatiquement à vos enregistrements."
 
@@ -2581,8 +2586,7 @@ msgstr "Type de soumission"
 msgid "Type of Submittal:"
 msgstr "Type de soumission:"
 
-msgid ""
-"U.S."
+msgid "U.S."
 "                        Department of Energy"
 msgstr "Département Américain de l'Énergie"
 
@@ -3116,6 +3120,9 @@ msgstr "enregistrant les données"
 
 msgid "saving energy data"
 msgstr "enregistreant des données de l’énergie"
+
+msgid "selected"
+msgstr "la sélection"
 
 #: seed/landing/models.py:60
 msgid "shows shared buildings within search results"

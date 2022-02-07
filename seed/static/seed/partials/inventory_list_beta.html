@@ -27,7 +27,9 @@
             <label>{$:: 'Actions' | translate $}:</label>
             <select id="select-actions" class="form-control input-sm grow" ng-model="model_actions" ng-change="run_action()">
                 <option value="none" selected="selected"></option>
-                <optgroup label="{$:: 'Selected ' + (inventory_type==='properties' ? 'Properties' : 'Taxlots') | translate $}">
+                <option value="select_all" ng-disabled="selectedCount === inventory_pagination.total">{$:: 'Select All' | translate $} ({$ inventory_pagination.total $}) </option>
+                <option value="select_none" ng-disabled="selectedCount < 1">{$:: 'Select None' | translate $}</option>
+                <optgroup label="{$:: 'Selected ' + (inventory_type === 'properties' ? 'Properties' : 'Taxlots') | translate $} ({$ selected_display $})">
                     <option value="open_merge_modal" ng-disabled="selectedParentCount < 2" translate>Merge</option>
                     <option value="open_delete_modal" ng-disabled="selectedCount === 0" translate>Delete</option>
                     <option value="open_export_modal" ng-disabled="selectedCount === 0" translate>Export</option>
@@ -79,8 +81,11 @@
 </div>
 
 <div class="inventory-list-tab-container">
-    <div class="item-count" ng-class="{'text-info': (filters_exist() || selected_labels.length)}">
+    <div class="item-count">
         {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+        <i ng-if="selectedCount > 0">
+            <span>({$ selected_display $}</span><span ng-if="selectedCount < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span><span ng-if="selectedCount === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span><span>)</span>
+        </i>
         <button
             ng-click="load_inventory(inventory_pagination.page - 1)"
             ng-disabled="!inventory_pagination.has_previous"
