@@ -22,7 +22,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
     'cycles',
     'profiles',
     'current_profile',
-    'labels',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -52,7 +51,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       cycles,
       profiles,
       current_profile,
-      labels,
       all_columns,
       derived_columns_payload,
       urls,
@@ -332,26 +330,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             return _.includes(_.toLower(lbl.name), _.toLower(query));
           }
         });
-      };
-
-      function updateApplicableLabels (current_labels) {
-        var inventoryIds;
-        if ($scope.inventory_type === 'properties') {
-          inventoryIds = _.map($scope.data, 'property_view_id').sort();
-        } else {
-          inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
-        }
-        $scope.labels = _.filter(current_labels, function (label) {
-          return _.some(label.is_applied, function (id) {
-            return _.includes(inventoryIds, id);
-          });
-        });
-        // Ensure that no previously-applied labels remain
-        // Filter on $scope.labels to refresh is_applied
-        $scope.selected_labels = _.filter($scope.labels, function (label) {
-          return _.find($scope.selected_labels, ['id', label.id]);
-        });
-        $scope.build_labels();
       };
 
       var filterUsingLabels = function () {
@@ -895,7 +873,23 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
-          updateApplicableLabels(current_labels);
+          var inventoryIds;
+          if ($scope.inventory_type === 'properties') {
+            inventoryIds = _.map($scope.data, 'property_view_id').sort();
+          } else {
+            inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
+          }
+          $scope.labels = _.filter(current_labels, function (label) {
+            return _.some(label.is_applied, function (id) {
+              return _.includes(inventoryIds, id);
+            });
+          });
+          // Ensure that no previously-applied labels remain
+          // Filter on $scope.labels to refresh is_applied
+          $scope.selected_labels = _.filter($scope.labels, function (label) {
+            return _.find($scope.selected_labels, ['id', label.id]);
+          });
+          $scope.build_labels();
           filterUsingLabels();
         });
       };
