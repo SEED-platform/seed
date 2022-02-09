@@ -42,7 +42,7 @@ angular.module('BE.seed.controller.export_inventory_modal', []).controller('expo
       var ext = '.' + export_type;
       if (!_.endsWith(filename, ext)) filename += ext;
       $scope.exporting = true
-      $http.get('/api/v3/tax_lot_properties/start_export', {}, {
+      $http.get('/api/v3/tax_lot_properties/start_export/', {
         params: {
           organization_id: user_service.get_organization().id,
         }
