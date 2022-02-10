@@ -369,6 +369,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         modalInstance.result.then(function () {
           //dialog was closed with 'Done' button.
           get_labels();
+          $scope.load_inventory(1);
         });
       };
 
