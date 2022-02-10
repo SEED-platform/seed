@@ -134,6 +134,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         // this only happens ONCE (after the ui-grid's saveState.restore has completed)
         if ($scope.restore_status === RESTORE_SETTINGS_DONE) {
           updateColumnFilterSort();
+          get_labels();
           $scope.load_inventory(1)
             .then(function () {
               $scope.restore_status = RESTORE_COMPLETE;
@@ -332,36 +333,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       };
 
       var filterUsingLabels = function () {
-        // Only submit the `id` of the label to the API.
-        var ids;
-        if ($scope.labelLogic === 'and') {
-          ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-          ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
-        }
-
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
-
-        if ($scope.selected_labels.length) {
-          _.forEach($scope.gridApi.grid.rows, function (row) {
-            var view_id;
-            if ($scope.inventory_type === 'properties') {
-              view_id = row.entity.property_view_id;
-            } else {
-              view_id = row.entity.taxlot_view_id;
-            }
-            if ($scope.labelLogic === 'exclude') {
-              if ((_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
-              else $scope.gridApi.core.clearRowInvisible(row);
-            } else {
-              if ((!_.includes(ids, view_id) && row.treeLevel === 0) || !_.has(row, 'treeLevel')) $scope.gridApi.core.setRowInvisible(row);
-              else $scope.gridApi.core.clearRowInvisible(row);
-            }
-          });
-        } else {
-          _.forEach($scope.gridApi.grid.rows, $scope.gridApi.core.clearRowInvisible);
-        }
-        _.delay($scope.updateHeight, 150);
+        $scope.load_inventory(1);
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
@@ -751,7 +724,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           _.merge(data[relatedIndex], aggregations);
         }
         $scope.data = data;
-        get_labels();
         $scope.updateQueued = true;
       };
 
@@ -763,12 +735,22 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           fn = inventory_service.get_taxlots;
         }
 
+        // add label filtering
+        let ids = undefined;
+        if ($scope.selected_labels.length) {
+          if ($scope.labelLogic === 'and') {
+            ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+          } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
+            ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
+          }
+        }
+
         return fn(
           page,
           chunk,
           $scope.cycle.selected_cycle,
           _.get($scope, 'currentProfile.id'),
-          undefined,
+          ids,
           true,
           $scope.organization.id,
           false,
@@ -875,17 +857,9 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           $scope.labels = _.filter(current_labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
-          // Ensure that no previously-applied labels remain
-          // Filter on $scope.labels to refresh is_applied
-          $scope.selected_labels = _.filter($scope.labels, function (label) {
-            return _.find($scope.selected_labels, ['id', label.id]);
-          });
           $scope.build_labels();
-          filterUsingLabels();
         });
       };
-
-      processData();
 
       $scope.open_ubid_modal = function (selectedViewIds) {
         $uibModal.open({
@@ -1428,12 +1402,10 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             var removed = _.difference($scope.selectedOrder, parentsSelectedIds);
             var added = _.difference(parentsSelectedIds, $scope.selectedOrder);
             if (removed.length === 1 && !added.length) {
-              // console.log('Removed ', removed);
               _.remove($scope.selectedOrder, function (item) {
                 return item === removed[0];
               });
             } else if (added.length === 1 && !removed.length) {
-              // console.log('Added ', added);
               $scope.selectedOrder.push(added[0]);
             }
             $scope.update_selected_display();
@@ -1469,7 +1441,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
               $scope.total = _.filter($scope.gridApi.core.getVisibleRows($scope.gridApi.grid), {treeLevel: 0}).length;
               if ($scope.updateQueued) {
                 $scope.updateQueued = false;
-                if ($scope.selected_labels.length) filterUsingLabels();
               }
             });
           }, 150));
