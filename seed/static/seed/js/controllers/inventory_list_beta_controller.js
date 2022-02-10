@@ -736,12 +736,15 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         }
 
         // add label filtering
-        let ids = undefined;
+        let include_ids = undefined;
+        let exclude_ids = undefined;
         if ($scope.selected_labels.length) {
           if ($scope.labelLogic === 'and') {
-            ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
-          } else if (_.includes(['or', 'exclude'], $scope.labelLogic)) {
-            ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
+            include_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+          } else if ($scope.labelLogic === 'or') {
+            include_ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
+          } else if ($scope.labelLogic === 'exclude') {
+            exclude_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
           }
         }
 
@@ -750,7 +753,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           chunk,
           $scope.cycle.selected_cycle,
           _.get($scope, 'currentProfile.id'),
-          ids,
+          include_ids,
+          exclude_ids,
           true,
           $scope.organization.id,
           false,
@@ -1033,11 +1037,11 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           selectedViewIds = [];
 
           if ($scope.inventory_type === 'properties') {
-            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           } else if ($scope.inventory_type === 'taxlots') {
-            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           }
