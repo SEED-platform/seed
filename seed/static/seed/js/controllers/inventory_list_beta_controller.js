@@ -180,7 +180,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           }
         }
       };
-      $scope.build_labels();
 
       // Builds the html to display labels associated with this row entity
       $scope.display_labels = function (entity) {
@@ -873,16 +872,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
 
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
-          var inventoryIds;
-          if ($scope.inventory_type === 'properties') {
-            inventoryIds = _.map($scope.data, 'property_view_id').sort();
-          } else {
-            inventoryIds = _.map($scope.data, 'taxlot_view_id').sort();
-          }
           $scope.labels = _.filter(current_labels, function (label) {
-            return _.some(label.is_applied, function (id) {
-              return _.includes(inventoryIds, id);
-            });
+            return !_.isEmpty(label.is_applied);
           });
           // Ensure that no previously-applied labels remain
           // Filter on $scope.labels to refresh is_applied
