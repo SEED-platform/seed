@@ -12,6 +12,7 @@ import datetime
 import io
 from collections import OrderedDict
 import math
+from random import randint
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
@@ -209,7 +210,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
 
-        progress_data = ProgressData(func_name='export_inventory', unique_id=org_id)
+        progress_data = ProgressData(func_name='export_inventory', unique_id=f'{org_id}{randint(10000, 99999)}')
         progress_key = progress_data.key
         progress_data = update_sub_progress_total(100, progress_key)
         return progress_data.result()
