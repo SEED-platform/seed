@@ -1,4 +1,8 @@
 """
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+"""
 Collects the various utility functions for doing a last-moment collapse of the
 Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
