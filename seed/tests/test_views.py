@@ -1072,6 +1072,7 @@ class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertEqual(rcycle['organization'], self.org.pk)
 
         self.assertEqual(len(results['taxlots']), 2)
+        results['taxlots'].sort(key=lambda x: x['id'])
 
         rtaxlot_view_1 = results['taxlots'][0]
         self.assertEqual(rtaxlot_view_1['id'], taxlot_view_1.pk)
