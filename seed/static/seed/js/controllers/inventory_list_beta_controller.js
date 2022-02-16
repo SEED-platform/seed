@@ -237,12 +237,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
       var localStorageKey = 'grid.' + $scope.inventory_type;
       var localStorageLabelKey = 'grid.' + $scope.inventory_type + '.labels';
 
-      // Reapply valid previously-applied labels
-      var ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
-      $scope.selected_labels = _.filter($scope.labels, function (label) {
-        return _.includes(ids, label.id);
-      });
-
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
       };
@@ -344,8 +338,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         localStorage.setItem('labelLogic', $scope.labelLogic);
         filterUsingLabels();
       };
-
-      $scope.$watchCollection('selected_labels', filterUsingLabels);
 
       /**
        Opens the update building labels modal.
@@ -834,6 +826,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             evaluateDerivedColumns();
             $scope.select_none();
             spinner_utility.hide();
+            loadSavedLabels();
           });
       };
 
@@ -857,11 +850,24 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         $scope.gridApi.core.raise.sortChanged();
       };
 
+      watchingSelectedLabels = false;
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
             return !_.isEmpty(label.is_applied);
           });
+
+          // load saved label filter
+          let ids = inventory_service.loadSelectedLabels(localStorageLabelKey);
+          $scope.selected_labels = _.filter($scope.labels, function (label) {
+            return _.includes(ids, label.id);
+          });
+
+          // watch for changes
+          if (!watchingSelectedLabels) {
+            watchingSelectedLabels = true;
+            $scope.$watchCollection('selected_labels', filterUsingLabels);
+          }
           $scope.build_labels();
         });
       };
