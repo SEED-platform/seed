@@ -733,7 +733,8 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
         let exclude_ids = undefined;
         if ($scope.selected_labels.length) {
           if ($scope.labelLogic === 'and') {
-            include_ids = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+            let intersection = _.intersection.apply(null, _.map($scope.selected_labels, 'is_applied'));
+            include_ids = intersection.length ? intersection : [0];
           } else if ($scope.labelLogic === 'or') {
             include_ids = _.union.apply(null, _.map($scope.selected_labels, 'is_applied'));
           } else if ($scope.labelLogic === 'exclude') {
