@@ -43,7 +43,7 @@ task manager (Celery) with:
 
 ```
 ./manage.py runserver
-celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events
+celery -A seed worker -l info -c 4 --max-tasks-per-child 1000 --events
 ```
 
 ### Developer Resources

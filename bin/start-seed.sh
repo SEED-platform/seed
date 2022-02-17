@@ -28,7 +28,7 @@ fi
 # Celery
 if [ ! -f $CELERY_PIDFILE ]; then
     printf "Starting Celery\n"
-    celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events --pidfile=$CELERY_PIDFILE > /tmp/celeryd.log 2>&1 &
+    celery -A seed worker -l info -c 4 --max-tasks-per-child 1000 --events --pidfile=$CELERY_PIDFILE > /tmp/celeryd.log 2>&1 &
 else
     printf "Celery is already running\n"
 fi
