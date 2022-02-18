@@ -49,7 +49,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return {order_by: sorts};
     }
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
@@ -82,7 +82,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         return $http.post('/api/v3/properties/filter/', {
           // Pass the specific ids if they exist
-          property_view_ids,
+          include_view_ids: include_view_ids,
+          exclude_view_ids: exclude_view_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
@@ -295,7 +296,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
@@ -323,7 +324,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         return $http.post('/api/v3/taxlots/filter/', {
           // Pass the specific ids if they exist
-          inventory_ids: inventory_ids,
+          include_view_ids: include_view_ids,
+          exclude_view_ids: exclude_view_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
