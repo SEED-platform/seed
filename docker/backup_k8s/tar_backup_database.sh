@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# This back up script grabs the lastest pg_dump, restores it, tars it, and
+# This back up script grabs the latest pg_dump, restores it, tars it, and
 # uploads it when SEED is running in a docker container. This is to be used
-# in conjunction with k8s and a CronJob task.
-
-DB_USERNAME=$1
+# in conjunction with k8s and a CronJob task, and runs as the `postgres` user.
 
 send_slack_notification(){
     if [ ! -z ${APP_SLACK_WEBHOOK} ]; then
@@ -15,7 +13,7 @@ send_slack_notification(){
     fi
 }
 
-# Verify that the following required enviroment variables are set
+# Verify that the following required environment variables are set
 if [ -z ${AWS_ACCESS_KEY_ID} ]; then
     echo "AWS_ACCESS_KEY_ID is not set"
     send_slack_notification "[ERROR-$ENVIRONMENT]-AWS_ACCESS_KEY_ID-not-configured"
@@ -40,47 +38,54 @@ if [ -z ${S3_BUCKET} ]; then
     exit 1
 fi
 
-if [ -z ${PGPASSWORD} ]; then
-    echo "PGPASSWORD is not set"
-    send_slack_notification "[ERROR-$ENVIRONMENT]-PGPASSWORD-not-configured"
+if [ -z ${POSTGRES_DB} ]; then
+    echo "POSTGRES_DB is not set"
+    send_slack_notification "[ERROR-$ENVIRONMENT]-POSTGRES_DB-not-configured"
     exit 1
 fi
 
-# Instal aws cli
-apk add --no-cache \
-    python3 \
-    py3-pip \
-&& pip3 install --upgrade pip \
-&& pip3 install awscli
+if [ -z ${POSTGRES_USER} ]; then
+    echo "POSTGRES_USER is not set"
+    send_slack_notification "[ERROR-$ENVIRONMENT]-POSTGRES_USER-not-configured"
+    exit 1
+fi
+
+if [ -z ${POSTGRES_PASSWORD} ]; then
+    echo "POSTGRES_PASSWORD is not set"
+    send_slack_notification "[ERROR-$ENVIRONMENT]-POSTGRES_PASSWORD-not-configured"
+    exit 1
+fi
 
 LATEST_DIR="$(aws s3 ls seed-dev1-backups | sort | tail -n 1 | awk -F' ' '{print $2}')"
+ARCHIVE=backup.tar.xz
 
-# if backup.tar already exists, for go rest of script
-if aws s3 ls  $S3_BUCKET/$LATEST_DIR | grep "backup.tar"; then
-    echo "There's already a backup for $LATEST_DIR"; 
+# if backup already exists, forgo rest of script
+if aws s3 ls $S3_BUCKET/$LATEST_DIR | grep $ARCHIVE; then
+    echo "There's already a backup for $LATEST_DIR";
     exit 0
-
 fi
 
 # work in the scratch volume for storage
 cd /scratch
 
 # Download latest S3 backup
-aws s3 cp $S3_BUCKET/$LATEST_DIR . --recursive --exclude "*" --include "*.dump"
+aws s3 cp $S3_BUCKET/$LATEST_DIR . --recursive --exclude "*" --include "seed*.dump"
 
-# Start postgres
-su postgres -c "initdb"
-su postgres -c "pg_ctl start"
+# Restart for timescale-tune to take effect
+pg_ctl restart
 
-# Restore db 
-su postgres -c "createuser ${DB_USERNAME}"
-su postgres -c "pg_restore -v -C -d postgres ./seed*.dump"
+# Restore db
+psql -U $POSTGRES_USER $POSTGRES_DB -c 'SELECT timescaledb_pre_restore();'
+pg_restore -U $POSTGRES_USER -d $POSTGRES_DB ./seed*.dump
+psql -U $POSTGRES_USER $POSTGRES_DB -c 'SELECT timescaledb_post_restore();'
 
 # Stop postgres
-su postgres -c "pg_ctl stop"
+pg_ctl stop
 
-# tar db
-tar -czf backup.tar /var/lib/postgresql/data
+# compress pgdata
+tar -cJf $ARCHIVE /var/lib/postgresql/data
 
-# push tared db to s3
-aws s3 cp backup.tar $S3_BUCKET/$LATEST_DIR
+# push archived db to s3
+aws s3 cp $ARCHIVE $S3_BUCKET/$LATEST_DIR
+
+exit 0
