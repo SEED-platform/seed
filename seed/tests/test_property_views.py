@@ -1227,6 +1227,7 @@ class PropertyViewExportTests(DataMappingBaseTestCase):
                           '<auc:Latitude>4444.0</auc:Latitude>', '<auc:Longitude>5555.0</auc:Longitude>']
         self.assertCountEqual(expected_diffs, diffs)
 
+
 class PropertySensorViewTests(DataMappingBaseTestCase):
     def setUp(self):
         self.user_details = {
@@ -1309,6 +1310,7 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         result_dict = json.loads(result.content)
 
         self.assertCountEqual([r["column_name"] for r in result_dict], ["sensor 3"])
+
 
 class PropertyMeterViewTests(DataMappingBaseTestCase):
     def setUp(self):
