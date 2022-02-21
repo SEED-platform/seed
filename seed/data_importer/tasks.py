@@ -841,7 +841,6 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    org_id = import_file.cycle.organization.id
     property_id = import_file.matching_results_data['property_id']
     sensor_property = Property.objects.get(id=property_id)
 
@@ -858,7 +857,7 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
             "column_name": sensor_datum["column_name"],
             "sensor_property": sensor_property
         })
-        s.display_name =  sensor_datum["display_name"]
+        s.display_name = sensor_datum["display_name"]
         s.location_identifier = sensor_datum["location_identifier"]
         s.description = sensor_datum["description"]
         s.sensor_type = sensor_datum["type"]
