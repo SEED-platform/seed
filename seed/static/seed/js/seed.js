@@ -1441,13 +1441,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
           }],
-          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
-              return _.filter(labels, function (label) {
-                return !_.isEmpty(label.is_applied);
-              });
-            });
-          }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns();
