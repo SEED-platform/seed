@@ -2,15 +2,25 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
   .controller('inventory_detail_sensors_controller', [
     '$scope',
     '$stateParams',
+    '$window',
+    'cycles',
+    'inventory_service',
     'inventory_payload',
     'sensors',
+    'sensor_service',
+    'property_sensor_usage',
     'spinner_utility',
     'organization_payload',
     function (
       $scope,
       $stateParams,
+      $window,
+      cycles,
+      inventory_service,
       inventory_payload,
       sensors,
+      sensor_service,
+      property_sensor_usage,
       spinner_utility,
       organization_payload,
     ) {
@@ -18,13 +28,15 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
+      $scope.property_sensor_usage = property_sensor_usage;
+      $scope.filler_cycle = cycles.cycles[0].id;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
 
       var getSensorLabel = function (sensor) {
-        return sensor.display_name + " - " + sensor.units;
+        return sensor.display_name;
       };
 
       var resetSelections = function () {
@@ -37,8 +49,174 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         });
       };
 
+      $scope.data = property_sensor_usage.readings.map(reading => {
+          readings = _.omit(reading, "timestamp");
+          readings_by_sensor = Object.keys(readings).map(function(key) {
+            return {
+              sensor: key,
+              value: readings[key]
+            }
+          });
+        
+          return {
+          timestamp: reading["timestamp"],
+          readings: readings_by_sensor
+        }
+      });
+
+      // On page load, all sensors and readings
+      $scope.has_sensor_readings = $scope.data.length > 0;
+      $scope.has_sensors = sensors.length > 0;
+
       var sorted_sensors = _.sortBy(sensors, ['id']);
       resetSelections();
+
+      $scope.sensor_selection_toggled = function (is_open) {
+        if (!is_open) {
+          $scope.applyFilters();
+        }
+      };
+
+      var base_sensor_col_defs = [{
+          field: 'display_name',
+          enableHiding: false,
+          type: 'string'
+        }, {
+          field: 'type',
+          enableHiding: false
+        }, {
+          field: 'location_identifier',
+          displayName: 'location identifier',        
+          enableHiding: false
+        },{
+          field: 'units',
+          enableHiding: false
+        }, {
+          field: 'column_name',
+          enableHiding: false
+        },{
+          field: 'description',
+          enableHiding: false
+      }];
+
+      $scope.sensorGridOptions = {
+        data: sensors,
+        columnDefs: base_sensor_col_defs,
+        enableColumnResizing: true,
+        enableFiltering: true,
+        flatEntityAccess: true,
+        fastWatch: true,
+      };
+
+      $scope.usageGridOptions = {
+        data: 'data',
+        columnDefs: property_sensor_usage.column_defs,
+        enableColumnResizing: true,
+        enableFiltering: true,
+        flatEntityAccess: true,
+        fastWatch: true,
+      };
+
+      $scope.apply_column_settings = function () {
+        _.forEach($scope.usageGridOptions.columnDefs, function (column) {
+          column.enableHiding = false;
+          column.enableColumnResizing = true;
+
+          if (column.field === 'year') {
+            // Filter years like integers
+            column.filter = inventory_service.combinedFilter();
+          } else if (column._filter_type === 'reading') {
+            column.cellFilter = 'number: 2';
+            column.filter = inventory_service.combinedFilter();
+          } else if (column._filter_type === 'datetime') {
+            column.filter = inventory_service.dateFilter();
+          }
+        });
+      };
+
+      $scope.apply_column_settings();
+
+      // Ideally, these should be translatable, but the "selected" property
+      // should always be in English as this gets sent to BE.
+      $scope.interval = {
+        options: [
+          'Exact',
+          'Month',
+          'Year'
+        ],
+        selected: 'Exact'
+      };
+
+      // given a list of sensor labels, it returns the filtered readings and column defs
+      // This is used by the primary filterBy... functions
+      var filterBySensorLabels = function filterBySensorLabels (readings, columnDefs, sensorLabels) {
+        var timeColumns = ['timestamp', 'month', 'year'];
+        var selectedColumns = sensorLabels.concat(timeColumns);
+        var filteredReadings = readings.map(function (reading) {
+          return Object.entries(reading).reduce(function (newReading, _ref) {
+            var key = _ref[0],
+              value = _ref[1];
+
+            if (selectedColumns.includes(key)) {
+              newReading[key] = value;
+            }
+
+            return newReading;
+          }, {});
+        });
+
+        var filteredColumnDefs = columnDefs.filter(function (columnDef) {
+          return selectedColumns.includes(columnDef.field);
+        });
+        return {
+          readings: filteredReadings,
+          columnDefs: filteredColumnDefs
+        };
+      };
+
+      // given the sensor selections, it returns the filtered readings and column defs
+      var filterBySensorSelections = function (readings, columnDefs, sensorSelections) {
+        // filter according to sensor selections
+        var selectedSensorLabels = sensorSelections.filter(function (selection) {
+          return selection.selected;
+        })
+          .map(function (selection) {
+            return selection.label;
+          });
+        
+        return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
+      };
+
+      // filters the sensor readings by selected sensors and updates the table
+      $scope.applyFilters = function () {
+        results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.sensor_selections);
+        readings = results.readings;
+        columnDefs = results.columnDefs;
+
+        $scope.data = readings;
+        $scope.usageGridOptions.columnDefs = columnDefs;
+        $scope.has_sensor_readings = $scope.data.length > 0;
+        $scope.apply_column_settings();
+      };
+
+      // refresh_readings make an API call to refresh the base readings data
+      // according to the selected interval
+      $scope.refresh_readings = function () {
+        spinner_utility.show();
+        sensor_service.property_sensor_usage(
+          $scope.inventory.view_id,
+          $scope.organization.id,
+          $scope.interval.selected,
+          [] // Not excluding any sensors from the query
+        ).then(function (usage) {
+          // update the base data and reset filters
+          property_sensor_usage = usage;
+
+          resetSelections();
+          $scope.applyFilters();
+          spinner_utility.hide();
+        });
+      };
 
       $scope.inventory_display_name = function (property_type) {
         let error = '';

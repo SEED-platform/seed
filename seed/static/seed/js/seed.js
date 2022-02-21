@@ -1747,9 +1747,16 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             });
             return promise;
           }],
+          property_sensor_usage: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
+            var organization_id = user_service.get_organization().id;
+            return sensor_service.property_sensor_usage($stateParams.view_id, organization_id, 'Exact');
+          }],
           sensors: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
             var organization_id = user_service.get_organization().id;
             return sensor_service.get_sensors($stateParams.view_id, organization_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
             return organization_service.get_organization(user_service.get_organization().id);

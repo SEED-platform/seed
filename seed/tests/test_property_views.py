@@ -47,7 +47,7 @@ from seed.models import (
     ColumnMappingProfile,
     Organization,
 )
-from seed.models.sensors import Sensor
+from seed.models.sensors import Sensor, SensorReading
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeColumnFactory,
@@ -1310,6 +1310,98 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         result_dict = json.loads(result.content)
 
         self.assertCountEqual([r["column_name"] for r in result_dict], ["sensor 3"])
+
+    def test_property_sensor_usage_returns_sensor_readings(self):
+        s1 = Sensor.objects.create(**{
+            "sensor_property": self.property_1,
+            "display_name": "s1",
+            "sensor_type": "first",
+            "units": "one",
+            "column_name": "sensor 1"
+        })
+        s2 = Sensor.objects.create(**{
+            "sensor_property": self.property_1,
+            "display_name": "s2",
+            "sensor_type": "second",
+            "units": "two",
+            "column_name": "sensor 2"
+        })
+
+        tz_obj = timezone(TIME_ZONE)
+        timestamps = [
+            make_aware(datetime(year, month, day), timezone=tz_obj)
+            for day in [10, 20]
+            for month in [1, 2]
+            for year in [2000, 2100]
+        ]
+
+        s1_reading = 0.0
+        s2_reading = 10.0
+        except_results = []
+        for timestamp in timestamps:
+            SensorReading.objects.create(**{
+                "reading": s1_reading,
+                "timestamp": timestamp,
+                "sensor": s1
+            })
+            SensorReading.objects.create(**{
+                "reading": s2_reading,
+                "timestamp": timestamp,
+                "sensor": s2
+            })
+            except_results.append({
+                "timestamp": str(timestamp.replace(tzinfo=None)),
+                s1.display_name: s1_reading,
+                s2.display_name: s2_reading
+            })
+            s1_reading += 1
+            s2_reading += 1
+
+        url = reverse('api:v3:properties-sensor-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+        post_params = json.dumps({
+            'interval': 'Exact',
+            'excluded_sensor_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = json.loads(result.content)
+        self.assertCountEqual(result_dict["readings"], except_results)
+
+        url = reverse('api:v3:properties-sensor-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+        post_params = json.dumps({
+            'interval': 'Month',
+            'excluded_sensor_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = json.loads(result.content)
+
+        self.assertCountEqual(
+            result_dict["readings"],
+            [
+                {'month': 'January 2000', 's1': 4.0, 's2': 24.0},
+                {'month': 'February 2000', 's1': 8.0, 's2': 28.0},
+                {'month': 'January 2100', 's1': 6.0, 's2': 26.0},
+                {'month': 'February 2100', 's1': 10.0, 's2': 30.0}
+            ]
+        )
+
+        url = reverse('api:v3:properties-sensor-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+        post_params = json.dumps({
+            'interval': 'Year',
+            'excluded_sensor_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = json.loads(result.content)
+
+        self.assertCountEqual(
+            result_dict["readings"],
+            [
+                {'year': 2000, 's1': 12.0, 's2': 52.0},
+                {'year': 2100, 's1': 16.0, 's2': 56.0},
+            ]
+        )
 
 
 class PropertyMeterViewTests(DataMappingBaseTestCase):
