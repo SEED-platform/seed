@@ -34,6 +34,9 @@
 <div class="section_content_container" ng-cloak style="padding-left:15px; padding-right:15px;">
 
     <div id="sensor-info-container">
+        <div class="btn-group" style="padding-top: 15px;">
+            <button type="button" ng-click="open_sensor_upload_modal()" class="btn btn-primary" translate>UPLOAD_SENSOR_BUTTON</button>
+        </div>
         <div id="grid-container" style="padding-top: 15px">
             <div ng-show="has_sensors">
                 <div ui-grid="sensorGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
