@@ -92,4 +92,6 @@ tar -cJf $ARCHIVE /var/lib/postgresql/data
 # push archived db to s3
 aws s3 cp $ARCHIVE $S3_BUCKET/$LATEST_DIR
 
+send_slack_notification "[$ENVIRONMENT]-tar-db-backup-uploaded-to-$S3_BUCKET/$LATEST_DIR/$ARCHIVE"
+
 exit 0
