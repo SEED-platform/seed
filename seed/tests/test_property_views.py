@@ -1379,10 +1379,10 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'month': 'January 2000', 's1': 4.0, 's2': 24.0},
-                {'month': 'February 2000', 's1': 8.0, 's2': 28.0},
-                {'month': 'January 2100', 's1': 6.0, 's2': 26.0},
-                {'month': 'February 2100', 's1': 10.0, 's2': 30.0}
+                {'month': 'January 2000', 's1': 2.0, 's2': 12.0},
+                {'month': 'February 2000', 's1': 4.0, 's2': 14.0},
+                {'month': 'January 2100', 's1': 3.0, 's2': 13.0},
+                {'month': 'February 2100', 's1': 5.0, 's2': 15.0}
             ]
         )
 
@@ -1398,8 +1398,8 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'year': 2000, 's1': 12.0, 's2': 52.0},
-                {'year': 2100, 's1': 16.0, 's2': 56.0},
+                {'year': 2000, 's1': 3.0, 's2': 13.0},
+                {'year': 2100, 's1': 4.0, 's2': 14.0},
             ]
         )
 
