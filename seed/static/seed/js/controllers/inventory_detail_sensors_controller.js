@@ -2,26 +2,32 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
   .controller('inventory_detail_sensors_controller', [
     '$scope',
     '$stateParams',
+    '$uibModal',
     '$window',
     'cycles',
+    'dataset_service',
     'inventory_service',
     'inventory_payload',
     'sensors',
     'sensor_service',
     'property_sensor_usage',
     'spinner_utility',
+    'urls',
     'organization_payload',
     function (
       $scope,
       $stateParams,
+      $uibModal,
       $window,
       cycles,
+      dataset_service,
       inventory_service,
       inventory_payload,
       sensors,
       sensor_service,
       property_sensor_usage,
       spinner_utility,
+      urls,
       organization_payload,
     ) {
       spinner_utility.show();
@@ -215,6 +221,29 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           resetSelections();
           $scope.applyFilters();
           spinner_utility.hide();
+        });
+      };
+      
+      $scope.open_sensor_upload_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sensor_upload_modal.html',
+          controller: 'sensor_upload_modal_controller',
+          resolve: {
+            filler_cycle: function () {
+              return $scope.filler_cycle;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            datasets: function () {
+              return dataset_service.get_datasets().then(function (result) {
+                return result.datasets;
+              });
+            }
+          }
         });
       };
 
