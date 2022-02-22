@@ -830,13 +830,7 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
 @shared_task
 def _save_sensor_data_create_tasks(file_pk, progress_key):
     """
-    Create GreenButton import tasks. Notably, 1 GreenButton import contains
-    data for 1 Property and 1 energy type. Subsequently, this means 1
-    GreenButton import contains MeterReadings for only 1 Meter.
-
-    By first getting or creating the single Meter for this file's MeterReadings,
-    the ID of this Meter can be passed to the individual tasks that will
-    actually create the readings.
+    Create or Edit Sensor tasks. Creates mutliple sensors for the same property.
     """
     progress_data = ProgressData.from_key(progress_key)
 
