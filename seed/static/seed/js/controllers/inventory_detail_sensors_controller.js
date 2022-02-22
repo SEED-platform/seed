@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       $scope.usageGridOptions = {
-        data: 'data',
+        data: property_sensor_usage.readings,
         columnDefs: property_sensor_usage.column_defs,
         enableColumnResizing: true,
         enableFiltering: true,
@@ -201,6 +201,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
         $scope.data = readings;
         $scope.usageGridOptions.columnDefs = columnDefs;
+        $scope.usageGridOptions.data = readings;
         $scope.has_sensor_readings = $scope.data.length > 0;
         $scope.apply_column_settings();
       };
@@ -228,6 +229,29 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/sensor_upload_modal.html',
           controller: 'sensor_upload_modal_controller',
+          resolve: {
+            filler_cycle: function () {
+              return $scope.filler_cycle;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            datasets: function () {
+              return dataset_service.get_datasets().then(function (result) {
+                return result.datasets;
+              });
+            }
+          }
+        });
+      };
+
+      $scope.open_sensor_readings_upload_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sensor_readings_upload_modal.html',
+          controller: 'sensor_readings_upload_modal_controller',
           resolve: {
             filler_cycle: function () {
               return $scope.filler_cycle;
