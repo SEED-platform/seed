@@ -26,7 +26,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
-                         Simulation)
+                         Sensor, Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
 from seed.serializers.pint import (PintJSONEncoder)
@@ -43,6 +43,7 @@ from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.sensors import PropertySensorReadingsExporter
 from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
@@ -217,6 +218,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return exporter.readings_and_column_defs(interval)
 
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def sensor_usage(self, request, pk):
+        """
+        Retrieves sensor usage information
+        """
+        body = dict(request.data)
+        interval = body['interval']
+        excluded_sensor_ids = body['excluded_sensor_ids']
+        org_id = self.get_organization(request)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids)
+
+        return exporter.readings_and_column_defs(interval)
+
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -254,6 +277,36 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'source_id': source_id,
                 'scenario_id': meter.scenario.id if meter.scenario is not None else None,
                 'scenario_name': meter.scenario.name if meter.scenario is not None else None
+            })
+
+        return res
+
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def sensors(self, request, pk):
+        """
+        Retrieves sensors for the property
+        """
+        org_id = self.get_organization(request)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        res = []
+        for sensor in Sensor.objects.filter(Q(sensor_property_id=property_id)):
+            res.append({
+                'id': sensor.id,
+                'display_name': sensor.display_name,
+                'location_identifier': sensor.location_identifier,
+                'description': sensor.description,
+                'type': sensor.sensor_type,
+                'units': sensor.units,
+                'column_name': sensor.column_name
             })
 
         return res

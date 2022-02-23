@@ -94,9 +94,13 @@ def get_filtered_results(request: Request, inventory_type: Literal['property', '
 
     views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
 
-    # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
-    if f'{inventory_type}_view_ids' in request.data and request.data[f'{inventory_type}_view_ids']:
-        views_list = views_list.filter(id__in=request.data[f'{inventory_type}_view_ids'])
+    # return property views limited to the 'include_view_ids' list if not empty
+    if 'include_view_ids' in request.data and request.data['include_view_ids']:
+        views_list = views_list.filter(id__in=request.data['include_view_ids'])
+
+    # exclude property views limited to the 'exclude_view_ids' list if not empty
+    if 'exclude_view_ids' in request.data and request.data['exclude_view_ids']:
+        views_list = views_list.exclude(id__in=request.data['exclude_view_ids'])
 
     if ids_only:
         id_list = list(views_list.values_list('id', flat=True))

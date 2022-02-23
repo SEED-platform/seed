@@ -2,7 +2,7 @@
 
 # This backup script creates nightly database and media file backups of SEED when SEED is running
 # in a docker container. This is to be used in conjunction with k8s and
-# a CronJob task. 
+# a CronJob task.
 
 DB_HOST=$1
 DB_NAME=$2
@@ -17,7 +17,7 @@ send_slack_notification(){
     fi
 }
 
-# Verify that the following required enviroment variables are set
+# Verify that the following required environment variables are set
 if [ -z ${AWS_ACCESS_KEY_ID} ]; then
     echo "AWS_ACCESS_KEY_ID is not set"
     send_slack_notification "[ERROR-$ENVIRONMENT]-AWS_ACCESS_KEY_ID-not-configured"
@@ -101,7 +101,7 @@ done
 for file in $BACKUP_DIR/*.tgz
 do
   echo "Backing up $file $S3_BUCKET/$RUN_DATE/"
-  
+
   if [ ! -s $file ]; then
     # the file is empty, send an error
     send_slack_notification "[ERROR-$ENVIRONMENT]-Mediadata-backup-file-was-empty-or-missing"
@@ -122,13 +122,13 @@ send_slack_notification "[$ENVIRONMENT]-database-backup-run-completed"
 
 # Daily - add dates in format "2021-10-22" to the keep array.
 for i in {0..60}
-do 
-    ((keep[$(date +%Y%m%d -d "-$i day")]++))  
+do
+    ((keep[$(date +%Y%m%d -d "-$i day")]++))
 done
 
 # Last 52 weeks of Monday morning backups. "monday-i week" is method to get previous monday back i times.
 for i in {0..52}
-do 
+do
     vali=$((i+1))
     ((keep[$(date "+%Y%m%d" -d "monday-$vali week")]++))
 done
@@ -146,7 +146,7 @@ done
 # Query S3 to find all the dates that exist. Mapfile converts output or CRLF stdout to array in bash.
 mapfile s3dirs < <(aws s3 ls $S3_BUCKET | awk '{print $2}')
 
-# Iterate to find which backups need to be removed 
+# Iterate to find which backups need to be removed
 for s3dir in "${s3dirs[@]}"
 do
     date_found=false
@@ -160,9 +160,9 @@ do
     done
 
     # This method can be quite destructive and delete any
-    # files that are in the date format. Be sure to 
-    # test this script before deploying in any production 
-    # environment. It will only remove directories that 
+    # files that are in the date format. Be sure to
+    # test this script before deploying in any production
+    # environment. It will only remove directories that
     # have a YYYY-MM-DD format
     if [ "$date_found" = false ] && [[ "${s3dir:0:10}" =~ ^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$ ]]; then
         echo "Deleting out of date backup of ${s3dir:0:10}"
