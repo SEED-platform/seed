@@ -99,7 +99,6 @@ def version(request):
 
 
 def error404(request, exception):
-    return redirect('/')
     # Leaving original code commented as redirecting to '/' is likely a temporary fix
 
     # if '/api/' in request.path:
@@ -112,10 +111,10 @@ def error404(request, exception):
     #     response.status_code = 404
     #     response.message = 'there was an error' # this didnt work.
     #     return response
+    return redirect('/')
 
 
 def error500(request):
-    return redirect('/')
     # Leaving original code commented as redirecting to '/' is likely a temporary fix
 
     # if '/api/' in request.path:
@@ -127,6 +126,7 @@ def error500(request):
     #     response = render(request, 'seed/500.html', {})
     #     response.status_code = 500
     #     return response
+    return redirect('/')
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
