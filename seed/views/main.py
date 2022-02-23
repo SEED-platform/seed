@@ -100,19 +100,33 @@ def version(request):
 
 def error404(request, exception):
     return redirect('/')
+    # Leaving original code commented as redirecting to '/' is likely a temporary fix
+
+    # if '/api/' in request.path:
+    #     return JsonResponse({
+    #         "status": "error",
+    #         "message": "Endpoint could not be found",
+    #     }, status=status.HTTP_404_NOT_FOUND)
+    # else:
+    #     response = render(request, 'seed/404.html', {})
+    #     response.status_code = 404
+    #     response.message = 'there was an error' # this didnt work.
+    #     return response
 
 
 def error500(request):
-    # Okay, this is a bit of a hack. Needed to move on.
-    if '/api/' in request.path:
-        return JsonResponse({
-            "status": "error",
-            "message": "Internal server error",
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    else:
-        response = render(request, 'seed/500.html', {})
-        response.status_code = 500
-        return response
+    return redirect('/')
+    # Leaving original code commented as redirecting to '/' is likely a temporary fix
+
+    # if '/api/' in request.path:
+    #     return JsonResponse({
+    #         "status": "error",
+    #         "message": "Internal server error",
+    #     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    # else:
+    #     response = render(request, 'seed/500.html', {})
+    #     response.status_code = 500
+    #     return response
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
