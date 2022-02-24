@@ -16,6 +16,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from past.builtins import basestring
 from rest_framework.decorators import api_view
+from rest_framework import status
 
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -98,34 +99,27 @@ def version(request):
 
 
 def error404(request, exception):
-    # Leaving original code commented as redirecting to '/' is likely a temporary fix
-
-    # if '/api/' in request.path:
-    #     return JsonResponse({
-    #         "status": "error",
-    #         "message": "Endpoint could not be found",
-    #     }, status=status.HTTP_404_NOT_FOUND)
-    # else:
-    #     response = render(request, 'seed/404.html', {})
-    #     response.status_code = 404
-    #     response.message = 'there was an error' # this didnt work.
-    #     return response
-    return redirect('/')
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Endpoint could not be found",
+        }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        response = render(request, 'seed/404.html', {})
+        response.status_code = 404
+        return response
 
 
 def error500(request):
-    # Leaving original code commented as redirecting to '/' is likely a temporary fix
-
-    # if '/api/' in request.path:
-    #     return JsonResponse({
-    #         "status": "error",
-    #         "message": "Internal server error",
-    #     }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    # else:
-    #     response = render(request, 'seed/500.html', {})
-    #     response.status_code = 500
-    #     return response
-    return redirect('/')
+    if '/api/' in request.path:
+        return JsonResponse({
+            "status": "error",
+            "message": "Internal server error",
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+        response = render(request, 'seed/500.html', {})
+        response.status_code = 500
+        return response
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
