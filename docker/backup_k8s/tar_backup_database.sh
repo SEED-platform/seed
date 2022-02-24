@@ -67,6 +67,10 @@ fi
 
 # work in the scratch volume for storage
 cd /scratch
+# make sure that the scratch volume does not have
+# any preexisting dumps as it will crash the pg_restore
+# command below.
+rm -f seed*.dump
 
 # Download latest S3 backup
 aws s3 cp $S3_BUCKET/$LATEST_DIR . --recursive --exclude "*" --include "seed*.dump"
@@ -87,5 +91,7 @@ tar -cJf $ARCHIVE /var/lib/postgresql/data
 
 # push archived db to s3
 aws s3 cp $ARCHIVE $S3_BUCKET/$LATEST_DIR
+
+send_slack_notification "[$ENVIRONMENT]-tar-db-backup-uploaded-to-$S3_BUCKET/$LATEST_DIR/$ARCHIVE"
 
 exit 0
