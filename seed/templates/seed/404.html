@@ -4,10 +4,7 @@
 {% endblock %}
 
 {% block content %}
-    <div ng-controller="menu_controller">
-
-        {% include "seed/_sidebar.html" %}
-
+    <div>
         <div class="display">
             <div ng-class="{narrow: narrow_controller, wide: wide_controller, content: true, hide_transition:is_initial_state}">
 
