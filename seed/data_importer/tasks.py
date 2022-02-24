@@ -33,6 +33,7 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
+from seed.models.sensors import SensorReading
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
@@ -42,6 +43,7 @@ from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots,
 )
 from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -746,6 +748,10 @@ def finish_raw_save(results, file_pk, progress_key):
         import_file.cycle_id = None
         new_summary = _append_sensor_import_results_to_summary(results)
         finished_progress_data = progress_data.finish_with_success(new_summary)
+
+    elif import_file.source_type == "SensorReadings":
+        finished_progress_data = progress_data.finish_with_success(results)
+
     else:
         finished_progress_data = progress_data.finish_with_success()
 
@@ -865,6 +871,53 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     progress_data.save()
 
     return finish_raw_save(sensors, file_pk, progress_data.key)
+
+
+@shared_task
+def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    org_id = import_file.cycle.organization.id
+    property_id = import_file.matching_results_data['property_id']
+
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
+    import_file.save()
+
+    parser = SensorsReadingsParser.factory(
+        import_file.local_file,
+        org_id,
+        property_id=property_id
+    )
+    sensor_readings_data = parser.sensor_readings_details
+
+    sensor_readings_summary = []
+    for sensor_column_name, readings in sensor_readings_data.items():
+        sensor = Sensor.objects.get(column_name=sensor_column_name)
+
+        num_readings = 0
+        if sensor:
+            for timestamp, value in readings.items():
+                sr, _ = SensorReading.objects.get_or_create(**{
+                    "sensor": sensor,
+                    "timestamp": timestamp
+                })
+                sr.reading = value
+                sr.save()
+                num_readings += 1
+
+        sensor_readings_summary.append({
+            "column_name": sensor.display_name,
+            "exists": sensor is not None,
+            "num_readings": num_readings
+        })
+
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.total = 0
+    progress_data.save()
+
+    return finish_raw_save(sensor_readings_summary, file_pk, progress_data.key)
 
 
 @shared_task
@@ -1167,6 +1220,8 @@ def save_raw_data(file_pk):
             _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
         elif import_file.source_type == 'SensorMetaData':
             _save_sensor_data_create_tasks.s(file_pk, progress_data.key).delay()
+        elif import_file.source_type == 'SensorReadings':
+            _save_sensor_readings_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
             _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
     except StopIteration:

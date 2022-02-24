@@ -101,6 +101,9 @@ class TestSensorViewSet(DataMappingBaseTestCase):
         expectation = [
             {'display_name': 'my charisma sensor', 'type': 'charisma', 'location_identifier': 'level C', 'units': 'finger guns', 'column_name': 'charisma_sensor_1', 'description': ''},
             {'display_name': 'my dex sensor', 'type': 'dex', 'location_identifier': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
+            {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_identifier': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
+            {'display_name': 'my coolness sensor', 'type': 'cool', 'location_identifier': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
+            {'display_name': 'my intelligence', 'type': 'intl', 'location_identifier': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
         ]
 
         self.assertCountEqual(result_dict.get("proposed_imports"), expectation)

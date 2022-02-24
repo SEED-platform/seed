@@ -839,6 +839,7 @@
     "UPLOAD_FILE": "Upload File",
     "UPLOAD_GB_DATA_BUTTON": "Upload GreenButton Data",
     "UPLOAD_SENSOR_BUTTON": "Upload Sensor",
+    "UPLOAD_SENSOR_READINGS_BUTTON": "Upload Sensor Readings",
     "UPLOAD_INCOMPLETE_TITLE": "Upload Incomplete",
     "UPLOAD_PM_READINGS_MODAL_TITLE": "Upload Portfolio Manager Meter Readings",
     "USING_DEFAULT_UNITS_WARNING": "For columns with unit settings, default units will be used for conversions.",

@@ -10,7 +10,7 @@ from collections import defaultdict
 from config.settings.common import TIME_ZONE
 
 from django.db.models.functions import TruncMonth, TruncYear
-from django.db.models import Sum
+from django.db.models import Avg
 from django.db.models import Q
 
 from pytz import timezone
@@ -97,18 +97,18 @@ class PropertySensorReadingsExporter():
         for sensor in self.sensors:
             field_name = self._build_column_def(sensor, column_defs)
 
-            # group by month and sum readings
-            readings_sum_by_month = sensor.sensor_readings \
+            # group by month and avg readings
+            readings_avg_by_month = sensor.sensor_readings \
                 .annotate(month=TruncMonth('timestamp')) \
                 .values('month').order_by('month') \
-                .annotate(sum=Sum('reading')) \
-                .values('month', 'sum')
+                .annotate(avg=Avg('reading')) \
+                .values('month', 'avg')
 
-            for reading in readings_sum_by_month:
+            for reading in readings_avg_by_month:
                 month_year = '{} {}'.format(month_name[reading['month'].month], reading['month'].year)
 
                 monthly_readings[month_year]['month'] = month_year
-                monthly_readings[month_year][field_name] = reading['sum']
+                monthly_readings[month_year][field_name] = reading['avg']
 
         return {
             'readings': list(monthly_readings.values()),
@@ -134,17 +134,17 @@ class PropertySensorReadingsExporter():
         for sensor in self.sensors:
             field_name = self._build_column_def(sensor, column_defs)
 
-            readings_sum_by_year = sensor.sensor_readings \
+            readings_avg_by_year = sensor.sensor_readings \
                 .annotate(year=TruncYear('timestamp')) \
                 .values('year').order_by('year') \
-                .annotate(sum=Sum('reading')) \
-                .values('year', 'sum')
+                .annotate(avg=Avg('reading')) \
+                .values('year', 'avg')
 
-            for reading in readings_sum_by_year:
+            for reading in readings_avg_by_year:
                 year = reading['year'].year
 
                 yearly_readings[year]['year'] = year
-                yearly_readings[year][field_name] = reading['sum']
+                yearly_readings[year][field_name] = reading['avg']
 
         return {
             'readings': list(yearly_readings.values()),
