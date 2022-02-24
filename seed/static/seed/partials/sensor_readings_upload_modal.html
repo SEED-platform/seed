@@ -1,0 +1,72 @@
+<div class="modal-header" ng-switch on="step.number">
+    <h4 class="modal-title" ng-switch-when="1" translate>SELECT_DATA_SET_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>SENSOR_CONTENTS_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="3" translate>UPLOADING_FILE_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="4" translate>UPLOAD_COMPLETE_TITLE</h4>
+</div>
+
+<div class="modal-body" ng-switch on="step.number">
+    <div class="data_upload_steps container-fluid" ng-switch-when="1">
+        <div class="alert alert-danger" ng-show="uploader.invalid_csv_extension_alert" style="margin-bottom: 18px;" translate="INVALID_CSV_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px;" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
+        <div class="row">
+            <label class="col-sm-3 col-sm-offset-1 control-label" for="selected-dataset" style="margin-top: 5px;" translate>Name</label>
+            <div class="col-sm-7">
+                <select name="selected-dataset" class="form-control input-sm" ng-change="datasetChanged(selectedDataset)" ng-model="selectedDataset" ng-options="dataset.name for dataset in datasets track by dataset.id"></select>
+            </div>
+        </div>
+    </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="2">
+        <div class="row">
+            <div class="alert alert-warning green-button-preview">
+                <div>
+                    <div translate><b>SENSOR_READING_COUNTS_TITLE</b></div>
+                    <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="data_upload_steps container-fluid" ng-switch-when="3">
+        <div class="progress_bar_container">
+            <div class="progress_bar_copy_top"
+                 translate="UPLOADING_PROGRESS"
+                 translate-values="{ dataset_filename: filename }"></div>
+
+            <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+            <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        </div>
+    </div>
+
+    <div class="data_upload_steps" ng-switch-when="4">
+        <div class="alert alert-info green-button-preview">
+            <div translate><b>SENSOR_READING_COUNTS_TITLE</b></div>
+            <div ui-grid="import_result_options" ui-grid-resize-columns></div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer container-fluid" ng-switch on="step.number">
+    <div class="row text-center" ng-switch-when="1">
+        <button type="butt  n" class="btn btn-primary col-sm-6 center-block" sd-uploader organization-id="organization_id" sourcetype="SensorReadings" sourceprog="" sourcever="" importrecord="selectedDataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-disabled="selectedDataset === undefined"><span translate>UPLOAD_FILE</span></button>
+    </div>
+
+    <div ng-switch-when="2">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="accept_sensor_readings()" translate>Confirm</button>
+        </div>
+    </div>
+
+    <div ng-switch-when="4">
+        <div class="row text-center">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="refresh_page()" translate>COMPLETE_AND_REFRESH</button>
+        </div>
+    </div>
+
+
+    <div class="row text-center">
+        <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
+    </div>
+</div>

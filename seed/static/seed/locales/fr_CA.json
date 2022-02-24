@@ -838,6 +838,7 @@
     "UPLOAD_FILE": "Téléverser un Fichier",
     "UPLOAD_GB_DATA_BUTTON": "Importer des Données GreenButton",
     "UPLOAD_SENSOR_BUTTON": "Importer des Capteurs",
+    "UPLOAD_SENSOR_READINGS_BUTTON": "Importer des relevés des Capteurs",
     "UPLOAD_INCOMPLETE_TITLE": "Téléchargement incomplet",
     "UPLOAD_PM_READINGS_MODAL_TITLE": "Importer des lectures de compteur Portfolio Manager",
     "USING_DEFAULT_UNITS_WARNING": "Pour les colonnes avec des paramètres d'unité, les unités par défaut seront utilisées pour les conversions.",
