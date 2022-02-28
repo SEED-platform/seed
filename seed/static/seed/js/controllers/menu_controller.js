@@ -280,6 +280,14 @@ angular.module('BE.seed.controller.menu', [])
           });
         }
       };
+
+      if ($location.search().http_error) {
+        $scope.http_error = true
+      }
+      $scope.closeAlert = function () {
+        $scope.http_error = false
+      }
+
       init();
       init_menu();
     }]);
