@@ -13,7 +13,7 @@ import subprocess
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -105,9 +105,10 @@ def error404(request, exception):
             "message": "Endpoint could not be found",
         }, status=status.HTTP_404_NOT_FOUND)
     else:
-        response = render(request, 'seed/partials/home.html', {})
-        response.status_code = 404
-        return response
+        # response = render(request, 'seed/static/seed/partials/home.html#?status=404', {"is404": "dog"})
+        # response.status_code = 404
+        # return response
+        return redirect('/app/#?http_error=404')
 
 
 def error500(request):
@@ -117,9 +118,10 @@ def error500(request):
             "message": "Internal server error",
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
-        response = render(request, 'seed/partials/home.html', {})
-        response.status_code = 500
-        return response
+        # response = render(request, 'seed/partials/home.html', {})
+        # response.status_code = 500
+        # return response
+        return redirect('/')
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will
