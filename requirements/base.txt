@@ -1,5 +1,5 @@
 # Django
-django==3.2.10
+django==3.2.12
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
@@ -9,7 +9,7 @@ django-crispy-forms==1.8.1
 psycopg2-binary==2.8.4
 
 # background process management
-celery==4.4.7
+celery==5.2.2
 django-redis-cache==3.0.0
 django-compressor==2.4.1
 django-compressor-autoprefixer==0.1.0

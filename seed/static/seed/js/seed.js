@@ -73,6 +73,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
+  'BE.seed.controller.sensor_upload_modal',
+  'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
   'BE.seed.controller.inventory_detail_analyses',
@@ -81,6 +83,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_detail_settings',
   'BE.seed.controller.inventory_detail_notes_modal',
   'BE.seed.controller.inventory_detail_meters',
+  'BE.seed.controller.inventory_detail_sensors',
   'BE.seed.controller.inventory_list',
   'BE.seed.controller.inventory_list_beta',
   'BE.seed.controller.inventory_map',
@@ -162,6 +165,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.organization',
   'BE.seed.service.pairing',
   'BE.seed.service.search',
+  'BE.seed.service.sensor',
   'BE.seed.service.simple_modal',
   'BE.seed.service.ubid',
   'BE.seed.service.uploader',
@@ -1439,13 +1443,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             if (currentProfile) inventory_service.save_last_profile(currentProfile.id, $stateParams.inventory_type);
             return currentProfile;
           }],
-          labels: ['$stateParams', 'label_service', function ($stateParams, label_service) {
-            return label_service.get_labels($stateParams.inventory_type).then(function (labels) {
-              return _.filter(labels, function (label) {
-                return !_.isEmpty(label.is_applied);
-              });
-            });
-          }],
           all_columns: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             if ($stateParams.inventory_type === 'properties') {
               return inventory_service.get_property_columns();
@@ -1725,6 +1722,40 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
             var organization_id = user_service.get_organization().id;
             return meter_service.get_meters($stateParams.view_id, organization_id);
+          }],
+          cycles: ['cycle_service', function (cycle_service) {
+            return cycle_service.get_cycles();
+          }],
+          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
+            return organization_service.get_organization(user_service.get_organization().id);
+          }]
+        }
+      })
+      .state({
+        name: 'inventory_detail_sensors',
+        url: '/{inventory_type:properties|taxlots}/{view_id:int}/sensors',
+        templateUrl: static_url + 'seed/partials/inventory_detail_sensors.html',
+        controller: 'inventory_detail_sensors_controller',
+        resolve: {
+          inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
+            // load `get_building` before page is loaded to avoid page flicker.
+            var view_id = $stateParams.view_id;
+            var promise = inventory_service.get_property(view_id);
+            promise.catch(function (err) {
+              if (err.message.match(/^(?:property|taxlot) view with id \d+ does not exist$/)) {
+                // Inventory item not found for current organization, redirecting
+                $state.go('inventory_list', {inventory_type: $stateParams.inventory_type});
+              }
+            });
+            return promise;
+          }],
+          property_sensor_usage: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
+            var organization_id = user_service.get_organization().id;
+            return sensor_service.property_sensor_usage($stateParams.view_id, organization_id, 'Exact');
+          }],
+          sensors: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
+            var organization_id = user_service.get_organization().id;
+            return sensor_service.get_sensors($stateParams.view_id, organization_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

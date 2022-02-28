@@ -43,6 +43,7 @@ from seed.models import (
     BuildingFile,
     PropertyMeasure,
 )
+from seed.models.models import DATA_STATE_MAPPING
 from seed.tests.util import DataMappingBaseTestCase
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
@@ -287,8 +288,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
 
         # -- Assert
         self.assertEqual('success', progress_info['status'])
-        ps = PropertyState.objects.filter(address_line_1='123 Main St',
-                                          import_file=self.import_file)
+        ps = PropertyState.objects.filter(import_file=self.import_file, data_state=DATA_STATE_MAPPING)
         self.assertEqual(len(ps), 2)
 
     def test_map_all_models_zip(self):
@@ -305,16 +305,13 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         # map the data
         progress_info = tasks.map_data(self.import_file.pk)
         self.assertEqual('success', progress_info['status'])
-        ps = PropertyState.objects.filter(address_line_1='123 Main St',
-                                          import_file=self.import_file)
-        self.assertEqual(ps.count(), 2)
 
         # -- Act
         tasks.geocode_and_match_buildings_task(self.import_file.pk)
 
         # -- Assert
-        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
-        self.assertEqual(ps.count(), 2)
+        pvs = PropertyView.objects.all()
+        self.assertEqual(pvs.count(), 2)
 
         # verify there are 2 building files
         bfs = BuildingFile.objects.all()

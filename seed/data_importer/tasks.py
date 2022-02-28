@@ -22,7 +22,7 @@ from math import ceil
 import zipfile
 import tempfile
 
-from celery import chord, shared_task
+from celery import chord, shared_task, group
 from celery import chain as celery_chain
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
@@ -33,6 +33,7 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
+from seed.models.sensors import SensorReading
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
@@ -42,6 +43,7 @@ from seed.data_importer.match import (
     match_and_link_incoming_properties_and_taxlots,
 )
 from seed.data_importer.meters_parser import MetersParser
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import (
     ImportFile,
     ImportRecord,
@@ -63,10 +65,12 @@ from seed.models import (
     Column,
     ColumnMapping,
     Meter,
+    Property,
     PropertyState,
     PropertyView,
     TaxLotView,
     TaxLotState,
+    Sensor,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
@@ -740,6 +744,14 @@ def finish_raw_save(results, file_pk, progress_key):
 
         new_summary = _append_meter_import_results_to_summary(results, progress_data.summary())
         finished_progress_data = progress_data.finish_with_success(new_summary)
+    elif import_file.source_type == "SensorMetaData":
+        import_file.cycle_id = None
+        new_summary = _append_sensor_import_results_to_summary(results)
+        finished_progress_data = progress_data.finish_with_success(new_summary)
+
+    elif import_file.source_type == "SensorReadings":
+        finished_progress_data = progress_data.finish_with_success(results)
+
     else:
         finished_progress_data = progress_data.finish_with_success()
 
@@ -819,6 +831,93 @@ def _save_greenbutton_data_create_tasks(file_pk, progress_key):
         tasks.append(_save_greenbutton_data_task.s(batch_readings, meter_id, meter_usage_point_id, progress_data.key))
 
     return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+@shared_task
+def _save_sensor_data_create_tasks(file_pk, progress_key):
+    """
+    Create or Edit Sensor tasks. Creates mutliple sensors for the same property.
+    """
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    property_id = import_file.matching_results_data['property_id']
+    sensor_property = Property.objects.get(id=property_id)
+
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
+    import_file.save()
+
+    parser = reader.MCMParser(import_file.local_file)
+    sensor_data = list(parser.data)
+
+    sensors = []
+    for sensor_datum in sensor_data:
+        s, _ = Sensor.objects.get_or_create(**{
+            "column_name": sensor_datum["column_name"],
+            "sensor_property": sensor_property
+        })
+        s.display_name = sensor_datum["display_name"]
+        s.location_identifier = sensor_datum["location_identifier"]
+        s.description = sensor_datum["description"]
+        s.sensor_type = sensor_datum["type"]
+        s.units = sensor_datum["units"]
+
+        s.save()
+        sensors.append(s)
+
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.total = 0
+    progress_data.save()
+
+    return finish_raw_save(sensors, file_pk, progress_data.key)
+
+
+@shared_task
+def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    import_file = ImportFile.objects.get(pk=file_pk)
+    org_id = import_file.cycle.organization.id
+    property_id = import_file.matching_results_data['property_id']
+
+    # matching_results_data gets cleared out since the field wasn't meant for this
+    import_file.matching_results_data = {}
+    import_file.save()
+
+    parser = SensorsReadingsParser.factory(
+        import_file.local_file,
+        org_id,
+        property_id=property_id
+    )
+    sensor_readings_data = parser.sensor_readings_details
+
+    sensor_readings_summary = []
+    for sensor_column_name, readings in sensor_readings_data.items():
+        sensor = Sensor.objects.get(column_name=sensor_column_name)
+
+        num_readings = 0
+        if sensor:
+            for timestamp, value in readings.items():
+                sr, _ = SensorReading.objects.get_or_create(**{
+                    "sensor": sensor,
+                    "timestamp": timestamp
+                })
+                sr.reading = value
+                sr.save()
+                num_readings += 1
+
+        sensor_readings_summary.append({
+            "column_name": sensor.display_name,
+            "exists": sensor is not None,
+            "num_readings": num_readings
+        })
+
+    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
+    progress_data.total = 0
+    progress_data.save()
+
+    return finish_raw_save(sensor_readings_summary, file_pk, progress_data.key)
 
 
 @shared_task
@@ -1027,6 +1126,20 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
     return incoming_summary
 
 
+def _append_sensor_import_results_to_summary(import_results):
+    return [
+        {
+            "display_name": sensor.display_name,
+            "type": sensor.sensor_type,
+            "location_identifier": sensor.location_identifier,
+            "units": sensor.units,
+            "column_name": sensor.column_name,
+            "description": sensor.description,
+        }
+        for sensor in import_results
+    ]
+
+
 @shared_task
 def _save_raw_data_create_tasks(file_pk, progress_key):
     """
@@ -1105,6 +1218,10 @@ def save_raw_data(file_pk):
             _save_pm_meter_usage_data_create_tasks.s(file_pk, progress_data.key).delay()
         elif import_file.source_type == 'GreenButton':
             _save_greenbutton_data_create_tasks.s(file_pk, progress_data.key).delay()
+        elif import_file.source_type == 'SensorMetaData':
+            _save_sensor_data_create_tasks.s(file_pk, progress_data.key).delay()
+        elif import_file.source_type == 'SensorReadings':
+            _save_sensor_readings_data_create_tasks.s(file_pk, progress_data.key).delay()
         else:
             _save_raw_data_create_tasks.s(file_pk, progress_data.key).delay()
     except StopIteration:
@@ -1140,45 +1257,33 @@ def geocode_and_match_buildings_task(file_pk):
     if import_file.cycle is None:
         _log.warning("Import file cycle is None; This should never happen in production")
 
-    post_geocode_tasks = None
-    if import_file.from_buildingsync:
-        source_type_dict = {
-            'Portfolio Raw': PORTFOLIO_RAW,
-            'Assessed Raw': ASSESSED_RAW,
-            'BuildingSync Raw': BUILDINGSYNC_RAW
-        }
-        source_type = source_type_dict.get(import_file.source_type, ASSESSED_RAW)
+    # get the properties and chunk them into tasks
+    property_states = (
+        PropertyState.objects.filter(import_file_id=file_pk)
+        .exclude(data_state=DATA_STATE_IMPORT)
+        .only('id')
+        .iterator()
+    )
 
-        # get the properties and chunk them into tasks
-        qs = PropertyState.objects.filter(
-            import_file=import_file,
-            source_type=source_type,
-            data_state=DATA_STATE_MAPPING,
-        ).only('id').iterator()
+    id_chunks = [[obj.id for obj in chunk] for chunk in batch(property_states, 100)]
 
-        id_chunks = [[obj.id for obj in chunk] for chunk in batch(qs, 100)]
-
-        post_geocode_tasks_count = len(id_chunks)
-        post_geocode_tasks = chord(
-            header=(_map_additional_models.si(ids, import_file.id, progress_data.key) for ids in id_chunks),
-            body=finish_mapping_additional_models.s(file_pk, progress_data.key))
-    else:
-        # Start, match, pair
-        post_geocode_tasks_count = 3
-        post_geocode_tasks = chord(
-            header=match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
-            body=finish_matching.s(file_pk, progress_data.key),
-            interval=15)
-
-    geocoding_tasks_count = 1
-    progress_data.total = geocoding_tasks_count + post_geocode_tasks_count
+    progress_data.total = (
+        1  # geocoding
+        + len(id_chunks)  # map additional models tasks
+        + 2  # match and link
+        + 1  # finish
+    )
     progress_data.save()
-    sub_progress_data.total = 100
-    sub_progress_data.save()
 
     celery_chain(
-        _geocode_properties_or_tax_lots.s(file_pk, progress_data.key, sub_progress_data.key),
-        post_geocode_tasks)()
+        _geocode_properties_or_tax_lots.si(file_pk, progress_data.key),
+        group(_map_additional_models.si(id_chunk, file_pk, progress_data.key) for id_chunk in id_chunks),
+        match_and_link_incoming_properties_and_taxlots.si(file_pk, progress_data.key, sub_progress_data.key),
+        finish_matching.s(file_pk, progress_data.key),
+    )()
+
+    sub_progress_data.total = 100
+    sub_progress_data.save()
 
     return {'progress_data': progress_data.result(), 'sub_progress_data': sub_progress_data.result()}
 
@@ -1367,10 +1472,7 @@ def finish_matching(result, import_file_id, progress_key):
     import_file = ImportFile.objects.get(pk=import_file_id)
     import_file.matching_done = True
     import_file.mapping_completion = 100
-    if isinstance(result, list) and len(result) == 1:
-        import_file.matching_results_data = result[0]
-    else:
-        raise Exception('there are more than one results for matching_results, need to merge')
+    import_file.matching_results_data = result
     import_file.save()
 
     return progress_data.finish_with_success()
@@ -1446,21 +1548,17 @@ def _map_additional_models(ids, file_pk, progress_key):
     for property_state in property_states:
         if source_type == BUILDINGSYNC_RAW:
             # parse the rest of the models (scenarios, meters, etc) from the building file
-            # and create the property and property view
+            # Note that we choose _not_ to promote the property state (i.e. create a canonical property)
+            # b/c that will be handled in the match/merge/linking later on
             building_file = property_state.building_files.get()
-            p_status, property_state, property_view, messages = building_file.process(
-                org.id, import_file.cycle)
+            success, property_state, _, messages = building_file.process(
+                org.id,
+                import_file.cycle,
+                promote_property_state=False
+            )
 
-            if not p_status or len(messages.get('errors', [])) > 0:
-                # something went wrong, save the messages and skip this file
+            if not success or messages.get('errors') or messages.get('warnings'):
                 progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-                continue
-            elif len(messages.get('warnings', [])) > 0:
-                # non-fatal warnings, add the info and continue to save the file
-                progress_data.add_file_info(os.path.basename(building_file.filename), messages)
-
-            property_state.data_state = DATA_STATE_MATCHING
-            property_state.save()
 
     progress_data.step()
 
