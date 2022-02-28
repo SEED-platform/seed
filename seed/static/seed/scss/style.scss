@@ -2322,6 +2322,12 @@ select {
   }
 }
 
+#column_settings_count {
+  table, th, td {
+    border: 1px solid black;
+  }
+}
+
 /* STYLES FOR REPORTS */
 
 /* Styles for building reports page */
@@ -4132,6 +4138,20 @@ iframe.analysis-results {
 
 
 .inventory-summary {
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 0.5em;
+  }
+  tbody tr:nth-child(odd) {
+    background: #eee;
+  }
+  table {
+    width: 300px;
+  }
+}
+
+.column_settings_count {
   table, th, td {
     border: 1px solid black;
     border-collapse: collapse;
