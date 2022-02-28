@@ -17,7 +17,7 @@ from quantityfield.units import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Cycle, PropertyView, PropertyState, Column, column_list_profile_columns
+from seed.models import Analysis, Cycle, PropertyView, PropertyState, Column
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
@@ -270,7 +270,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         columns = Column.objects.filter(organization_id=org_id)
         column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
 
-        col_names = [x for x,y in list(columns.values_list('column_name', 'table_name')) if (y=='PropertyState')]          
+        col_names = [x for x, y in list(columns.values_list('column_name', 'table_name')) if (y == 'PropertyState')]
 
         def get_counts(field_name):
             """Get aggregated count of each unique value for the field
@@ -410,13 +410,13 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         count_agg = []
         for i in col_names:
-                count_dict = {}
-                if i in column_names_extra_data:
-                    count_dict[i] = len(list(filter(None, states.values_list('extra_data__'+i, flat=True))))  
-                else:
-                    count_dict[i] = len(list(filter(None, states.values_list(i, flat=True)))) 
-                count_agg.append(count_dict)
-        
+            count_dict = {}
+            if i in column_names_extra_data:
+                count_dict[i] = len(list(filter(None, states.values_list('extra_data__' + i, flat=True))))
+            else:
+                count_dict[i] = len(list(filter(None, states.values_list(i, flat=True))))
+            count_agg.append(count_dict)
+
         count_agg_dict = {}
         for d in count_agg:
             count_agg_dict.update(d)
@@ -431,4 +431,4 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             'year_built': year_built_list,
             'energy': energy_list2,
             'square_footage': sqftage_list2
-            })
+        })
