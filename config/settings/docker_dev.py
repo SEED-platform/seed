@@ -28,7 +28,7 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception(f"{loc} Not defined as env variables")
 
-DEBUG = True
+DEBUG = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 compress = False
