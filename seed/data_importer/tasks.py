@@ -12,6 +12,8 @@ import copy
 import hashlib
 import json
 import os
+from collections import Counter
+import re
 import traceback
 from _csv import Error
 from builtins import str
@@ -750,7 +752,8 @@ def finish_raw_save(results, file_pk, progress_key):
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
     elif import_file.source_type == "SensorReadings":
-        finished_progress_data = progress_data.finish_with_success(results)
+        new_summary = _append_sensor_readings_import_results_to_summary(results)
+        finished_progress_data = progress_data.finish_with_success(new_summary)
 
     else:
         finished_progress_data = progress_data.finish_with_success()
@@ -892,32 +895,42 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     )
     sensor_readings_data = parser.sensor_readings_details
 
-    sensor_readings_summary = []
+    tasks = []
+    chunk_size = 500
     for sensor_column_name, readings in sensor_readings_data.items():
-        sensor = Sensor.objects.get(column_name=sensor_column_name)
+        readings_tuples = [t for t in readings.items()]
+        for batch_readings in batch(readings_tuples, chunk_size):
+            tasks.append(_save_sensor_readings_task.s(batch_readings, sensor_column_name, progress_data.key))
 
-        num_readings = 0
-        if sensor:
-            for timestamp, value in readings.items():
-                sr, _ = SensorReading.objects.get_or_create(**{
-                    "sensor": sensor,
-                    "timestamp": timestamp
-                })
-                sr.reading = value
-                sr.save()
-                num_readings += 1
-
-        sensor_readings_summary.append({
-            "column_name": sensor.display_name,
-            "exists": sensor is not None,
-            "num_readings": num_readings
-        })
-
-    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
-    progress_data.total = 0
+    progress_data.total = len(tasks)
     progress_data.save()
 
-    return finish_raw_save(sensor_readings_summary, file_pk, progress_data.key)
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+@shared_task
+def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
+    try:
+        sensor = Sensor.objects.get(column_name=sensor_column_name)
+
+    except Sensor.DoesNotExist:
+        result = (sensor_column_name, 0)
+
+    else:
+        for timestamp, value in readings_tuples:
+            sr, _ = SensorReading.objects.get_or_create(**{
+                "sensor": sensor,
+                "timestamp": timestamp
+            })
+            sr.reading = value
+            sr.save()
+
+        result = (sensor.column_name, len(readings_tuples))
+
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.step()
+
+    return result
 
 
 @shared_task
@@ -1137,6 +1150,22 @@ def _append_sensor_import_results_to_summary(import_results):
             "description": sensor.description,
         }
         for sensor in import_results
+    ]
+
+def _append_sensor_readings_import_results_to_summary(import_results):
+    counter = Counter()
+    for (sensor_column_name, readings_num) in import_results:
+        if sensor_column_name is not None:
+            counter[sensor_column_name] += readings_num
+
+    return [
+        {
+            "column_name": sensor_column_name,
+            "exists": True,
+            "num_readings": num_readings
+        } 
+        for (sensor_column_name, num_readings)
+        in counter.items()
     ]
 
 
