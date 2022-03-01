@@ -105,10 +105,10 @@ def error404(request, exception):
             "message": "Endpoint could not be found",
         }, status=status.HTTP_404_NOT_FOUND)
     else:
-        # response = render(request, 'seed/static/seed/partials/home.html#?status=404', {"is404": "dog"})
-        # response.status_code = 404
-        # return response
-        return redirect('/app/#?http_error=404')
+        response = render(request, 'seed/static/seed/partials/home.html', {"http_404": "true"})
+        response.status_code = 404
+        return response
+        # return redirect('/app/#?http_error=404')
 
 
 def error500(request):
