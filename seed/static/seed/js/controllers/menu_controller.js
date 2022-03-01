@@ -281,7 +281,7 @@ angular.module('BE.seed.controller.menu', [])
         }
       };
 
-      if ($location.search().http_error == 404) {
+      if ($location.search().http_error) {
         $scope.http_error = $location.search().http_error
       } 
 
