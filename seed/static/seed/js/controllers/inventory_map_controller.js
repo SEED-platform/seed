@@ -11,6 +11,8 @@ angular.module('BE.seed.controller.inventory_map', [])
     '$uibModal',
     'cycles',
     'inventory_service',
+    'user_service',
+    'organization_service',
     'labels',
     'urls',
     function (
@@ -21,6 +23,8 @@ angular.module('BE.seed.controller.inventory_map', [])
       $uibModal,
       cycles,
       inventory_service,
+      user_service,
+      organization_service,
       labels,
       urls
     ) {
@@ -29,6 +33,16 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.data = [];
       $scope.geocoded_data = [];
       $scope.ungeocoded_data = [];
+
+      // find organization's property/taxlot default type to display in popup
+      org_id = user_service.get_organization().id
+      organization_service.get_organization(org_id).then(function (data) {
+        if ($scope.inventory_type == 'properties') {
+          $scope.default_field = data.organization.property_display_field;
+        } else {
+          $scope.default_field = data.organization.taxlot_display_field;
+        }
+      });
 
       var lastCycleId = inventory_service.get_last_cycle();
       $scope.cycle = {
@@ -445,8 +459,8 @@ angular.module('BE.seed.controller.inventory_map', [])
 
         var showPointInfo = function (point) {
           var pop_info = point.getProperties();
-          var address_line_1_key = _.find(_.keys(pop_info), function (key) {
-            return _.startsWith(key, 'address_line_1');
+          var default_display_key = _.find(_.keys(pop_info), function (key) {
+            return _.startsWith(key, $scope.default_field);
           });
 
           var coordinates = point.getGeometry().getCoordinates();
@@ -456,7 +470,7 @@ angular.module('BE.seed.controller.inventory_map', [])
             placement: 'top',
             html: true,
             selector: true,
-            content: pop_info[address_line_1_key] + detailPageIcon(pop_info)
+            content: pop_info[default_display_key] + detailPageIcon(pop_info)
           });
 
           $(popup_element).popover('show');
