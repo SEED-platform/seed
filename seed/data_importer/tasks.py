@@ -12,8 +12,6 @@ import copy
 import hashlib
 import json
 import os
-from collections import Counter
-import re
 import traceback
 from _csv import Error
 from builtins import str
@@ -35,7 +33,6 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from seed.models.sensors import SensorReading
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
@@ -911,7 +908,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 @shared_task
 def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
     progress_data = ProgressData.from_key(progress_key)
-    
+
     result = {}
     try:
         sensor = Sensor.objects.get(column_name=sensor_column_name)
@@ -1179,6 +1176,7 @@ def _append_sensor_import_results_to_summary(import_results):
         for sensor in import_results
     ]
 
+
 def _append_sensor_readings_import_results_to_summary(import_results):
     summary = {}
     for import_result in import_results:
@@ -1193,7 +1191,7 @@ def _append_sensor_readings_import_results_to_summary(import_results):
 
         if "count" in result:
             summary[sensor_name]["num_readings"] += result["count"]
-        
+
         if "error" in result:
             summary[sensor_name]["errors"] = result["error"]
 
