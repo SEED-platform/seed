@@ -62,6 +62,7 @@ ARCHIVE=backup.tar.xz
 # if backup already exists, forgo rest of script
 if aws s3 ls $S3_BUCKET/$LATEST_DIR | grep $ARCHIVE; then
     echo "There's already a backup for $LATEST_DIR";
+    send_slack_notification "[ERROR-$ENVIRONMENT]-backup-already-exists-for-$LATEST_DIR"
     exit 0
 fi
 
