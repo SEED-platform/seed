@@ -230,8 +230,13 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       if (field == null) {
         throw Error(`Provided display field for type "${inventory_type}" is undefined`);
       }
+      // if nothing is returned, check in extra data
+      return_field = inventory_state[field];
+      if (return_field == null){
+        return_field = inventory_state['extra_data'][field];
+      }
 
-      return inventory_state[field];
+      return return_field;
     }
 
     return organization_factory;
