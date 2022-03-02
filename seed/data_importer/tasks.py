@@ -910,24 +910,51 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 
 @shared_task
 def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+    
+    result = {}
     try:
         sensor = Sensor.objects.get(column_name=sensor_column_name)
 
     except Sensor.DoesNotExist:
-        result = (sensor_column_name, 0)
+        result[sensor_column_name] = {'error': 'No such sensor.'}
 
     else:
-        for timestamp, value in readings_tuples:
-            sr, _ = SensorReading.objects.get_or_create(**{
-                "sensor": sensor,
-                "timestamp": timestamp
-            })
-            sr.reading = value
-            sr.save()
+        try:
+            with transaction.atomic():
+                reading_strings = [
+                    f"({sensor.id}, '{timestamp}', '{value}')"
+                    for timestamp, value
+                    in readings_tuples
+                ]
+                sql = (
+                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading)' +
+                    ' VALUES ' + ', '.join(reading_strings) +
+                    ' ON CONFLICT (sensor_id, timestamp)' +
+                    ' DO UPDATE SET reading = EXCLUDED.reading' +
+                    ' RETURNING reading;'
+                )
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+                    result[sensor_column_name] = {'count': len(cursor.fetchall())}
+        except ProgrammingError as e:
+            if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
+                result[sensor_column_name] = {'error': 'Overlapping readings.'}
+            else:
+                progress_data.finish_with_error('data failed to import')
+                raise e
+        except DataError as e:
+            if "date/time field" in str(e):
+                result[sensor_column_name] = {'error': 'Invalid readings. Ensure timestamps are in iso format.'}
+            elif "invalid input syntax for type double precision" in str(e):
+                result[sensor_column_name] = {'error': 'Invalid readings. Ensure readings are numbers.'}
+            else:
+                result[sensor_column_name] = {'error': 'Invalid readings.'}
 
-        result = (sensor.column_name, len(readings_tuples))
+        except Exception as e:
+            progress_data.finish_with_error('data failed to import')
+            raise e
 
-    progress_data = ProgressData.from_key(progress_key)
     progress_data.step()
 
     return result
@@ -1153,20 +1180,24 @@ def _append_sensor_import_results_to_summary(import_results):
     ]
 
 def _append_sensor_readings_import_results_to_summary(import_results):
-    counter = Counter()
-    for (sensor_column_name, readings_num) in import_results:
-        if sensor_column_name is not None:
-            counter[sensor_column_name] += readings_num
+    summary = {}
+    for import_result in import_results:
+        sensor_name, result = list(import_result.items())[0]
 
-    return [
-        {
-            "column_name": sensor_column_name,
-            "exists": True,
-            "num_readings": num_readings
-        } 
-        for (sensor_column_name, num_readings)
-        in counter.items()
-    ]
+        if sensor_name not in summary:
+            summary[sensor_name] = {
+                "column_name": sensor_name,
+                "num_readings": 0,
+                "errors": ""
+            }
+
+        if "count" in result:
+            summary[sensor_name]["num_readings"] += result["count"]
+        
+        if "error" in result:
+            summary[sensor_name]["errors"] = result["error"]
+
+    return list(summary.values())
 
 
 @shared_task
