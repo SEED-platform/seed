@@ -1137,6 +1137,12 @@ msgstr "COMMENT APPORTER MANUELLEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
 msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
 msgstr "Votre fichier de données source est présenté dans le tableau de gauche. Toutes les propriétés/lots d'impôt où une correspondance de données possible existe sont présentées dans un tableau sur la droite. Le système tente de faire correspondre automatiquement les enregistrements à l'aide d'ID uniques partagés tels que: ID de Propriété PM, ID de Lot d'Impôt de Juridiction et les ID personnalisés, ainsi que des informations d'adresse. Lorsque le système croit qu'une correspondance existe entre un enregistrement de votre fichier source et un enregistrement existant, il vérifie automatiquement la 'correspondance' <i class=\"fa fa-check-square-o\"></i> case à cocher &mdash; faire efficacement une correspondance entre ces enregistrements."
 
+msgid "HTTP Error! Status Code: 404. The requested URL was not found."
+msgstr "Erreur HTTP! Code d'état : 404. L'URL demandée est introuvable."
+
+msgid "HTTP Error! Status Code: 500. Internal Server Error."
+msgstr "Erreur HTTP! Code d'état : 500. Erreur interne du serveur."
+
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
 msgstr "Bonjour% (first_name) s,"
