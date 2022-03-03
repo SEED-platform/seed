@@ -1126,6 +1126,12 @@ msgstr "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
 msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
 msgstr "Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match' <i class=\"fa fa-check-square-o\"></i> checkbox &mdash; effectively making a match between these records."
 
+msgid "HTTP Error! Status Code: 404. The requested URL was not found."
+msgstr "HTTP Error! Status Code: 404. The requested URL was not found."
+
+msgid "HTTP Error! Status Code: 500. Internal Server Error."
+msgstr "HTTP Error! Status Code: 500. Internal Server Error."
+
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
