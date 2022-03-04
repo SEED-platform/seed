@@ -33,7 +33,6 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from seed.models.sensors import SensorReading
 from unidecode import unidecode
 
 from seed.building_sync import validation_client
@@ -750,7 +749,8 @@ def finish_raw_save(results, file_pk, progress_key):
         finished_progress_data = progress_data.finish_with_success(new_summary)
 
     elif import_file.source_type == "SensorReadings":
-        finished_progress_data = progress_data.finish_with_success(results)
+        new_summary = _append_sensor_readings_import_results_to_summary(results)
+        finished_progress_data = progress_data.finish_with_success(new_summary)
 
     else:
         finished_progress_data = progress_data.finish_with_success()
@@ -892,32 +892,69 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     )
     sensor_readings_data = parser.sensor_readings_details
 
-    sensor_readings_summary = []
+    tasks = []
+    chunk_size = 500
     for sensor_column_name, readings in sensor_readings_data.items():
-        sensor = Sensor.objects.get(column_name=sensor_column_name)
+        readings_tuples = [t for t in readings.items()]
+        for batch_readings in batch(readings_tuples, chunk_size):
+            tasks.append(_save_sensor_readings_task.s(batch_readings, sensor_column_name, progress_data.key))
 
-        num_readings = 0
-        if sensor:
-            for timestamp, value in readings.items():
-                sr, _ = SensorReading.objects.get_or_create(**{
-                    "sensor": sensor,
-                    "timestamp": timestamp
-                })
-                sr.reading = value
-                sr.save()
-                num_readings += 1
-
-        sensor_readings_summary.append({
-            "column_name": sensor.display_name,
-            "exists": sensor is not None,
-            "num_readings": num_readings
-        })
-
-    # add in the proposed_imports into the progress key to be used later. (This used to be the summary).
-    progress_data.total = 0
+    progress_data.total = len(tasks)
     progress_data.save()
 
-    return finish_raw_save(sensor_readings_summary, file_pk, progress_data.key)
+    return chord(tasks, interval=15)(finish_raw_save.s(file_pk, progress_data.key))
+
+
+@shared_task
+def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
+    progress_data = ProgressData.from_key(progress_key)
+
+    result = {}
+    try:
+        sensor = Sensor.objects.get(column_name=sensor_column_name)
+
+    except Sensor.DoesNotExist:
+        result[sensor_column_name] = {'error': 'No such sensor.'}
+
+    else:
+        try:
+            with transaction.atomic():
+                reading_strings = [
+                    f"({sensor.id}, '{timestamp}', '{value}')"
+                    for timestamp, value
+                    in readings_tuples
+                ]
+                sql = (
+                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading)' +
+                    ' VALUES ' + ', '.join(reading_strings) +
+                    ' ON CONFLICT (sensor_id, timestamp)' +
+                    ' DO UPDATE SET reading = EXCLUDED.reading' +
+                    ' RETURNING reading;'
+                )
+                with connection.cursor() as cursor:
+                    cursor.execute(sql)
+                    result[sensor_column_name] = {'count': len(cursor.fetchall())}
+        except ProgrammingError as e:
+            if 'ON CONFLICT DO UPDATE command cannot affect row a second time' in str(e):
+                result[sensor_column_name] = {'error': 'Overlapping readings.'}
+            else:
+                progress_data.finish_with_error('data failed to import')
+                raise e
+        except DataError as e:
+            if "date/time field" in str(e):
+                result[sensor_column_name] = {'error': 'Invalid readings. Ensure timestamps are in iso format.'}
+            elif "invalid input syntax for type double precision" in str(e):
+                result[sensor_column_name] = {'error': 'Invalid readings. Ensure readings are numbers.'}
+            else:
+                result[sensor_column_name] = {'error': 'Invalid readings.'}
+
+        except Exception as e:
+            progress_data.finish_with_error('data failed to import')
+            raise e
+
+    progress_data.step()
+
+    return result
 
 
 @shared_task
@@ -1138,6 +1175,27 @@ def _append_sensor_import_results_to_summary(import_results):
         }
         for sensor in import_results
     ]
+
+
+def _append_sensor_readings_import_results_to_summary(import_results):
+    summary = {}
+    for import_result in import_results:
+        sensor_name, result = list(import_result.items())[0]
+
+        if sensor_name not in summary:
+            summary[sensor_name] = {
+                "column_name": sensor_name,
+                "num_readings": 0,
+                "errors": ""
+            }
+
+        if "count" in result:
+            summary[sensor_name]["num_readings"] += result["count"]
+
+        if "error" in result:
+            summary[sensor_name]["errors"] = result["error"]
+
+    return list(summary.values())
 
 
 @shared_task
