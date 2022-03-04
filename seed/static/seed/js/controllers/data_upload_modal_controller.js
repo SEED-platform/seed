@@ -212,6 +212,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       var present_parsed_meters_confirmation = function (result) {
+        $scope.proposed_meters_count = result.proposed_imports.length
+        $scope.proposed_properties_with_meters = new Set(result.proposed_imports.map((meter) => meter.pm_property_id)).size
+        $scope.unlinkable_properties = result.unlinkable_pm_ids.length
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [{
@@ -590,6 +593,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
+              $scope.import_meter_count = progress_data.message.length
+              $scope.import_property_count = new Set(progress_data.message.map((meter) => meter.pm_property_id)).size
               $scope.import_results_options = meter_import_results(progress_data.message);
               $scope.step.number = 16;
             } else {
