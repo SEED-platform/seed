@@ -372,8 +372,8 @@
                 </div>
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
-                    <ul class="meter-count" ng-if="unlinkable_properties">
-                        <li>{$ unlinkable_properties_string $}</li>
+                    <ul class="meter-count" ng-if="unlinkable_properties_count">
+                        <li>{$ unlinkable_properties_count_string $}</li>
                     </ul>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
                 </div>

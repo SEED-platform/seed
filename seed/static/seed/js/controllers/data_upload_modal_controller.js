@@ -217,8 +217,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         $scope.proposed_properties_count = new Set(result.proposed_imports.map((meter) => meter.pm_property_id)).size
         $scope.proposed_properties_count_string = $scope.proposed_properties_count > 1 ? `${$scope.proposed_properties_count} Properties` : `${$scope.proposed_properties_count} Property`
 
-        $scope.unlinkable_properties = result.unlinkable_pm_ids.length
-        $scope.unlinkable_properties_string = $scope.unlinkable_properties > 1 ? `${$scope.unlinkable_properties} Properties` : `${$scope.unlinkable_properties} Property`
+        $scope.unlinkable_properties_count = result.unlinkable_pm_ids.length
+        $scope.unlinkable_properties_count_string = $scope.unlinkable_properties_count > 1 ? `${$scope.unlinkable_properties_count} Properties` : `${$scope.unlinkable_properties} Property`
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [{
