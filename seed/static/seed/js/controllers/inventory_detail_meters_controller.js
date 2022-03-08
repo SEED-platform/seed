@@ -162,18 +162,22 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       var filterByMeterLabels = function filterByMeterLabels (readings, columnDefs, meterLabels) {
         var timeColumns = ['start_time', 'end_time', 'month', 'year'];
         var selectedColumns = meterLabels.concat(timeColumns);
-        var filteredReadings = readings.map(function (reading) {
-          return Object.entries(reading).reduce(function (newReading, _ref) {
-            var key = _ref[0],
-              value = _ref[1];
+        // var filteredReadings = readings.map(function (reading) {
+        //   return Object.entries(reading).reduce(function (newReading, _ref) {
+        //     var key = _ref[0],
+        //       value = _ref[1];
 
-            if (selectedColumns.includes(key)) {
-              newReading[key] = value;
-            }
+        //     if (selectedColumns.includes(key)) {
+        //       newReading[key] = value;
+        //     }
 
-            return newReading;
-          }, {});
-        });
+        //     return newReading;
+        //   }, {});
+        // });
+        var filteredReadings = readings.filter(reading => {
+          return meterLabels.some(label => Object.keys(reading).includes(label))
+        })
+        console.log('filteredReadings', filteredReadings)
         var filteredColumnDefs = columnDefs.filter(function (columnDef) {
           return selectedColumns.includes(columnDef.field);
         });
