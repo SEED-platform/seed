@@ -358,8 +358,8 @@
                 <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
                     <div ng-if="proposed_imports_options.data.length">
                         <div translate><b>METER_READING_COUNTS_TITLE</b></div>
-                        <ul class="meter-count" nf-if="proposed_properties_with_meters">    
-                            <li>{$ proposed_meters_count $} Meters from {$ proposed_properties_with_meters $} Properties</li>
+                        <ul class="meter-count" nf-if="proposed_properties_count">    
+                            <li>{$ proposed_meters_count_string $} from {$ proposed_properties_count_string $}</li>
                         </ul>
                         <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
                     </div>
@@ -373,7 +373,7 @@
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                     <ul class="meter-count" ng-if="unlinkable_properties">
-                        <li>{$ unlinkable_properties $} Unlinkable Properties</li>
+                        <li>{$ unlinkable_properties_string $}</li>
                     </ul>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
                 </div>
@@ -385,8 +385,8 @@
         <div class="row">
             <div class="alert alert-info">
                 <div translate><b>METER_READING_COUNTS_TITLE</b></div>
-                <ul class="meter-count" ng-if="import_property_count">
-                    <li>{$ import_meter_count $} Meters Imported from {$ import_property_count $} Properties</li>
+                <ul class="meter-count" ng-if="import_properties_count">
+                    <li>{$ import_meters_count_string $} Imported from {$ import_properties_count_string $} </li>
                 </ul>
                 <div ui-grid="import_results_options"></div>
             </div>
