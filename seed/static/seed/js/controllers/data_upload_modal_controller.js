@@ -187,6 +187,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         } else {
           $uibModalInstance.dismiss('cancel');
         }
+        // Following a completed meter import refresh datasets
+        $scope.step.number == 16 ? location.reload() : null
       };
       /**
        * create_dataset: uses the `uploader_service` to create a new data set. If
