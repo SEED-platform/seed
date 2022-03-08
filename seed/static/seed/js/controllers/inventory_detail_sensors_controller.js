@@ -9,6 +9,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
     'inventory_service',
     'inventory_payload',
     'sensors',
+    'data_loggers',
     'sensor_service',
     'property_sensor_usage',
     'spinner_utility',
@@ -24,6 +25,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       inventory_service,
       inventory_payload,
       sensors,
+      data_loggers,
       sensor_service,
       property_sensor_usage,
       spinner_utility,
@@ -70,9 +72,28 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         }
       });
 
+      $scope.dataloggers = property_sensor_usage.readings.map(reading => {
+          readings = _.omit(reading, "timestamp");
+          readings_by_sensor = Object.keys(readings).map(function(key) {
+            return {
+              sensor: key,
+              value: readings[key]
+            }
+          });
+        
+          return {
+          timestamp: reading["timestamp"],
+          readings: readings_by_sensor
+        }
+      });
+
       // On page load, all sensors and readings
       $scope.has_sensor_readings = $scope.data.length > 0;
       $scope.has_sensors = sensors.length > 0;
+      $scope.has_data_loggers = data_loggers.length > 0;
+
+      var sorted_data_loggers = _.sortBy(data_loggers, ['id']);
+      resetSelections();
 
       var sorted_sensors = _.sortBy(sensors, ['id']);
       resetSelections();
@@ -82,6 +103,16 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           $scope.applyFilters();
         }
       };
+
+      var base_data_logger_col_defs = [{
+          field: 'display_name',
+          enableHiding: false,
+          type: 'string'
+        }, {
+          field: 'location_identifier',
+          displayName: 'location identifier',        
+          enableHiding: false
+      }];
 
       var base_sensor_col_defs = [{
           field: 'display_name',
@@ -103,7 +134,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         },{
           field: 'description',
           enableHiding: false
+        },{
+          field: 'data_logger',
+          displayName: 'Data Logger',
+          enableHiding: false
       }];
+
+      $scope.dataloggerGridOptions = {
+        data: sorted_data_loggers,
+        columnDefs: base_data_logger_col_defs,
+        enableColumnResizing: true,
+        enableFiltering: true,
+        flatEntityAccess: true,
+        fastWatch: true,
+      };
 
       $scope.sensorGridOptions = {
         data: sensors,

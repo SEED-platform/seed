@@ -11,7 +11,6 @@ from config.settings.common import TIME_ZONE
 
 from django.db.models.functions import TruncMonth, TruncYear
 from django.db.models import Avg
-from django.db.models import Q
 
 from pytz import timezone
 
@@ -30,9 +29,7 @@ class PropertySensorReadingsExporter():
         self._cache_factors = None
         self._cache_org_country = None
 
-        self.sensors = Sensor.objects.filter(
-            Q(sensor_property_id=property_id)
-        ).exclude(pk__in=excluded_sensor_ids)
+        self.sensors = Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
         self.org_id = org_id
         self.tz = timezone(TIME_ZONE)
 

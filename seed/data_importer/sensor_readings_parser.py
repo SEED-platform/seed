@@ -64,7 +64,7 @@ class SensorsReadingsParser(object):
         return cls(org_id, sensor_readings_by_sensor_name, property_id=property_id)
 
     def get_validation_report(self):
-        sensor_names = list(Sensor.objects.filter(sensor_property_id=self._property_id).values_list('column_name', flat=True))
+        sensor_names = Sensor.objects.select_related('data_logger').filter(data_logger__property_id=self._property_id).values_list('column_name', flat=True)
 
         result = [
             {
