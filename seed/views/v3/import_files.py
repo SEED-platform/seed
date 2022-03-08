@@ -1107,7 +1107,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             meters_parser = MetersParser.factory(import_file.local_file, org_id)
             import_file.num_rows = len(meters_parser.proposed_imports)
             import_file.save()
-            
+
         except ImportFile.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
