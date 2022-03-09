@@ -390,7 +390,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         cycle_id = cycle_id || $scope.selectedCycle.id;
         $scope.uploader.in_progress = true;
         save_raw_assessed_data(file_id, cycle_id, true);
-        $rootScope.$emit('datasets_updated')
+        $rootScope.$emit('datasets_updated');
       };
 
       /**
