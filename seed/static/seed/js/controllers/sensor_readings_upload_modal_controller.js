@@ -93,9 +93,6 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
         enableHiding: false,
         type: 'string'
       }, {
-        field: 'exists',
-        enableHiding: false
-      }, {
         field: 'num_readings',
         displayName: 'number of readings',        
         enableHiding: false
@@ -113,9 +110,16 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
 
       var show_confirmation_info = function () {
         uploader_service.sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
+          var addtional_columnDefs = [
+            {
+              field: 'exists',
+              enableHiding: false
+            }
+          ]
+
           $scope.proposed_imports_options = {
             data: result,
-            columnDefs: base_sensor_readings_col_defs,
+            columnDefs: [...base_sensor_readings_col_defs, ...addtional_columnDefs],
             enableColumnResizing: true,
             enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
             enableVerticalScrollbar: result.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
@@ -140,9 +144,17 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
       };
 
       var buildImportResults = function (message) {
+        var addtional_columnDefs = [
+          {
+            field: 'errors',
+            displayName: 'errors',        
+            enableHiding: false
+          }
+        ]
+
         $scope.import_result_options = {
           data: message,
-          columnDefs: base_sensor_readings_col_defs,
+          columnDefs: [...base_sensor_readings_col_defs, ...addtional_columnDefs],
           enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
