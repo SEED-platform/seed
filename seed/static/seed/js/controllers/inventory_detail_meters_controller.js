@@ -164,7 +164,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         var selectedColumns = meterLabels.concat(timeColumns);
         var filteredReadings = readings.filter(reading => {
           return meterLabels.some(label => Object.keys(reading).includes(label))
-        })
+        });
         var filteredColumnDefs = columnDefs.filter(function (columnDef) {
           return selectedColumns.includes(columnDef.field);
         });
