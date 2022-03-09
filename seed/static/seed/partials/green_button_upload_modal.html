@@ -22,7 +22,7 @@
             <div class="alert alert-warning green-button-preview">
                 <div>
                     <div translate><b>METER_READING_COUNTS_TITLE</b></div>
-                    <ul class="meter-count" nf-if="proposed_meters_count">
+                    <ul class="meter-count" ng-if="proposed_meters_count">
                         <li>{$ proposed_meters_count_string $} </li>
                     </ul>
                     <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
