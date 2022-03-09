@@ -785,7 +785,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.export_meter_results = function(results) {
         console.log('export meter results')
       }
-      $scope.export_unlinkable_properties =  function(results) {
+      $scope.export_meter_data = function (results, new_file_name) {
         // let data = ['PM Property ID']
         // data.push(results.data.map(d => d.portfolio_manager_id).join('\n'))
         // saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), 'unlinkable_property_ids.csv')
@@ -794,10 +794,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         data = results.data  
         data.forEach(d => excluded_keys.forEach(k => delete d[k]))
         let headers = Object.keys(data[0])
-        let csv_data = headers.join(',').replace('_', ' ')
-        
-
-        console.log('export unlinked')
+        let csv_data = [headers.join(',').replace('_', ' ')]
+        csv_data.push(data.map(d => Object.values(d).join(',')))
+        saveAs(new Blob([data.join('\n')], { type: 'text/csv' }), new_file_name)
       }
 
       /**

@@ -372,7 +372,7 @@
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
-                    <button type="button" class="btn btn-primary" ng-click="export_unlinkable_properties(unlinkable_pm_ids_options)"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+                    <button type="button" class="btn btn-primary" ng-click="export_meter_data(unlinkable_pm_ids_options, 'unlinkable_properties.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
 
                 </div>
             </div>
