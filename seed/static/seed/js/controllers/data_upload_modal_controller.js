@@ -782,21 +782,15 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'import_issues.csv');
       };
 
-      $scope.export_meter_results = function(results) {
-        console.log('export meter results')
-      }
       $scope.export_meter_data = function (results, new_file_name) {
-        // let data = ['PM Property ID']
-        // data.push(results.data.map(d => d.portfolio_manager_id).join('\n'))
-        // saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), 'unlinkable_property_ids.csv')
-        let excluded_keys = []
-        // let excluded_keys = ['$$hashKey']
-        data = results.data  
-        data.forEach(d => excluded_keys.forEach(k => delete d[k]))
-        let headers = Object.keys(data[0])
-        let csv_data = [headers.join(',').replace('_', ' ')]
-        csv_data.push(data.map(d => Object.values(d).join(',')))
-        saveAs(new Blob([data.join('\n')], { type: 'text/csv' }), new_file_name)
+        let data = [results.columnDefs.map(c => c.displayName || c.name).join(',')]
+        let keys = results.columnDefs.map(c => c.name)
+        results.data.forEach(r => {
+          let row = []
+          keys.forEach(k => row.push(r[k]))
+          data.push(row.join(','))
+        })
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name)
       }
 
       /**
