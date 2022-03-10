@@ -269,10 +269,10 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         });
       };
       
-      $scope.open_sensor_upload_modal = function () {
+      $scope.open_data_logger_upload_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/sensor_upload_modal.html',
-          controller: 'sensor_upload_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/data_logger_upload_modal.html',
+          controller: 'data_logger_upload_modal_controller',
           resolve: {
             filler_cycle: function () {
               return $scope.filler_cycle;
@@ -287,7 +287,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
               return dataset_service.get_datasets().then(function (result) {
                 return result.datasets;
               });
-            }
+            },
+            sensor_service: sensor_service,
           }
         });
       };

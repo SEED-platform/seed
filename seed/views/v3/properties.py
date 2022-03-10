@@ -313,32 +313,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return res
 
-    @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=True, methods=['GET'])
-    def data_loggers(self, request, pk):
-        """
-        Retrieves data_loggers for the property
-        """
-        org_id = self.get_organization(request)
-
-        property_view = PropertyView.objects.get(
-            pk=pk,
-            cycle__organization_id=org_id
-        )
-        property_id = property_view.property.id
-
-        res = []
-        for data_logger in DataLogger.objects.filter(property_id=property_id):
-            res.append({
-                'id': data_logger.id,
-                'display_name': data_logger.display_name,
-                'location_identifier': data_logger.location_identifier,
-            })
-
-        return res
-
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),

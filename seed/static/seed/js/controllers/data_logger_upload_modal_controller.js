@@ -1,5 +1,5 @@
-angular.module('BE.seed.controller.sensor_upload_modal', [])
-  .controller('sensor_upload_modal_controller', [
+angular.module('BE.seed.controller.data_logger_upload_modal', [])
+  .controller('data_logger_upload_modal_controller', [
     '$scope',
     '$state',
     '$uibModalInstance',
@@ -7,6 +7,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
     'filler_cycle',
     'dataset_service',
     'organization_id',
+    'sensor_service',
     'uploader_service',
     'view_id',
     'datasets',
@@ -18,6 +19,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       filler_cycle,
       dataset_service,
       organization_id,
+      sensor_service,
       uploader_service,
       view_id,
       datasets
@@ -29,6 +31,10 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
       $scope.datasets = datasets;
+      $scope.data_logger = {
+        display_name: null,
+        location_identifier: ""
+      };
 
       if (datasets.length) $scope.selectedDataset = datasets[0];
 
@@ -46,15 +52,41 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       };
 
       $scope.cancel = function () {
-        // If step 2, GB import confirmation was not accepted by user, so delete file
-        if ($scope.step.number === 2) {
+        // If step 3, GB import confirmation was not accepted by user, so delete file
+        if ($scope.step.number === 3) {
           dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
-            $uibModalInstance.dismiss('cancel');
           });
-        } else {
-          $uibModalInstance.dismiss('cancel');
+        } else if ($scope.step.number === 2) {
+          $scope.refresh_page()
         }
+        $uibModalInstance.dismiss('cancel');
       };
+
+      $scope.create_data_logger = function(){
+        if ($scope.data_logger.display_name == null || $scope.data_logger.display_name == ""){
+          $scope.data_logger_display_name_not_entered_alert = true
+        }
+        else {
+          $scope.data_logger_display_name_not_entered_alert = false
+
+          sensor_service.create_data_logger(
+            $scope.view_id, 
+            $scope.organization_id, 
+            $scope.data_logger.display_name, 
+            $scope.data_logger.location_identifier
+          ).then((result) => {
+            $scope.data_logger = result;
+            $scope.step = {
+              number: 2
+            };
+          })
+          .catch((err) => {
+            if(err.status == 400){
+              $scope.data_logger_display_name_not_unique_alert = true
+            }
+          })
+        }
+      }
 
       $scope.uploaderfunc = function (event_message, file/*, progress*/) {
         switch (event_message) {
@@ -83,8 +115,8 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
         $scope.uploader.invalid_csv_extension_alert = false;
         $scope.uploader.invalid_file_contents = true;
 
-        // Be sure user is back to step 1 where the error is shown and they can upload another file
-        $scope.step.number = 1;
+        // Be sure user is back to step 2 where the error is shown and they can upload another file
+        $scope.step.number = 2;
       };
 
       var base_sensor_col_defs = [{
@@ -119,7 +151,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       };
 
       var show_confirmation_info = function () {
-        uploader_service.sensors_preview($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
+        uploader_service.sensors_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger.id).then(function (result) {
           $scope.proposed_imports_options = {
             data: result.proposed_imports,
             columnDefs: base_sensor_col_defs,
@@ -132,7 +164,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
           var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
           modal_element.addClass('modal-lg');
 
-          $scope.step.number = 2;
+          $scope.step.number = 3;
         }).catch(saveFailure);
       };
 
@@ -142,7 +174,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
           $scope.uploader.status_message = 'saving complete';
           $scope.uploader.progress = 100;
           buildImportResults(data.message);
-          $scope.step.number = 4;
+          $scope.step.number = 5;
         });
       };
 
@@ -169,7 +201,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
         uploader_service.save_raw_data($scope.file_id, $scope.selectedCycle).then(function (data) {
           $scope.uploader.status_message = 'saving data';
           $scope.uploader.progress = 0;
-          $scope.step.number = 3;
+          $scope.step.number = 4;
 
           var progress = _.clamp(data.progress, 0, 100);
 

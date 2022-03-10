@@ -1018,6 +1018,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
         view_id = request.query_params.get('view_id')
+        data_logger_id = request.query_params.get('data_logger_id')
 
         try:
             import_file = ImportFile.objects.get(
@@ -1041,7 +1042,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             "proposed_imports": list(parser.data)
         }
 
-        import_file.matching_results_data['property_id'] = property_id
+        import_file.matching_results_data['data_logger_id'] = data_logger_id
         import_file.save()
 
         return result

@@ -6,8 +6,21 @@ angular.module('BE.seed.service.sensor', [])
 
       sensor_factory.get_data_loggers = function (property_view_id, organization_id) {
         return $http.get(
-          '/api/v3/properties/' + property_view_id + '/data_loggers/',
-          { params: { organization_id } }
+          '/api/v3/data_loggers/',
+          { params: {property_view_id, organization_id }}
+        ).then(function (response) {
+          return response.data;
+        });
+      };
+
+      sensor_factory.create_data_logger = function (property_view_id, organization_id, display_name, location_identifier) {
+        return $http(
+          { 
+            url: '/api/v3/data_loggers/',
+            method: 'POST',
+            params: {property_view_id,  organization_id}, 
+            data: {display_name, location_identifier}
+          }
         ).then(function (response) {
           return response.data;
         });
