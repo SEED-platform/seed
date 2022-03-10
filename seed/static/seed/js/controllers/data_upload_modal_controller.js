@@ -799,9 +799,9 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         let data = [results.columnDefs.map(c => c.displayName || c.name).join(',')];
         let keys = results.columnDefs.map(c => c.name);
         results.data.forEach(r => {
-          let row = []
-          keys.forEach(k => row.push(r[k]))
-          data.push(row.join(','))
+          let row = [];
+          keys.forEach(k => row.push(r[k]));
+          data.push(row.join(','));
         });
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name);
       }
