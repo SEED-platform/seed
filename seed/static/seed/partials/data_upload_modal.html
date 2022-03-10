@@ -358,6 +358,9 @@
                 <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
                     <div ng-if="proposed_imports_options.data.length">
                         <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                        <ul class="meter-count" ng-if="proposed_properties_count">    
+                            <li>{$ proposed_meters_count_string $} from {$ proposed_properties_count_string $}</li>
+                        </ul>
                         <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
                     </div>
                     <br>
@@ -369,6 +372,9 @@
                 </div>
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                    <ul class="meter-count" ng-if="unlinkable_properties_count">
+                        <li>{$ unlinkable_properties_count_string $}</li>
+                    </ul>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
                 </div>
             </div>
@@ -379,6 +385,9 @@
         <div class="row">
             <div class="alert alert-info">
                 <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                <ul class="meter-count" ng-if="import_properties_count">
+                    <li>{$ import_meters_count_string $} Imported from {$ import_properties_count_string $} </li>
+                </ul>
                 <div ui-grid="import_results_options"></div>
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">

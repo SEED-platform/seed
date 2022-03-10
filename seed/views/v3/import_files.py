@@ -1104,12 +1104,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 pk=pk,
                 import_record__super_organization_id=org_id
             )
+            meters_parser = MetersParser.factory(import_file.local_file, org_id)
+            import_file.num_rows = len(meters_parser.proposed_imports)
+            import_file.save()
+
         except ImportFile.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
-
-        meters_parser = MetersParser.factory(import_file.local_file, org_id)
 
         result = {}
         result["validated_type_units"] = meters_parser.validated_type_units()
