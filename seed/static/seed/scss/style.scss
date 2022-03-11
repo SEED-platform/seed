@@ -2330,10 +2330,44 @@ select {
 
 /* Styles for building summary page */
 
- #inventory-summary {
+.inventory-summary {
+  margin: 20px 10px;
+
   table, th, td {
     border: 1px solid black;
   }
+
+  &.columns {
+    display: flex;
+    column-gap: 10px;
+    align-items: start;
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      flex-grow: 1;
+    }
+  }
+
+  .row {
+    display: flex;
+    margin: 0 0;
+
+    .grow {
+      flex-grow: 1;
+    }
+  }
+
+  .tab-content {
+    border-width: 0 1px 1px 1px;
+    border-color: #ddd;
+    border-style: solid;
+  }
+}
+
+.inventory-summary-controls {
+  margin: 20px 10px;
 }
 
 #column_settings_count {
@@ -2787,7 +2821,7 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.inventory-list-controls, .inventory-summary-controls {
+.inventory-list-controls {
   padding: 20px 10px;
 
   .form-group {
