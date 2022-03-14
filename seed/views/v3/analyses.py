@@ -17,7 +17,7 @@ from quantityfield.units import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Cycle, PropertyView, PropertyState
+from seed.models import Analysis, Cycle, PropertyView, PropertyState, Column
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
@@ -267,6 +267,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
+        columns = Column.objects.filter(organization_id=org_id)
+        column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
+
+        col_names = [x for x, y in list(columns.values_list('column_name', 'table_name')) if (y == 'PropertyState')]
 
         def get_counts(field_name):
             """Get aggregated count of each unique value for the field
@@ -399,12 +403,31 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             g[h['gross_floor_area']] += h['count']
         sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
+        extra_data_list = []
+        for data in states.values_list('extra_data', flat=True):
+            for key, value in data.items():
+                extra_data_list.append(key)
+
+        count_agg = []
+        for i in col_names:
+            count_dict = {}
+            if i in column_names_extra_data:
+                count_dict[i] = len(list(filter(None, states.values_list('extra_data__' + i, flat=True))))
+            else:
+                count_dict[i] = len(list(filter(None, states.values_list(i, flat=True))))
+            count_agg.append(count_dict)
+
+        count_agg_dict = {}
+        for d in count_agg:
+            count_agg_dict.update(d)
+
         return JsonResponse({
             'status': 'success',
             'total_records': views.count(),
             'number_extra_data_fields': len(extra_data_count),
+            'column_settings fields and counts': count_agg_dict,
+            'existing_extra_data fields and count': extra_data,
             'property_types': property_types,
-            'extra_data fields and count': extra_data,
             'year_built': year_built_list,
             'energy': energy_list2,
             'square_footage': sqftage_list2
