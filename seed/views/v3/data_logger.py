@@ -3,7 +3,6 @@
 :author
 """
 from rest_framework import viewsets
-from rest_framework.decorators import action
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (PropertyView,
@@ -11,6 +10,7 @@ from seed.models import (PropertyView,
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.api import OrgMixin
 from django.db.utils import IntegrityError
+
 
 class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
@@ -61,8 +61,8 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         property_id = property_view.property.id
 
         data_logger = DataLogger(
-            property_id = property_id, 
-            display_name=display_name, 
+            property_id=property_id,
+            display_name=display_name,
             location_identifier=location_identifier
         )
 

@@ -1031,7 +1031,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+            PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
         except PropertyView.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find property with pk=' + str(
@@ -1052,7 +1052,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['GET'])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
-        view_id = request.query_params.get('view_id')
+        data_logger_id = request.query_params.get('data_logger_id')
 
         try:
             import_file = ImportFile.objects.get(
@@ -1065,17 +1065,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
-        except PropertyView.DoesNotExist:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Could not find property with pk=' + str(
-                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
             sensor_readings_parser = SensorsReadingsParser.factory(
                 import_file.local_file,
                 org_id,
-                property_id=property_id
+                data_logger_id=data_logger_id
             )
         except ValueError as e:
             return JsonResponse(
@@ -1083,7 +1076,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         result = sensor_readings_parser.get_validation_report()
 
-        import_file.matching_results_data['property_id'] = property_id
+        import_file.matching_results_data['data_logger_id'] = data_logger_id
         import_file.save()
 
         return result

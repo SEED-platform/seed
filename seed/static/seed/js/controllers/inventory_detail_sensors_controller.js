@@ -44,7 +44,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       var getSensorLabel = function (sensor) {
-        return sensor.display_name;
+        return sensor.display_name + " (" + sensor.data_logger + ")";
       };
 
       var resetSelections = function () {
@@ -57,22 +57,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         });
       };
 
-      $scope.data = property_sensor_usage.readings.map(reading => {
-          readings = _.omit(reading, "timestamp");
-          readings_by_sensor = Object.keys(readings).map(function(key) {
-            return {
-              sensor: key,
-              value: readings[key]
-            }
-          });
-        
-          return {
-          timestamp: reading["timestamp"],
-          readings: readings_by_sensor
-        }
-      });
-
-      $scope.dataloggers = property_sensor_usage.readings.map(reading => {
+      $scope.dataloggers = $scope.property_sensor_usage.readings.map(reading => {
           readings = _.omit(reading, "timestamp");
           readings_by_sensor = Object.keys(readings).map(function(key) {
             return {
@@ -88,7 +73,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       });
 
       // On page load, all sensors and readings
-      $scope.has_sensor_readings = $scope.data.length > 0;
+      $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
       $scope.has_sensors = sensors.length > 0;
       $scope.has_data_loggers = data_loggers.length > 0;
 
@@ -112,6 +97,24 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           field: 'location_identifier',
           displayName: 'location identifier',        
           enableHiding: false
+        }, {
+          name: 'actions',
+          field: 'actions',
+          displayName: 'actions',      
+          enableHiding: false,
+          cellTemplate: '<div style="display: flex; justify-content: center">' +
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' + 
+            '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 200
       }];
 
       var base_sensor_col_defs = [{
@@ -159,8 +162,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       $scope.usageGridOptions = {
-        data: property_sensor_usage.readings,
-        columnDefs: property_sensor_usage.column_defs,
+        data: $scope.property_sensor_usage.readings,
+        columnDefs: $scope.property_sensor_usage.column_defs,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
@@ -243,10 +246,9 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         readings = results.readings;
         columnDefs = results.columnDefs;
 
-        $scope.data = readings;
         $scope.usageGridOptions.columnDefs = columnDefs;
         $scope.usageGridOptions.data = readings;
-        $scope.has_sensor_readings = $scope.data.length > 0;
+        $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
         $scope.apply_column_settings();
       };
 
@@ -293,7 +295,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         });
       };
 
-      $scope.open_sensor_readings_upload_modal = function () {
+      $scope.open_sensor_readings_upload_modal = function (data_logger) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/sensor_readings_upload_modal.html',
           controller: 'sensor_readings_upload_modal_controller',
@@ -311,6 +313,9 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
               return dataset_service.get_datasets().then(function (result) {
                 return result.datasets;
               });
+            },
+            data_logger_id: function () {
+              return data_logger.id
             }
           }
         });

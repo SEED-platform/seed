@@ -25,19 +25,19 @@ class SensorsReadingsParser(object):
 
     _tz = timezone(TIME_ZONE)
 
-    def __init__(self, org_id, sensor_readings_details, property_id):
+    def __init__(self, org_id, sensor_readings_details, data_logger_id):
         # defaulted to None to show it hasn't been cached yet
         self.sensor_readings_details = sensor_readings_details
         self._org_id = org_id
-        self._property_id = property_id
+        self._data_logger_id = data_logger_id
 
     @classmethod
-    def factory(cls, sensor_readings_file, org_id, property_id):
+    def factory(cls, sensor_readings_file, org_id, data_logger_id):
         """Factory function for sensorReadingsParser
 
         :param sensor_readings_file: File
         :param org_id: int
-        :param property_id: int, id of property - required if sensor data is for a specific property
+        :param data_logger_id: int, id of data_logger
         :return: SensorReadingsParser
         """
         parser = reader.MCMParser(sensor_readings_file)
@@ -61,10 +61,10 @@ class SensorsReadingsParser(object):
             for sensor_name in sensor_names:
                 sensor_readings_by_sensor_name[sensor_name][timestamp] = reading[sensor_name]
 
-        return cls(org_id, sensor_readings_by_sensor_name, property_id=property_id)
+        return cls(org_id, sensor_readings_by_sensor_name, data_logger_id=data_logger_id)
 
     def get_validation_report(self):
-        sensor_names = Sensor.objects.select_related('data_logger').filter(data_logger__property_id=self._property_id).values_list('column_name', flat=True)
+        sensor_names = Sensor.objects.filter(data_logger=self._data_logger_id).values_list('column_name', flat=True)
 
         result = [
             {

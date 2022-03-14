@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
     'uploader_service',
     'view_id',
     'datasets',
+    'data_logger_id',
     function (
       $scope,
       $state,
@@ -20,7 +21,8 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
       organization_id,
       uploader_service,
       view_id,
-      datasets
+      datasets,
+      data_logger_id,
     ) {
       $scope.step = {
         number: 1
@@ -29,6 +31,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
       $scope.datasets = datasets;
+      $scope.data_logger_id = data_logger_id;
 
       if (datasets.length) $scope.selectedDataset = datasets[0];
 
@@ -109,7 +112,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
       };
 
       var show_confirmation_info = function () {
-        uploader_service.sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
+        uploader_service.sensor_readings_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger_id).then(function (result) {
           var addtional_columnDefs = [
             {
               field: 'exists',

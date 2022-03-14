@@ -150,11 +150,12 @@ class PropertySensorReadingsExporter():
 
     def _build_column_def(self, sensor, column_defs):
         field_name = sensor.display_name
+        display_name = '{} ({})'.format(field_name, sensor.data_logger.display_name)
 
-        column_defs[field_name] = {
-            'field': field_name,
-            'displayName': '{} ({})'.format(field_name, sensor.units),
+        column_defs[display_name] = {
+            'field': display_name,
+            'displayName': display_name,
             '_filter_type': 'reading',
         }
 
-        return field_name
+        return display_name
