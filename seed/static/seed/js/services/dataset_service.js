@@ -93,9 +93,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        return response.data
+        return response.data;
       });
-    }
+    };
 
     dataset_service.reuse_inventory_file_for_meters = function (file_id) {
       return $http.post('/api/v3/import_files/reuse_inventory_file_for_meters/', {

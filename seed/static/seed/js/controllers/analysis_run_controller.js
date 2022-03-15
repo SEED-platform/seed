@@ -36,9 +36,9 @@ angular.module('BE.seed.controller.analysis_run', [])
       // Forces analysis_runs.html to only show one view/run - the selected run
       $scope.views = [view_payload.view];
       $scope.view = view_payload.view;
-      if ($scope.analysis.service == 'BETTER') {
+      if ($scope.analysis.service === 'BETTER') {
         // for BETTER, make sure we show the Building report before the Portfolio report
-        $scope.view.output_files.sort((a, b) => a.file.includes('portfolio') ? 1 : -1)
+        $scope.view.output_files.sort(a => a.file.includes('portfolio') ? 1 : -1);
       }
       $scope.view_id = view_payload.view.id;
       $scope.original_view = view_payload.original_view;
@@ -58,6 +58,6 @@ angular.module('BE.seed.controller.analysis_run', [])
           // NOTE: hardcoding 'property' b/c you can only run analyses on properties
           'property',
           inventory_state
-        )
+        );
       };
     }]);

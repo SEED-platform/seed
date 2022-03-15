@@ -31,8 +31,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         filters[`${column_name}__${operator}`] = value;
       }
 
-      return filters
-    }
+      return filters;
+    };
 
     const format_column_sorts = function (column_sorts) {
       // turn column sort objects into usable query parameter
@@ -42,12 +42,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       const sorts = [];
       for (const {column_name, direction} of column_sorts) {
-        const direction_operator = direction == 'desc' ? '-' : ''
+        const direction_operator = direction == 'desc' ? '-' : '';
         sorts.push(`${direction_operator}${column_name}`);
       }
 
       return {order_by: sorts};
-    }
+    };
 
     inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
@@ -57,7 +57,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         include_related: include_related,
         ids_only: ids_only,
         ...format_column_sorts(column_sorts),
-        ...format_column_filters(column_filters),
+        ...format_column_filters(column_filters)
       };
 
       if (ids_only) {
@@ -93,9 +93,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
       }).catch(function (response) {
         if (response.data.message) {
-          return response.data
+          return response.data;
         }
-        throw response
+        throw response;
       });
     };
 
@@ -306,7 +306,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         include_related: include_related,
         ids_only: ids_only,
         ...format_column_sorts(column_sorts),
-        ...format_column_filters(column_filters),
+        ...format_column_filters(column_filters)
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -335,9 +335,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
       }).catch(function (response) {
         if (response.data.message) {
-          return response.data
+          return response.data;
         }
-        throw response
+        throw response;
       });
     };
 

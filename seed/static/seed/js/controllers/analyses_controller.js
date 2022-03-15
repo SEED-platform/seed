@@ -21,7 +21,7 @@ angular.module('BE.seed.controller.analyses', [])
       auth_payload,
       urls,
       analyses_service,
-      Notification,
+      Notification
     ) {
       $scope.org = organization_payload;
       $scope.auth = auth_payload.auth;
@@ -29,12 +29,12 @@ angular.module('BE.seed.controller.analyses', [])
       $scope.users = users_payload.users;
 
       // Stores functions for stopping the polling of analysis progress. Keyed by analysis id
-      const analysis_polling_stoppers = {}
+      const analysis_polling_stoppers = {};
 
       $scope.$on('$destroy', () => {
         // cancel all polling
-        Object.values(analysis_polling_stoppers).forEach(stop_func => stop_func())
-      })
+        Object.values(analysis_polling_stoppers).forEach(stop_func => stop_func());
+      });
 
       const refresh_analyses = function () {
         analyses_service.get_analyses_for_org($scope.org.id)
@@ -48,37 +48,37 @@ angular.module('BE.seed.controller.analyses', [])
         return analyses_service.get_analysis_for_org(analysis_id, $scope.org.id)
           .then(data => {
             const analysis_index = $scope.analyses.findIndex(analysis => {
-              return analysis.id === analysis_id
-            })
-            $scope.analyses[analysis_index] = data.analysis
-            return data.analysis
-          })
-      }
+              return analysis.id === analysis_id;
+            });
+            $scope.analyses[analysis_index] = data.analysis;
+            return data.analysis;
+          });
+      };
 
       // add flag to the analysis indicating it has no currently running tasks
       // Used to determine if we should indicate on UI if an analysis's status is being polled
       const mark_analysis_not_active = (analysis_id) => {
         const analysis_index = $scope.analyses.findIndex(analysis => {
-          return analysis.id === analysis_id
-        })
-        $scope.analyses[analysis_index]._finished_with_tasks = true
-      }
+          return analysis.id === analysis_id;
+        });
+        $scope.analyses[analysis_index]._finished_with_tasks = true;
+      };
 
       // Entry point for keeping track of analysis progress
       // Refreshes analysis in $scope when necessary
       const poll_analysis_progress = (analysis) => {
         if (analysis_polling_stoppers[analysis.id]) {
-          analysis_polling_stoppers[analysis.id]()
+          analysis_polling_stoppers[analysis.id]();
         }
 
-        const stop_func = analyses_service.check_progress_loop(analysis, refresh_analysis, mark_analysis_not_active)        
-        analysis_polling_stoppers[analysis.id] = stop_func
-      }
+        const stop_func = analyses_service.check_progress_loop(analysis, refresh_analysis, mark_analysis_not_active);
+        analysis_polling_stoppers[analysis.id] = stop_func;
+      };
 
       // start polling all of the analyses
       $scope.analyses.forEach(analysis => {
-        poll_analysis_progress(analysis)
-      })
+        poll_analysis_progress(analysis);
+      });
 
       $scope.start_analysis = function (analysis_id) {
         const analysis = $scope.analyses.find(function (a) {
@@ -92,8 +92,8 @@ angular.module('BE.seed.controller.analyses', [])
               Notification.primary('Analysis started');
               refresh_analysis(analysis_id)
                 .then((updated_analysis) => {
-                  poll_analysis_progress(updated_analysis)
-                })
+                  poll_analysis_progress(updated_analysis);
+                });
             } else {
               Notification.error('Failed to start analysis: ' + result.message);
             }
@@ -112,8 +112,8 @@ angular.module('BE.seed.controller.analyses', [])
               Notification.primary('Analysis stopped');
               refresh_analysis(analysis_id)
                 .then((updated_analysis) => {
-                  poll_analysis_progress(updated_analysis)
-                })
+                  poll_analysis_progress(updated_analysis);
+                });
             } else {
               Notification.error('Failed to stop analysis: ' + result.message);
             }
@@ -131,11 +131,11 @@ angular.module('BE.seed.controller.analyses', [])
             if (result.status === 'success') {
               Notification.primary('Analysis deleted');
               // stop polling and remove the analysis from the scope
-              analysis_polling_stoppers[analysis_id]()
+              analysis_polling_stoppers[analysis_id]();
               const analysis_index = $scope.analyses.findIndex(analysis => {
-                return analysis.id === analysis_id
-              })
-              $scope.analyses.splice(analysis_index, 1)
+                return analysis.id === analysis_id;
+              });
+              $scope.analyses.splice(analysis_index, 1);
             } else {
               Notification.error('Failed to delete analysis: ' + result.message);
             }
