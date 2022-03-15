@@ -95,15 +95,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           type: 'string'
         }, {
           field: 'location_identifier',
-          displayName: 'location identifier',        
+          displayName: 'Location Identifier',        
+          enableHiding: false
+        }, {
+          field: 'number_of_sensor',
+          displayName: 'Number of Sensor',        
           enableHiding: false
         }, {
           name: 'actions',
           field: 'actions',
-          displayName: 'actions',      
+          displayName: 'Actions',      
           enableHiding: false,
-          cellTemplate: '<div style="display: flex; justify-content: center">' +
+          cellTemplate: '<div style="display: flex; justify-content: space-around; align-content: center">' +
             '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' + 
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_data_logger_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' + 
             '</div>',
           enableColumnMenu: false,
           enableColumnMoving: false,
@@ -114,7 +119,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           exporterSuppressExport: true,
           pinnedLeft: true,
           visible: true,
-          width: 200
+          width: 300
       }];
 
       var base_sensor_col_defs = [{
@@ -271,7 +276,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         });
       };
       
-      $scope.open_data_logger_upload_modal = function () {
+      $scope.open_data_logger_upload_modal = function (data_logger) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_logger_upload_modal.html',
           controller: 'data_logger_upload_modal_controller',
@@ -289,6 +294,14 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
               return dataset_service.get_datasets().then(function (result) {
                 return result.datasets;
               });
+            },
+            data_logger: function () {
+              return data_logger?? {
+                  display_name: null,
+                  location_identifier: "",
+                  id: null,
+                  number_of_sensors: 0
+              };
             },
             sensor_service: sensor_service,
           }

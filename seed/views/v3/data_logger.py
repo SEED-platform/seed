@@ -7,6 +7,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (PropertyView,
                          DataLogger)
+from seed.models.sensors import Sensor
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.api import OrgMixin
 from django.db.utils import IntegrityError
@@ -37,6 +38,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
                 'id': data_logger.id,
                 'display_name': data_logger.display_name,
                 'location_identifier': data_logger.location_identifier,
+                'number_of_sensor': len(Sensor.objects.filter(data_logger=data_logger.id).all())
             })
 
         return res
@@ -78,6 +80,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
                 'id': data_logger.id,
                 'display_name': data_logger.display_name,
                 'location_identifier': data_logger.location_identifier,
+                'number_of_sensor': 0
             }
 
         return result

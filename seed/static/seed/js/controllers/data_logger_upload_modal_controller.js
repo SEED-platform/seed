@@ -10,6 +10,7 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
     'sensor_service',
     'uploader_service',
     'view_id',
+    'data_logger',
     'datasets',
     function (
       $scope,
@@ -22,19 +23,18 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
       sensor_service,
       uploader_service,
       view_id,
+      data_logger,
       datasets
     ) {
+      console.log(data_logger)
       $scope.step = {
-        number: 1
+        number: data_logger.id == null? 1: 2
       };
       $scope.view_id = view_id;
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
       $scope.datasets = datasets;
-      $scope.data_logger = {
-        display_name: null,
-        location_identifier: ""
-      };
+      $scope.data_logger = data_logger;
 
       if (datasets.length) $scope.selectedDataset = datasets[0];
 
