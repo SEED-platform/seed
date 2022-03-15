@@ -107,7 +107,7 @@ angular.module('BE.seed.service.analyses', [])
       };
 
       const get_summary = function (cycle_id) {
-        const organization_id = user_service.get_organization().id
+        const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/stats',
           method: 'GET',
@@ -117,7 +117,7 @@ angular.module('BE.seed.service.analyses', [])
         }).catch(function (response) {
           return response.data;
         });
-      }
+      };
 
       const get_progress_key = function (analysis_id) {
         const organization_id = user_service.get_organization().id;
@@ -130,7 +130,7 @@ angular.module('BE.seed.service.analyses', [])
         }).catch(function (response) {
           return response.data;
         });
-      }
+      };
 
       /**
        * check_progress_loop: polls progress data of an analysis
@@ -147,20 +147,20 @@ angular.module('BE.seed.service.analyses', [])
           'Ready',
           'Completed',
           'Stopped',
-          'Failed',
-        ]
+          'Failed'
+        ];
         if (NOT_ACTIVE_STATUSES.indexOf(status) >= 0) {
-          no_current_task_callback(id)
-          return () => {}
+          no_current_task_callback(id);
+          return () => {};
         }
 
         // stop_func allows the caller of check_progress_loop to cancel the polling
-        let stop = false
+        let stop = false;
         const stop_func = () => {
-          stop = true
-        }
+          stop = true;
+        };
 
-        const POLLING_DELAY_MS = 1500
+        const POLLING_DELAY_MS = 1500;
         // recursive func for checking the progress of the analysis.
         // Gets the key for the current progress data, polls it until it finishes
         // then starts over by getting the new key for the next progress data.
@@ -169,52 +169,52 @@ angular.module('BE.seed.service.analyses', [])
         const get_key_and_check_progress = () => {
           get_progress_key(id)
             .then(data => {
-              const progress_key = data.progress_key
+              const progress_key = data.progress_key;
               if (!progress_key) {
                 // analysis isn't in a trackable state/status, stop checking
-                no_current_task_callback(id)
-                return
+                no_current_task_callback(id);
+                return;
               }
 
               const check_progress_loop = () => {
                 $timeout(() => {
                   if (stop) {
-                    return
+                    return;
                   }
 
                   uploader_service.check_progress(progress_key)
                     .then(data => {
                       if (data.progress < 100) {
                         // keep polling, not done yet
-                        check_progress_loop()
+                        check_progress_loop();
                       } else {
                         // progress data has finished
                         // let caller know the task has finished
                         status_update_callback(id)
                           .then(() => {
                             // start tracking the next task
-                            get_key_and_check_progress(id, status_update_callback)
-                          })
+                            get_key_and_check_progress(id, status_update_callback);
+                          });
                       }
                     })
                     .catch(data => {
                       // yikes, something went wrong. Let the caller know the status
                       // probably changed and let's bail
                       status_update_callback(id)
-                        .then(() => no_current_task_callback(id))
-                    })
-                }, POLLING_DELAY_MS)
-              }
+                        .then(() => no_current_task_callback(id));
+                    });
+                }, POLLING_DELAY_MS);
+              };
 
               // kick off polling the progress data
-              check_progress_loop()
-            })
-        }
+              check_progress_loop();
+            });
+        };
 
         // finally kick off the polling process
-        get_key_and_check_progress()
-        return stop_func
-      }
+        get_key_and_check_progress();
+        return stop_func;
+      };
 
       const analyses_factory = {
         get_analyses_for_org: get_analyses_for_org,
@@ -229,7 +229,7 @@ angular.module('BE.seed.service.analyses', [])
         delete_analysis: delete_analysis,
         get_summary: get_summary,
         get_progress_key: get_progress_key,
-        check_progress_loop: check_progress_loop,
+        check_progress_loop: check_progress_loop
       };
 
       return analyses_factory;

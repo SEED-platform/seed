@@ -64,8 +64,8 @@ angular.module('BE.seed.controller.delete_column_modal', [])
 
       $scope.setRunningState = function () {
         $scope.eta = $scope.etaFn();
-        $scope.eta ? 
-          ($scope.state = 'running', $scope.startTime = moment()) : null
+        $scope.eta ?
+          ($scope.state = 'running', $scope.startTime = moment()) : null;
       };
 
       $scope.updateTime = function () {
