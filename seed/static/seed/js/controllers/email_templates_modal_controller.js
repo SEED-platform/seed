@@ -66,4 +66,4 @@ angular.module('BE.seed.controller.email_templates_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss();
       };
-  }]);
+    }]);

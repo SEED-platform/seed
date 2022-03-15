@@ -57,10 +57,10 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
           // refresh the current page b/c we have modified the default organization
           location.reload();
         }).catch(function (response) {
-          console.error('Failed to set default org: ');
-          console.error(response);
+          // console.error('Failed to set default org: ');
+          // console.error(response);
           $scope.error_occurred = true;
-        })
+        });
       };
 
       $scope.cancel = function () {
@@ -73,13 +73,13 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
         $scope.uploader.in_progress = true;
         cycle_service.delete_cycle($scope.cycle_id, $scope.organization_id)
           .then(function (data) {
-            function successHandler() {
+            function successHandler () {
               $scope.delete_cycle_status = 'success';
               $scope.uploader.in_progress = false;
             }
-            function errorHandler(err) {
-              console.error('Failed to delete cycle: ');
-              console.error(err);
+            function errorHandler (err) {
+              // console.error('Failed to delete cycle: ');
+              // console.error(err);
               $scope.delete_cycle_status = 'failed';
               $scope.error_occurred = true;
               $scope.uploader.in_progress = false;
@@ -90,12 +90,12 @@ angular.module('BE.seed.controller.delete_cycle_modal', [])
               1,
               successHandler,
               errorHandler,
-              $scope.uploader,
+              $scope.uploader
             );
           })
           .catch(function (res) {
-            console.error('Failed to delete cycle: ');
-            console.error(res);
+            // console.error('Failed to delete cycle: ');
+            // console.error(res);
             $scope.delete_cycle_status = 'failed';
             $scope.error_occurred = true;
             $scope.uploader.in_progress = false;

@@ -17,7 +17,6 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
-    'urls',
     function (
       $scope,
       $log,
@@ -31,8 +30,7 @@ angular.module('BE.seed.controller.admin', [])
       user_profile_payload,
       users_payload,
       Notification,
-      $window,
-      urls
+      $window
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};
