@@ -15,7 +15,6 @@ coverage.protractor.json
 *.swo
 *.swn
 seed_issues.csv
-package-lock.json
 web_root/css/compressed.*.css
 web_root/js/compressed.*.js
 web_root/collected_static
