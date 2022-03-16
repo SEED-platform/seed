@@ -118,7 +118,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.users = users_payload.users;
 
       // handle popovers cleared on scrolling
-      [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach(el => {el.onscroll = document.body.click;})
+      [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach(el => {if (el) el.onscroll = document.body.click;})
 
       // Flag columns whose values have changed between imports and edits.
       var historical_states = _.map($scope.historical_items, 'state');
