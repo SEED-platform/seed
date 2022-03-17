@@ -957,7 +957,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
               paramType: body
         """
         view_ids = request.data.get('view_ids', [])
-        organization_id = self.get_organization(request)
         property_queryset = PropertyView.objects.filter(id__in=view_ids).distinct()
         property_ids = list(property_queryset.values_list('property_id', flat=True))
         return JsonResponse({

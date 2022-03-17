@@ -25,6 +25,7 @@ from seed.utils.api_schema import AutoSchemaHelper
 import logging
 logger = logging.getLogger(__name__)
 
+
 class CreateAnalysisSerializer(AnalysisSerializer):
     property_view_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
 
@@ -147,7 +148,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
               description: List of canonical property ids
               paramType: body
         """
-        org_id = request.data.get('organization_id', None)
         property_ids = request.data.get('property_ids', [])
         organization_id = int(self.get_organization(request))
         analyses = []
