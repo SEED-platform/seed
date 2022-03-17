@@ -15,8 +15,7 @@ angular.module('BE.seed.controller.delete_modal', [])
       $scope.property_view_ids = _.uniq(property_view_ids);
       $scope.taxlot_view_ids = _.uniq(taxlot_view_ids);
       $scope.delete_state = 'delete';
-      $scope.delete_analyses = true;
-      $scope.delete_batch_analyses = false;
+      $scope.delete = {'analyses': true, 'batch_analyses': false};
 
       $scope.generating_analysis_info = true;
       let analysis_ids = [];
@@ -41,15 +40,16 @@ angular.module('BE.seed.controller.delete_modal', [])
 
         var promises = [];
 
-        if ($scope.property_view_ids.length) promises.push(inventory_service.delete_property_states($scope.property_view_ids));
-        if ($scope.taxlot_view_ids.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_view_ids));
-        if ($scope.delete_analyses) for (i in $scope.analysis_ids) promises.push(analyses_service.delete_analysis($scope.analysis_ids[i]));
-        if ($scope.delete_batch_analyses) for (i in $scope.batch_analysis_ids) promises.push(analyses_service.delete_analysis($scope.batch_analysis_ids[i]));
+        // if ($scope.property_view_ids.length) promises.push(inventory_service.delete_property_states($scope.property_view_ids));
+        // if ($scope.taxlot_view_ids.length) promises.push(inventory_service.delete_taxlot_states($scope.taxlot_view_ids));
+        if ($scope.delete.analyses) for (i in $scope.analysis_ids) promises.push(analyses_service.delete_analysis($scope.analysis_ids[i]));
+        if ($scope.delete.batch_analyses) for (i in $scope.batch_analysis_ids) promises.push(analyses_service.delete_analysis($scope.batch_analysis_ids[i]));
 
         return $q.all(promises).then(function (results) {
           $scope.deletedProperties = 0;
           $scope.deletedTaxlots = 0;
           _.forEach(results, function (result, index) {
+            if (!result.data) return;
             if (result.data.status === 'success') {
               if (index === 0 && $scope.property_view_ids.length) $scope.deletedProperties = result.data.properties;
               else $scope.deletedTaxlots = result.data.taxlots;
@@ -62,6 +62,7 @@ angular.module('BE.seed.controller.delete_modal', [])
           }
           $scope.delete_state = 'success';
         }).catch(function (resp) {
+          console.log('resp', resp);
           $scope.delete_state = 'fail';
           if (resp.status === 422) {
             $scope.error = resp.data.message;
