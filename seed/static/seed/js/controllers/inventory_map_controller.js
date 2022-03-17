@@ -35,7 +35,7 @@ angular.module('BE.seed.controller.inventory_map', [])
       $scope.ungeocoded_data = [];
 
       // find organization's property/taxlot default type to display in popup
-      org_id = user_service.get_organization().id
+      const org_id = user_service.get_organization().id;
       organization_service.get_organization(org_id).then(function (data) {
         if ($scope.inventory_type == 'properties') {
           $scope.default_field = data.organization.property_display_field;

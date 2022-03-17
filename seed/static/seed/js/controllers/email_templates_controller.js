@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.email_templates', [])
     'Notification',
     function (
       $scope,
-			$filter,
+      $filter,
       auth_payload,
       organization_payload,
       postoffice_service,
@@ -80,10 +80,9 @@ angular.module('BE.seed.controller.email_templates', [])
             postoffice_service.update_template(id, newTemplate, $scope.org.id);
 
             modified_service.resetModified();
-            Notification.primary("Template saved");
+            Notification.primary('Template saved');
           });
-        }
-        else {
+        } else {
           var id = $scope.selected_template.id;
           var newTemplate = _.omit($scope.selected_template, 'id');
           newTemplate.subject = $scope.selected_template.subject = $scope.temp.subject;
@@ -92,7 +91,7 @@ angular.module('BE.seed.controller.email_templates', [])
           postoffice_service.update_template(id, newTemplate, $scope.org.id);
 
           modified_service.resetModified();
-          Notification.primary("Template saved");
+          Notification.primary('Template saved');
         }
       };
 
@@ -109,7 +108,7 @@ angular.module('BE.seed.controller.email_templates', [])
         });
         modalInstance.result.then(function (newName) {
           $scope.selected_template.name = newName;
-          var originalIndex = _.findIndex($scope.available_templates, {'name': $scope.selected_template.name});
+          var originalIndex = _.findIndex($scope.available_templates, {name: $scope.selected_template.name});
           var newIndex = _.sortedIndexBy($scope.available_templates, $scope.selected_template, 'name');
 
           //reinsert template in dropdown according to new name
@@ -164,7 +163,9 @@ angular.module('BE.seed.controller.email_templates', [])
       };
 
       $scope.$watch('selected_template', function (newTemplate, oldTemplate) {
-        if (!newTemplate || !oldTemplate || newTemplate.id == oldTemplate.id) {return;}
+        if (!newTemplate || !oldTemplate || newTemplate.id == oldTemplate.id) {
+          return;
+        }
         if (!modified_service.isModified() && !$scope.canceled) {
           $scope.temp.html_content = newTemplate.html_content;
           $scope.temp.subject = newTemplate.subject;
@@ -183,7 +184,7 @@ angular.module('BE.seed.controller.email_templates', [])
             $scope.selected_template = oldTemplate;
 
           }).catch(function () { //Switch
-            var old = _.findIndex($scope.available_templates, {'id': oldTemplate.id});
+            var old = _.findIndex($scope.available_templates, {id: oldTemplate.id});
             $scope.temp.html_content = newTemplate.html_content;
             $scope.temp.subject = newTemplate.subject;
             postoffice_service.save_last_template(newTemplate.id, $scope.org.id);
@@ -203,4 +204,4 @@ angular.module('BE.seed.controller.email_templates', [])
       $scope.isModified = function () {
         return modified_service.isModified();
       };
-  }]);
+    }]);

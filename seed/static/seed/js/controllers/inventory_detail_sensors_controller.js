@@ -30,7 +30,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       property_sensor_usage,
       spinner_utility,
       urls,
-      organization_payload,
+      organization_payload
     ) {
       spinner_utility.show();
       $scope.item_state = inventory_payload.state;
@@ -56,21 +56,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           };
         });
       };
-
-      $scope.dataloggers = $scope.property_sensor_usage.readings.map(reading => {
-          readings = _.omit(reading, "timestamp");
-          readings_by_sensor = Object.keys(readings).map(function(key) {
-            return {
-              sensor: key,
-              value: readings[key]
-            }
-          });
-        
-          return {
-          timestamp: reading["timestamp"],
-          readings: readings_by_sensor
-        }
-      });
 
       // On page load, all sensors and readings
       $scope.has_sensor_readings = $scope.property_sensor_usage.readings.length > 0;
@@ -163,7 +148,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true,
+        fastWatch: true
       };
 
       $scope.usageGridOptions = {
@@ -172,7 +157,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
-        fastWatch: true,
+        fastWatch: true
       };
 
       $scope.apply_column_settings = function () {
@@ -241,15 +226,15 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           .map(function (selection) {
             return selection.label;
           });
-        
+
         return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
       };
 
       // filters the sensor readings by selected sensors and updates the table
       $scope.applyFilters = function () {
-        results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.sensor_selections);
-        readings = results.readings;
-        columnDefs = results.columnDefs;
+        const results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.sensor_selections);
+        const readings = results.readings;
+        const columnDefs = results.columnDefs;
 
         $scope.usageGridOptions.columnDefs = columnDefs;
         $scope.usageGridOptions.data = readings;

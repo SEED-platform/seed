@@ -32,7 +32,7 @@ angular.module('BE.seed.vendor_dependencies', [
   angularDragula(angular),
   'pascalprecht.translate',
   'ngSanitize',
-  'ngWig',
+  'ngWig'
 ]);
 angular.module('BE.seed.controllers', [
   'BE.docs.controller.faq',
@@ -114,7 +114,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.show_populated_columns_modal',
   'BE.seed.controller.ubid_modal',
   'BE.seed.controller.unmerge_modal',
-  'BE.seed.controller.update_item_labels_modal',
+  'BE.seed.controller.update_item_labels_modal'
 
 ]);
 angular.module('BE.seed.filters', [
@@ -567,7 +567,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
           }],
           derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
-            const organization_id = user_service.get_organization().id
+            const organization_id = user_service.get_organization().id;
             return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
@@ -614,7 +614,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
           }],
           derived_columns_payload: ['derived_columns_service', '$stateParams', 'user_service', function (derived_columns_service, $stateParams, user_service) {
-            const organization_id = user_service.get_organization().id
+            const organization_id = user_service.get_organization().id;
             return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
@@ -1348,7 +1348,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }],
           derived_column_payload: ['derived_columns_service', '$stateParams', function (derived_columns_service, $stateParams) {
             if ($stateParams.derived_column_id === undefined) {
-              return {}
+              return {};
             }
 
             return derived_columns_service.get_derived_column($stateParams.organization_id, $stateParams.derived_column_id);
@@ -1412,7 +1412,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
           }],
           derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id
+            const organization_id = user_service.get_organization().id;
             return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
@@ -1451,7 +1451,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
           }],
           derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id
+            const organization_id = user_service.get_organization().id;
             return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
@@ -1485,7 +1485,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         resolve: {
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();
-          }],
+          }]
         }
       })
       .state({
@@ -1579,14 +1579,14 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
             }
           }],
           derived_columns_payload: ['$stateParams', 'user_service', 'derived_columns_service', function ($stateParams, user_service, derived_columns_service) {
-            const organization_id = user_service.get_organization().id
+            const organization_id = user_service.get_organization().id;
             return derived_columns_service.get_derived_columns(organization_id, $stateParams.inventory_type);
           }],
           profiles: ['$stateParams', 'inventory_service', function ($stateParams, inventory_service) {
             var inventory_type = $stateParams.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             return inventory_service.get_column_list_profiles('Detail View Profile', inventory_type);
           }],
-          users_payload: ['organization_service', 'user_service', '$stateParams', function (organization_service, user_service, $stateParams) {
+          users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
           }],
           current_profile: ['$stateParams', 'inventory_service', 'profiles', function ($stateParams, inventory_service, profiles) {
@@ -1676,6 +1676,7 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           inventory_payload: ['$state', '$stateParams', 'inventory_service', function ($state, $stateParams, inventory_service) {
             // load `get_building` before page is loaded to avoid page flicker.
             var view_id = $stateParams.view_id;
+            let promise;
             if ($stateParams.inventory_type === 'properties') promise = inventory_service.get_property(view_id);
             else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(view_id);
             promise.catch(function (err) {

@@ -76,11 +76,11 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
         }
       };
 
-      var saveFailure = function (error) {
+      const saveFailure = function (error) {
         // Delete file and present error message
 
         // file_id source varies depending on which step the error occurs
-        var file_id = $scope.file_id || error.config.data.file_id;
+        const file_id = $scope.file_id || error.config.data.file_id;
         dataset_service.delete_file(file_id);
 
         $scope.uploader.invalid_csv_extension_alert = false;
@@ -90,24 +90,23 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
         $scope.step.number = 1;
       };
 
-      var base_sensor_readings_col_defs = [{
+      const base_sensor_readings_col_defs = [{
         field: 'column_name',
-        displayName: 'column name',        
+        displayName: 'column name',
         enableHiding: false,
         type: 'string'
       }, {
         field: 'num_readings',
-        displayName: 'number of readings',        
+        displayName: 'number of readings',
         enableHiding: false
-      }
-    ];
+      }];
 
-      var successfully_imported_col_def = {
+      const successfully_imported_col_def = {
         field: 'successfully_imported',
         enableHiding: false
       };
 
-      var grid_rows_to_display = function (data) {
+      const grid_rows_to_display = function (data) {
         return Math.min(data.length, 5);
       };
 
@@ -129,14 +128,14 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
             minRowsToShow: grid_rows_to_display(result)
           };
 
-          var modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
+          const modal_element = angular.element(document.getElementsByClassName('modal-dialog'));
           modal_element.addClass('modal-lg');
 
           $scope.step.number = 2;
         }).catch(saveFailure);
       };
 
-      var saveSuccess = function (progress_data) {
+      const saveSuccess = function (progress_data) {
         // recheck progress in order to ensure message has been appended to progress_data
         uploader_service.check_progress(progress_data.progress_key).then(function (data) {
           $scope.uploader.status_message = 'saving complete';
@@ -146,18 +145,16 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
         });
       };
 
-      var buildImportResults = function (message) {
-        var addtional_columnDefs = [
-          {
-            field: 'errors',
-            displayName: 'errors',        
-            enableHiding: false
-          }
-        ]
+      const buildImportResults = function (message) {
+        const additional_columnDefs = [{
+          field: 'errors',
+          displayName: 'errors',
+          enableHiding: false
+        }];
 
         $scope.import_result_options = {
           data: message,
-          columnDefs: [...base_sensor_readings_col_defs, ...addtional_columnDefs],
+          columnDefs: [...base_sensor_readings_col_defs, ...additional_columnDefs],
           enableColumnResizing: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.NEVER,
           enableVerticalScrollbar: message.length <= 5 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
@@ -171,7 +168,7 @@ angular.module('BE.seed.controller.sensor_readings_upload_modal', [])
           $scope.uploader.progress = 0;
           $scope.step.number = 3;
 
-          var progress = _.clamp(data.progress, 0, 100);
+          const progress = _.clamp(data.progress, 0, 100);
 
           uploader_service.check_progress_loop(
             data.progress_key,

@@ -128,15 +128,15 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
         enableHiding: false
       }, {
         field: 'location_identifier',
-        displayName: 'location identifier',        
+        displayName: 'location identifier',
         enableHiding: false
-      },{
+      }, {
         field: 'units',
         enableHiding: false
       }, {
         field: 'column_name',
         enableHiding: false
-      },{
+      }, {
         field: 'description',
         enableHiding: false
       }];

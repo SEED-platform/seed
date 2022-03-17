@@ -18,7 +18,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
       urls,
       analyses_service,
       inventory_service,
-      cycles_payload,
+      cycles_payload
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
 
@@ -54,7 +54,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
           x: 'gross_floor_area',
           y: 'percentage',
           xLabel: 'Gross Floor Area'
-        },
+        }
       ];
       let charts_loaded = false;
 
@@ -62,7 +62,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
         if (!charts_loaded) {
           charts_loaded = true;
           $scope.charts.forEach(config => {
-            const svg = dimple.newSvg("#chart-" + config.name, "100%", 500);
+            const svg = dimple.newSvg('#chart-' + config.name, '100%', 500);
             const chart = new dimple.chart(svg, []);
             const xaxis = chart.addCategoryAxis('x', config.x);
             xaxis.title = config.xLabel;
@@ -83,7 +83,7 @@ angular.module('BE.seed.controller.inventory_summary', [])
         });
       };
 
-      $scope.draw_chart = function (chart_name, no_data_change=true) {
+      $scope.draw_chart = function (chart_name, no_data_change = true) {
         if ($scope.summary_data[chart_name].length < 1) {
           return;
         }
@@ -102,29 +102,29 @@ angular.module('BE.seed.controller.inventory_summary', [])
         });
 
         analyses_service.get_summary($scope.cycle.selected_cycle.id)
-          .then(function(data) {
+          .then(function (data) {
             $scope.summary_data = data;
             $scope.table_data = [
               {
-                text: "Total Records",
-                count: data['total_records']
-              },{
-                text: "Number of Extra Data Fields",
-                count: data['number_extra_data_fields']
+                text: 'Total Records',
+                count: data.total_records
+              }, {
+                text: 'Number of Extra Data Fields',
+                count: data.number_extra_data_fields
               }
             ];
 
-            column_settings_count = data["column_settings fields and counts"];
+            const column_settings_count = data['column_settings fields and counts'];
             $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => {
-                return {
-                  column_settings: key,
-                  count: value
-                }
+              return {
+                column_settings: key,
+                count: value
+              };
             });
 
             load_charts();
-            modalInstance.close()
-          })
+            modalInstance.close();
+          });
       };
 
       $scope.update_cycle = function (cycle) {
@@ -134,6 +134,6 @@ angular.module('BE.seed.controller.inventory_summary', [])
       };
 
       // load initial data
-      refresh_data()
+      refresh_data();
     }
   ]);
