@@ -75,15 +75,15 @@
                 </select>
             </div>
         </div>
-        <div class="form-group" uib-dropdown is-open="sensors_options.isopen" auto-close="outsideClick" on-toggle="sensor_selection_toggled(open)" style="margin-top: 15px;">
+        <div class="form-group" uib-dropdown is-open="data_loggers_options.isopen" auto-close="outsideClick" on-toggle="data_logger_selection_toggled(open)" style="margin-top: 15px;">
             <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                Filter Sensors <span class="caret"></span>
+                Filter Data Logger <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" uib-dropdown-menu>    
-                <li ng-repeat="sensor in sensor_selections">
+                <li ng-repeat="data_logger in data_logger_selections">
                     <div>
                         <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
-                            {$:: sensor.label $}<input type="checkbox" ng-model="sensor.selected" name="sensor.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                            {$:: data_logger.label $}<input type="checkbox" ng-model="data_logger.selected" name="data_logger.label" style="width: 14px; height: 14px; margin-left: 10px;">
                         </label>
                     </div>
                 </li>
