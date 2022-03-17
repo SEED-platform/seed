@@ -8,7 +8,10 @@
 <div class="modal-body row" style="padding-bottom: 0;">
     <div ng-show="delete_state === 'delete'">
         <p class="col-sm-12" translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS" translate-values="{num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length}"></p>
-        <div class="col-sm-12" ng-if="analysis_ids.length > 0">
+        <div class="col-sm-12" ng-show="generating_analysis_info">
+            Collecting analysis info...
+        </div>
+        <div class="col-sm-12" ng-if="analysis_ids.length > 0" ng-show="!generating_analysis_info">
             <label for="input_delete_analyses" translate="ALSO_DELETE_ANALYSES" translate-values="{num: analysis_ids.length}"></label>
             <input type="checkbox" id="input_delete_analyses" ng-model="delete_analyses"/>
         </div>

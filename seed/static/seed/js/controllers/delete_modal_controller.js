@@ -18,24 +18,23 @@ angular.module('BE.seed.controller.delete_modal', [])
       $scope.delete_analyses = true;
       $scope.delete_batch_analyses = false;
 
-
+      $scope.generating_analysis_info = true;
       let analysis_ids = [];
       let batch_analysis_ids = [];
-      for (i in $scope.property_view_ids) {
-        inventory_service.get_property($scope.property_view_ids[i]).then(function (results) {
-          analyses_service.get_analyses_for_canonical_property(results.property.id).then(function (results) {
-            for (i in results.analyses) {
-              if (results.analyses[i].number_of_analysis_property_views > 1) {
-                batch_analysis_ids.push(results.analyses[i].id);
-              } else {
-                analysis_ids.push(results.analyses[i].id);
-              }
+      inventory_service.get_canonical_properties($scope.property_view_ids).then(function (inventory_data) {
+        analyses_service.get_analyses_for_canonical_properties(inventory_data.properties).then(function (results) {
+          for (i in results.analyses) {
+            if (results.analyses[i].number_of_analysis_property_views > 1) {
+              batch_analysis_ids.push(results.analyses[i].id);
+            } else {
+              analysis_ids.push(results.analyses[i].id);
             }
-            $scope.analysis_ids = _.uniq(analysis_ids);
-            $scope.batch_analysis_ids = _.uniq(batch_analysis_ids);
-          });
+          }
+          $scope.analysis_ids = _.uniq(analysis_ids);
+          $scope.batch_analysis_ids = _.uniq(batch_analysis_ids);
+          $scope.generating_analysis_info = false;
         });
-      }
+      });
 
       $scope.delete_inventory = function () {
         $scope.delete_state = 'prepare';
