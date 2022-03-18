@@ -14,6 +14,8 @@
     "ADD_FILES_TO": "Ajoutez des fichiers à {dataset_name}.",
     "ADD_REMOVE_LABELS_FROM_PROPERTIES": "Ajouter ou supprimer des étiquettes de {num, plural, one{1 propriété sélectionnée} other{# propriétés sélectionnées}}",
     "ADD_REMOVE_LABELS_FROM_TAXLOTS": "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt sélectionné} other{# lots d'impôt sélectionnés}}",
+    "ALSO_DELETE_ANALYSES": "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} .",
+    "ALSO_DELETE_BATCH_ANALYSES": "Supprimez également {num,plural, one{ 1 analyse de lot associée } other{# analyses de lot associées }} .",
     "AND": "ET",
     "API Documentation": "Documentation de l'API",
     "API Key": "Clé API",
