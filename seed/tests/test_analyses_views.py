@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
@@ -168,7 +168,7 @@ class TestAnalysesView(TestCase):
 
         analysis_b = next((x for x in result['analyses'] if x['id'] == self.analysis_b.id), None)
         self.assertIsNotNone(analysis_b)
-        self.assertEqual(analysis_b['number_of_analysis_property_views'], 1)
+        self.assertEqual(analysis_b['number_of_analysis_property_views'], 2)
         self.assertEqual(len(analysis_b['cycles']), 1)
 
     def test_list_organization_missing(self):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -25,10 +25,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.utils.api_schema import AutoSchemaHelper
 
-try:
-    from urllib import quote  # python2.x
-except ImportError:
-    from urllib.parse import quote  # python3.x
+from urllib.parse import quote
 
 _log = logging.getLogger(__name__)
 
@@ -139,17 +136,21 @@ class PortfolioManagerViewSet(GenericViewSet):
         this generated report.  If not successful, a second key, message, will include an error description that can be
         presented on the UI.
         """
+
         if 'username' not in request.data:
+            _log.debug("Invalid call to PM worker: missing username for PM account: %s" % str(request.data))
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid call to PM worker: missing username for PM account'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         if 'password' not in request.data:
+            _log.debug("Invalid call to PM worker: missing password for PM account: %s" % str(request.data))
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid call to PM worker: missing password for PM account'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         if 'template' not in request.data:
+            _log.debug("Invalid call to PM worker: missing template for PM account: %s" % str(request.data))
             return JsonResponse(
                 {'status': 'error', 'message': 'Invalid call to PM worker: missing template for PM account'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -161,6 +162,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         try:
             try:
                 if 'z_seed_child_row' not in template:
+                    _log.debug("Invalid template formulation during portfolio manager data import: %s" % str(template))
                     return JsonResponse(
                         {
                             'status': 'error',
@@ -173,10 +175,12 @@ class PortfolioManagerViewSet(GenericViewSet):
                 else:
                     content = pm.generate_and_download_template_report(template)
             except PMExcept as pme:
+                _log.debug("%s: %s" % (str(pme), str(template)))
                 return JsonResponse({'status': 'error', 'message': str(pme)}, status=status.HTTP_400_BAD_REQUEST)
             try:
                 content_object = xmltodict.parse(content, dict_constructor=dict)
             except Exception:  # catch all because xmltodict doesn't specify a class of Exceptions
+                _log.debug("Malformed XML from template download: %s" % str(content))
                 return JsonResponse(
                     {'status': 'error', 'message': 'Malformed XML from template download'},
                     status=status.HTTP_400_BAD_REQUEST)
@@ -187,6 +191,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                 elif isinstance(possible_properties, dict):
                     properties = [possible_properties]
                 else:  # OrderedDict hints that a 'preview' report was generated, anything else is an unhandled case
+                    _log.debug("Property list was not a list...was a preview report template used on accident?: %s" % str(possible_properties))
                     return JsonResponse(
                         {
                             'status': 'error',
@@ -195,6 +200,7 @@ class PortfolioManagerViewSet(GenericViewSet):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             except KeyError:
+                _log.debug("Processed template successfully, but missing keys -- is the report empty on Portfolio Manager?: %s" % str(content_object))
                 return JsonResponse(
                     {
                         'status': 'error', 'message':
@@ -205,6 +211,7 @@ class PortfolioManagerViewSet(GenericViewSet):
 
             return JsonResponse({'status': 'success', 'properties': properties})
         except Exception as e:
+            _log.debug("%s: %s" % (e, str(request.data)))
             return JsonResponse({'status': 'error', 'message': e}, status=status.HTTP_400_BAD_REQUEST)
 
 

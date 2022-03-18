@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -293,7 +293,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_member')
     @action(detail=True, methods=['PUT'])
     def role(self, request, pk=None):
         """
@@ -302,18 +302,26 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         body = request.data
         role = _get_role_from_js(body['role'])
 
-        user_id = pk
+        user_id = int(pk)
         organization_id = self.get_organization(request)
 
-        is_last_member = not OrganizationUser.objects.filter(
-            organization_id=organization_id,
-        ).exclude(user_id=user_id).exists()
+        requester = OrganizationUser.objects.get(user=request.user, organization_id=organization_id)
 
-        if is_last_member:
+        try:
+            user = OrganizationUser.objects.get(user_id=user_id, organization_id=organization_id)
+        except OrganizationUser.DoesNotExist:
             return JsonResponse({
                 'status': 'error',
-                'message': 'an organization must have at least one member'
-            }, status=status.HTTP_409_CONFLICT)
+                'message': 'no relationship to organization'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Non-superuser members can only change their own role, and it must have the same or less permissions
+        if requester.role_level == ROLE_MEMBER and not requester.user.is_superuser:
+            if requester.user_id != user_id or role > ROLE_MEMBER:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'members can only change their own role to viewer'
+                }, status=status.HTTP_403_FORBIDDEN)
 
         is_last_owner = not OrganizationUser.objects.filter(
             organization_id=organization_id,
@@ -323,13 +331,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         if is_last_owner:
             return JsonResponse({
                 'status': 'error',
-                'message': 'an organization must have at least one owner level member'
+                'message': 'an organization must have at least one owner'
             }, status=status.HTTP_409_CONFLICT)
 
-        OrganizationUser.objects.filter(
-            user_id=user_id,
-            organization_id=organization_id
-        ).update(role_level=role)
+        user.role_level = role
+        user.save()
 
         return JsonResponse({'status': 'success'})
 
@@ -632,7 +638,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):
         """
-        Deactivates a user
+        Deactivates a user. This action can only be performed by superusers
         """
         try:
             user_id = pk

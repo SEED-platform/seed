@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -11,8 +11,17 @@ from django.test import TestCase
 from seed.landing.models import SEEDUser as User
 from seed.lib.merging import merging
 from seed.lib.merging.merging import get_state_attrs, get_state_to_state_tuple
-from seed.models.columns import Column
+from seed.models import (
+    Column,
+    Measure,
+    Meter,
+    MeterReading,
+    PropertyState,
+    PropertyMeasure,
+    Scenario,
+)
 from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeTaxLotViewFactory
 )
@@ -64,14 +73,12 @@ class StateFieldsTest(TestCase):
 
         expected = (('address_line_1', 'address_line_1'),
                     ('address_line_2', 'address_line_2'),
-                    ('analysis_end_time', 'analysis_end_time'),
-                    ('analysis_start_time', 'analysis_start_time'),
-                    ('analysis_state_message', 'analysis_state_message'),
                     ('building_certification', 'building_certification'),
                     ('building_count', 'building_count'),
                     ('city', 'city'),
                     ('conditioned_floor_area', 'conditioned_floor_area'),
                     ('custom_id_1', 'custom_id_1'),
+                    ('egrid_subregion_code', 'egrid_subregion_code'),
                     ('energy_alerts', 'energy_alerts'),
                     ('energy_score', 'energy_score'),
                     ('generation_date', 'generation_date'),
@@ -436,3 +443,92 @@ class StateFieldsTest(TestCase):
         self.assertEqual(result.energy_score, 86)
         self.assertIsNone(result.extra_data['ed_field_1'])
         self.assertEqual(result.extra_data['ed_field_2'], 'ED eighty-six')
+
+
+class MergeRelationshipsTest(TestCase):
+    """Tests that our logic for merging relationships for states works."""
+
+    def setUp(self):
+        self.maxDiff = None
+        user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_superuser(
+            email='test_user@demo.com', **user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        self.column_priorities = {'extra_data': {}}
+        self.measure_1 = Measure.objects.filter(organization=self.org)[0]
+        self.measure_2 = Measure.objects.filter(organization=self.org)[1]
+
+    def test_no_new_relationships_when_none_exist(self):
+        # -- Setup
+        ps1 = self.property_state_factory.get_property_state()
+        ps2 = self.property_state_factory.get_property_state()
+        merged_state = PropertyState.objects.create(organization=self.org)
+
+        # -- Act
+        merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
+
+        # -- Assert
+        self.assertEqual(Scenario.objects.count(), 0)
+        self.assertEqual(PropertyMeasure.objects.count(), 0)
+        self.assertEqual(Meter.objects.count(), 0)
+        self.assertEqual(MeterReading.objects.count(), 0)
+
+    def test_both_have_scenarios(self):
+        # -- Setup
+        ps1 = self.property_state_factory.get_property_state()
+        ps2 = self.property_state_factory.get_property_state()
+
+        Scenario.objects.create(name='Scenario 1', property_state=ps1)
+        s2 = Scenario.objects.create(name='Scenario 2', property_state=ps2)
+
+        merged_state = PropertyState.objects.create(organization=self.org)
+
+        # -- Act
+        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
+
+        # -- Assert
+        # Only scenario should remain
+        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
+        self.assertEqual(merged_scenarios.count(), 1)
+        self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)
+
+    def test_old_property_state_has_scenario(self):
+        # -- Setup
+        ps1 = self.property_state_factory.get_property_state()
+        ps2 = self.property_state_factory.get_property_state()
+
+        Scenario.objects.create(name='Scenario 1', property_state=ps1)
+
+        merged_state = PropertyState.objects.create(organization=self.org)
+
+        # -- Act
+        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
+
+        # -- Assert
+        # Only scenario 2 should remain
+        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
+        self.assertEqual(merged_scenarios.count(), 0)
+
+    def test_new_property_state_has_scenario(self):
+        # -- Setup
+        ps1 = self.property_state_factory.get_property_state()
+        ps2 = self.property_state_factory.get_property_state()
+
+        s2 = Scenario.objects.create(name='Scenario 2', property_state=ps2)
+
+        merged_state = PropertyState.objects.create(organization=self.org)
+
+        # -- Act
+        merged_state = merging.merge_state(merged_state, ps1, ps2, self.column_priorities)
+
+        # -- Assert
+        # Only scenario 2 should remain
+        merged_scenarios = Scenario.objects.filter(property_state=merged_state)
+        self.assertEqual(merged_scenarios.count(), 1)
+        self.assertEqual(merged_scenarios.filter(name=s2.name).count(), 1)

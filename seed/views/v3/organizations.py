@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -9,22 +9,30 @@ import logging
 from collections import defaultdict
 from io import BytesIO
 from random import randint
+from pathlib import Path
 
 import dateutil
 
 from celery import shared_task
+from django.conf import settings
 from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
 from seed import tasks
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
@@ -32,7 +40,8 @@ from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
                                              ROLE_VIEWER, Organization,
                                              OrganizationUser)
-from seed.models import Column, Cycle, ImportFile, PropertyView, TaxLotView
+from seed.models import Column, Cycle, PropertyView, TaxLot, TaxLotView, TaxLotState, StatusLabel as Label, \
+    PropertyState, Property, AUDIT_IMPORT, PropertyAuditLog, TaxLotAuditLog
 from seed.serializers.column_mappings import \
     SaveColumnMappingsRequestPayloadSerializer
 from seed.serializers.organizations import (SaveSettingsSerializer,
@@ -42,11 +51,15 @@ from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.generic import median, round_down_hundred_thousand
+from seed.utils.geocode import geocode_buildings
 from seed.utils.match import (matching_criteria_column_names,
                               whole_org_match_merge_link)
 from seed.utils.organizations import (create_organization,
                                       create_suborganization)
 from xlsxwriter import Workbook
+from seed.utils.merge import merge_properties
+from seed.utils.match import match_merge_link
+from seed.utils.properties import pair_unpair_property_taxlot
 
 _log = logging.getLogger(__name__)
 
@@ -102,11 +115,13 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
             'display_units_area': o.display_units_area,
-            'display_significant_figures': o.display_significant_figures,
+            'display_decimal_places': o.display_decimal_places,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
+            'better_analysis_api_key': o.better_analysis_api_key or '',
+            'better_host_url': settings.BETTER_HOST,
             'property_display_field': o.property_display_field,
             'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
@@ -348,9 +363,9 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({'organizations': orgs})
 
-    @method_decorator(permission_required('seed.can_access_admin'))
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('requires_owner')
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.
@@ -360,7 +375,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_member')
+    @has_perm_class('requires_viewer')
     def retrieve(self, request, pk=None):
         """
         Retrieves a single organization by id.
@@ -413,7 +428,6 @@ class OrganizationViewSet(viewsets.ViewSet):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_parent_org_owner')
     def create(self, request):
         """
         Creates a new organization.
@@ -422,17 +436,23 @@ class OrganizationViewSet(viewsets.ViewSet):
         user = User.objects.get(pk=body['user_id'])
         org_name = body['organization_name']
 
+        if not request.user.is_superuser and request.user.id != user.id:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'not authorized'
+            }, status=status.HTTP_403_FORBIDDEN)
+
         if Organization.objects.filter(name=org_name).exists():
             return JsonResponse({
                 'status': 'error',
-                'message': 'organization name already exists'
+                'message': 'Organization name already exists'
             }, status=status.HTTP_409_CONFLICT)
 
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse(
             {
                 'status': 'success',
-                'message': 'organization created',
+                'message': 'Organization created',
                 'organization': _dict_org(request, [org])[0]
             }
         )
@@ -499,12 +519,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             warn_bad_pint_spec('area', desired_display_units_area)
 
-        desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
-            org.display_significant_figures = desired_display_significant_figures
-        elif desired_display_significant_figures is not None:
+        desired_display_decimal_places = posted_org.get('display_decimal_places')
+        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:  # noqa
+            org.display_decimal_places = desired_display_decimal_places
+        elif desired_display_decimal_places is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
-                desired_display_significant_figures, org.name))
+                desired_display_decimal_places, org.name))
 
         desired_display_meter_units = posted_org.get('display_meter_units')
         if desired_display_meter_units:
@@ -523,6 +543,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get('geocoding_enabled', True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update BETTER Analysis API Key if it's been changed
+        better_analysis_api_key = posted_org.get('better_analysis_api_key', '').strip()
+        if better_analysis_api_key != org.better_analysis_api_key:
+            org.better_analysis_api_key = better_analysis_api_key
 
         # Update property_display_field option
         property_display_field = posted_org.get('property_display_field', 'address_line_1')
@@ -1358,3 +1383,162 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(id=pk)
 
         return org.geocoding_enabled
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @action(detail=True, methods=['POST'])
+    def reset_all_passwords(self, request, pk=None):
+        """
+        Resets all user passwords in organization
+        """
+        org_users = OrganizationUser.objects.filter(organization=pk).select_related('user')
+        for org_user in org_users:
+            form = PasswordResetForm({'email': org_user.user.email})
+            if form.is_valid():
+                org_user.user.password = ''
+                org_user.user.save()
+                form.save(
+                    from_email=settings.PASSWORD_RESET_EMAIL,
+                    subject_template_name='landing/password_reset_subject.txt',
+                    email_template_name='landing/password_reset_forced_email.html'
+                )
+
+        return JsonResponse(
+            {
+                'status': 'success',
+                'message': 'passwords reset'
+            }
+        )
+
+    @has_perm_class('requires_member')
+    @ajax_request_class
+    @action(detail=True, methods=['GET'])
+    def insert_sample_data(self, request, pk=None):
+        """
+        Create a button for new users to import data below if no data exists
+        """
+        org = Organization.objects.get(id=pk)
+        cycles = Cycle.objects.filter(organization=org)
+        if cycles.count() == 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'there must be at least 1 cycle'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        cycle = cycles.first()
+        if PropertyView.objects.filter(cycle=cycle).count() > 0 or TaxLotView.objects.filter(cycle=cycle).count() > 0:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'the cycle must not contain any properties or tax lots'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        taxlot_details = {
+            'jurisdiction_tax_lot_id': 'A-12345',
+            'city': 'Boring',
+            'organization_id': pk,
+            'extra_data': {'Note': 'This is my first note'}
+        }
+
+        taxlot_state = TaxLotState(**taxlot_details)
+        taxlot_state.save()
+        taxlot_1 = TaxLot.objects.create(organization=org)
+        taxview = TaxLotView.objects.create(taxlot=taxlot_1, cycle=cycle, state=taxlot_state)
+
+        TaxLotAuditLog.objects.create(
+            organization=org,
+            state=taxlot_state,
+            record_type=AUDIT_IMPORT,
+            name='Import Creation'
+        )
+
+        filename_pd = 'property_sample_data.json'
+        filepath_pd = f"{Path(__file__).parent.absolute()}/../../tests/data/{filename_pd}"
+
+        with open(filepath_pd) as file:
+            property_details = json.load(file)
+
+        property_views = []
+        properties = []
+        ids = []
+        for dic in property_details:
+
+            dic['organization_id'] = pk
+
+            state = PropertyState(**dic)
+            state.save()
+            ids.append(state.id)
+
+            property_1 = Property.objects.create(organization=org)
+            properties.append(property_1)
+            propertyview = PropertyView.objects.create(property=property_1, cycle=cycle, state=state)
+            property_views.append(propertyview)
+
+            # create labels and add to records
+            new_label, created = Label.objects.get_or_create(color='red', name='Housing', super_organization=org)
+            if state.extra_data.get('Note') == 'Residential':
+                propertyview.labels.add(new_label)
+
+            PropertyAuditLog.objects.create(
+                organization=org,
+                state=state,
+                record_type=AUDIT_IMPORT,
+                name='Import Creation'
+            )
+
+            # Geocoding - need mapquest API (should add comment for new users)
+            geocode = PropertyState.objects.filter(id__in=ids)
+            geocode_buildings(geocode)
+
+        # Create a merge of the last 2 properties
+        state_ids_to_merge = ids[-2:]
+        merged_state = merge_properties(state_ids_to_merge, pk, 'Manual Match')
+        match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
+
+        # pair a property to tax lot
+        property_id = property_views[0].id
+        taxlot_id = taxview.id
+        pair_unpair_property_taxlot(property_id, taxlot_id, org, True)
+
+        # create column for Note
+        Column.objects.get_or_create(
+            organization=org,
+            table_name='PropertyState',
+            column_name='Note',
+            is_extra_data=True  # Column objects representing raw/header rows are NEVER extra data
+        )
+
+        import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
+
+        # Interval Data
+        filename = 'PM Meter Data.xlsx'  # contians meter data for bsyncr and BETTER
+        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
+
+        import_meterdata = ImportFile.objects.create(
+            import_record=import_record,
+            source_type='PM Meter Usage',
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=cycle
+        )
+
+        save_raw_data(import_meterdata.id)
+
+        # Greenbutton Import
+        filename = 'example-GreenButton-data.xml'
+        filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
+
+        import_greenbutton = ImportFile.objects.create(
+            import_record=import_record,
+            source_type='GreenButton',
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            cycle=cycle,
+            matching_results_data={'property_id': properties[7].id}
+        )
+
+        save_raw_data(import_greenbutton.id)
+
+        return JsonResponse({
+            'status': 'success'
+        })

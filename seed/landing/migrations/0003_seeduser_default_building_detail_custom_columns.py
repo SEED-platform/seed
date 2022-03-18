@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import django.contrib.postgres.fields.jsonb
-from django.db import migrations
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -14,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='seeduser',
             name='default_building_detail_custom_columns',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
+            field=models.JSONField(default={}),
             preserve_default=True,
         ),
     ]

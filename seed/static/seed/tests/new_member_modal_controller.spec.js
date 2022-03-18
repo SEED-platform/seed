@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 describe('controller: new_member_modal_controller', function () {
@@ -75,7 +75,7 @@ describe('controller: new_member_modal_controller', function () {
           first_name: 'JB',
           last_name: 'Smooth',
           email: 'jb.smooth@be.com',
-          role: ctrl_scope.roles[0].value,
+          role: ctrl_scope.roles[1].value,
           organization: {
             organization_id: 1
           }

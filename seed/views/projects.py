@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 # system imports
@@ -64,7 +64,7 @@ STATUS_LOOKUP = {
 PLURALS = {'property': 'properties', 'taxlot': 'taxlots'}
 
 
-class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):
+class ProjectViewSet(DecoratorMixin(drf_api_endpoint), viewsets.ModelViewSet):  # type: ignore[misc]
     serializer_class = ProjectSerializer
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)

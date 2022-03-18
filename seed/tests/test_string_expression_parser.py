@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 import itertools
@@ -37,7 +37,7 @@ class TestCaseFactory(type):
 def make_is_string_expression_method(value, expected):
     def run(self):
         result = is_string_expression(value)
-        self.assertEquals(expected, bool(result), (expected, result, value))
+        self.assertEqual(expected, bool(result), (expected, result, value))
     return run
 
 
@@ -115,7 +115,7 @@ def make_parse_expression_method(value, expected):
         parts = STRING_EXPRESSION_REGEX.findall(value)
         result = parse_expression("field", parts)
         query_children = query_to_child_tuples(result)
-        self.assertEquals(expected, query_children)
+        self.assertEqual(expected, query_children)
     return run
 
 

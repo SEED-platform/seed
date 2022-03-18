@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 """
@@ -16,7 +16,7 @@ from django import template
 from django.template import Node, Variable
 from django.template import VariableDoesNotExist
 from django.template.defaulttags import url
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 _log = logging.getLogger(__name__)
 
@@ -181,7 +181,7 @@ class BreadcrumbNode(Node):
                 _log.error('URL does not exist: {}'.format(val))
                 url = None
 
-        # add ugettext function for title i18n translation
+        # add gettext function for title i18n translation
         title = _(title)
         return self.render_func(title, url)
 
@@ -206,6 +206,6 @@ class UrlBreadcrumbNode(Node):
             title = title.strip("'").strip('"')
 
         url = self.url_node.render(context)
-        # add ugettext function for title translation i18n
+        # add gettext function for title translation i18n
         title = _(title)
         return self.render_func(title, url)

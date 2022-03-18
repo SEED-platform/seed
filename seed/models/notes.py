@@ -1,13 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
-from django.contrib.postgres.fields import JSONField
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
@@ -51,7 +50,7 @@ class Note(models.Model):
     #    "tax_lot_state": [ { ... } ],
     # }
     #
-    log_data = JSONField(default=dict, null=True)
+    log_data = models.JSONField(default=dict, null=True)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)

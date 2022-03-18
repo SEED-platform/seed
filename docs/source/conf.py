@@ -71,7 +71,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SEED Platform'
-copyright = '2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
+copyright = '2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 author = 'The Regents of the University of California, through Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -79,8 +79,8 @@ author = 'The Regents of the University of California, through Lawrence Berkeley
 # built documents.
 #
 # Grab the version from the package.json file
-f = open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../package.json"))
-data = json.load(f)
+with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../package.json")) as f:
+    data = json.load(f)
 
 version = data['version']
 # The full version, including alpha/beta/rc tags.

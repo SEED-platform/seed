@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import re
@@ -21,14 +21,12 @@ from django.contrib.auth.models import (
     UserManager,
     # SiteProfileNotAvailable
 )
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.db import models
 from django.utils.http import urlquote
 from django.core.mail import send_mail
 from rest_framework import exceptions
-
-from django.contrib.postgres.fields import JSONField
 
 from seed.lib.superperms.orgs.models import Organization
 
@@ -56,8 +54,8 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                     'active. Unselect this instead of deleting accounts.'))
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
-    default_custom_columns = JSONField(default=dict)
-    default_building_detail_custom_columns = JSONField(default=dict)
+    default_custom_columns = models.JSONField(default=dict)
+    default_building_detail_custom_columns = models.JSONField(default=dict)
     show_shared_buildings = models.BooleanField(
         _('active'), default=False,
         help_text=_('shows shared buildings within search results'))

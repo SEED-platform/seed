@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import include, re_path
+from django.urls import path
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
@@ -32,34 +33,32 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    url(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
-    url(
+    re_path(r'^accounts/password/reset/done/$', password_reset_done, name='password_reset_done'),
+    re_path(
         r'^accounts/password/reset/complete/$',
         password_reset_complete,
         name='password_reset_complete',
     ),
-    url(
-        (
-            r'^accounts/password/reset/confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/'
-            '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'
-        ),
+    path(
+        'accounts/password/reset/confirm/<uidb64>/<token>/',
         password_reset_confirm,
         name='password_reset_confirm'
     ),
+
     # Application
-    url(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
-    url(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
-    url(r'^documentation/', include(('seed.docs.urls', 'seed.docs'), namespace='docs')),
+    re_path(r'^', include(('seed.landing.urls', "seed.landing"), namespace="landing")),
+    re_path(r'^app/', include(('seed.urls', "seed"), namespace="seed")),
+    re_path(r'^documentation/', include(('seed.docs.urls', 'seed.docs'), namespace='docs')),
 
     # root configuration items
-    url(r'^i18n/', include('django.conf.urls.i18n')),
-    url(r'^robots\.txt', robots_txt, name='robots_txt'),
+    re_path(r'^i18n/', include('django.conf.urls.i18n')),
+    re_path(r'^robots\.txt', robots_txt, name='robots_txt'),
 
     # API
-    url(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    url(r'^api/version/$', version, name='version'),
-    url(r'^api/', include((api, "seed"), namespace='api')),
-    url(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
+    re_path(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^api/version/$', version, name='version'),
+    re_path(r'^api/', include((api, "seed"), namespace='api')),
+    re_path(r'^oauth/', include(('oauth2_jwt_provider.urls', 'oauth2_jwt_provider'), namespace='oauth2_provider'))
 ]
 
 handler404 = 'seed.views.main.error404'
@@ -74,8 +73,8 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += [
         # test URLs
-        url(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
+        re_path(r'^angular_js_tests/$', angular_js_tests, name='angular_js_tests'),
 
         # admin
-        url(r'^admin/', admin.site.urls),
+        re_path(r'^admin/', admin.site.urls),
     ]

@@ -1,17 +1,27 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from datetime import datetime
+import json
+import os.path as osp
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from mock import patch
+import pytz
+
+from config.settings.common import BASE_DIR
 from seed.data_importer.models import ImportFile
 
-from seed.data_importer.tasks import geocode_and_match_buildings_task
+from seed.data_importer.tasks import geocode_and_match_buildings_task, map_data, save_raw_data
 from seed.data_importer.match import (
     filter_duplicate_states,
     save_state_match,
 )
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_DELETE,
@@ -21,10 +31,15 @@ from seed.models import (
     MERGE_STATE_NEW,
     MERGE_STATE_UNKNOWN,
     Column,
+    Measure,
+    Meter,
+    MeterReading,
     Property,
     PropertyAuditLog,
+    PropertyMeasure,
     PropertyState,
     PropertyView,
+    Scenario,
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
@@ -1028,8 +1043,181 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
             )
 
         props = self.import_file.find_unmatched_property_states()
-        uniq_state_ids, dup_state_count = filter_duplicate_states(props)
+        sub_progress_data = ProgressData(func_name='match_sub_progress', unique_id=123)
+        sub_progress_data.save()
+        uniq_state_ids, dup_state_count = filter_duplicate_states(props, sub_progress_data.key)
 
         # There should be 6 uniq states. 5 from the second call, and one of 'The Same Address'
         self.assertEqual(len(uniq_state_ids), 6)
         self.assertEqual(dup_state_count, 9)
+
+
+class TestBuildingSyncImportXml(DataMappingBaseTestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+        filename = 'buildingsync_v2_0_bricr_workflow.xml'
+        filepath = osp.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', filename)
+
+        import_file_source_type = 'BuildingSync Raw'
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, self.import_file_bsync, self.import_record, self.cycle = selfvars
+
+        self.import_file_bsync.file = SimpleUploadedFile(
+            name=filename,
+            content=open(filepath, 'rb').read(),
+            content_type="application/xml"
+        )
+        self.import_file_bsync.uploaded_filename = filename
+        self.import_file_bsync.save()
+
+        self.import_record_2, self.import_file_2 = self.create_import_file(
+            self.user, self.org, self.cycle
+        )
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+    def map_bsync_file(self):
+        with patch.object(ImportFile, 'cache_first_rows', return_value=None):
+            progress_info = save_raw_data(self.import_file_bsync.pk)
+        self.assertEqual('success', progress_info['status'], json.dumps(progress_info))
+        self.assertEqual(PropertyState.objects.filter(import_file=self.import_file_bsync).count(), 1)
+
+        # make the column mappings
+        self.fake_mappings = default_buildingsync_profile_mappings()
+        Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file_bsync.pk)
+
+        # map the data
+        progress_info = map_data(self.import_file_bsync.pk)
+        self.assertEqual('success', progress_info['status'])
+        # verify there were no errors with the files
+        self.assertEqual({}, progress_info.get('file_info', {}))
+
+    def test_match_buildingsync_works_when_no_existing_scenarios_or_meters(self):
+        """If a BuildingSync file is merged into an existing property WITHOUT scenarios and meters,
+        we expect the final property to have only the new scenarios and meters"""
+        # -- Setup
+        # make address_line_1 the only matching criteria
+        (
+            Column.objects.filter(is_matching_criteria=True)
+            .exclude(column_name='address_line_1')
+            .update(is_matching_criteria=False)
+        )
+        # this should be the address in the BSync file
+        ADDRESS_LINE_1 = '123 MAIN BLVD'
+        base_details = {
+            'address_line_1': ADDRESS_LINE_1,
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create a property which will match with the BuildingSync file
+        self.property_state_factory.get_property_state(**base_details)
+        # set import_file mapping done so that matching can occur.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        geocode_and_match_buildings_task(self.import_file_2.id)
+
+        # Map the BuildingSync file which should match with the existing property
+        self.map_bsync_file()
+        ps_new = PropertyState.objects.filter(
+            address_line_1=ADDRESS_LINE_1,
+            import_file=self.import_file_bsync
+        )
+        self.assertEqual(len(ps_new), 1)
+
+        # -- Act
+        geocode_and_match_buildings_task(self.import_file_bsync.id)
+
+        # -- Assert
+        # we should end up with only one view b/c the bsync file was merged into the existing property
+        self.assertEqual(PropertyView.objects.count(), 1)
+        pv = PropertyView.objects.all().first()
+
+        # the bsync file's scenarios should end up on our property view
+        ps = pv.state
+        scenario = Scenario.objects.filter(property_state=ps)
+        self.assertEqual(scenario.count(), 3)
+
+        pms = PropertyMeasure.objects.filter(property_state=ps, recommended=False)
+        self.assertEqual(pms.count(), 1)
+        pms = PropertyMeasure.objects.filter(property_state=ps, recommended=True)
+        self.assertEqual(pms.count(), 70)
+
+        meters = Meter.objects.filter(scenario__in=scenario)
+        self.assertEqual(meters.count(), 6)
+
+    def test_match_buildingsync_works_when_there_are_existing_different_scenarios_and_meters(self):
+        """If a BuildingSync file is merged into an existing property with scenarios and meters
+        that differ from the ones in the file, we expect the final property to have only the new scenarios and meters"""
+        # -- Setup
+        # make address_line_1 the only matching criteria
+        (
+            Column.objects.filter(is_matching_criteria=True)
+            .exclude(column_name='address_line_1')
+            .update(is_matching_criteria=False)
+        )
+        # this should be the address in the BSync file
+        ADDRESS_LINE_1 = '123 MAIN BLVD'
+        base_details = {
+            'address_line_1': ADDRESS_LINE_1,
+            'import_file_id': self.import_file_2.id,
+            'data_state': DATA_STATE_MAPPING,
+            'no_default_data': False,
+        }
+        # Create a property which will match with the BuildingSync file
+        ps_orig = self.property_state_factory.get_property_state(**base_details)
+        # set import_file mapping done so that matching can occur.
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        geocode_and_match_buildings_task(self.import_file_2.id)
+        # add scenario, measure, and meter
+        scenario = Scenario.objects.create(
+            name='My Original Scenario',
+            property_state_id=ps_orig.id,
+        )
+        PropertyMeasure.objects.create(
+            property_measure_name='My Original PropertyMeasure',
+            measure_id=Measure.objects.filter(organization=self.org).first().id,
+            property_state_id=ps_orig.id
+        )
+        meter = Meter.objects.create(
+            scenario_id=scenario.id,
+            source_id='My Original Meter',
+        )
+        MeterReading.objects.create(
+            start_time=datetime.now(tz=pytz.UTC),
+            end_time=datetime.now(tz=pytz.UTC),
+            reading=123,
+            meter_id=meter.id,
+            conversion_factor=1,
+        )
+
+        # Map the BuildingSync file which should match with the existing property
+        self.map_bsync_file()
+        ps_new = PropertyState.objects.filter(
+            address_line_1=ADDRESS_LINE_1,
+            import_file=self.import_file_bsync
+        )
+        self.assertEqual(len(ps_new), 1)
+
+        # -- Act
+        geocode_and_match_buildings_task(self.import_file_bsync.id)
+
+        # -- Assert
+        # we should end up with only one view b/c the bsync file was merged into the existing property
+        self.assertEqual(PropertyView.objects.count(), 1)
+        pv = PropertyView.objects.all().first()
+
+        num_bsync_scenarios = 3
+        ps = pv.state
+        scenario = Scenario.objects.filter(property_state=ps)
+        self.assertEqual(scenario.count(), num_bsync_scenarios)
+
+        num_bsync_measures = 71
+        pms = PropertyMeasure.objects.filter(property_state=ps)
+        self.assertEqual(pms.count(), num_bsync_measures)
+
+        num_bsync_meters = 6
+        meters = Meter.objects.filter(scenario__in=scenario)
+        self.assertEqual(meters.count(), num_bsync_meters)

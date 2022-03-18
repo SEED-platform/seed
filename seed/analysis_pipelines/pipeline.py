@@ -4,6 +4,7 @@ import inspect
 import json
 import logging
 
+from seed.decorators import get_prog_key
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import Analysis, AnalysisPropertyView, AnalysisMessage
 
@@ -25,12 +26,12 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
     :param analysis_id: int
     :param property_view_ids: list[int]
     :param progress_data_key: str, optional
-    :returns: list[int], IDs of the successfully created AnalysisPropertyViews
+    :returns: dictionary[int:int] IDs of the successfully created AnalysisPropertyViews listed by property_view_id
     """
     if progress_data_key is not None:
         progress_data = ProgressData.from_key(progress_data_key)
         progress_data.step('Copying property data')
-    analysis_view_ids, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
+    analysis_view_ids_by_property_view_id, failures = AnalysisPropertyView.batch_create(analysis_id, property_view_ids)
     for failure in failures:
         truncated_user_message = f'Failed to copy property data for PropertyView ID {failure.property_view_id}: {failure.message}'
         if len(truncated_user_message) > 255:
@@ -40,7 +41,7 @@ def task_create_analysis_property_views(analysis_id, property_view_ids, progress
             type=AnalysisMessage.DEFAULT,
             user_message=truncated_user_message,
         )
-    return analysis_view_ids
+    return analysis_view_ids_by_property_view_id
 
 
 def analysis_pipeline_task(expected_status):
@@ -253,6 +254,7 @@ class AnalysisPipeline(abc.ABC):
     AnalysisPipeline is an abstract class for defining workflows for preparing,
     running, and post processing analyses.
     """
+
     def __init__(self, analysis_id):
         self._analysis_id = analysis_id
 
@@ -265,43 +267,63 @@ class AnalysisPipeline(abc.ABC):
         """
         # import here to avoid circular dependencies
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
+        from seed.analysis_pipelines.better import BETTERPipeline
+        from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.co2 import CO2Pipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
+        elif analysis.service == Analysis.BETTER:
+            return BETTERPipeline(analysis.id)
+        elif analysis.service == Analysis.EUI:
+            return EUIPipeline(analysis.id)
+        elif analysis.service == Analysis.CO2:
+            return CO2Pipeline(analysis.id)
         else:
             raise AnalysisPipelineException(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 
-    def prepare_analysis(self, property_view_ids):
+    def prepare_analysis(self, property_view_ids, start_analysis=False):
         """Entrypoint for preparing an analysis.
 
         :param property_view_ids: list[int]
-        :returns: str, ProgressData.result
+        :param start_analysis: bool, if true, the pipeline should immediately start the analysis after preparation
+        :returns: ProgressData.result
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
             if locked_analysis.status is Analysis.PENDING_CREATION:
                 locked_analysis.status = Analysis.CREATING
                 locked_analysis.save()
+                progress_data = ProgressData(
+                    self._get_progress_data_key_prefix(locked_analysis),
+                    self._analysis_id,
+                )
             else:
                 raise AnalysisPipelineException('Analysis has already been prepared or is currently being prepared')
 
-        return self._prepare_analysis(property_view_ids)
+        self._prepare_analysis(property_view_ids, start_analysis)
+        return progress_data.result()
 
     def start_analysis(self):
         """Entrypoint for starting an analysis.
 
-        :returns: str, ProgressData.result
+        :returns: ProgressData.result
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
             if locked_analysis.status is Analysis.READY:
                 locked_analysis.status = Analysis.QUEUED
                 locked_analysis.save()
+                progress_data = ProgressData(
+                    self._get_progress_data_key_prefix(locked_analysis),
+                    self._analysis_id,
+                )
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 raise AnalysisPipelineException(f'Analysis cannot be started. Its status should be "{statuses[Analysis.READY]}" but it is "{statuses[locked_analysis.status]}"')
 
-        return self._start_analysis()
+        self._start_analysis()
+        return progress_data.result()
 
     def fail(self, message, logger, progress_data_key=None):
         """Fails the analysis. Creates an AnalysisMessage and logs it
@@ -316,6 +338,10 @@ class AnalysisPipeline(abc.ABC):
             if progress_data_key is not None:
                 progress_data = ProgressData.from_key(progress_data_key)
                 progress_data.finish_with_error(message)
+            else:
+                progress_data = self.get_progress_data(locked_analysis)
+                if progress_data is not None:
+                    progress_data.finish_with_error(message)
 
             if locked_analysis.in_terminal_state():
                 raise AnalysisPipelineException(f'Analysis is already in a terminal state: status {locked_analysis.status}')
@@ -360,13 +386,144 @@ class AnalysisPipeline(abc.ABC):
         """
         Analysis.objects.get(id=self._analysis_id).delete()
 
+    def set_analysis_status_to_ready(self, status_message):
+        """Sets the analysis status to READY and saves the analysis start time.
+        This method should be called once for an analysis. In addition, it should
+        only be called by the pipeline once the analysis task has officially finished
+        creation/preparation.
+
+        Therefore, this should only be called in the context of a pipeline task.
+
+        :param status_message: str, message to use for the finished ProgressData
+            for the creating/preparation process
+        :returns: None
+        """
+        with transaction.atomic():
+            locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
+
+            if locked_analysis.status == Analysis.CREATING:
+                progress_data = self.get_progress_data(locked_analysis)
+                progress_data.finish_with_success(status_message)
+
+                locked_analysis.status = Analysis.READY
+                locked_analysis.save()
+            else:
+                statuses = dict(Analysis.STATUS_TYPES)
+                raise AnalysisPipelineException(
+                    f'Analysis status can\'t be set to READY. '
+                    f'Its status should be "{statuses[Analysis.CREATING]}" but it is "{statuses[locked_analysis.status]}"'
+                )
+
+    def set_analysis_status_to_running(self):
+        """Sets the analysis status to RUNNING and saves the analysis start time.
+        This method should be called once for an analysis. In addition, it should
+        only be called by the pipeline once the analysis task has officially started
+        (ie a worker has picked up the actual work of the task).
+
+        Therefore, this should only be called in the context of a pipeline task.
+
+        :returns: ProgressData
+        """
+        with transaction.atomic():
+            locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
+
+            # allow pipeline authors to go straight from Queued or Ready to Running
+            valid_statuses = [Analysis.QUEUED, Analysis.READY]
+            if locked_analysis.status in valid_statuses:
+                progress_data = self.get_progress_data(locked_analysis)
+                if progress_data:  # analyses in Ready status don't have progress data
+                    progress_data.finish_with_success('Analysis is now being run')
+
+                locked_analysis.status = Analysis.RUNNING
+                locked_analysis.start_time = tz.now()
+                locked_analysis.save()
+
+                return ProgressData(
+                    self._get_progress_data_key_prefix(locked_analysis),
+                    locked_analysis.id
+                )
+            else:
+                statuses = dict(Analysis.STATUS_TYPES)
+                valid_statuses_str = ' or '.join([statuses[s] for s in valid_statuses])
+                raise AnalysisPipelineException(
+                    f'Analysis status can\'t be set to RUNNING. '
+                    f'Its status should be {valid_statuses_str} but it is "{statuses[locked_analysis.status]}"'
+                )
+
+    def set_analysis_status_to_completed(self):
+        """Sets the analysis status to COMPLETED and saves the analysis end time.
+        This method should be called once for an analysis. In addition, it should
+        only be called by the pipeline once the analysis task has officially ended
+        (ie all work for the analysis is finished).
+
+        Therefore, this should only be called in the context of a pipeline task.
+
+        :returns: None
+        """
+        with transaction.atomic():
+            locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
+
+            if locked_analysis.status == Analysis.RUNNING:
+                progress_data = self.get_progress_data(locked_analysis)
+                progress_data.finish_with_success('Analysis is complete')
+
+                locked_analysis.status = Analysis.COMPLETED
+                locked_analysis.end_time = tz.now()
+                locked_analysis.save()
+            else:
+                statuses = dict(Analysis.STATUS_TYPES)
+                raise AnalysisPipelineException(
+                    f'Analysis status can\'t be set to COMPLETED. '
+                    f'Its status should be "{statuses[Analysis.RUNNING]}" but it is "{statuses[locked_analysis.status]}"'
+                )
+
+    def _get_progress_data_key_prefix(self, analysis):
+        statuses = dict(Analysis.STATUS_TYPES)
+        return f'analysis-{statuses[analysis.status]}'
+
+    def get_progress_data(self, analysis=None):
+        """Get the ProgressData for the current task. If the analysis doesn't currently
+        have progress data, this method returns None
+
+        :returns: ProgressData | None
+        """
+        if analysis is None:
+            analysis = Analysis.objects.get(id=self._analysis_id)
+
+        if (
+            # PENDING_CREATION doesn't have progress data due to... uninteresting reasons...
+            analysis.status is Analysis.PENDING_CREATION
+            # READY doesn't have progress data b/c it's waiting for the user to kick it off
+            or analysis.status is Analysis.READY
+            # Terminal states (e.g. Failed, Stopped, Complete) don't have progress data
+            or analysis.in_terminal_state()
+        ):
+            return None
+
+        progress_key = get_prog_key(
+            self._get_progress_data_key_prefix(analysis),
+            self._analysis_id
+        )
+        try:
+            return ProgressData.from_key(progress_key)
+        except Exception:
+            logger.warn(
+                f'Expected analysis to have progress data, but {progress_key} was not found. '
+                'A race condition probably occurred due to the analysis status becoming "outdated" '
+                'inside this method. Returning None for progress data...'
+            )
+            return None
+
     @abc.abstractmethod
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis):
         """Abstract method which should do the work necessary for preparing
         an analysis, e.g. creating input file(s)
 
         :param property_view_ids: list[int]
-        :returns: str, ProgressData.result
+        :param start_analysis: bool, if true, the pipeline should be started immediately
+            after preparation is finished. It is the responsibility of the pipline
+            implementation to make sure this happens by calling `pipeline.start_analysis()`
+        :returns: None
         """
         pass
 
@@ -375,7 +532,6 @@ class AnalysisPipeline(abc.ABC):
         """Abstract method which should start the analysis, e.g. make HTTP requests
         to the analysis service.
 
-        :param analysis_id: int
-        :returns: str, ProgressData.result
+        :returns: None
         """
         pass

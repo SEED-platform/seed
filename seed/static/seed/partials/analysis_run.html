@@ -1,16 +1,21 @@
-<div ng-include="::urls.static_url + 'seed/partials/analyses_header.html'"></div>
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" class="page_action">
+                <i class="fa fa-chevron-left"></i>{$:: 'Analysis' | translate $}: {$:: analysis.name $}
+            </a>
+        </div>
+        <div class="page_title"><h1>{$:: analysis.name $}</a> - Run #{$:: view.id $}</h1></div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
 
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header fixed_height_short">
-            <div class="left section_action_container" style="width:100%;">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}: {$:: analysis.name $} - Run #{$:: view.id $}</h2>
-            </div>
-        </div>
-    </div>
     <div class="section_content_container">
         <div class="section_content">
-            <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+            <div ng-controller="analysis_details_controller">
+                <div ng-include="::urls.static_url + 'seed/partials/analysis_details.html'"></div>
+            </div>
             <div ng-include="::urls.static_url + 'seed/partials/analysis_runs.html'"></div>
         </div>
     </div>
@@ -19,10 +24,31 @@
 <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
         <div class="section_action_container left" style="width: 50%;">
-            <span>
-                <h2 translate>Results</h2>
-                <pre>{$:: view.parsed_results | json $}</pre>
-            </span>
+            <h2 translate>Results</h2>
+        </div>
+    </div>
+    <div class="section">
+        <div class="section_content_container">
+                <div class="section_content with_padding">
+                    <div ng-if="analysis.service !== 'BETTER' && !angular.equals(view.parsed_results, {}) && view.output_files.length === 0">
+                        <pre>{$:: view.parsed_results | json $}</pre>
+                    </div>
+                    <div ng-repeat="file in view.output_files | filter:filter_params:strict">
+                        <div ng-if="file.content_type == 'html'">
+                            <iframe class="analysis-results" scrolling="no" ng-attr-src="{$:: file.file $}" onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"></iframe>
+                            <div ng-repeat-end ng-if="!$last">
+                                <br />
+                            </div>
+                        </div>
+                        <div ng-if="file.content_type == 'PNG'" style='width: 50%; min-width: 200px;'>
+                            <img ng-attr-src="{$:: file.file $}" style="width: 100%"></img>
+                            <div ng-repeat-end ng-if="!$last">
+                                <br />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

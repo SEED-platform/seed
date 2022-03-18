@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.settings_profile_modal', [])
@@ -44,9 +44,11 @@ angular.module('BE.seed.controller.settings_profile_modal', [])
             name: $scope.newName,
             profile_location: $scope.profile_location,
             inventory_type: $scope.inventory_type,
-            columns: $scope.data
+            columns: $scope.data.columns,
+            derived_columns: $scope.data.derived_columns
           }).then(function (result) {
             result.columns = _.sortBy(result.columns, ['order', 'column_name']);
+            result.derived_columns = _.sortBy(result.derived_columns, ['column_name']);
             $uibModalInstance.close(result);
           });
         }

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 """
@@ -59,6 +59,11 @@ def clean_fieldnames(fieldnames):
 
         new_fieldnames.append(new_fieldname)
     return new_fieldnames, num_generated_headers > 0
+
+
+class SheetDoesNotExist(Exception):
+    """Exception when parsing an Excel workbook and the specified sheet does not exist"""
+    pass
 
 
 class GreenButtonParser(object):
@@ -505,6 +510,8 @@ class MCMParser(object):
         except XLRDError as e:
             if 'Unsupported format' in str(e):
                 return CSVParser(import_file)
+            elif 'No sheet named' in str(e):
+                raise SheetDoesNotExist(str(e))
             else:
                 raise Exception('Cannot parse file')
 

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -13,7 +13,7 @@ import subprocess
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -99,29 +99,23 @@ def version(request):
 
 
 def error404(request, exception):
-    # Okay, this is a bit of a hack. Needed to move on.
     if '/api/' in request.path:
         return JsonResponse({
             "status": "error",
             "message": "Endpoint could not be found",
         }, status=status.HTTP_404_NOT_FOUND)
     else:
-        response = render(request, 'seed/404.html', {})
-        response.status_code = 404
-        return response
+        return redirect('/app/#?http_error=404')
 
 
 def error500(request):
-    # Okay, this is a bit of a hack. Needed to move on.
     if '/api/' in request.path:
         return JsonResponse({
             "status": "error",
             "message": "Internal server error",
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
-        response = render(request, 'seed/500.html', {})
-        response.status_code = 500
-        return response
+        return redirect('/app/#?http_error=500')
 
 
 # @api_view(['POST'])  # do not add api_view on this because this is public and adding it will

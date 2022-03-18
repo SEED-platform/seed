@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -53,8 +53,7 @@ INTERNAL_IPS = ('127.0.0.1',)
 COMPRESS_ENABLED = False
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_PRECOMPILERS = ()
-    COMPRESS_CSS_FILTERS = ['compressor.filters.css_default.CssAbsoluteFilter']
-    COMPRESS_JS_FILTERS = []
+    COMPRESS_FILTERS = {'css': ['compressor.filters.css_default.CssAbsoluteFilter']}
 
 ALLOWED_HOSTS = ['*']
 
@@ -76,22 +75,15 @@ LOGGING = {
     },
 }
 
-# use imp module to find the local_untracked file rather than a hard-coded path
-try:
-    import imp
-    import config.settings
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
 
-    local_untracked_exists = imp.find_module(
-        'local_untracked', config.settings.__path__
-    )
-except BaseException:
-    pass
-
-
-if 'local_untracked_exists' in locals():
-    from config.settings.local_untracked import *  # noqa
-else:
+local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
+if local_untracked_spec is None:
     raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
+else:
+    from config.settings.local_untracked import *  # noqa
+
 
 # suppress some logging -- only show warnings or greater
 # logging.getLogger('faker.factory').setLevel(logging.ERROR)

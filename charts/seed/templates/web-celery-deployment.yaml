@@ -27,41 +27,53 @@ spec:
         io.kompose.service: web-celery
     spec:
       containers:
-      - args:
-        - /seed/docker/start_celery_docker.sh
-        env:
-        - name: DJANGO_SETTINGS_MODULE
-          value: config.settings.docker
-        - name: POSTGRES_DB
-          value: seed
-        - name: POSTGRES_PASSWORD
-          value: super-secret-password
-        - name: POSTGRES_PORT
-          value: "5432"
-        - name: POSTGRES_USER
-          value: seeduser
-        - name: SECRET_KEY
-          value: <secret>
-        - name: BSYNCR_SERVER_PORT
-          value: "5000"
-        - name: BSYNCR_SERVER_HOST
-          value: bsyncr
-        image: seedplatform/seed:<verison>
-        imagePullPolicy: Always
-        name: web-celery
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
-        volumeMounts:
-        - mountPath: /seed/media
-          name: seed-media
+        - args:
+            - /seed/docker/start_celery_docker.sh
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              value: <access key id>
+            - name: AWS_SECRET_ACCESS_KEY
+              value: <secret access key>
+            - name: AWS_SES_REGION_NAME
+              value: us-west-2
+            - name: AWS_SES_REGION_ENDPOINT
+              value: email.us-west-2.amazonaws.com
+            - name: SERVER_EMAIL
+              value: info@seed-platform.org
+            - name: DJANGO_SETTINGS_MODULE
+              value: config.settings.docker
+            - name: POSTGRES_DB
+              value: seed
+            - name: POSTGRES_PASSWORD
+              value: super-secret-password
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: seeduser
+            - name: SECRET_KEY
+              value: <secret>
+            - name: BSYNCR_SERVER_PORT
+              value: "5000"
+            - name: BSYNCR_SERVER_HOST
+              value: bsyncr
+            - name: BETTER_HOST
+              value: https://better-lbnl-development.herokuapp.com
+          image: seedplatform/seed:<version>
+          imagePullPolicy: Always
+          name: web-celery
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /seed/media
+              name: seed-media
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       securityContext: {}
       terminationGracePeriodSeconds: 30
       volumes:
-      - name: seed-media
-        persistentVolumeClaim:
-          claimName: seed-media
+        - name: seed-media
+          persistentVolumeClaim:
+            claimName: seed-media
 status: {}

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -12,8 +12,8 @@ import logging
 import re
 from os import path
 
+from django.conf import settings
 from django.contrib.gis.db import models as geomodels
-from django.contrib.postgres.fields import JSONField
 from django.db import (
     models,
     transaction,
@@ -29,16 +29,16 @@ from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Cycle,
+from seed.models.cycles import Cycle
+from seed.models.models import (
     StatusLabel,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
-    TaxLotProperty
 )
+from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
@@ -128,19 +128,6 @@ class Property(models.Model):
 
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property"""
-    ANALYSIS_STATE_NOT_STARTED = 0
-    ANALYSIS_STATE_STARTED = 1
-    ANALYSIS_STATE_COMPLETED = 2
-    ANALYSIS_STATE_FAILED = 3
-    ANALYSIS_STATE_QUEUED = 4  # analysis queue was added after the others above.
-
-    ANALYSIS_STATE_TYPES = (
-        (ANALYSIS_STATE_NOT_STARTED, 'Not Started'),
-        (ANALYSIS_STATE_QUEUED, 'Queued'),
-        (ANALYSIS_STATE_STARTED, 'Started'),
-        (ANALYSIS_STATE_COMPLETED, 'Completed'),
-        (ANALYSIS_STATE_FAILED, 'Failed'),
-    )
 
     # Support finding the property by the import_file and source_type
     import_file = models.ForeignKey(ImportFile, on_delete=models.CASCADE, null=True, blank=True)
@@ -193,6 +180,9 @@ class PropertyState(models.Model):
     # footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
     geocoding_confidence = models.CharField(max_length=32, null=True, blank=True)
 
+    # EPA's eGRID Subregion Code (https://www.epa.gov/egrid)
+    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True)
+
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
@@ -222,13 +212,6 @@ class PropertyState(models.Model):
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
-
-    analysis_start_time = models.DateTimeField(null=True)
-    analysis_end_time = models.DateTimeField(null=True)
-    analysis_state = models.IntegerField(choices=ANALYSIS_STATE_TYPES,
-                                         default=ANALYSIS_STATE_NOT_STARTED,
-                                         null=True)
-    analysis_state_message = models.TextField(null=True)
 
     # Need to add another field eventually to define the source of the EUI's and other
     # reported fields. Ideally would have the ability to provide the same field from
@@ -266,7 +249,7 @@ class PropertyState(models.Model):
     source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
     source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
 
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
     measures = models.ManyToManyField('Measure', through='PropertyMeasure')
 
@@ -279,7 +262,6 @@ class PropertyState(models.Model):
             ['import_file', 'data_state'],
             ['import_file', 'data_state', 'merge_state'],
             ['import_file', 'data_state', 'source_type'],
-            ['analysis_state', 'organization'],
         ]
 
     def promote(self, cycle, property_id=None):
@@ -419,7 +401,11 @@ class PropertyState(models.Model):
         }
 
         def record_dict(log):
-            filename = None if not log.import_filename else path.basename(log.import_filename)
+            filename = file = None
+            if log.import_filename:
+                filename = path.basename(log.import_filename)
+                file = settings.MEDIA_URL + '/'.join(log.import_filename.split('/')[-2:])
+
             if filename:
                 # Attempt to remove NamedTemporaryFile suffix
                 name, ext = path.splitext(filename)
@@ -433,6 +419,7 @@ class PropertyState(models.Model):
                 'date_edited': convert_to_js_timestamp(log.created),
                 'source': log.get_record_type_display(),
                 'filename': filename,
+                'file': file
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
@@ -580,10 +567,7 @@ class PropertyState(models.Model):
                     ps.energy_alerts,
                     ps.space_alerts,
                     ps.building_certification,
-                    ps.analysis_start_time,
-                    ps.analysis_end_time,
-                    ps.analysis_state,
-                    ps.analysis_state_message,
+                    ps.egrid_subregion_code,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
@@ -607,8 +591,7 @@ class PropertyState(models.Model):
                        'home_energy_score_id', 'generation_date', 'release_date',
                        'source_eui_weather_normalized', 'site_eui_weather_normalized',
                        'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
-                       'building_certification', 'analysis_start_time', 'analysis_end_time',
-                       'analysis_state', 'analysis_state_message', 'extra_data', ]
+                       'building_certification', 'extra_data', ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
@@ -617,6 +600,10 @@ class PropertyState(models.Model):
     def merge_relationships(cls, merged_state, state1, state2):
         """
         Merge together the old relationships with the new.
+
+        :param merged_state: empty state to fill with merged state
+        :param state1: *State
+        :param state2: *State - given priority over state1
         """
         from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure

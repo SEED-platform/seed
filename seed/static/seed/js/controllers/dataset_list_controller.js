@@ -1,15 +1,16 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.dataset', [])
   .controller('dataset_list_controller', [
     '$scope',
+    '$rootScope',
     'datasets_payload',
     '$uibModal',
     'urls',
     'dataset_service',
-    function ($scope, datasets_payload, $uibModal, urls, dataset_service) {
+    function ($scope, $rootScope, datasets_payload, $uibModal, urls, dataset_service) {
       $scope.datasets = datasets_payload.datasets;
       $scope.columns = [{
         title: 'Data Set Name'
@@ -130,6 +131,7 @@ angular.module('BE.seed.controller.dataset', [])
        * event broadcast from menu controller when a new dataset is added
        */
       $scope.$on('datasets_updated', refresh_datasets);
+      $rootScope.$on('datasets_updated', refresh_datasets);
 
     }
   ]);

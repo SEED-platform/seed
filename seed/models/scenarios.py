@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import unicode_literals
@@ -11,7 +11,7 @@ import logging
 from django.db import models
 
 from seed.models.property_measures import PropertyMeasure
-from seed.models.properties import PropertyState, PropertyView
+from seed.models.properties import PropertyView
 
 _log = logging.getLogger(__name__)
 
@@ -65,19 +65,13 @@ class Scenario(models.Model):
     annual_natural_gas_energy = models.FloatField(null=True)
     annual_electricity_energy = models.FloatField(null=True)
     annual_peak_demand = models.FloatField(null=True)
+    annual_peak_electricity_reduction = models.FloatField(null=True)
     annual_site_energy_use_intensity = models.FloatField(null=True)
     annual_source_energy_use_intensity = models.FloatField(null=True)
     hdd = models.FloatField(null=True)
     hdd_base_temperature = models.FloatField(null=True)
     cdd = models.FloatField(null=True)
     cdd_base_temperature = models.FloatField(null=True)
-
-    analysis_start_time = models.DateTimeField(null=True)
-    analysis_end_time = models.DateTimeField(null=True)
-    # use the analysis states that are defined in the PropertyState model
-    analysis_state = models.IntegerField(choices=PropertyState.ANALYSIS_STATE_TYPES,
-                                         default=PropertyState.ANALYSIS_STATE_NOT_STARTED)
-    analysis_state_message = models.TextField(null=True)
 
     measures = models.ManyToManyField(PropertyMeasure)
 

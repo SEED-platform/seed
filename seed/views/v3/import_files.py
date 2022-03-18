@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -11,7 +11,11 @@ from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+import xlrd
+
 from seed.data_importer.meters_parser import MetersParser
+from seed.lib.mcm import reader
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.tasks import do_checks
 from seed.data_importer.tasks import geocode_and_match_buildings_task
@@ -21,7 +25,7 @@ from seed.data_importer.tasks import \
     validate_use_cases as task_validate_use_cases
 from seed.decorators import ajax_request_class
 from seed.lib.mappings import mapper as simple_mapper
-from seed.lib.mcm import mapper, reader
+from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
@@ -154,6 +158,84 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({
             'status': 'success',
             'import_file': f,
+        })
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def check_meters_tab_exists(self, request, pk=None):
+        """
+        Checks for the existence of meters tab "Meter Entries" for a file.
+        """
+        org_id = self.get_organization(request)
+        try:
+            import_file = ImportFile.objects.get(
+                id=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find import file with pk=' + str(pk)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            has_meter_tab = bool(
+                {'Meter Entries', 'Monthly Usage'}
+                & set(xlrd.open_workbook(import_file.file.path).sheet_names())
+            )
+            return JsonResponse({
+                'status': 'success',
+                'data': has_meter_tab
+            })
+        except xlrd.XLRDError:
+            return JsonResponse({
+                'status': 'success',
+                'data': False
+            })
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory({
+            'import_file_id': 'integer'
+        })
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['POST'])
+    def reuse_inventory_file_for_meters(self, request):
+        org_id = self.get_organization(request)
+        try:
+            import_file_id = request.data.get('import_file_id', 0)
+            original_file = ImportFile.objects.get(
+                id=import_file_id,
+                import_record__super_organization_id=org_id,
+                mapping_done=True,
+                source_type="Assessed Raw"
+            )
+        except ImportFile.DoesNotExist:
+            resp = {
+                'status': 'error',
+                'message': 'Could not find previously imported inventory file with pk=' + str(import_file_id)
+            }
+            return JsonResponse(resp, status=status.HTTP_400_BAD_REQUEST)
+
+        new_file = ImportFile.objects.create(
+            import_record=original_file.import_record,
+            file=original_file.file,
+            uploaded_filename=original_file.uploaded_filename,
+            source_type="PM Meter Usage",
+        )
+
+        return JsonResponse({
+            'status': 'success',
+            'import_file_id': new_file.id
         })
 
     @swagger_auto_schema_org_query_param
@@ -904,8 +986,48 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.GreenButtonParser(import_file.local_file)
-        raw_meter_data = list(parser.data)
+        try:
+            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+        except PropertyView.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find property with pk=' + str(
+                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
+
+        meters_parser = MetersParser.factory(
+            import_file.local_file,
+            org_id,
+            source_type=Meter.GREENBUTTON,
+            property_id=property_id
+        )
+
+        result = {}
+        result["validated_type_units"] = meters_parser.validated_type_units()
+        result["proposed_imports"] = meters_parser.proposed_imports
+
+        import_file.matching_results_data['property_id'] = property_id
+        import_file.save()
+
+        return result
+
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def sensors_preview(self, request, pk):
+        """
+        Returns validated type units and proposed imports
+        """
+        org_id = self.get_organization(request)
+        view_id = request.query_params.get('view_id')
+
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
@@ -914,12 +1036,51 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {'status': 'error', 'message': 'Could not find property with pk=' + str(
                     view_id)}, status=status.HTTP_400_BAD_REQUEST)
 
-        meters_parser = MetersParser(org_id, raw_meter_data, source_type=Meter.GREENBUTTON, property_id=property_id)
+        parser = reader.MCMParser(import_file.local_file)
+        result = {
+            "proposed_imports": list(parser.data)
+        }
 
-        result = {}
+        import_file.matching_results_data['property_id'] = property_id
+        import_file.save()
 
-        result["validated_type_units"] = meters_parser.validated_type_units()
-        result["proposed_imports"] = meters_parser.proposed_imports
+        return result
+
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['GET'])
+    def sensor_readings_preview(self, request, pk):
+        org_id = self.get_organization(request)
+        view_id = request.query_params.get('view_id')
+
+        try:
+            import_file = ImportFile.objects.get(
+                pk=pk,
+                import_record__super_organization_id=org_id
+            )
+        except ImportFile.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find import file with pk=' + str(
+                    pk)}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            property_id = PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+        except PropertyView.DoesNotExist:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find property with pk=' + str(
+                    view_id)}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            sensor_readings_parser = SensorsReadingsParser.factory(
+                import_file.local_file,
+                org_id,
+                property_id=property_id
+            )
+        except ValueError as e:
+            return JsonResponse(
+                {'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        result = sensor_readings_parser.get_validation_report()
 
         import_file.matching_results_data['property_id'] = property_id
         import_file.save()
@@ -943,18 +1104,16 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 pk=pk,
                 import_record__super_organization_id=org_id
             )
+            meters_parser = MetersParser.factory(import_file.local_file, org_id)
+            import_file.num_rows = len(meters_parser.proposed_imports)
+            import_file.save()
+
         except ImportFile.DoesNotExist:
             return JsonResponse(
                 {'status': 'error', 'message': 'Could not find import file with pk=' + str(
                     pk)}, status=status.HTTP_400_BAD_REQUEST)
 
-        parser = reader.MCMParser(import_file.local_file, sheet_name='Meter Entries')
-        raw_meter_data = list(parser.data)
-
-        meters_parser = MetersParser(org_id, raw_meter_data)
-
         result = {}
-
         result["validated_type_units"] = meters_parser.validated_type_units()
         result["proposed_imports"] = meters_parser.proposed_imports
         result["unlinkable_pm_ids"] = meters_parser.unlinkable_pm_ids

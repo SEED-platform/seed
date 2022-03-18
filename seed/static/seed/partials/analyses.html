@@ -1,46 +1,62 @@
-<div ng-include="::urls.static_url + 'seed/partials/analyses_header.html'"></div>
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container"></div>
+        <div class="page_title"><h1>{$:: 'Analyses' | translate $}</h1></div>
+        <div class="right page_action_container"></div>
+    </div>
+</div>
 
 <div class="section">
-    <div class="section_header_container">
-        <div class="section_header fixed_height_short">
-            <div class="left section_action_container">
-                <h2><i class="fa fa-bar-chart"></i> {$:: 'Analyses' | translate $}</h2>
-            </div>
-        </div>
-    </div>
     <div class="section_content_container">
         <div class="section_content">
             <div class="table_list_container">
                 <table id="analyses-table" class="table table-striped table_highlight_first">
                     <thead>
-                        <tr>
-                            <th translate>Analysis Name (User Defined)</th>
-                            <th translate>Actions</th>
-                            <th translate>Number of Properties</th>
-                            <th translate>Type</th>
-                            <th translate>Configuration</th>
-                            <th translate>Run Status</th>
-                            <th translate>Run Date</th>
-                            <th translate>Run Duration</th>
-                            <th translate>Run Author</th>
-                        </tr>
+                    <tr>
+                        <th translate>Analysis Name (User Defined)</th>
+                        <th translate>Actions</th>
+                        <th translate>Number of Properties</th>
+                        <th translate>Type</th>
+                        <th translate>Configuration</th>
+                        <th translate>Created</th>
+                        <th translate>Run Status</th>
+                        <th translate>Run Date</th>
+                        <th translate>Run Duration</th>
+                        <th translate>Run Author</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
-                            <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})" ui-sref-active="active">{$:: analysis.name $}</a></td>
-                            <td>
-                                <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true" ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
-                                <i class="glyphicon glyphicon-stop" title="Stop Analysis" aria-hidden="true" ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0" ng-disabled="['Pending Creation', 'Queued'].indexOf(analysis.status) >= 0" ng-click="stop_analysis(analysis.id)"></i>
-                                <i class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true" ng-click="delete_analysis(analysis.id)"></i>
-                             </td>
-                            <td>{$:: analysis.number_of_analysis_property_views $}</td>
-                            <td>{$:: analysis.service $}</td>
-                            <td>{$:: analysis.configuration $}</td>
-                            <td class="analysis-status {$:: analysis.status.toLowerCase() $}">{$:: analysis.status $}</td>
-                            <td>{$:: analysis.start_time | date : 'MM-dd-yyyy  HH:mm' $}</td>
-                            <td>{$:: analysis | get_run_duration $}</td>
-                            <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
-                        </tr>
+                    <tr ng-repeat="analysis in analyses | filter:filter_params:strict">
+                        <td><a ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})"
+                               ui-sref-active="active">{$:: analysis.name $}</a></td>
+                        <td>
+                            <i class="glyphicon glyphicon-play" title="Start Analysis" aria-hidden="true"
+                               ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
+                            <i class="glyphicon glyphicon-stop" title="Stop Analysis" aria-hidden="true"
+                               ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0"
+                               ng-disabled="['Pending Creation', 'Queued'].indexOf(analysis.status) >= 0"
+                               ng-click="stop_analysis(analysis.id)"></i>
+                            <i class="glyphicon glyphicon-trash" title="Delete Analysis" aria-hidden="true"
+                               ng-click="delete_analysis(analysis.id)"></i>
+                        </td>
+                        <td>{$:: analysis.number_of_analysis_property_views $}</td>
+                        <td>{$:: analysis.service $}</td>
+                        <td>
+                            <ul ng-repeat="(config, setting) in analysis.configuration">
+                                <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
+                            </ul>
+                        </td>
+                        <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>
+                        <td class="analysis-status {$ analysis.status.toLowerCase() $}">
+                            <i
+                                class="fa fa-refresh fa-pulse fa-fw" style="padding-right: 0"
+                                ng-if="!analysis._finished_with_tasks"></i>
+                            {$ analysis.status $}
+                        </td>
+                        <td>{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</td>
+                        <td>{$:: analysis | get_run_duration $}</td>
+                        <td>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>

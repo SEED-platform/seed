@@ -136,7 +136,7 @@
           <auc:MeasureTotalFirstCost>298679.15</auc:MeasureTotalFirstCost>
           <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
           <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
-          <auc:Recommended>true</auc:Recommended>
+          <auc:Recommended>false</auc:Recommended>
           <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
         </auc:Measure>
         <auc:Measure ID="Measure2">
@@ -161,7 +161,6 @@
           <auc:MeasureTotalFirstCost>39565.29</auc:MeasureTotalFirstCost>
           <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
           <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
-          <auc:Recommended>true</auc:Recommended>
           <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
         </auc:Measure>
         <auc:Measure ID="Measure3">
@@ -186,7 +185,6 @@
           <auc:MeasureTotalFirstCost>181534.86</auc:MeasureTotalFirstCost>
           <auc:MeasureInstallationCost>0</auc:MeasureInstallationCost>
           <auc:MeasureMaterialCost>0</auc:MeasureMaterialCost>
-          <auc:Recommended>true</auc:Recommended>
           <auc:ImplementationStatus>Proposed</auc:ImplementationStatus>
         </auc:Measure>
         <auc:Measure ID="Measure4">

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -28,7 +28,6 @@ from seed.models import (
     TaxLotProperty,
     TaxLotView,
 )
-from seed.serializers.base import ChoiceField
 from seed.serializers.building_file import BuildingFileSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
@@ -138,7 +137,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES)
 
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True)
@@ -155,8 +153,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
     release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
-    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
@@ -222,7 +218,6 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     measures = PropertyMeasureSerializer(source='propertymeasure_set', many=True, read_only=True)
     scenarios = ScenarioSerializer(many=True, read_only=True)
     files = BuildingFileSerializer(source='building_files', many=True, read_only=True)
-    analysis_state = ChoiceField(choices=PropertyState.ANALYSIS_STATE_TYPES, required=False)
 
     # to support the old state serializer method with the PROPERTY_STATE_FIELDS variables
     import_file_id = serializers.IntegerField(allow_null=True, read_only=True)
@@ -233,8 +228,6 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
     generation_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     recent_sale_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
     release_date = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
-    analysis_start_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
-    analysis_end_time = serializers.DateTimeField('%Y-%m-%dT%H:%M:%S', allow_null=True, required=False)
 
     # support the pint objects
     conditioned_floor_area = PintQuantitySerializerField(allow_null=True, required=False)
@@ -346,7 +339,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyView
-        validators = []
+        validators = []  # type: ignore[var-annotated]
         fields = ('id', 'state', 'property', 'cycle',
                   'changed_fields', 'date_edited',
                   'certifications', 'filename', 'history',

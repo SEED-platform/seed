@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -35,6 +35,7 @@ class RuleSerializer(serializers.ModelSerializer):
             'table_name',
             'text_match',
             'units',
+            'for_derived_column',
         ]
 
     def create(self, validated_data):
@@ -51,9 +52,18 @@ class RuleSerializer(serializers.ModelSerializer):
         from child orgs. In other words, Rule and associated Label should be
         from the same org.
         """
-        if label is not None and label.super_organization_id != self.instance.data_quality_check.organization_id:
+        dq_org_id = None
+        if self.instance is not None:
+            dq_org_id = self.instance.data_quality_check.organization_id
+        else:
+            if 'request' not in self.context:
+                raise serializers.ValidationError('`request` must exist in serializer context when no instance data is provided.')
+
+            dq_org_id = int(self.context['request'].parser_context['kwargs']['nested_organization_id'])
+
+        if label is not None and label.super_organization_id != dq_org_id:
             raise serializers.ValidationError(
-                f'Label with ID {label.id} not found in organization, {self.instance.data_quality_check.organization.name}.'
+                f'Label with ID {label.id} not found in organization, {dq_org_id}.'
             )
         else:
             return label

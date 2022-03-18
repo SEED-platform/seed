@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -182,7 +182,7 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
             # if it is a child (data request) row, the display name should be formatted
             # it is possible that a parent row could have the same "indentation", and that's fine, we don't assert there
             if row['z_seed_child_row']:
-                self.assertEquals('  -  ', row['display_name'][0:5])
+                self.assertEqual('  -  ', row['display_name'][0:5])
 
 
 class PortfolioManagerReportGenerationViewTestsFailure(TestCase):
@@ -315,13 +315,13 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
         )
 
         # as usual, the first thing to test is really the status code of the response
-        self.assertEquals(200, resp.status_code)
+        self.assertEqual(200, resp.status_code)
 
         # and we expect a json blob to come back
         body = resp.json()
 
         # the status flag should be successful
-        self.assertEquals('success', body['status'])
+        self.assertEqual('success', body['status'])
 
         # we expect a list of properties to come back
         self.assertIn('properties', body)
@@ -354,13 +354,13 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
         )
 
         # this child template is empty over on PM, so it comes back as a 400
-        self.assertEquals(400, resp.status_code)
+        self.assertEqual(400, resp.status_code)
 
         # still, we expect a json blob to come back
         body = resp.json()
 
         # the status flag should be error
-        self.assertEquals('error', body['status'])
+        self.assertEqual('error', body['status'])
 
         # in this case, we expect a meaningful error message
         self.assertIn('message', body)
@@ -413,10 +413,10 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
             json.dumps({"username": self.pm_un, "password": self.pm_pw, "template": template}),
             content_type='application/json',
         )
-        self.assertEquals(200, report_response.status_code)
+        self.assertEqual(200, report_response.status_code)
 
         property_info = json.loads(report_response.content)
-        self.assertEquals(1, len(property_info['properties']))
+        self.assertEqual(1, len(property_info['properties']))
         self.assertIsInstance(property_info['properties'], list)
 
         # add report to dataset
@@ -428,4 +428,4 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
                 'organization_id': self.org.pk}),
             content_type='application/json',
         )
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)

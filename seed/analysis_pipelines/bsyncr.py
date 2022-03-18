@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from tempfile import TemporaryFile, TemporaryDirectory
@@ -17,7 +17,6 @@ from seed.analysis_pipelines.pipeline import (
     StopAnalysisTaskChain
 )
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
-from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Analysis,
     AnalysisInputFile,
@@ -31,7 +30,6 @@ from django.core.files.base import ContentFile, File as BaseFile
 from django.core.files.images import ImageFile
 from django.db.models import Count
 from django.conf import settings
-from django.utils import timezone as tz
 
 from celery import chain, shared_task
 
@@ -82,7 +80,7 @@ class BsyncrPipeline(AnalysisPipeline):
     methods.
     """
 
-    def _prepare_analysis(self, property_view_ids):
+    def _prepare_analysis(self, property_view_ids, start_analysis=False):
         """Internal implementation for preparing bsyncr analysis"""
         if not settings.BSYNCR_SERVER_HOST:
             message = 'SEED instance is not configured to run bsyncr analysis. Please contact the server administrator.'
@@ -93,7 +91,7 @@ class BsyncrPipeline(AnalysisPipeline):
         if validation_errors:
             raise AnalysisPipelineException(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
 
-        progress_data = ProgressData('prepare-analysis-bsyncr', self._analysis_id)
+        progress_data = self.get_progress_data()
 
         # Steps:
         # 1) ...starting
@@ -103,17 +101,15 @@ class BsyncrPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            task_create_analysis_property_views.si(self._analysis_id, property_view_ids, progress_data.key),
-            _prepare_all_properties.s(self._analysis_id, progress_data.key),
-            _finish_preparation.si(self._analysis_id, progress_data.key)
+            task_create_analysis_property_views.si(self._analysis_id, property_view_ids),
+            _prepare_all_properties.s(self._analysis_id),
+            _finish_preparation.si(self._analysis_id, start_analysis)
         ).apply_async()
-
-        return progress_data.result()
 
     def _start_analysis(self):
         """Internal implementation for starting the bsyncr analysis"""
 
-        progress_data = ProgressData('start-analysis-bsyncr', self._analysis_id)
+        progress_data = self.get_progress_data()
 
         # Steps:
         # 1) ...starting
@@ -123,29 +119,27 @@ class BsyncrPipeline(AnalysisPipeline):
         progress_data.save()
 
         chain(
-            _start_analysis.si(self._analysis_id, progress_data.key),
-            _process_results.s(self._analysis_id, progress_data.key),
-            _finish_analysis.si(self._analysis_id, progress_data.key),
+            _start_analysis.si(self._analysis_id),
+            _process_results.s(self._analysis_id),
+            _finish_analysis.si(self._analysis_id),
         ).apply_async()
-
-        return progress_data.result()
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progress_data_key):
+def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysis_id):
     """A Celery task which attempts to make BuildingSync files for all AnalysisPropertyViews.
 
-    :param analysis_property_view_ids: list[int]
+    :param analysis_view_ids_by_property_view_id: dictionary[int:int]
     :param analysis_id: int
-    :param progress_data_key: str
     :returns: void
     """
-    progress_data = ProgressData.from_key(progress_data_key)
+    analysis = Analysis.objects.get(id=analysis_id)
+    pipeline = BsyncrPipeline(analysis.id)
+    progress_data = pipeline.get_progress_data(analysis)
     progress_data.step('Creating files for analysis')
 
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
+    analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_view_ids_by_property_view_id.values())
     input_file_paths = []
     for analysis_property_view in analysis_property_views:
         meters = (
@@ -153,7 +147,7 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
             .annotate(readings_count=Count('meter_readings'))
             .filter(
                 property=analysis_property_view.property,
-                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND],
+                type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
                 readings_count__gte=12,
             )
         )
@@ -194,27 +188,25 @@ def _prepare_all_properties(self, analysis_property_view_ids, analysis_id, progr
         input_file_paths.append(analysis_input_file.file.path)
 
     if len(input_file_paths) == 0:
-        pipeline = BsyncrPipeline(analysis.id)
         message = 'No files were able to be prepared for the analysis'
-        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        pipeline.fail(message, logger)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.CREATING)
-def _finish_preparation(self, analysis_id, progress_data_key):
+def _finish_preparation(self, analysis_id, start_analysis):
     """A Celery task which finishes the preparation for bsyncr analysis
 
     :param analysis_id: int
-    :param progress_data_key: str
+    :param start_analysis: bool
     """
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.READY
-    analysis.save()
+    pipeline = BsyncrPipeline(analysis_id)
+    pipeline.set_analysis_status_to_ready('Ready to run BSyncr')
 
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
+    if start_analysis:
+        pipeline.start_analysis()
 
 
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
@@ -340,21 +332,25 @@ def _parse_analysis_property_view_id(filepath):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.QUEUED)
-def _start_analysis(self, analysis_id, progress_data_key):
+def _start_analysis(self, analysis_id):
     """Start bsyncr analysis by making requests to the service
 
     """
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.RUNNING
-    analysis.start_time = tz.now()
-    analysis.save()
-
-    progress_data = ProgressData.from_key(progress_data_key)
+    pipeline = BsyncrPipeline(analysis_id)
+    progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step('Sending requests to bsyncr service')
 
+    analysis = Analysis.objects.get(id=analysis_id)
+
+    ANALYSIS_STATUS_CHECK_FREQUENCY = 5
     bsyncr_model_type = BSYNCR_MODEL_TYPE_MAP[analysis.configuration['model_type']]
     output_xml_file_ids = []
-    for input_file in analysis.input_files.all():
+    for idx, input_file in enumerate(analysis.input_files.all()):
+        if idx % ANALYSIS_STATUS_CHECK_FREQUENCY == 0:
+            analysis.refresh_from_db()
+            if analysis.in_terminal_state():
+                raise StopAnalysisTaskChain('Analysis found to be in terminal state, stopping')
+
         analysis_property_view_id = _parse_analysis_property_view_id(input_file.file.path)
         results_dir, errors = _run_bsyncr_analysis(input_file.file, bsyncr_model_type)
 
@@ -394,9 +390,8 @@ def _start_analysis(self, analysis_id, progress_data_key):
                     output_xml_file_ids.append(analysis_output_file.id)
 
     if len(output_xml_file_ids) == 0:
-        pipeline = BsyncrPipeline(analysis.id)
         message = 'Failed to get results for all properties'
-        pipeline.fail(message, logger, progress_data_key=progress_data.key)
+        pipeline.fail(message, logger)
         # stop the task chain
         raise StopAnalysisTaskChain(message)
 
@@ -405,12 +400,9 @@ def _start_analysis(self, analysis_id, progress_data_key):
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
-def _process_results(self, analysis_output_xml_file_ids, analysis_id, progress_data_key):
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.RUNNING
-    analysis.save()
-
-    progress_data = ProgressData.from_key(progress_data_key)
+def _process_results(self, analysis_output_xml_file_ids, analysis_id):
+    pipeline = BsyncrPipeline(analysis_id)
+    progress_data = pipeline.get_progress_data()
     progress_data.step('Processing results')
 
     analysis_output_files = AnalysisOutputFile.objects.filter(id__in=analysis_output_xml_file_ids)
@@ -424,19 +416,13 @@ def _process_results(self, analysis_output_xml_file_ids, analysis_id, progress_d
 
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.RUNNING)
-def _finish_analysis(self, analysis_id, progress_data_key):
+def _finish_analysis(self, analysis_id):
     """A Celery task which finishes the analysis run
 
     :param analysis_id: int
-    :param progress_data_key: str
     """
-    analysis = Analysis.objects.get(id=analysis_id)
-    analysis.status = Analysis.COMPLETED
-    analysis.end_time = tz.now()
-    analysis.save()
-
-    progress_data = ProgressData.from_key(progress_data_key)
-    progress_data.finish_with_success()
+    pipeline = BsyncrPipeline(analysis_id)
+    pipeline.set_analysis_status_to_completed()
 
 
 def _parse_bsyncr_results(filepath):

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import os
@@ -28,6 +28,10 @@ class TestValidationClient(TestCase):
         # to use these files so we don't have to create tmp ones and clean them up
         self.single_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'buildingsync_v2_0_bricr_workflow.xml'))
         self.zip_file = open(os.path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'ex_1_and_buildingsync_ex01_measures.zip'))
+
+    def tearDown(self) -> None:
+        self.single_file.close()
+        self.zip_file.close()
 
     def test_validation_single_file_ok(self):
         good_body = {

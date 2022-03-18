@@ -3,20 +3,34 @@
         <thead>
             <tr>
                 <th translate>Run ID</th>
-                <th translate>Property Address</th>
-                <th translate>Latest Message</th>
+                <th translate>Property</th>
+                <th translate>Latest Messages</th>
                 <th translate>Output Files</th>
             </tr>
         </thead>
         <tbody>
             <tr ng-repeat="view in views | filter:filter_params:strict">
                 <td><a ui-sref="analysis_run(::{run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
-                <td>{$:: view.property_state.address_line_1 $}</td>
-                <td>{$:: (messages | filter : {'analysis_property_view':view.id})[0]['user_message'] $}</td>
+                <td>
+                    <a ng-if="original_views[view.id]" ui-sref="inventory_detail({inventory_type: 'properties', view_id: original_views[view.id]})">
+                        {$:: get_display_name(view.property_state) || 'Property ' + original_views[view.id] $} <i class="glyphicon glyphicon-log-out"></i>
+                    </a>
+                    <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists">
+                        {$:: get_display_name(view.property_state) || 'Unknown' $}
+                    </span>
+                </td>
+                <td>
+                    <ul>
+                        <li ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
+                            {$:: message['user_message'] $}
+                        </li>
+                    </ul>
+                </td>
                 <td>
                     <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-                        <a href="{$:: file.file $}">{$:: file.content_type $}</a>
-                        <span ng-repeat-end ng-if="!$last">,&nbsp;</span>
+                        <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa fa-download"></span></a>
+                        <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download>{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa fa-download"></span></a>
+                        <span ng-repeat-end ng-if="!$last">, </span>
                     </span>
                 </td>
             </tr>

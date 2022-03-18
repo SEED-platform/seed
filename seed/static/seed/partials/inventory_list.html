@@ -37,6 +37,12 @@
                     <li role="menuitem">
                         <a ng-click="run_data_quality_check()" ng-disabled="selectedCount === 0" translate>Data Quality Check</a>
                     </li>
+                    <li role="menuitem">
+                        <a ng-click="open_postoffice_modal()" ng-disabled="selectedCount === 0" translate>Email</a>
+                    </li>
+                    <li role="menuitem">
+                        <a ng-click="open_analyses_modal()" ng-disabled="selectedCount === 0" translate>Run Analysis</a>
+                    </li>
                     <li class="divider"></li>
                     <li role="menuitem">
                         <a ng-click="open_geocode_modal()" ng-disabled="selectedCount === 0" translate>Geocode Selected</a>
@@ -52,9 +58,9 @@
             </div>
         </div>
         <div class="form-group">
-            <label for="tagsInput" translate>Filter by label:</label>
+            <label for="tags-input" translate>Filter by label:</label>
             <div class="btn-group">
-                <tags-input id="tagsInput" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
+                <tags-input id="tags-input" ng-model="selected_labels" min-length="1" placeholder="{$:: 'Add a label' | translate $}" replace-spaces-with-dashes="false" add-from-autocomplete-only="true" ng-disabled="!labels.length">
                     <auto-complete source="loadLabelsForFilter($query)" max-results-to-show="255" min-length="0" load-on-empty="true" load-on-focus="true" ng-disabled="!labels.length"></auto-complete>
                 </tags-input>
             </div>

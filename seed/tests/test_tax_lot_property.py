@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -75,7 +75,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             'gross_floor_area', 'owner_city_state', 'owner_telephone', 'recent_sale_date',
         ]
         columns_from_database = Column.retrieve_all(self.org.id, 'property', False)
-        data = TaxLotProperty.get_related(qs, columns, columns_from_database)
+        data = TaxLotProperty.serialize(qs, columns, columns_from_database)
 
         self.assertEqual(len(data), 50)
         self.assertEqual(len(data[0]['related']), 0)
@@ -93,9 +93,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}&{}={}'.format(
+            url + '?{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
-                'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
             data=json.dumps({'columns': columns, 'export_type': 'csv'}),
@@ -125,9 +124,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}&{}={}'.format(
+            url + '?{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
-                'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
             data=json.dumps({'columns': columns, 'export_type': 'csv'}),
@@ -161,9 +159,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}&{}={}'.format(
+            url + '?{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
-                'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
             data=json.dumps({'columns': columns, 'export_type': 'xlsx'}),
@@ -193,9 +190,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         # call the API
         url = reverse_lazy('api:v3:tax_lot_properties-export')
         response = self.client.post(
-            url + '?{}={}&{}={}&{}={}'.format(
+            url + '?{}={}&{}={}'.format(
                 'organization_id', self.org.pk,
-                'cycle_id', self.cycle,
                 'inventory_type', 'properties'
             ),
             data=json.dumps({'columns': columns, 'export_type': 'geojson'}),

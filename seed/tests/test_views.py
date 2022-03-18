@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -45,7 +45,7 @@ DEFAULT_CUSTOM_COLUMNS = [
     'state_province',
 ]
 
-from seed.tests.util import DeleteModelsTestCase
+from seed.tests.util import DeleteModelsTestCase, AssertDictSubsetMixin
 
 COLUMNS_TO_SEND = DEFAULT_CUSTOM_COLUMNS + ['postal_code', 'pm_parent_property_id',
                                             # 'calculated_taxlot_ids', 'primary',
@@ -352,7 +352,7 @@ class TestMCMViews(TestCase):
             column_name='Global National Median Site Energy Use'
         )
 
-        self.assertEquals(len(energy_use_columns), 1)
+        self.assertEqual(len(energy_use_columns), 1)
 
         eu_col = energy_use_columns.first()
         self.assertTrue(eu_col.unit is not None)
@@ -483,7 +483,7 @@ class TestMCMViews(TestCase):
         self.assertEqual(self.org, import_record.super_organization)
 
 
-class InventoryViewTests(DeleteModelsTestCase):
+class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
     def setUp(self):
         user_details = {
             'username': 'test_user@demo.com',
@@ -526,8 +526,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['address_line_1']], state.address_line_1)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state.address_line_1)
 
     def test_get_properties_profile_id(self):
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
@@ -553,8 +553,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['field_1']], state.extra_data['field_1'])
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['field_1']], state.extra_data['field_1'])
 
         # test with queryparam
 
@@ -566,8 +566,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['field_1']], state.extra_data['field_1'])
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['field_1']], state.extra_data['field_1'])
 
     def test_get_properties_cycle_id(self):
         state = self.property_state_factory.get_property_state()
@@ -588,8 +588,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['address_line_1']], state.address_line_1)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state.address_line_1)
 
     def test_get_properties_property_extra_data(self):
         extra_data = {
@@ -619,12 +619,111 @@ class InventoryViewTests(DeleteModelsTestCase):
             if not c['related']:
                 column_name_mappings[c['column_name']] = c['name']
 
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['address_line_1']], state.address_line_1)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state.address_line_1)
         # Extra data is not returned by default
         self.assertNotIn(column_name_mappings['is secret lair'], results)
         self.assertNotIn(column_name_mappings['number of secret gadgets'], results)
         self.assertNotIn(column_name_mappings['paint color'], results)
+
+    def test_get_properties_select_all(self):
+        state1 = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state1, id=1001
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1004
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1003
+        )
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state, id=1002
+        )
+
+        column_name_mappings = {}
+        for c in Column.retrieve_all(self.org.pk, 'property'):
+            if not c['related']:
+                column_name_mappings[c['column_name']] = c['name']
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'ids_only', 'true',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'ids_only', 'TrUE',
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results']
+        self.assertEqual(len(results), 4)
+        self.assertEqual(results, [1001, 1002, 1003, 1004])
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'not_true'
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+        ), data={}, content_type='application/json')
+        result = response.json()
+        results = result['results'][0]
+        self.assertEqual(len(result['results']), 4)
+        self.assertEqual(results[column_name_mappings['address_line_1']], state1.address_line_1)
+
+    def test_get_properties_wrong_query_params(self):
+        state1 = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state1, id=1001
+        )
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 1,
+            'per_page', 999999999,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        result = response.json()
+        self.assertEqual(result['success'], False)
+        self.assertEqual(result['message'], 'Cannot pass query parameter "ids_only" with "per_page" or "page"')
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 9999,
+            'per_page', 1,
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.post('/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
+            'organization_id', self.org.pk,
+            'page', 'dog',
+            'ids_only', 'true'
+        ), data={}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
     def test_get_properties_pint_fields(self):
         state = self.property_state_factory.get_property_state(
@@ -716,14 +815,14 @@ class InventoryViewTests(DeleteModelsTestCase):
                 column_name_mappings[c['column_name']] = c['name']
 
         results = response.json()
-        self.assertEquals(len(results['results']), 1)
+        self.assertEqual(len(results['results']), 1)
         result = results['results'][0]
         self.assertTrue(result[column_name_mappings['campus']])
-        self.assertEquals(len(result['related']), 1)
+        self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['postal_code']],
-                          result[column_name_mappings['postal_code']])
-        # self.assertEquals(related['primary'], 'P')
+        self.assertEqual(related[column_name_mappings_related['postal_code']],
+                         result[column_name_mappings['postal_code']])
+        # self.assertEqual(related['primary'], 'P')
 
     def test_get_properties_with_taxlots_with_footprints(self):
         property_state = self.property_state_factory.get_property_state(
@@ -762,13 +861,13 @@ class InventoryViewTests(DeleteModelsTestCase):
                 column_name_mappings[c['column_name']] = c['name']
 
         results = response.json()
-        self.assertEquals(len(results['results']), 1)
+        self.assertEqual(len(results['results']), 1)
         result = results['results'][0]
         self.assertTrue(result[column_name_mappings['campus']])
-        self.assertEquals(len(result['related']), 1)
+        self.assertEqual(len(result['related']), 1)
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['postal_code']],
-                          result[column_name_mappings['postal_code']])
+        self.assertEqual(related[column_name_mappings_related['postal_code']],
+                         result[column_name_mappings['postal_code']])
 
     def test_get_properties_taxlot_extra_data(self):
         extra_data = {
@@ -813,8 +912,8 @@ class InventoryViewTests(DeleteModelsTestCase):
                 column_name_mappings[c['column_name']] = c['name']
 
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(len(results['related']), 1)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(len(results['related']), 1)
         # Extra data is not returned by default
         self.assertNotIn('is secret lair', column_name_mappings)
         self.assertNotIn('paint color', column_name_mappings)
@@ -833,15 +932,15 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={}, content_type='application/json')
         result = response.json()
 
-        self.assertEquals(len(result['results']), 1)
+        self.assertEqual(len(result['results']), 1)
         pagination = result['pagination']
-        self.assertEquals(pagination['page'], 1)
-        self.assertEquals(pagination['start'], 1)
-        self.assertEquals(pagination['end'], 1)
-        self.assertEquals(pagination['num_pages'], 1)
-        self.assertEquals(pagination['has_next'], False)
-        self.assertEquals(pagination['has_previous'], False)
-        self.assertEquals(pagination['total'], 1)
+        self.assertEqual(pagination['page'], 1)
+        self.assertEqual(pagination['start'], 1)
+        self.assertEqual(pagination['end'], 1)
+        self.assertEqual(pagination['num_pages'], 1)
+        self.assertEqual(pagination['has_next'], False)
+        self.assertEqual(pagination['has_previous'], False)
+        self.assertEqual(pagination['total'], 1)
 
     def test_get_properties_empty_page(self):
         filter_properties_url = '/api/v3/properties/filter/?{}={}&{}={}&{}={}'.format(
@@ -851,15 +950,15 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
         response = self.client.post(filter_properties_url, data={}, content_type='application/json')
         result = response.json()
-        self.assertEquals(len(result['results']), 0)
+        self.assertEqual(len(result['results']), 0)
         pagination = result['pagination']
-        self.assertEquals(pagination['page'], 1)
-        self.assertEquals(pagination['start'], 0)
-        self.assertEquals(pagination['end'], 0)
-        self.assertEquals(pagination['num_pages'], 1)
-        self.assertEquals(pagination['has_next'], False)
-        self.assertEquals(pagination['has_previous'], False)
-        self.assertEquals(pagination['total'], 0)
+        self.assertEqual(pagination['page'], 1)
+        self.assertEqual(pagination['start'], 0)
+        self.assertEqual(pagination['end'], 0)
+        self.assertEqual(pagination['num_pages'], 1)
+        self.assertEqual(pagination['has_next'], False)
+        self.assertEqual(pagination['has_previous'], False)
+        self.assertEqual(pagination['total'], 0)
 
     def test_get_property(self):
         property_state = self.property_state_factory.get_property_state()
@@ -906,15 +1005,15 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertTrue(results['property']['created'])
 
         state = results['state']
-        self.assertEquals(state['id'], property_state.pk)
-        self.assertEquals(state['address_line_1'], property_state.address_line_1)
+        self.assertEqual(state['id'], property_state.pk)
+        self.assertEqual(state['address_line_1'], property_state.address_line_1)
 
         rcycle = results['cycle']
-        self.assertEquals(rcycle['name'], '2010 Annual')
-        self.assertEquals(rcycle['user'], self.user.pk)
-        self.assertEquals(rcycle['organization'], self.org.pk)
+        self.assertEqual(rcycle['name'], '2010 Annual')
+        self.assertEqual(rcycle['user'], self.user.pk)
+        self.assertEqual(rcycle['organization'], self.org.pk)
 
-        self.assertEquals(len(results['taxlots']), 1)
+        self.assertEqual(len(results['taxlots']), 1)
 
         rtaxlot_view = results['taxlots'][0]
         self.assertEqual(rtaxlot_view['id'], taxlot_view.pk)
@@ -925,9 +1024,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         tcycle = rtaxlot_view['cycle']
-        self.assertEquals(tcycle['name'], '2010 Annual')
-        self.assertEquals(tcycle['user'], self.user.pk)
-        self.assertEquals(tcycle['organization'], self.org.pk)
+        self.assertEqual(tcycle['name'], '2010 Annual')
+        self.assertEqual(tcycle['user'], self.user.pk)
+        self.assertEqual(tcycle['organization'], self.org.pk)
 
         tstate = rtaxlot_view['state']
         self.assertEqual(tstate['id'], taxlot_state.pk)
@@ -968,11 +1067,12 @@ class InventoryViewTests(DeleteModelsTestCase):
         results = response.json()
 
         rcycle = results['cycle']
-        self.assertEquals(rcycle['name'], '2010 Annual')
-        self.assertEquals(rcycle['user'], self.user.pk)
-        self.assertEquals(rcycle['organization'], self.org.pk)
+        self.assertEqual(rcycle['name'], '2010 Annual')
+        self.assertEqual(rcycle['user'], self.user.pk)
+        self.assertEqual(rcycle['organization'], self.org.pk)
 
-        self.assertEquals(len(results['taxlots']), 2)
+        self.assertEqual(len(results['taxlots']), 2)
+        results['taxlots'].sort(key=lambda x: x['id'])
 
         rtaxlot_view_1 = results['taxlots'][0]
         self.assertEqual(rtaxlot_view_1['id'], taxlot_view_1.pk)
@@ -983,9 +1083,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         tcycle_1 = rtaxlot_view_1['cycle']
-        self.assertEquals(tcycle_1['name'], '2010 Annual')
-        self.assertEquals(tcycle_1['user'], self.user.pk)
-        self.assertEquals(tcycle_1['organization'], self.org.pk)
+        self.assertEqual(tcycle_1['name'], '2010 Annual')
+        self.assertEqual(tcycle_1['user'], self.user.pk)
+        self.assertEqual(tcycle_1['organization'], self.org.pk)
 
         tstate_1 = rtaxlot_view_1['state']
         self.assertEqual(tstate_1['id'], taxlot_state_1.pk)
@@ -1000,9 +1100,9 @@ class InventoryViewTests(DeleteModelsTestCase):
         )
 
         tcycle_2 = rtaxlot_view_2['cycle']
-        self.assertEquals(tcycle_2['name'], '2010 Annual')
-        self.assertEquals(tcycle_2['user'], self.user.pk)
-        self.assertEquals(tcycle_2['organization'], self.org.pk)
+        self.assertEqual(tcycle_2['name'], '2010 Annual')
+        self.assertEqual(tcycle_2['user'], self.user.pk)
+        self.assertEqual(tcycle_2['organization'], self.org.pk)
 
         tstate_2 = rtaxlot_view_2['state']
         self.assertEqual(tstate_2['id'], taxlot_state_2.pk)
@@ -1016,8 +1116,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         }
         self.assertDictContainsSubset(expected_property, results['property'])
         state = results['state']
-        self.assertEquals(state['address_line_1'], property_state.address_line_1)
-        self.assertEquals(state['id'], property_state.pk)
+        self.assertEqual(state['address_line_1'], property_state.address_line_1)
+        self.assertEqual(state['id'], property_state.pk)
 
     def test_get_taxlots(self):
         property_state = self.property_state_factory.get_property_state(
@@ -1054,22 +1154,22 @@ class InventoryViewTests(DeleteModelsTestCase):
             else:
                 column_name_mappings[c['column_name']] = c['name']
 
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
 
         result = results[0]
-        self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']],
-                          taxlot_state.address_line_1)
-        self.assertEquals(result[column_name_mappings['block_number']], taxlot_state.block_number)
+        self.assertEqual(len(result['related']), 1)
+        self.assertEqual(result[column_name_mappings['address_line_1']],
+                         taxlot_state.address_line_1)
+        self.assertEqual(result[column_name_mappings['block_number']], taxlot_state.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
-        self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
-        # self.assertEquals(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
-        # self.assertEquals(related['calculated_taxlot_ids'], result[column_name_mappings['jurisdiction_tax_lot_id']])
-        # self.assertEquals(related['primary'], 'P')
+        self.assertEqual(related[column_name_mappings_related['address_line_1']],
+                         property_state.address_line_1)
+        self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
+                         property_state.pm_parent_property_id)
+        # self.assertEqual(related['calculated_taxlot_ids'], taxlot_state.jurisdiction_tax_lot_id)
+        # self.assertEqual(related['calculated_taxlot_ids'], result[column_name_mappings['jurisdiction_tax_lot_id']])
+        # self.assertEqual(related['primary'], 'P')
         self.assertNotIn(column_name_mappings_related['extra_data_field'], related)
 
     def test_get_taxlots_profile_id(self):
@@ -1098,8 +1198,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={'profile_id': columnlistprofile.pk}, content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['field_1']], state.extra_data['field_1'])
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['field_1']], state.extra_data['field_1'])
 
         # test with queryparam
 
@@ -1111,8 +1211,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), content_type='application/json')
         result = response.json()
         results = result['results'][0]
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(results[column_name_mappings['field_1']], state.extra_data['field_1'])
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(results[column_name_mappings['field_1']], state.extra_data['field_1'])
 
     def test_get_taxlots_no_cycle_id(self):
         property_state = self.property_state_factory.get_property_state()
@@ -1139,7 +1239,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.post(url, data={}, content_type='application/json')
         results = response.json()['results']
 
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
 
         property_state_1 = self.property_state_factory.get_property_state()
         property_1 = self.property_factory.get_property()
@@ -1167,8 +1267,8 @@ class InventoryViewTests(DeleteModelsTestCase):
             else:
                 column_name_mappings[c['column_name']] = c['name']
 
-        self.assertEquals(len(result['results']), 1)
-        self.assertEquals(len(result['results'][0]['related']), 2)
+        self.assertEqual(len(result['results']), 1)
+        self.assertEqual(len(result['results'][0]['related']), 2)
 
         related_1 = result['results'][0]['related'][0]
         related_2 = result['results'][0]['related'][1]
@@ -1214,7 +1314,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             'per_page', 999999999
         ), data={}, content_type='application/json')
         results = response.json()['results']
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
 
         column_name_mappings_related = {}
         column_name_mappings = {}
@@ -1225,38 +1325,38 @@ class InventoryViewTests(DeleteModelsTestCase):
                 column_name_mappings[c['column_name']] = c['name']
 
         result = results[0]
-        self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']],
-                          taxlot_state_1.address_line_1)
-        self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_1.block_number)
+        self.assertEqual(len(result['related']), 1)
+        self.assertEqual(result[column_name_mappings['address_line_1']],
+                         taxlot_state_1.address_line_1)
+        self.assertEqual(result[column_name_mappings['block_number']], taxlot_state_1.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
-        self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
+        self.assertEqual(related[column_name_mappings_related['address_line_1']],
+                         property_state.address_line_1)
+        self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
+                         property_state.pm_parent_property_id)
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
         # self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         # self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
-        # self.assertEquals(related['primary'], 'P')
+        # self.assertEqual(related['primary'], 'P')
         self.assertNotIn(column_name_mappings_related['extra_data_field'], related)
 
         result = results[1]
-        self.assertEquals(len(result['related']), 1)
-        self.assertEquals(result[column_name_mappings['address_line_1']],
-                          taxlot_state_2.address_line_1)
-        self.assertEquals(result[column_name_mappings['block_number']], taxlot_state_2.block_number)
+        self.assertEqual(len(result['related']), 1)
+        self.assertEqual(result[column_name_mappings['address_line_1']],
+                         taxlot_state_2.address_line_1)
+        self.assertEqual(result[column_name_mappings['block_number']], taxlot_state_2.block_number)
 
         related = result['related'][0]
-        self.assertEquals(related[column_name_mappings_related['address_line_1']],
-                          property_state.address_line_1)
-        self.assertEquals(related[column_name_mappings_related['pm_parent_property_id']],
-                          property_state.pm_parent_property_id)
+        self.assertEqual(related[column_name_mappings_related['address_line_1']],
+                         property_state.address_line_1)
+        self.assertEqual(related[column_name_mappings_related['pm_parent_property_id']],
+                         property_state.pm_parent_property_id)
 
         # calculated_taxlot_ids = related['calculated_taxlot_ids'].split('; ')
         # self.assertIn(str(taxlot_state_1.jurisdiction_tax_lot_id), calculated_taxlot_ids)
         # self.assertIn(str(taxlot_state_2.jurisdiction_tax_lot_id), calculated_taxlot_ids)
-        # self.assertEquals(related['primary'], 'P')
+        # self.assertEqual(related['primary'], 'P')
         self.assertNotIn(column_name_mappings_related['extra_data_field'], related)
 
     def test_get_taxlots_extra_data(self):
@@ -1294,7 +1394,7 @@ class InventoryViewTests(DeleteModelsTestCase):
             else:
                 column_name_mappings[c['column_name']] = c['name']
 
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
 
         result = results[0]
         self.assertNotIn(column_name_mappings['extra_data_field'], result)
@@ -1325,15 +1425,15 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={}, content_type='application/json')
         result = response.json()
 
-        self.assertEquals(len(result['results']), 1)
+        self.assertEqual(len(result['results']), 1)
         pagination = result['pagination']
-        self.assertEquals(pagination['page'], 1)
-        self.assertEquals(pagination['start'], 1)
-        self.assertEquals(pagination['end'], 1)
-        self.assertEquals(pagination['num_pages'], 1)
-        self.assertEquals(pagination['has_next'], False)
-        self.assertEquals(pagination['has_previous'], False)
-        self.assertEquals(pagination['total'], 1)
+        self.assertEqual(pagination['page'], 1)
+        self.assertEqual(pagination['start'], 1)
+        self.assertEqual(pagination['end'], 1)
+        self.assertEqual(pagination['num_pages'], 1)
+        self.assertEqual(pagination['has_next'], False)
+        self.assertEqual(pagination['has_previous'], False)
+        self.assertEqual(pagination['total'], 1)
 
     def test_get_taxlots_empty_page(self):
         property_state = self.property_state_factory.get_property_state(
@@ -1361,15 +1461,15 @@ class InventoryViewTests(DeleteModelsTestCase):
         ), data={}, content_type='application/json')
         result = response.json()
 
-        self.assertEquals(len(result['results']), 1)
+        self.assertEqual(len(result['results']), 1)
         pagination = result['pagination']
-        self.assertEquals(pagination['page'], 1)
-        self.assertEquals(pagination['start'], 1)
-        self.assertEquals(pagination['end'], 1)
-        self.assertEquals(pagination['num_pages'], 1)
-        self.assertEquals(pagination['has_next'], False)
-        self.assertEquals(pagination['has_previous'], False)
-        self.assertEquals(pagination['total'], 1)
+        self.assertEqual(pagination['page'], 1)
+        self.assertEqual(pagination['start'], 1)
+        self.assertEqual(pagination['end'], 1)
+        self.assertEqual(pagination['num_pages'], 1)
+        self.assertEqual(pagination['has_next'], False)
+        self.assertEqual(pagination['has_previous'], False)
+        self.assertEqual(pagination['total'], 1)
 
     def test_get_taxlot(self):
         taxlot_state = self.taxlot_state_factory.get_taxlot_state()
@@ -1462,6 +1562,49 @@ class InventoryViewTests(DeleteModelsTestCase):
         cycle = results['cycles'][0]
         self.assertEqual(cycle['id'], self.cycle.pk)
         self.assertEqual(cycle['name'], self.cycle.name)
+
+    def test_postoffice(self):
+        # Create a template
+        response = self.client.post('/api/v3/postoffice/', {
+            'organization_id': self.org.pk,
+            'name': 'Email Template',
+            'subject': 'Test',
+            'content': 'This is a test email.'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        template = results['data']
+
+        # Get list of templates
+        response = self.client.get('/api/v3/postoffice/', {'organization_id': self.org.pk})
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(len(results['data']), 1)
+
+        # Update a template
+        response = self.client.put('/api/v3/postoffice/' + str(template['id']) + '/', {
+            'organization_id': self.org.pk,
+            'name': 'New Email Template'
+        }, content_type='application/json')
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
+        self.assertEqual(results['data']['name'], 'New Email Template')
+
+        # Send email
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        response = self.client.post('/api/v3/postoffice_email/', {
+            'organization_id': self.org.pk,
+            'from_email': 'dummy@email.com',
+            'template_id': template['id'],
+            'inventory_id': pv.id,
+            'inventory_type': 'properties'
+        })
+        results = response.json()
+        self.assertEqual(results['status'], 'success')
 
     def test_get_property_columns(self):
         self.column_factory.get_column(

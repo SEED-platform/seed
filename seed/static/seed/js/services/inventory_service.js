@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // inventory services
@@ -20,13 +20,52 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids, save_last_cycle = true) {
+    const format_column_filters = function (column_filters) {
+      // turn column filter objects into usable query parameters
+      if (!column_filters) {
+        return {};
+      }
+
+      const filters = {};
+      for (const {column_name, operator, value} of column_filters) {
+        filters[`${column_name}__${operator}`] = value;
+      }
+
+      return filters;
+    };
+
+    const format_column_sorts = function (column_sorts) {
+      // turn column sort objects into usable query parameter
+      if (!column_sorts) {
+        return [];
+      }
+
+      const sorts = [];
+      for (const {column_name, direction} of column_sorts) {
+        const direction_operator = direction == 'desc' ? '-' : '';
+        sorts.push(`${direction_operator}${column_name}`);
+      }
+
+      return {order_by: sorts};
+    };
+
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
-        organization_id: user_service.get_organization().id,
-        page: page,
-        per_page: per_page || 999999999
+        organization_id: organization_id,
+        include_related: include_related,
+        ids_only: ids_only,
+        ...format_column_sorts(column_sorts),
+        ...format_column_filters(column_filters)
       };
+
+      if (ids_only) {
+        params.ids_only = true;
+      } else {
+        params.page = page;
+        params.per_page = per_page || 999999999;
+      }
 
       return cycle_service.get_cycles().then(function (cycles) {
         var validCycleIds = _.map(cycles.cycles, 'id');
@@ -43,7 +82,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         return $http.post('/api/v3/properties/filter/', {
           // Pass the specific ids if they exist
-          property_view_ids,
+          include_view_ids: include_view_ids,
+          exclude_view_ids: exclude_view_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
@@ -51,7 +91,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).then(function (response) {
           return response.data;
         });
-      }).catch(_.constant('Error fetching cycles'));
+      }).catch(function (response) {
+        if (response.data.message) {
+          return response.data;
+        }
+        throw response;
+      });
     };
 
     inventory_service.properties_cycle = function (profile_id, cycle_ids) {
@@ -137,6 +182,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }, {
         params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    inventory_service.get_canonical_properties = function (view_ids) {
+      return $http.post('/api/v3/properties/get_canonical_properties/', { view_ids: view_ids }, {
+        params: { organization_id: user_service.get_organization().id }
+      }).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
         return response.data;
       });
     };
@@ -251,11 +306,17 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, inventory_ids, save_last_cycle = true) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+
       var params = {
-        organization_id: user_service.get_organization().id,
+        organization_id: organization_id,
         page: page,
-        per_page: per_page || 999999999
+        per_page: per_page || 999999999,
+        include_related: include_related,
+        ids_only: ids_only,
+        ...format_column_sorts(column_sorts),
+        ...format_column_filters(column_filters)
       };
 
       return cycle_service.get_cycles().then(function (cycles) {
@@ -273,7 +334,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
         return $http.post('/api/v3/taxlots/filter/', {
           // Pass the specific ids if they exist
-          inventory_ids: inventory_ids,
+          include_view_ids: include_view_ids,
+          exclude_view_ids: exclude_view_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
@@ -281,7 +343,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         }).then(function (response) {
           return response.data;
         });
-      }).catch(_.constant('Error fetching cycles'));
+      }).catch(function (response) {
+        if (response.data.message) {
+          return response.data;
+        }
+        throw response;
+      });
     };
 
     inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
@@ -459,9 +526,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return (JSON.parse(localStorage.getItem('cycles')) || {})[organization_id];
     };
 
-    inventory_service.save_last_cycle = function (pk) {
-      var organization_id = user_service.get_organization().id,
-        cycles = JSON.parse(localStorage.getItem('cycles')) || {};
+    inventory_service.save_last_cycle = function (pk, organization_id = null) {
+      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      var cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
     };

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -288,8 +288,8 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
             except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
-        related_results = TaxLotProperty.get_related(property_views, show_columns,
-                                                     columns_from_database)
+        related_results = TaxLotProperty.serialize(property_views, show_columns,
+                                                   columns_from_database)
 
         # collapse units here so we're only doing the last page; we're already a
         # realized list by now and not a lazy queryset

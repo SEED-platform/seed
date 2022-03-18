@@ -3,6 +3,9 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - 'develop'
+      - 'main'
 
 jobs:
   # Currently GH Actions provides no simple method for "sharing"
@@ -27,9 +30,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          # using `-v3` in key to clear old cache due to errors
+          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
+          key: ${{ runner.os }}-buildx-v3-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-v3-
       -
         name: Build Docker dev image
         run: /usr/bin/docker buildx build --tag seedplatform/seed:dev --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
@@ -40,8 +45,12 @@ jobs:
           docker volume create --name=seed_media
           docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
       -
-        name: Setup SEED
+        name: Migrate
         run: |
+          # verify no migrations need to be made...
+          docker exec seed_web python manage.py makemigrations --check --dry-run
+
+          # run migrations
           docker exec seed_web ./manage.py migrate
           docker exec seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
@@ -53,8 +62,9 @@ jobs:
           npm install
           sudo apt update
           sudo apt install -y xvfb
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt install ./google-chrome-stable_current_amd64.deb
+          wget --no-verbose -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt install -y /tmp/chrome.deb
+          google-chrome --version
       -
         name: Test Django
         if: ${{ matrix.test_env == 'django' }}
@@ -76,7 +86,9 @@ jobs:
         env:
           DISPLAY: ":99"
         run: |
-          ./node_modules/protractor/bin/webdriver-manager update --gecko=false
+          CHROME_VERSION=$(google-chrome --version | awk '{ print $NF }')
+          echo "Getting webdriver for chrome version ${CHROME_VERSION}"
+          ./node_modules/protractor/bin/webdriver-manager update --versions.chrome=${CHROME_VERSION} --gecko=false
           Xvfb :99 &
           ./node_modules/protractor/bin/protractor seed/static/seed/tests/protractor-tests/protractorConfig.js
       -
@@ -85,18 +97,22 @@ jobs:
         run: |
           docker exec seed_web ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
           docker exec seed_web python seed/tests/api/test_seed_host_api.py --noinput --nofile
+      -
+        name: Web container logs
+        if: ${{ always() }}
+        run: docker logs seed_web
   formatting:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tox_env: [flake8, docs]
+        tox_env: [flake8, docs, mypy]
     steps:
       -
         uses: actions/checkout@v2
       -
         uses: actions/setup-python@v2
         with:
-          python-version: '3.7'
+          python-version: '3.9'
       -
         name: Install deps
         run: |
@@ -104,6 +120,16 @@ jobs:
           pip install tox==2.7.0
           sudo apt update
           sudo apt install gdal-bin
+      -
+        name: Setup config
+        run: |
+          cat <<EOF > config/settings/local_untracked.py
+          {
+              'default': {
+                  'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+              }
+          }
+          EOF
       -
         name: Run tox
         run: tox -e ${{ matrix.tox_env }}

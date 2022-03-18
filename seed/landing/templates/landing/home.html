@@ -22,7 +22,9 @@
                         </table>
                         <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}"><br>
                     <div>
+                        {% if context.self_registration %}
                         <a class="create_account" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
+                        {% endif %}
                         <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
                     </div>
                     </form>

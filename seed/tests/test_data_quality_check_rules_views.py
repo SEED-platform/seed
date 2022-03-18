@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -175,7 +175,7 @@ class RuleViewTests(DataMappingBaseTestCase):
         res = self.client.put(url, content_type='application/json', data=json.dumps(put_data))
 
         self.assertEqual(res.status_code, 400)
-        self.assertTrue(f'Label with ID {wrong_org_label_id} not found in organization, {self.org.name}.' in json.loads(res.content)['status_label'])
+        self.assertTrue(f'Label with ID {wrong_org_label_id} not found in organization, {self.org.id}.' in json.loads(res.content)['status_label'])
 
     def test_update_rule_valid_severity_label_validation(self):
         # Start with 1 Rule

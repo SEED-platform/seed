@@ -2,7 +2,7 @@
 {% load i18n %}
 <!DOCTYPE html>
 <html>
-    <!-- :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
+    <!-- :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
     <head>
         <title>{% block title %}{% trans "SEED Platform™" %}{% endblock title %}</title>
         <meta charset="utf-8">
@@ -41,6 +41,7 @@
         <link href="/static/node_modules/angular-xeditable/dist/css/xeditable.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.css" rel="stylesheet" type="text/css">
         <link href="/static/node_modules/angular-dragula/dist/dragula.min.css" rel="stylesheet" type="text/css">
+        <link href='/static/node_modules/ng-wig/dist/css/ng-wig.min.css' rel="stylesheet" type="text/css">
         {% endcompress %}
 
         {% block css %}{{block.super}}
@@ -127,7 +128,7 @@
         <script src="/static/node_modules/angular-ui-notification/dist/angular-ui-notification.min.js"></script>
         <script src="/static/node_modules/spin.js/spin.js"></script>
         <script src="/static/node_modules/ol/ol.js"></script>
-        <script src="/static/node_modules/openlayers-ext/dist/ol-ext.min.js"></script>
+        <script src="/static/node_modules/ol-ext/dist/ol-ext.js"></script>
 
         <!-- i18n -->
         <script src="/static/node_modules/angular-translate/dist/angular-translate.min.js"></script>
@@ -138,6 +139,9 @@
         <script src="/static/node_modules/angular-sanitize/angular-sanitize.min.js"></script>
 
         <script src="/static/node_modules/fine-uploader/all.fine-uploader/all.fine-uploader.core.min.js"></script>
+
+        <!-- Text Editor -->
+        <script src='/static/node_modules/ng-wig/dist/ng-wig.min.js'></script>
         {% endcompress %}
 
 

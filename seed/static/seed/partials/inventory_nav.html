@@ -1,6 +1,9 @@
-        <a ng-if="inventory_type === 'taxlots'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Tax Lots List</a><!--
-     --><a ng-if="inventory_type === 'properties'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Properties List</a><!--
-     --><a id="column-list-profiles" ui-sref="column_list_profiles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Column List Profiles</a><!--
-     --><a id="reports" ui-sref="reports(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Reports</a><!--
-     --><a id="inventory-cycles" ui-sref="inventory_cycles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Cross-Cycles</a><!--
-     --><a id="inventory-maps" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a>
+        <a ng-if="inventory_type === 'taxlots'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Tax Lots List</a>
+        <a ng-if="inventory_type === 'properties'" id="inventory-list" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Properties List</a>
+        <a ng-if="inventory_type === 'taxlots'" id="inventory-list" ui-sref="inventory_list_beta(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Tax Lots List (beta)</a>
+        <a ng-if="inventory_type === 'properties'" id="inventory-list" ui-sref="inventory_list_beta(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Properties List (beta)</a>
+        <a id="column-list-profiles" ui-sref="column_list_profiles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Column List Profiles</a>
+        <a id="reports" ui-sref="reports(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Reports</a>
+        <a id="inventory-cycles" ui-sref="inventory_cycles(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Cross-Cycles</a>
+        <a id="inventory-maps" ui-sref="inventory_map(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Map</a>
+        <a id="inventory-summary" ui-sref="inventory_summary(::{inventory_type: inventory_type})" ui-sref-active="active" translate>Summary</a>

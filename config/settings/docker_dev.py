@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -11,6 +11,9 @@ import sys
 from config.settings.common import *  # noqa
 
 from celery.utils import LOG_LEVELS
+
+# override MEDIA_URL (requires nginx which dev stack doesn't use)
+MEDIA_URL = '/media/'
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD']
@@ -33,6 +36,9 @@ COMPRESS_ENABLED = compress
 COMPRESS_OFFLINE = compress
 
 ALLOWED_HOSTS = ['*']
+
+# LBNL's BETTER tool host
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.herokuapp.com')
 
 # PostgreSQL DB config
 DATABASES = {
@@ -120,18 +126,11 @@ LOGGING = {
     },
 }
 
-# use imp module to find the local_untracked file rather than a hard-coded path
-try:
-    import imp
-    import config.settings
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
 
-    local_untracked_exists = imp.find_module(
-        'local_untracked', config.settings.__path__
-    )
-except BaseException:
-    pass
-
-if 'local_untracked_exists' in locals():
-    from config.settings.local_untracked import *  # noqa
-else:
+local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
+if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
+else:
+    from config.settings.local_untracked import *  # noqa

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations
-import django.contrib.postgres.fields.jsonb
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
@@ -15,19 +14,19 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='buildingsnapshot',
             name='extra_data',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
+            field=models.JSONField(default={}),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='buildingsnapshot',
             name='extra_data_sources',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
+            field=models.JSONField(default={}),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='custombuildingheaders',
             name='building_headers',
-            field=django.contrib.postgres.fields.jsonb.JSONField(default={}),
+            field=models.JSONField(default={}),
             preserve_default=True,
         ),
     ]

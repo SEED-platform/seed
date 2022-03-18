@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -20,19 +20,22 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 
 from seed.decorators import lock_and_track
-from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     ColumnMapping,
+    Cycle,
     DATA_STATE_MATCHING,
     Property,
     PropertyState,
+    PropertyView,
     TaxLot,
-    TaxLotState
+    TaxLotState,
+    TaxLotView
 )
+
 
 logger = get_task_logger(__name__)
 
@@ -167,19 +170,9 @@ def delete_organization(org_pk):
 @shared_task
 @lock_and_track
 def _delete_organization_related_data(org_pk, prog_key):
-    # Get all org users
-    user_ids = OrganizationUser.objects.filter(
-        organization_id=org_pk).values_list('user_id', flat=True)
-    users = list(User.objects.filter(pk__in=user_ids))
-
     Organization.objects.get(pk=org_pk).delete()
 
     # TODO: Delete measures in BRICR branch
-
-    # Delete any abandoned users.
-    for user in users:
-        if not OrganizationUser.objects.filter(user_id=user.pk).exists():
-            user.delete()
 
     progress_data = ProgressData.from_key(prog_key)
     return progress_data.result()
@@ -193,8 +186,7 @@ def _finish_delete(results, org_pk, prog_key):
     return progress_data.finish_with_success()
 
 
-@shared_task
-def _finish_delete_column(results, column_id, prog_key):
+def _finish_delete_column(column_id, prog_key):
     # Delete all mappings from raw column names to the mapped column, then delete the mapped column
     column = Column.objects.get(id=column_id)
     ColumnMapping.objects.filter(column_mapped=column).delete()
@@ -269,51 +261,107 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
 
 @shared_task
 @lock_and_track
-def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
-    """Deletes an extra_data column from all merged property/taxlot states."""
+def delete_organization_cycle(cycle_pk, organization_pk, prog_key=None, chunk_size=100, *args, **kwargs):
+    """Deletes an organization's cycle.
 
-    column = Column.objects.get(id=column_pk, organization_id=org_pk)
+    This must be an async task b/c a cascading deletion can require the removal
+    of many *States associated with an ImportFile, overwhelming the server.
 
+    :param cycle_pk: int
+    :param prog_key: str
+    :param chunk_size: int
+    :return: dict, from ProgressData.result()
+    """
     progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
-        func_name='delete_organization_column', unique_id=column_pk)
+        func_name='delete_organization_cycle', unique_id=cycle_pk)
 
-    ids = []
+    has_inventory = (
+        PropertyView.objects.filter(cycle_id=cycle_pk).exists()
+        or TaxLotView.objects.filter(cycle_id=cycle_pk).exists()
+    )
+    if has_inventory:
+        progress_data.finish_with_error('All PropertyView and TaxLotViews linked to the Cycle must be removed')
+        return progress_data.result()
 
-    if column.table_name == 'PropertyState':
-        ids = list(
-            PropertyState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
-                                         extra_data__has_key=column.column_name).values_list('id', flat=True)
-        )
-    elif column.table_name == 'TaxLotState':
-        ids = list(
-            TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
-                                       extra_data__has_key=column.column_name).values_list('id', flat=True)
-        )
-
-    total = len(ids)
-
-    # total is the number of records divided by the chunk size
-    progress_data.total = total / float(chunk_size)
-    progress_data.data['completed_records'] = 0
-    progress_data.data['total_records'] = total
+    property_state_ids = PropertyState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
+    tax_lot_state_ids = TaxLotState.objects.filter(import_file__cycle_id=cycle_pk).values_list('id', flat=True)
+    progress_data.total = (len(property_state_ids) + len(tax_lot_state_ids)) / chunk_size
     progress_data.save()
 
     tasks = []
-    # we could also use .s instead of .subtask and not wrap the *args
-    for chunk_ids in batch(ids, chunk_size):
+    for chunk_ids in batch(property_state_ids, chunk_size):
         tasks.append(
-            _delete_organization_column_chunk.subtask(
-                (chunk_ids, column.column_name, column.table_name, progress_data.key)
+            _delete_organization_property_state_chunk.si(
+                chunk_ids, progress_data.key, organization_pk
             )
         )
-    chord(tasks, interval=15)(_finish_delete_column.subtask([column.id, progress_data.key]))
+    for chunk_ids in batch(tax_lot_state_ids, chunk_size):
+        tasks.append(
+            _delete_organization_taxlot_state_chunk.si(
+                chunk_ids, progress_data.key, organization_pk
+            )
+        )
+
+    chord(tasks, interval=15)(_finish_delete_cycle.si(cycle_pk, progress_data.key))
 
     return progress_data.result()
 
 
 @shared_task
+def _finish_delete_cycle(cycle_id, prog_key):
+    # Finally delete the cycle
+    cycle = Cycle.objects.get(id=cycle_id)
+    cycle.delete()
+
+    progress_data = ProgressData.from_key(prog_key)
+    return progress_data.finish_with_success(
+        f'Removed {cycle.name}')
+
+
+@shared_task
+@lock_and_track
+def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
+    """Deletes an extra_data column from all merged property/taxlot states."""
+    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(
+        func_name='delete_organization_column', unique_id=column_pk)
+
+    _evaluate_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
+
+    return progress_data.result()
+
+
+@shared_task
+def _evaluate_delete_organization_column(column_pk, org_pk, prog_key, chunk_size, *args, **kwargs):
+    """ Find -States with column to be deleted """
+    column = Column.objects.get(id=column_pk, organization_id=org_pk)
+
+    ids = []
+
+    if column.table_name == 'PropertyState':
+        ids = PropertyState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
+                                           extra_data__has_key=column.column_name).values_list('id', flat=True)
+    elif column.table_name == 'TaxLotState':
+        ids = TaxLotState.objects.filter(organization_id=org_pk, data_state=DATA_STATE_MATCHING,
+                                         extra_data__has_key=column.column_name).values_list('id', flat=True)
+
+    progress_data = ProgressData.from_key(prog_key)
+    total = len(ids)
+    progress_data.total = total / float(chunk_size) + 1
+    progress_data.data['completed_records'] = 0
+    progress_data.data['total_records'] = total
+    progress_data.save()
+
+    for chunk_ids in batch(ids, chunk_size):
+        _delete_organization_column_chunk(
+            chunk_ids, column.column_name, column.table_name, progress_data.key
+        )
+
+    _finish_delete_column(column_pk, progress_data.key)
+
+
 def _delete_organization_column_chunk(chunk_ids, column_name, table_name, prog_key, *args, **kwargs):
     """updates a list of ``chunk_ids`` and increments the cache"""
+
     if table_name == 'PropertyState':
         states = PropertyState.objects.filter(id__in=chunk_ids)
     else:

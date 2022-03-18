@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.db import models
@@ -14,10 +14,12 @@ class AnalysisOutputFile(models.Model):
     The AnalysisOutputFile is a file returned as output from an analysis.
     """
     BUILDINGSYNC = 1
+    HTML = 2
     IMAGE_PNG = 100
 
     CONTENT_TYPES = (
         (BUILDINGSYNC, 'BuildingSync'),
+        (HTML, 'html'),
         (IMAGE_PNG, 'PNG'),
     )
 

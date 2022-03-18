@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.new_member_modal', [])
@@ -19,18 +19,19 @@ angular.module('BE.seed.controller.new_member_modal', [])
       $translate
     ) {
       $scope.roles = [{
-        name: $translate.instant('Member'),
-        value: 'member'
-      }, {
         name: $translate.instant('Owner'),
         value: 'owner'
+      }, {
+        name: $translate.instant('Member'),
+        value: 'member'
       }, {
         name: $translate.instant('Viewer'),
         value: 'viewer'
       }];
-      $scope.user = {};
-      $scope.user.role = $scope.roles[0];
-      $scope.user.organization = organization;
+      $scope.user = {
+        organization,
+        role: $scope.roles[1]
+      };
 
       /**
        * adds a user to the org

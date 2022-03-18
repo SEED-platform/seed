@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -25,7 +25,7 @@ from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    Analysis, AnalysisPropertyView, Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
+    Analysis, AnalysisPropertyView, Cycle, Column, DerivedColumn, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
     TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
@@ -790,6 +790,7 @@ class FakeAnalysisFactory(BaseFake):
     """
     Factory Class for producing Analysis instances.
     """
+
     def __init__(self, organization=None, user=None):
         super().__init__()
         self.organization = organization
@@ -814,6 +815,7 @@ class FakeAnalysisPropertyViewFactory(BaseFake):
     """
     Factory Class for producing AnalysisPropertyView instances.
     """
+
     def __init__(self, organization=None, user=None, analysis=None):
         super().__init__()
         self.organization = organization
@@ -840,6 +842,29 @@ class FakeAnalysisPropertyViewFactory(BaseFake):
         }
 
         return AnalysisPropertyView.objects.create(**config)
+
+
+class FakeDerivedColumnFactory(BaseFake):
+    def __init__(self, expression=None, name=None, organization=None, inventory_type=None):
+        super().__init__()
+        self.expression = expression
+        self.name = name if name else self.fake.text()
+        self.organization = organization
+        self.inventory_type = inventory_type
+
+    def get_derived_column(self, expression=None, name=None, organization=None, inventory_type=None):
+        name = name if name is not None else self.name
+        organization = organization if organization is not None else self.organization
+        inventory_type = inventory_type if inventory_type is not None else self.inventory_type
+
+        config = {
+            'expression': expression,
+            'name': name,
+            'organization': organization,
+            'inventory_type': inventory_type
+        }
+
+        return DerivedColumn.objects.create(**config)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

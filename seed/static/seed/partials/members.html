@@ -17,7 +17,11 @@
     <div class="section_header_container">
         <div class="section_header fixed_height_short">
             <div class="left section_action_container"><h2><i class="fa fa-user"></i> {$:: 'Members' | translate $}</h2></div>
-            <div class="right_wide section_action_container"><a ng-click="new_member_modal()" ng-if="::auth.can_invite_member" translate>Invite a new member</a></div>
+            <div class="right_wide section_action_container">
+                <a ng-click="reset_all_passwords('Really reset all passwords?  This will sign you out of SEED.' | translate)" ng-if="auth.can_remove_member" title="{$:: 'Sends the reset password email to all users.' | translate $}" translate>Reset all passwords</a>
+                <span ng-if="auth.can_remove_member && auth.can_invite_member">—</span>
+                <a ng-click="new_member_modal()" ng-if="auth.can_invite_member" translate>Invite a new member</a>
+            </div>
         </div>
     </div>
         <div class="section_content_container">
@@ -29,7 +33,7 @@
                             <th translate>Member Name</th>
                             <th translate>Member Email</th>
                             <th translate>Member Role</th>
-                            <th ng-if="::auth.can_remove_member"></th>
+                            <th ng-if="auth.can_remove_member"></th>
                         </tr>
                         <tr class="sub_head">
                             <th class="sub_head">
@@ -41,11 +45,11 @@
                             <th class="sub_head">
                                 <input type="text" placeholder="{$:: 'member role' | translate $}" class="form-control input-sm" ng-model="filter_params.role" ng-class="{active: filter_params.role.length}">
                             </th>
-                            <th class="sub_head" ng-if="::auth.can_remove_member"></th>
+                            <th class="sub_head" ng-if="auth.can_remove_member"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-repeat="u in users  | filter:filter_params:strict">
+                        <tr ng-repeat="u in users | filter:filter_params:strict">
                             <td>
                                 {$:: u.name $}
                             </td>
@@ -55,16 +59,16 @@
                             <td>
                                 <div class="row">
                                     <div class="form-group">
-                                        <div class="col-sm-12">
-                                            <select class="form-control input-sm" ng-model="u.role" ng-options="role for role in ::roles" ng-change="update_role(u)" ng-if="!is_last_owner || auth.requires_owner && u.email !== user_profile.email">
-                                            </select>
-                                            <span ng-if="is_last_owner && u.email === user_profile.email || !auth.requires_owner">{$:: u.role | translate $}</span>
+                                        <div class="col-sm-12" ng-switch="can_edit(u)">
+                                            <select ng-switch-when="owner" class="form-control input-sm hide_transition" ng-model="u.role" ng-options="role for role in ::ownerRoles" ng-change="update_role(u)"></select>
+                                            <select ng-switch-when="member" class="form-control input-sm hide_transition" ng-model="u.role" ng-options="role for role in ::memberRoles" ng-change="update_role(u)"></select>
+                                            <span ng-switch-default style="padding-left: 15px">{$:: u.role | translate $}</span>
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td ng-if="::auth.can_remove_member">
-                                <a ng-if="!is_last_owner || u.email !== user_profile.email" ng-click="remove_member(u)" translate>Remove</a>
+                            <td ng-if="auth.can_remove_member">
+                                <a ng-if="!only_one_owner || u.email !== user_profile.email" ng-click="remove_member(u)" translate>Remove</a>
                             </td>
                         </tr>
                     </tbody>

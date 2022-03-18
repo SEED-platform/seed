@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_analyses', [])
@@ -39,19 +39,29 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
       $scope.item_state = inventory_payload.state;
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.view_id = $stateParams.view_id;
+      // WARNING: $scope.org is used by "child" controller - analysis_details_controller
       $scope.org = organization_payload.organization;
       $scope.users = users_payload.users;
       $scope.analyses = analyses_payload.analyses;
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
+      $scope.tab = 0;
 
       const refresh_analyses = function () {
         analyses_service.get_analyses_for_canonical_property(inventory_payload.property.id)
           .then(function (data) {
             $scope.analyses = data.analyses;
+            $scope.analyses_by_type = {};
+            for (let analysis in $scope.analyses) {
+              if (!$scope.analyses_by_type[$scope.analyses[analysis].service]) {
+                $scope.analyses_by_type[$scope.analyses[analysis].service] = [];
+              }
+              $scope.analyses_by_type[$scope.analyses[analysis].service].push($scope.analyses[analysis]);
+            }
           });
       };
+      refresh_analyses();
 
       $scope.start_analysis = function (analysis_id) {
         const analysis = $scope.analyses.find(function (a) {
@@ -130,10 +140,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
             inventory_ids: function () {
               return [$scope.inventory.view_id];
             }
-          //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
-          //   var organization_id = user_service.get_organization().id;
-          //   return meter_service.get_meters($stateParams.view_id, organization_id);
-          // }],
+            //   meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            //   var organization_id = user_service.get_organization().id;
+            //   return meter_service.get_meters($stateParams.view_id, organization_id);
+            // }],
           }
         }).result.then(function (data) {
           if (data) {
@@ -145,5 +155,10 @@ angular.module('BE.seed.controller.inventory_detail_analyses', [])
             }, {});
           }
         });
+      };
+      $scope.has_children = function (value) {
+        if (typeof value == 'object') {
+          return true;
+        }
       };
     }]);

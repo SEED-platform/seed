@@ -1,4 +1,4 @@
-{% extends "landing/base.html" %}{% load compress %}{% load i18n %}
+{% extends "landing/base.html" %}{% load compress %}{% load i18n %}{% load settings_value %}
 {% block js %}{{ block.super }}
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <script type="text/javascript">
@@ -19,13 +19,14 @@
             <div class="section_forms">
                 <div class="form_title">
                     <h2>{% trans "Create Your Account" %}</h2>
+                    <p>By creating an account, signing in, and using this website, you are agreeing to our <a href="{{ STATIC_URL }}seed/Terms_of_Service.txt" target="_blank" rel="noopener noreferrer">Terms of Service</a>.</p>
                     <form id="AuthNewPassword" class="signup_form" action="" method="post">
                         {% csrf_token %}
                         <table class="signup_table">
                             {{ form.as_table }}
                         </table>
                         {% include "landing/_password_note.html" %}
-                        <div  style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV"></div>
+                        <div style="padding-left: 4.5em" class="g-recaptcha" data-sitekey="{% settings_value "GOOGLE_RECAPTCHA_SITE_KEY" %}"></div>
                         <div style="padding-bottom: 2em">
                             <input class="btn btn-primary" type="submit"
                                    value="{% block password_submit %}{% trans "Create my account" %}{% endblock %}">

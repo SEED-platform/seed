@@ -1,9 +1,11 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
+  '$uibModal',
+  'urls',
   'organization_payload',
   'auth_payload',
   'organization_service',
@@ -13,6 +15,8 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
   '$translate',
   function (
     $scope,
+    $uibModal,
+    urls,
     organization_payload,
     auth_payload,
     organization_service,
@@ -94,20 +98,20 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 'm**2'
     }];
 
-    $scope.significant_figures_options = [{
-      label: '0',
+    $scope.decimal_places_options = [{
+      label: '0 (e.g. 0)',
       value: 0
     }, {
-      label: '0.1',
+      label: '1 (e.g. 0.1)',
       value: 1
     }, {
-      label: '0.02',
+      label: '2 (e.g. 0.12)',
       value: 2
     }, {
-      label: '0.003',
+      label: '3 (e.g. 0.123)',
       value: 3
     }, {
-      label: '0.0004',
+      label: '4 (e.g. 0.1234)',
       value: 4
     }];
 
@@ -119,10 +123,22 @@ angular.module('BE.seed.controller.organization_settings', []).controller('organ
       value: 2
     }];
 
-    const resize_textarea = function () {
+    $scope.confirm_delete = function (org) {
+      $uibModal.open({
+        templateUrl: urls.static_url + 'seed/partials/delete_org_modal.html',
+        controller: 'delete_org_modal_controller',
+        backdrop: 'static',
+        keyboard: false,
+        resolve: {
+          org: org
+        }
+      });
+    };
+
+    $scope.resize_textarea = function () {
       const input = document.getElementById('new-user-email-content');
       input.style.height = '34px';
-      input.style.height = (input.scrollHeight) + 'px';
+      input.style.height = input.scrollHeight + 'px';
     };
 
     /**

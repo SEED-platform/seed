@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author noel.merket@nrel.gov
 """
 
@@ -16,7 +16,7 @@ import probablepeople as pp
 import usaddress as usadd
 from lxml import etree, objectify
 from past.builtins import basestring
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 _log = logging.getLogger(__name__)
 

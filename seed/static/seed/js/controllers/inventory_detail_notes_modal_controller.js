@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
@@ -26,7 +26,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
       $scope.viewId = viewId;
       $scope.orgId = orgId;
       $scope.action = action;
-      $scope.note = note;
+      $scope.note = angular.copy(note);
 
       $scope.close = function () {
         $uibModalInstance.dismiss();
@@ -36,7 +36,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
         var data = {
           name: 'Manually Created',
           note_type: 'Note',
-          text: note.text
+          text: $scope.note.text
         };
         note_service.create_note($scope.orgId, $scope.inventoryType, $scope.viewId, data).then(function () {
           $uibModalInstance.close();
@@ -45,17 +45,17 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', [])
 
       $scope.update = function () {
         var data = {
-          name: note.name,
-          note_type: note.note_type,
-          text: note.text
+          name: $scope.note.name,
+          note_type: $scope.note.note_type,
+          text: $scope.note.text
         };
-        note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, note.id, data).then(function () {
+        note_service.update_note($scope.orgId, $scope.inventoryType, $scope.viewId, $scope.note.id, data).then(function () {
           $uibModalInstance.close();
         });
       };
 
       $scope.delete = function () {
-        note_service.delete_note($scope.inventoryType, $scope.viewId, note.id).then(function () {
+        note_service.delete_note($scope.inventoryType, $scope.viewId, $scope.note.id).then(function () {
           $uibModalInstance.close();
         });
       };

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.menu', [])
@@ -11,13 +11,14 @@ angular.module('BE.seed.controller.menu', [])
     '$uibModal',
     '$log',
     'urls',
+    'auth_service',
     'organization_service',
     'user_service',
     'dataset_service',
     'modified_service',
+    'inventory_service',
     '$timeout',
     '$state',
-    '$cookies',
     function (
       $rootScope,
       $scope,
@@ -26,13 +27,14 @@ angular.module('BE.seed.controller.menu', [])
       $uibModal,
       $log,
       urls,
+      auth_service,
       organization_service,
       user_service,
       dataset_service,
       modified_service,
+      inventory_service,
       $timeout,
-      $state,
-      $cookies
+      $state
     ) {
       // initial state of css classes for menu and sidebar
       $scope.expanded_controller = false;
@@ -84,9 +86,13 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
+      const STORAGE_KEY = 'seed_nav_is_expanded';
+
       function init_menu () {
-        //Default to false but use cookie value if one has been set
-        var isNavExpanded = $cookies.seed_nav_is_expanded === 'true';
+        if ($window.localStorage.getItem(STORAGE_KEY) === null) {
+          $window.localStorage.setItem(STORAGE_KEY, 'true');
+        }
+        var isNavExpanded = $window.localStorage.getItem(STORAGE_KEY) === 'true';
         $scope.expanded_controller = isNavExpanded;
         $scope.collapsed_controller = !isNavExpanded;
         $scope.narrow_controller = isNavExpanded;
@@ -111,7 +117,7 @@ angular.module('BE.seed.controller.menu', [])
         $scope.wide_controller = !$scope.wide_controller;
         try {
           //TODO : refactor to put() when we move to Angular 1.3 or greater
-          $cookies.seed_nav_is_expanded = $scope.expanded_controller.toString();
+          $window.localStorage.setItem(STORAGE_KEY, $scope.expanded_controller.toString());
         } catch (err) {
           //it's ok if the cookie can't be written, so just report in the log and move along.
           $log.error('Couldn\'t write cookie for nav state. Error: ', err);
@@ -147,14 +153,80 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       /**
+       * open_sample_data_modal: opens the auto-populate sample data modal
+       */
+      $scope.open_sample_data_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sample_data_modal.html',
+          controller: 'sample_data_modal_controller',
+          size: 'md',
+          resolve: {
+            organization: () => {
+              return $scope.menu.user.organization;
+            },
+            cycle: ['Notification', 'organization_service', function (Notification, organization_service) {
+              return organization_service.get_organization($scope.menu.user.organization.org_id)
+                .then(response => {
+                  if (!response.organization.cycles.length) {
+                    Notification.error('Error: please create a cycle before Auto-Populating data');
+                    return;
+                  }
+                  let lastCycleId = inventory_service.get_last_cycle();
+                  let lastCycle;
+                  if (typeof lastCycleId === 'number') {
+                    lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId);
+                  }
+                  if ((lastCycleId === undefined || !lastCycle)) {
+                    lastCycle = response.organization.cycles[0];
+                  }
+                  return lastCycle;
+                });
+            }],
+            profiles: ['inventory_service', function (inventory_service) {
+              return inventory_service.get_column_list_profiles('List View Profile', 'Property');
+            }]
+          }
+        });
+      };
+
+      /**
        * sets the users primary organization, reloads/refreshed the page
        * @param {obj} org
        */
       $scope.set_user_org = function (org) {
+        $scope.mouseout_org();
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
+        console.log($scope.menu.user.organization);
         $state.reload();
         init();
+      };
+      // set authorization and organization data to $scope
+      const set_auth = function (org_id) {
+        auth_service.is_authorized(org_id, ['requires_owner'])
+          .then(function (data) {
+            $scope.auth = data.auth.requires_owner ? data.auth : 'not authorized';
+          }, function (data) {
+            $scope.auth = data.message;
+          });
+      };
+      const set_org = function (org_id) {
+        organization_service.get_organization(org_id)
+          .then(function (data) {
+            $scope.org = data.organization;
+          });
+      };
+      $scope.mouseover_org = function (org_id) {
+        $scope.show_org_id = true;
+        $scope.hover_org_id = org_id;
+      };
+      $scope.mouseout_org = function () {
+        $scope.show_org_id = false;
+      };
+      $scope.track_mouse = function (e) {
+        let xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
+        let ypos = `${e.clientY - 25}px`;
+        $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
       };
 
       //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
@@ -180,22 +252,43 @@ angular.module('BE.seed.controller.menu', [])
         if (!$scope.logged_in) {
           return;
         }
-
-        organization_service.get_organizations_brief().then(function (data) {
-          $scope.organizations_count = data.organizations.length;
-          $scope.menu.user.organizations = data.organizations;
-
-          // get the default org for the user
-          $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
-        }).catch(function (error) {
-          $rootScope.route_load_error = true;
-          $rootScope.load_error_message = error.data.message;
-        });
-
-        dataset_service.get_datasets_count().then(function (data) {
-          $scope.datasets_count = data.datasets_count;
-        });
+        if (!user_service.get_organization().id) {
+          $uibModal.open({
+            backdrop: 'static',
+            keyboard: false,
+            templateUrl: urls.static_url + 'seed/partials/create_organization_modal.html',
+            controller: 'create_organization_modal_controller',
+            resolve: {
+              user_id: user_service.get_user_id()
+            }
+          });
+        } else {
+          organization_service.get_organizations_brief().then(function (data) {
+            $scope.organizations_count = data.organizations.length;
+            $scope.menu.user.organizations = data.organizations;
+            // get the default org for the user
+            $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+            set_auth($scope.menu.user.organization.id);
+            set_org($scope.menu.user.organization.id);
+          }).catch(function (error) {
+            // user does not have an org
+            $rootScope.route_load_error = true;
+            $rootScope.load_error_message = error.data.message;
+          });
+          dataset_service.get_datasets_count().then(function (data) {
+            $scope.datasets_count = data.datasets_count;
+          });
+        }
       };
+
+      if ($location.search().http_error) {
+        $scope.http_error = $location.search().http_error;
+      }
+
+      $scope.closeAlert = function () {
+        $scope.http_error = false;
+      };
+
       init();
       init_menu();
     }]);

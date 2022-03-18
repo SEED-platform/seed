@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -26,7 +26,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.utils.organizations import create_organization
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 
 class TestColumns(TestCase):
@@ -200,7 +200,7 @@ class TestColumns(TestCase):
 
     def test_save_column_mapping_by_file_exception(self):
         self.mapping_import_file = os.path.abspath("./no-file.csv")
-        with self.assertRaisesRegexp(Exception, "Mapping file does not exist: .*/no-file.csv"):
+        with self.assertRaisesRegex(Exception, "Mapping file does not exist: .*/no-file.csv"):
             Column.create_mappings_from_file(self.mapping_import_file, self.fake_org,
                                              self.fake_user)
 
@@ -1012,7 +1012,7 @@ class TestColumnsByInventory(TestCase):
             is_extra_data=True
         )
 
-        with self.assertRaisesRegexp(Exception, 'Duplicate name'):
+        with self.assertRaisesRegex(Exception, 'Duplicate name'):
             Column.retrieve_all(self.fake_org.pk, 'property', False)
 
     def test_column_retrieve_schema(self):
@@ -1020,10 +1020,6 @@ class TestColumnsByInventory(TestCase):
             "types": {
                 "address_line_1": "string",
                 "address_line_2": "string",
-                "analysis_end_time": "datetime",
-                "analysis_start_time": "datetime",
-                "analysis_state": "string",
-                "analysis_state_message": "string",
                 "block_number": "string",
                 "building_certification": "string",
                 "building_count": "integer",
@@ -1033,6 +1029,7 @@ class TestColumnsByInventory(TestCase):
                 "created": "datetime",
                 "custom_id_1": "string",
                 "district": "string",
+                "egrid_subregion_code": "string",
                 "energy_alerts": "string",
                 "energy_score": "integer",
                 "generation_date": "datetime",
@@ -1086,10 +1083,9 @@ class TestColumnsByInventory(TestCase):
     def test_column_retrieve_db_fields(self):
         c = Column.retrieve_db_fields(self.fake_org.pk)
 
-        data = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time',
-                'analysis_state', 'analysis_state_message', 'block_number',
+        data = ['address_line_1', 'address_line_2', 'block_number',
                 'building_certification', 'building_count', 'campus', 'city',
-                'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'energy_alerts',
+                'conditioned_floor_area', 'created', 'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts',
                 'energy_score', 'generation_date', 'geocoding_confidence', 'gross_floor_area',
                 'home_energy_score_id', 'jurisdiction_property_id', 'jurisdiction_tax_lot_id',
                 'latitude', 'longitude', 'lot_number', 'normalized_address', 'number_properties',
@@ -1107,10 +1103,9 @@ class TestColumnsByInventory(TestCase):
 
     def test_retrieve_db_field_name_from_db_tables(self):
         """These values are the fields that can be used for hashing a property to check if it is the same record."""
-        expected = ['address_line_1', 'address_line_2', 'analysis_end_time', 'analysis_start_time',
-                    'analysis_state_message', 'block_number', 'building_certification',
+        expected = ['address_line_1', 'address_line_2', 'block_number', 'building_certification',
                     'building_count', 'city', 'conditioned_floor_area',
-                    'custom_id_1', 'district', 'energy_alerts', 'energy_score', 'generation_date',
+                    'custom_id_1', 'district', 'egrid_subregion_code', 'energy_alerts', 'energy_score', 'generation_date',
                     'gross_floor_area', 'home_energy_score_id', 'jurisdiction_property_id',
                     'jurisdiction_tax_lot_id', 'latitude', 'longitude', 'lot_number',
                     'number_properties', 'occupied_floor_area', 'owner', 'owner_address',

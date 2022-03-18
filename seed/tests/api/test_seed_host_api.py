@@ -1,7 +1,7 @@
 ﻿# !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author Claudine Custodio / Baptiste Ravache
 """
 """
@@ -88,10 +88,10 @@ else:
 
 # API is now used basic auth with base64 encoding.
 # NOTE: The header only accepts lower case usernames.
-auth_string = base64.urlsafe_b64encode(bytes(
+encoded_credentials = base64.urlsafe_b64encode(bytes(
     '{}:{}'.format(username.lower(), api_key), 'utf-8'
 ))
-auth_string = 'Basic {}'.format(auth_string.decode('utf-8'))
+auth_string = 'Basic {}'.format(encoded_credentials.decode('utf-8'))
 header = {
     'Authorization': auth_string,
     # "Content-Type": "application/json"
@@ -175,7 +175,7 @@ report_memory()
 
 # Export dataset
 print('\n|---Export Dataset---|\n')
-export_data(header, main_url, organization_id, cycle_id, log)
+export_data(header, main_url, organization_id, log)
 report_memory()
 
 # Delete dataset

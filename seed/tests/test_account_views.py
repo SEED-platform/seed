@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -65,7 +65,7 @@ class AccountsViewTests(TestCase):
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
-            'display_significant_figures': 2,
+            'display_decimal_places': 2,
             'display_units_area': 'ft**2',
             'display_units_eui': 'kBtu/ft**2/year',
             'user_role': 'owner',
@@ -142,7 +142,7 @@ class AccountsViewTests(TestCase):
                 'user_is_owner': True,
                 'display_units_area': 'ft**2',
                 'display_units_eui': 'kBtu/ft**2/year',
-                'display_significant_figures': 2,
+                'display_decimal_places': 2,
                 'cycles': [{
                     'num_taxlots': 0,
                     'num_properties': 0,
@@ -168,7 +168,7 @@ class AccountsViewTests(TestCase):
             'org_id': self.org.pk,
             'id': self.org.pk,
             'user_is_owner': True,
-            'display_significant_figures': 2,
+            'display_decimal_places': 2,
             'display_units_area': 'ft**2',
             'display_units_eui': 'kBtu/ft**2/year',
             'cycles': [{
@@ -194,8 +194,8 @@ class AccountsViewTests(TestCase):
         )
         orgs = json.loads(resp.content)['organizations']
         org = orgs[0]
-        self.assertEquals(org['name'], 'my org')
-        self.assertEquals(org['number_of_users'], 1)
+        self.assertEqual(org['name'], 'my org')
+        self.assertEqual(org['number_of_users'], 1)
         self.assertDictEqual(
             org['owners'][0],
             {
@@ -223,8 +223,8 @@ class AccountsViewTests(TestCase):
         )
 
         org = json.loads(resp.content)['organization']
-        self.assertEquals(org['name'], 'my org')
-        self.assertEquals(org['number_of_users'], 1)
+        self.assertEqual(org['name'], 'my org')
+        self.assertEqual(org['number_of_users'], 1)
         self.assertDictEqual(
             org['owners'][0],
             {
@@ -248,7 +248,7 @@ class AccountsViewTests(TestCase):
             reverse_lazy('api:v3:organizations-detail', args=[other_org.id]),
             content_type='application/json',
         )
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -261,7 +261,7 @@ class AccountsViewTests(TestCase):
             reverse_lazy('api:v3:organizations-detail', args=[self.org.id + 100]),
             content_type='application/json',
         )
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -344,14 +344,14 @@ class AccountsViewTests(TestCase):
             })
 
     def test__get_js_role(self):
-        self.assertEquals(_get_js_role(ROLE_OWNER), 'owner')
-        self.assertEquals(_get_js_role(ROLE_MEMBER), 'member')
-        self.assertEquals(_get_js_role(ROLE_VIEWER), 'viewer')
+        self.assertEqual(_get_js_role(ROLE_OWNER), 'owner')
+        self.assertEqual(_get_js_role(ROLE_MEMBER), 'member')
+        self.assertEqual(_get_js_role(ROLE_VIEWER), 'viewer')
 
     def test__get_role_from_js(self):
-        self.assertEquals(_get_role_from_js('owner'), ROLE_OWNER)
-        self.assertEquals(_get_role_from_js('member'), ROLE_MEMBER)
-        self.assertEquals(_get_role_from_js('viewer'), ROLE_VIEWER)
+        self.assertEqual(_get_role_from_js('owner'), ROLE_OWNER)
+        self.assertEqual(_get_role_from_js('member'), ROLE_MEMBER)
+        self.assertEqual(_get_role_from_js('viewer'), ROLE_VIEWER)
 
     def test_update_role(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -359,7 +359,7 @@ class AccountsViewTests(TestCase):
 
         ou = OrganizationUser.objects.get(
             user_id=u.id, organization_id=self.org.id)
-        self.assertEquals(ou.role_level, ROLE_VIEWER)
+        self.assertEqual(ou.role_level, ROLE_VIEWER)
 
         resp = self.client.put(
             reverse_lazy("api:v3:user-role", args=[u.id]) + '?organization_id=' + str(
@@ -379,7 +379,7 @@ class AccountsViewTests(TestCase):
             {
                 'status': 'success'
             })
-        self.assertEquals(ou.role_level, ROLE_MEMBER)
+        self.assertEqual(ou.role_level, ROLE_MEMBER)
 
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -387,7 +387,7 @@ class AccountsViewTests(TestCase):
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)
-        self.assertEquals(ou.role_level, ROLE_OWNER)
+        self.assertEqual(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
             reverse_lazy("api:v3:user-role",
@@ -407,7 +407,7 @@ class AccountsViewTests(TestCase):
             {
                 'status': 'success'
             })
-        self.assertEquals(ou.role_level, ROLE_MEMBER)
+        self.assertEqual(ou.role_level, ROLE_MEMBER)
 
     def test_cannot_update_role_if_last_owner(self):
         u = User.objects.create(username='b@b.com', email='b@be.com')
@@ -415,7 +415,7 @@ class AccountsViewTests(TestCase):
 
         ou = OrganizationUser.objects.get(
             user_id=self.user.id, organization_id=self.org.id)
-        self.assertEquals(ou.role_level, ROLE_OWNER)
+        self.assertEqual(ou.role_level, ROLE_OWNER)
 
         resp = self.client.put(
             reverse_lazy("api:v3:user-role",
@@ -434,9 +434,9 @@ class AccountsViewTests(TestCase):
             json.loads(resp.content),
             {
                 'status': 'error',
-                'message': 'an organization must have at least one owner level member'
+                'message': 'an organization must have at least one owner'
             })
-        self.assertEquals(ou.role_level, ROLE_OWNER)
+        self.assertEqual(ou.role_level, ROLE_OWNER)
 
     def test_update_role_no_perms(self):
         """ Test trying to change your own role when you are not an owner. """
@@ -634,7 +634,7 @@ class AccountsViewTests(TestCase):
             json.dumps(user_data),
             content_type='application/json',
         )
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
@@ -651,7 +651,7 @@ class AccountsViewTests(TestCase):
             reverse_lazy('api:v3:user-detail', args=[self.user.pk]),
             content_type='application/json',
         )
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
@@ -669,7 +669,7 @@ class AccountsViewTests(TestCase):
             reverse_lazy('api:v3:user-detail', args=[self.user.pk]),
             content_type='application/json',
         )
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
@@ -690,7 +690,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         api_key = user.api_key
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
@@ -712,7 +712,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertTrue(user.check_password('new passwordD3'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'success',
@@ -733,8 +733,8 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(resp.status_code, 405)
-        self.assertEquals(
+        self.assertEqual(resp.status_code, 405)
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'detail': 'Method \"POST\" not allowed.',
@@ -748,8 +748,8 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(resp.status_code, 405)
-        self.assertEquals(
+        self.assertEqual(resp.status_code, 405)
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'detail': 'Method \"GET\" not allowed.'
@@ -771,7 +771,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error', 'message': 'current password is not valid',
@@ -790,7 +790,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error', 'message': 'entered password do not match',
@@ -812,7 +812,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -832,7 +832,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -854,7 +854,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -876,7 +876,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',
@@ -897,7 +897,7 @@ class AccountsViewTests(TestCase):
         user = User.objects.get(pk=self.user.pk)
         self.assertFalse(user.check_password('new password'))
 
-        self.assertEquals(
+        self.assertEqual(
             json.loads(resp.content),
             {
                 'status': 'error',

@@ -30,12 +30,12 @@ spec:
         io.kompose.service: db-redis
     spec:
       containers:
-      - image: redis:5.0.1
-        imagePullPolicy: IfNotPresent
-        name: db-redis
-        resources: {}
-        terminationMessagePath: /dev/termination-log
-        terminationMessagePolicy: File
+        - image: redis:5.0.1
+          imagePullPolicy: IfNotPresent
+          name: db-redis
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler

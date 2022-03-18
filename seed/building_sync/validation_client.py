@@ -1,10 +1,18 @@
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+
 import os
+import zipfile
 
 import requests
+import pathlib
+from seed.building_sync.building_sync import BuildingSync
 
 
-VALIDATION_API_URL = "https://selectiontool.buildingsync.net/api/validate"
-DEFAULT_SCHEMA_VERSION = '2.0.0'
+VALIDATION_API_URL = "https://buildingsync.net/api/validate"
+DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
 DEFAULT_USE_CASE = 'SEED'
 
 
@@ -13,15 +21,15 @@ class ValidationClientException(Exception):
 
 
 def _validation_api_post(file_, schema_version, use_case_name):
-    payload = {'schema_version': schema_version}
-    files = [
-        ('file', file_)
-    ]
+    if zipfile.is_zipfile(file_.name):
+        files = [('file', file_)]
+    else:
+        files = {'file': (file_.name, pathlib.Path(file_.name).read_text(), 'application/xml')}
 
     return requests.request(
         "POST",
         VALIDATION_API_URL,
-        data=payload,
+        data={'schema_version': schema_version},
         files=files,
         timeout=60 * 2,  # timeout after two minutes (it can take a long time for zips)
     )
@@ -37,6 +45,9 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     :return: tuple, (bool, list), bool indicates if the file passes validation,
              the list is a collection of files and their errors, warnings, and infos
     """
+
+    if schema_version == BuildingSync.BUILDINGSYNC_V2_0:
+        schema_version = BuildingSync.BUILDINGSYNC_V2_0_0
 
     try:
         response = _validation_api_post(file_, schema_version, use_case_name)
@@ -76,12 +87,12 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     validation_results = response_body.get('validation_results')
     # check the returned type and make validation_results a list if it's not already
     if file_extension == '.zip':
-        if type(validation_results) is not list:
+        if not isinstance(validation_results, list):
             raise ValidationClientException(
                 f"Expected response validation_results to be list for zip file: {response.text}",
             )
     else:
-        if type(validation_results) is not dict:
+        if not isinstance(validation_results, dict):
             raise ValidationClientException(
                 f"Expected response validation_results to be dict for single xml file: {response.text}",
             )

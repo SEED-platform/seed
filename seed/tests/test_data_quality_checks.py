@@ -1,13 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+from seed.models.derived_columns import DerivedColumn
 from django.forms.models import model_to_dict
-from quantityfield import ureg
+from quantityfield.units import ureg
 
-from seed.models import Column, PropertyView
+from seed.models import Column, DerivedColumnParameter, PropertyView
 from seed.models.data_quality import (
     DataQualityCheck,
     Rule,
@@ -17,14 +18,15 @@ from seed.models.data_quality import (
 )
 from seed.models.models import ASSESSED_RAW
 from seed.test_helpers.fake import (
+    FakeDerivedColumnFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import DataMappingBaseTestCase, AssertDictSubsetMixin
 
 
-class DataQualityCheckTests(DataMappingBaseTestCase):
+class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
 
@@ -33,6 +35,7 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.derived_column_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
 
     def test_default_create(self):
         dq = DataQualityCheck.retrieve(self.org.id)
@@ -414,3 +417,53 @@ class DataQualityCheckTests(DataMappingBaseTestCase):
 
         with self.assertRaises(UnitMismatchError):
             self.assertFalse(rule.maximum_valid(ureg.Quantity(5, "kBtu/ft**2/year")))
+
+    def test_works_with_derived_columns(self):
+        # -- Setup
+        # create a derived column and properties that have the necessary data
+        derived_column_name = 'my_derived_column'
+        derived_column = self.derived_column_factory.get_derived_column(
+            expression='$gross_floor_area + 1',
+            name=derived_column_name
+        )
+        DerivedColumnParameter.objects.create(
+            parameter_name='gross_floor_area',
+            derived_column=derived_column,
+            source_column=Column.objects.get(column_name='gross_floor_area', table_name='PropertyState')
+        )
+        # good b/c 0 + 1 will be in our DQ range
+        ps_good = self.property_state_factory.get_property_state(gross_floor_area=0)
+        # bad b/c 100 + 1 will be out of our DQ range
+        ps_bad = self.property_state_factory.get_property_state(gross_floor_area=100)
+
+        # create a rule to check the derived column
+        dq = DataQualityCheck.retrieve(self.org.id)
+        dq.remove_all_rules()
+
+        ex_rule = {
+            'table_name': 'PropertyState',
+            'field': derived_column_name,
+            'for_derived_column': True,
+            'data_type': Rule.TYPE_NUMBER,
+            'rule_type': Rule.RULE_TYPE_CUSTOM,
+            'condition': Rule.RULE_RANGE,
+            'min': 0,
+            'max': 10,
+            'severity': Rule.SEVERITY_ERROR,
+            'units': '',
+        }
+
+        dq.add_rule(ex_rule)
+
+        # -- Act
+        dq.check_data(ps_good.__class__.__name__, [ps_good, ps_bad])
+
+        # -- Assert
+        good_results = dq.results.get(ps_good.id, {}).get('data_quality_results', None)
+        self.assertIsNone(good_results)
+
+        bad_results = dq.results[ps_bad.id]['data_quality_results']
+        self.assertDictContainsSubset(
+            {'field': derived_column_name, 'message': f'{derived_column_name} out of range'},
+            bad_results[0]
+        )

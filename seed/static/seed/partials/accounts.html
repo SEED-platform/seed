@@ -39,7 +39,9 @@
                                 <a ui-sref="organization_labels(::{organization_id: org.id})"><i class="fa fa-tags"></i>{$:: 'Labels' | translate $}</a>
                                 <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
                                 <a ui-sref="organization_members(::{organization_id: org.id})"><i class="fa fa-user"></i>{$:: 'Members' | translate $}</a>
+                                <a ui-sref="organization_email_templates(::{organization_id: org.id})"><i class="fa fa-envelope"></i>{$:: 'Email Templates' | translate $}</a>
                                 <a ui-sref="analyses(::{organization_id: org.id})"><i class="fa fa-bar-chart"></i>{$:: 'Analyses' | translate $}</a>
+                                <a ui-sref="organization_derived_columns(::{organization_id: org.id, inventory_type: 'properties'})"><i class="fa fa-calculator"></i>Derived Columns</a>
                                 <i class="fa fa-cog"></i>
                             </td>
                         </tr>

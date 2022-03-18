@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -17,11 +17,12 @@ from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
 from pint.errors import DimensionalityError
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
+    DerivedColumn,
     StatusLabel,
     PropertyView,
     TaxLotView
@@ -331,6 +332,9 @@ class Rule(models.Model):
     status_label = models.ForeignKey(StatusLabel, on_delete=models.DO_NOTHING, null=True)
     table_name = models.CharField(max_length=200, default='PropertyState', blank=True)
     field = models.CharField(max_length=200)
+    # If for_derived_column is True, `Rule.field` is a derived column name
+    # If False, `Rule.field` is a *State field or extra_data key
+    for_derived_column = models.BooleanField(default=False)
     enabled = models.BooleanField(default=True)
     condition = models.CharField(max_length=200, default='', blank=True)
     data_type = models.IntegerField(choices=DATA_TYPES, null=True)
@@ -628,6 +632,20 @@ class DataQualityCheck(models.Model):
         for c in Column.retrieve_all(self.organization, record_type, False):
             self.column_lookup[(c['table_name'], c['column_name'])] = c['display_name']
 
+        STATE_NAME_TO_INVENTORY_TYPE = {
+            'PropertyState': DerivedColumn.PROPERTY_TYPE,
+            'TaxLotState': DerivedColumn.TAXLOT_TYPE
+        }
+        derived_columns_by_name = {
+            dc.name: dc
+            for dc in DerivedColumn.objects.filter(
+                organization=self.organization,
+                inventory_type=STATE_NAME_TO_INVENTORY_TYPE[record_type]
+            )
+        }
+        for derived_column_name in derived_columns_by_name.keys():
+            self.column_lookup[(record_type, derived_column_name)] = derived_column_name
+
         # grab all the rules once, save query time
         rules = self.rules.filter(enabled=True, table_name=record_type).order_by('field',
                                                                                  'severity')
@@ -644,7 +662,7 @@ class DataQualityCheck(models.Model):
                 self.results[row.id]['data_quality_results'] = []
 
             # Run the checks
-            self._check(rules, row)
+            self._check(rules, row, derived_columns_by_name)
 
         # Prune the results will remove any entries that have zero data_quality_results
         for k, v in self.results.copy().items():
@@ -660,12 +678,13 @@ class DataQualityCheck(models.Model):
     def reset_results(self):
         self.results = {}
 
-    def _check(self, rules, row):
+    def _check(self, rules, row, derived_columns_by_name):
         """
         Check for errors in the min/max of the values.
 
         :param rules: list, rules to run from database objects
         :param row: PropertyState or TaxLotState, row of data to check
+        :param derived_columns_by_name: dict{str: DerivedColumn}
         :return: None
         """
         # check if the row has any rules applied to it
@@ -697,24 +716,28 @@ class DataQualityCheck(models.Model):
             label_applied = False
             display_name = rule.field
 
-            if hasattr(row, rule.field):
-                value = getattr(row, rule.field)
-                # TODO cleanup after the cleaner is better able to handle fields with units on import
-                # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
-                if isinstance(value, ureg.Quantity) and rule.units == '':
-                    value = value.magnitude
-            else:  # rule is for extra_data
-                value = row.extra_data.get(rule.field, None)
+            if rule.for_derived_column:
+                derived_column = derived_columns_by_name[rule.field]
+                value = derived_column.evaluate(inventory_state=row)
+            else:
+                if hasattr(row, rule.field):
+                    value = getattr(row, rule.field)
+                    # TODO cleanup after the cleaner is better able to handle fields with units on import
+                    # If the rule doesn't specify units only consider the value for the purposes of numerical comparison
+                    if isinstance(value, ureg.Quantity) and rule.units == '':
+                        value = value.magnitude
+                else:  # rule is for extra_data
+                    value = row.extra_data.get(rule.field, None)
 
-                if ' (Invalid Footprint)' in rule.field and value is not None:
-                    self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
-                    continue
+                    if ' (Invalid Footprint)' in rule.field and value is not None:
+                        self.add_invalid_geometry_entry_provided(row.id, rule, display_name, value)
+                        continue
 
-                try:
-                    value = rule.str_to_data_type(value)
-                except DataQualityTypeCastError:
-                    self.add_result_type_error(row.id, rule, display_name, value)
-                    continue
+                    try:
+                        value = rule.str_to_data_type(value)
+                    except DataQualityTypeCastError:
+                        self.add_result_type_error(row.id, rule, display_name, value)
+                        continue
 
             # get the display name of the rule
             if (rule.table_name, rule.field) in self.column_lookup:

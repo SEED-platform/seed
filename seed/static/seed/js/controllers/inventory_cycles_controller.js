@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.inventory_cycles', [])
@@ -179,7 +179,7 @@ angular.module('BE.seed.controller.inventory_cycles', [])
             options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
             options.filter = inventory_service.dateFilter();
           } else if (col.data_type === 'eui' || col.data_type === 'area') {
-            options.cellFilter = 'number: ' + $scope.organization.display_significant_figures;
+            options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
             options.filter = inventory_service.combinedFilter();
           } else {
             options.filter = inventory_service.combinedFilter();

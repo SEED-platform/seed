@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // test Data Quality, labels, delete function and other misc items after data is loaded
@@ -221,12 +221,12 @@ describe('When I do miscellaneous things', function () {
 
     //check labels -
     $('[ng-click="clear_labels()"]').click();
-    $('#tagsInput').click();
+    $('#tags-input').click();
     $$('.suggestion-item.selected').first().click();
 
     expect(rows.count()).toBe(3);
     $('[uib-btn-radio="\'and\'"]').click();
-    $('#tagsInput').click();
+    $('#tags-input').click();
     $$('.suggestion-item.selected').first().click();
 
     expect(rows.count()).toBe(2);

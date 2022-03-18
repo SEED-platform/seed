@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -14,7 +14,7 @@ from collections import OrderedDict
 
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
-from quantityfield import ureg
+from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
@@ -147,7 +147,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
             *prefetch_related).filter(**filter_str).order_by('id')
 
         # get the data in a dict which includes the related data
-        data = TaxLotProperty.get_related(model_views, column_ids, columns_from_database)
+        data = TaxLotProperty.serialize(model_views, column_ids, columns_from_database)
 
         # add labels and notes
         for i, record in enumerate(model_views):
@@ -227,7 +227,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         scenario_keys = (
             'id', 'name', 'description', 'annual_site_energy_savings', 'annual_source_energy_savings',
-            'annual_cost_savings', 'analysis_state', 'analysis_state_message', 'annual_electricity_savings',
+            'annual_cost_savings', 'annual_electricity_savings',
             'annual_natural_gas_savings', 'annual_site_energy', 'annual_source_energy', 'annual_natural_gas_energy',
             'annual_electricity_energy', 'annual_peak_demand', 'annual_site_energy_use_intensity',
             'annual_source_energy_use_intensity'

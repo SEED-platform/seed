@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -10,6 +10,7 @@ import csv
 import logging
 import os.path
 from collections import OrderedDict
+from typing import Literal, Optional
 
 from django.apps import apps
 from django.db import IntegrityError
@@ -20,7 +21,7 @@ from django.db import (
 )
 from django.db.models import Q
 from django.db.models.signals import pre_save
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
@@ -94,7 +95,6 @@ class Column(models.Model):
 
     # These are the columns that are removed when looking to see if the records are the same
     COLUMN_EXCLUDE_FIELDS = [
-        'analysis_state',
         'bounding_box',
         'centroid',
         'created',
@@ -139,10 +139,6 @@ class Column(models.Model):
 
     # These are columns that should not be offered as suggestions during mapping
     UNMAPPABLE_PROPERTY_FIELDS = [
-        'analysis_end_time',
-        'analysis_start_time',
-        'analysis_state',
-        'analysis_state_message',
         'campus',
         'created',
         'geocoding_confidence',
@@ -522,30 +518,6 @@ class Column(models.Model):
             'display_name': 'Building Certification',
             'data_type': 'string',
         }, {
-            'column_name': 'analysis_start_time',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis Start Time',
-            'data_type': 'datetime',
-            # 'type': 'date',
-            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
-            'column_name': 'analysis_end_time',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis End Time',
-            'data_type': 'datetime',
-            # 'type': 'date',
-            # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
-        }, {
-            'column_name': 'analysis_state',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis State',
-            'data_type': 'string',
-        }, {
-            'column_name': 'analysis_state_message',
-            'table_name': 'PropertyState',
-            'display_name': 'Analysis State Message',
-            'data_type': 'string',
-        }, {
             'column_name': 'number_properties',
             'table_name': 'TaxLotState',
             'display_name': 'Number Properties',
@@ -561,7 +533,12 @@ class Column(models.Model):
             'table_name': 'TaxLotState',
             'display_name': 'District',
             'data_type': 'string',
-        }
+        }, {
+            'column_name': 'egrid_subregion_code',
+            'table_name': 'PropertyState',
+            'display_name': 'eGRID Subregion Code',
+            'data_type': 'string',
+        },
     ]
     organization = models.ForeignKey(SuperOrganization, on_delete=models.CASCADE, blank=True, null=True)
     column_name = models.CharField(max_length=512, db_index=True)
@@ -637,7 +614,7 @@ class Column(models.Model):
         from pint.errors import DimensionalityError
         from seed.models.properties import PropertyState
         from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
-        from quantityfield import ureg
+        from quantityfield.units import ureg
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):
@@ -758,7 +735,7 @@ class Column(models.Model):
 
         mappings = []
         if os.path.isfile(filename):
-            with open(filename, 'rU') as csvfile:
+            with open(filename, 'r', newline=None) as csvfile:
                 for row in csv.reader(csvfile):
                     data = {
                         "from_field": row[0],
@@ -1272,7 +1249,12 @@ class Column(models.Model):
         return columns
 
     @staticmethod
-    def retrieve_all(org_id, inventory_type=None, only_used=False):
+    def retrieve_all(
+        org_id: int,
+        inventory_type: Optional[Literal['property', 'taxlot']] = None,
+        only_used: bool = False,
+        include_related: bool = True,
+    ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
         database assigned to the organization. It will then go through and cleanup the names to ensure that
@@ -1281,8 +1263,7 @@ class Column(models.Model):
         :param org_id: Organization ID
         :param inventory_type: Inventory Type (property|taxlot) from the requester. This sets the related columns if requested.
         :param only_used: View only the used columns that exist in the Column's table
-
-        :return: dict
+        :param include_related: Include related columns (e.g. if inventory type is Property, include Taxlot columns)
         """
         from seed.serializers.columns import ColumnSerializer
 
@@ -1319,11 +1300,16 @@ class Column(models.Model):
                     new_c['display_name'] = new_c['display_name'] + ' (%s)' % INVENTORY_DISPLAY[
                         new_c['table_name']]
 
-            # only add the column if it is in a ColumnMapping object
+            include_column = True
             if only_used:
-                if ColumnMapping.objects.filter(column_mapped=c).exists():
-                    columns.append(new_c)
-            else:
+                # only add the column if it is in a ColumnMapping object
+                include_column = include_column and ColumnMapping.objects.filter(column_mapped=c).exists()
+            if not include_related:
+                # only add the column if it is not a related column
+                is_not_related = not new_c['related']
+                include_column = include_column and is_not_related
+
+            if include_column:
                 columns.append(new_c)
 
         # import json

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // data_quality services
@@ -39,7 +39,7 @@ angular.module('BE.seed.service.data_quality', []).factory('data_quality_service
      * @param  {int} org_id the id of the organization
      */
     data_quality_factory.data_quality_rules = function (org_id) {
-      return $http.get('/api/v3/data_quality_checks/' + org_id + '/rules').then(function (response) {
+      return $http.get('/api/v3/data_quality_checks/' + org_id + '/rules/').then(function (response) {
         return response.data;
       });
     };

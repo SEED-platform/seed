@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -142,13 +142,21 @@ angular.module('BE.seed.controller.cycle_admin', [])
 
       initialize_new_cycle();
 
-      $scope.showDeleteCycleModal = function (cycle_id, cycle_name) {
+      $scope.showDeleteCycleModal = function (cycle_id) {
         const delete_cycle_modal = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/delete_cycle_modal.html',
           controller: 'delete_cycle_modal_controller',
+          backdrop: 'static',
+          keyboard: false,
           resolve: {
-            cycle_id: () => cycle_id,
-            cycle_name: () => cycle_name
+            // use cycle data from organization endpoint b/c it includes inventory counts
+            cycle: (organization_service) => {
+              return organization_service.get_organization($scope.org.id)
+                .then(res => {
+                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id);
+                });
+            },
+            organization_id: () => $scope.org.id
           }
         });
         delete_cycle_modal.result.then(function () {

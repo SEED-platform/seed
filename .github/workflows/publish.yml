@@ -28,9 +28,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          # using `v2` in key to clear old cache due to errors
+          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
+          key: ${{ runner.os }}-buildx-v2-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-v2-
       -
         name: Login to DockerHub
         uses: docker/login-action@v1

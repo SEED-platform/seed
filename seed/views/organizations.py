@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -94,7 +94,7 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
             'display_units_area': o.display_units_area,
-            'display_significant_figures': o.display_significant_figures,
+            'display_decimal_places': o.display_decimal_places,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
@@ -681,12 +681,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             warn_bad_pint_spec('area', desired_display_units_area)
 
-        desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
-            org.display_significant_figures = desired_display_significant_figures
-        elif desired_display_significant_figures is not None:
+        desired_display_decimal_places = posted_org.get('display_decimal_places')
+        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:  # noqa
+            org.display_decimal_places = desired_display_decimal_places
+        elif desired_display_decimal_places is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
-                desired_display_significant_figures, org.name))
+                desired_display_decimal_places, org.name))
 
         desired_display_meter_units = posted_org.get('display_meter_units')
         if desired_display_meter_units:

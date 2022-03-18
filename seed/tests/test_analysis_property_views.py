@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.landing.models import SEEDUser as User
 from seed.models import AnalysisPropertyView, Analysis
@@ -48,7 +48,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_a.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_a.fake.random_number(digits=6)),
@@ -63,7 +63,7 @@ class TestAnalysisPropertyViews(TestCase):
                 # override unitted fields so that hashes are correct
                 site_eui=ureg.Quantity(
                     float(view_factory_b.fake.random_int(min=50, max=600)),
-                    "kilobtu / foot ** 2 / year"
+                    "kBtu / foot ** 2 / year"
                 ),
                 gross_floor_area=ureg.Quantity(
                     float(view_factory_b.fake.random_number(digits=6)),
@@ -78,6 +78,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=[p.id for p in self.property_views_a],
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(failures))
@@ -114,6 +115,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(failures))
@@ -132,6 +134,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=bad_property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(0, len(analysis_view_ids))
@@ -150,6 +153,7 @@ class TestAnalysisPropertyViews(TestCase):
             analysis_id=self.analysis_a.id,
             property_view_ids=property_view_ids,
         )
+        analysis_view_ids = analysis_view_ids.values()
 
         # Assert
         self.assertEqual(len(analysis_view_ids), len(self.property_views_a))

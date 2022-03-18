@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:gbxml="http://www.gbxml.org/schema" targetNamespace="http://buildingsync.net/schemas/bedes-auc/2019" elementFormDefault="qualified" attributeFormDefault="unqualified" version="2.2.0">
-  <xs:import namespace="http://www.gbxml.org/schema" schemaLocation="http://www.gbxml.org/schema/6-01/GreenBuildingXML_Ver6.01.xsd"/>
+  <xs:import namespace="http://www.gbxml.org/schema" schemaLocation="https://github.com/BuildingSync/gbXML_Schemas/releases/download/v6.01/GreenBuildingXML_Ver6.01.xsd"/>
   <xs:annotation>
     <xs:documentation>BuildingSync Schema - Version 2.2.0</xs:documentation>
     <xs:documentation xmlns="http://www.w3.org/1999/xhtml">

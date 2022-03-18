@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from __future__ import absolute_import
@@ -12,23 +12,22 @@ import re
 from os import path
 
 from django.contrib.gis.db import models as geomodels
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import post_save, pre_save, m2m_changed
 from django.dispatch import receiver
 
 from seed.data_importer.models import ImportFile
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Cycle,
+from seed.models.cycles import Cycle
+from seed.models.models import (
     StatusLabel,
-    TaxLotProperty,
     DATA_STATE,
     DATA_STATE_UNKNOWN,
     DATA_STATE_MATCHING,
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
 )
+from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import (
     compare_orgs_between_label_and_target,
@@ -82,7 +81,7 @@ class TaxLotState(models.Model):
     postal_code = models.CharField(max_length=255, null=True, blank=True)
     number_properties = models.IntegerField(null=True, blank=True)
 
-    extra_data = JSONField(default=dict, blank=True)
+    extra_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
 
     # taxlots can now have lat/long and polygons, points.

@@ -1,11 +1,11 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -103,6 +103,7 @@ class StatusLabel(TimeStampedModel):
         null=True,
         related_name='labels'
     )
+    show_in_list = models.BooleanField(default=False)
 
     DEFAULT_LABELS = [
         'Residential',
@@ -143,6 +144,9 @@ class Compliance(TimeStampedModel):
     end_date = models.DateField(_('end_date'), null=True, blank=True)
     deadline_date = models.DateField(_('deadline_date'), null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name=_('Project'), )
+
+    class Meta:
+        ordering = ('-modified', '-created',)
 
     def __str__(self):
         return 'Compliance %s for project %s' % (

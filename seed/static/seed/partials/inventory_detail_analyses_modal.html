@@ -1,6 +1,6 @@
 <div>
     <div class="modal-header">
-        <h4 class="modal-title" id="manageLabelsModalLabel">Run Analysis</h4>
+        <h4 class="modal-title" id="manageLabelsModalLabel" translate>Run Analysis</h4>
     </div>
     <div class="modal-body">
         <div class="newAnalysisInput" style="margin-top:0;">
@@ -13,17 +13,77 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label sectionLabel">Type</label>
-                    <select class="form-control" ng-model="new_analysis.service" ng-dropdown required>
+                    <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
                         <option ng-option value='BSyncr' selected="selected">BSyncr</option>
+                        <option ng-option value='BETTER' selected="selected">BETTER</option>
+                        <option ng-option value='EUI' selected="selected">EUI</option>
+                        <option ng-option value='CO2' selected="selected">Average Annual CO2</option>
                     </select>
                 </div>
+
                 <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
                     <label class="control-label sectionLabel">BSyncr Model Selection</label>
-                    <select class="form-control" ng-model="new_analysis.configuration" ng-dropdown required>
-                         <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$:: model.model_type $}</option>
+                    <select class="form-control" ng-model="new_analysis.configuration.model_type" ng-dropdown required>
+                        <option ng-repeat="model in bsyncr_models" selected="selected" ng-value=model>{$::
+                            model $}
+                        </option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid" translate>Create Analysis</button>
+
+                <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
+                    <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
+                    <div class="form-group" style="padding-top: 1em">
+                        <div class="form-row">
+                            <div class="col-md-6">
+                                <label class="control-label sectionLabel text-muted">
+                                    Savings Target
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"></i>
+                                </label>
+                                <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
+                                    <option ng-repeat="model in better_savings_targets" selected="selected"
+                                            ng-value=model>{$:: model $}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="control-label sectionLabel text-muted">
+                                    Benchmark Data
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"></i>
+                                </label>
+                                <select class="form-control" ng-model="new_analysis.configuration.benchmark_data" ng-dropdown required>
+                                    <option ng-repeat="model in better_benchmark_options" selected="selected"
+                                            ng-value=model>{$:: model $}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="col-md-6" style="padding-top: 1em; padding-bottom: 1em">
+                                <label class="control-label sectionLabel text-muted">
+                                    Minimum Model R Squared
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'R² is a value from 0 to 1 that represents the proportion of the variance in the dependent variable (energy use) that is predictable from the independent variable (outdoor air temperature).'"></i>
+                                </label>
+                                <input ng-model="new_analysis.configuration.min_model_r_squared" type="number" class="form-control" ng-init="new_analysis.configuration.min_model_r_squared=0.6" ng-value="0.6" step=".01" min="0" max="1">
+                            </div>
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
+                                <label class="control-label sectionLabel text-muted">
+                                    Preprocess Meters
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"></i>
+                                </label>
+                                <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
+                            </div>
+                            <div class="col-md-3" style="padding-top: 1em; padding-bottom: 1em">
+                                <label class="control-label sectionLabel text-muted">
+                                    Run Portfolio Analysis
+                                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>
+                                </label>
+                                <input ng-model="new_analysis.configuration.portfolio_analysis" ng-disabled="inventory_count == 1" type="checkbox" style="width: 34px; height: 34px; display: block; margin: 0;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" translate>Create Analysis</button>
             </form>
         </div>
     </div>

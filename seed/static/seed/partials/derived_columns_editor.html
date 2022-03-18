@@ -1,0 +1,142 @@
+<script type="text/ng-template" id="typeahead.html">
+    <a>
+        <span ng-bind-html="match.label | uibTypeaheadHighlight:query"></span>
+    </a>
+</script>
+
+<div class="page_header_container">
+    <div class="page_header">
+        <div class="left page_action_container">
+            <a ui-sref="organizations" class="page_action"><i class="fa fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+        </div>
+        <div class="page_title">
+            <h1>{$:: org.name $}</h1>
+        </div>
+        <div class="right page_action_container">
+        </div>
+    </div>
+</div>
+
+<div class="section_nav_container">
+    <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+
+<div class="section">
+    <div class="section_header_container">
+        <div class="section_header has_no_padding fixed_height_short">
+            <div class="section_action_container left_40">
+                <h2><i class="fa fa-calculator"></i> <span translate>Derived Columns</span></h2>
+            </div>
+        </div>
+    </div>
+    <div class="section_content_container">
+        <div class="section_content with_padding" style="margin-top:15px; margin-bottom:15px; padding: 0 2em 0 2em;">
+            <div style="display: grid; grid-template-columns: 15em 30em 10em; gap: .75em;">
+                <!-- basic info -->
+                <h3>Derived column name</h3>
+                <h3>Type</h3>
+                <span></span>
+                <div>
+                    <input
+                        type="text"
+                        ng-model="derived_column.name"
+                        ng-change="update_column_name_error()"
+                        class="form-control"
+                        placeholder="Derived column name"
+                    >
+                    <div ng-if="invalid_column_name" class="text-danger">Please provide a valid name</div>
+                </div>
+                <select
+                    type="text"
+                    ng-disabled="!!derived_column.id"
+                    ng-model="derived_column.inventory_type"
+                    ng-options="option for option in inventory_type_options"
+                    ng-change="updated_inventory_type()"
+                    class="form-control"
+                ></select>
+                <span></span>
+ 
+                <!-- parameters -->
+                <h3>Parameter name</h3>
+                <h3>Source column</h3>
+                <span></span>
+                <div ng-repeat-start="parameter in parameters" >
+                    <input
+                        type="text"
+                        placeholder="Parameter name"
+                        ng-model="parameter.parameter_name"
+                        ng-change="updated_parameter_or_expression()"
+                        class="form-control"
+                        aria-label="Parameter name"
+                    >
+                    <div ng-if="parameter.errors.invalid_parameter_name" class="text-danger">Parameter name is invalid.</div>
+                    <div ng-if="parameter.errors.duplicate_parameter_name" class="text-danger">Parameter name "{$ parameter.parameter_name $}" is duplicated. Please change or remove one of the duplicate parameters.</div>
+                    <div ng-if="parameter.errors.expression_missing_parameter" class="text-danger">Parameter is not used in the expression. Use <code>${$ parameter.parameter_name $}</code> to reference the parameter.</div>
+                </div>
+                <div>
+                    <input
+                        type="text"
+                        ng-model="parameter.source_column"
+                        ng-blur="updated_parameter_or_expression()"
+                        class="form-control"
+                        placeholder="Source column name"
+                        uib-typeahead="column as column.displayName for column in (derived_column.inventory_type === 'Property' ? property_columns : taxlot_columns) | filter:{displayName:$viewValue}"
+                        typeahead-template-url="typeahead.html"
+                        typeahead-editable="false"
+                        typeahead-show-hint="true"
+                        typeahead-min-length="0"
+                        typeahead-select-on-exact="true"
+                        typeahead-select-on-blur="true"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        aria-label="Source column name"
+                    >
+                    <div ng-if="parameter.errors.invalid_source_column" class="text-danger">Column name is invalid. Please select one of the provided choices.</div>
+                    <div ng-if="parameter.errors.duplicate_source_column" class="text-danger">Column is duplicated. Please change or remove one of the duplicate columns.</div>
+                </div>
+                <div ng-repeat-end>
+                    <button ng-if="parameters.length > 1" ng-click="delete_parameter($index)" class="btn btn-danger" aria-label="Delete">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
+
+                <button ng-click="add_parameter()" class="btn btn-info">
+                    <span class="glyphicon glyphicon-plus"></span> Add parameter
+                </button>
+                <span></span>
+                <span></span>
+
+                <!-- expression -->
+                <h3>Expression</h3>
+                <span></span>
+                <span></span>
+                <div style="grid-column: 1 / 3">
+                    <input
+                        type="text"
+                        ng-model="derived_column.expression"
+                        ng-change="updated_parameter_or_expression()"
+                        class="form-control"
+                    >
+                    <div ng-if="expression_error_message" class="text-danger">{$ expression_error_message $}</div>
+                    <div ng-if="errors_from_server" class="text-danger">
+                        Error(s):
+                        <span ng-repeat="(field_name, messages) in errors_from_server">
+                            <br>
+                            {$ field_name $}:
+                            <ul>
+                                <li ng-repeat="message in messages">{$ message $}</li>
+                            </ul>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <button ng-click="create_or_update_derived_column()" class="btn btn-success" ng-disabled="any_errors()">
+                       {$ !derived_column.id ? 'Create' : 'Save' $}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

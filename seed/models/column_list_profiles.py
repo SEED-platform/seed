@@ -1,11 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
 from collections import OrderedDict
+from seed.models.derived_columns import DerivedColumn
 
 from django.apps import apps
 from django.db import models
@@ -40,6 +41,7 @@ class ColumnListProfile(models.Model):
     inventory_type = models.IntegerField(choices=VIEW_LIST_INVENTORY_TYPE, default=VIEW_LIST_PROPERTY)
     columns = models.ManyToManyField(Column, related_name='column_list_profiles',
                                      through='seed.ColumnListProfileColumn')
+    derived_columns = models.ManyToManyField(DerivedColumn, related_name='column_list_profiles')
 
     PROFILE_TYPE = {'properties': VIEW_LIST_PROPERTY, 'taxlots': VIEW_LIST_TAXLOT}
     COLUMN_TYPE = {'properties': 'property', 'taxlots': 'taxlot'}

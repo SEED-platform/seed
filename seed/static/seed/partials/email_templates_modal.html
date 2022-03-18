@@ -1,0 +1,26 @@
+<div class="modal-header" ng-switch="::action">
+    <h4 class="modal-title" ng-switch-when="rename" translate>Rename the Selected Template</h4>
+    <h4 class="modal-title" ng-switch-when="remove" translate>Delete the Selected Template</h4>
+    <h4 class="modal-title" ng-switch-when="new" translate>Create the Selected Template</h4>
+</div>
+<div class="modal-body no_bottom_padding row form-horizontal" ng-switch="::action">
+    <div class="form-group" ng-switch-when="rename">
+        <label class="control-label col-lg-3 col-sm-3" for="inputRename" translate>Template Name</label>
+        <div class="col-lg-8 col-sm-8">
+            <input type="text" class="form-control" id="inputRename" ng-model="$parent.newName" autofocus placeholder="{$:: data.name $}" sd-enter="rename_template()" required>
+        </div>
+    </div>
+    <div class="col-sm-12" style="padding-bottom: 15px;" ng-switch-when="remove">{$:: 'Are you sure you want to delete the template' | translate $}, <strong>{$:: data.name $}</strong>?</div>
+    <div class="form-group" ng-switch-when="new">
+        <label class="control-label col-lg-3 col-sm-3" for="inputNew" translate>Template Name</label>
+        <div class="col-lg-8 col-sm-8">
+            <input type="text" class="form-control" id="inputNew" ng-model="$parent.newName" autofocus placeholder="{$:: 'your template name' | translate $}" sd-enter="new_template()" required>
+        </div>
+    </div>
+</div>
+<div class="modal-footer" ng-switch="::action">
+    <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+    <button type="button" ng-switch-when="rename" class="btn btn-primary" ng-click="rename_template()" ng-disabled="disabled()" translate>Rename Template</button>
+    <button type="button" ng-switch-when="remove" class="btn btn-danger" ng-click="remove_template()" autofocus translate>Yes, Remove Template</button>
+    <button type="button" ng-switch-when="new" class="btn btn-info" ng-click="new_template()" ng-disabled="disabled()" translate>Create Template</button>
+</div>

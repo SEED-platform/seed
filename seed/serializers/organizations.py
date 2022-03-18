@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from rest_framework import serializers
@@ -18,7 +18,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     public_fields = SaveSettingsOrgFieldSerializer(many=True)
     display_units_eui = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_EUI)
     display_units_area = serializers.ChoiceField(choices=Organization.MEASUREMENT_CHOICES_AREA)
-    display_significant_figures = serializers.IntegerField(min_value=0)
+    display_decimal_places = serializers.IntegerField(min_value=0)
     display_meter_units = serializers.JSONField()
     thermal_conversion_assumption = serializers.ChoiceField(choices=Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES)
     mapquest_api_key = serializers.CharField()

@@ -1,11 +1,16 @@
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+
 import re
 
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 
 class PasswordBaseCharacterQuantityValidator(object):
-    TYPE = None
+    TYPE = ''
     RE = re.compile(r'')
 
     def __init__(self, quantity=1):

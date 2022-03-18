@@ -1,0 +1,48 @@
+<div class="row analysis-status {$ analysis.status.toLowerCase() $}">
+    <h1 class="grow">{$:: analysis.name $} <small>Run #{$:: analysis.views[0] $}</small></h1>
+        <!-- <span class="link" ui-sref="analysis(::{organization_id: org.id, analysis_id: analysis.id})">Analysis {$:: analysis.name $}</span> -->
+    <span>
+        <i
+            class="fa fa-refresh fa-pulse fa-fw" style="padding-right: 0"
+            ng-if="!analysis._finished_with_tasks"></i>
+        {$ analysis.status $}
+    </span>
+    <span>
+        <i class="glyphicon glyphicon-play link" title="Start Analysis" aria-hidden="true"
+           ng-if="analysis.status === 'Ready'" ng-click="start_analysis(analysis.id)"></i>
+        <i class="glyphicon glyphicon-stop link" title="Stop Analysis" aria-hidden="true"
+           ng-if="['Pending Creation', 'Creating', 'Queued', 'Running'].indexOf(analysis.status) >= 0"
+           ng-disabled="['Pending Creation', 'Queued'].indexOf(analysis.status) >= 0"
+           ng-click="stop_analysis(analysis.id)"></i>
+        <i class="glyphicon glyphicon-trash link" title="Delete Analysis" aria-hidden="true"
+           ng-click="delete_analysis(analysis.id)"></i>
+    </span>
+</div>
+<div class="row grow">
+    <div>
+        <div ng-repeat="highlight in analysis.highlights" class="card-highlight">
+            <div class="card-highlight-score">{$:: highlight.value $}</div>
+            <div class="card-highlight-title">{$:: highlight.name $}</div>
+        </div>
+    </div>
+    <div class="card-stats grow">
+        <ul ng-if="(analysis.configuration | json) != '{}'" ng-repeat="(config, setting) in analysis.configuration">
+            <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
+        </ul>
+        <div ng-if="(analysis.configuration | json) == '{}'">
+            No configuration.
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="grow">
+        <div>
+            <small ng-if="analysis.start_time">{$:: analysis.start_time | date : 'MM-dd-yyyy HH:mm' $}</small>
+            <small ng-if="analysis.end_time"> ({$:: analysis | get_run_duration $})</small>
+        </div>
+        <small>{$:: users | filter : {'user_id':analysis.user} | getAnalysisRunAuthor $}</small>
+    </div>
+    <div class="link" ui-sref="analysis_run(::{inventory_type: inventory_type, view_id: view_id, run_id: analysis.views[0], analysis_id: analysis.id, organization_id: org.id})">
+        Full Analysis <i class="glyphicon glyphicon-log-out"></i>
+    </div>
+</div>

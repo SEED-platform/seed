@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -18,6 +18,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    DerivedColumn,
     Property,
     PropertyState,
     PropertyView,
@@ -45,6 +46,7 @@ from seed.utils.organizations import create_organization
 class DeleteModelsTestCase(TestCase):
     def _delete_models(self):
         # Order matters here
+        DerivedColumn.objects.all().delete()
         Column.objects.all().delete()
         ColumnMapping.objects.all().delete()
         DataQualityCheck.objects.all().delete()
@@ -127,7 +129,7 @@ class FakeRequest(object):
     META = {'REMOTE_ADDR': '127.0.0.1'}
     path = 'fake_login_path'
     body = None
-    GET = POST = {}
+    GET = POST = {}  # type: ignore
 
     def __init__(self, data=None, headers=None, user=None, method='POST', **kwargs):
         if 'body' in kwargs:
@@ -161,3 +163,15 @@ class FakeClient(object):
 
     def post(self, view_func, data, headers=None, **kwargs):
         return self._gen_req(view_func, data, headers, **kwargs)
+
+
+class AssertDictSubsetMixin:
+    def assertDictContainsSubset(self, subset, dictionary):
+        """Checks whether dictionary is a superset of subset
+
+        This is a necessary polyfill b/c assertDictContainsSubset was deprecated
+        and I believe it's much more readable compared to the implementation below
+        """
+        # source: https://stackoverflow.com/a/59777678
+        # Note that this only works in Python >= 3.9
+        self.assertEqual(dictionary, dictionary | subset)

@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California,
+:copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
@@ -14,7 +14,7 @@ from kombu.serialization import register
 
 from seed.serializers.celery import CeleryDatetimeSerializer
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -84,7 +84,7 @@ MIDDLEWARE = (
 
 ROOT_URLCONF = 'config.urls'
 
-INSTALLED_APPS = (
+DJANGO_CORE_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.flatpages',
@@ -105,6 +105,7 @@ INSTALLED_APPS = (
     'oauth2_provider',
     'oauth2_jwt_provider',
     'crispy_forms',  # needed to squash warnings around collectstatic with rest_framework
+    'post_office',
 )
 
 SEED_CORE_APPS = (
@@ -116,28 +117,41 @@ SEED_CORE_APPS = (
     'seed.docs'
 )
 
+# Added by Ashray Wadhwa (08/19/2020)
+POST_OFFICE = {
+    'BACKENDS': {
+        'default': 'smtp.EmailBackend',
+        'post_office_backend': 'django.core.mail.backends.console.EmailBackend',
+    },
+    'CELERY_ENABLED': True,
+}
+
+
+
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
 # Internal apps can resolve this via South's depends_on.
 HIGH_DEPENDENCY_APPS = ('seed.landing',)  # 'landing' contains SEEDUser
 
-INSTALLED_APPS = HIGH_DEPENDENCY_APPS + INSTALLED_APPS + SEED_CORE_APPS
+INSTALLED_APPS = HIGH_DEPENDENCY_APPS + DJANGO_CORE_APPS + SEED_CORE_APPS
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = (
     'seed',
 )
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/api/v3/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
 COMPRESS_AUTOPREFIXER_BINARY = 'node_modules/.bin/postcss'
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'django_compressor_autoprefixer.AutoprefixerFilter',
-    'compressor.filters.cssmin.CSSMinFilter'
-]
+COMPRESS_FILTERS = {
+    'css': [
+        'compressor.filters.css_default.CssAbsoluteFilter',
+        'django_compressor_autoprefixer.AutoprefixerFilter',
+        'compressor.filters.cssmin.CSSMinFilter',
+    ]
+}
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'vendors')
 ]
@@ -258,6 +272,7 @@ AUTH_PASSWORD_VALIDATORS = [
         }
     },
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Django Rest Framework
 REST_FRAMEWORK = {
@@ -309,7 +324,13 @@ SWAGGER_SETTINGS = {
 BSYNCR_SERVER_HOST = os.environ.get('BSYNCR_SERVER_HOST')
 BSYNCR_SERVER_PORT = os.environ.get('BSYNCR_SERVER_PORT', '80')
 
-# Google reCAPTCHA env variable for self-registration
+# LBNL's BETTER tool host location
+BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better.lbl.gov') 
+
+# Google reCAPTCHA env variable for self-registration. SITE_KEY defaults
+# to the key registered for SEED. Override it needing to test.
+# https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
+GOOGLE_RECAPTCHA_SITE_KEY = os.environ.get('GOOGLE_RECAPTCHA_SITE_KEY', '6LexR2MaAAAAAMkCFmLaucT0KwSfx0PjiX-cf6rV')
 GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get('GOOGLE_RECAPTCHA_SECRET_KEY')
 
 # Certification
@@ -320,3 +341,6 @@ GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 
 # Config to include v2 APIs
 INCLUDE_SEED_V2_APIS = os.environ.get('INCLUDE_SEED_V2_APIS', 'true').lower() == 'true'
+
+# Config self registration
+INCLUDE_ACCT_REG = os.environ.get('INCLUDE_ACCT_REG', 'true').lower() == 'true'

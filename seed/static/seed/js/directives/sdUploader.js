@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 /**
@@ -309,6 +309,10 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
   } else if (scope.sourcetype === 'GreenButton') {
     uploader = makeFileSystemUploader(scope, element, ['xml']);
+  } else if (scope.sourcetype === 'SensorMetaData') {
+    uploader = makeFileSystemUploader(scope, element, ['csv', 'xlsx']);
+  } else if (scope.sourcetype === 'SensorReadings') {
+    uploader = makeFileSystemUploader(scope, element, ['csv', 'xlsx']);
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
   } else {

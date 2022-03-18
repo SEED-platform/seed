@@ -1,3 +1,8 @@
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+
 import copy
 from datetime import datetime
 
@@ -207,18 +212,112 @@ def to_energy_type(energy_type):
     """converts an energy type from BuildingSync into one allowed by SEED
 
     :param energy_type: string, building sync energy type
-    :return: string
+    :return: int | None
     """
     # avoid circular dependency
     from seed.models import Meter
 
-    energy_name = "Electric - Grid" if energy_type == 'Electricity' else energy_type
-    energy_name = energy_name.lower()
+    if energy_type is None:
+        return energy_type
+
+    # valid energy type values from the schema (<xs:simpleType name="FuelTypes">) and their maps
+    # non-trivial or non-obvious mappings currently map to "Other:" and are flagged with a comment
+    # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
+    energy_name = {
+        'Electricity': 'Electric - Grid',
+        'Electricity-Exported': 'Electric - Grid',
+        'Electricity-Onsite generated': 'Other:',                   # other?
+        'Natural gas': 'Natural Gas',
+        'Fuel oil': 'Other:',                                       # other?
+        'Fuel oil no 1': 'Fuel oil (No. 1)',
+        'Fuel oil no 2': 'Fuel Oil (No. 2)',
+        'Fuel oil no 4': 'Fuel Oil (No. 4)',
+        'Fuel oil no 5': 'Other:',                                  # other?
+        'Fuel oil no 5 (light)': 'Other:',                          # other?
+        'Fuel oil no 5 (heavy)': 'Other:',                          # other?
+        'Fuel oil no 6': 'Fuel Oil (No. 5 and No. 6)',              # other?
+        'Fuel oil no 5 and no 6': 'Fuel Oil (No. 5 and No. 6)',
+        'District steam': 'District Steam',
+        'District hot water': 'District Hot Water',
+        'District chilled water': 'District Chilled Water - Other',  # correct mapping?
+        'Propane': 'Propane',
+        'Liquid propane': 'Propane',
+        'Kerosene': 'Kerosene',
+        'Diesel': 'Diesel',
+        'Coal': 'Other:',                                           # other?
+        'Coal anthracite': 'Coal (anthracite)',
+        'Coal bituminous': 'Coal (bituminous)',
+        'Coke': 'Coke',
+        'Wood': 'Wood',
+        'Wood pellets': 'Wood',
+        'Hydropower': 'Other:',                                     # other?
+        'Biofuel': 'Other:',                                        # other?
+        'Biofuel B5': 'Other:',                                     # other?
+        'Biofuel B10': 'Other:',                                    # other?
+        'Biofuel B20': 'Other:',                                    # other?
+        'Wind': 'Electric - Wind',
+        'Geothermal': 'Other:',                                     # other?
+        'Solar': 'Electric - Solar',
+        'Biomass': 'Other:',                                        # other?
+        'Hydrothermal': 'Other:',                                   # other?
+        'Dry steam': 'Other:',                                      # other?
+        'Flash steam': 'Other:',                                    # other?
+        'Ethanol': 'Other:',                                        # other?
+        'Biodiesel': 'Other:',                                      # other?
+        'Waste heat': 'Other:',                                     # other?
+        'Dual fuel': 'Other:',                                      # other?
+        'Gasoline': 'Other:',                                       # other?
+        'Thermal-Exported': 'Other:',                               # other?
+        'Thermal-Onsite generated': 'Other:',                       # other?
+        'Other delivered-Exported': 'Other:',                       # other?
+        'Other delivered-Onsite generated': 'Other:',               # other?
+        'Other metered-Exported': 'Other:',                         # other?
+        'Other metered-Onsite generated': 'Other:',                 # other?
+        'Other': 'Other:',
+        'Unknown': 'Other:',                                        # other?
+    }.get(energy_type, energy_type).lower()
     for energy_pair in Meter.ENERGY_TYPES:
         if energy_pair[1].lower() == energy_name:
             return energy_pair[0]
 
-    return energy_type
+    # couldn't find this energy type... default to "Other:"
+    return Meter.ENERGY_TYPES.OTHER
+
+
+def to_energy_units(units):
+    """converts energy units from BuildingSync into one allowed by SEED
+
+    :param units: string, building sync units
+    :return: string | None
+    """
+
+    if units is None:
+        return None
+
+    # valid energy unit values from the schema (<xs:element name="ResourceUnits">) and their maps
+    # non-trivial or non-obvious mappings currently map to "Unknown" and are flagged with a comment
+    # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
+    return {
+        'Cubic Meters': 'cm (cubic meters)',
+        'kcf': 'kcf (thousand cubic feet)',
+        'MCF': 'Mcf (million cubic feet)',
+        'Gallons': 'Gallons (US)',
+        'Wh': 'Wh (Watt-hours)',
+        'kWh': 'kWh (thousand Watt-hours)',
+        'MWh': 'MWh (million Watt-hours)',
+        'Btu': 'Btu',
+        'kBtu': 'kBtu (thousand Btu)',
+        'MMBtu': 'MBtu/MMBtu (million Btu)',
+        'therms': 'therms',
+        'lbs': 'Lbs. (pounds)',
+        'Klbs': 'kLbs. (thousand pounds)',
+        'Mlbs': 'MLbs. (million pounds)',
+        'Mass ton': 'Tons',                     # assuming "Tons" over "Tonnes (metric)"
+        'Ton-hour': 'ton hours',
+        'Other': 'Unknown',
+        'Unknown': 'Unknown',
+        'None': 'None',
+    }.get(units, "Unknown")
 
 
 def to_float(value):
@@ -426,8 +525,8 @@ def update_tree(schema, tree, xpath, target, value, namespaces):
         update_element(last_element, target, value)
 
 
-# Base mapping for BuildingSync schema version 2.0
-BASE_MAPPING_V2_0 = {
+# Base mapping for BuildingSync schema version 2.x
+BASE_MAPPING_V2 = {
     'property': {
         'xpath': '/auc:BuildingSync/auc:Facilities/auc:Facility/auc:Sites/auc:Site',
         'type': 'object',
@@ -566,6 +665,36 @@ BASE_MAPPING_V2_0 = {
                 'type': 'value',
                 'value': 'text',
                 'formatter': to_bool
+            },
+            'measure_total_first_cost': {
+                'xpath': './auc:MeasureTotalFirstCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'measure_installation_cost': {
+                'xpath': './auc:MeasureInstallationCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'measure_material_cost': {
+                'xpath': './auc:MeasureMaterialCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'mv_cost': {
+                'xpath': './auc:MVCost',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
+            },
+            'useful_life': {
+                'xpath': './auc:UsefulLife',
+                'type': 'value',
+                'value': 'text',
+                'formatter': to_float
             }
         }
     },
@@ -580,6 +709,11 @@ BASE_MAPPING_V2_0 = {
             },
             'name': {
                 'xpath': './auc:ScenarioName',
+                'type': 'value',
+                'value': 'text'
+            },
+            'temporal_status': {
+                'xpath': './auc:TemporalStatus',
                 'type': 'value',
                 'value': 'text'
             },
@@ -643,6 +777,11 @@ BASE_MAPPING_V2_0 = {
                 'type': 'value',
                 'value': 'text'
             },
+            'annual_peak_electricity_reduction': {
+                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualPeakElectricityReduction',
+                'type': 'value',
+                'value': 'text'
+            },
             'annual_natural_gas_energy': {
                 'xpath': './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Natural gas"]/auc:AnnualFuelUseConsistentUnits',
                 'type': 'value',
@@ -654,11 +793,11 @@ BASE_MAPPING_V2_0 = {
                 'value': 'exist'
             },
             'measure_ids': {
-                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:MeasureIDs',
+                'xpath': './auc:ScenarioType/auc:PackageOfMeasures/auc:MeasureIDs/auc:MeasureID',
                 'type': 'list',
                 'items': {
                     'id': {
-                        'xpath': './auc:MeasureID',
+                        'xpath': '.',
                         'type': 'value',
                         'value': '@IDref'
                     }
@@ -682,7 +821,8 @@ BASE_MAPPING_V2_0 = {
                     'units': {
                         'xpath': './auc:ResourceUnits',
                         'type': 'value',
-                        'value': 'text'
+                        'value': 'text',
+                        'formatter': to_energy_units
                     }
                 }
             },
@@ -690,6 +830,11 @@ BASE_MAPPING_V2_0 = {
                 'xpath': './auc:TimeSeriesData/auc:TimeSeries',
                 'type': 'list',
                 'items': {
+                    'id': {
+                        'xpath': '.',
+                        'type': 'value',
+                        'value': '@ID',
+                    },
                     'start_time': {
                         'xpath': './auc:StartTimestamp',
                         'type': 'value',
@@ -711,6 +856,24 @@ BASE_MAPPING_V2_0 = {
                         'xpath': './auc:ResourceUseID',
                         'type': 'value',
                         'value': '@IDref'
+                    }
+                }
+            },
+            # Audit Template stores some meter readings in AllResourceTotals...
+            'audit_template_all_resource_totals': {
+                'xpath': './auc:AllResourceTotals/auc:AllResourceTotal[auc:UserDefinedFields/auc:UserDefinedField/auc:FieldName="Linked Time Series ID"]',
+                'type': 'list',
+                'items': {
+                    'linked_time_series_id': {
+                        'xpath': './auc:UserDefinedFields/auc:UserDefinedField[auc:FieldName="Linked Time Series ID"]/auc:FieldValue',
+                        'type': 'value',
+                        'value': 'text',
+                    },
+                    'site_energy_use': {
+                        'xpath': './auc:SiteEnergyUse',
+                        'type': 'value',
+                        'value': 'text',
+                        'formatter': to_float,
                     }
                 }
             }

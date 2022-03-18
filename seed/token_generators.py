@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author: Aleck Landgraf
 
 token_generator.py - taken from django core master branch
@@ -15,7 +15,6 @@ from datetime import date
 from django.conf import settings
 from django.utils.http import int_to_base36, base36_to_int
 from django.utils.crypto import constant_time_compare, salted_hmac
-from django.utils import six
 
 
 class SignupTokenGenerator(object):
@@ -81,7 +80,7 @@ class SignupTokenGenerator(object):
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
         value = (
-            six.text_type(user.pk) + user.password + six.text_type(login_timestamp) + six.text_type(timestamp)
+            str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
         )
         hash = salted_hmac(key_salt, value).hexdigest()[::2]
         return "%s-%s" % (ts_b36, hash)
