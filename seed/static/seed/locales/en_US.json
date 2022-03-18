@@ -14,6 +14,8 @@
     "ADD_FILES_TO": "Add files to {dataset_name}.",
     "ADD_REMOVE_LABELS_FROM_PROPERTIES": "Add or remove labels from {num, plural, one{1 selected property} other{# selected properties}}",
     "ADD_REMOVE_LABELS_FROM_TAXLOTS": "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}",
+    "ALSO_DELETE_ANALYSES": "Also delete {num,plural, one{1 analysis} other{# analyses}}.",
+    "ALSO_DELETE_BATCH_ANALYSES": "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}.",
     "AND": "AND",
     "API Documentation": "API Documentation",
     "API Key": "API Key",
