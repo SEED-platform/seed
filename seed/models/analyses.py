@@ -99,7 +99,7 @@ class Analysis(models.Model):
 
         # BSyncr
         if self.service == self.BSYNCR:
-            return [{'name': 'Unimplemented', 'value': 'Oops!'}]
+            return [{'name': 'Completed', 'value': ''}]
 
         # BETTER
         elif self.service == self.BETTER:
