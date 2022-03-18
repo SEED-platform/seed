@@ -186,15 +186,18 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     ).values_list('column_name', flat=True)
 
     default = state2
+    null = None
+    state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns
 
-        attr_values = [
-            value
-            for value
-            in list(can_attrs[attr].values())
-            if value is not None or recognize_empty
-        ]
+        attr_values = []
+        for value in list(can_attrs[attr].values()):
+            if value is None and recognize_empty:
+                if attr in state2_present_columns:
+                    attr_values.append(value)
+            elif value is not None or recognize_empty:
+                attr_values.append(value)
 
         attr_value = None
         # Two, differing values are set.
