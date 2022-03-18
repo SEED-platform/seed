@@ -423,14 +423,14 @@ def _process_results(self, analysis_id):
         ),
         ExtraDataColumnPath(
             'better_ghg_reductions_electricity',
-            'BETTER Potential Electricity GHG Emissions Reduction (kgCO2e)',
-            1,
+            'BETTER Potential Electricity GHG Emissions Reduction (MTCO2e)',
+            .001,
             'assessment.assessment_energy_use.ghg_reductions_e'
         ),
         ExtraDataColumnPath(
             'better_ghg_reductions_fuel',
-            'BETTER Potential Fuel GHG Emissions Reduction (kgCO2e)',
-            1,
+            'BETTER Potential Fuel GHG Emissions Reduction (MTCO2e)',
+            .001,
             'assessment.assessment_energy_use.ghg_reductions_f'
         ),
         ExtraDataColumnPath(
