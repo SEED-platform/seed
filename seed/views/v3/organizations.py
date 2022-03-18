@@ -121,6 +121,7 @@ def _dict_org(request, organizations):
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
             'better_analysis_api_key': o.better_analysis_api_key or '',
+            'better_host_url': settings.BETTER_HOST,
             'property_display_field': o.property_display_field,
             'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
