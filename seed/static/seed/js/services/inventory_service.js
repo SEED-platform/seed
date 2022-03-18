@@ -186,6 +186,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.get_canonical_properties = function (view_ids) {
+      return $http.post('/api/v3/properties/get_canonical_properties/', { view_ids: view_ids }, {
+        params: { organization_id: user_service.get_organization().id }
+      }).then(function (response) {
+        return response.data;
+      }).catch(function (response) {
+        return response.data;
+      });
+    };
+
     inventory_service.get_property = function (view_id) {
       // Error checks
       if (_.isNil(view_id)) {
