@@ -56,6 +56,12 @@ msgstr "Add or remove labels from {num, plural, one{1 selected property} other{#
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}"
 
+msgid "ALSO_DELETE_ANALYSES"
+msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
+
+msgid "ALSO_DELETE_BATCH_ANALYSES"
+msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}."
+
 msgid "AND"
 msgstr "AND"
 
