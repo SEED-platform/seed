@@ -23,7 +23,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW,
                          BuildingFile, Column,
-                         ColumnMappingProfile, Cycle,
+                         ColumnMappingProfile, Cycle, InventoryDocument,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Sensor, Simulation)
@@ -1304,6 +1304,57 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def upload_inventory_document(self, request, pk):
+        """
+        Upload an inventory document on a property. Currently only supports PDFs.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        file_type = InventoryDocument.str_to_file_type(request.data.get('file_type', 'Unknown'))
+
+        # retrieve property ID from property_view
+        org_id = self.get_organization(request)
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+        
+        # Save File
+        try:
+            inventory_doc = InventoryDocument.objects.create(
+                file=the_file,
+                filename=the_file.name,
+                file_type=file_type,
+                property_id=property_id
+            )
+
+            print("INVENTORY_DOC: {}".format(inventory_doc))
+            print("!!! {}".format(inventory_doc.filename))
+            print("!!! {}".format(inventory_doc.pk))
+
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                },
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 def diffupdate(old, new):

@@ -301,10 +301,13 @@
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                         <span>
-                            <h2><i class="fa fa-file"></i> {$:: 'Files (Main State Only)' | translate $}</h2>
+                            <h2><i class="fa fa-file"></i>{$:: 'Files (Main State Only)' | translate $} </h2>
                         </span>
                         </div>
                     </div>
+                    <button type="button" class="btn btn-info" ng-click="open_file_upload_modal()" style="margin: 15px;">
+                        <i class="fa fa-file"></i> <span translate>Add a File</span>
+                    </button>
                 </div>
             </div>
             <div class="section_content_container">

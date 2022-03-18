@@ -71,6 +71,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_buildingsync_modal',
   'BE.seed.controller.export_report_modal',
   'BE.seed.controller.export_inventory_modal',
+  'BE.seed.controller.file_upload_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.sensor_upload_modal',

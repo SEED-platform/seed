@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'pairing_service',
     'derived_columns_service',
     'organization_service',
+    'dataset_service',
     'inventory_payload',
     'analyses_payload',
     'users_payload',
@@ -54,6 +55,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       pairing_service,
       derived_columns_service,
       organization_service,
+      dataset_service,
       inventory_payload,
       analyses_payload,
       users_payload,
@@ -245,6 +247,21 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
       }
+
+      $scope.open_file_upload_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/file_upload_modal.html',
+          controller: 'file_upload_modal_controller',
+          resolve: {
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            }
+          }
+        });
+      };
 
       $scope.isDisabledField = function (name) {
         return _.includes([
