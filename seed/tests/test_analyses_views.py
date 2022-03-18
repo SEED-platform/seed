@@ -168,7 +168,7 @@ class TestAnalysesView(TestCase):
 
         analysis_b = next((x for x in result['analyses'] if x['id'] == self.analysis_b.id), None)
         self.assertIsNotNone(analysis_b)
-        self.assertEqual(analysis_b['number_of_analysis_property_views'], 1)
+        self.assertEqual(analysis_b['number_of_analysis_property_views'], 2)
         self.assertEqual(len(analysis_b['cycles']), 1)
 
     def test_list_organization_missing(self):
