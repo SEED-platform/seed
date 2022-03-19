@@ -190,7 +190,6 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
         null = None  # noqa
         state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
-    
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns
         attr_values = []
