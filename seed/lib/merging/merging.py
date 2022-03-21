@@ -135,7 +135,7 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
         setattr(merged_state, geo_attr, getattr(geo_state, geo_attr, None))
 
 
-def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False):
+def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False, state2_present_columns=None):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -153,7 +153,7 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
         if (val1 and val2) or recognize_empty:
             # decide based on the priority which one to use
             col_prior = priorities.get(key, 'Favor New')
-            if ignore_merge_protection or col_prior == 'Favor New':
+            if (ignore_merge_protection or col_prior == 'Favor New') and key in state2_present_columns:
                 extra_data[key] = val2
             else:  # favor the existing field
                 extra_data[key] = val1
@@ -235,7 +235,8 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         state2.extra_data,
         priorities['extra_data'],
         recognize_empty_ed_columns,
-        ignore_merge_protection
+        ignore_merge_protection,
+        state2_present_columns
     )
 
     # merge measures, scenarios, simulations
