@@ -600,7 +600,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Undoing 1 rollup merge should expose a set -State having
-        '3rd Oldest City' and state_order of 'third'.
+        '2nd Oldest City' and state_order of 'second'.
         """
         rollback_unmerge_url_1 = reverse('api:v3:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_1, content_type='application/json')
@@ -611,7 +611,7 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Undoing another rollup merge should expose a set -State having
-        '2nd Oldest City' and state_order of 'second'.
+        '4th Oldest City' and state_order of 'fourth'.
         """
         rollback_unmerge_url_2 = reverse('api:v3:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_2, content_type='application/json')
