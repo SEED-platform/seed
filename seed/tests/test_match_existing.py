@@ -448,39 +448,39 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        manual merge -View with '1st Oldest City'. '1st Oldest City' is expected
+        manual merge -View with '3rd Oldest City'. '3rd Oldest City' is expected
         to be final City value since this rollup should ignore Merge Protection.
         """
         self.assertEqual(PropertyView.objects.count(), 1)
         only_view = PropertyView.objects.get()
-        self.assertEqual(only_view.state.city, '1st Oldest City')
-        self.assertEqual(only_view.state.extra_data['state_order'], 'first')
+        self.assertEqual(only_view.state.city, '3rd Oldest City')
+        self.assertEqual(only_view.state.extra_data['state_order'], 'third')
 
         """
         Undoing 1 rollup merge should expose a set -State having
-        '3rd Oldest City' and state_order of 'third'.
+        '2nd Oldest City' and state_order of 'second'.
         """
         rollback_unmerge_url_1 = reverse('api:v3:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(rollback_unmerge_url_1, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
 
-        rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
-        self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
-        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'third')
+        rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
+        self.assertEqual(rollback_view_1.state.city, '2nd Oldest City')
+        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'second')
 
         """
         Undoing another rollup merge should expose a set -State having
-        '2nd Oldest City' and state_order of 'second'.
+        '4th Oldest City' and state_order of 'fourth'.
         """
         rollback_unmerge_url_2 = reverse('api:v3:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(rollback_unmerge_url_2, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
 
-        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
-        self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
-        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
+        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
+        self.assertEqual(rollback_view_2.state.city, '4th Oldest City')
+        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'fourth')
 
     def test_match_merge_link_ignores_properties_with_unpopulated_matching_criteria(self):
         base_details = {
