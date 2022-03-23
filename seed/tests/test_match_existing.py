@@ -6,7 +6,6 @@
 """
 
 import json
-from os import O_RSYNC
 
 from config.settings.common import TIME_ZONE
 
