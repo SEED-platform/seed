@@ -808,7 +808,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
             'Unmatched City - Cycle 2',
-            '1st Match - Cycle 2 - City 2'  # ps_22 was explicitly given precedence. 
+            '1st Match - Cycle 2 - City 2'  # ps_22 was explicitly given precedence.
                                             # Update: precedence is given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
