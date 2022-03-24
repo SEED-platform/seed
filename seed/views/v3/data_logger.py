@@ -73,7 +73,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         except IntegrityError:
             result = {
                 'status': 'error',
-                'message': f'the name {display_name} is not unique.'
+                'message': f'Data Logger name {display_name} is not unique.'
             }
         else:
             result = {
