@@ -112,7 +112,6 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 .distinct()
                 .order_by('-id')
             )
-            logger.error(f'--- {analyses_queryset.query}')
         else:
             analyses_queryset = (
                 Analysis.objects.filter(organization=organization_id)
