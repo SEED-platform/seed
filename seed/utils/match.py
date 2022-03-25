@@ -105,8 +105,9 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
         if given_state_id in ordered_ids:
             # If the given -State ID is included, give it precedence and
             # capture resulting merged_state ID to be returned
-            ordered_ids.remove(given_state_id)
-            ordered_ids.append(given_state_id)
+            # (disabled with https://github.com/SEED-platform/seed/issues/2624)
+            # ordered_ids.remove(given_state_id)
+            # ordered_ids.append(given_state_id)
             merged_state = merge_states_with_views(ordered_ids, org_id, 'System Match', StateClass)
             target_state_id = merged_state.id
         else:
