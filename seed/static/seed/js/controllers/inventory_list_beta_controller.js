@@ -826,7 +826,6 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
             evaluateDerivedColumns();
             $scope.select_none();
             spinner_utility.hide();
-            loadSavedLabels();
           });
       };
 
