@@ -12,10 +12,10 @@ from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import AnalysisMessage
 from seed.serializers.analysis_messages import AnalysisMessageSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint_class, OrgMixin
 
 
-class AnalysisMessageViewSet(viewsets.ViewSet):
+class AnalysisMessageViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisMessageSerializer
     model = AnalysisMessage
 
@@ -24,7 +24,9 @@ class AnalysisMessageViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_member')
     def list(self, request, analysis_pk, view_pk=None):
-        if view_pk is None:
+        if int(analysis_pk) < 1:
+            messages_queryset = AnalysisMessage.objects.filter(analysis__organization=self.get_organization(request)).order_by('-id')
+        elif view_pk is None:
             messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk).order_by('-id')
         else:
             messages_queryset = AnalysisMessage.objects.filter(analysis=analysis_pk, analysis_property_view=view_pk).order_by('-id')
