@@ -1,5 +1,6 @@
 # !/usr/bin/env python
 # encoding: utf-8
+from dateutil.relativedelta import relativedelta
 
 from calendar import (
     monthrange,
@@ -134,35 +135,67 @@ class PropertyMeterReadingsExporter():
             },
         }
 
+        by_month = {}
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
+            for dat in meter.meter_readings.all().values():
+                all_days_start = monthrange(dat['start_time'].year, dat['start_time'].month)[1]
+                monthly_data = {'total_days': all_days_start - dat['start_time'].day, dat['start_time'].strftime('%B %Y'): {'days': all_days_start - dat['start_time'].day}}
+                month0 = dat['start_time'].strftime('%B %Y')
 
-            min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
-            max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
+                # determine all months in range
+                while month0 != dat['end_time'].strftime('%B %Y'):
+                    date1 = datetime.strptime(month0, '%B %Y') + relativedelta(months=+1)
+                    month1 = date1.strftime('%B %Y')
+                    if month1 == dat['end_time'].strftime('%B %Y'):
+                        monthly_data[month1] = {'days': dat['end_time'].day}
+                        monthly_data['total_days'] += dat['end_time'].day
+                        break
+                    month0 = month1 # for next loop
+                    monthly_data[month1] = {'days': monthrange(date1.year, date1.month)[1]}
+                    monthly_data['total_days'] += monthrange(date1.year, date1.month)[1]
 
-            # Iterate through months
-            current_month_time = min_time
-            while current_month_time < max_time:
-                _weekday, days_in_month = monthrange(current_month_time.year, current_month_time.month)
+                # determine percentage of reading to assign to each month
+                reading = dat['reading']
+                for month in list(monthly_data.keys())[1:]:
+                    percent = monthly_data[month]['days'] / float(monthly_data['total_days'])
+                    if not by_month.get(month):
+                        by_month[month] = {'month': month}
+                    by_month[month][field_name] = round((reading / conversion_factor) * percent, 2)
 
-                unaware_end = datetime(current_month_time.year, current_month_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
-                end_of_month = make_aware(unaware_end, timezone=self.tz)
+        res = list(by_month.values())
+        # import remote_pdb; remote_pdb.set_trace()
+        # return res
 
-                # Find all meters fully contained within this month (second-level granularity)
-                interval_readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
-                if interval_readings.exists():
-                    readings_list = list(interval_readings.order_by('end_time'))
-                    reading_month_total = self._max_reading_total(readings_list)
+        # for meter in self.meters:
+        #     field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
-                    if reading_month_total > 0:
-                        month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
-                        monthly_readings[month_year]['month'] = month_year
-                        monthly_readings[month_year][field_name] = reading_month_total / conversion_factor
+        #     min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
+        #     max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
 
-                current_month_time = end_of_month
+        #     # Iterate through months
+        #     current_month_time = min_time
+        #     while current_month_time < max_time:
+        #         _weekday, days_in_month = monthrange(current_month_time.year, current_month_time.month)
 
+        #         unaware_end = datetime(current_month_time.year, current_month_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
+        #         end_of_month = make_aware(unaware_end, timezone=self.tz)
+
+        #         # Find all meters fully contained within this month (second-level granularity)
+        #         interval_readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
+        #         if interval_readings.exists():
+        #             readings_list = list(interval_readings.order_by('end_time'))
+        #             reading_month_total = self._max_reading_total(readings_list)
+
+        #             if reading_month_total > 0:
+        #                 month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
+        #                 monthly_readings[month_year]['month'] = month_year
+        #                 monthly_readings[month_year][field_name] = reading_month_total / conversion_factor
+
+        #         current_month_time = end_of_month
         return {
-            'readings': list(monthly_readings.values()),
+            # 'readings': list(monthly_readings.values()),
+            'readings': res,
             'column_defs': list(column_defs.values())
         }
 
