@@ -21,7 +21,7 @@ flake8==3.8.1
 pycodestyle==2.6.0
 
 # documentation and spelling
-Sphinx==2.3.1
+Sphinx==4.0.2
 sphinxcontrib-spelling==4.3.0
 sphinx_rtd_theme==0.4.3
 docutils==0.17.1

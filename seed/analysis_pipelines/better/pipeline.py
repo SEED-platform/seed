@@ -356,6 +356,7 @@ def _process_results(self, analysis_id):
         ExtraDataColumnPath(
             f'better_recommendation_{ee_measure_name.lower().replace(" ", "_")}',
             f'BETTER Recommendation: {ee_measure_name}',
+            1,
             f'assessment.ee_measures.{ee_measure_name}'
         ) for ee_measure_name in ee_measure_names
     ]
@@ -368,57 +369,68 @@ def _process_results(self, analysis_id):
         ExtraDataColumnPath(
             'better_cost_savings_combined',
             'BETTER Potential Cost Savings (USD)',
+            1,
             'assessment.assessment_energy_use.cost_savings_combined'
         ),
         ExtraDataColumnPath(
             'better_energy_savings_combined',
             'BETTER Potential Energy Savings (kWh)',
+            1,
             'assessment.assessment_energy_use.energy_savings_combined'
         ),
         ExtraDataColumnPath(
             'better_ghg_reductions_combined',
-            'BETTER Potential GHG Emissions Reduction (kgCO2e)',
+            'BETTER Potential GHG Emissions Reduction (MtCO2e)',
+            .001,
             'assessment.assessment_energy_use.ghg_reductions_combined'
         ),
         # Energy-specific Savings
         ExtraDataColumnPath(
             BETTER_VALID_MODEL_E_COL,
             'BETTER Valid Electricity Model',
+            1,
             'assessment.assessment_energy_use.valid_model_e'
         ),
         ExtraDataColumnPath(
             BETTER_VALID_MODEL_F_COL,
             'BETTER Valid Fuel Model',
+            1,
             'assessment.assessment_energy_use.valid_model_f'
         ),
         ExtraDataColumnPath(
             'better_cost_savings_electricity',
             'BETTER Potential Electricity Cost Savings (USD)',
+            1,
             'assessment.assessment_energy_use.cost_savings_e'
         ),
         ExtraDataColumnPath(
             'better_cost_savings_fuel',
             'BETTER Potential Fuel Cost Savings (USD)',
+            1,
             'assessment.assessment_energy_use.cost_savings_f'
         ),
         ExtraDataColumnPath(
             'better_energy_savings_electricity',
             'BETTER Potential Electricity Energy Savings (kWh)',
+            1,
             'assessment.assessment_energy_use.energy_savings_e'
         ),
         ExtraDataColumnPath(
             'better_energy_savings_fuel',
             'BETTER Potential Fuel Energy Savings (kWh)',
+            1,
             'assessment.assessment_energy_use.energy_savings_f'
         ),
         ExtraDataColumnPath(
             'better_ghg_reductions_electricity',
-            'BETTER Potential Electricity GHG Emissions Reduction (kgCO2e)',
+            'BETTER Potential Electricity GHG Emissions Reduction (MtCO2e)',
+            .001,
             'assessment.assessment_energy_use.ghg_reductions_e'
         ),
         ExtraDataColumnPath(
             'better_ghg_reductions_fuel',
-            'BETTER Potential Fuel GHG Emissions Reduction (kgCO2e)',
+            'BETTER Potential Fuel GHG Emissions Reduction (MtCO2e)',
+            .001,
             'assessment.assessment_energy_use.ghg_reductions_f'
         ),
         ExtraDataColumnPath(
@@ -426,11 +438,13 @@ def _process_results(self, analysis_id):
             # Provides info so user knows which SEED analysis last updated these stored values
             'better_seed_analysis_id',
             'BETTER Analysis Id',
+            1,
             'better_seed_analysis_id'
         ),
         ExtraDataColumnPath(
             'better_min_model_r_squared',
             'BETTER Min Model R^2',
+            1,
             'min_model_r_squared'
         ),
     ] + ee_measure_column_data_paths
@@ -453,10 +467,12 @@ def _process_results(self, analysis_id):
         raw_better_results = copy.deepcopy(analysis_property_view.parsed_results)
         raw_better_results.update({'better_seed_analysis_id': analysis_id})
 
-        simplified_results = {
-            data_path.column_name: get_json_path(data_path.json_path, raw_better_results)
-            for data_path in column_data_paths
-        }
+        simplified_results = {}
+        for data_path in column_data_paths:
+            value = get_json_path(data_path.json_path, raw_better_results)
+            if value is not None:
+                value = float(value) * data_path.unit_multiplier
+            simplified_results[data_path.column_name] = value
 
         electricity_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_E_COL])
         fuel_model_is_valid = bool(simplified_results[BETTER_VALID_MODEL_F_COL])

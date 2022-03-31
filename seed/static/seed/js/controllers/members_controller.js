@@ -53,7 +53,7 @@ angular.module('BE.seed.controller.members', [])
         }).catch(function (response) {
           $scope.$emit('app_error', response);
         });
-      }
+      };
 
       /**
        * saves the changed role for the user
@@ -96,7 +96,7 @@ angular.module('BE.seed.controller.members', [])
       /**
        * reset_all_passwords triggers a reset password email for all users
        */
-      $scope.reset_all_passwords = function (confirm_message = "Really reset all passwords?  This will sign you out of SEED.") {
+      $scope.reset_all_passwords = function (confirm_message = 'Really reset all passwords?  This will sign you out of SEED.') {
         if (confirm(confirm_message)) {
           organization_service.reset_all_passwords($scope.org.id);
           window.location.href = '/accounts/login/?next=' + window.location.pathname + window.location.hash;
@@ -117,9 +117,9 @@ angular.module('BE.seed.controller.members', [])
           return 'member';
         }
         return 'none';
-      }
+      };
 
-      function refreshRoleStatus(auth_refresh = true) {
+      function refreshRoleStatus (auth_refresh = true) {
         $scope.only_one_owner = (_.chain($scope.users)
           .filter(['role', 'owner'])
           .size()

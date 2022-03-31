@@ -17,10 +17,14 @@ from quantityfield.units import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Cycle, PropertyView, PropertyState, Column
+from seed.models import Analysis, AnalysisPropertyView, Cycle, PropertyView, PropertyState, Column
 from seed.serializers.analyses import AnalysisSerializer
+from seed.serializers.analysis_property_views import AnalysisPropertyViewSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class CreateAnalysisSerializer(AnalysisSerializer):
@@ -102,6 +106,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     def list(self, request):
         organization_id = self.get_organization(request)
         property_id = request.query_params.get('property_id', None)
+
         analyses = []
         if property_id is not None:
             analyses_queryset = (
@@ -120,6 +125,55 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
+        views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
+        serialized_views = []
+        property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
+        for view in views_queryset:
+            serialized_view = AnalysisPropertyViewSerializer(view).data
+            serialized_views.append(serialized_view)
+
+        return JsonResponse({
+            'status': 'success',
+            'analyses': analyses,
+            'views': serialized_views,
+            'original_views': {
+                apv_id: property_view.id if property_view is not None else None
+                for apv_id, property_view in property_views_by_apv_id.items()
+            }
+        })
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['post'])
+    def get_analyses_for_properties(self, request):
+        """
+        List all the analyses associated with provided canonical property ids
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_ids
+              description: List of canonical property ids
+              paramType: body
+        """
+        property_ids = request.data.get('property_ids', [])
+        organization_id = int(self.get_organization(request))
+        analyses = []
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id, analysispropertyview__property__in=property_ids)
+            .distinct()
+            .order_by('-id')
+        )
+        for analysis in analyses_queryset:
+            serialized_analysis = AnalysisSerializer(analysis).data
+            serialized_analysis.update(analysis.get_property_view_info(None))
+            serialized_analysis.update({'highlights': analysis.get_highlights(None)})
+            analyses.append(serialized_analysis)
         return JsonResponse({
             'status': 'success',
             'analyses': analyses

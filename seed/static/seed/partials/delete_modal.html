@@ -6,9 +6,19 @@
     <h4 class="modal-title" id="exportModalLabel" ng-show="delete_state === 'fail'" translate>Failed to delete inventory</h4>
 </div>
 <div class="modal-body row" style="padding-bottom: 0;">
-    <div class="col-sm-12" ng-show="delete_state === 'delete'"
-        translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS"
-        translate-values="{ num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length }">
+    <div ng-show="delete_state === 'delete'">
+        <p class="col-sm-12" translate="OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS" translate-values="{num_properties: property_view_ids.length, num_taxlots: taxlot_view_ids.length}"></p>
+        <div class="col-sm-12" ng-show="generating_analysis_info">
+            Collecting analysis info...
+        </div>
+        <div class="col-sm-12" ng-if="analysis_ids.length > 0" ng-show="!generating_analysis_info">
+            <label for="input_delete_analyses" translate="ALSO_DELETE_ANALYSES" translate-values="{num: analysis_ids.length}"></label>
+            <input type="checkbox" id="input_delete_analyses" ng-checked="delete.analyses" ng-model="delete.analyses"/>
+        </div>
+        <div class="col-sm-12" ng-if="batch_analysis_ids.length > 0">
+            <label for="input_delete_batch_analyses" translate="ALSO_DELETE_BATCH_ANALYSES" translate-values="{num: batch_analysis_ids.length}"></label>
+            <input type="checkbox" id="input_delete_batch_analyses" ng-checked="delete.batch_analyses" ng-model="delete.batch_analyses"/>
+        </div>
     </div>
     <div class="col-sm-12" ng-show="delete_state === 'incomplete' || delete_state === 'success'">
         <div ng-if="(deletedProperties + deletedTaxlots) > 0"

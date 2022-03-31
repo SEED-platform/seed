@@ -1,5 +1,8 @@
 {
   "extends": "eslint:recommended",
+  "parserOptions": {
+    "ecmaVersion": 2018
+  },
   "env": {
     "browser": true,
     "es6": true,
@@ -66,7 +69,6 @@
     "lodash/prefer-filter": ["warn", 3],
     "lodash/prefer-get": ["warn", 2],
     "lodash/prefer-is-nil": "warn",
-    "lodash/prefer-lodash-typecheck": "warn",
     "lodash/prefer-matches": ["warn", 2],
     "lodash/prefer-startswith": "warn",
     "lodash/prefer-times": "warn",

@@ -51,7 +51,7 @@ angular.module('BE.seed.controller.sample_data_modal', [])
         // 4. Find only populated columns, and save to column list profile Auto-Populate
         profilePromise.then(profile => {
           inventory_service.save_last_profile(profile.id, 'properties');
-          inventory_service.save_last_cycle(cycle.id)
+          inventory_service.save_last_cycle(cycle.id);
 
           return organization_service.insert_sample_data(organization.org_id).then(() => {
             return inventory_service.get_property_columns().then(columns => {
@@ -83,11 +83,11 @@ angular.module('BE.seed.controller.sample_data_modal', [])
         $uibModalInstance.dismiss();
       };
 
-      function notEmpty(value) {
+      function notEmpty (value) {
         return !_.isNil(value) && value !== '';
       }
 
-      function findPopulatedColumns(allColumns, inventory) {
+      function findPopulatedColumns (allColumns, inventory) {
         const cols = _.reject(allColumns, 'related');
         const relatedCols = _.filter(allColumns, 'related');
 

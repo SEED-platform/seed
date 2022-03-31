@@ -86,7 +86,7 @@
                     <form class="form-horizontal" role="form">
                         <div class="form-group">
                             <div class="col-sm-4">
-                                <p>Please refer to the <a href="https://better.lbl.gov/docs/api/" target="_blank" rel="noopener noreferrer">BETTER documentation</a> to learn how to get an API key. Note, do not prefix the token with "Token ", only include the token itself.</p>
+                                <p>Please refer to the <a href="{$ org.better_host_url $}/docs/api/" target="_blank" rel="noopener noreferrer">BETTER documentation</a> to learn how to get an API key. Note, do not prefix the token with "Token ", only include the token itself. BETTER host is configured to be {$ org.better_host_url $}.</p>
                                 <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner">
                             </div>
                         </div>
