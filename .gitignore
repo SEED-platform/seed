@@ -8,6 +8,7 @@
 .coverage
 coverage.protractor.json
 .noseids
+.vscode
 *~
 *~$*
 *.pyc
