@@ -92,8 +92,8 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           displayName: 'Actions',      
           enableHiding: false,
           cellTemplate: '<div style="display: flex; justify-content: space-around; align-content: center">' +
+            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensors_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' + 
             '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_sensor_readings_upload_modal(row.entity)" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>' + 
-            '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_data_logger_upload_modal(row.entity)" translate>UPLOAD_SENSORS_BUTTON</button>' + 
             '</div>',
           enableColumnMenu: false,
           enableColumnMoving: false,
@@ -265,6 +265,25 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/data_logger_upload_modal.html',
           controller: 'data_logger_upload_modal_controller',
+          resolve: {
+            filler_cycle: function () {
+              return $scope.filler_cycle;
+            },
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            sensor_service: sensor_service,
+          }
+        });
+      };
+
+      $scope.open_sensors_upload_modal = function (data_logger) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/sensors_upload_modal.html',
+          controller: 'sensors_upload_modal_controller',
           resolve: {
             filler_cycle: function () {
               return $scope.filler_cycle;

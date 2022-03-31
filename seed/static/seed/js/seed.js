@@ -74,6 +74,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
   'BE.seed.controller.data_logger_upload_modal',
+  'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',

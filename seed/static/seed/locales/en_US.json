@@ -843,7 +843,7 @@
     "UPLOAD_FILE": "Upload File",
     "CONTINUE": "Continue",
     "UPLOAD_GB_DATA_BUTTON": "Upload GreenButton Data",
-    "UPLOAD_DATA_LOGGER_BUTTON": "Upload Data Logger",
+    "UPLOAD_DATA_LOGGER_BUTTON": "Create Data Logger",
     "CREATE_DATA_LOGGER": "Create a Data Logger",
     "UPLOAD_SENSORS_BUTTON": "Upload Sensors",
     "UPLOAD_SENSOR_READINGS_BUTTON": "Upload Sensor Readings",
