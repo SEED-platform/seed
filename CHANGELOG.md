@@ -36,6 +36,7 @@ Closed Issues and Features (Total: 46):
 - Maintenance [#3062]( https://github.com/SEED-platform/seed/issues/3062 ), Remove warnings from tests
 - Fixed [#3071]( https://github.com/SEED-platform/seed/issues/3071 ), bug: saved filter/sort results in multiple initial queries
 - Fixed [#3073]( https://github.com/SEED-platform/seed/issues/3073 ), Refactor Beta-Inventory List Filters View
+- Maintenance [#3079]( https://github.com/SEED-platform/seed/issues/3079 ), Run WAVA and address issues
 - Fixed [#3081]( https://github.com/SEED-platform/seed/issues/3081 ), refactor: move filtering of querysets into generalized function
 - Fixed [#3093]( https://github.com/SEED-platform/seed/issues/3093 ), refactor: enable inventory `/filter` endpoints to return only IDs
 - Fixed [#3094]( https://github.com/SEED-platform/seed/issues/3094 ), refactor(frontend): fetch all inventory IDs when an action is performed when user does a "select all"
