@@ -448,39 +448,39 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        manual merge -View with '1st Oldest City'. '1st Oldest City' is expected
+        manual merge -View with '3rd Oldest City'. '3rd Oldest City' is expected
         to be final City value since this rollup should ignore Merge Protection.
         """
         self.assertEqual(PropertyView.objects.count(), 1)
         only_view = PropertyView.objects.get()
-        self.assertEqual(only_view.state.city, '1st Oldest City')
-        self.assertEqual(only_view.state.extra_data['state_order'], 'first')
+        self.assertEqual(only_view.state.city, '3rd Oldest City')
+        self.assertEqual(only_view.state.extra_data['state_order'], 'third')
 
         """
         Undoing 1 rollup merge should expose a set -State having
-        '3rd Oldest City' and state_order of 'third'.
+        '2nd Oldest City' and state_order of 'second'.
         """
         rollback_unmerge_url_1 = reverse('api:v3:properties-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(rollback_unmerge_url_1, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
 
-        rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
-        self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
-        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'third')
+        rollback_view_1 = PropertyView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
+        self.assertEqual(rollback_view_1.state.city, '2nd Oldest City')
+        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'second')
 
         """
         Undoing another rollup merge should expose a set -State having
-        '2nd Oldest City' and state_order of 'second'.
+        '4th Oldest City' and state_order of 'fourth'.
         """
         rollback_unmerge_url_2 = reverse('api:v3:properties-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
         response = self.client.put(rollback_unmerge_url_2, content_type='application/json')
         self.assertEqual(200, response.status_code)
         self.assertEqual('success', json.loads(response.content).get('status'))
 
-        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
-        self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
-        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
+        rollback_view_2 = PropertyView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
+        self.assertEqual(rollback_view_2.state.city, '4th Oldest City')
+        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'fourth')
 
     def test_match_merge_link_ignores_properties_with_unpopulated_matching_criteria(self):
         base_details = {
@@ -591,35 +591,34 @@ class TestMatchingExistingViewMatching(DataMappingBaseTestCase):
 
         """
         Verify everything's rolled up to one -View with precedence given to
-        manual merge -View with '1st Oldest City'. '1st Oldest City' is expected
-        to be final City value since this rollup should ignore Merge Protection.
+        the reverse order of the merged -State. 3rd City will be given precedecnce
         """
         self.assertEqual(TaxLotView.objects.count(), 1)
         only_view = TaxLotView.objects.get()
-        self.assertEqual(only_view.state.city, '1st Oldest City')
-        self.assertEqual(only_view.state.extra_data['state_order'], 'first')
+        self.assertEqual(only_view.state.city, '3rd Oldest City')
+        self.assertEqual(only_view.state.extra_data['state_order'], 'third')
 
         """
         Undoing 1 rollup merge should expose a set -State having
-        '3rd Oldest City' and state_order of 'third'.
+        '2nd Oldest City' and state_order of 'second'.
         """
         rollback_unmerge_url_1 = reverse('api:v3:taxlots-unmerge', args=[only_view.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_1, content_type='application/json')
 
-        rollback_view_1 = TaxLotView.objects.prefetch_related('state').exclude(state__city='1st Oldest City').get()
-        self.assertEqual(rollback_view_1.state.city, '3rd Oldest City')
-        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'third')
+        rollback_view_1 = TaxLotView.objects.prefetch_related('state').exclude(state__city='3rd Oldest City').get()
+        self.assertEqual(rollback_view_1.state.city, '2nd Oldest City')
+        self.assertEqual(rollback_view_1.state.extra_data['state_order'], 'second')
 
         """
         Undoing another rollup merge should expose a set -State having
-        '2nd Oldest City' and state_order of 'second'.
+        '4th Oldest City' and state_order of 'fourth'.
         """
         rollback_unmerge_url_2 = reverse('api:v3:taxlots-unmerge', args=[rollback_view_1.id]) + '?organization_id={}'.format(self.org.pk)
         self.client.post(rollback_unmerge_url_2, content_type='application/json')
 
-        rollback_view_2 = TaxLotView.objects.prefetch_related('state').exclude(state__city__in=['1st Oldest City', '3rd Oldest City']).get()
-        self.assertEqual(rollback_view_2.state.city, '2nd Oldest City')
-        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'second')
+        rollback_view_2 = TaxLotView.objects.prefetch_related('state').exclude(state__city__in=['3rd Oldest City', '2nd Oldest City']).get()
+        self.assertEqual(rollback_view_2.state.city, '4th Oldest City')
+        self.assertEqual(rollback_view_2.state.extra_data['state_order'], 'fourth')
 
     def test_match_merge_link_ignores_taxlots_with_unpopulated_matching_criteria(self):
         base_details = {
@@ -796,8 +795,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
-            '1st Match - Cycle 1 - City 1',  # ps_11 took precedence over ps_12, since the provided -View was ps_11's -View
-            'Unmatched City - Cycle 1'
+            'Unmatched City - Cycle 1',
+            '1st Match - Cycle 1 - City 2'  # ps_11 took precedence over ps_12, since the provided -View was ps_11's -View
+                                            # Update: precedence is given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
 
@@ -807,8 +807,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
-            '1st Match - Cycle 2 - City 2',  # ps_22 was explicitly given precedence
-            'Unmatched City - Cycle 2'
+            'Unmatched City - Cycle 2',
+            '1st Match - Cycle 2 - City 2'  # ps_22 was explicitly given precedence.
+                                            # Update: precedence is given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
 
@@ -952,8 +953,8 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_1_cities = list(cycle_1_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_1 = [
-            '1st Match - Cycle 1 - City 1',  # tls_11 took precedence over tls_12, since tls_11's -View took precedence
-            'Unmatched City - Cycle 1'
+            'Unmatched City - Cycle 1',
+            '1st Match - Cycle 1 - City 2'  # precedence given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_1, cycle_1_cities)
 
@@ -963,8 +964,8 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
 
         cycle_2_cities = list(cycle_2_views.prefetch_related('state').values_list('state__city', flat=True))
         expected_cities_2 = [
-            '1st Match - Cycle 2 - City 3',  # tls_23 took precedence
-            'Unmatched City - Cycle 2'
+            'Unmatched City - Cycle 2',
+            '1st Match - Cycle 2 - City 3'  # precedence given in reverse order of merge
         ]
         self.assertCountEqual(expected_cities_2, cycle_2_cities)
 

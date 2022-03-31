@@ -10,6 +10,8 @@ from datetime import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse, reverse_lazy
 from django.utils.timezone import get_current_timezone
+import pathlib
+
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (FAKE_EXTRA_DATA, FAKE_MAPPINGS,
@@ -26,6 +28,85 @@ from seed.test_helpers.fake import (FakeCycleFactory, FakePropertyFactory,
                                     FakePropertyStateFactory)
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+
+
+class TestSensorViewSet(DataMappingBaseTestCase):
+    def setUp(self):
+        self.user_details = {
+            'username': 'test_user@demo.com',
+            'password': 'test_pass',
+        }
+        self.user = User.objects.create_user(
+            email='test_user@demo.com', **self.user_details
+        )
+        self.org, _, _ = create_organization(self.user)
+
+        # For some reason, defaults weren't established consistently for each test.
+        self.org.display_meter_units = Organization._default_display_meter_units.copy()
+        self.org.save()
+        self.client.login(**self.user_details)
+
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        property_details = self.property_state_factory.get_details()
+        property_details['organization_id'] = self.org.id
+
+        # pm_property_ids must match those within example-monthly-meter-usage.xlsx
+        self.pm_property_id_1 = '5766973'
+        self.pm_property_id_2 = '5766975'
+
+        property_details['pm_property_id'] = self.pm_property_id_1
+        state_1 = PropertyState(**property_details)
+        state_1.save()
+        self.state_1 = PropertyState.objects.get(pk=state_1.id)
+
+        property_details['pm_property_id'] = self.pm_property_id_2
+        state_2 = PropertyState(**property_details)
+        state_2.save()
+        self.state_2 = PropertyState.objects.get(pk=state_2.id)
+
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
+
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_1 = self.property_factory.get_property()
+        self.property_2 = self.property_factory.get_property()
+
+        self.property_view_1 = PropertyView.objects.create(property=self.property_1, cycle=self.cycle, state=self.state_1)
+        self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
+
+        self.import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+
+        # This file has multiple tabs
+        filename = "example-sensor-metadata.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        self.import_file = ImportFile.objects.create(
+            import_record=self.import_record,
+            source_type="PM Meter Usage",
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
+            cycle=self.cycle
+        )
+
+    def test_parsed_sensors_confirmation(self):
+        url = reverse('api:v3:import_files-sensors-preview', kwargs={'pk': self.import_file.id})
+        url += f'?organization_id={self.org.pk}'
+        url += f'&view_id={self.property_view_1.id}'
+        result = self.client.get(url)
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = [
+            {'display_name': 'my charisma sensor', 'type': 'charisma', 'location_identifier': 'level C', 'units': 'finger guns', 'column_name': 'charisma_sensor_1', 'description': ''},
+            {'display_name': 'my dex sensor', 'type': 'dex', 'location_identifier': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
+            {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_identifier': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
+            {'display_name': 'my coolness sensor', 'type': 'cool', 'location_identifier': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
+            {'display_name': 'my intelligence', 'type': 'intl', 'location_identifier': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
+        ]
+
+        self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
 
 
 class TestMeterViewSet(DataMappingBaseTestCase):
@@ -82,7 +163,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -113,7 +197,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -183,7 +270,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="PM Meter Usage",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -279,7 +369,10 @@ class TestMeterViewSet(DataMappingBaseTestCase):
             import_record=self.import_record,
             source_type="GreenButton",
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
             cycle=self.cycle
         )
 
@@ -501,7 +594,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -521,7 +617,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -541,7 +640,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -561,7 +663,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         import_file = ImportFile.objects.create(
             import_record=import_record,
             uploaded_filename=filename,
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -583,7 +688,10 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             uploaded_filename=filename,
             mapping_done=True,
             source_type="Assessed Raw",
-            file=SimpleUploadedFile(name=filename, content=open(filepath, 'rb').read()),
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
         )
 
         # hit endpoint with record ID
@@ -616,7 +724,7 @@ class TestDataImportViewWithCRLF(DataMappingBaseTestCase):
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -713,7 +821,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         filepath = os.path.join(data_importer_data_dir, filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
         tasks.save_raw_data(self.import_file.pk)
@@ -727,7 +835,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         filepath = os.path.join(data_importer_data_dir, filename_2)
         self.import_file_2.file = SimpleUploadedFile(
             name=filename_2,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file_2.save()
 

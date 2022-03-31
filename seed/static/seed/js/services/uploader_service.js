@@ -87,7 +87,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
     };
 
-    function update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj }) {
+    function update_progress_bar_obj (data, { multiplier, offset, progress_bar_obj }) {
       const right_now = Date.now();
       progress_bar_obj.progress_last_checked = right_now;
 
@@ -121,7 +121,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     uploader_factory.check_progress_loop = function (progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj) {
       uploader_factory.check_progress(progress_key).then(function (data) {
         $timeout(function () {
-          update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj })
+          update_progress_bar_obj(data, { multiplier, offset, progress_bar_obj });
           if (data.progress < 100) {
             uploader_factory.check_progress_loop(progress_key, offset, multiplier, success_fn, failure_fn, progress_bar_obj);
           } else {
@@ -131,30 +131,32 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       }, failure_fn);
     };
 
-    uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument=null) {
-      const {progress_key} = progress_argument
-      const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null 
+    uploader_factory.check_progress_loop_main_sub = function (progress_argument, success_fn, failure_fn, sub_progress_argument = null) {
+      const {progress_key} = progress_argument;
+      const sub_progress_key = sub_progress_argument ? sub_progress_argument.progress_key : null;
 
-      let progress_list = [uploader_factory.check_progress(progress_key)]
-      sub_progress_argument && progress_list.push(uploader_factory.check_progress(sub_progress_key))
+      let progress_list = [uploader_factory.check_progress(progress_key)];
+      sub_progress_argument && progress_list.push(uploader_factory.check_progress(sub_progress_key));
 
-      Promise.all(progress_list).then((values) => {check_and_update_progress(values)})
-      
-      function check_and_update_progress(data) {
+      Promise.all(progress_list).then((values) => {
+        check_and_update_progress(values);
+      });
+
+      function check_and_update_progress (data) {
         $timeout(function () {
-          update_progress_bar_obj(data[0], progress_argument)
+          update_progress_bar_obj(data[0], progress_argument);
           if (data[0].progress < 100) {
             data.length > 1 ? (
               update_progress_bar_obj(data[1], sub_progress_argument),
               uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn, sub_progress_argument)
-              ) :
-              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn)
+            ) :
+              uploader_factory.check_progress_loop_main_sub(progress_argument, success_fn, failure_fn);
           } else {
             success_fn(data[0]);
           }
-          
+
         }, 750);
-      };
+      }
     };
 
     uploader_factory.pm_meters_preview = function (file_id, org_id) {
@@ -169,6 +171,24 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     uploader_factory.greenbutton_meters_preview = function (file_id, org_id, view_id) {
       return $http.get(
         '/api/v3/import_files/' + file_id + '/greenbutton_meters_preview/',
+        { params: { organization_id: org_id, view_id } }
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
+    uploader_factory.sensors_preview = function (file_id, org_id, view_id) {
+      return $http.get(
+        '/api/v3/import_files/' + file_id + '/sensors_preview/',
+        { params: { organization_id: org_id, view_id } }
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
+    uploader_factory.sensor_readings_preview = function (file_id, org_id, view_id) {
+      return $http.get(
+        '/api/v3/import_files/' + file_id + '/sensor_readings_preview/',
         { params: { organization_id: org_id, view_id } }
       ).then(function (response) {
         return response.data;

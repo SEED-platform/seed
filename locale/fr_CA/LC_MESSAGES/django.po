@@ -24,6 +24,9 @@ msgstr "# d'Enregistrements"
 msgid "(field must contain this text)"
 msgstr "(le champ doit contenir ce texte)"
 
+msgid "(from table below)"
+msgstr "(à partir du tableau ci-dessous)"
+
 msgid "(no address 1)"
 msgstr "(pas d'adresse 1)"
 
@@ -53,6 +56,12 @@ msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 propriété 
 
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Ajouter ou supprimer des étiquettes de {num, plural, one{1 lot d'impôt sélectionné} other{# lots d'impôt sélectionnés}}"
+
+msgid "ALSO_DELETE_ANALYSES"
+msgstr "Supprimez également {num,plural, one{ 1 analyse } other{# analyses }} ."
+
+msgid "ALSO_DELETE_BATCH_ANALYSES"
+msgstr "Supprimez également {num,plural, one{ 1 analyse de lot associée } other{# analyses de lot associées }} ."
 
 msgid "AND"
 msgstr "ET"
@@ -576,6 +585,9 @@ msgstr "Entre les Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Profil de mappage de colonne actuel"
 
+msgid "Current Filters"
+msgstr "Filtres Actuel"
+
 msgid "Current Name"
 msgstr "Nom Actuel"
 
@@ -698,6 +710,9 @@ msgstr "Date limite"
 
 msgid "Deadline:"
 msgstr "Date limite:"
+
+msgid "Decode UBID/ULID"
+msgstr "Décoder UBID/ULID"
 
 msgid "Default Display Fields"
 msgstr "Champs d'affichage par défaut"
@@ -1128,6 +1143,12 @@ msgstr "COMMENT APPORTER MANUELLEMENT VOS PROPRIETES ET LOTS D'IMPÔT:"
 msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
 msgstr "Votre fichier de données source est présenté dans le tableau de gauche. Toutes les propriétés/lots d'impôt où une correspondance de données possible existe sont présentées dans un tableau sur la droite. Le système tente de faire correspondre automatiquement les enregistrements à l'aide d'ID uniques partagés tels que: ID de Propriété PM, ID de Lot d'Impôt de Juridiction et les ID personnalisés, ainsi que des informations d'adresse. Lorsque le système croit qu'une correspondance existe entre un enregistrement de votre fichier source et un enregistrement existant, il vérifie automatiquement la 'correspondance' <i class=\"fa fa-check-square-o\"></i> case à cocher &mdash; faire efficacement une correspondance entre ces enregistrements."
 
+msgid "HTTP Error! Status Code: 404. The requested URL was not found."
+msgstr "Erreur HTTP! Code d'état : 404. L'URL demandée est introuvable."
+
+msgid "HTTP Error! Status Code: 500. Internal Server Error."
+msgstr "Erreur HTTP! Code d'état : 500. Erreur interne du serveur."
+
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
 msgstr "Bonjour% (first_name) s,"
@@ -1507,6 +1528,9 @@ msgstr "Rôle de membre"
 msgid "Members"
 msgstr "Membres"
 
+msgid "Merge"
+msgstr "Fusionner"
+
 msgid "Merge Protection"
 msgstr "Protection contre les fusions"
 
@@ -1631,6 +1655,9 @@ msgstr "Pas de données"
 
 msgid "No action was taken"
 msgstr "Aucune action n'a été prise"
+
+msgid "No filters added."
+msgstr "Aucun filtre ajouté."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "Pas d'étiquettes disponibles. Ajoutez une étiquette ci-dessus pour commencer."
@@ -2238,8 +2265,14 @@ msgstr "Sécurité"
 msgid "SeedOrg"
 msgstr "SeedOrg"
 
+msgid "Select All"
+msgstr "Tout sélectionner"
+
 msgid "Select All Columns"
 msgstr "Sélectionnez toutes les colonnes"
+
+msgid "Select None"
+msgstr "Sélectionnez Aucun"
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
@@ -2258,6 +2291,12 @@ msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
 
 msgid "Select which columns to include in the list:"
 msgstr "Sélectionnez les colonnes à inclure dans la liste:"
+
+msgid "Selected Properties"
+msgstr "Propriétés Sélectionnées"
+
+msgid "Selected Taxlots"
+msgstr "Lots d'impôt Sélectionnés"
 
 msgid "Selecting Fields to Share"
 msgstr "Sélection des champs à partager"
@@ -2341,6 +2380,9 @@ msgstr "Les projets Snapshot sont utiles lorsque vous souhaitez geler les donné
 
 msgid "Sorry!"
 msgstr "Désolée!"
+
+msgid "Sorting By (in order)"
+msgstr "Trier Par (dans l'ordre)"
 
 msgid "Source EUI"
 msgstr "IUE source"
@@ -2481,8 +2523,7 @@ msgstr "La Plate-forme SEED™ (Standard Energy Efficiency Data) est une applica
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "Les actions suivantes ont des effets destructeurs, veuillez lire tous les avertissements après avoir cliqué sur une option."
 
-msgid ""
-"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
 msgstr "Voici une liste des champs que nous utilisons pour faire correspondre les propriétés/lots d'impôt entre différents fichiers importés. Le plus de données que vous avez dans ces quatre domaines, le mieux notre système correspondra automatiquement à vos enregistrements."
 
@@ -2557,8 +2598,7 @@ msgstr "Type de soumission"
 msgid "Type of Submittal:"
 msgstr "Type de soumission:"
 
-msgid ""
-"U.S."
+msgid "U.S."
 "                        Department of Energy"
 msgstr "Département Américain de l'Énergie"
 
@@ -3092,6 +3132,9 @@ msgstr "enregistrant les données"
 
 msgid "saving energy data"
 msgstr "enregistreant des données de l’énergie"
+
+msgid "selected"
+msgstr "la sélection"
 
 #: seed/landing/models.py:60
 msgid "shows shared buildings within search results"

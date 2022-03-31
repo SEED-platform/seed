@@ -9,6 +9,7 @@ from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+import pathlib
 
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -36,7 +37,7 @@ class TestTasks(TestCase):
         )
         self.import_file.file = SimpleUploadedFile(
             name='portfolio-manager-sample.csv',
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

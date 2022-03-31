@@ -5,7 +5,6 @@
 import os
 from collections import namedtuple
 
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -20,19 +19,17 @@ from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import Organization
 from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW, VIEW_LIST, VIEW_LIST_PROPERTY,
-                         BuildingFile, Column, ColumnListProfile,
-                         ColumnListProfileColumn, ColumnMappingProfile, Cycle,
+                         MERGE_STATE_NEW,
+                         BuildingFile, Column,
+                         ColumnMappingProfile, Cycle,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
-                         Simulation)
+                         Sensor, Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
-from seed.serializers.pint import (PintJSONEncoder,
-                                   apply_display_unit_preferences)
+from seed.serializers.pint import (PintJSONEncoder)
 from seed.serializers.properties import (PropertySerializer,
                                          PropertyStateSerializer,
                                          PropertyViewAsStateSerializer,
@@ -46,10 +43,15 @@ from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.sensors import PropertySensorReadingsExporter
 from seed.utils.properties import (get_changed_fields,
                                    pair_unpair_property_taxlot,
                                    properties_across_cycles,
                                    update_result_with_master)
+from seed.utils.inventory_filter import get_filtered_results
+
+import logging
+logger = logging.getLogger(__name__)
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -130,116 +132,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             PropertyViewAsStateSerializer(list(qs), context={'request': request}, many=True).data,
             safe=False,
         )
-
-    def _get_filtered_results(self, request, profile_id):
-        page = request.query_params.get('page', 1)
-        per_page = request.query_params.get('per_page', 1)
-        org_id = self.get_organization(request)
-        cycle_id = request.query_params.get('cycle')
-        # check if there is a query paramater for the profile_id. If so, then use that one
-        profile_id = request.query_params.get('profile_id', profile_id)
-
-        if not org_id:
-            return JsonResponse(
-                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
-                status=status.HTTP_400_BAD_REQUEST)
-
-        if cycle_id:
-            cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
-        else:
-            cycle = Cycle.objects.filter(organization_id=org_id).order_by('name')
-            if cycle:
-                cycle = cycle.first()
-            else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Could not locate cycle',
-                    'pagination': {
-                        'total': 0
-                    },
-                    'cycle_id': None,
-                    'results': []
-                })
-
-        # Return property views limited to the 'property_view_ids' list. Otherwise, if selected is empty, return all
-        if 'property_view_ids' in request.data and request.data['property_view_ids']:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(id__in=request.data['property_view_ids'],
-                        property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
-        else:
-            property_views_list = PropertyView.objects.select_related('property', 'state', 'cycle') \
-                .filter(property__organization_id=org_id, cycle=cycle) \
-                .order_by('id')  # TODO: test adding .only(*fields['PropertyState'])
-
-        paginator = Paginator(property_views_list, per_page)
-
-        try:
-            property_views = paginator.page(page)
-            page = int(page)
-        except PageNotAnInteger:
-            property_views = paginator.page(1)
-            page = 1
-        except EmptyPage:
-            property_views = paginator.page(paginator.num_pages)
-            page = paginator.num_pages
-
-        org = Organization.objects.get(pk=org_id)
-
-        # Retrieve all the columns that are in the db for this organization
-        columns_from_database = Column.retrieve_all(org_id, 'property', False)
-
-        # This uses an old method of returning the show_columns. There is a new method that
-        # is prefered in v2.1 API with the ProfileIdMixin.
-        if profile_id is None:
-            show_columns = None
-        elif profile_id == -1:
-            show_columns = list(Column.objects.filter(
-                organization_id=org_id
-            ).values_list('id', flat=True))
-        else:
-            try:
-                profile = ColumnListProfile.objects.get(
-                    organization=org,
-                    id=profile_id,
-                    profile_location=VIEW_LIST,
-                    inventory_type=VIEW_LIST_PROPERTY
-                )
-                show_columns = list(ColumnListProfileColumn.objects.filter(
-                    column_list_profile_id=profile.id
-                ).values_list('column_id', flat=True))
-            except ColumnListProfile.DoesNotExist:
-                show_columns = None
-
-        include_related = (
-            str(request.query_params.get('include_related', 'true')).lower() == 'true'
-        )
-        related_results = TaxLotProperty.serialize(
-            property_views,
-            show_columns,
-            columns_from_database,
-            include_related
-        )
-
-        # collapse units here so we're only doing the last page; we're already a
-        # realized list by now and not a lazy queryset
-        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
-
-        response = {
-            'pagination': {
-                'page': page,
-                'start': paginator.page(page).start_index(),
-                'end': paginator.page(page).end_index(),
-                'num_pages': paginator.num_pages,
-                'has_next': paginator.page(page).has_next(),
-                'has_previous': paginator.page(page).has_previous(),
-                'total': paginator.count
-            },
-            'cycle_id': cycle.id,
-            'results': unit_collapsed_results
-        }
-
-        return JsonResponse(response)
 
     def _move_relationships(self, old_state, new_state):
         """
@@ -329,6 +221,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return exporter.readings_and_column_defs(interval)
 
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=True, methods=['POST'])
+    def sensor_usage(self, request, pk):
+        """
+        Retrieves sensor usage information
+        """
+        body = dict(request.data)
+        interval = body['interval']
+        excluded_sensor_ids = body['excluded_sensor_ids']
+        org_id = self.get_organization(request)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids)
+
+        return exporter.readings_and_column_defs(interval)
+
     @swagger_auto_schema_org_query_param
     @ajax_request_class
     @has_perm_class('requires_viewer')
@@ -370,6 +284,36 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return res
 
+    @swagger_auto_schema_org_query_param
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @action(detail=True, methods=['GET'])
+    def sensors(self, request, pk):
+        """
+        Retrieves sensors for the property
+        """
+        org_id = self.get_organization(request)
+
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        res = []
+        for sensor in Sensor.objects.filter(Q(sensor_property_id=property_id)):
+            res.append({
+                'id': sensor.id,
+                'display_name': sensor.display_name,
+                'location_identifier': sensor.location_identifier,
+                'description': sensor.description,
+                'type': sensor.sensor_type,
+                'units': sensor.units,
+                'column_name': sensor.column_name
+            })
+
+        return res
+
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
@@ -402,7 +346,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         List all the properties	with all columns
         """
-        return self._get_filtered_results(request, profile_id=-1)
+        return get_filtered_results(request, 'property', profile_id=-1)
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
@@ -464,6 +408,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 required=False,
                 description='If False, related data (i.e. Tax Lot data) is not added to the response (default is True)'
             ),
+            AutoSchemaHelper.query_boolean_field(
+                'ids_only',
+                required=False,
+                description='Function will return a list of property ids instead of property objects'
+            )
         ],
         request_body=AutoSchemaHelper.schema_factory(
             {
@@ -497,7 +446,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 except TypeError:
                     pass
 
-        return self._get_filtered_results(request, profile_id=profile_id)
+        return get_filtered_results(request, 'property', profile_id=profile_id)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
@@ -988,6 +937,32 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_view_data')
+    @action(detail=False, methods=['post'])
+    def get_canonical_properties(self, request):
+        """
+        List all the canonical properties associated with provided view ids
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: view_ids
+              description: List of property view ids
+              paramType: body
+        """
+        view_ids = request.data.get('view_ids', [])
+        property_queryset = PropertyView.objects.filter(id__in=view_ids).distinct()
+        property_ids = list(property_queryset.values_list('property_id', flat=True))
+        return JsonResponse({
+            'status': 'success',
+            'properties': property_ids
+        })
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],

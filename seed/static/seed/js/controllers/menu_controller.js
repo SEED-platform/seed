@@ -11,6 +11,7 @@ angular.module('BE.seed.controller.menu', [])
     '$uibModal',
     '$log',
     'urls',
+    'auth_service',
     'organization_service',
     'user_service',
     'dataset_service',
@@ -26,6 +27,7 @@ angular.module('BE.seed.controller.menu', [])
       $uibModal,
       $log,
       urls,
+      auth_service,
       organization_service,
       user_service,
       dataset_service,
@@ -84,9 +86,9 @@ angular.module('BE.seed.controller.menu', [])
       };
 
       //Sets initial expanded/collapse state of sidebar menu
-      const STORAGE_KEY = "seed_nav_is_expanded";
+      const STORAGE_KEY = 'seed_nav_is_expanded';
 
-      function init_menu() {
+      function init_menu () {
         if ($window.localStorage.getItem(STORAGE_KEY) === null) {
           $window.localStorage.setItem(STORAGE_KEY, 'true');
         }
@@ -172,7 +174,7 @@ angular.module('BE.seed.controller.menu', [])
                   let lastCycleId = inventory_service.get_last_cycle();
                   let lastCycle;
                   if (typeof lastCycleId === 'number') {
-                    lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId)
+                    lastCycle = response.organization.cycles.find(cycle => cycle.cycle_id === lastCycleId);
                   }
                   if ((lastCycleId === undefined || !lastCycle)) {
                     lastCycle = response.organization.cycles[0];
@@ -192,11 +194,39 @@ angular.module('BE.seed.controller.menu', [])
        * @param {obj} org
        */
       $scope.set_user_org = function (org) {
+        $scope.mouseout_org();
         user_service.set_organization(org);
         $scope.menu.user.organization = org;
         console.log($scope.menu.user.organization);
         $state.reload();
         init();
+      };
+      // set authorization and organization data to $scope
+      const set_auth = function (org_id) {
+        auth_service.is_authorized(org_id, ['requires_owner'])
+          .then(function (data) {
+            $scope.auth = data.auth.requires_owner ? data.auth : 'not authorized';
+          }, function (data) {
+            $scope.auth = data.message;
+          });
+      };
+      const set_org = function (org_id) {
+        organization_service.get_organization(org_id)
+          .then(function (data) {
+            $scope.org = data.organization;
+          });
+      };
+      $scope.mouseover_org = function (org_id) {
+        $scope.show_org_id = true;
+        $scope.hover_org_id = org_id;
+      };
+      $scope.mouseout_org = function () {
+        $scope.show_org_id = false;
+      };
+      $scope.track_mouse = function (e) {
+        let xpos = `${e.view.window.innerWidth - e.clientX - 105}px`;
+        let ypos = `${e.clientY - 25}px`;
+        $scope.hover_style = `right: ${xpos}; top: ${ypos};`;
       };
 
       //DMcQ: Set up watch statements to keep nav updated with latest datasets_count, etc.
@@ -238,6 +268,8 @@ angular.module('BE.seed.controller.menu', [])
             $scope.menu.user.organizations = data.organizations;
             // get the default org for the user
             $scope.menu.user.organization = _.find(data.organizations, {id: _.toInteger(user_service.get_organization().id)});
+            set_auth($scope.menu.user.organization.id);
+            set_org($scope.menu.user.organization.id);
           }).catch(function (error) {
             // user does not have an org
             $rootScope.route_load_error = true;
@@ -248,6 +280,15 @@ angular.module('BE.seed.controller.menu', [])
           });
         }
       };
+
+      if ($location.search().http_error) {
+        $scope.http_error = $location.search().http_error;
+      }
+
+      $scope.closeAlert = function () {
+        $scope.http_error = false;
+      };
+
       init();
       init_menu();
     }]);

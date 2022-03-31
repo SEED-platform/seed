@@ -1,6 +1,6 @@
 # Author: Nicholas Long
-# 
-# This docker container is used to create a backup of the seed database and 
+#
+# This docker container is used to create a backup of the seed database and
 # mediafiles, then push the backups to S3. The script itself is the backup_database.sh
 # script that is copied into this container for use by helm/k8s batch/CronJob.
 
@@ -22,7 +22,7 @@ RUN apt update && \
     apt upgrade -y && \
     apt install -y \
         python3 \
-        curl \ 
+        curl \
         apt-transport-https \
         ca-certificates \
         gnupg \
@@ -36,6 +36,6 @@ RUN apt update && \
     sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt focal-pgdg main" > /etc/apt/sources.list.d/pgdg.list' && \
     apt update && \
     apt install -y postgresql-client-12
-  
+
 WORKDIR /app
 ADD backup_database.sh /app/

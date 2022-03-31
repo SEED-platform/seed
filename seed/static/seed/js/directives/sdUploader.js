@@ -309,6 +309,10 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
     uploader = makeBuildingSyncUpdater(scope, element, ['xml']);
   } else if (scope.sourcetype === 'GreenButton') {
     uploader = makeFileSystemUploader(scope, element, ['xml']);
+  } else if (scope.sourcetype === 'SensorMetaData') {
+    uploader = makeFileSystemUploader(scope, element, ['csv', 'xlsx']);
+  } else if (scope.sourcetype === 'SensorReadings') {
+    uploader = makeFileSystemUploader(scope, element, ['csv', 'xlsx']);
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
   } else {

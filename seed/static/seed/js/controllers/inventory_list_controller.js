@@ -105,22 +105,22 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         // add derived columns
         _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id})
+          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
           if (foundCol) {
-            foundCol.is_derived_column = true
-            $scope.columns.push(foundCol)
+            foundCol.is_derived_column = true;
+            $scope.columns.push(foundCol);
           }
-        })
+        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
-      };
+      }
 
       $scope.restoring = false;
 
       // Find labels that should be displayed and organize by applied inventory id
       $scope.show_labels_by_inventory_id = {};
-      $scope.build_labels = function() {
+      $scope.build_labels = function () {
         $scope.show_labels_by_inventory_id = {};
         for (let n in $scope.labels) {
           let label = $scope.labels[n];
@@ -149,7 +149,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             titles.push(label.text);
           }
         }
-        return ['<span title="', titles.join(', ') ,'" class="label-bars" style="overflow-x:scroll">', labels.join(''), '</span>'].join('');
+        return ['<span title="', titles.join(', '), '" class="label-bars" style="overflow-x:scroll">', labels.join(''), '</span>'].join('');
       };
 
       $scope.show_full_labels = false;
@@ -174,7 +174,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         let col = $scope.gridApi.grid.getColumn('labels');
         let cells = renderContainer.querySelectorAll('.' + uiGridConstants.COL_CLASS_PREFIX + col.uid + ' .ui-grid-cell-contents');
         Array.prototype.forEach.call(cells, function (cell) {
-          gridUtil.fakeElement(cell, {}, function(newElm) {
+          gridUtil.fakeElement(cell, {}, function (newElm) {
             var e = angular.element(newElm);
             e.attr('style', 'float: left;');
             var width = gridUtil.elementWidth(e);
@@ -223,8 +223,8 @@ angular.module('BE.seed.controller.inventory_list', [])
             data: function () {
               return {
                 columns: currentColumns(),
-                derived_columns: [],
-              }
+                derived_columns: []
+              };
             },
             profile_location: _.constant('List View Profile'),
             inventory_type: function () {
@@ -305,7 +305,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           return _.find($scope.selected_labels, ['id', label.id]);
         });
         $scope.build_labels();
-      };
+      }
 
       var filterUsingLabels = function () {
         // Only submit the `id` of the label to the API.
@@ -382,7 +382,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       */
       $scope.open_postoffice_modal = function () {
         var modalInstance = $uibModal.open({
-          templateUrl:  urls.static_url + 'seed/partials/postoffice_modal.html',
+          templateUrl: urls.static_url + 'seed/partials/postoffice_modal.html',
           controller: 'postoffice_modal_controller',
           resolve: {
             property_states: function () {
@@ -593,7 +593,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
         // Modify headerCellClass
         if (col.is_derived_column) {
-          col.headerCellClass = 'derived-column-display-name'
+          col.headerCellClass = 'derived-column-display-name';
         }
 
         // Modify misc
@@ -799,37 +799,37 @@ angular.module('BE.seed.controller.inventory_list', [])
           batch_index += batch_size;
         }
 
-        const all_evaluation_results = []
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column)
+        const all_evaluation_results = [];
+        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
         for (const col of visible_derived_columns) {
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
-                return {derived_column_id: col.id, results: res.results}
-              })
-          }))
+                return {derived_column_id: col.id, results: res.results};
+              });
+          }));
         }
 
         $q.all(all_evaluation_results).then(results => {
-          const aggregated_results = {}
+          const aggregated_results = {};
           results.forEach(result => {
             if (result.derived_column_id in aggregated_results) {
-              aggregated_results[result.derived_column_id].push(...result.results)
+              aggregated_results[result.derived_column_id].push(...result.results);
             } else {
-              aggregated_results[result.derived_column_id] = result.results
+              aggregated_results[result.derived_column_id] = result.results;
             }
-          })
+          });
 
           // finally, update the data to include the calculated values
           $scope.data.forEach(row => {
             Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-              const derived_column = visible_derived_columns.find(col => col.id == derived_column_id)
-              const result = results.find(res => res.id == row.id) || {}
-              row[derived_column.name] = result.value
-            })
-          })
-        })
-      }
+              const derived_column = visible_derived_columns.find(col => col.id == derived_column_id);
+              const result = results.find(res => res.id == row.id) || {};
+              row[derived_column.name] = result.value;
+            });
+          });
+        });
+      };
 
       var refresh_objects = function () {
         var page = 1;
@@ -1013,6 +1013,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/export_inventory_modal.html',
           controller: 'export_inventory_modal_controller',
+          backdrop: 'static',
           resolve: {
             ids: function () {
               var viewId = $scope.inventory_type === 'properties' ? 'property_view_id' : 'taxlot_view_id';
@@ -1067,16 +1068,16 @@ angular.module('BE.seed.controller.inventory_list', [])
             }
           }
         });
-        modalInstance.result.then(function(data) {
+        modalInstance.result.then(function (data) {
           setTimeout(() => {
-            Notification.primary(`<a href="#/analyses" style="color: #337ab7;">Click here to view your analyses</a>`)
-          }, 1000)
-        }, function() {
+            Notification.primary('<a href="#/analyses" style="color: #337ab7;">Click here to view your analyses</a>');
+          }, 1000);
+        }, function () {
           // Modal dismissed, do nothing
-        })
+        });
       };
 
-      $scope.view_notes = function(record) {
+      $scope.view_notes = function (record) {
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/notes_modal.html',
           controller: 'notes_controller',
@@ -1095,7 +1096,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         }).result.then(function (notes_count) {
           record.record.notes_count = notes_count;
         });
-      }
+      };
 
       function currentColumns () {
         // Save all columns except first 3

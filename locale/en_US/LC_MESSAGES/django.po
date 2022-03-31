@@ -23,6 +23,9 @@ msgstr "# of Records"
 msgid "(field must contain this text)"
 msgstr "(field must contain this text)"
 
+msgid "(from table below)"
+msgstr "(from table below)"
+
 msgid "(no address 1)"
 msgstr "(no address 1)"
 
@@ -52,6 +55,12 @@ msgstr "Add or remove labels from {num, plural, one{1 selected property} other{#
 
 msgid "ADD_REMOVE_LABELS_FROM_TAXLOTS"
 msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# selected tax lots}}"
+
+msgid "ALSO_DELETE_ANALYSES"
+msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
+
+msgid "ALSO_DELETE_BATCH_ANALYSES"
+msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associated batch analyses}}."
 
 msgid "AND"
 msgstr "AND"
@@ -568,6 +577,9 @@ msgstr "Cross-Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Current Column Mapping Profile"
 
+msgid "Current Filters"
+msgstr "Current Filters"
+
 msgid "Current Name"
 msgstr "Current Name"
 
@@ -690,6 +702,9 @@ msgstr "Deadline"
 
 msgid "Deadline:"
 msgstr "Deadline:"
+
+msgid "Decode UBID/ULID"
+msgstr "Decode UBID/ULID"
 
 msgid "Default Display Fields"
 msgstr "Default Display Fields"
@@ -1117,6 +1132,12 @@ msgstr "HOW TO MANUALLY MATCH YOUR PROPERTIES AND TAX LOTS:"
 msgid "HOW_SYSTEM_AUTO_MATCHES_EXPLANATION"
 msgstr "Your source data file(s) are presented in the table on the left. All properties/tax lots where a possible data match exists are presented in a table on the right. The system attempts to auto-match records using shared unique IDs like: PM Property ID, Jurisdiction Tax Lot ID, and Custom IDs as well as Address information. Where the system believes a match exists between a record in your source file and an existing record it will auto-check the 'match' <i class=\"fa fa-check-square-o\"></i> checkbox &mdash; effectively making a match between these records."
 
+msgid "HTTP Error! Status Code: 404. The requested URL was not found."
+msgstr "HTTP Error! Status Code: 404. The requested URL was not found."
+
+msgid "HTTP Error! Status Code: 500. Internal Server Error."
+msgstr "HTTP Error! Status Code: 500. Internal Server Error."
+
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
@@ -1494,6 +1515,9 @@ msgstr "Member Role"
 msgid "Members"
 msgstr "Members"
 
+msgid "Merge"
+msgstr "Merge"
+
 msgid "Merge Protection"
 msgstr "Merge Protection"
 
@@ -1618,6 +1642,9 @@ msgstr "No Data"
 
 msgid "No action was taken"
 msgstr "No action was taken"
+
+msgid "No filters added."
+msgstr "No filters added."
 
 msgid "No labels available. Add a label above to get started."
 msgstr "No labels available. Add a label above to get started."
@@ -2218,8 +2245,14 @@ msgstr "Security"
 msgid "SeedOrg"
 msgstr "SeedOrg"
 
+msgid "Select All"
+msgstr "Select All"
+
 msgid "Select All Columns"
 msgstr "Select All Columns"
+
+msgid "Select None"
+msgstr "Select None"
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."
@@ -2238,6 +2271,12 @@ msgstr "Select the type of file(s) you would like to add to"
 
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
+
+msgid "Selected Properties"
+msgstr "Selected Properties"
+
+msgid "Selected Taxlots"
+msgstr "Selected Taxlots"
 
 msgid "Selecting Fields to Share"
 msgstr "Selecting Fields to Share"
@@ -2321,6 +2360,9 @@ msgstr "Snapshot projects are useful when you want to freeze the building data a
 
 msgid "Sorry!"
 msgstr "Sorry!"
+
+msgid "Sorting By (in order)"
+msgstr "Sorting By (in order)"
 
 msgid "Source EUI"
 msgstr "Source EUI"
@@ -2461,8 +2503,7 @@ msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software app
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
 
-msgid ""
-"The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
+msgid "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our"
 "                            system will auto-match your records."
 msgstr "The following is a list of the fields we use to match up properties/tax lots between different imported files. The more data you have in these four fields the better our\n                            system will auto-match your records."
 
@@ -2537,8 +2578,7 @@ msgstr "Type of Submittal"
 msgid "Type of Submittal:"
 msgstr "Type of Submittal:"
 
-msgid ""
-"U.S."
+msgid "U.S."
 "                        Department of Energy"
 msgstr "U.S. Department of Energy"
 
@@ -3070,6 +3110,9 @@ msgstr "saving data"
 
 msgid "saving energy data"
 msgstr "saving energy data"
+
+msgid "selected"
+msgstr "selected"
 
 #: seed/landing/models.py:60
 msgid "shows shared buildings within search results"

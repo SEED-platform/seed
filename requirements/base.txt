@@ -1,5 +1,5 @@
 # Django
-django==3.2.10
+django==3.2.12
 
 django-autoslug==1.9.8
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
@@ -9,7 +9,7 @@ django-crispy-forms==1.8.1
 psycopg2-binary==2.8.4
 
 # background process management
-celery==4.4.7
+celery==5.2.2
 django-redis-cache==3.0.0
 django-compressor==2.4.1
 django-compressor-autoprefixer==0.1.0
@@ -27,7 +27,7 @@ django-pint==0.6
 djangorestframework==3.12.2
 # Django-post-office dependency needs to be installed via github b/c
 # with pypi version Celery fails to auto discover post_office tasks
--e git+https://github.com/ui/django-post_office.git@v3.5.2#egg=django-post_office
+-e git+https://github.com/ui/django-post_office.git@v3.6.0#egg=django-post_office
 drf-yasg==1.20.0
 django-filter==2.4.0
 drf-nested-routers==0.91
@@ -36,7 +36,7 @@ drf-nested-routers==0.91
 raven==6.10.0
 
 # Various packages
-jellyfish==0.7.2
+jellyfish==0.8.2
 Markdown==3.1.1
 pyyaml==5.4.1
 polling==0.3.2
@@ -66,7 +66,7 @@ django-braces==1.14.0
 # Use forked jwt-oauth2 b/c the published version broke when updating to Django 3.x
 # See: https://docs.djangoproject.com/en/dev/releases/3.0/#removed-private-python-2-compatibility-apis
 # jwt-oauth2>=0.1.1
--e git+https://github.com/SEED-platform/jwt-oauth2.git@f2db7e16803969f6121129a7b2fa04d09ec5f5e9#egg=jwt-oauth2
+-e git+https://github.com/SEED-platform/jwt-oauth2.git@9726367db36b332c84fb1288a7df32196509c06d#egg=jwt-oauth2
 django-oauth-toolkit==1.2.0
 
 future==0.18.2

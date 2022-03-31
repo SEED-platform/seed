@@ -107,11 +107,19 @@ for issue in repo.issues(state='closed'):
                 continue
 
             if 'Not Reproducible' in labels:
-                # these issues are noxt going to be reported
+                # these issues are not going to be reported
                 continue
 
             if 'stale' in labels:
                 # issue closed due to staleness, it was not really addressed
+                continue
+            
+            if 'Milestone' in labels:
+                # these are milestone tracking tickets and should not show up in changelog
+                continue
+
+            if 'Project Tracking' in labels:
+                # these are project tracking tickets that do not need to show up in the changelog
                 continue
 
             if 'Feature' in labels:

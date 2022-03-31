@@ -7,6 +7,7 @@ import os
 import zipfile
 
 import requests
+import pathlib
 from seed.building_sync.building_sync import BuildingSync
 
 
@@ -23,7 +24,7 @@ def _validation_api_post(file_, schema_version, use_case_name):
     if zipfile.is_zipfile(file_.name):
         files = [('file', file_)]
     else:
-        files = {'file': (file_.name, open(file_.name, 'r').read(), 'application/xml')}
+        files = {'file': (file_.name, pathlib.Path(file_.name).read_text(), 'application/xml')}
 
     return requests.request(
         "POST",

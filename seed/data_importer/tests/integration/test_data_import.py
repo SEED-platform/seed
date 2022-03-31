@@ -17,6 +17,7 @@ from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
+import pathlib
 
 from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
@@ -42,6 +43,7 @@ from seed.models import (
     BuildingFile,
     PropertyMeasure,
 )
+from seed.models.models import DATA_STATE_MAPPING
 from seed.tests.util import DataMappingBaseTestCase
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
@@ -66,7 +68,7 @@ class TestDataImport(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -169,7 +171,7 @@ class TestImportCSVMissingHeaders(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -212,7 +214,7 @@ class TestBuildingSyncImportZipBad(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/zip"
         )
         self.import_file.save()
@@ -286,8 +288,7 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
 
         # -- Assert
         self.assertEqual('success', progress_info['status'])
-        ps = PropertyState.objects.filter(address_line_1='123 Main St',
-                                          import_file=self.import_file)
+        ps = PropertyState.objects.filter(import_file=self.import_file, data_state=DATA_STATE_MAPPING)
         self.assertEqual(len(ps), 2)
 
     def test_map_all_models_zip(self):
@@ -304,16 +305,13 @@ class TestBuildingSyncImportZip(DataMappingBaseTestCase):
         # map the data
         progress_info = tasks.map_data(self.import_file.pk)
         self.assertEqual('success', progress_info['status'])
-        ps = PropertyState.objects.filter(address_line_1='123 Main St',
-                                          import_file=self.import_file)
-        self.assertEqual(ps.count(), 2)
 
         # -- Act
         tasks.geocode_and_match_buildings_task(self.import_file.pk)
 
         # -- Assert
-        ps = PropertyState.objects.filter(address_line_1='123 Main St', import_file=self.import_file)
-        self.assertEqual(ps.count(), 2)
+        pvs = PropertyView.objects.all()
+        self.assertEqual(pvs.count(), 2)
 
         # verify there are 2 building files
         bfs = BuildingFile.objects.all()
@@ -337,11 +335,14 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/xml"
         )
         self.import_file.uploaded_filename = filename
         self.import_file.save()
+
+    def tearDown(self) -> None:
+        self.import_file.file.close()
 
     def test_save_raw_data_xml(self):
         # -- Act
@@ -415,7 +416,7 @@ class TestBuildingSyncImportXmlBadMeasures(DataMappingBaseTestCase):
 
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read(),
+            content=pathlib.Path(filepath).read_bytes(),
             content_type="application/xml"
         )
         self.import_file.uploaded_filename = filename
@@ -467,7 +468,7 @@ class TestMappingExampleData(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -540,7 +541,7 @@ class TestMappingPropertiesOnly(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -579,7 +580,7 @@ class TestMappingTaxLotsOnly(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -619,7 +620,7 @@ class TestPromotingProperties(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 
@@ -712,7 +713,7 @@ class TestPostalCode(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

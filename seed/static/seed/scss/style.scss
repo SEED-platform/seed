@@ -367,6 +367,22 @@ a:not([href]) {
       height: 54px;
       border-bottom: 1px solid $gray_lighter;
 
+      .hover-org-container {
+        position: absolute;
+        background: none;
+        z-index: 10000;
+        width: 100px;
+      }
+
+      .hover-org-id {
+        font-size: 10px;
+        background:rgba(255, 255, 255, 0.8);
+        border: 1px solid gray;
+        border-radius: 3px;
+        color: gray;
+        padding:2px;
+      }
+
       .logo_container {
 
         .logo {
@@ -427,6 +443,10 @@ a:not([href]) {
             }
           }
 
+          ul.justify-left a {
+            text-align: left;
+          }
+          
           ul.dropdown-menu {
 
             text-align: center;
@@ -443,6 +463,11 @@ a:not([href]) {
                 color: #000;
                 font-weight: bold;
                 text-align: center;
+              }
+
+              .active {
+                background-color: $gray_lightest;
+                text-decoration: none;
               }
 
               a {
@@ -482,6 +507,10 @@ a:not([href]) {
       }
     }
   }
+}
+
+.http_error {
+  margin: 20px;
 }
 
 .page {
@@ -1781,6 +1810,14 @@ a:not([href]) {
     padding-left: 0;
   }
 
+  .meter-count {
+    margin-bottom: 0px;
+
+    li {
+      padding: 5px;
+    }
+  }
+
 }
 
 .modal-footer {
@@ -1964,7 +2001,9 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   padding-top: 10px;
   margin-top: 10px;
 }
-
+.export_progress {
+  padding: 0 20px 0 20px;
+}
 .btn-sm, .btn-xs {
   font-size: 13px;
 }
@@ -2291,7 +2330,47 @@ select {
 
 /* Styles for building summary page */
 
- #inventory-summary {
+.inventory-summary {
+  margin: 20px 10px;
+
+  table, th, td {
+    border: 1px solid black;
+  }
+
+  &.columns {
+    display: flex;
+    column-gap: 10px;
+    align-items: start;
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      flex-grow: 1;
+    }
+  }
+
+  .row {
+    display: flex;
+    margin: 0 0;
+
+    .grow {
+      flex-grow: 1;
+    }
+  }
+
+  .tab-content {
+    border-width: 0 1px 1px 1px;
+    border-color: #ddd;
+    border-style: solid;
+  }
+}
+
+.inventory-summary-controls {
+  margin: 20px 10px;
+}
+
+#column_settings_count {
   table, th, td {
     border: 1px solid black;
   }
@@ -2742,7 +2821,7 @@ gs-input .tags .tag-item .remove-button {
 /* OTHER */
 
 /* Styles for building list controls and table */
-.inventory-list-controls, .inventory-summary-controls {
+.inventory-list-controls {
   padding: 20px 10px;
 
   .form-group {
@@ -2752,6 +2831,62 @@ gs-input .tags .tag-item .remove-button {
 
   & + .buildingListControls {
     padding-top: 0;
+  }
+
+  &.columns {
+    display: flex;
+    column-gap: 10px;
+    align-items: start;
+
+    .column {
+      display: flex;
+      flex-direction: column;
+      row-gap: 10px;
+      flex-grow: 1;
+
+      &.no-shrink {
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    margin: 0 !important;
+
+    label {
+      white-space: nowrap;
+      margin: 0 10px 0 0;
+    }
+
+    .btn-group {
+      display: flex;
+      margin-left: 10px;
+    }
+
+    .tags {
+      min-width: 50% !important;
+    }
+  }
+
+  .grow {
+    flex-grow: 1;
+    width: 100%;
+  }
+}
+
+#filters-list, #sort-list {
+
+  .tags, .tags .input {
+    cursor: default !important;
+  }
+
+  .tags.focused {
+    border: 1px solid #ccc !important;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
   }
 }
 
@@ -4051,6 +4186,20 @@ iframe.analysis-results {
 
 
 .inventory-summary {
+  table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 0.5em;
+  }
+  tbody tr:nth-child(odd) {
+    background: #eee;
+  }
+  table {
+    width: 300px;
+  }
+}
+
+.column_settings_count {
   table, th, td {
     border: 1px solid black;
     border-collapse: collapse;

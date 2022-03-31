@@ -32,6 +32,7 @@ class Command(BaseCommand):
         from tos.models import TermsOfService
 
         content = fh.read()
+        fh.close()
 
         tos = TermsOfService.objects.create(active=True,
                                             content=content)

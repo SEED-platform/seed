@@ -9,6 +9,7 @@ import logging
 import os.path as osp
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+import pathlib
 
 from seed.data_importer import tasks, match
 from seed.data_importer.tests.util import (
@@ -39,7 +40,7 @@ class TestEquivalenceWithFile(DataMappingBaseTestCase):
         filepath = osp.join(osp.dirname(__file__), '..', '..', '..', 'tests', 'data', filename)
         self.import_file.file = SimpleUploadedFile(
             name=filename,
-            content=open(filepath, 'rb').read()
+            content=pathlib.Path(filepath).read_bytes()
         )
         self.import_file.save()
 

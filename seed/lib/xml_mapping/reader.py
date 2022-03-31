@@ -18,7 +18,7 @@ class BuildingSyncParser(object):
         """
         :param file_: FieldFile, an ImportFile's file
         """
-        # these properties will be construced while processing the files
+        # these properties will be constructed while processing the files
         self.headers = []
         self._xpath_col_dict = {}
 

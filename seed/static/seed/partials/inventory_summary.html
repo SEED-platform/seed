@@ -26,36 +26,49 @@
     </div>
 </div>
 
-<div class="section inventory-summary">
-    <div class="section_content_container">
-        <div class="section_content container-fluid">
-            <div class="content_block row" style="padding:20px 20px 10px 20px">
-                <div class="col-md-12">
-                    <div class="row">
-                        <table class="zebra">
-                        <thead>
-                        <tr>
-                            <th>Field</th>
-                            <th>Count</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="item in table_data">
-                            <td>{$item.text$}</td>
-                            <td>{$item.count$}</td>
-                        </tr>
-                        </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="content_block row" style="padding:20px 20px 10px 20px">
-                <div class="col-md-12">
-                    <div class="row">
-                        <div id="chart"></div>
-                    </div>
-                </div>
-            </div>
+<div class="inventory-summary columns">
+    <div class="column">
+        <div class="row">
+            <table class="zebra grow">
+                <thead>
+                <tr>
+                    <th>Summary</th>
+                    <th>Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in table_data">
+                    <td>{$item.text$}</td>
+                    <td>{$item.count$}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <table class="zebra grow">
+                <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Count</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="item in column_settings_count">
+                    <td>{$item.column_settings$}</td>
+                    <td>{$item.count$}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="column">
+        <div class="row">
+            <uib-tabset class="grow">
+                <uib-tab ng-repeat="chart in charts" index="$index" heading="{$:: chart.xLabel $}" ng-click="draw_chart(chart.name)">
+                    <div ng-hide="summary_data[chart.name].length < 1" id="chart-{$:: chart.name $}"></div>
+                    <div ng-hide="summary_data[chart.name].length > 0" style="padding: 10px;">Insufficient number of properties to summarize!</div>
+                </uib-tab>
+            </uib-tabset>
         </div>
     </div>
 </div>

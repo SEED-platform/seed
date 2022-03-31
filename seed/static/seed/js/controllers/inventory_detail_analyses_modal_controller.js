@@ -24,9 +24,9 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
       analyses_service,
       inventory_ids
     ) {
-      $scope.inventory_count = inventory_ids.length
+      $scope.inventory_count = inventory_ids.length;
       // used to disable buttons on submit
-      $scope.waiting_for_server = false
+      $scope.waiting_for_server = false;
 
       $scope.new_analysis = {
         name: null,
@@ -58,7 +58,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           case 'BSyncr':
             $scope.new_analysis.configuration = {
               model_type: null
-            }
+            };
             break;
 
           case 'EUI':
@@ -75,16 +75,16 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
               benchmark_data: null,
               min_model_r_squared: null,
               portfolio_analysis: false,
-              preprocess_meters: false,
-            }
+              preprocess_meters: false
+            };
             break;
 
-           default:
+          default:
             $log.error('Unknown analysis type.', $scope.new_analysis.service);
             Notification.error('Unknown analysis type: ' + $scope.new_analysis.service);
 
         }
-      }
+      };
 
       /* Create a new analysis based on user input */
       $scope.submitNewAnalysisForm = function (form) {
@@ -98,12 +98,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', [])
           $scope.new_analysis.configuration,
           inventory_ids
         ).then(function (data) {
-          $scope.waiting_for_server = false
+          $scope.waiting_for_server = false;
           Notification.primary('Created Analysis');
           form.$setPristine();
           $scope.$close(data);
         }, function (response) {
-          $scope.waiting_for_server = false
+          $scope.waiting_for_server = false;
           $log.error('Error creating new analysis.', response);
           Notification.error('Failed to create Analysis: ' + response.data.message);
         });

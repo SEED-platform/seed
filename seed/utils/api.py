@@ -167,7 +167,7 @@ def get_api_request_user(request):
     """
     Determines if this is an API request and returns the corresponding user if so.
     """
-    if request.is_ajax():
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return False
 
     return User.process_header_request(request)
