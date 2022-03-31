@@ -2,7 +2,7 @@
 
 Date Range: 12/27/21 - 03/31/22
 
-Closed Issues and Features (Total: 45):
+Closed Issues and Features (Total: 46):
 - Fixed [#2508]( https://github.com/SEED-platform/seed/issues/2508 ), Inventory Detail View: Text bubbles stay on the screen even if you scroll down the page
 - Fixed [#2515]( https://github.com/SEED-platform/seed/issues/2515 ), Progress bar sits on 33% for a very long time so that users think the program has crashed
 - Feature [#2624]( https://github.com/SEED-platform/seed/issues/2624 ), Merge and Link Matches - Enable and Change Sorting
@@ -12,6 +12,7 @@ Closed Issues and Features (Total: 45):
 - Improved [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
 - Fixed [#2831]( https://github.com/SEED-platform/seed/issues/2831 ), Deleting Property Inventory doesn't delete the BETTER analyses
 - Fixed [#2843]( https://github.com/SEED-platform/seed/issues/2843 ), BETTER - GHG emission reduction units
+- Feature [#2844]( https://github.com/SEED-platform/seed/issues/2844 ), BETTER -- show a list of all buildings in Org/Analyses, not just grouped by Portfolio
 - Fixed [#2891]( https://github.com/SEED-platform/seed/issues/2891 ), Fix deprecated urls
 - Fixed [#2892]( https://github.com/SEED-platform/seed/issues/2892 ), Fix usage of deprecated method request.is_ajax()
 - Fixed [#2902]( https://github.com/SEED-platform/seed/issues/2902 ), XMLSchema fails to fetch gbXML Schema
