@@ -8,8 +8,10 @@ angular.module('BE.seed.controller.analyses', [])
     '$scope',
     'analyses_payload',
     'organization_payload',
+    'organization_service',
     'users_payload',
     'auth_payload',
+    'messages_payload',
     'urls',
     'analyses_service',
     'Notification',
@@ -17,16 +19,21 @@ angular.module('BE.seed.controller.analyses', [])
       $scope,
       analyses_payload,
       organization_payload,
+      organization_service,
       users_payload,
       auth_payload,
+      messages_payload,
       urls,
       analyses_service,
       Notification
     ) {
-      $scope.org = organization_payload;
+      $scope.org = organization_payload.organization;
       $scope.auth = auth_payload.auth;
       $scope.analyses = analyses_payload.analyses;
+      $scope.views = analyses_payload.views;
+      $scope.original_views = analyses_payload.original_views;
       $scope.users = users_payload.users;
+      $scope.messages = messages_payload.messages;
 
       // Stores functions for stopping the polling of analysis progress. Keyed by analysis id
       const analysis_polling_stoppers = {};
@@ -141,10 +148,20 @@ angular.module('BE.seed.controller.analyses', [])
             }
           });
       };
+
       $scope.has_children = function (value) {
         if (typeof value == 'object') {
           return true;
         }
+      };
+
+      $scope.get_display_name = function (inventory_state) {
+        return organization_service.get_inventory_display_value(
+          $scope.org,
+          // NOTE: hardcoding 'property' b/c you can only run analyses on properties
+          'property',
+          inventory_state
+        );
       };
 
     }

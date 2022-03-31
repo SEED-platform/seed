@@ -49,6 +49,12 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      const get_analyses_messages_for_org = function (org_id) {
+        return $http.get('/api/v3/analyses/0/messages/?organization_id=' + org_id).then(function (response) {
+          return response.data;
+        });
+      };
+
       const get_analysis_views_for_org = function (analysis_id, org_id) {
         return $http.get('/api/v3/analyses/' + analysis_id + '/views/?organization_id=' + org_id).then(function (response) {
           return response.data;
@@ -233,6 +239,7 @@ angular.module('BE.seed.service.analyses', [])
         get_analyses_for_canonical_properties: get_analyses_for_canonical_properties,
         get_analysis_for_org: get_analysis_for_org,
         get_analysis_messages_for_org: get_analysis_messages_for_org,
+        get_analyses_messages_for_org: get_analyses_messages_for_org,
         get_analysis_views_for_org: get_analysis_views_for_org,
         get_analysis_view_for_org: get_analysis_view_for_org,
         create_analysis: create_analysis,

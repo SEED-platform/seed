@@ -338,6 +338,7 @@ class StateFieldsTest(TestCase):
             'field_3': 'only_in_ed1',
             'field_4': 'only_in_ed2'
         }
+        logger.error(f'--- {result}')
         self.assertDictEqual(result, expected)
 
     def test_recognize_empty_column_setting_allows_empty_values_to_overwrite_nonempty_values(self):
