@@ -415,11 +415,8 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           analyses_payload: ['analyses_service', 'user_service', function (analyses_service, user_service) {
             return analyses_service.get_analyses_for_org(user_service.get_organization().id);
           }],
-          organization_payload: ['user_service', 'organization_service', function (user_service, organization_service) {
-            return organization_service.get_organization(user_service.get_organization().id);
-          }],
-          messages_payload: ['analyses_service', 'user_service', '$stateParams', function (analyses_service, user_service) {
-            return analyses_service.get_analyses_messages_for_org(user_service.get_organization().id);
+          organization_payload: ['user_service', function (user_service) {
+            return user_service.get_organization();
           }],
           users_payload: ['organization_service', 'user_service', function (organization_service, user_service) {
             return organization_service.get_organization_users({org_id: user_service.get_organization().id});
