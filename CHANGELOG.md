@@ -2,7 +2,7 @@
 
 Date Range: 12/27/21 - 03/31/22
 
-Closed Issues and Features (Total: 46):
+Closed Issues and Features (Total: 45):
 - Fixed [#2508]( https://github.com/SEED-platform/seed/issues/2508 ), Inventory Detail View: Text bubbles stay on the screen even if you scroll down the page
 - Fixed [#2515]( https://github.com/SEED-platform/seed/issues/2515 ), Progress bar sits on 33% for a very long time so that users think the program has crashed
 - Feature [#2624]( https://github.com/SEED-platform/seed/issues/2624 ), Merge and Link Matches - Enable and Change Sorting
