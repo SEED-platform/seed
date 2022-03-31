@@ -147,15 +147,17 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
     all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
-        recognize_empty = key in recognize_empty_columns
         val1 = ed1.get(key, None)
         val2 = ed2.get(key, None)
-        if (val1 and val2) or recognize_empty:
-            # decide based on the priority which one to use
-            col_prior = priorities.get(key, 'Favor New')
-            if (ignore_merge_protection or col_prior == 'Favor New') or (state2_present_columns and key in state2_present_columns):
+        not_present_in_new = state2_present_columns and not (key in state2_present_columns)
+        have_two_values = (val1 and val2) or key in recognize_empty_columns
+        use_new_regardless = ignore_merge_protection or priorities.get(key, 'Favor New') == 'Favor New'
+        if not_present_in_new:
+            extra_data[key] = val1
+        elif have_two_values:
+            if use_new_regardless:
                 extra_data[key] = val2
-            else:  # favor the existing field
+            else:
                 extra_data[key] = val1
         else:
             extra_data[key] = val1 or val2
