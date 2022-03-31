@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 
 from calendar import (
     monthrange,
-    month_name,
+    # month_name,
 )
 
 from collections import defaultdict
@@ -13,7 +13,7 @@ from config.settings.common import TIME_ZONE
 
 from datetime import (
     datetime,
-    timedelta,
+    # timedelta,
 )
 
 from django.db.models import Q
@@ -125,7 +125,7 @@ class PropertyMeterReadingsExporter():
                 - For more details how that monthly aggregation occurs, see _max_reading_total()
         """
         # Used to consolidate different readings (types) within the same month
-        monthly_readings = defaultdict(lambda: {})
+        # monthly_readings = defaultdict(lambda: {})
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -151,7 +151,7 @@ class PropertyMeterReadingsExporter():
                         monthly_data[month1] = {'days': dat['end_time'].day}
                         monthly_data['total_days'] += dat['end_time'].day
                         break
-                    month0 = month1 # for next loop
+                    month0 = month1  # for next loop
                     monthly_data[month1] = {'days': monthrange(date1.year, date1.month)[1]}
                     monthly_data['total_days'] += monthrange(date1.year, date1.month)[1]
 
