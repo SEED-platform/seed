@@ -11,6 +11,9 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+msgid "\"Your building's latitude and longitude is {{latitude}}, {{longitude}}!\""
+msgstr "\"Your building's latitude and longitude is {{latitude}}, {{longitude}}!\""
+
 msgid "# Of Files"
 msgstr "# Of Files"
 
@@ -594,6 +597,9 @@ msgstr "Custom ID 1 (Property)"
 
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
+
+msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
+msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 
 msgid "Cycle"
 msgstr "Cycle"
@@ -2499,6 +2505,9 @@ msgstr "The SEED team"
 
 msgid "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
 msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
+
+msgid "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
+msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
 
 msgid "The following actions have destructive effects, please read all warnings after clicking an option."
 msgstr "The following actions have destructive effects, please read all warnings after clicking an option."
