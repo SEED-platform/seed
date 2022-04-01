@@ -1,3 +1,56 @@
+# SEED Version 2.14.0
+
+Date Range: 12/27/21 - 03/31/22
+
+Closed Issues and Features (Total: 46):
+- Fixed [#2508]( https://github.com/SEED-platform/seed/issues/2508 ), Inventory Detail View: Text bubbles stay on the screen even if you scroll down the page
+- Fixed [#2515]( https://github.com/SEED-platform/seed/issues/2515 ), Progress bar sits on 33% for a very long time so that users think the program has crashed
+- Feature [#2624]( https://github.com/SEED-platform/seed/issues/2624 ), Merge and Link Matches - Enable and Change Sorting
+- Fixed [#2683]( https://github.com/SEED-platform/seed/issues/2683 ), Meter screen shows intervals for meters that are "unselected"
+- Feature [#2761]( https://github.com/SEED-platform/seed/issues/2761 ), Derived Columns: Many small improvements
+- Feature [#2806]( https://github.com/SEED-platform/seed/issues/2806 ), Summarize the count for each of the columns from the "Columns Setting" Tab in the Property Tab
+- Improved [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
+- Fixed [#2831]( https://github.com/SEED-platform/seed/issues/2831 ), Deleting Property Inventory doesn't delete the BETTER analyses
+- Fixed [#2843]( https://github.com/SEED-platform/seed/issues/2843 ), BETTER - GHG emission reduction units
+- Feature [#2844]( https://github.com/SEED-platform/seed/issues/2844 ), BETTER -- show a list of all buildings in Org/Analyses, not just grouped by Portfolio
+- Fixed [#2891]( https://github.com/SEED-platform/seed/issues/2891 ), Fix deprecated urls
+- Fixed [#2892]( https://github.com/SEED-platform/seed/issues/2892 ), Fix usage of deprecated method request.is_ajax()
+- Fixed [#2902]( https://github.com/SEED-platform/seed/issues/2902 ), XMLSchema fails to fetch gbXML Schema
+- Fixed [#2947]( https://github.com/SEED-platform/seed/issues/2947 ), BETTER: update endpoint for token validity check
+- Fixed [#2959]( https://github.com/SEED-platform/seed/issues/2959 ), BuildingSync: add matching/linking for imported files
+- Fixed [#2962]( https://github.com/SEED-platform/seed/issues/2962 ), BSyncr: Analysis results link back to properties doesn't work
+- Fixed [#2974]( https://github.com/SEED-platform/seed/issues/2974 ), Derived Columns: add ability to specify decimal places for individual columns
+- Feature [#2976]( https://github.com/SEED-platform/seed/issues/2976 ), Export Properties and Tax Lots Progress Bar
+- Feature [#2998]( https://github.com/SEED-platform/seed/issues/2998 ), Geocoding -- allow user to specify field to appear in text associated with map pin
+- Maintenance [#3020]( https://github.com/SEED-platform/seed/issues/3020 ), Backup prod postgres docker volume
+- Fixed [#3040]( https://github.com/SEED-platform/seed/issues/3040 ), Refactor list API to make adding related data optional
+- Feature [#3041]( https://github.com/SEED-platform/seed/issues/3041 ), Add server-side filtering for canonical columns
+- Feature [#3042]( https://github.com/SEED-platform/seed/issues/3042 ), Add server-side filtering for extra data columns
+- Feature [#3044]( https://github.com/SEED-platform/seed/issues/3044 ), Add server-side filtering by labels
+- Feature [#3045]( https://github.com/SEED-platform/seed/issues/3045 ), Add server-side sorting for inventory list
+- Feature [#3046]( https://github.com/SEED-platform/seed/issues/3046 ), Frontend: enable actions for current page and across entire result set (for inventory list BETA page)
+- Feature [#3047]( https://github.com/SEED-platform/seed/issues/3047 ), Add frontend functionality for filtering on canonical columns
+- Feature [#3048]( https://github.com/SEED-platform/seed/issues/3048 ), Add frontend filtering for extra data columns
+- Feature [#3049]( https://github.com/SEED-platform/seed/issues/3049 ), Add frontend filtering of inventory by labels
+- Improved [#3052]( https://github.com/SEED-platform/seed/issues/3052 ), Update functionality of top right nav shortcut
+- Maintenance [#3062]( https://github.com/SEED-platform/seed/issues/3062 ), Remove warnings from tests
+- Fixed [#3071]( https://github.com/SEED-platform/seed/issues/3071 ), bug: saved filter/sort results in multiple initial queries
+- Fixed [#3073]( https://github.com/SEED-platform/seed/issues/3073 ), Refactor Beta-Inventory List Filters View
+- Maintenance [#3079]( https://github.com/SEED-platform/seed/issues/3079 ), Run WAVA and address issues
+- Fixed [#3081]( https://github.com/SEED-platform/seed/issues/3081 ), refactor: move filtering of querysets into generalized function
+- Fixed [#3093]( https://github.com/SEED-platform/seed/issues/3093 ), refactor: enable inventory `/filter` endpoints to return only IDs
+- Fixed [#3094]( https://github.com/SEED-platform/seed/issues/3094 ), refactor(frontend): fetch all inventory IDs when an action is performed when user does a "select all"
+- Fixed [#3095]( https://github.com/SEED-platform/seed/issues/3095 ), Fix the test using vcr
+- Maintenance [#3096]( https://github.com/SEED-platform/seed/issues/3096 ), chore: update celery to 5.2.2
+- Fixed [#3108]( https://github.com/SEED-platform/seed/issues/3108 ), refactor(buildingsync): use consistent scenario/measure/meter merge logic
+- Feature [#3126]( https://github.com/SEED-platform/seed/issues/3126 ), Upload Portfolio Manager Meter Readings -- allow data shown on that screen to be exported
+- Feature [#3127]( https://github.com/SEED-platform/seed/issues/3127 ), Portfolio Manager Meter Import Results -- add count of Properties + count of meters
+- Feature [#3128]( https://github.com/SEED-platform/seed/issues/3128 ), Data Sets feedback on number of records for meters -- right now it says 0
+- Fixed [#3130]( https://github.com/SEED-platform/seed/issues/3130 ), Org: Settings: Default Display Fields -- doesn't work for all fields
+- Improved [#3132]( https://github.com/SEED-platform/seed/issues/3132 ), Update the Getting Started PDF for 2.13.0 release
+- Fixed [#3140]( https://github.com/SEED-platform/seed/issues/3140 ), Redirect to home on 404s
+- Fixed [#3163]( https://github.com/SEED-platform/seed/issues/3163 ), Recognize Empty not working as intended
+
 # SEED Version 2.13.0
 
 Date Range: 11/20/21 - 12/27/21

@@ -35,6 +35,7 @@ from seed.views.v3.organization_users import OrganizationUserViewSet
 from seed.views.v3.portfolio_manager import PortfolioManagerViewSet
 from seed.views.v3.postoffice import PostOfficeViewSet, PostOfficeEmailViewSet
 from seed.views.v3.progress import ProgressViewSet
+from seed.views.v3.data_logger import DataLoggerViewSet
 from seed.views.v3.properties import PropertyViewSet
 from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
@@ -52,6 +53,8 @@ api_v3_router.register(r'column_list_profiles', ColumnListProfileViewSet, basena
 api_v3_router.register(r'column_mapping_profiles', ColumnMappingProfileViewSet, basename='column_mapping_profiles')
 api_v3_router.register(r'columns', ColumnViewSet, basename='columns')
 api_v3_router.register(r'cycles', CycleViewSet, basename='cycles')
+api_v3_router.register(r'data_loggers', DataLoggerViewSet, basename="data_logger")
+api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
 api_v3_router.register(r'datasets', DatasetViewSet, basename='datasets')
 api_v3_router.register(r'derived_columns', DerivedColumnViewSet, basename='derived_columns')
 api_v3_router.register(r'gbr_properties', GBRPropertyViewSet, basename="properties")
@@ -60,7 +63,6 @@ api_v3_router.register(r'green_assessment_properties', GreenAssessmentPropertyVi
 api_v3_router.register(r'green_assessment_urls', GreenAssessmentURLViewSet, basename="green_assessment_urls")
 api_v3_router.register(r'green_assessments', GreenAssessmentViewSet, basename="green_assessments")
 api_v3_router.register(r'labels', LabelViewSet, basename='labels')
-api_v3_router.register(r'data_quality_checks', DataQualityCheckViewSet, basename='data_quality_checks')
 api_v3_router.register(r'import_files', ImportFileViewSet, basename='import_files')
 api_v3_router.register(r'measures', MeasureViewSet, basename='measures')
 api_v3_router.register(r'meters', MeterViewSet, basename='meters')

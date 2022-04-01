@@ -177,19 +177,19 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
       });
     };
 
-    uploader_factory.sensors_preview = function (file_id, org_id, view_id) {
+    uploader_factory.sensors_preview = function (file_id, org_id, view_id, data_logger_id) {
       return $http.get(
         '/api/v3/import_files/' + file_id + '/sensors_preview/',
-        { params: { organization_id: org_id, view_id } }
+        { params: { organization_id: org_id, view_id, data_logger_id } }
       ).then(function (response) {
         return response.data;
       });
     };
 
-    uploader_factory.sensor_readings_preview = function (file_id, org_id, view_id) {
+    uploader_factory.sensor_readings_preview = function (file_id, org_id, view_id, data_logger_id) {
       return $http.get(
         '/api/v3/import_files/' + file_id + '/sensor_readings_preview/',
-        { params: { organization_id: org_id, view_id } }
+        { params: { organization_id: org_id, view_id, data_logger_id} }
       ).then(function (response) {
         return response.data;
       });

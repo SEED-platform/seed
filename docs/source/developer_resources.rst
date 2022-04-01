@@ -412,7 +412,7 @@ To make a release do the following:
 
 .. code-block:: console
 
-    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2020-09-25 –e 2020-12-28
+    python docs/scripts/change_log.py –k GITHUB_API_TOKEN –s 2021-12-27 –e 2022-03-31
 
 4. Paste the results (remove unneeded Accepted Pull Requests and the new issues) into the CHANGELOG.md. Cleanup the formatting (if needed).
 5. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).

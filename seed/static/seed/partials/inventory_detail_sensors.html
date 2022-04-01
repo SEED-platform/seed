@@ -33,10 +33,26 @@
 </div>
 <div class="section_content_container" ng-cloak style="padding-left:15px; padding-right:15px;">
 
-    <div id="sensor-info-container">
-        <div class="btn-group" style="padding-top: 15px;">
-            <button type="button" ng-click="open_sensor_upload_modal()" class="btn btn-primary" translate>UPLOAD_SENSOR_BUTTON</button>
+    <div>
+        <div class="btn-group" style="padding-top: 15px; display: flex; gap: 15px;">
+            <button type="button" style="border-radius: 4px;" ng-click="open_data_logger_upload_modal()" class="btn btn-primary" translate>UPLOAD_DATA_LOGGER_BUTTON</button>
         </div>
+    </div>
+
+    <div id="data-logger-info-container">
+        <h4 translate>DATA_LOGGERS</h4>
+        <div id="grid-container" style="padding-top: 15px">
+            <div ng-show="has_data_loggers">
+                <div ui-grid="dataloggerGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
+            </div>
+            <div ng-hide="has_data_loggers">
+                <div class="jumbotron text-center" translate>No Data</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sensor-info-container">
+        <h4 translate>SENSORS</h4>
         <div id="grid-container" style="padding-top: 15px">
             <div ng-show="has_sensors">
                 <div ui-grid="sensorGridOptions" ui-grid-resize-columns ui-grid-auto-resize></div>
@@ -73,10 +89,8 @@
                 </li>
             </ul>
         </div>
-        <div class="btn-group" style="padding-bottom: 15px;">
-            <button type="button" ng-click="open_sensor_readings_upload_modal()" class="btn btn-primary" translate>UPLOAD_SENSOR_READINGS_BUTTON</button>
-        </div>
         <div class="section_content" ng-show="has_sensor_readings">
+            <h4 translate>SENSOR_READINGS</h4>
             <div id="usage-grid-container">
                 <div ui-grid="usageGridOptions" ui-grid-resize-columns></div>
             </div>
