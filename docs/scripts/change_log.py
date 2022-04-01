@@ -113,9 +113,13 @@ for issue in repo.issues(state='closed'):
             if 'stale' in labels:
                 # issue closed due to staleness, it was not really addressed
                 continue
-
-	    if 'Milestone' in labels:
+            
+            if 'Milestone' in labels:
                 # these are milestone tracking tickets and should not show up in changelog
+                continue
+
+            if 'Project Tracking' in labels:
+                # these are project tracking tickets that do not need to show up in the changelog
                 continue
 
             if 'Feature' in labels:
