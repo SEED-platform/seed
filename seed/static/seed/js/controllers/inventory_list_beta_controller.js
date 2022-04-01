@@ -110,6 +110,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
           if (foundCol) {
             foundCol.is_derived_column = true;
+            foundCol.displayName = foundCol.name
             $scope.columns.push(foundCol);
           }
         });
