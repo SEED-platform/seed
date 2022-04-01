@@ -111,6 +111,10 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           field: 'display_name',
           enableHiding: false,
           type: 'string'
+        },{
+          field: 'data_logger',
+          displayName: 'Data Logger',
+          enableHiding: false
         }, {
           field: 'type',
           enableHiding: false
@@ -126,10 +130,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           enableHiding: false
         },{
           field: 'description',
-          enableHiding: false
-        },{
-          field: 'data_logger',
-          displayName: 'Data Logger',
           enableHiding: false
       }];
 
