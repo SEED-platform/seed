@@ -73,7 +73,8 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.export_inventory_modal',
   'BE.seed.controller.geocode_modal',
   'BE.seed.controller.green_button_upload_modal',
-  'BE.seed.controller.sensor_upload_modal',
+  'BE.seed.controller.data_logger_upload_modal',
+  'BE.seed.controller.sensors_upload_modal',
   'BE.seed.controller.sensor_readings_upload_modal',
   'BE.seed.controller.inventory_cycles',
   'BE.seed.controller.inventory_detail',
@@ -1760,6 +1761,10 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           sensors: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
             var organization_id = user_service.get_organization().id;
             return sensor_service.get_sensors($stateParams.view_id, organization_id);
+          }],
+          data_loggers: ['$stateParams', 'user_service', 'sensor_service', function ($stateParams, user_service, sensor_service) {
+            var organization_id = user_service.get_organization().id;
+            return sensor_service.get_data_loggers($stateParams.view_id, organization_id);
           }],
           cycles: ['cycle_service', function (cycle_service) {
             return cycle_service.get_cycles();

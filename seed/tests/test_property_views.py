@@ -47,7 +47,7 @@ from seed.models import (
     ColumnMappingProfile,
     Organization,
 )
-from seed.models.sensors import Sensor, SensorReading
+from seed.models.sensors import DataLogger, Sensor, SensorReading
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeColumnFactory,
@@ -1273,22 +1273,31 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.property_view_2 = PropertyView.objects.create(property=self.property_2, cycle=self.cycle, state=self.state_2)
 
     def test_property_sensors_endpoint_returns_a_list_of_sensors_of_a_view(self):
+        dl_a = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
         Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl_a,
             "display_name": "s1",
             "sensor_type": "first",
             "units": "one",
             "column_name": "sensor 1"
         })
         Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl_a,
             "display_name": "s2",
             "sensor_type": "second",
             "units": "two",
             "column_name": "sensor 2"
         })
+
+        dl_b = DataLogger.objects.create(**{
+            "property_id": self.property_2.id,
+            "display_name": "boo",
+        })
         Sensor.objects.create(**{
-            "sensor_property": self.property_2,
+            "data_logger": dl_b,
             "display_name": "s3",
             "sensor_type": "third",
             "units": "three",
@@ -1312,15 +1321,19 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual([r["column_name"] for r in result_dict], ["sensor 3"])
 
     def test_property_sensor_usage_returns_sensor_readings(self):
+        dl = DataLogger.objects.create(**{
+            "property_id": self.property_1.id,
+            "display_name": "moo",
+        })
         s1 = Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl,
             "display_name": "s1",
             "sensor_type": "first",
             "units": "one",
             "column_name": "sensor 1"
         })
         s2 = Sensor.objects.create(**{
-            "sensor_property": self.property_1,
+            "data_logger": dl,
             "display_name": "s2",
             "sensor_type": "second",
             "units": "two",
@@ -1351,8 +1364,8 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
             })
             except_results.append({
                 "timestamp": str(timestamp.replace(tzinfo=None)),
-                s1.display_name: s1_reading,
-                s2.display_name: s2_reading
+                f"{s1.display_name} ({dl.display_name})": s1_reading,
+                f"{s2.display_name} ({dl.display_name})": s2_reading
             })
             s1_reading += 1
             s2_reading += 1
@@ -1379,10 +1392,10 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'month': 'January 2000', 's1': 2.0, 's2': 12.0},
-                {'month': 'February 2000', 's1': 4.0, 's2': 14.0},
-                {'month': 'January 2100', 's1': 3.0, 's2': 13.0},
-                {'month': 'February 2100', 's1': 5.0, 's2': 15.0}
+                {'month': 'January 2000', 's1 (moo)': 2.0, 's2 (moo)': 12.0},
+                {'month': 'February 2000', 's1 (moo)': 4.0, 's2 (moo)': 14.0},
+                {'month': 'January 2100', 's1 (moo)': 3.0, 's2 (moo)': 13.0},
+                {'month': 'February 2100', 's1 (moo)': 5.0, 's2 (moo)': 15.0}
             ]
         )
 
@@ -1398,8 +1411,8 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(
             result_dict["readings"],
             [
-                {'year': 2000, 's1': 3.0, 's2': 13.0},
-                {'year': 2100, 's1': 4.0, 's2': 14.0},
+                {'year': 2000, 's1 (moo)': 3.0, 's2 (moo)': 13.0},
+                {'year': 2100, 's1 (moo)': 4.0, 's2 (moo)': 14.0},
             ]
         )
 

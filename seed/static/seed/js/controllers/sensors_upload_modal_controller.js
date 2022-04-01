@@ -1,5 +1,5 @@
-angular.module('BE.seed.controller.sensor_upload_modal', [])
-  .controller('sensor_upload_modal_controller', [
+angular.module('BE.seed.controller.sensors_upload_modal', [])
+  .controller('sensors_upload_modal_controller', [
     '$scope',
     '$state',
     '$uibModalInstance',
@@ -7,8 +7,10 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
     'filler_cycle',
     'dataset_service',
     'organization_id',
+    'sensor_service',
     'uploader_service',
     'view_id',
+    'data_logger',
     'datasets',
     function (
       $scope,
@@ -18,10 +20,13 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       filler_cycle,
       dataset_service,
       organization_id,
+      sensor_service,
       uploader_service,
       view_id,
+      data_logger,
       datasets
     ) {
+      console.log(data_logger)
       $scope.step = {
         number: 1
       };
@@ -29,6 +34,7 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
       $scope.selectedCycle = filler_cycle;
       $scope.organization_id = organization_id;
       $scope.datasets = datasets;
+      $scope.data_logger = data_logger;
 
       if (datasets.length) $scope.selectedDataset = datasets[0];
 
@@ -49,11 +55,11 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
         // If step 2, GB import confirmation was not accepted by user, so delete file
         if ($scope.step.number === 2) {
           dataset_service.delete_file($scope.file_id).then(function (/*results*/) {
-            $uibModalInstance.dismiss('cancel');
           });
-        } else {
-          $uibModalInstance.dismiss('cancel');
+        } else if ($scope.step.number === 1) {
+          $scope.refresh_page()
         }
+        $uibModalInstance.dismiss('cancel');
       };
 
       $scope.uploaderfunc = function (event_message, file/*, progress*/) {
@@ -109,17 +115,12 @@ angular.module('BE.seed.controller.sensor_upload_modal', [])
         enableHiding: false
       }];
 
-      var successfully_imported_col_def = {
-        field: 'successfully_imported',
-        enableHiding: false
-      };
-
       var grid_rows_to_display = function (data) {
         return Math.min(data.length, 5);
       };
 
       var show_confirmation_info = function () {
-        uploader_service.sensors_preview($scope.file_id, $scope.organization_id, $scope.view_id).then(function (result) {
+        uploader_service.sensors_preview($scope.file_id, $scope.organization_id, $scope.view_id, $scope.data_logger.id).then(function (result) {
           $scope.proposed_imports_options = {
             data: result.proposed_imports,
             columnDefs: base_sensor_col_defs,
