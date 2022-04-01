@@ -375,7 +375,6 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
-        console.log("FILE name: ", fileName);
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -416,7 +415,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
        */
       onError: function (id, fileName, errorReason, xhr) {
         if (_.includes(errorReason, ' has an invalid extension.')) {
-          scope.eventfunc({message: 'invalid_file_extension'});
+          scope.eventfunc({message: 'invalid_extension'});
           return;
         }
 
@@ -463,7 +462,7 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
   } else if (scope.sourcetype === 'UploadFile') {
-    uploader = makeDocumentUploader(scope, element, ['pdf']);
+    uploader = makeDocumentUploader(scope, element, ['pdf', 'idf', 'osm', 'dxf']);
   } else {
     uploader = makeFileSystemUploader(scope, element, ['csv', 'xls', 'xlsx', 'zip', 'xml']);
   }

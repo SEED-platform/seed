@@ -1,12 +1,12 @@
 <div class="modal-header" ng-switch on="step.number">
-    <h4 class="modal-title" ng-switch-when="1" translate>SELECT_UPLOAD_FILE_TITLE</h4>
-    <h4 class="modal-title" ng-switch-when="2" translate>UPLOADING_PDF_FILE_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="1" translate>SELECT_DOC_UPLOAD_TITLE</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>UPLOADING_DOCUMENT_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="3" translate>UPLOAD_COMPLETE_TITLE</h4>
 </div>
 
 <div class="modal-body" ng-switch on="step.number">
     <div class="data_upload_steps container-fluid" ng-switch-when="1">
-        <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px;" translate="INVALID_FILE_EXTENSION_ALERT"></div>
+        <div class="alert alert-danger" ng-show="uploader.invalid_file_extension_alert" style="margin-bottom: 18px;" translate="INVALID_DOC_FILE_EXTENSION_ALERT"></div>
         <div class="alert alert-danger" ng-show="uploader.invalid_file_contents" style="margin-bottom: 18px;" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
     </div>
 

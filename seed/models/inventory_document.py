@@ -2,6 +2,7 @@
 """
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
+import logging
 
 from django.db import (
     connection,
@@ -13,10 +14,16 @@ class InventoryDocument(models.Model):
 
     UNKNOWN = 0
     PDF = 1
+    OSM = 2
+    IDF = 3
+    DXF = 4
 
     FILE_TYPES = (
         (UNKNOWN, 'Unknown'),
-        (PDF, 'PDF')
+        (PDF, 'PDF'),
+        (OSM, 'OSM'),
+        (IDF, 'IDF'),
+        (DXF, 'DXF')
     )
         
     property = models.ForeignKey(

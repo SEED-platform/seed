@@ -87,6 +87,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
+      $scope.inventory_docs = inventory_payload.property.inventory_documents;
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
