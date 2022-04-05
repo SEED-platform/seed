@@ -75,19 +75,35 @@
                 </select>
             </div>
         </div>
-        <div class="form-group" uib-dropdown is-open="sensors_options.isopen" auto-close="outsideClick" on-toggle="sensor_selection_toggled(open)" style="margin-top: 15px;">
-            <button type="button" class="btn btn-default" uib-dropdown-toggle>
-                Filter Sensors <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" uib-dropdown-menu>    
-                <li ng-repeat="sensor in sensor_selections">
-                    <div>
-                        <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
-                            {$:: sensor.label $}<input type="checkbox" ng-model="sensor.selected" name="sensor.label" style="width: 14px; height: 14px; margin-left: 10px;">
-                        </label>
-                    </div>
-                </li>
-            </ul>
+        <div style="display: flex;">
+            <div class="form-group" uib-dropdown is-open="data_loggers_options.isopen" auto-close="outsideClick" on-toggle="data_logger_selection_toggled(open)" style="margin-top: 15px; margin-right: 15px;">
+                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                    Filter Data Logger <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu>    
+                    <li ng-repeat="data_logger in data_logger_selections">
+                        <div>
+                            <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                                {$:: data_logger.label $}<input type="checkbox" ng-model="data_logger.selected" name="data_logger.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="form-group" uib-dropdown is-open="sensor_types_options.isopen" auto-close="outsideClick" on-toggle="sensor_type_selection_toggled(open)" style="margin-top: 15px;">
+                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                    Filter Sensor Type <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu>    
+                    <li ng-repeat="sensor_type in sensor_type_selections">
+                        <div>
+                            <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
+                                {$:: sensor_type.label $}<input type="checkbox" ng-model="sensor_type.selected" name="sensor_type.label" style="width: 14px; height: 14px; margin-left: 10px;">
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
         <div class="section_content" ng-show="has_sensor_readings">
             <h4 translate>SENSOR_READINGS</h4>

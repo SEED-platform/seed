@@ -48,13 +48,22 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       var resetSelections = function () {
-        $scope.sensor_selections = _.map(sorted_sensors, function (sensor) {
+        $scope.data_logger_selections = _.map(sorted_data_loggers, function (data_logger) {
           return {
             selected: true,
-            label: getSensorLabel(sensor),
-            value: sensor.id
+            label: data_logger.display_name,
+            value: data_logger.id
           };
         });
+
+        var sensorTypes = new Set(_.map(sorted_sensors, s => s.type))
+        $scope.sensor_type_selections = [...sensorTypes].map(t => {
+          return {
+            selected: true,
+            label: t,
+            value: t
+          };
+        })
       };
 
       // On page load, all sensors and readings
@@ -68,7 +77,13 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       var sorted_sensors = _.sortBy(sensors, ['id']);
       resetSelections();
 
-      $scope.sensor_selection_toggled = function (is_open) {
+      $scope.data_logger_selection_toggled = function (is_open) {
+        if (!is_open) {
+          $scope.applyFilters();
+        }
+      };
+
+      $scope.sensor_type_selection_toggled = function (is_open) {
         if (!is_open) {
           $scope.applyFilters();
         }
@@ -218,13 +233,16 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       };
 
       // given the sensor selections, it returns the filtered readings and column defs
-      var filterBySensorSelections = function (readings, columnDefs, sensorSelections) {
+      var filterBySensorSelections = function (readings, columnDefs, dataLoggerSelections, sensor_type_selections) {
+        var selectedDataLoggerDisplayNames = dataLoggerSelections.filter((dl) => dl.selected).map((dl) => dl.label);
+        var selectedSensorType = sensor_type_selections.filter((t) => t.selected).map((t) => t.label);
+
         // filter according to sensor selections
-        var selectedSensorLabels = sensorSelections.filter(function (selection) {
-          return selection.selected;
+        var selectedSensorLabels = sensors.filter(function (sensor) {
+          return selectedDataLoggerDisplayNames.includes(sensor.data_logger) & selectedSensorType.includes(sensor.type)
         })
-          .map(function (selection) {
-            return selection.label;
+          .map(function (sensor) {
+            return getSensorLabel(sensor);
           });
 
         return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);
@@ -232,7 +250,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
       // filters the sensor readings by selected sensors and updates the table
       $scope.applyFilters = function () {
-        const results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.sensor_selections);
+        const results = filterBySensorSelections(property_sensor_usage.readings, property_sensor_usage.column_defs, $scope.data_logger_selections, $scope.sensor_type_selections);
         const readings = results.readings;
         const columnDefs = results.columnDefs;
 
@@ -255,7 +273,6 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           // update the base data and reset filters
           property_sensor_usage = usage;
 
-          resetSelections();
           $scope.applyFilters();
           spinner_utility.hide();
         });
