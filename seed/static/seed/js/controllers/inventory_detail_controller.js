@@ -249,10 +249,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       }
 
-      $scope.open_file_upload_modal = function () {
+      $scope.open_doc_upload_modal = function () {
         $uibModal.open({
-          templateUrl: urls.static_url + 'seed/partials/file_upload_modal.html',
-          controller: 'file_upload_modal_controller',
+          templateUrl: urls.static_url + 'seed/partials/document_upload_modal.html',
+          controller: 'document_upload_modal_controller',
           resolve: {
             organization_id: function () {
               return $scope.organization.id;
@@ -263,6 +263,24 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
       };
+
+      $scope.confirm_delete = function (file) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_document_modal.html',
+          controller: 'delete_document_modal_controller',
+          resolve: {
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            file: file
+          }
+        });
+
+        modalInstance.result.finally(function () {
+          init();
+        });
+      };
+
 
       $scope.isDisabledField = function (name) {
         return _.includes([

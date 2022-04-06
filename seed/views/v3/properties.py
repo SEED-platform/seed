@@ -1337,10 +1337,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 property_id=property_id
             )
 
-            print("INVENTORY_DOC: {}".format(inventory_doc))
-            print("!!! {}".format(inventory_doc.filename))
-            print("!!! {}".format(inventory_doc.pk))
-
             return JsonResponse({
                 'success': True,
                 'status': 'success',
@@ -1355,6 +1351,49 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @action(detail=True, methods=['DELETE'])
+    @has_perm_class('can_modify_data')
+    def delete_inventory_document(self, request, pk):
+        """
+        Deletes an inventory document from a property
+        """
+        
+        file_id = request.query_params.get('file_id')
+
+        # retrieve property ID from property_view
+        org_id = int(self.get_organization(request))
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+        
+        try:
+            doc_file = InventoryDocument.objects.get(
+                pk=file_id,
+                property_id=property_id
+            )
+            
+        except InventoryDocument.DoesNotExist:
+
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find inventory document with pk=' + str(
+                    file_id)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check permissions
+        d = Property.objects.filter(
+            organization_id=org_id,
+            pk=property_id)
+
+        if not d.exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'user does not have permission to delete the inventory document',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # delete file
+        doc_file.delete()
+        return JsonResponse({'status': 'success'})
 
 
 def diffupdate(old, new):

@@ -305,27 +305,35 @@
                         </span>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-info" ng-click="open_file_upload_modal()" style="margin: 15px;">
+                    <button type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px;">
                         <i class="fa fa-paperclip"></i> <span translate>Add a Document</span>
                     </button>
                 </div>
             </div>
             <div class="section_content_container">
-                <!-- List of files -->
+                <!-- List of Documents -->
                 <div class="section_content">
                     <div class="table_list_container table_item_detail">
-                        <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom:-1px;">
+                        <table class="table table-striped table_highlight_first" style="margin-bottom:-1px;">
                             <thead>
                                 <tr>
+                                    <th sd-resizable class="ellipsis-resizable" colspan="2">File Name</th>
                                     <th sd-resizable>File Type</th>
-                                    <th sd-resizable class="ellipsis-resizable">File Name</th>
                                     <th sd-resizable class="ellipsis-resizable">Created</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr ng-repeat="file in inventory_docs">
+                                    <td class="data_file_name" style="border-right:0px;">
+                                        {$:: file.filename $} - {$:: file.id $}
+                                    </td>
+                                    <td style="border-left:0px; text-align:right;">
+                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                    </a>
+                                    <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
+                                    </td>
                                     <td> {$ file.file_type $}</td>
-                                    <td><a href="{$ file.file $}" download="{$ file.filename $}">{$ file.filename $}</a></td>
                                     <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
                                 </tr>
                             </tbody>

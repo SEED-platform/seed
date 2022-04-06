@@ -205,6 +205,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.delete_inventory_document = function (view_id, file_id) {
+      return $http.delete('/api/v3/properties/' + view_id + '/delete_inventory_document/', {
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        params: {
+          organization_id: user_service.get_organization().id,
+          file_id: file_id
+        }
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
     inventory_service.get_property_links = function (view_id) {
       // Error checks
       if (_.isNil(view_id)) {
