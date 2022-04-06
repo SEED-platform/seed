@@ -611,6 +611,10 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
           options.sortingAlgorithm = naturalSort;
+        } else if (col.is_extra_data && (col.data_type === 'number' || col.data_type === 'float')) {
+          options.filter = inventory_service.combinedFilter();
+          options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
+          options.sortingAlgorithm = naturalSort;
         } else {
           options.filter = inventory_service.combinedFilter();
           options.sortingAlgorithm = naturalSort;

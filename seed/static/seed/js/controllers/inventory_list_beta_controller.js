@@ -568,7 +568,7 @@ angular.module('BE.seed.controller.inventory_list_beta', [])
           options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
         } else if (col.data_type === 'eui' || col.data_type === 'area') {
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-        } else if (col.data_type === 'float' || col.is_derived_column) {
+        } else if (col.data_type === 'float' || col.data_type === 'number'|| col.is_derived_column) {
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
         }
 
