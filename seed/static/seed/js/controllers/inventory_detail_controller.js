@@ -739,7 +739,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.displayValue = function (dataType, value) {
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a');
-        } else if (dataType === 'eui' || dataType === 'area') {
+        } else if (['area', 'eui', 'float', 'number'].includes(dataType)) {
           return $filter('number')(value, $scope.organization.display_decimal_places);
         }
         return value;
