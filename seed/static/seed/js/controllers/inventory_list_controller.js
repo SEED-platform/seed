@@ -603,15 +603,11 @@ angular.module('BE.seed.controller.inventory_list', [])
           options.filter = inventory_service.dateFilter();
         } else if (col.data_type === 'date') {
           options.filter = inventory_service.dateFilter();
-        } else if (col.data_type === 'eui' || col.data_type === 'area') {
+        } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
           options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
           options.sortingAlgorithm = naturalSort;
-        } else if (col.data_type === 'float' || col.is_derived_column) {
-          options.filter = inventory_service.combinedFilter();
-          options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
-          options.sortingAlgorithm = naturalSort;
-        } else if (col.is_extra_data && (col.data_type === 'number' || col.data_type === 'float')) {
+        } else if (col.is_derived_column) {
           options.filter = inventory_service.combinedFilter();
           options.cellFilter = 'number: ' + $scope.organization.display_decimal_places;
           options.sortingAlgorithm = naturalSort;
