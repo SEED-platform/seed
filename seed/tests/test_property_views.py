@@ -167,10 +167,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         # content_type='multipart/form-data'
         response = self.client.put(url, params=params, files={'file': tmp2})
         data = response.json()
-        self.assertTrue(data['success'])
-
         print("RESPONSE:")
         print(data)
+        self.assertTrue(data['success'])
 
     def test_edit_properties_creates_notes_after_initial_edit(self):
         state = self.property_state_factory.get_property_state()
