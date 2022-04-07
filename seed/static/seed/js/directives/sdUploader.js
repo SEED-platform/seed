@@ -361,8 +361,7 @@ var makeDocumentUploader = function (scope, element, allowed_extensions) {
           csrf_name: 'csrfmiddlewaretoken',
           csrf_xname: 'X-CSRFToken',
           file_type: extracted_filetype,
-          organization_id: scope.organizationId,
-          cycle_id: scope.cycleId
+          organization_id: scope.organizationId
         };
 
         uploader.setParams(params);

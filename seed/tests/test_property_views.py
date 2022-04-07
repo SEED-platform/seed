@@ -144,6 +144,34 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.assertGreater(datetime.strptime(data['property']['updated'], "%Y-%m-%dT%H:%M:%S.%fZ"),
                            datetime.strptime(db_updated_time, "%Y-%m-%dT%H:%M:%S.%fZ"))
 
+    def test_upload_inventory_document_and_delete(self):
+        state = self.property_state_factory.get_property_state()
+        prprty = self.property_factory.get_property()
+        view = PropertyView.objects.create(
+            property=prprty, cycle=self.cycle, state=state
+        )
+        location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        test_filepath = os.path.relpath(
+            os.path.join(location, 'data', 'test-document.pdf'))
+
+        url = reverse('api:v3:properties-detail', args=[view.id]) + 'upload_inventory_document/?organization_id={}'.format(self.org.pk).format(self.org.pk)
+
+        params = json.dumps({
+            'file': {
+                'file_type': 1
+            }
+        })
+        tmp = pathlib.Path(test_filepath).read_bytes()
+        tmp2 = open(test_filepath, 'rb')
+        
+        # content_type='multipart/form-data'
+        response = self.client.put(url, params=params, files={'file': tmp2})
+        data = response.json()
+        self.assertTrue(data['success'])
+
+        print("RESPONSE:")
+        print(data)
+
     def test_edit_properties_creates_notes_after_initial_edit(self):
         state = self.property_state_factory.get_property_state()
         prprty = self.property_factory.get_property()
