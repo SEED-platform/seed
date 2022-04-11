@@ -6,6 +6,7 @@
 .pydevproject
 .python-version
 .coverage
+.vscode
 coverage.protractor.json
 .noseids
 *~

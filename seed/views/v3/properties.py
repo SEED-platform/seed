@@ -1327,10 +1327,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             cycle__organization_id=org_id
         )
         property_id = property_view.property.id
-        
+
         # Save File
         try:
-            inventory_doc = InventoryDocument.objects.create(
+            InventoryDocument.objects.create(
                 file=the_file,
                 filename=the_file.name,
                 file_type=file_type,
@@ -1357,7 +1357,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Deletes an inventory document from a property
         """
-        
+
         file_id = request.query_params.get('file_id')
 
         # retrieve property ID from property_view
@@ -1367,13 +1367,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             cycle__organization_id=org_id
         )
         property_id = property_view.property.id
-        
+
         try:
             doc_file = InventoryDocument.objects.get(
                 pk=file_id,
                 property_id=property_id
             )
-            
+
         except InventoryDocument.DoesNotExist:
 
             return JsonResponse(

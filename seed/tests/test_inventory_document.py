@@ -50,4 +50,3 @@ class TestInventoryDocuments(TestCase):
         )
 
         self.assertTrue(doc.id is not None)
- 

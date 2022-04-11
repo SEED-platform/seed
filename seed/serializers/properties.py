@@ -192,8 +192,6 @@ class PropertyStateSerializer(serializers.ModelSerializer):
             for field_name in set(self.fields) - set(show_columns['fields']):
                 self.fields.pop(field_name)
 
-
-
     def to_representation(self, data):
         """Overwritten to handle time conversion and extra_data null fields"""
         result = super().to_representation(data)

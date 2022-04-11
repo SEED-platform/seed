@@ -161,9 +161,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
                 'file_type': 1
             }
         })
-        tmp = pathlib.Path(test_filepath).read_bytes()
+        # tmp = pathlib.Path(test_filepath).read_bytes()
         tmp2 = open(test_filepath, 'rb')
-        
+
         # content_type='multipart/form-data'
         response = self.client.put(url, params=params, files={'file': tmp2})
         data = response.json()

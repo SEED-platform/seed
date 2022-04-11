@@ -2,13 +2,12 @@
 """
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 """
-import logging
 
 from django.db import (
-    connection,
     models,
 )
 from seed.models import Property
+
 
 class InventoryDocument(models.Model):
 
@@ -25,7 +24,7 @@ class InventoryDocument(models.Model):
         (IDF, 'IDF'),
         (DXF, 'DXF')
     )
-        
+
     property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
