@@ -64,12 +64,12 @@ from seed.models import (
     Column,
     ColumnMapping,
     Meter,
-    Property,
     PropertyState,
     PropertyView,
     TaxLotView,
     TaxLotState,
     Sensor,
+    DataLogger,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
@@ -841,8 +841,8 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     import_file = ImportFile.objects.get(pk=file_pk)
-    property_id = import_file.matching_results_data['property_id']
-    sensor_property = Property.objects.get(id=property_id)
+    data_logger_id = import_file.matching_results_data['data_logger_id']
+    data_logger = DataLogger.objects.get(id=data_logger_id)
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}
@@ -855,7 +855,7 @@ def _save_sensor_data_create_tasks(file_pk, progress_key):
     for sensor_datum in sensor_data:
         s, _ = Sensor.objects.get_or_create(**{
             "column_name": sensor_datum["column_name"],
-            "sensor_property": sensor_property
+            "data_logger": data_logger
         })
         s.display_name = sensor_datum["display_name"]
         s.location_identifier = sensor_datum["location_identifier"]
@@ -879,7 +879,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 
     import_file = ImportFile.objects.get(pk=file_pk)
     org_id = import_file.cycle.organization.id
-    property_id = import_file.matching_results_data['property_id']
+    data_logger_id = import_file.matching_results_data['data_logger_id']
 
     # matching_results_data gets cleared out since the field wasn't meant for this
     import_file.matching_results_data = {}
@@ -888,7 +888,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     parser = SensorsReadingsParser.factory(
         import_file.local_file,
         org_id,
-        property_id=property_id
+        data_logger_id=data_logger_id
     )
     sensor_readings_data = parser.sensor_readings_details
 
@@ -897,7 +897,7 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
     for sensor_column_name, readings in sensor_readings_data.items():
         readings_tuples = [t for t in readings.items()]
         for batch_readings in batch(readings_tuples, chunk_size):
-            tasks.append(_save_sensor_readings_task.s(batch_readings, sensor_column_name, progress_data.key))
+            tasks.append(_save_sensor_readings_task.s(batch_readings, data_logger_id, sensor_column_name, progress_data.key))
 
     progress_data.total = len(tasks)
     progress_data.save()
@@ -906,12 +906,12 @@ def _save_sensor_readings_data_create_tasks(file_pk, progress_key):
 
 
 @shared_task
-def _save_sensor_readings_task(readings_tuples, sensor_column_name, progress_key):
+def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_name, progress_key):
     progress_data = ProgressData.from_key(progress_key)
 
     result = {}
     try:
-        sensor = Sensor.objects.get(column_name=sensor_column_name)
+        sensor = Sensor.objects.get(data_logger_id=data_logger_id, column_name=sensor_column_name)
 
     except Sensor.DoesNotExist:
         result[sensor_column_name] = {'error': 'No such sensor.'}

@@ -358,18 +358,29 @@
                 <div class="alert alert-warning" ng-if="proposed_imports_options.data.length">
                     <div ng-if="proposed_imports_options.data.length">
                         <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                        <ul class="meter-count" ng-if="proposed_properties_count">    
+                            <li>{$ proposed_meters_count_string $} from {$ proposed_properties_count_string $}</li>
+                        </ul>
                         <div ui-grid="proposed_imports_options" ui-grid-resize-columns></div>
+                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(proposed_imports_options, 'proposed_meter_imports.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+
                     </div>
                     <br>
                     <div ng-if="parsed_type_units_options.data.length">
                         <div translate><b>PARSED_ENERGY_TYPES_AND_UNITS_TITLE</b></div>
                         <div ui-grid="parsed_type_units_options" ui-grid-resize-columns></div>
+                        <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(parsed_type_units_options, 'parsed_energy_types.csv')"><i class="fa fa-download"aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
                     </div>
                     <br>
                 </div>
                 <div class="alert alert-danger" ng-if="unlinkable_pm_ids_options.data.length">
                     <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>
+                    <ul class="meter-count" ng-if="unlinkable_properties_count">
+                        <li>{$ unlinkable_properties_count_string $}</li>
+                    </ul>
                     <div ui-grid="unlinkable_pm_ids_options" ui-grid-resize-columns></div>
+                    <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(unlinkable_pm_ids_options, 'unlinkable_properties.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+
                 </div>
             </div>
         </div>
@@ -379,7 +390,12 @@
         <div class="row">
             <div class="alert alert-info">
                 <div translate><b>METER_READING_COUNTS_TITLE</b></div>
+                <ul class="meter-count" ng-if="import_properties_count">
+                    <li>{$ import_meters_count_string $} Imported from {$ import_properties_count_string $} </li>
+                </ul>
                 <div ui-grid="import_results_options"></div>
+                <button type="button" class="btn btn-default" style="margin-top: 15px;" ng-click="export_meter_data(import_results_options, 'import_meter_results.csv')"><i class="fa fa-download" aria-hidden="true"></i><span class="pad-left-5" translate>Export CSV<span></button>
+
             </div>
             <div class="alert alert-danger" ng-if="unlinkable_pm_ids.length">
                 <div translate><b>PM_METER_IMPORT_NO_ASSOCIATION</b></div>

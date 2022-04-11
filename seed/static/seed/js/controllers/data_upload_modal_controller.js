@@ -26,6 +26,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
   .controller('data_upload_modal_controller', [
     '$http',
     '$scope',
+    '$rootScope',
     '$uibModalInstance',
     '$log',
     '$timeout',
@@ -45,6 +46,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
     function (
       $http,
       $scope,
+      $rootScope,
       $uibModalInstance,
       $log,
       $timeout,
@@ -125,7 +127,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
       $scope.sub_uploader = {
         progress: 0,
-        status_message: '',
+        status_message: ''
       };
 
       /**
@@ -212,6 +214,12 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       };
 
       var present_parsed_meters_confirmation = function (result) {
+        $scope.proposed_meters_count = result.proposed_imports.length;
+        $scope.proposed_meters_count_string = $scope.proposed_meters_count > 1 ? `${$scope.proposed_meters_count} Meters` : `${$scope.proposed_meters_count} Meter`;
+        $scope.proposed_properties_count = new Set(result.proposed_imports.map((meter) => meter.pm_property_id)).size;
+        $scope.proposed_properties_count_string = $scope.proposed_properties_count > 1 ? `${$scope.proposed_properties_count} Properties` : `${$scope.proposed_properties_count} Property`;
+        $scope.unlinkable_properties_count = result.unlinkable_pm_ids.length;
+        $scope.unlinkable_properties_count_string = $scope.unlinkable_properties_count > 1 ? `${$scope.unlinkable_properties_count} Properties` : `${$scope.unlinkable_properties} Property`;
         $scope.proposed_imports_options = {
           data: result.proposed_imports,
           columnDefs: [{
@@ -388,6 +396,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
         cycle_id = cycle_id || $scope.selectedCycle.id;
         $scope.uploader.in_progress = true;
         save_raw_assessed_data(file_id, cycle_id, true);
+        $rootScope.$emit('datasets_updated');
       };
 
       /**
@@ -522,13 +531,13 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           var result = JSON.parse(progress_data.message);
           $scope.buildingsync_valid = result.valid;
           $scope.buildingsync_issues = result.issues;
-          for (file in $scope.buildingsync_issues) {
+          for (const file in $scope.buildingsync_issues) {
             let schema_errors = [];
-            for (i in $scope.buildingsync_issues[file].schema_errors) {
+            for (const i in $scope.buildingsync_issues[file].schema_errors) {
               let error = $scope.buildingsync_issues[file].schema_errors[i];
               schema_errors.push([error.message, error.path].join(' - '));
-             }
-             $scope.buildingsync_issues[file].schema_errors = schema_errors;
+            }
+            $scope.buildingsync_issues[file].schema_errors = schema_errors;
           }
 
           // if validation failed, end the import flow here; otherwise continue
@@ -571,8 +580,8 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             .pm_meters_preview($scope.dataset.import_file_id, $scope.organization.org_id)
             .then(present_parsed_meters_confirmation)
             .catch(present_meter_import_error);
-        })
-      }
+        });
+      };
 
       /**
        * save_raw_assessed_data: saves Assessed data
@@ -590,6 +599,10 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             $scope.uploader.status_message = 'saving complete';
             $scope.uploader.progress = 100;
             if (is_meter_data) {
+              $scope.import_meters_count = progress_data.message.length;
+              $scope.import_meters_count_string = $scope.import_meters_count > 1 ? `${$scope.import_meters_count} Meters` : `${$scope.import_meters_count} Meter`;
+              $scope.import_properties_count = new Set(progress_data.message.map((meter) => meter.pm_property_id)).size;
+              $scope.import_properties_count_string = $scope.import_properties_count > 1 ? `${$scope.import_properties_count} Properties` : `${$scope.import_properties_count} Property`;
               $scope.import_results_options = meter_import_results(progress_data.message);
               $scope.step.number = 16;
             } else {
@@ -627,17 +640,17 @@ angular.module('BE.seed.controller.data_upload_modal', [])
             handleSystemMatchingError(data);
           } else {
             const progress_argument = {
-              'progress_key': data.progress_data.progress_key,
-              'offset': data.progress_data.progress,
-              'multiplier': 1,
-              'progress_bar_obj':$scope.uploader
-            }
+              progress_key: data.progress_data.progress_key,
+              offset: data.progress_data.progress,
+              multiplier: 1,
+              progress_bar_obj: $scope.uploader
+            };
             const sub_progress_argument = {
-              'progress_key': data.sub_progress_data.progress_key,
-              'offset': data.sub_progress_data.progress,
-              'multiplier': 1,
-              'progress_bar_obj':$scope.sub_uploader
-            }
+              progress_key: data.sub_progress_data.progress_key,
+              offset: data.sub_progress_data.progress,
+              multiplier: 1,
+              progress_bar_obj: $scope.sub_uploader
+            };
             uploader_service.check_progress_loop_main_sub(progress_argument, function (progress_data) {
               inventory_service.get_matching_and_geocoding_results($scope.dataset.import_file_id).then(function (result_data) {
                 $scope.import_file_records = result_data.import_file_records;
@@ -677,18 +690,18 @@ angular.module('BE.seed.controller.data_upload_modal', [])
                   // thus we will always end up at step 10
                   $scope.step_10_style = 'danger';
                   $scope.step_10_file_message = 'Warnings and/or errors occurred while processing the file(s).';
-                  $scope.match_issues = []
+                  $scope.match_issues = [];
                   for (let file_name in progress_data.file_info) {
                     $scope.match_issues.push({
-                      'file': file_name,
-                      'errors': progress_data.file_info[file_name].errors,
-                      'warnings': progress_data.file_info[file_name].warnings
+                      file: file_name,
+                      errors: progress_data.file_info[file_name].errors,
+                      warnings: progress_data.file_info[file_name].warnings
                     });
                   }
                 }
 
                 // Toggle a meter import button if the imported file also has a meters tab
-                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function(result) {
+                dataset_service.check_meters_tab_exists($scope.dataset.import_file_id).then(function (result) {
                   $scope.import_file_reusable_for_meters = result.data || false;
                 });
 
@@ -762,25 +775,36 @@ angular.module('BE.seed.controller.data_upload_modal', [])
       $scope.export_issues = function (issues) {
         let data = ['File Name,Severity,Message'];
         let allowed_severities = {
-          'warnings': 'Warning',
-          'use_case_warnings': 'Use Case Warning',
-          'errors': 'Error',
-          'use_case_errors': 'Use Case Error',
-          'schema_errors': 'Schema Error'
-        }
-        for (i in issues) {
-          for (severity in allowed_severities) {
-              for (issue in issues[i][severity]) {
-                data.push([
-                  '"' + issues[i].file + '"',
-                  allowed_severities[severity],
-                  '"' + issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ') + '"'
-                ].join(','));
-              }
+          warnings: 'Warning',
+          use_case_warnings: 'Use Case Warning',
+          errors: 'Error',
+          use_case_errors: 'Use Case Error',
+          schema_errors: 'Schema Error'
+        };
+        for (const i in issues) {
+          for (const severity in allowed_severities) {
+            for (const issue in issues[i][severity]) {
+              data.push([
+                '"' + issues[i].file + '"',
+                allowed_severities[severity],
+                '"' + issues[i][severity][issue].replace(/\r?\n|\r/gm, ' ') + '"'
+              ].join(','));
+            }
           }
         }
         saveAs(new Blob([data.join('\r\n')], {type: 'text/csv'}), 'import_issues.csv');
       };
+
+      $scope.export_meter_data = function (results, new_file_name) {
+        let data = [results.columnDefs.map(c => c.displayName || c.name).join(',')];
+        let keys = results.columnDefs.map(c => c.name);
+        results.data.forEach(r => {
+          let row = [];
+          keys.forEach(k => row.push(r[k]));
+          data.push(row.join(','));
+        });
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), new_file_name);
+      }
 
       /**
        * init: ran upon the controller load

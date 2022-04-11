@@ -17,10 +17,14 @@ from quantityfield.units import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineException
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Cycle, PropertyView, PropertyState
+from seed.models import Analysis, AnalysisPropertyView, Cycle, PropertyView, PropertyState, Column
 from seed.serializers.analyses import AnalysisSerializer
+from seed.serializers.analysis_property_views import AnalysisPropertyViewSerializer
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class CreateAnalysisSerializer(AnalysisSerializer):
@@ -102,6 +106,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     def list(self, request):
         organization_id = self.get_organization(request)
         property_id = request.query_params.get('property_id', None)
+
         analyses = []
         if property_id is not None:
             analyses_queryset = (
@@ -120,6 +125,58 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             serialized_analysis.update({'highlights': analysis.get_highlights(property_id)})
             analyses.append(serialized_analysis)
 
+        serialized_views = []
+        original_views = {}
+        if analyses:
+            views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by('-id')
+            property_views_by_apv_id = AnalysisPropertyView.get_property_views(views_queryset)
+            for view in views_queryset:
+                serialized_view = AnalysisPropertyViewSerializer(view).data
+                serialized_views.append(serialized_view)
+            original_views = {
+                apv_id: property_view.id if property_view is not None else None
+                for apv_id, property_view in property_views_by_apv_id.items()
+            }
+
+        return JsonResponse({
+            'status': 'success',
+            'analyses': analyses,
+            'views': serialized_views,
+            'original_views': original_views
+        })
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @require_organization_id_class
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_member')
+    @action(detail=False, methods=['post'])
+    def get_analyses_for_properties(self, request):
+        """
+        List all the analyses associated with provided canonical property ids
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: property_ids
+              description: List of canonical property ids
+              paramType: body
+        """
+        property_ids = request.data.get('property_ids', [])
+        organization_id = int(self.get_organization(request))
+        analyses = []
+        analyses_queryset = (
+            Analysis.objects.filter(organization=organization_id, analysispropertyview__property__in=property_ids)
+            .distinct()
+            .order_by('-id')
+        )
+        for analysis in analyses_queryset:
+            serialized_analysis = AnalysisSerializer(analysis).data
+            serialized_analysis.update(analysis.get_property_view_info(None))
+            serialized_analysis.update({'highlights': analysis.get_highlights(None)})
+            analyses.append(serialized_analysis)
         return JsonResponse({
             'status': 'success',
             'analyses': analyses
@@ -267,6 +324,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         views = PropertyView.objects.filter(state__organization_id=org_id, cycle_id=cycle_id)
         states = PropertyState.objects.filter(id__in=views.values_list('state_id', flat=True))
+        columns = Column.objects.filter(organization_id=org_id)
+        column_names_extra_data = list(Column.objects.filter(organization_id=org_id, is_extra_data=True).values_list('column_name', flat=True))
+
+        col_names = [x for x, y in list(columns.values_list('column_name', 'table_name')) if (y == 'PropertyState')]
 
         def get_counts(field_name):
             """Get aggregated count of each unique value for the field
@@ -399,12 +460,31 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             g[h['gross_floor_area']] += h['count']
         sqftage_list2 = [{'gross_floor_area': gross_floor_area, 'percentage': count / views.count() * 100} for gross_floor_area, count in g.items()]
 
+        extra_data_list = []
+        for data in states.values_list('extra_data', flat=True):
+            for key, value in data.items():
+                extra_data_list.append(key)
+
+        count_agg = []
+        for i in col_names:
+            count_dict = {}
+            if i in column_names_extra_data:
+                count_dict[i] = len(list(filter(None, states.values_list('extra_data__' + i, flat=True))))
+            else:
+                count_dict[i] = len(list(filter(None, states.values_list(i, flat=True))))
+            count_agg.append(count_dict)
+
+        count_agg_dict = {}
+        for d in count_agg:
+            count_agg_dict.update(d)
+
         return JsonResponse({
             'status': 'success',
             'total_records': views.count(),
             'number_extra_data_fields': len(extra_data_count),
+            'column_settings fields and counts': count_agg_dict,
+            'existing_extra_data fields and count': extra_data,
             'property_types': property_types,
-            'extra_data fields and count': extra_data,
             'year_built': year_built_list,
             'energy': energy_list2,
             'square_footage': sqftage_list2

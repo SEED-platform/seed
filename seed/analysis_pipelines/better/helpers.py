@@ -41,8 +41,9 @@ class BETTERPipelineContext:
 # Used to define json paths to parse from analysis results, which are linked to an extra data column
 # column_name: Column.column_name (also the extra_data key)
 # column_display_name: Column.display_name
+# unit_multiplier: applied to result before being saved to extra_data
 # json_path: naive json path -- dot separated keys into the parsed analysis results dict
-ExtraDataColumnPath = namedtuple('ExtraDataColumnPath', ['column_name', 'column_display_name', 'json_path'])
+ExtraDataColumnPath = namedtuple('ExtraDataColumnPath', ['column_name', 'column_display_name', 'unit_multiplier', 'json_path'])
 
 
 def _check_errors(errors, what_failed_desc, context, analysis_property_view_id=None, fail_on_error=False):

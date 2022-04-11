@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.postoffice_modal', [])
       $scope.loading = false;
       $scope.available_templates = [];
 
-      postoffice_service.get_templates().then(function(templates){
+      postoffice_service.get_templates().then(function (templates) {
         $scope.available_templates = templates;
       });
       $scope.cancel = function () {
@@ -28,9 +28,9 @@ angular.module('BE.seed.controller.postoffice_modal', [])
       };
 
       // Method for passing selected template name, state ids, and inventory type into postoffice_service's 'send_templated_email()'
-      $scope.send_templated_email = function (template_id){
+      $scope.send_templated_email = function (template_id) {
         var inventory_id = property_states.length > 0 ? property_states : taxlot_states;
-        postoffice_service.send_templated_email(template_id, inventory_id, inventory_type).then(function(result) {
+        postoffice_service.send_templated_email(template_id, inventory_id, inventory_type).then(function (result) {
           $uibModalInstance.close(result);
         });
       };

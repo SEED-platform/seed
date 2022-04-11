@@ -69,7 +69,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
       // WARNING: $scope.org is used by "child" controller - analysis_details_controller
-      $scope.org = {'id': organization_payload.organization.id};
+      $scope.org = {id: organization_payload.organization.id};
 
       // Detail Column List Profile
       $scope.profiles = profiles;
@@ -110,7 +110,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.currentProfile = current_profile;
 
       if (analyses_payload.analyses) {
-        $scope.analysis = analyses_payload.analyses.sort(function(a, b) {
+        $scope.analysis = analyses_payload.analyses.sort(function (a, b) {
           let key_a = new Date(a.end_time);
           let key_b = new Date(b.end_time);
           if (key_a > key_b) return -1;
@@ -119,6 +119,9 @@ angular.module('BE.seed.controller.inventory_detail', [])
         })[0];
       }
       $scope.users = users_payload.users;
+
+      // handle popovers cleared on scrolling
+      [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach(el => {if (el) el.onscroll = document.body.click;})
 
       // Flag columns whose values have changed between imports and edits.
       var historical_states = _.map($scope.historical_items, 'state');
@@ -150,14 +153,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
         // add derived columns
         _.forEach($scope.currentProfile.derived_columns, function (col) {
-          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id})
+          const foundCol = _.find(derived_columns_payload.derived_columns, {id: col.id});
           if (foundCol) {
-            foundCol.displayName = foundCol.name
-            foundCol.column_name = foundCol.name
-            foundCol.is_derived_column = true
-            $scope.columns.push(foundCol)
+            foundCol.displayName = foundCol.name;
+            foundCol.column_name = foundCol.name;
+            foundCol.is_derived_column = true;
+            $scope.columns.push(foundCol);
           }
-        })
+        });
       } else {
         // No profiles exist
         $scope.columns = _.reject(columns, 'is_extra_data');
@@ -184,8 +187,8 @@ angular.module('BE.seed.controller.inventory_detail', [])
             data: function () {
               return {
                 columns: profile_formatted_columns(),
-                derived_columns: [],
-              }
+                derived_columns: []
+              };
             },
             profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
@@ -546,7 +549,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.open_analyses_modal = function () {
-        var modalInstance = $uibModal.open({
+        const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
           controller: 'inventory_detail_analyses_modal_controller',
           resolve: {
@@ -772,7 +775,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.displayValue = function (dataType, value) {
         if (dataType === 'datetime') {
           return $filter('date')(value, 'yyyy-MM-dd h:mm a');
-        } else if (dataType === 'eui' || dataType === 'area') {
+        } else if (['area', 'eui', 'float', 'number'].includes(dataType)) {
           return $filter('number')(value, $scope.organization.display_decimal_places);
         }
         return value;
@@ -780,23 +783,23 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
       // evaluate all derived columns and store the results
       var evaluate_derived_columns = function () {
-        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column)
+        const visible_derived_columns = $scope.columns.filter(col => col.is_derived_column);
         const all_evaluation_results = visible_derived_columns.map(col => {
           return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id])
             .then(res => {
               return {
                 derived_column_id: col.id,
                 value: res.results[0].value
-              }
-            })
-        })
+              };
+            });
+        });
 
         $q.all(all_evaluation_results).then(results => {
           results.forEach(result => {
-            $scope.item_derived_values[result.derived_column_id] = result.value
-          })
-        })
-      }
+            $scope.item_derived_values[result.derived_column_id] = result.value;
+          });
+        });
+      };
 
       /**
        *   init: sets default state of inventory detail page,

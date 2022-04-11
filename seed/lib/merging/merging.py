@@ -135,7 +135,7 @@ def _merge_geocoding_results(merged_state, state1, state2, priorities, can_attrs
         setattr(merged_state, geo_attr, getattr(geo_state, geo_attr, None))
 
 
-def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False):
+def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merge_protection=False, state2_present_columns=None):
     """
     Merge extra_data field between two extra data dictionaries, return result.
 
@@ -147,15 +147,17 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
     all_keys = set(list(ed1.keys()) + list(ed2.keys()))
     extra_data = {}
     for key in all_keys:
-        recognize_empty = key in recognize_empty_columns
         val1 = ed1.get(key, None)
         val2 = ed2.get(key, None)
-        if (val1 and val2) or recognize_empty:
-            # decide based on the priority which one to use
-            col_prior = priorities.get(key, 'Favor New')
-            if ignore_merge_protection or col_prior == 'Favor New':
+        not_present_in_new = state2_present_columns and not (key in state2_present_columns)
+        have_two_values = (val1 and val2) or key in recognize_empty_columns
+        use_new_regardless = ignore_merge_protection or priorities.get(key, 'Favor New') == 'Favor New'
+        if not_present_in_new:
+            extra_data[key] = val1
+        elif have_two_values:
+            if use_new_regardless:
                 extra_data[key] = val2
-            else:  # favor the existing field
+            else:
                 extra_data[key] = val1
         else:
             extra_data[key] = val1 or val2
@@ -186,15 +188,19 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     ).values_list('column_name', flat=True)
 
     default = state2
+    state2_present_columns = None
+    if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
+        null = None  # noqa
+        state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns
-
-        attr_values = [
-            value
-            for value
-            in list(can_attrs[attr].values())
-            if value is not None or recognize_empty
-        ]
+        attr_values = []
+        for value in list(can_attrs[attr].values()):
+            if value is None and recognize_empty:
+                if state2_present_columns is None or attr in state2_present_columns:
+                    attr_values.append(value)
+            elif value is not None or recognize_empty:
+                attr_values.append(value)
 
         attr_value = None
         # Two, differing values are set.
@@ -231,7 +237,8 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
         state2.extra_data,
         priorities['extra_data'],
         recognize_empty_ed_columns,
-        ignore_merge_protection
+        ignore_merge_protection,
+        state2_present_columns
     )
 
     # merge measures, scenarios, simulations

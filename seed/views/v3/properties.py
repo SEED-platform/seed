@@ -26,7 +26,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          ColumnMappingProfile, Cycle, InventoryDocument,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
-                         Sensor, Simulation)
+                         Sensor, DataLogger, Simulation)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
 from seed.serializers.pint import (PintJSONEncoder)
@@ -49,6 +49,9 @@ from seed.utils.properties import (get_changed_fields,
                                    properties_across_cycles,
                                    update_result_with_master)
 from seed.utils.inventory_filter import get_filtered_results
+
+import logging
+logger = logging.getLogger(__name__)
 
 # Global toggle that controls whether or not to display the raw extra
 # data fields in the columns returned for the view.
@@ -298,16 +301,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         property_id = property_view.property.id
 
         res = []
-        for sensor in Sensor.objects.filter(Q(sensor_property_id=property_id)):
-            res.append({
-                'id': sensor.id,
-                'display_name': sensor.display_name,
-                'location_identifier': sensor.location_identifier,
-                'description': sensor.description,
-                'type': sensor.sensor_type,
-                'units': sensor.units,
-                'column_name': sensor.column_name
-            })
+        for data_logger in DataLogger.objects.filter(property_id=property_id):
+            for sensor in Sensor.objects.filter(Q(data_logger_id=data_logger.id)):
+                res.append({
+                    'id': sensor.id,
+                    'display_name': sensor.display_name,
+                    'location_identifier': sensor.location_identifier,
+                    'description': sensor.description,
+                    'type': sensor.sensor_type,
+                    'units': sensor.units,
+                    'column_name': sensor.column_name,
+                    'data_logger': data_logger.display_name
+                })
 
         return res
 
@@ -934,6 +939,32 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('can_view_data')
+    @action(detail=False, methods=['post'])
+    def get_canonical_properties(self, request):
+        """
+        List all the canonical properties associated with provided view ids
+        ---
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: view_ids
+              description: List of property view ids
+              paramType: body
+        """
+        view_ids = request.data.get('view_ids', [])
+        property_queryset = PropertyView.objects.filter(id__in=view_ids).distinct()
+        property_ids = list(property_queryset.values_list('property_id', flat=True))
+        return JsonResponse({
+            'status': 'success',
+            'properties': property_ids
+        })
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
