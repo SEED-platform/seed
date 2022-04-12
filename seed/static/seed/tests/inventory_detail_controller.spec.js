@@ -112,7 +112,10 @@ describe('controller: inventory_detail_controller', function () {
       cycle: {
         id: 2017
       },
-      user_org_id: 42
+      user_org_id: 42,
+      property: {
+        inventory_documents: []
+      }
     };
     var fake_all_columns = [{
       title: 'PM Property ID',
