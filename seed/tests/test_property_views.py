@@ -14,6 +14,7 @@ from config.settings.common import TIME_ZONE
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.client import MULTIPART_CONTENT, encode_multipart, BOUNDARY
 from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
@@ -151,25 +152,30 @@ class PropertyViewTests(DataMappingBaseTestCase):
             property=prprty, cycle=self.cycle, state=state
         )
         location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        test_filepath = os.path.relpath(
-            os.path.join(location, 'data', 'test-document.pdf'))
+        test_filepath = os.path.relpath(os.path.join(location, 'data', 'test-document.pdf'))
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'upload_inventory_document/?organization_id={self.org.pk}'
 
-        url = reverse('api:v3:properties-detail', args=[view.id]) + 'upload_inventory_document/?organization_id={}'.format(self.org.pk).format(self.org.pk)
+        document = open(test_filepath, 'rb')
+        response = self.client.put(
+            path=url,
+            data=encode_multipart(data=dict(
+                file=document,
+                file_type='PDF',
+                name='unused-name'),
+                boundary=BOUNDARY),
+            content_type=MULTIPART_CONTENT
+        )
 
-        params = json.dumps({
-            'file': {
-                'file_type': 1
-            }
-        })
-        # tmp = pathlib.Path(test_filepath).read_bytes()
-        tmp2 = open(test_filepath, 'rb')
-
-        # content_type='multipart/form-data'
-        response = self.client.put(url, params=params, files={'file': tmp2})
         data = response.json()
-        print("RESPONSE:")
-        print(data)
+        self.assertEqual(200, response.status_code)
         self.assertTrue(data['success'])
+
+        # verify that the object in on the property
+        url = reverse('api:v3:properties-detail', args=[view.id]) + f'?organization_id={self.org.pk}'
+        response = self.client.get(url)
+        self.assertEqual(len(response.json()['property']['inventory_documents']), 1)
+        self.assertEqual(response.json()['property']['inventory_documents'][0]['filename'], 'test-document.pdf')
+        self.assertEqual(response.json()['property']['inventory_documents'][0]['file_type'], 'PDF')
 
     def test_edit_properties_creates_notes_after_initial_edit(self):
         state = self.property_state_factory.get_property_state()
