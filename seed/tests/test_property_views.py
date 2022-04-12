@@ -1355,12 +1355,14 @@ class PropertySensorViewTests(DataMappingBaseTestCase):
             SensorReading.objects.create(**{
                 "reading": s1_reading,
                 "timestamp": timestamp,
-                "sensor": s1
+                "sensor": s1,
+                "is_occupied": False
             })
             SensorReading.objects.create(**{
                 "reading": s2_reading,
                 "timestamp": timestamp,
-                "sensor": s2
+                "sensor": s2,
+                "is_occupied": False
             })
             except_results.append({
                 "timestamp": str(timestamp.replace(tzinfo=None)),

@@ -38,6 +38,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
       $scope.organization = organization_payload.organization;
       $scope.property_sensor_usage = property_sensor_usage;
       $scope.filler_cycle = cycles.cycles[0].id;
+      $scope.showOnlyOccupiedReadings = false;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -205,6 +206,11 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         selected: 'Exact'
       };
 
+      $scope.toggled_show_only_occupied_reading = function (b) {
+        $scope.showOnlyOccupiedReadings = b
+        $scope.refresh_readings();
+      };
+
       // given a list of sensor labels, it returns the filtered readings and column defs
       // This is used by the primary filterBy... functions
       var filterBySensorLabels = function filterBySensorLabels (readings, columnDefs, sensorLabels) {
@@ -268,6 +274,7 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
           $scope.inventory.view_id,
           $scope.organization.id,
           $scope.interval.selected,
+          $scope.showOnlyOccupiedReadings,
           [] // Not excluding any sensors from the query
         ).then(function (usage) {
           // update the base data and reset filters

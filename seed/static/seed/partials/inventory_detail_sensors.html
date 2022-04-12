@@ -75,7 +75,7 @@
                 </select>
             </div>
         </div>
-        <div style="display: flex;">
+        <div style="display: flex; align-items: baseline;">
             <div class="form-group" uib-dropdown is-open="data_loggers_options.isopen" auto-close="outsideClick" on-toggle="data_logger_selection_toggled(open)" style="margin-top: 15px; margin-right: 15px;">
                 <button type="button" class="btn btn-default" uib-dropdown-toggle>
                     Filter Data Logger <span class="caret"></span>
@@ -103,6 +103,10 @@
                         </div>
                     </li>
                 </ul>
+            </div>
+            <div style="margin: 15px;">
+                <input ng-click="toggled_show_only_occupied_reading(!showOnlyOccupiedReadings)" type="checkbox" name="showOnlyOccupiedReadingsCheckbox">
+                <label for="showOnlyOccupiedReadingsCheckbox"> Only Show Readings for Occupied Hours</label><br>
             </div>
         </div>
         <div class="section_content" ng-show="has_sensor_readings">

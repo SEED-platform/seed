@@ -6,11 +6,15 @@ from rest_framework import viewsets
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (PropertyView,
-                         DataLogger)
+                         DataLogger,
+                         )
 from seed.models.sensors import Sensor
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.api import OrgMixin
 from django.db.utils import IntegrityError
+from datetime import datetime, timedelta
+from config.settings.common import TIME_ZONE
+from pytz import timezone as pytztimezone
 
 
 class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
@@ -67,6 +71,29 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
             display_name=display_name,
             location_identifier=location_identifier
         )
+
+        # for every weekday from 2020-2023, mark as occupied from 8-5
+        tz_obj = pytztimezone(TIME_ZONE)
+        start_time = datetime(2020, 1, 1, 0, 0, tzinfo=tz_obj)
+        end_time = datetime(2023, 1, 1, 0, 0, tzinfo=tz_obj)
+
+        day = start_time
+        is_occupied_data = []
+        while day < end_time:
+            if day.weekday() <= 4:
+                open_time = day + timedelta(hours=8)
+                is_occupied_data.append(
+                    (open_time.isoformat(), True)
+                )
+
+                close_time = day + timedelta(hours=17)
+                is_occupied_data.append(
+                    (close_time.isoformat(), False)
+                )
+
+            day += timedelta(days=1)
+
+        data_logger.is_occupied_data = is_occupied_data
 
         try:
             data_logger.save()
