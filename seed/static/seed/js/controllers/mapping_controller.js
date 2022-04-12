@@ -79,6 +79,13 @@ angular.module('BE.seed.controller.mapping', [])
       $scope.dropdown_selected_profile = $scope.current_profile = $scope.profiles[0] || {};
       $scope.organization = organization_payload.organization;
 
+      // TEMP
+      console.log('import_file_payload:', import_file_payload);
+      console.log('suggested_mappings_payload: ', suggested_mappings_payload);
+      console.log('raw_columns_payload: ', raw_columns_payload);
+      console.log('first_five_rows_payload: ', first_five_rows_payload);
+      console.log('matching criteria payload: ', matching_criteria_columns_payload);
+
       // Track changes to help prevent losing changes when data could be lost
       $scope.profile_change_possible = false;
 

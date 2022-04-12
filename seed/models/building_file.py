@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
+from buildingsync_asset_extractor.processor import BSyncProcessor
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
@@ -161,6 +162,12 @@ class BuildingFile(models.Model):
             parser_kwargs = {}
             # TODO: use table_mappings for BuildingSync process method
             data, messages = parser.process(*parser_args, **parser_kwargs)
+            # BuildingSync Asset Extractor
+            bp = BSyncProcessor(self.file.path)
+            bp.extract()
+            assets = bp.get_assets()
+            print("ASSETS:")
+            print(assets)
         except ParsingError as e:
             return False, None, None, [str(e)]
 

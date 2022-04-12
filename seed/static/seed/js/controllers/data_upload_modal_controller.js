@@ -529,6 +529,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           $scope.uploader.progress = 100;
 
           var result = JSON.parse(progress_data.message);
+          console.log(result);
           $scope.buildingsync_valid = result.valid;
           $scope.buildingsync_issues = result.issues;
           for (const file in $scope.buildingsync_issues) {
@@ -548,6 +549,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           } else {
             // successfully passed validation, save the data
             save_raw_assessed_data(file_id, cycle_id, false);
+
           }
         };
 

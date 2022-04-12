@@ -54,6 +54,10 @@ class BuildingSyncParser(object):
             self.headers = list(self._xpath_col_dict.keys())
 
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
+        property_['TESTING'] = 'DIEHARDER'
+        print(f"@@@!!!!!!property_: {property_}")
+        # KATHERINE: around here run the BAE
+
         # When importing zip files, we need to be able to determine which .xml file
         # a certain PropertyState came from (because of the linked BuildingFile model).
         # For this reason, we add this extra information here for later use in

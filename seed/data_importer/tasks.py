@@ -701,6 +701,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     else:
                         new_chunk[key] = v
                 raw_property.extra_data = new_chunk
+                print("!!! extra_Data = {}".format(new_chunk))
                 raw_property.source_type = source_type
                 raw_property.data_state = DATA_STATE_IMPORT
                 raw_property.organization = import_file.import_record.super_organization
@@ -1216,6 +1217,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
         parser = reader.GeoJSONParser(import_file.local_file)
     elif import_file.source_type == 'BuildingSync Raw':
         try:
+            print("!!! XML READER PARSER")
             parser = xml_reader.BuildingSyncParser(import_file.file)
         except Exception as e:
             return progress_data.finish_with_error(f'Failed to parse BuildingSync data: {str(e)}')
