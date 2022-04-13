@@ -39,7 +39,7 @@ class TestInventoryDocuments(TestCase):
         self.assertEqual(InventoryDocument.str_to_file_type('DXF'), 4)
 
     def test_inventorydocument_constructor(self):
-        filename = path.join(BASE_DIR, 'seed', 'building_sync', 'tests', 'data', 'test-document.pdf')
+        filename = path.join(BASE_DIR, 'seed', 'tests', 'data', 'test-document.pdf')
         with open(filename, 'rb') as f:
             simple_uploaded_file = SimpleUploadedFile(f.name, f.read())
 
