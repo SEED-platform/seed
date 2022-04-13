@@ -5,7 +5,7 @@
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
-:author Nicholas Long <nicholas.long@nrel.gov>
+:author Katherine Fleming <katherine.fleming@nrel.gov>
 """
 
 from rest_framework import serializers
