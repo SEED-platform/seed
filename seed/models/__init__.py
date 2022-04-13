@@ -26,6 +26,7 @@ from .meters import *  # noqa
 from .sensors import *  # noqa
 from .simulations import *  # noqa
 from .building_file import *  # noqa
+from .inventory_document import *  # noqa
 from .notes import *  # noqa
 from .analysis_property_views import *  # noqa
 from .analysis_input_files import *  # noqa

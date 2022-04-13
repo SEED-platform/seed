@@ -24,6 +24,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'pairing_service',
     'derived_columns_service',
     'organization_service',
+    'dataset_service',
     'inventory_payload',
     'analyses_payload',
     'users_payload',
@@ -54,6 +55,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       pairing_service,
       derived_columns_service,
       organization_service,
+      dataset_service,
       inventory_payload,
       analyses_payload,
       users_payload,
@@ -85,6 +87,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
       /** See service for structure of returned payload */
       $scope.historical_items = inventory_payload.history;
       $scope.item_state = inventory_payload.state;
+      $scope.inventory_docs = $scope.inventory_type == 'properties' ? inventory_payload.property.inventory_documents : null;
 
       // stores derived column values -- updated later once we fetch the data
       $scope.item_derived_values = {};
@@ -248,6 +251,39 @@ angular.module('BE.seed.controller.inventory_detail', [])
           }
         });
       }
+
+      $scope.open_doc_upload_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/document_upload_modal.html',
+          controller: 'document_upload_modal_controller',
+          resolve: {
+            organization_id: function () {
+              return $scope.organization.id;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            }
+          }
+        });
+      };
+
+      $scope.confirm_delete = function (file) {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/delete_document_modal.html',
+          controller: 'delete_document_modal_controller',
+          resolve: {
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            file: file
+          }
+        });
+
+        modalInstance.result.finally(function () {
+          init();
+        });
+      };
+
 
       $scope.isDisabledField = function (name) {
         return _.includes([
