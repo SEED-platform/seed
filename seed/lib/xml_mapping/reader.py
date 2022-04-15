@@ -8,9 +8,11 @@
 from io import BytesIO
 import os
 import zipfile
+from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
+
 
 
 class BuildingSyncParser(object):
@@ -39,6 +41,7 @@ class BuildingSyncParser(object):
             raise Exception(f'Unsupported file type for BuildingSync {file_extension}')
 
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
+        print(f"@@@ first5rows reader.py:42: {self.first_five_rows}")
 
     def _add_property_to_data(self, bsync_file, file_name):
         try:
@@ -54,9 +57,16 @@ class BuildingSyncParser(object):
             self.headers = list(self._xpath_col_dict.keys())
 
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
-        property_['TESTING'] = 'DIEHARDER'
-        print(f"@@@!!!!!!property_: {property_}")
-        # KATHERINE: around here run the BAE
+      
+        # BuildingSync Asset Extractor (BAE) - automatically extract assets from BuildingSync file
+        bae = BAE(file_name)
+        bae.extract()
+        assets = bae.get_assets()
+
+        # add to data and column headers
+        for item in assets:
+            property_[item['name']] = item['value']
+            self.headers.append(item['name'])
 
         # When importing zip files, we need to be able to determine which .xml file
         # a certain PropertyState came from (because of the linked BuildingFile model).
