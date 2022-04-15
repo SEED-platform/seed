@@ -113,7 +113,7 @@ class PropertyMeterReadingsExporter():
             'column_defs': list(column_defs.values())
         }
 
-    def _usages_by_month(self):
+    def _usages_by_monthx(self):
         """
         Returns readings and column definitions formatted and aggregated to display all
         records in monthly intervals.
@@ -168,7 +168,7 @@ class PropertyMeterReadingsExporter():
             'column_defs': list(column_defs.values())
         }
 
-    def _usages_by_monthx(self):
+    def _usages_by_month(self):
         """
         Returns readings and column definitions formatted and aggregated to display all
         records in monthly intervals.
@@ -195,7 +195,6 @@ class PropertyMeterReadingsExporter():
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
             for data in meter.meter_readings.values():
                 st, et = self.format_range(data)
-                # find range to iterate over
                 month_range = self.find_month_range(st, et)
                 span = (et - st).days
                 for month in month_range:
@@ -205,7 +204,7 @@ class PropertyMeterReadingsExporter():
                     reading = data['reading'] / span * days_from_start / conversion_factor
                     if not res.get(month_key):
                         res[month_key] = {'month': month_key}
-                        res[month_key][field_name] = reading
+                        res[month_key][field_name] = round(reading,1)
                     else: 
                         if res[month_key].get(field_name):
                             last_reading = res[month_key][field_name]
@@ -216,7 +215,7 @@ class PropertyMeterReadingsExporter():
 
         readings = list(res.values())
             
-        import remote_pdb; remote_pdb.set_trace()
+        # import remote_pdb; remote_pdb.set_trace()
         return {
             'readings': readings,
             'column_defs': list(column_defs.values())
