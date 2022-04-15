@@ -1,5 +1,6 @@
 # !/usr/bin/env python
 # encoding: utf-8
+from dateutil.relativedelta import relativedelta
 
 from calendar import (
     monthrange,
@@ -160,11 +161,84 @@ class PropertyMeterReadingsExporter():
                         monthly_readings[month_year][field_name] = reading_month_total / conversion_factor
 
                 current_month_time = end_of_month
-
+        readings = list(monthly_readings.values())
+        import remote_pdb; remote_pdb.set_trace()
         return {
-            'readings': list(monthly_readings.values()),
+            'readings': readings,
             'column_defs': list(column_defs.values())
         }
+
+    def _usages_by_monthx(self):
+        """
+        Returns readings and column definitions formatted and aggregated to display all
+        records in monthly intervals.
+
+        At a high-level, following algorithm is used to acccomplish this:
+            - Identify the first start time and last end time
+            - For each month between, aggregate the readings found in that month
+                - The highest possible reading total without overlapping times is found
+                - For more details how that monthly aggregation occurs, see _max_reading_total()
+        """
+        # Used to consolidate different readings (types) within the same month
+        monthly_readings = defaultdict(lambda: {})
+
+        # Construct column_defs using this dictionary's values for frontend to use
+        column_defs = {
+            '_month': {
+                'field': 'month',
+                '_filter_type': 'datetime',
+            },
+        }
+        res = {}
+
+        for meter in self.meters:
+            field_name, conversion_factor = self._build_column_def(meter, column_defs)
+            for data in meter.meter_readings.values():
+                st, et = self.format_range(data)
+                # find range to iterate over
+                month_range = self.find_month_range(st, et)
+                span = (et - st).days
+                for month in month_range:
+                    next_month = self.get_next_month(st, et)
+                    days_from_start = (next_month - month).days
+                    month_key = month.strftime('%B %Y')
+                    reading = data['reading'] / span * days_from_start / conversion_factor
+                    if not res.get(month_key):
+                        res[month_key] = {'month': month_key}
+                        res[month_key][field_name] = reading
+                    else: 
+                        if res[month_key].get(field_name):
+                            last_reading = res[month_key][field_name]
+                        else: 
+                            last_reading = 0
+                        res[month_key][field_name] = max(reading, last_reading)
+
+
+        readings = list(res.values())
+            
+        import remote_pdb; remote_pdb.set_trace()
+        return {
+            'readings': readings,
+            'column_defs': list(column_defs.values())
+        }
+
+    def format_range(sefl,data):
+        st = data['start_time'].replace(hour=0).replace(minute=0).replace(second=0)
+        et = data['end_time'].replace(hour=0).replace(minute=0).replace(second=0)
+        return st, et
+
+    def find_month_range(sefl, st, et):
+        et = et + relativedelta(days = -1)
+        month_count = (et.year - st.year) * 12 + et.month - st.month + 1
+        x = [(st + relativedelta(months = x)).replace(day=1) for x in range(0, month_count)]
+        return x
+
+
+    def get_next_month(self, st, et):
+        next_month = (st + relativedelta(months = 1)).replace(day=1)
+        if next_month > et:
+            next_month = et
+        return next_month
 
     def _usages_by_year(self):
         """
