@@ -386,8 +386,6 @@ class BuildingSync(object):
 
         # turn result into SEED structure
         seed_result = self.restructure_mapped_result(result, messages)
-        print(f"!!! seed-results {seed_result}")
-        seed_result['TESTING'] = 'DIEHARD'
 
         return seed_result, messages
 
