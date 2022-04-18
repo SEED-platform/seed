@@ -193,7 +193,7 @@ class PropertyMeterReadingsExporter():
             for data in meter.meter_readings.values():
                 st, et = self.format_range(data)
                 month_range = self.find_month_range(st, et)
-                span = (et - st).days
+                span = (et - st).days or 1
                 for month in month_range:
                     next_month = self.get_next_month(st, et)
                     days_from_start = (next_month - month).days
