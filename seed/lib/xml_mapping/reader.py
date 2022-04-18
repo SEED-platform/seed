@@ -14,7 +14,6 @@ from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
 
 
-
 class BuildingSyncParser(object):
     def __init__(self, file_):
         """
@@ -41,7 +40,6 @@ class BuildingSyncParser(object):
             raise Exception(f'Unsupported file type for BuildingSync {file_extension}')
 
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
-        print(f"@@@ first5rows reader.py:42: {self.first_five_rows}")
 
     def _add_property_to_data(self, bsync_file, file_name):
         try:
