@@ -55,7 +55,7 @@ class BuildingSyncParser(object):
             self.headers = list(self._xpath_col_dict.keys())
 
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
-      
+
         # BuildingSync Asset Extractor (BAE) - automatically extract assets from BuildingSync file
         bae = BAE(file_name)
         bae.extract()
