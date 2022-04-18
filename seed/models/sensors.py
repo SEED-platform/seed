@@ -15,7 +15,7 @@ class DataLogger(models.Model):
 
     display_name = models.CharField(max_length=255)
     location_identifier = models.CharField(max_length=2047, default="")
-    is_occupied_data = models.JSONField(null=False, default=None)
+    is_occupied_data = models.JSONField(null=False, default=dict)
 
     class Meta:
         unique_together = ('property', 'display_name')
