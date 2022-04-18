@@ -23,7 +23,7 @@ from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
                          MERGE_STATE_DELETE, MERGE_STATE_MERGED,
                          MERGE_STATE_NEW,
                          BuildingFile, Column,
-                         ColumnMappingProfile, Cycle,
+                         ColumnMappingProfile, Cycle, InventoryDocument,
                          Meter, Note, Property, PropertyAuditLog,
                          PropertyMeasure, PropertyState, PropertyView,
                          Sensor, DataLogger, Simulation)
@@ -1335,6 +1335,96 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'status': 'error',
                 'message': "Could not process building file with messages {}".format(messages)
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['PUT'], parser_classes=(MultiPartParser,))
+    @has_perm_class('can_modify_data')
+    def upload_inventory_document(self, request, pk):
+        """
+        Upload an inventory document on a property. Currently only supports PDFs.
+        """
+        if len(request.FILES) == 0:
+            return JsonResponse({
+                'success': False,
+                'message': "Must pass file in as a Multipart/Form post"
+            })
+
+        the_file = request.data['file']
+        file_type = InventoryDocument.str_to_file_type(request.data.get('file_type', 'Unknown'))
+
+        # retrieve property ID from property_view
+        org_id = self.get_organization(request)
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        # Save File
+        try:
+            InventoryDocument.objects.create(
+                file=the_file,
+                filename=the_file.name,
+                file_type=file_type,
+                property_id=property_id
+            )
+
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successfully imported file',
+                'data': {
+                    'property_view': PropertyViewAsStateSerializer(property_view).data,
+                },
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=True, methods=['DELETE'])
+    @has_perm_class('can_modify_data')
+    def delete_inventory_document(self, request, pk):
+        """
+        Deletes an inventory document from a property
+        """
+
+        file_id = request.query_params.get('file_id')
+
+        # retrieve property ID from property_view
+        org_id = int(self.get_organization(request))
+        property_view = PropertyView.objects.get(
+            pk=pk,
+            cycle__organization_id=org_id
+        )
+        property_id = property_view.property.id
+
+        try:
+            doc_file = InventoryDocument.objects.get(
+                pk=file_id,
+                property_id=property_id
+            )
+
+        except InventoryDocument.DoesNotExist:
+
+            return JsonResponse(
+                {'status': 'error', 'message': 'Could not find inventory document with pk=' + str(
+                    file_id)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # check permissions
+        d = Property.objects.filter(
+            organization_id=org_id,
+            pk=property_id)
+
+        if not d.exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': 'user does not have permission to delete the inventory document',
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # delete file
+        doc_file.delete()
+        return JsonResponse({'status': 'success'})
 
 
 def diffupdate(old, new):
