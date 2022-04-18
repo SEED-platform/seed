@@ -190,15 +190,19 @@ class PropertyMeterReadingsExporter():
 
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
+
             for data in meter.meter_readings.values():
                 st, et = self.format_range(data)
                 month_range = self.find_month_range(st, et)
                 span = (et - st).days or 1
+
                 for month in month_range:
-                    next_month = self.get_next_month(st, et)
-                    days_from_start = (next_month - month).days
+                    next_month = self.get_next_month(month, et)
                     month_key = month.strftime('%B %Y')
+
+                    days_from_start = (next_month - month).days
                     reading = data['reading'] / span * days_from_start / conversion_factor
+
                     if not res.get(month_key):
                         res[month_key] = {'month': month_key}
                         res[month_key][field_name] = round(reading, 1)
@@ -226,6 +230,7 @@ class PropertyMeterReadingsExporter():
         et = et + relativedelta(days=-1)
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
         x = [(st + relativedelta(months=x)).replace(day=1) for x in range(0, month_count)]
+        x[0] = x[0].replace(day=st.day)
         return x
 
     def get_next_month(self, st, et):
