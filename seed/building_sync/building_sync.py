@@ -168,12 +168,15 @@ class BuildingSync(object):
             xml_element_xpath = mapping['from_field']
             xml_element_value = mapping['from_field_value']
             seed_value = None
-            try:
-                property_state._meta.get_field(field)
-                seed_value = getattr(property_state, field)
-            except FieldDoesNotExist:
-                _log.debug("Field {} is not a db field, trying read from extra data".format(field))
-                seed_value = property_state.extra_data.get(field, None)
+            if mapping['to_field'] != mapping['from_field']:
+                # only do this for non BAE assets
+                try:
+                    property_state._meta.get_field(field)
+                    seed_value = getattr(property_state, field)
+                except FieldDoesNotExist:
+                    _log.debug("Field {} is not a db field, trying read from extra data".format(field))
+                    seed_value = property_state.extra_data.get(field, None)
+                    continue
 
             if seed_value is None:
                 continue
