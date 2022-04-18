@@ -162,7 +162,7 @@ class PropertyMeterReadingsExporter():
 
                 current_month_time = end_of_month
         readings = list(monthly_readings.values())
-        import remote_pdb; remote_pdb.set_trace()
+
         return {
             'readings': readings,
             'column_defs': list(column_defs.values())
@@ -179,9 +179,6 @@ class PropertyMeterReadingsExporter():
                 - The highest possible reading total without overlapping times is found
                 - For more details how that monthly aggregation occurs, see _max_reading_total()
         """
-        # Used to consolidate different readings (types) within the same month
-        monthly_readings = defaultdict(lambda: {})
-
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
             '_month': {
@@ -204,37 +201,35 @@ class PropertyMeterReadingsExporter():
                     reading = data['reading'] / span * days_from_start / conversion_factor
                     if not res.get(month_key):
                         res[month_key] = {'month': month_key}
-                        res[month_key][field_name] = round(reading,1)
-                    else: 
+                        res[month_key][field_name] = round(reading, 1)
+                    else:
                         if res[month_key].get(field_name):
                             last_reading = res[month_key][field_name]
-                        else: 
+                        else:
                             last_reading = 0
                         res[month_key][field_name] = max(reading, last_reading)
 
-
         readings = list(res.values())
-            
+
         # import remote_pdb; remote_pdb.set_trace()
         return {
             'readings': readings,
             'column_defs': list(column_defs.values())
         }
 
-    def format_range(sefl,data):
+    def format_range(self, data):
         st = data['start_time'].replace(hour=0).replace(minute=0).replace(second=0)
         et = data['end_time'].replace(hour=0).replace(minute=0).replace(second=0)
         return st, et
 
     def find_month_range(sefl, st, et):
-        et = et + relativedelta(days = -1)
+        et = et + relativedelta(days=-1)
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
-        x = [(st + relativedelta(months = x)).replace(day=1) for x in range(0, month_count)]
+        x = [(st + relativedelta(months=x)).replace(day=1) for x in range(0, month_count)]
         return x
 
-
     def get_next_month(self, st, et):
-        next_month = (st + relativedelta(months = 1)).replace(day=1)
+        next_month = (st + relativedelta(months=1)).replace(day=1)
         if next_month > et:
             next_month = et
         return next_month
