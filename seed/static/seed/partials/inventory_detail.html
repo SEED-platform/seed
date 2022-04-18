@@ -293,14 +293,60 @@
         </br>
         </br>
 
-        <ng-hide ng-hide="::hide_bricr">
-            <!-- Files Section -->
+        <div ng-if="::inventory_type==='properties'">
+            <!-- Inventory Document Section -->
             <div class="section">
                 <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
                     <div class="section_header fixed_height_short has_no_padding">
                         <div class="section_action_container left" style="width: 50%;">
                         <span>
-                            <h2><i class="fa fa-file"></i> {$:: 'Files (Main State Only)' | translate $}</h2>
+                            <h2><i class="fa fa-paperclip"></i>{$:: 'Inventory Documents' | translate $} </h2>
+                        </span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px;">
+                        <i class="fa fa-paperclip"></i> <span translate>Add a Document</span>
+                    </button>
+                </div>
+            </div>
+            <div class="section_content_container">
+                <!-- List of Documents -->
+                <div class="section_content">
+                    <div class="table_list_container table_item_detail">
+                        <table class="table table-striped table_highlight_first" style="margin-bottom:-1px;">
+                            <thead>
+                                <tr>
+                                    <th sd-resizable class="ellipsis-resizable" colspan="2">File Name</th>
+                                    <th sd-resizable>File Type</th>
+                                    <th sd-resizable class="ellipsis-resizable">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="file in inventory_docs">
+                                    <td class="data_file_name" style="border-right:0px;">
+                                        {$:: file.filename $} - {$:: file.id $}
+                                    </td>
+                                    <td style="border-left:0px; text-align:right;">
+                                        <a style="margin-right: 8px;" href="{$ file.file $}" download="{$ file.filename $}">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                    </a>
+                                    <a class="delete_link" ng-click="confirm_delete(file)"><i class="fa fa-trash-o"></i></a>
+                                    </td>
+                                    <td> {$ file.file_type $}</td>
+                                    <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Building Files Section -->
+            <div class="section">
+                <div class="section_header_container" style="margin-top: 20px; border-bottom: 0;">
+                    <div class="section_header fixed_height_short has_no_padding">
+                        <div class="section_action_container left" style="width: 50%;">
+                        <span>
+                            <h2><i class="fa fa-file"></i>{$:: 'Building Files (Main State Only)' | translate $} </h2>
                         </span>
                         </div>
                     </div>
@@ -425,6 +471,6 @@
                     </div>
                 </div>
             </div>
-        </ng-hide>
+        </div>
     </div>
 </div>

@@ -229,6 +229,7 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
        * the filename.
        */
       onComplete: function (id, fileName, responseJSON) {
+
         // Only handle success because error transition is in onError event handler
         if (responseJSON.status === 'success') {
           scope.eventfunc({
@@ -303,6 +304,150 @@ var makeBuildingSyncUpdater = function (scope, element, allowed_extensions) {
   return uploader;
 };
 
+/* Inventory Document Uploader for files to attach to a property */
+var makeDocumentUploader = function (scope, element, allowed_extensions) {
+
+  var uploader = new qq.FineUploaderBasic({
+    button: element[0],
+    request: {
+      method: 'PUT',
+      endpoint: '/api/v3/properties/' + scope.importrecord + '/upload_inventory_document/?organization_id=' + scope.organizationId,
+      inputName: 'file',
+      paramsInBody: true,
+      forceMultipart: true,
+      customHeaders: {
+        'X-CSRFToken': BE.csrftoken
+      },
+      params: {
+        file_type: 1
+      }
+    },
+    validation: {
+      allowedExtensions: allowed_extensions
+    },
+    text: {
+      fileInputTitle: '',
+      uploadButton: scope.buttontext
+    },
+    retry: {
+      enableAuto: false
+    },
+    iframeSupport: {
+      localBlankPathPage: '/success.html'
+    },
+    /**
+     * multiple: only allow one file to be uploaded at a time
+     */
+    multiple: false,
+    maxConnections: 20,
+    callbacks: {
+      /**
+       * onSubmitted: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload has started, "upload_submitted", and
+       * the filename.
+       */
+      onSubmitted: function (id, fileName) {
+        scope.eventfunc({
+          message: 'upload_submitted',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          }
+        });
+        var extracted_filetype = fileName.split('.').pop();
+        var params = {
+          csrf_token: BE.csrftoken,
+          csrf_name: 'csrfmiddlewaretoken',
+          csrf_xname: 'X-CSRFToken',
+          file_type: extracted_filetype,
+          organization_id: scope.organizationId
+        };
+
+        uploader.setParams(params);
+      },
+      /**
+       * onComplete: overloaded callback that calls the callback defined
+       * in the element attribute unless the upload failed, which will
+       * fire a window alert. Passes as arguments to the callback
+       * a message indicating upload has completed, "upload_complete", and
+       * the filename.
+       */
+      onComplete: function (id, fileName, responseJSON) {
+        // Only handle success because error transition is in onError event handler
+        if (responseJSON.status === 'success') {
+          scope.eventfunc({
+            message: 'upload_complete',
+            file: {
+              filename: fileName,
+              view_id: _.get(responseJSON, 'data.property_view.id'),
+              source_type: scope.sourcetype
+            }
+          });
+        }
+      },
+      /**
+       * onProgress: overloaded callback that calls the callback defined
+       * in the element attribute. Passes as arguments to the callback
+       * a message indicating upload is in progress, "upload_in_progress",
+       * the filename, and a progress object with two keys: loaded - the
+       * bytes of the file loaded, and total - the total number of bytes
+       * for the file.
+       */
+      onProgress: function (id, fileName, loaded, total) {
+        scope.eventfunc({
+          message: 'upload_in_progress',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype
+          },
+          progress: {
+            loaded: loaded,
+            total: total
+          }
+        });
+      },
+      /**
+       * onError: overloaded callback that calls the callback defined
+       * in the element attribute. Primarily for non-conforming files
+       * that return 400 from the backend and invalid file extensions.
+       */
+      onError: function (id, fileName, errorReason, xhr) {
+        if (_.includes(errorReason, ' has an invalid extension.')) {
+          scope.eventfunc({message: 'invalid_extension'});
+          return;
+        }
+
+        // Ignore this error handler if the network request hasn't taken place yet (e.g. invalid file extension)
+        if (!xhr) {
+          alert(errorReason);
+          return;
+        }
+
+        var error = errorReason;
+        try {
+          var json = JSON.parse(xhr.responseText);
+          if (_.has(json, 'message')) {
+            error = json.message;
+          }
+        } catch (e) {
+          // no-op
+        }
+
+        scope.eventfunc({
+          message: 'upload_error',
+          file: {
+            filename: fileName,
+            source_type: scope.sourcetype,
+            error: error
+          }
+        });
+      }
+    }
+  });
+  return uploader;
+};
+
 var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
   var uploader;
   if (scope.sourcetype === 'BuildingSyncUpdate') {
@@ -315,6 +460,8 @@ var sdUploaderFineUploader = function (scope, element/*, attrs, filename*/) {
     uploader = makeFileSystemUploader(scope, element, ['csv', 'xlsx']);
   } else if (scope.sourcetype === 'GeoJSON') {
     uploader = makeFileSystemUploader(scope, element, ['json', 'geojson']);
+  } else if (scope.sourcetype === 'UploadFile') {
+    uploader = makeDocumentUploader(scope, element, ['pdf', 'idf', 'osm', 'dxf']);
   } else {
     uploader = makeFileSystemUploader(scope, element, ['csv', 'xls', 'xlsx', 'zip', 'xml']);
   }

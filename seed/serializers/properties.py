@@ -29,6 +29,7 @@ from seed.models import (
     TaxLotView,
 )
 from seed.serializers.building_file import BuildingFileSerializer
+from seed.serializers.inventory_document import InventoryDocumentSerializer
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
@@ -107,6 +108,8 @@ class PropertySerializer(serializers.ModelSerializer):
     # The created and updated fields are in UTC time and need to be casted accordingly in this format
     created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
     updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+
+    inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
