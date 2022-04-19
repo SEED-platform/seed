@@ -175,6 +175,20 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         fastWatch: true
       };
 
+      $scope.exportSensorData = function (grid_data, title) {
+        let keys = grid_data.columnDefs.map(c => c.field);
+        let data = [keys.join(',')]
+
+        grid_data.data.forEach(d => {
+          let row = []
+          keys.forEach(k => row.push(d[k]))
+          data.push(row.join(','))
+        });
+
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title)
+      }
+
+
       $scope.apply_column_settings = function () {
         _.forEach($scope.usageGridOptions.columnDefs, function (column) {
           column.enableHiding = false;
