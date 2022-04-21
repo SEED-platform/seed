@@ -7,7 +7,6 @@ from calendar import (
 )
 
 from collections import defaultdict
-from weakref import ProxyType
 
 from config.settings.common import TIME_ZONE
 
@@ -181,14 +180,14 @@ class PropertyMeterReadingsExporter():
         monthly_readings = {}
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
-            
+
             for usage in meter.meter_readings.values():
                 st, et = usage['start_time'].replace(tzinfo=None), usage['end_time'].replace(tzinfo=None)
                 total_seconds = round((et - st).total_seconds())
                 ranges = self._get_month_ranges(st, et)
-                
+
                 for range in ranges:
-                    range_seconds = round((range[1]-range[0]).total_seconds())
+                    range_seconds = round((range[1] - range[0]).total_seconds())
                     month_key = range[1].strftime('%B %Y')
 
                     if not monthly_readings.get(month_key):
@@ -196,7 +195,7 @@ class PropertyMeterReadingsExporter():
                     reading = usage['reading'] / total_seconds * range_seconds / conversion_factor
                     monthly_readings[month_key][field_name] = monthly_readings[month_key].get(field_name, 0) + reading
 
-        sorted_readings =  sorted(list(monthly_readings.values()), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
+        sorted_readings = sorted(list(monthly_readings.values()), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
 
         return {
             'readings': sorted_readings,
@@ -208,12 +207,12 @@ class PropertyMeterReadingsExporter():
         start = st
         ranges = []
         for idx in range(0, month_count):
-            end_of_month = datetime.combine(start.replace(day = monthrange(start.year, start.month)[1]), time.max)
+            end_of_month = datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max)
             if end_of_month >= et:
                 ranges.append([start, et])
                 break
             ranges.append([start, end_of_month])
-            start = end_of_month + timedelta(microseconds = 1)
+            start = end_of_month + timedelta(microseconds=1)
         return ranges
 
     def _usages_by_year(self):
