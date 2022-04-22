@@ -1910,15 +1910,23 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
+        # Readings for Jan and Feb have end times as the first day of the following month at 8am.
+        # the 8 hours in the next month should be accounted for within that month.
         expectation = {
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Natural Gas - PM - 5766973-1': 569806.65,
+                    # 'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Natural Gas - PM - 5766973-1': 488584.45,
+                    # 'Natural Gas - PM - 5766973-1': 488000.1,
+                },
+                {
+                    'month': 'March 2016', 
+                    'Natural Gas - PM - 5766973-1': 5609.2,
                 },
                 {
                     'month': 'November 2019',
