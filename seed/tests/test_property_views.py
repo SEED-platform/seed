@@ -1918,17 +1918,11 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Natural Gas - PM - 5766973-1': 569806.65,
-                    # 'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Natural Gas - PM - 5766973-1': 488584.45,
-                    # 'Natural Gas - PM - 5766973-1': 488000.1,
-                },
-                {
-                    'month': 'March 2016',
-                    'Natural Gas - PM - 5766973-1': 5609.2,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'November 2019',

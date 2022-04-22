@@ -189,11 +189,11 @@ class PropertyMeterReadingsExporter():
                 for range in ranges:
                     range_seconds = round((range[1] - range[0]).total_seconds())
                     month_key = range[1].strftime('%B %Y')
-
-                    if not monthly_readings.get(month_key):
-                        monthly_readings[month_key] = {'month': month_key}
                     reading = usage['reading'] / total_seconds * range_seconds / conversion_factor
-                    monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
+                    if reading: 
+                        if not monthly_readings.get(month_key):
+                            monthly_readings[month_key] = {'month': month_key}
+                        monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
 
         sorted_readings = sorted(list(monthly_readings.values()), key=lambda reading: datetime.strptime(reading['month'], '%B %Y'))
 
