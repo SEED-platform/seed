@@ -182,7 +182,7 @@ class PropertyMeterReadingsExporter():
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
             for usage in meter.meter_readings.values():
-                st, et = usage['start_time'].replace(tzinfo=None), usage['end_time'].replace(tzinfo=None)
+                st, et = usage['start_time'], usage['end_time']
                 total_seconds = round((et - st).total_seconds())
                 ranges = self._get_month_ranges(st, et)
 
@@ -208,7 +208,7 @@ class PropertyMeterReadingsExporter():
         start = st
         ranges = []
         for idx in range(0, month_count):
-            end_of_month = datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max)
+            end_of_month = make_aware(datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz)
             if end_of_month >= et:
                 ranges.append([start, et])
                 break

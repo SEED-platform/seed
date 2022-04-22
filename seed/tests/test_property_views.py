@@ -8,6 +8,7 @@ import ast
 import os
 import json
 import unittest
+from unittest import skip
 
 from config.settings.common import TIME_ZONE
 
@@ -1796,12 +1797,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         # add additional entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
+        tz_obj = None
         for meter in Meter.objects.all():
             # March 2016 reading
             reading_details = {
                 'meter_id': meter.id,
                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
-                'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
+                'end_time': make_aware(datetime(2016, 3, 31, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu (thousand Btu)',
                 'conversion_factor': 1
@@ -1810,7 +1812,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
             # May 2016 reading
             reading_details['start_time'] = make_aware(datetime(2016, 5, 1, 0, 0, 0), timezone=tz_obj)
-            reading_details['end_time'] = make_aware(datetime(2016, 6, 1, 0, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2016, 5, 31, 0, 0, 0), timezone=tz_obj)
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
@@ -1828,22 +1830,22 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(597478.9 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(548603.7 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': 100 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(100 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 100,
                 },
                 {
                     'month': 'May 2016',
-                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(200 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 200,
                 },
             ],
@@ -1863,7 +1865,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'reading',
                 },
             ]
-        }
+        }  
+
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
@@ -1949,6 +1952,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
+    @skip('Overlapping data is not valid through ESPM. This test is no longer valid')
     def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
@@ -2065,7 +2069,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 },
             ]
         }
-
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
