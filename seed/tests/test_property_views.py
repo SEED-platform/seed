@@ -1797,7 +1797,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         # add additional entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
-        tz_obj = None
         for meter in Meter.objects.all():
             # March 2016 reading
             reading_details = {
