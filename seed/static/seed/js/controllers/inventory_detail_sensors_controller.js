@@ -175,9 +175,22 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         fastWatch: true
       };
 
-      $scope.exportSensorData = function (grid_data, data_type) {
+      $scope.exportSensors = function (grid_data, data_type) {
         let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
-        let keys = grid_data.columnDefs.map(c => c.field);
+        let keys = grid_data.columnDefs.map(c => c.field).filter(key => key != 'data_logger');
+        let data = [keys.join(',')];
+
+        grid_data.data.forEach(d => {
+          let row = []
+          keys.forEach(k => row.push(d[k]))
+          data.push(row.join(','))
+        });
+
+        saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
+      }
+      $scope.exportSensorUsages = function (grid_data, data_type) {
+        let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
+        let keys = grid_data.columnDefs.map(c => c.field)
         let data = [keys.join(',')];
 
         grid_data.data.forEach(d => {
