@@ -1912,8 +1912,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         result = self.client.post(url, post_params, content_type="application/json")
         result_dict = ast.literal_eval(result.content.decode("utf-8"))
 
-        # Readings for Jan and Feb have end times as the first day of the following month at 8am.
-        # the 8 hours in the next month should be accounted for within that month.
         expectation = {
             'readings': [
                 {
