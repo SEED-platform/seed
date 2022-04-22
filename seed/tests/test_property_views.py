@@ -1803,7 +1803,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             reading_details = {
                 'meter_id': meter.id,
                 'start_time': make_aware(datetime(2016, 3, 1, 0, 0, 0), timezone=tz_obj),
-                'end_time': make_aware(datetime(2016, 3, 31, 0, 0, 0), timezone=tz_obj),
+                'end_time': make_aware(datetime(2016, 4, 1, 0, 0, 0), timezone=tz_obj),
                 'reading': 100,
                 'source_unit': 'kBtu (thousand Btu)',
                 'conversion_factor': 1
@@ -1812,7 +1812,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
             # May 2016 reading
             reading_details['start_time'] = make_aware(datetime(2016, 5, 1, 0, 0, 0), timezone=tz_obj)
-            reading_details['end_time'] = make_aware(datetime(2016, 5, 31, 0, 0, 0), timezone=tz_obj)
+            reading_details['end_time'] = make_aware(datetime(2016, 6, 1, 0, 0, 0), timezone=tz_obj)
             reading_details['reading'] = 200
             MeterReading.objects.create(**reading_details)
 
