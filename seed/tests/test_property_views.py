@@ -1865,8 +1865,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'reading',
                 },
             ]
-        }  
-
+        }
 
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
@@ -1928,7 +1927,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     # 'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
-                    'month': 'March 2016', 
+                    'month': 'March 2016',
                     'Natural Gas - PM - 5766973-1': 5609.2,
                 },
                 {
