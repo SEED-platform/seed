@@ -3,7 +3,6 @@
 
 from calendar import (
     monthrange,
-    month_name,
 )
 
 from collections import defaultdict
