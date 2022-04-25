@@ -136,11 +136,13 @@ class PropertyMeterReadingsExporter():
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
+            # iterate through each usage and assingn to accumulator
             for usage in meter.meter_readings.values():
                 st, et = usage['start_time'], usage['end_time']
                 total_seconds = round((et - st).total_seconds())
                 ranges = self._get_month_ranges(st, et)
 
+                # partial usages of the full usage are calculated from a linear relationship between the range_seconds to the total_seconds
                 for range in ranges:
                     range_seconds = round((range[1] - range[0]).total_seconds())
                     month_key = range[1].strftime('%B %Y')
@@ -157,14 +159,21 @@ class PropertyMeterReadingsExporter():
         }
 
     def _get_month_ranges(self, st, et):
+        """
+        Given two dates start time (st) and end date time (et)
+        return a list of date ranges that are within a single month
+        ex: 
+            st = may 15th 2020 
+            et = july 10th 2020 
+            ranges = [[may 15, may 31], [june 1, june 30], [july 1, july 10]]
+        """
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
         start = st
         ranges = []
         for idx in range(0, month_count):
             end_of_month = make_aware(datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz)
             if end_of_month >= et:
-                ranges.append([start, et])
-                break
+                end_of_month = et
             ranges.append([start, end_of_month])
             start = end_of_month + timedelta(microseconds=1)
         return ranges
