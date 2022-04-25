@@ -113,61 +113,16 @@ class PropertyMeterReadingsExporter():
             'column_defs': list(column_defs.values())
         }
 
-    def _usages_by_monthx(self):
+    def _usages_by_month(self):
         """
         Returns readings and column definitions formatted and aggregated to display all
         records in monthly intervals.
 
         At a high-level, following algorithm is used to acccomplish this:
             - Identify the first start time and last end time
-            - For each month between, aggregate the readings found in that month
-                - The highest possible reading total without overlapping times is found
-                - For more details how that monthly aggregation occurs, see _max_reading_total()
+            - Define a range of dates between start and end time that fall within a month
+            - For each month in the date range, aggregate the readings found in that month using a linear relationship down to the second.
         """
-        # Used to consolidate different readings (types) within the same month
-        monthly_readings = defaultdict(lambda: {})
-
-        # Construct column_defs using this dictionary's values for frontend to use
-        column_defs = {
-            '_month': {
-                'field': 'month',
-                '_filter_type': 'datetime',
-            },
-        }
-
-        for meter in self.meters:
-            field_name, conversion_factor = self._build_column_def(meter, column_defs)
-
-            min_time = meter.meter_readings.earliest('start_time').start_time.astimezone(tz=self.tz)
-            max_time = meter.meter_readings.latest('end_time').end_time.astimezone(tz=self.tz)
-
-            # Iterate through months
-            current_month_time = min_time
-            while current_month_time < max_time:
-                _weekday, days_in_month = monthrange(current_month_time.year, current_month_time.month)
-
-                unaware_end = datetime(current_month_time.year, current_month_time.month, days_in_month, 23, 59, 59) + timedelta(seconds=1)
-                end_of_month = make_aware(unaware_end, timezone=self.tz)
-
-                # Find all meters fully contained within this month (second-level granularity)
-                interval_readings = meter.meter_readings.filter(start_time__range=(current_month_time, end_of_month), end_time__range=(current_month_time, end_of_month))
-                if interval_readings.exists():
-                    readings_list = list(interval_readings.order_by('end_time'))
-                    reading_month_total = self._max_reading_total(readings_list)
-
-                    if reading_month_total > 0:
-                        month_year = '{} {}'.format(month_name[current_month_time.month], current_month_time.year)
-                        monthly_readings[month_year]['month'] = month_year
-                        monthly_readings[month_year][field_name] = reading_month_total / conversion_factor
-
-                current_month_time = end_of_month
-
-        return {
-            'readings': list(monthly_readings.values()),
-            'column_defs': list(column_defs.values())
-        }
-
-    def _usages_by_month(self):
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
