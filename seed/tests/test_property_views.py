@@ -2293,7 +2293,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     'month': 'January 2020',
                     'Electric - Grid - PM - 5766973-0': 100,
                 },
-                
+
             ],
             'column_defs': [
                 {

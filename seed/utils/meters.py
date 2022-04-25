@@ -162,9 +162,9 @@ class PropertyMeterReadingsExporter():
         """
         Given two dates start time (st) and end date time (et)
         return a list of date ranges that are within a single month
-        ex: 
-            st = may 15th 2020 
-            et = july 10th 2020 
+        ex:
+            st = may 15th 2020
+            et = july 10th 2020
             ranges = [[may 15, may 31], [june 1, june 30], [july 1, july 10]]
         """
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
