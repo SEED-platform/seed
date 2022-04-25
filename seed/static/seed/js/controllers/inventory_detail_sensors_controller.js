@@ -188,10 +188,17 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
 
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
       }
-      $scope.exportSensorUsages = function (grid_data, data_type) {
+      $scope.exportSensorUsages = function (grid_data, sensor_data, data_type) {
         let title = `${data_type}_for_${$scope.inventory_type == 'properties' ? 'Property' : 'Taxlot'}_${$scope.item_state.pm_property_id}_${moment().format('YYYY_MM_DD')}`;
         let keys = grid_data.columnDefs.map(c => c.field)
-        let data = [keys.join(',')];
+
+        // grid data headers are a combination of display name and data logger. Use sensor_data to make a conversion object
+        let display_to_column = {'timestamp': 'timestamp'}
+        sensor_data.data.forEach(sensor => {
+          display_to_column[`${sensor.display_name} (${sensor.data_logger})`] = sensor.column_name
+        })
+
+        let data = [keys.map(k => display_to_column[k]).join(',')];
 
         grid_data.data.forEach(d => {
           let row = []
