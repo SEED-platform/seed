@@ -2142,7 +2142,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
 
         # 2020 January-February reading has 1 full day in January 1 full day in February.
-        # The reading should be split 1/2 January (50) and 1/2 February (50), 
+        # The reading should be split 1/2 January (50) and 1/2 February (50)
         reading_details = {
             'meter_id': meter.id,
             'start_time': make_aware(datetime(2020, 1, 31, 0, 0, 0), timezone=tz_obj),
