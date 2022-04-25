@@ -122,6 +122,8 @@ class PropertyMeterReadingsExporter():
             - Define a range of dates between start and end time that fall within a month
             - For each month in the date range, aggregate the readings found in that month using a linear relationship down to the second.
         """
+        # Used to consolidate different readings (types) within the same month
+        monthly_readings = defaultdict(lambda: {})
 
         # Construct column_defs using this dictionary's values for frontend to use
         column_defs = {
@@ -131,7 +133,6 @@ class PropertyMeterReadingsExporter():
             },
         }
 
-        monthly_readings = {}
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
