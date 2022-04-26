@@ -1,0 +1,19 @@
+<div class="modal-header">
+    <h4 class="modal-title" id="exportModalLabel" translate>Refresh Metadata of Selected Properties and Tax Logs</h4>
+</div>
+<div class="modal-body form-horizontal" style="padding-bottom: 0;">
+    <div class="section">
+
+        <div class="section_content_container">
+            <div class="section_content with_padding">
+                <p>Refresh Metadata for {$ id_count $} selected Properties or Taxlots</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="modal-footer">
+        <button type="button" class="btn btn-primary" ng-click="export_selected('csv')"
+            ng-disabled="!export_name.length || exporting" translate>Refresh Metadata</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="exporting" translate>Cancel</button>
+</div>

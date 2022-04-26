@@ -1056,6 +1056,21 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
+      $scope.open_refresh_metadata_modal = function () {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
+          controller: 'refresh_metadata_modal_controller',
+          resolve: {
+            ids: function () {
+              return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
+                if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
+                return !_.has(row, '$$treeLevel');
+              }), 'property_view_id');
+            }
+          }
+        });
+      }
+
       $scope.open_analyses_modal = function () {
         const modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
