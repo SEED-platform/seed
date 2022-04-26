@@ -181,9 +181,9 @@ angular.module('BE.seed.controller.inventory_detail_sensors', [])
         let data = [keys.join(',')];
 
         grid_data.data.forEach(d => {
-          let row = []
-          keys.forEach(k => row.push(d[k]))
-          data.push(row.join(','))
+          let row = [];
+          keys.forEach(k => row.push(d[k]));
+          data.push(row.join(','));
         });
 
         saveAs(new Blob([data.join('\n')], {type: 'text/csv'}), title);
