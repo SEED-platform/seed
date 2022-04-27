@@ -704,7 +704,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @shared_task
     def update_properties_metadata(ids):
         now = datetime.now()
-        import remote_pdb; remote_pdb.set_trace()
+        # import remote_pdb; remote_pdb.set_trace()
         Property.objects.filter(id__in=ids).update(updated=now)
         logging.error('>>> UPDATED PROPERTY METADATA')
 
