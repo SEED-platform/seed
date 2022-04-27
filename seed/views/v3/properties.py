@@ -719,8 +719,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Unmerge a property view into two property views
         """
         ids = request.data['params'].get('ids')
-        properties = Property.objects.filter(id__in=ids)
-        return chain(update_properties_metadata(properties))
+        # properties = Property.objects.filter(id__in=ids)
+        return chain(update_properties_metadata(ids))
         # return chord([update_properties_metadata(properties)])
         
 
