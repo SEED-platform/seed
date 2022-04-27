@@ -5,6 +5,7 @@
 import os
 from collections import namedtuple
 from datetime import datetime
+import pytz
 
 from celery import chord, chain, shared_task
 from django.db.models import Q, Subquery
@@ -703,10 +704,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
     @shared_task
     def update_properties_metadata(ids):
-        now = datetime.now()
-        # import remote_pdb; remote_pdb.set_trace()
-        Property.objects.filter(id__in=ids).update(updated=now)
+        logging.error('>>> pre update property metadata')
+        now = datetime.now(pytz.UTC)
+        logging.info('Updating Property Metadata for Properties: %s', )
+        for p in Property.objects.filter(id__in=ids):
+            p.updated = now
+            p.save()
+            logging.info('>>> %s %s', p.id, p.updated)
         logging.error('>>> UPDATED PROPERTY METADATA')
+        return
 
 
     @has_perm_class('can_modify_data')
@@ -718,10 +724,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Unmerge a property view into two property views
         """
         ids = request.data['params'].get('ids')
+        # import remote_pdb; remote_pdb.set_trace()
         # properties = Property.objects.filter(id__in=ids)
         # return update_properties_metadata(ids)
-        return chain(self.update_properties_metadata(ids))
+        # return chain(self.update_properties_metadata(ids))
         # return chord([update_properties_metadata(ids)])
+        # chain(self.update_properties_metadata.si(ids))
+        # self.update_properties_metadata.subtask(ids)
+        self.update_properties_metadata.subtask([ids]).apply_async()
+        
         
 
 
