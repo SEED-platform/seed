@@ -719,7 +719,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         ids = request.data['params'].get('ids')
         # properties = Property.objects.filter(id__in=ids)
-        return chain(update_properties_metadata(ids))
+        # return update_properties_metadata(ids)
+        return chain(self.update_properties_metadata(ids))
         # return chord([update_properties_metadata(ids)])
         
 
