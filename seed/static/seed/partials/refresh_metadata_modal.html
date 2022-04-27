@@ -6,14 +6,13 @@
 
         <div class="section_content_container">
             <div class="section_content with_padding">
-                <p>Refresh Metadata for {$ id_count $} selected Properties or Taxlots</p>
+                <p>Refresh Metadata for {$ id_count $} selected {$ inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties'$}</p>
             </div>
         </div>
 
     </div>
 </div>
 <div class="modal-footer">
-        <button type="button" class="btn btn-primary" ng-click="export_selected('csv')"
-            ng-disabled="!export_name.length || exporting" translate>Refresh Metadata</button>
+    <button type="button" class="btn btn-primary" ng-click="refresh_metadata()" translate>Refresh Metadata</button>
     <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="exporting" translate>Cancel</button>
 </div>

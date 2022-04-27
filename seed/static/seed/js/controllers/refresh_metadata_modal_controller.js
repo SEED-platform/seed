@@ -7,13 +7,24 @@ angular.module('BE.seed.controller.refresh_metadata_modal', []).controller('refr
     '$scope',
     '$uibModalInstance',
     'ids',
+    'inventory_type',
+    'inventory_service',
     function(
         $http,
         $scope,
         $uibModalInstance,
         ids,
+        inventory_type,
+        inventory_service,
+
     ) {
         $scope.id_count = ids.length
+        $scope.inventory_type = inventory_type
+
+        $scope.refresh_metadata = function () {
+            console.log('refresh data for ',inventory_type, ': ', ids)
+            inventory_service.refresh_metadata(ids, inventory_type)
+        }
 
         $scope.cancel = function() {
             $uibModalInstance.dismiss('cancel');

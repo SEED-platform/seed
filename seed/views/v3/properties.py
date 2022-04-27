@@ -4,7 +4,9 @@
 """
 import os
 from collections import namedtuple
+from datetime import datetime
 
+from celery import chord, chain, shared_task
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -49,6 +51,7 @@ from seed.utils.properties import (get_changed_fields,
                                    properties_across_cycles,
                                    update_result_with_master)
 from seed.utils.inventory_filter import get_filtered_results
+from seed.data_importer.tasks import update_properties_metadata
 
 import logging
 logger = logging.getLogger(__name__)
@@ -697,6 +700,30 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             'status': 'success',
             'view_id': new_view1.id
         }
+
+
+    @shared_task
+    def update_properties_metadata(ids):
+        now = datetime.now()
+        import remote_pdb; remote_pdb.set_trace()
+        Property.objects.filter(id__in=ids).update(updated=now)
+        logging.error('>>> UPDATED PROPERTY METADATA')
+
+
+    @has_perm_class('can_modify_data')
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    def refresh_metadata(self, request, pk=None):
+        """
+        Unmerge a property view into two property views
+        """
+        ids = request.data['params'].get('ids')
+        properties = Property.objects.filter(id__in=ids)
+        return chain(update_properties_metadata(properties))
+        # return chord([update_properties_metadata(properties)])
+        
+
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class

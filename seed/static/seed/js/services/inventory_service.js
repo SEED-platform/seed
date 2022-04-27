@@ -1153,6 +1153,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
+    inventory_service.refresh_metadata = function (ids, inventory_type) {
+      // invenotry type is either 'properties' or 'taxlots'
+      return $http.post('/api/v3/properties/refresh_metadata/', {
+          params: {
+            ids: ids
+          }
+        })
+    }
+
     return inventory_service;
 
   }]);

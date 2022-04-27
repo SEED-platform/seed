@@ -1066,7 +1066,8 @@ angular.module('BE.seed.controller.inventory_list', [])
                 if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
                 return !_.has(row, '$$treeLevel');
               }), 'property_view_id');
-            }
+            },
+            inventory_type: _.constant($scope.inventory_type),
           }
         });
       }
