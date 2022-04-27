@@ -51,7 +51,6 @@ from seed.utils.properties import (get_changed_fields,
                                    properties_across_cycles,
                                    update_result_with_master)
 from seed.utils.inventory_filter import get_filtered_results
-from seed.data_importer.tasks import update_properties_metadata
 
 import logging
 logger = logging.getLogger(__name__)
