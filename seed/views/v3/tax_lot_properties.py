@@ -598,13 +598,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     @api_endpoint_class
     @ajax_request_class
     @action(detail=False, methods=['POST'])
-    def refresh_metadata(self, request, pk=None):
+    def refresh_metadata(self, request):
         """
-        Unmerge a property view into two property views
+        Kick off celery task to refresh metadata of selected inventory
         """
         ids = request.data['params'].get('ids')
         inventory_type = request.data['params'].get('inventory_type')
         progress_key = request.data['params'].get('progress_key')
-        
-        update_inventory_metadata.subtask([ids, inventory_type, progress_key,]).apply_async()
+
+        update_inventory_metadata.subtask([ids, inventory_type, progress_key]).apply_async()
         return

@@ -7,7 +7,7 @@
 from __future__ import absolute_import
 
 import sys
-from datetime import datetime 
+from datetime import datetime
 import pytz
 import math
 
@@ -418,13 +418,13 @@ def update_inventory_metadata(ids, inventory_type, progress_key):
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
     id_count = len(ids)
-    batch_size = math.ceil(id_count/ 100)
+    batch_size = math.ceil(id_count / 100)
 
     if inventory_type == 'properties':
         inventory = Property.objects.filter(id__in=ids)
     else:
         inventory = TaxLot.objects.filter(id__in=ids)
-    
+
     for idx, inv in enumerate(inventory):
         inv.updated = now
         inv.save()

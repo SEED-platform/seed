@@ -4,12 +4,7 @@
 """
 import os
 from collections import namedtuple
-from datetime import datetime
-import pytz
-from random import randint
 
-
-from celery import chord, chain, shared_task
 from django.db.models import Q, Subquery
 from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
@@ -54,8 +49,6 @@ from seed.utils.properties import (get_changed_fields,
                                    properties_across_cycles,
                                    update_result_with_master)
 from seed.utils.inventory_filter import get_filtered_results
-from seed.lib.progress_data.progress_data import ProgressData
-
 
 import logging
 logger = logging.getLogger(__name__)
@@ -704,10 +697,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             'status': 'success',
             'view_id': new_view1.id
         }
-
-    
-
-
 
     @swagger_auto_schema_org_query_param
     @api_endpoint_class
