@@ -49,6 +49,8 @@ from seed.serializers.tax_lot_properties import (
 from seed.utils.api import api_endpoint_class, OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
+from seed.tasks import update_inventory_metadata
+
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
@@ -580,3 +582,29 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                                            for i in related)]
 
         return unique
+
+    @has_perm_class('can_modify_data')
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['GET'])
+    def start_refresh_metadata(self, request):
+        """
+        Generate a ProgressData object that will be used to monitor property and tax lot metadata refresh
+        """
+        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        return progress_data.result()
+
+    @has_perm_class('can_modify_data')
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    def refresh_metadata(self, request, pk=None):
+        """
+        Unmerge a property view into two property views
+        """
+        ids = request.data['params'].get('ids')
+        inventory_type = request.data['params'].get('inventory_type')
+        progress_key = request.data['params'].get('progress_key')
+        
+        update_inventory_metadata.subtask([ids, inventory_type, progress_key,]).apply_async()
+        return

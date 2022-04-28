@@ -6,6 +6,8 @@ import os
 from collections import namedtuple
 from datetime import datetime
 import pytz
+from random import randint
+
 
 from celery import chord, chain, shared_task
 from django.db.models import Q, Subquery
@@ -52,6 +54,8 @@ from seed.utils.properties import (get_changed_fields,
                                    properties_across_cycles,
                                    update_result_with_master)
 from seed.utils.inventory_filter import get_filtered_results
+from seed.lib.progress_data.progress_data import ProgressData
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -701,39 +705,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             'view_id': new_view1.id
         }
 
+    
 
-    @shared_task
-    def update_properties_metadata(ids):
-        logging.error('>>> pre update property metadata')
-        now = datetime.now(pytz.UTC)
-        logging.info('Updating Property Metadata for Properties: %s', )
-        for p in Property.objects.filter(id__in=ids):
-            p.updated = now
-            p.save()
-            logging.info('>>> %s %s', p.id, p.updated)
-        logging.error('>>> UPDATED PROPERTY METADATA')
-        return
-
-
-    @has_perm_class('can_modify_data')
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=False, methods=['POST'])
-    def refresh_metadata(self, request, pk=None):
-        """
-        Unmerge a property view into two property views
-        """
-        ids = request.data['params'].get('ids')
-        # import remote_pdb; remote_pdb.set_trace()
-        # properties = Property.objects.filter(id__in=ids)
-        # return update_properties_metadata(ids)
-        # return chain(self.update_properties_metadata(ids))
-        # return chord([update_properties_metadata(ids)])
-        # chain(self.update_properties_metadata.si(ids))
-        # self.update_properties_metadata.subtask(ids)
-        self.update_properties_metadata.subtask([ids]).apply_async()
-        
-        
 
 
     @swagger_auto_schema_org_query_param
