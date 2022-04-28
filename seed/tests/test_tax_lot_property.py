@@ -233,13 +233,13 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         update_inventory_metadata(ids[:20], 'properties', progress_data.key)
 
         properties_touched = Property.objects.filter(id__in=ids[:20])
-        properties_untouched = Property.objects.filter(id__in=ids[20:])
+        properties_untouched = Property.objects.filter(id__in=ids[21:])
 
         for i, p in enumerate(properties_touched):
             self.assertGreater(p.updated, updated_initial[i])
 
         for i, p in enumerate(properties_untouched):
-            self.assertEqual(p.updated, updated_initial[i + 20])
+            self.assertEqual(p.updated, updated_initial[i + 21])
 
     def tearDown(self):
         for x in self.properties:
