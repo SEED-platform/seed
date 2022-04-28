@@ -230,16 +230,10 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         updated_initial = list(map(lambda pv: pv.property.updated, property_views))
 
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
-        update_inventory_metadata(ids[:20], 'properties', progress_data.key)
+        update_inventory_metadata(ids, 'properties', progress_data.key)
 
-        properties_touched = Property.objects.filter(id__in=ids[:20])
-        properties_untouched = Property.objects.filter(id__in=ids[21:])
-
-        for i, p in enumerate(properties_touched):
+        for i, p in enumerate(Property.objects.filter(id__in=ids)):
             self.assertGreater(p.updated, updated_initial[i])
-
-        for i, p in enumerate(properties_untouched):
-            self.assertEqual(p.updated, updated_initial[i + 21])
 
     def tearDown(self):
         for x in self.properties:
