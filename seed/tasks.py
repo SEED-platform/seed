@@ -7,6 +7,9 @@
 from __future__ import absolute_import
 
 import sys
+from datetime import datetime 
+import pytz
+import math
 
 from celery import chord, chain
 from celery import shared_task
@@ -407,3 +410,26 @@ def _delete_organization_taxlot_state_chunk(del_ids, prog_key, org_pk, *args, **
     TaxLotState.objects.filter(organization_id=org_pk, pk__in=del_ids).delete()
     progress_data = ProgressData.from_key(prog_key)
     progress_data.step()
+
+
+@shared_task
+def update_inventory_metadata(ids, inventory_type, progress_key):
+    now = datetime.now(pytz.UTC)
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.total = 100
+    id_count = len(ids)
+    batch_size = math.ceil(id_count/ 100)
+
+    if inventory_type == 'properties':
+        inventory = Property.objects.filter(id__in=ids)
+    else:
+        inventory = TaxLot.objects.filter(id__in=ids)
+    
+    for idx, inv in enumerate(inventory):
+        inv.updated = now
+        inv.save()
+        if batch_size > 0 and idx % batch_size == 0:
+            progress_data.step(f'Refreshing ({idx}/{id_count}) ')
+
+    progress_data.finish_with_success()
+    return progress_data.result()['progress']
