@@ -1060,6 +1060,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
           controller: 'refresh_metadata_modal_controller',
+          backdrop: 'static',
           resolve: {
             ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
