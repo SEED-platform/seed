@@ -4221,3 +4221,17 @@ iframe.analysis-results {
   margin: 0.5em 0 0 0.5em;
   float: left;
 }
+
+.sensor-header-container{
+  position: relative;
+  margin-top: 10px;
+
+  h4 {
+    display: inline-block;
+  }
+
+  button {
+    position: absolute;
+    right: 0;
+  }
+}
