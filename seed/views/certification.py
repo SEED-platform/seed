@@ -8,32 +8,28 @@ All rights reserved.  # NOQA
 :author Paul Munday <paul@paulmunday.net>
 """
 
-from rest_framework.decorators import action
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-
 from seed.filtersets import GAPropertyFilterSet, GreenAssessmentFilterSet
 from seed.models import (
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL
 )
-
 from seed.serializers.certification import (
-    GreenAssessmentSerializer,
     GreenAssessmentPropertySerializer,
+    GreenAssessmentSerializer,
     GreenAssessmentURLSerializer
 )
-
 from seed.utils.viewsets import (
-    SEEDOrgModelViewSet,
-    SEEDOrgCreateUpdateModelViewSet
+    SEEDOrgCreateUpdateModelViewSet,
+    SEEDOrgModelViewSet
 )
 
 
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
     """API endpoint for viewing and creating green assessment certifications.
-
         Returns::
             {
                 'status': 'success',

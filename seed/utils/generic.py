@@ -9,9 +9,8 @@ import logging
 import math
 from datetime import datetime
 
-from django.db import models
 from django.core import serializers
-from django.db import IntegrityError
+from django.db import IntegrityError, models
 from past.builtins import basestring
 
 

@@ -7,15 +7,8 @@
 import json
 
 from django.urls import reverse_lazy
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Cycle,
-    PropertyView,
-    TaxLotProperty,
-    Column,
-    Note,
-)
+from seed.models import Column, Cycle, Note, PropertyView, TaxLotProperty
 from seed.test_helpers.fake import (
     FakePropertyFactory,
     FakePropertyStateFactory,

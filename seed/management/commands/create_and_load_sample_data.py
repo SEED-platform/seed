@@ -10,11 +10,14 @@ import itertools
 import logging
 from random import randint
 
-from django.core.management.base import BaseCommand
-
 import seed.models
+from django.core.management.base import BaseCommand
 from seed.lib.superperms.orgs.models import Organization
-from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory, BaseFake
+from seed.test_helpers.fake import (
+    BaseFake,
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
+)
 
 logging.basicConfig(level=logging.DEBUG)
 _log = logging.getLogger(__name__)

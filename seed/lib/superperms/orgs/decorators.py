@@ -9,10 +9,9 @@ from functools import wraps
 
 from django.conf import settings
 from django.http import HttpResponseForbidden
-
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     Organization,
     OrganizationUser

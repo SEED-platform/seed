@@ -5,9 +5,9 @@
 :author Nicholas Long <nicholas.long@nrel.gov>
 """
 import logging
+from functools import cmp_to_key
 
 from seed.lib.mcm import matchers
-from functools import cmp_to_key
 
 _log = logging.getLogger(__name__)
 

@@ -5,10 +5,7 @@
 :author
 """
 from rest_framework import serializers
-
-from seed.models import (
-    TaxLot, TaxLotProperty, TaxLotState, TaxLotView, Column
-)
+from seed.models import Column, TaxLot, TaxLotProperty, TaxLotState, TaxLotView
 
 
 class TaxLotLabelsField(serializers.RelatedField):

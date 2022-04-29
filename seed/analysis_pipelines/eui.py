@@ -8,16 +8,15 @@ import datetime
 import logging
 
 from celery import chain, shared_task
-
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
-    task_create_analysis_property_views,
-    analysis_pipeline_task
+    analysis_pipeline_task,
+    task_create_analysis_property_views
 )
 from seed.analysis_pipelines.utils import (
-    get_days_in_reading,
-    SimpleMeterReading
+    SimpleMeterReading,
+    get_days_in_reading
 )
 from seed.models import (
     Analysis,

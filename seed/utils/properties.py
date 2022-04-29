@@ -15,18 +15,17 @@ import json
 # Imports from Django
 from django.http import JsonResponse
 from rest_framework import status
-
 # Local Imports
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY,
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST,
-    VIEW_LIST_PROPERTY,
+    TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
 

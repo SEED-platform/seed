@@ -6,10 +6,15 @@
 """
 
 from __future__ import absolute_import
+
 import logging
 
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2
+from seed.building_sync.mappings import (
+    BASE_MAPPING_V2,
+    merge_mappings,
+    xpath_to_column_map
+)
 
 _log = logging.getLogger(__name__)
 

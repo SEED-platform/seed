@@ -7,30 +7,29 @@
 import datetime
 import logging
 import os.path as osp
+import pathlib
 
 from django.contrib.gis.geos import Polygon
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-import pathlib
-
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
     FAKE_ROW,
-    TAXLOT_FOOTPRINT_MAPPING,
     PROPERTY_FOOTPRINT_MAPPING,
+    TAXLOT_FOOTPRINT_MAPPING
 )
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Column,
-    Cycle,
-    TaxLotState,
-    PropertyState,
+    ASSESSED_RAW,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
-    ASSESSED_RAW,
+    Column,
+    Cycle,
+    PropertyState,
+    TaxLotState
 )
 from seed.models.data_quality import DataQualityCheck
 from seed.tests.util import DataMappingBaseTestCase

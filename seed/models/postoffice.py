@@ -6,9 +6,9 @@ All rights reserved.  # NOQA
 
 """
 from django.db import models
+from post_office.models import Email, EmailTemplate
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from post_office.models import EmailTemplate, Email
 
 # We create our own models replicating EmailTemplate and Email from post_office
 # and adding columns for organization id and user id

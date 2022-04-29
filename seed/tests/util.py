@@ -10,34 +10,31 @@ import json
 
 from django.test import TestCase
 from django.utils import timezone
-
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_IMPORT,
     Column,
     ColumnMapping,
     Cycle,
     DerivedColumn,
-    Property,
-    PropertyState,
-    PropertyView,
-    PropertyAuditLog,
-    Note,
-    Scenario,
-    StatusLabel,
-    TaxLotAuditLog,
-    TaxLotState,
-    TaxLot,
-    TaxLotView,
-    TaxLotProperty,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
-)
-from seed.models import (
-    DATA_STATE_IMPORT,
-    ASSESSED_RAW,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    Scenario,
+    StatusLabel,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
 )
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.organizations import create_organization

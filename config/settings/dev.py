@@ -4,10 +4,11 @@
 """
 from __future__ import absolute_import
 
-import sys
-from config.settings.common import *  # noqa
-from kombu import Exchange, Queue
-from django.conf import settings
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
+import os
+
+from config.settings.common import MIDDLEWARE  # noqa
 
 DEBUG = True
 compress = False
@@ -75,8 +76,6 @@ BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.her
 
 ALLOWED_HOSTS = ['*']
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:

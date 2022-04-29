@@ -4,13 +4,13 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.db import models
+import logging
 
+from django.db import models
+from seed.analysis_pipelines.utils import get_json_path
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.analysis_pipelines.utils import get_json_path
 
-import logging
 logger = logging.getLogger(__name__)
 
 

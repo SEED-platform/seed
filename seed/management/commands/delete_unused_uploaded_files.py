@@ -5,11 +5,10 @@
 """
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand
-
-from seed.data_importer.models import ImportFile
-
 import os
+
+from django.core.management.base import BaseCommand
+from seed.data_importer.models import ImportFile
 
 
 class Command(BaseCommand):

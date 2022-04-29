@@ -4,9 +4,8 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.conf.urls import re_path, include
+from django.conf.urls import include, re_path
 from rest_framework_nested import routers
-
 from seed.api.v2_1.views import PropertyViewSetV21
 from seed.views.notes import NoteViewSet
 from seed.views.portfoliomanager import PortfolioManagerViewSet

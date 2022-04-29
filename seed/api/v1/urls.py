@@ -5,15 +5,14 @@
 :author
 """
 
-from django.conf.urls import re_path, include
+from django.conf.urls import include, re_path
 from rest_framework import routers
-
 from seed.views.main import (
-    set_default_columns,
-    get_default_building_detail_columns,
-    set_default_building_detail_columns,
-    public_search,
     delete_organization_inventory,
+    get_default_building_detail_columns,
+    public_search,
+    set_default_building_detail_columns,
+    set_default_columns
 )
 
 router = routers.DefaultRouter()

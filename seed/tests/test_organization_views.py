@@ -7,18 +7,14 @@
 import json
 
 from django.urls import reverse
-
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import (
-    ASSESSED_RAW,
-    DATA_STATE_MAPPING,
-)
+from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.cache import get_cache_raw

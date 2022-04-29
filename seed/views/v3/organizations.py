@@ -8,11 +8,10 @@ import json
 import logging
 from collections import defaultdict
 from io import BytesIO
-from random import randint
 from pathlib import Path
+from random import randint
 
 import dateutil
-
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.decorators import permission_required
@@ -22,14 +21,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
@@ -37,29 +34,49 @@ from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (ROLE_MEMBER, ROLE_OWNER,
-                                             ROLE_VIEWER, Organization,
-                                             OrganizationUser)
-from seed.models import Column, Cycle, PropertyView, TaxLot, TaxLotView, TaxLotState, StatusLabel as Label, \
-    PropertyState, Property, AUDIT_IMPORT, PropertyAuditLog, TaxLotAuditLog
-from seed.serializers.column_mappings import \
+from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
+    ROLE_OWNER,
+    ROLE_VIEWER,
+    Organization,
+    OrganizationUser
+)
+from seed.models import (
+    AUDIT_IMPORT,
+    Column,
+    Cycle,
+    Property,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView
+)
+from seed.models import StatusLabel as Label
+from seed.models import TaxLot, TaxLotAuditLog, TaxLotState, TaxLotView
+from seed.serializers.column_mappings import (
     SaveColumnMappingsRequestPayloadSerializer
-from seed.serializers.organizations import (SaveSettingsSerializer,
-                                            SharedFieldsReturnSerializer)
+)
+from seed.serializers.organizations import (
+    SaveSettingsSerializer,
+    SharedFieldsReturnSerializer
+)
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.generic import median, round_down_hundred_thousand
 from seed.utils.geocode import geocode_buildings
-from seed.utils.match import (matching_criteria_column_names,
-                              whole_org_match_merge_link)
-from seed.utils.organizations import (create_organization,
-                                      create_suborganization)
-from xlsxwriter import Workbook
+from seed.utils.match import (
+    match_merge_link,
+    matching_criteria_column_names,
+    whole_org_match_merge_link
+)
 from seed.utils.merge import merge_properties
-from seed.utils.match import match_merge_link
+from seed.utils.organizations import (
+    create_organization,
+    create_suborganization
+)
 from seed.utils.properties import pair_unpair_property_taxlot
+from xlsxwriter import Workbook
 
 _log = logging.getLogger(__name__)
 

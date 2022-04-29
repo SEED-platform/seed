@@ -9,7 +9,6 @@ All rights reserved.  # NOQA
 """
 from seed.filtersets import CycleFilterSet
 from seed.models import Cycle
-
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 

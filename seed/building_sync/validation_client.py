@@ -4,12 +4,11 @@
 """
 
 import os
+import pathlib
 import zipfile
 
 import requests
-import pathlib
 from seed.building_sync.building_sync import BuildingSync
-
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0

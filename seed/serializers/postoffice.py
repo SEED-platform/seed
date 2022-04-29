@@ -8,7 +8,8 @@ All rights reserved.  # NOQA
 
 """
 from rest_framework import serializers
-from seed.models import PostOfficeEmail as Email, PostOfficeEmailTemplate as EmailTemplate
+from seed.models import PostOfficeEmail as Email
+from seed.models import PostOfficeEmailTemplate as EmailTemplate
 
 
 class PostOfficeSerializer(serializers.ModelSerializer):

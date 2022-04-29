@@ -8,11 +8,9 @@ from __future__ import unicode_literals
 import collections
 import logging
 
-from django.core.management.base import BaseCommand
-
 from _localtools import logging_info
-from seed.models import PropertyState
-from seed.models import TaxLotState
+from django.core.management.base import BaseCommand
+from seed.models import PropertyState, TaxLotState
 
 logging.basicConfig(level=logging.DEBUG)
 

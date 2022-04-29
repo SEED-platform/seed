@@ -11,13 +11,12 @@ All rights reserved.  # NOQA
 import datetime
 
 from django.core.exceptions import ValidationError
-
 from seed.landing.models import SEEDUser as User
 from seed.models import GreenAssessment
 from seed.test_helpers.fake import (
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory,
-    FakeGreenAssessmentURLFactory,
+    FakeGreenAssessmentURLFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization

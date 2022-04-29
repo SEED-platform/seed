@@ -7,14 +7,13 @@
 
 from os import path
 
+from config.settings.common import BASE_DIR
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-
-from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.building_file import BuildingFile
-from seed.models.scenarios import Scenario
 from seed.models.meters import Meter, MeterReading
+from seed.models.scenarios import Scenario
 from seed.utils.organizations import create_organization
 
 

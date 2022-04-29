@@ -7,17 +7,16 @@
 import json
 from datetime import date
 
-from django.urls import reverse_lazy, NoReverseMatch
 from django.test import TestCase
-
+from django.urls import NoReverseMatch, reverse_lazy
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
-    OrganizationUser,
-    Organization
+    Organization,
+    OrganizationUser
 )
 from seed.models.columns import Column
 from seed.models.cycles import Cycle

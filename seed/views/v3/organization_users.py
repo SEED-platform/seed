@@ -11,9 +11,11 @@ from rest_framework.decorators import action
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.models import (ROLE_OWNER,
-                                             Organization,
-                                             OrganizationUser)
+from seed.lib.superperms.orgs.models import (
+    ROLE_OWNER,
+    Organization,
+    OrganizationUser
+)
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
 from seed.views.v3.organizations import _get_js_role

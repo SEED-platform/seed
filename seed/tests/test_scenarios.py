@@ -5,12 +5,14 @@
 :author
 """
 from django.utils.dateparse import parse_datetime
-
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import FakePropertyMeasureFactory, FakePropertyStateFactory
+from seed.models import Meter, MeterReading, Property, PropertyView, Scenario
+from seed.test_helpers.fake import (
+    FakePropertyMeasureFactory,
+    FakePropertyStateFactory
+)
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
-from seed.models import Scenario, Meter, MeterReading, Property, PropertyView
 
 
 class TestMeasures(DeleteModelsTestCase):

@@ -12,82 +12,78 @@ import copy
 import hashlib
 import json
 import os
+import tempfile
 import traceback
-from _csv import Error
+import zipfile
 from builtins import str
 from collections import namedtuple
 from datetime import date, datetime
 from itertools import chain
 from math import ceil
-import zipfile
-import tempfile
 
-from celery import chord, shared_task, group
+from _csv import Error
 from celery import chain as celery_chain
+from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import IntegrityError, DataError
-from django.db import connection, transaction
+from django.db import DataError, IntegrityError, connection, transaction
 from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
-from unidecode import unidecode
-
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
 from seed.data_importer.match import (
-    match_and_link_incoming_properties_and_taxlots,
+    match_and_link_incoming_properties_and_taxlots
 )
 from seed.data_importer.meters_parser import MetersParser
-from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord,
     STATUS_READY_TO_MERGE,
+    ImportFile,
+    ImportRecord
 )
+from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
 from seed.data_importer.utils import usage_point_id
 from seed.lib.mcm import cleaners, mapper, reader
 from seed.lib.mcm.mapper import expand_rows
 from seed.lib.mcm.utils import batch
-from seed.lib.xml_mapping import reader as xml_reader
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
+from seed.lib.xml_mapping import reader as xml_reader
 from seed.models import (
     ASSESSED_BS,
     ASSESSED_RAW,
-    PORTFOLIO_BS,
-    PORTFOLIO_RAW,
     BUILDINGSYNC_RAW,
-    Column,
-    ColumnMapping,
-    Meter,
-    PropertyState,
-    PropertyView,
-    TaxLotView,
-    TaxLotState,
-    Sensor,
-    DataLogger,
+    DATA_STATE_DELETE,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
-    DATA_STATE_DELETE,
-    DATA_STATE_UNKNOWN)
-from seed.models import BuildingFile
-from seed.models import PropertyAuditLog
-from seed.models import TaxLotAuditLog
-from seed.models import TaxLotProperty
-from seed.models.auditlog import AUDIT_IMPORT
-from seed.models.data_quality import (
-    DataQualityCheck,
-    Rule,
+    DATA_STATE_UNKNOWN,
+    PORTFOLIO_BS,
+    PORTFOLIO_RAW,
+    BuildingFile,
+    Column,
+    ColumnMapping,
+    DataLogger,
+    Meter,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    Sensor,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
 )
+from seed.models.auditlog import AUDIT_IMPORT
+from seed.models.data_quality import DataQualityCheck, Rule
 from seed.utils.buildings import get_source_type
-from seed.utils.geocode import geocode_buildings, MapQuestAPIKeyError
-from seed.utils.ubid import decode_unique_ids
+from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
 from seed.utils.match import update_sub_progress_total
+from seed.utils.ubid import decode_unique_ids
+from unidecode import unidecode
 
 # from seed.utils.cprofile import cprofile
 

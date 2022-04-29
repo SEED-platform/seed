@@ -5,42 +5,40 @@
 :author
 """
 import logging
+from random import randint
 
 from celery import shared_task
-
-from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.auth.decorators import permission_required
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-
-from random import randint
-
-from rest_framework import status
-from rest_framework import viewsets, serializers
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
-
 from seed import tasks
 from seed.decorators import ajax_request_class
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     Organization,
-    OrganizationUser,
+    OrganizationUser
 )
-from seed.models import Cycle, PropertyView, TaxLotView, Column
+from seed.models import Column, Cycle, PropertyView, TaxLotView
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint_class
-from seed.utils.match import (
-    whole_org_match_merge_link,
-    matching_criteria_column_names,
-)
-from seed.utils.organizations import create_organization, create_suborganization
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.match import (
+    matching_criteria_column_names,
+    whole_org_match_merge_link
+)
+from seed.utils.organizations import (
+    create_organization,
+    create_suborganization
+)
 
 
 def _dict_org(request, organizations):

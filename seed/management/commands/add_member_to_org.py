@@ -4,14 +4,13 @@
 :author
 """
 from django.core.management.base import BaseCommand
-
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
-    Organization,
-    OrganizationUser,
     ROLE_MEMBER,
-    ROLE_VIEWER,
     ROLE_OWNER,
+    ROLE_VIEWER,
+    Organization,
+    OrganizationUser
 )
 
 

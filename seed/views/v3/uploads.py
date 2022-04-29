@@ -3,27 +3,21 @@ import datetime
 import logging
 import os
 
-from drf_yasg.utils import swagger_auto_schema, no_body
-from past.builtins import basestring
 import pint
+import xlrd
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+from drf_yasg.utils import no_body, swagger_auto_schema
+from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import xlrd
-
-from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord
-)
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    SEED_DATA_SOURCES,
-    PORTFOLIO_RAW)
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.models import PORTFOLIO_RAW, SEED_DATA_SOURCES
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)

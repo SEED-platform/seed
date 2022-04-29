@@ -6,12 +6,8 @@
 """
 
 from django.test import TestCase
-
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import (
-    FakePropertyViewFactory,
-    FakeNoteFactory,
-)
+from seed.test_helpers.fake import FakeNoteFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 
 

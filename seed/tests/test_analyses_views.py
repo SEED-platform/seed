@@ -4,16 +4,12 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
 import json
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Analysis,
-    AnalysisPropertyView,
-    AnalysisOutputFile
-)
+from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,

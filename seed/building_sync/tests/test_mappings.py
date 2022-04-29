@@ -4,12 +4,11 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from io import StringIO
 import random
+from io import StringIO
 
 from django.test import TestCase
 from lxml import etree
-
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import (
     BUILDINGSYNC_URI,
@@ -17,7 +16,7 @@ from seed.building_sync.mappings import (
     build_path,
     children_sorter_factory,
     find_last_in_xpath,
-    update_tree,
+    update_tree
 )
 
 

@@ -10,11 +10,11 @@ import os
 import pathlib
 import pprint
 import time
+from http.client import RemoteDisconnected
 
 import psutil
 import requests
 import urllib3
-from http.client import RemoteDisconnected
 
 
 def report_memory():

@@ -6,7 +6,7 @@
 """
 import re
 import string
-from datetime import datetime, date
+from datetime import date, datetime
 
 import dateutil
 import dateutil.parser
@@ -16,7 +16,6 @@ from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield.units import ureg
-
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (

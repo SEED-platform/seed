@@ -8,11 +8,8 @@ import json
 
 from django.urls import reverse
 from rest_framework import status
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Column,
-)
+from seed.models import Column
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 

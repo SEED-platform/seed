@@ -6,7 +6,9 @@ File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
 
-from config.settings.common import *  # noqa
+import os
+
+from config.settings.common import SECRET_KEY, Exchange, Queue  # noqa
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD', ]
@@ -42,8 +44,8 @@ ALLOWED_HOSTS = ['*']
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g. SMTP), then please update this model to support both and
 # create a pull request.
-EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")
-DEFAULT_FROM_EMAIL = SERVER_EMAIL
+EMAIL_BACKEND = (DJANGO_EMAIL_BACKEND if 'DJANGO_EMAIL_BACKEND' in os.environ else "django_ses.SESBackend")  # noqa: F821
+DEFAULT_FROM_EMAIL = SERVER_EMAIL  # noqa: F821
 POST_OFFICE = {
     'BACKENDS': {
         'default': EMAIL_BACKEND,
@@ -56,11 +58,11 @@ POST_OFFICE = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB,
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWORD,
+        'NAME': POSTGRES_DB,  # noqa: F821
+        'USER': POSTGRES_USER,  # noqa: F821
+        'PASSWORD': POSTGRES_PASSWORD,  # noqa: F821
         'HOST': "db-postgres",
-        'PORT': POSTGRES_PORT,
+        'PORT': POSTGRES_PORT,  # noqa: F821
     }
 }
 
@@ -72,7 +74,7 @@ if 'REDIS_PASSWORD' in os.environ:
             'LOCATION': "db-redis:6379",
             'OPTIONS': {
                 'DB': 1,
-                'PASSWORD': REDIS_PASSWORD,
+                'PASSWORD': REDIS_PASSWORD,  # noqa: F821
             },
             'TIMEOUT': 300
         }
@@ -131,7 +133,7 @@ if 'default' in SECRET_KEY:
 if 'SENTRY_RAVEN_DSN' in os.environ:
     import raven
     RAVEN_CONFIG = {
-        'dsn': SENTRY_RAVEN_DSN,
+        'dsn': SENTRY_RAVEN_DSN,  # noqa: F821
         # If you are using git, you can also automatically configure the
         # release based on the git info.
         'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),

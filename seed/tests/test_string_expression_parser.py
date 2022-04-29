@@ -7,11 +7,10 @@
 import itertools
 
 from django.test import TestCase
-
 from seed.utils.search import (
-    is_string_expression,
-    parse_expression,
     STRING_EXPRESSION_REGEX,
+    is_string_expression,
+    parse_expression
 )
 
 

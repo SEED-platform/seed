@@ -6,23 +6,22 @@
 """
 import logging
 import os.path as osp
-
-from django.core.files.uploadedfile import SimpleUploadedFile
 import pathlib
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
+    FAKE_ROW
 )
 from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_MAPPING,
     Column,
     PropertyState,
     TaxLotState,
-    TaxLotView,
-    DATA_STATE_MAPPING,
-    ASSESSED_RAW,
+    TaxLotView
 )
 from seed.tests.util import DataMappingBaseTestCase
 

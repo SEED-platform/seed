@@ -9,25 +9,24 @@ All rights reserved.  # NOQA
 """
 # pylint:disable=too-few-public-methods
 from __future__ import unicode_literals
+
 import datetime
 
-# import logging
-
-from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import models
 from past.builtins import basestring
-
+from seed.landing.models import SEEDUser
 from seed.lib.superperms.orgs.models import Organization
+from seed.models import PropertyView
 from seed.models.auditlog import (
-    AUDIT_USER_EDIT,
     AUDIT_USER_CREATE,
+    AUDIT_USER_EDIT,
     DATA_UPDATE_TYPE
 )
-from seed.landing.models import SEEDUser
-from seed.models import PropertyView
 from seed.utils.strings import titlecase
 
+# import logging
 DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
 )

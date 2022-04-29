@@ -45,8 +45,16 @@ import time
 from subprocess import Popen
 
 import requests
-from seed_readingtools import check_status, setup_logger, report_memory
-from test_modules import cycles, upload_match_sort, account, delete_set, labels, data_quality, export_data
+from seed_readingtools import check_status, report_memory, setup_logger
+from test_modules import (
+    account,
+    cycles,
+    data_quality,
+    delete_set,
+    export_data,
+    labels,
+    upload_match_sort
+)
 
 location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 print("Running from {}".format(location))

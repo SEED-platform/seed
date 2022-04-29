@@ -6,15 +6,10 @@
 """
 
 from django.test import TestCase
-
-from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Column,
-    ColumnListProfile,
-    ColumnListProfileColumn,
-)
-from seed.utils.organizations import create_organization
 from past.builtins import basestring
+from seed.landing.models import SEEDUser as User
+from seed.models import Column, ColumnListProfile, ColumnListProfileColumn
+from seed.utils.organizations import create_organization
 
 
 class TestColumnListProfile(TestCase):

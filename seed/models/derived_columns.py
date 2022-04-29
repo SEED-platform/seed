@@ -5,17 +5,15 @@
 :author
 """
 from __future__ import annotations
+
 import copy
 from typing import Any, Union
 
-from django.db import models
 from django.core.exceptions import ValidationError
-
+from django.db import models
 from lark import Lark, Transformer, v_args
 from lark.exceptions import UnexpectedToken
-
 from quantityfield.units import ureg
-
 from seed.landing.models import Organization
 from seed.models.columns import Column
 from seed.models.properties import PropertyState

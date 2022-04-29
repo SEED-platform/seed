@@ -7,25 +7,17 @@
 
 import logging
 import os.path as osp
-
-from django.core.files.uploadedfile import SimpleUploadedFile
 import pathlib
 
-from seed.data_importer import tasks, match
-from seed.data_importer.tests.util import (
-    FAKE_MAPPINGS,
-)
+from django.core.files.uploadedfile import SimpleUploadedFile
+from seed.data_importer import match, tasks
+from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
+from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import (
-    ASSESSED_RAW,
-    Column,
-    PropertyState
-)
+from seed.models import ASSESSED_RAW, Column, PropertyState
+from seed.tests.util import DataMappingBaseTestCase
 
 logger = logging.getLogger(__name__)
-
-from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
-from seed.tests.util import DataMappingBaseTestCase
 
 
 class TestEquivalenceWithFile(DataMappingBaseTestCase):

@@ -6,10 +6,12 @@
 """
 
 from django.test import TestCase
-
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_VIEWER
-from seed.utils.organizations import create_organization, create_suborganization
+from seed.utils.organizations import (
+    create_organization,
+    create_suborganization
+)
 
 
 class TestOrganizations(TestCase):

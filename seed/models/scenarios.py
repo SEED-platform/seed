@@ -9,9 +9,8 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
-
-from seed.models.property_measures import PropertyMeasure
 from seed.models.properties import PropertyView
+from seed.models.property_measures import PropertyMeasure
 
 _log = logging.getLogger(__name__)
 

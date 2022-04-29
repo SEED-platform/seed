@@ -7,7 +7,7 @@
 import base64
 import datetime
 import random
-from decimal import getcontext, Decimal
+from decimal import Decimal, getcontext
 
 getcontext().prec = 7
 

@@ -5,7 +5,6 @@
 :author
 """
 from django.test import TestCase
-
 from seed.utils.address import normalize_address_str
 
 

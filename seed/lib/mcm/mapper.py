@@ -11,13 +11,13 @@ import copy
 import itertools
 import logging
 import re
-from datetime import datetime, date
+from datetime import date, datetime
 
-from .cleaners import default_cleaner
 from django.apps import apps
 from past.builtins import basestring
-
 from seed.lib.mappings.mapping_columns import MappingColumns
+
+from .cleaners import default_cleaner
 
 _log = logging.getLogger(__name__)
 

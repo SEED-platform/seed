@@ -5,32 +5,21 @@
 :author
 """
 
+import re
 from calendar import monthrange
+from datetime import datetime, timedelta
 
 from config.settings.common import TIME_ZONE
-
-from datetime import (
-    datetime,
-    timedelta,
-)
-import re
-
 from django.db.models import Subquery
 from django.utils.timezone import make_aware
-
 from pytz import timezone
-
-from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    Meter,
-    PropertyState,
-    PropertyView,
-)
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
-    usage_point_id,
+    usage_point_id
 )
 from seed.lib.mcm import reader
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import Meter, PropertyState, PropertyView
 
 
 class MetersParser(object):

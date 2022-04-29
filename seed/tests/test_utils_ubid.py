@@ -1,23 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 from django.contrib.gis.geos import Polygon
-
 from django.test import TestCase
-
 from seed.landing.models import SEEDUser as User
-
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-
-from seed.test_helpers.fake import FakePropertyStateFactory
-from seed.test_helpers.fake import FakeTaxLotStateFactory
-
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
+)
 from seed.utils.geocode import bounding_box_wkt
 from seed.utils.organizations import create_organization
-from seed.utils.ubid import (
-    centroid_wkt,
-    decode_unique_ids,
-)
+from seed.utils.ubid import centroid_wkt, decode_unique_ids
 
 
 class UbidSpecificWktMethods(TestCase):

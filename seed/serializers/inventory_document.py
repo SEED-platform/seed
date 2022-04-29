@@ -9,10 +9,7 @@ All rights reserved.  # NOQA
 """
 
 from rest_framework import serializers
-
-from seed.models import (
-    InventoryDocument,
-)
+from seed.models import InventoryDocument
 from seed.serializers.base import ChoiceField
 
 

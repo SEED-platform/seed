@@ -10,43 +10,31 @@ All rights reserved.  # NOQA
 import csv
 import datetime
 import io
-from collections import OrderedDict
 import math
+from collections import OrderedDict
 from random import randint
 
 import xlsxwriter
-from django.http import JsonResponse, HttpResponse
-
+from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-
 from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
-
 from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import (
+    ColumnListProfile,
     PropertyView,
     TaxLotProperty,
-    TaxLotView,
-    ColumnListProfile,
+    TaxLotView
 )
-from seed.models.meters import (
-    Meter,
-    MeterReading
-)
-from seed.models.property_measures import (
-    PropertyMeasure
-)
-from seed.models.scenarios import (
-    Scenario
-)
-from seed.serializers.tax_lot_properties import (
-    TaxLotPropertySerializer
-)
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.models.meters import Meter, MeterReading
+from seed.models.property_measures import PropertyMeasure
+from seed.models.scenarios import Scenario
+from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
 

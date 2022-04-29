@@ -20,10 +20,10 @@
             <span>
                 <h2>
                     <span ng-if="::inventory_type==='properties'">
-                        <i class="fa fa-building-o"></i><span translate>Property</span> : 
+                        <i class="fa fa-building-o"></i><span translate>Property</span> :
                     </span>
                     <span ng-if="::inventory_type==='taxlots'">
-                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> : 
+                        <i class="fa fa-map-o"></i><span translate>Tax Lot</span> :
                     </span>
                     <span ng-bind-html="inventory_name">{$ inventory_display_name(inventory_type==='properties' ? 'property' : 'taxlot') | translate $}</span>
                 </h2>
@@ -83,7 +83,7 @@
                 <button type="button" class="btn btn-default" uib-dropdown-toggle>
                     Filter Data Logger <span class="caret"></span>
                 </button>
-                <ul class="dropdown-menu" uib-dropdown-menu>    
+                <ul class="dropdown-menu" uib-dropdown-menu>
                     <li ng-repeat="data_logger in data_logger_selections">
                         <div>
                             <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">
@@ -97,7 +97,7 @@
                 <button type="button" class="btn btn-default" uib-dropdown-toggle>
                     Filter Sensor Type <span class="caret"></span>
                 </button>
-                <ul class="dropdown-menu" uib-dropdown-menu>    
+                <ul class="dropdown-menu" uib-dropdown-menu>
                     <li ng-repeat="sensor_type in sensor_type_selections">
                         <div>
                             <label class="btn btn-default" style="width: 100%; display: flex; justify-content: space-between; border-radius: 0px;">

@@ -8,6 +8,7 @@
 import argparse
 import csv
 import os
+
 import github3
 
 parser = argparse.ArgumentParser()
@@ -41,10 +42,10 @@ points_map = {
 with open(args.infile) as csvfile:
     reader = csv.reader(csvfile)
     for index, row in enumerate(reader):
-        if index >= 1: # skip header row
+        if index >= 1:  # skip header row
             print(row)
             issue = repo.issue(row[0])
-            labels = [l.name for l in issue.labels()]
+            labels = [label.name for label in issue.labels()]
 
             # remove any of the labels that we are setting that may
             # already be on the issue
@@ -53,8 +54,8 @@ with open(args.infile) as csvfile:
             labels = list(set(labels) - set(estimate_impact))
 
             # add the new labels to the list
-            labels.append(priority_labels[int(row[3])-1])
-            labels.append(impact_labels[int(row[4])-1])
+            labels.append(priority_labels[int(row[3]) - 1])
+            labels.append(impact_labels[int(row[4]) - 1])
             labels.append(points_map[int(row[5])])
 
             # save the labels to github

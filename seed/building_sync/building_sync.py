@@ -9,24 +9,23 @@ import copy
 import logging
 import os
 import re
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 
-from django.core.exceptions import FieldDoesNotExist
-from quantityfield.units import ureg
-from lxml import etree
 import xmlschema
-
 from config.settings.common import BASE_DIR
-from seed.models.meters import Meter
+from django.core.exceptions import FieldDoesNotExist
+from lxml import etree
+from quantityfield.units import ureg
 from seed.building_sync.mappings import (
     BASE_MAPPING_V2,
     BUILDINGSYNC_URI,
     NAMESPACES,
-    merge_mappings,
     apply_mapping,
-    update_tree,
+    merge_mappings,
     table_mapping_to_buildingsync_mapping,
+    update_tree
 )
+from seed.models.meters import Meter
 
 _log = logging.getLogger(__name__)
 

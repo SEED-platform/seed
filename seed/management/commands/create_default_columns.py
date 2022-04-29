@@ -4,7 +4,6 @@
 :author
 """
 from django.core.management.base import BaseCommand
-
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Column
 from seed.utils.organizations import _create_default_columns

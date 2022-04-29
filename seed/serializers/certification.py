@@ -13,13 +13,14 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from past.builtins import basestring
 from rest_framework import serializers
-
 from seed.models import (
-    GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
     PropertyView
 )
 from seed.models.auditlog import AUDIT_USER_CREATE
-from seed.utils.api import OrgValidator, OrgValidateMixin
+from seed.utils.api import OrgValidateMixin, OrgValidator
 from seed.utils.strings import titlecase
 
 ASSESSMENT_VALIDATOR = OrgValidator('assessment', 'organization_id')

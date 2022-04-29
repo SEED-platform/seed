@@ -9,12 +9,9 @@ import logging
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models.models import (
-    SEED_DATA_SOURCES,
-)
+from seed.models.models import SEED_DATA_SOURCES
 
 # This is the inverse mapping of the property and tax lots that are prepended to the fields
 # for the other table.

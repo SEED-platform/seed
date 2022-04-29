@@ -7,11 +7,7 @@
 import logging
 from collections import defaultdict
 
-from seed.models import (
-    Column,
-    PropertyState,
-    TaxLotState,
-)
+from seed.models import Column, PropertyState, TaxLotState
 
 _log = logging.getLogger(__name__)
 

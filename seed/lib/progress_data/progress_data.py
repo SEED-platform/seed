@@ -7,7 +7,7 @@
 import logging
 
 from seed.decorators import get_prog_key
-from seed.utils.cache import get_cache, set_cache, delete_cache
+from seed.utils.cache import delete_cache, get_cache, set_cache
 
 _log = logging.getLogger(__name__)
 

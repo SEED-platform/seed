@@ -6,7 +6,6 @@
 """
 
 from rest_framework import authentication
-
 from seed.landing.models import SEEDUser as User
 
 

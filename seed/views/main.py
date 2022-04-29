@@ -13,11 +13,10 @@ import subprocess
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect, render
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.decorators import api_view
-
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.decorators import ajax_request

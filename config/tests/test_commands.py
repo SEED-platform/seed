@@ -5,10 +5,8 @@
 
 from django.core.management import call_command
 from django.test import TestCase
-
-from seed.lib.superperms.orgs.models import Organization, OrganizationUser
-
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 
 
 class ManagementTests(TestCase):

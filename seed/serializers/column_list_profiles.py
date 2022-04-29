@@ -7,18 +7,17 @@ required approvals from the U.S. Department of Energy) and contributors.
 All rights reserved.  # NOQA
 """
 
-from seed.models.derived_columns import DerivedColumn
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
-
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    VIEW_LIST_INVENTORY_TYPE,
+    VIEW_LOCATION_TYPES,
     Column,
     ColumnListProfile,
-    ColumnListProfileColumn,
-    VIEW_LOCATION_TYPES,
-    VIEW_LIST_INVENTORY_TYPE
+    ColumnListProfileColumn
 )
-from seed.lib.superperms.orgs.models import Organization
+from seed.models.derived_columns import DerivedColumn
 from seed.serializers.base import ChoiceField
 
 

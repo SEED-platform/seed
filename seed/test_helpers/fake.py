@@ -23,15 +23,33 @@ import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
-
 from seed.models import (
-    Analysis, AnalysisPropertyView, Cycle, Column, DerivedColumn, GreenAssessment, GreenAssessmentURL, Measure,
-    GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
-    PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
-    ColumnListProfileColumn,
     VIEW_LIST,
-    VIEW_LIST_PROPERTY)
+    VIEW_LIST_PROPERTY,
+    Analysis,
+    AnalysisPropertyView,
+    Column,
+    ColumnListProfile,
+    ColumnListProfileColumn,
+    Cycle,
+    DerivedColumn,
+    GreenAssessment,
+    GreenAssessmentProperty,
+    GreenAssessmentURL,
+    Measure,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    StatusLabel,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
+)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
 from seed.utils.strings import titlecase
 

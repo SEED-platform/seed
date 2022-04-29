@@ -7,13 +7,12 @@
 from datetime import datetime as dt
 
 from django.test import TestCase
-
 from seed.analysis_pipelines.utils import (
     SimpleMeterReading,
     _split_reading,
-    interpolate_monthly_readings,
-    calendarize_meter_readings,
     calendarize_and_extrapolate_meter_readings,
+    calendarize_meter_readings,
+    interpolate_monthly_readings
 )
 
 

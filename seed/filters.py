@@ -7,9 +7,8 @@
 import json
 
 from rest_framework import filters
-
 from seed import search
-from seed.models import VIEW_LOCATION_TYPES, VIEW_LIST_INVENTORY_TYPE
+from seed.models import VIEW_LIST_INVENTORY_TYPE, VIEW_LOCATION_TYPES
 
 
 class ColumnListProfileFilterBackend(filters.BaseFilterBackend):

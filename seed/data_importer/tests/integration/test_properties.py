@@ -7,22 +7,19 @@
 
 import copy
 import os.path as osp
-
-from django.core.files.uploadedfile import SimpleUploadedFile
 import pathlib
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from seed.data_importer import tasks
-from seed.data_importer.tests.util import (
-    FAKE_MAPPINGS,
-)
+from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.models import (
-    Column,
-    PropertyState,
     ASSESSED_RAW,
     DATA_STATE_MATCHING,
-    MERGE_STATE_UNKNOWN,
-    MERGE_STATE_NEW,
     MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
+    Column,
+    PropertyState
 )
 from seed.tests.util import DataMappingBaseTestCase
 

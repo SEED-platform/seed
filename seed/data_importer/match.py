@@ -5,22 +5,15 @@
 :author
 """
 
-from celery import shared_task
-from celery.utils.log import get_task_logger
-
 import datetime as dt
 import math
-
-from django.contrib.postgres.aggregates.general import ArrayAgg
-
-from django.db import (
-    IntegrityError,
-    transaction,
-)
-from django.db.models import Subquery
-
 from functools import reduce
 
+from celery import shared_task
+from celery.utils.log import get_task_logger
+from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.db import IntegrityError, transaction
+from django.db.models import Subquery
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
 from seed.lib.merging import merging
@@ -39,15 +32,15 @@ from seed.models import (
     PropertyView,
     TaxLotAuditLog,
     TaxLotState,
-    TaxLotView,
+    TaxLotView
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.utils.match import (
     empty_criteria_filter,
     match_merge_link,
-    matching_filter_criteria,
     matching_criteria_column_names,
-    update_sub_progress_total,
+    matching_filter_criteria,
+    update_sub_progress_total
 )
 from seed.utils.merge import merge_states_with_views
 

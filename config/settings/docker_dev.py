@@ -5,12 +5,14 @@
 File contains settings needed to run SEED with docker
 """
 from __future__ import absolute_import
+
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
 import os
 import sys
 
-from config.settings.common import *  # noqa
-
 from celery.utils import LOG_LEVELS
+from config.settings.common import INSTALLED_APPS, Exchange, Queue  # noqa
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = '/media/'
@@ -44,11 +46,11 @@ BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.her
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB,
-        'USER': POSTGRES_USER,
-        'PASSWORD': POSTGRES_PASSWORD,
-        'HOST': "db-postgres",
-        'PORT': POSTGRES_PORT,
+        'NAME': POSTGRES_DB,  # noqa: F821
+        'USER': POSTGRES_USER,  # noqa: F821
+        'PASSWORD': POSTGRES_PASSWORD,  # noqa: F821
+        'HOST': "db-postgres",  # noqa: F821
+        'PORT': POSTGRES_PORT,  # noqa: F821
     }
 }
 
@@ -126,8 +128,6 @@ LOGGING = {
     },
 }
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:

@@ -9,14 +9,11 @@ All rights reserved.  # NOQA
 """
 
 from rest_framework import serializers
-
-from seed.models import (
-    Property
-)
+from seed.models import Property
 from seed.serializers.properties import (
     PropertyLabelsField,
     PropertyListSerializer,
-    PropertyMinimalSerializer,
+    PropertyMinimalSerializer
 )
 
 

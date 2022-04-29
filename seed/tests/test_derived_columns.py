@@ -7,18 +7,21 @@
 from string import Template, ascii_letters, digits
 
 from django.core.exceptions import ValidationError
-
+from hypothesis import assume, example, given, settings
+from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
-from hypothesis import strategies as st, assume, given, example, settings
-
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import FakeDerivedColumnFactory, FakeColumnFactory, FakePropertyStateFactory
 from seed.models.columns import Column
 from seed.models.derived_columns import (
-    ExpressionEvaluator,
     DerivedColumn,
     DerivedColumnParameter,
-    InvalidExpression,
+    ExpressionEvaluator,
+    InvalidExpression
+)
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyStateFactory
 )
 from seed.utils.organizations import create_organization
 

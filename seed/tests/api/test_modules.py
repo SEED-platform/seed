@@ -13,8 +13,8 @@ from builtins import str
 
 import requests
 from seed_readingtools import (
-    check_status,
     check_progress,
+    check_status,
     read_map_file,
     upload_file,
     write_out_django_debug

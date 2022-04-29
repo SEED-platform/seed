@@ -7,15 +7,14 @@
 
 import json
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework import status
-
 from seed.landing.models import SEEDUser as User
 from seed.test_helpers.fake import (
-    FakePropertyViewFactory,
-    FakeTaxLotViewFactory,
     FakeNoteFactory,
+    FakePropertyViewFactory,
+    FakeTaxLotViewFactory
 )
 from seed.utils.organizations import create_organization
 

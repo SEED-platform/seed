@@ -11,13 +11,13 @@ All rights reserved.  # NOQA
 # Local Imports
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    VIEW_LIST,
+    VIEW_LIST_TAXLOT,
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
     TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST,
-    VIEW_LIST_TAXLOT,
+    TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
 

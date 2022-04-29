@@ -8,26 +8,24 @@ from __future__ import absolute_import
 
 import sys
 
-from celery import chord, chain
-from celery import shared_task
+from celery import chain, chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.template import Context, Template, loader
 from django.urls import reverse_lazy
-from django.template import Template, Context, loader
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-
 from seed.decorators import lock_and_track
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    DATA_STATE_MATCHING,
     Column,
     ColumnMapping,
     Cycle,
-    DATA_STATE_MATCHING,
     Property,
     PropertyState,
     PropertyView,
@@ -35,7 +33,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView
 )
-
 
 logger = get_task_logger(__name__)
 

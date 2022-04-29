@@ -5,10 +5,14 @@ import re
 from django.conf import settings
 from django.http import HttpResponse
 from rest_framework import generics
-
-from seed.models import ImportFile, Organization, BuildingFile, Analysis, AnalysisOutputFile
+from seed.models import (
+    Analysis,
+    AnalysisOutputFile,
+    BuildingFile,
+    ImportFile,
+    Organization
+)
 from seed.utils.api import OrgMixin
-
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)

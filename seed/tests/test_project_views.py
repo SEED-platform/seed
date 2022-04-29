@@ -8,21 +8,17 @@ import json
 
 from django.urls import reverse_lazy
 from django.utils.text import slugify
-
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
-    ROLE_OWNER,
     ROLE_MEMBER,
+    ROLE_OWNER,
     ROLE_VIEWER,
     OrganizationUser
 )
-from seed.models import (
-    Project, ProjectPropertyView,
-    PropertyView
-)
+from seed.models import Project, ProjectPropertyView, PropertyView
 from seed.test_helpers import fake
-from seed.tests.util import FakeRequest, DeleteModelsTestCase
+from seed.tests.util import DeleteModelsTestCase, FakeRequest
 from seed.utils.organizations import create_organization
 
 DEFAULT_NAME = 'proj1'

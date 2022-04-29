@@ -5,12 +5,11 @@
 :author
 """
 import logging
+import pathlib
 from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-import pathlib
-
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User

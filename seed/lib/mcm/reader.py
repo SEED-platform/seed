@@ -14,15 +14,14 @@ import json
 import mmap
 import operator
 import re
-import xmltodict
-
 from builtins import str
 from csv import DictReader, Sniffer
 
+import xmltodict
 from past.builtins import basestring
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from unidecode import unidecode
-from xlrd import xldate, XLRDError, open_workbook, empty_cell
+from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
 (

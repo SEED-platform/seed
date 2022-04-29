@@ -6,15 +6,12 @@
 """
 
 from collections import OrderedDict
-from seed.models.derived_columns import DerivedColumn
 
 from django.apps import apps
 from django.db import models
-
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models import (
-    Column,
-)
+from seed.models import Column
+from seed.models.derived_columns import DerivedColumn
 
 VIEW_LIST = 0
 VIEW_DETAIL = 1

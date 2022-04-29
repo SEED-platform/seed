@@ -183,5 +183,3 @@ project directory, ``celery`` can be started:
     celery -A seed worker -l INFO -c 2 -B --events --max-tasks-per-child 1000
 
 .. _Celery: http://www.celeryproject.org/
-
-

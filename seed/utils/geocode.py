@@ -1,13 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-import requests
 import json
 import re
+from numbers import Number
 
+import requests
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
-from numbers import Number
 
 
 class MapQuestAPIKeyError(Exception):

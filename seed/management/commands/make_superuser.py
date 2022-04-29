@@ -6,7 +6,6 @@
 from __future__ import unicode_literals
 
 from django.core.management.base import BaseCommand
-
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import User
 

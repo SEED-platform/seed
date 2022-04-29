@@ -6,8 +6,8 @@
 """
 
 from rest_framework import serializers
-from seed.models.data_quality import Rule, DataQualityCheck
 from seed.models import StatusLabel
+from seed.models.data_quality import DataQualityCheck, Rule
 
 
 class RuleSerializer(serializers.ModelSerializer):

@@ -7,31 +7,28 @@
 import datetime
 import logging
 import os.path as osp
+import pathlib
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-import pathlib
-
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
+    FAKE_ROW
 )
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Column,
-    PropertyView,
-    TaxLotState,
-    TaxLotView,
+    ASSESSED_RAW,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
-    ASSESSED_RAW,
-)
-from seed.models import (
+    Column,
     Cycle,
     PropertyState,
+    PropertyView,
+    TaxLotState,
+    TaxLotView
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization

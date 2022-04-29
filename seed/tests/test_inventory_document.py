@@ -7,10 +7,9 @@
 
 from os import path
 
+from config.settings.common import BASE_DIR
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-
-from config.settings.common import BASE_DIR
 from seed.models import User
 from seed.models.inventory_document import InventoryDocument
 from seed.utils.organizations import create_organization

@@ -6,24 +6,21 @@
 """
 
 import json
-
-from config.settings.common import TIME_ZONE
-
 from datetime import datetime
 
+from config.settings.common import TIME_ZONE
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.urls import reverse
-from django.db.models.aggregates import Count
 from django.db.models import Subquery
-from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-
+from django.db.models.aggregates import Count
+from django.urls import reverse
+from django.utils.timezone import \
+    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from pytz import timezone
-
 from seed.data_importer.tasks import geocode_and_match_buildings_task
-
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_MAPPING,
+    VIEW_LIST_TAXLOT,
     Column,
     Meter,
     MeterReading,
@@ -34,20 +31,16 @@ from seed.models import (
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
-    TaxLotView,
-    VIEW_LIST_TAXLOT,
-)
-from seed.utils.match import (
-    match_merge_link,
-    whole_org_match_merge_link,
+    TaxLotView
 )
 from seed.test_helpers.fake import (
     FakeColumnListProfileFactory,
     FakeCycleFactory,
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
+from seed.utils.match import match_merge_link, whole_org_match_merge_link
 
 
 class TestMatchingPostEdit(DataMappingBaseTestCase):

@@ -15,6 +15,7 @@ seed local_untracked.py
     For local dev, all these services can run locally on localhost, 127.0.0.1, or 0.0.0.0.
 """
 import os
+
 from kombu import Exchange, Queue
 
 DEBUG = True

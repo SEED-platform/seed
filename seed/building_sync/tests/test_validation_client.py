@@ -4,15 +4,18 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
+import json
 import os
 from unittest.mock import patch
 
+from config.settings.common import BASE_DIR
 from django.test import TestCase
 from requests.models import Response
-import json
-
-from config.settings.common import BASE_DIR
-from seed.building_sync.validation_client import validate_use_case, DEFAULT_USE_CASE, DEFAULT_SCHEMA_VERSION
+from seed.building_sync.validation_client import (
+    DEFAULT_SCHEMA_VERSION,
+    DEFAULT_USE_CASE,
+    validate_use_case
+)
 
 
 def responseFactory(status_code, body_dict):

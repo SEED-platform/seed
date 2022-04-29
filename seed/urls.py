@@ -6,10 +6,7 @@
 """
 
 from django.conf.urls import re_path
-
-from seed.views.main import (
-    home,
-)
+from seed.views.main import home
 
 urlpatterns = [
     re_path(r'^$', home, name='home'),

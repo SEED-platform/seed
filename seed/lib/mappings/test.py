@@ -7,7 +7,6 @@
 import logging
 
 from django.test import TestCase
-
 from seed.lib.mappings.mapping_columns import MappingColumns
 
 logger = logging.getLogger(__name__)

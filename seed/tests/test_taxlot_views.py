@@ -5,23 +5,21 @@
 :author
 """
 import json
-
 from datetime import datetime
 
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
-
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
-    Column,
     DATA_STATE_MAPPING,
+    VIEW_LIST_TAXLOT,
+    Column,
     Note,
     PropertyView,
     TaxLot,
     TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST_TAXLOT,
+    TaxLotView
 )
 from seed.test_helpers.fake import (
     FakeColumnListProfileFactory,
@@ -31,7 +29,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeStatusLabelFactory,
     FakeTaxLotFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization

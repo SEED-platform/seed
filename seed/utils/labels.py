@@ -7,14 +7,9 @@ All rights reserved.  # NOQA
 """
 import json
 
+from rest_framework import response, status
 from seed import search
-from seed.serializers.labels import (
-    LabelSerializer,
-)
-from rest_framework import (
-    response,
-    status,
-)
+from seed.serializers.labels import LabelSerializer
 
 
 def filter_labels_for_inv_type(request, inventory_type=None):

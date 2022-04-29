@@ -5,12 +5,11 @@
 :author
 """
 
+import pathlib
 from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-import pathlib
-
 from seed.models import User
 from seed.models.building_file import BuildingFile
 from seed.utils.organizations import create_organization

@@ -7,31 +7,19 @@
 from collections import namedtuple
 
 from django.apps import apps
-from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import (
-    response,
-    status,
-    viewsets
-)
+from django.db import IntegrityError
+from rest_framework import response, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
-
 from seed.decorators import DecoratorMixin
-from seed.filters import (
-    LabelFilterBackend,
-    InventoryFilterBackend,
-)
-from seed.models import (
-    StatusLabel as Label,
-    PropertyView,
-    TaxLotView,
-)
-from seed.serializers.labels import (
-    LabelSerializer,
-)
+from seed.filters import InventoryFilterBackend, LabelFilterBackend
+from seed.models import PropertyView
+from seed.models import StatusLabel as Label
+from seed.models import TaxLotView
+from seed.serializers.labels import LabelSerializer
 from seed.utils.api import drf_api_endpoint
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])

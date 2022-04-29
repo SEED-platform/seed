@@ -14,11 +14,8 @@ import json
 from collections import OrderedDict
 
 import mock
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    PropertyView
-)
+from seed.models import PropertyView
 from seed.models.auditlog import AUDIT_USER_EDIT
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
@@ -27,10 +24,10 @@ from seed.serializers.properties import (
     PropertyAuditLogReadOnlySerializer,
     PropertyListSerializer,
     PropertyMinimalSerializer,
-    PropertyViewSerializer,
-    PropertyViewListSerializer,
     PropertyViewAsStateSerializer,
-    unflatten_values,
+    PropertyViewListSerializer,
+    PropertyViewSerializer,
+    unflatten_values
 )
 from seed.test_helpers.fake import (
     FakeCycleFactory,

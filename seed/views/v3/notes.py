@@ -6,15 +6,10 @@
 """
 import logging
 
-from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
-
-from seed.models import (
-    Note,
-)
-from seed.serializers.notes import (
-    NoteSerializer,
-)
+from seed.models import Note
+from seed.serializers.notes import NoteSerializer
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 _log = logging.getLogger(__name__)

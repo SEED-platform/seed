@@ -9,16 +9,14 @@ All rights reserved.  # NOQA
 """
 import json
 import os
-import requests
 from unittest import skip, skipIf
 
-from django.urls import reverse_lazy
+import requests
 from django.test import TestCase
-
+from django.urls import reverse_lazy
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport
-
 
 PM_UN = 'SEED_PM_UN'
 PM_PW = 'SEED_PM_PW'

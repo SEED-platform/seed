@@ -13,26 +13,43 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
-                         MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW,
-                         Note, PropertyView, StatusLabel, TaxLot,
-                         TaxLotAuditLog, TaxLotProperty, TaxLotState,
-                         TaxLotView)
+from seed.models import (
+    AUDIT_USER_EDIT,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    Note,
+    PropertyView,
+    StatusLabel,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
+)
 from seed.serializers.properties import PropertyViewSerializer
-from seed.serializers.taxlots import (TaxLotSerializer, TaxLotStateSerializer,
-                                      TaxLotViewSerializer,
-                                      UpdateTaxLotPayloadSerializer)
+from seed.serializers.taxlots import (
+    TaxLotSerializer,
+    TaxLotStateSerializer,
+    TaxLotViewSerializer,
+    UpdateTaxLotPayloadSerializer
+)
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
+from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_taxlots
-from seed.utils.properties import (get_changed_fields,
-                                   pair_unpair_property_taxlot,
-                                   update_result_with_master)
+from seed.utils.properties import (
+    get_changed_fields,
+    pair_unpair_property_taxlot,
+    update_result_with_master
+)
 from seed.utils.taxlots import taxlots_across_cycles
-from seed.utils.inventory_filter import get_filtered_results
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])
 

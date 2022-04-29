@@ -9,12 +9,18 @@ All rights reserved.  # NOQA
 """
 from django.conf import settings
 from django.forms.models import model_to_dict
-
-from seed.serializers.postoffice import PostOfficeSerializer, PostOfficeEmailSerializer
-from seed.utils.viewsets import SEEDOrgModelViewSet
-from seed.models import PropertyState, TaxLotState
-from seed.models import PostOfficeEmail, PostOfficeEmailTemplate
 from post_office import mail
+from seed.models import (
+    PostOfficeEmail,
+    PostOfficeEmailTemplate,
+    PropertyState,
+    TaxLotState
+)
+from seed.serializers.postoffice import (
+    PostOfficeEmailSerializer,
+    PostOfficeSerializer
+)
+from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 class PostOfficeViewSet(SEEDOrgModelViewSet):

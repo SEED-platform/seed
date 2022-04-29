@@ -9,7 +9,6 @@ from datetime import datetime
 import pytz
 from lxml import etree
 
-
 BUILDINGSYNC_URI = 'http://buildingsync.net/schemas/bedes-auc/2019'
 NAMESPACES = {
     'auc': BUILDINGSYNC_URI

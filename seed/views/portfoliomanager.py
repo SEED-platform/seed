@@ -11,6 +11,7 @@ All rights reserved.  # NOQA
 import json
 import logging
 import time
+from urllib.parse import quote
 
 import requests
 import xmltodict
@@ -18,8 +19,6 @@ from django.http import JsonResponse
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
-
-from urllib.parse import quote
 
 _log = logging.getLogger(__name__)
 

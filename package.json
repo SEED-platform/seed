@@ -1,7 +1,7 @@
 {
   "name": "seed",
   "version": "2.14.0",
-  "description": "Standard Energy Efficiency Data (SEED) Platform™",
+  "description": "Standard Energy Efficiency Data (SEED) Platform\u2122",
   "license": "SEE LICENSE IN LICENSE",
   "directories": {
     "doc": "docs"

@@ -1,12 +1,9 @@
 from lxml import etree
 from lxml.builder import ElementMaker
-
+from quantityfield.units import ureg
 from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.models import Meter
-
-from quantityfield.units import ureg
-
 
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
 # to link it to SEED's AnalysisPropertyViews

@@ -5,33 +5,22 @@
 :author
 """
 from collections import defaultdict
+from io import BytesIO
 
 import dateutil
 from django.http import HttpResponse
-from io import BytesIO
 from past.builtins import basestring
 from rest_framework import status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
-from seed.decorators import (
-    DecoratorMixin,
-)
-from seed.lib.superperms.orgs.models import (
-    Organization
-)
-from seed.models import (
-    Cycle,
-    PropertyView
-)
-from seed.serializers.pint import (
-    apply_display_unit_preferences,
-)
+from seed.decorators import DecoratorMixin
+from seed.lib.superperms.orgs.models import Organization
+from seed.models import Cycle, PropertyView
+from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import drf_api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
-
 from xlsxwriter import Workbook
 
 

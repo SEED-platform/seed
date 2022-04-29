@@ -5,62 +5,56 @@
 :author
 """
 import ast
-import os
 import json
+import os
+import pathlib
 import unittest
+from datetime import datetime
 from unittest import skip
 
 from config.settings.common import TIME_ZONE
-
-from datetime import datetime
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test.client import MULTIPART_CONTENT, encode_multipart, BOUNDARY
+from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
-from django.utils.timezone import (
-    get_current_timezone,
-    make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-)
-
+from django.utils.timezone import \
+    make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
+from django.utils.timezone import get_current_timezone
 from pytz import timezone
-import pathlib
-
-from seed.landing.models import SEEDUser as User
-from seed.data_importer.models import (
-    ImportFile,
-    ImportRecord,
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import (
+    geocode_and_match_buildings_task,
+    save_raw_data
 )
-from seed.data_importer.tasks import geocode_and_match_buildings_task, save_raw_data
+from seed.landing.models import SEEDUser as User
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
-
 from seed.models import (
     DATA_STATE_MAPPING,
+    BuildingFile,
+    Column,
+    ColumnMappingProfile,
     Meter,
     MeterReading,
     Note,
+    Organization,
     Property,
     PropertyState,
     PropertyView,
-    TaxLotView,
-    TaxLotProperty,
-    Column,
-    BuildingFile,
     Scenario,
-    ColumnMappingProfile,
-    Organization,
+    TaxLotProperty,
+    TaxLotView
 )
 from seed.models.sensors import DataLogger, Sensor, SensorReading
 from seed.test_helpers.fake import (
-    FakeCycleFactory,
     FakeColumnFactory,
+    FakeColumnListProfileFactory,
+    FakeCycleFactory,
+    FakeNoteFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
-    FakeNoteFactory,
+    FakePropertyViewFactory,
     FakeStatusLabelFactory,
     FakeTaxLotFactory,
-    FakeTaxLotStateFactory,
-    FakePropertyViewFactory,
-    FakeColumnListProfileFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization

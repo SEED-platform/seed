@@ -3,22 +3,17 @@
 
 import ast
 
-from django.urls import reverse
-
 from django.test import TestCase
-
+from django.urls import reverse
 from seed.landing.models import SEEDUser as User
-
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
     FakePropertyViewFactory,
+    FakeTaxLotStateFactory,
     FakeTaxLotViewFactory
 )
-
 from seed.utils.geocode import bounding_box_wkt
 from seed.utils.organizations import create_organization
 from seed.utils.ubid import centroid_wkt

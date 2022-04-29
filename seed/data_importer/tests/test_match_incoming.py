@@ -4,24 +4,23 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-from datetime import datetime
 import json
 import os.path as osp
+from datetime import datetime
 
+import pytz
+from config.settings.common import BASE_DIR
 from django.core.files.uploadedfile import SimpleUploadedFile
 from mock import patch
-import pytz
-
-from config.settings.common import BASE_DIR
+from seed.data_importer.match import filter_duplicate_states, save_state_match
 from seed.data_importer.models import ImportFile
-
-from seed.data_importer.tasks import geocode_and_match_buildings_task, map_data, save_raw_data
-from seed.data_importer.match import (
-    filter_duplicate_states,
-    save_state_match,
+from seed.data_importer.tasks import (
+    geocode_and_match_buildings_task,
+    map_data,
+    save_raw_data
 )
-from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
     ASSESSED_RAW,
     DATA_STATE_DELETE,
@@ -43,11 +42,11 @@ from seed.models import (
     TaxLot,
     TaxLotAuditLog,
     TaxLotState,
-    TaxLotView,
+    TaxLotView
 )
 from seed.test_helpers.fake import (
     FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 

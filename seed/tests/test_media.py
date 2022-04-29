@@ -4,20 +4,23 @@ import tempfile
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.test import TestCase
-
-from seed.test_helpers.fake import FakePropertyStateFactory, FakeAnalysisFactory, FakeAnalysisPropertyViewFactory
-from seed.views.v3.media import check_file_permission, ModelForFileNotFound
-from seed.views.v3.uploads import get_upload_path
+from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import OrganizationUser
-from seed.data_importer.models import ImportRecord
 from seed.models import (
-    Organization,
+    AnalysisInputFile,
+    AnalysisOutputFile,
     BuildingFile,
     ImportFile,
-    AnalysisInputFile,
-    AnalysisOutputFile
+    Organization
 )
+from seed.test_helpers.fake import (
+    FakeAnalysisFactory,
+    FakeAnalysisPropertyViewFactory,
+    FakePropertyStateFactory
+)
+from seed.views.v3.media import ModelForFileNotFound, check_file_permission
+from seed.views.v3.uploads import get_upload_path
 
 
 class TestMeasures(TestCase):

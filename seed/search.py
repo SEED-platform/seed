@@ -9,31 +9,30 @@ Search methods pertaining to buildings.
 """
 from __future__ import annotations
 
-from datetime import datetime
 import json
 import logging
 import operator
-from typing import Any, Callable, Union
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-
 from functools import reduce
+from typing import Any, Callable, Union
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, Replace, NullIf
-from django.http.request import RawPostDataException, QueryDict
+from django.db.models.functions import Cast, NullIf, Replace
+from django.http.request import QueryDict, RawPostDataException
 from past.builtins import basestring
-
 from seed.lib.superperms.orgs.models import Organization
+
 from .models import (
+    Column,
     Property,
     PropertyState,
     PropertyView,
     TaxLot,
     TaxLotState,
-    TaxLotView,
-    Column,
+    TaxLotView
 )
 
 _log = logging.getLogger(__name__)

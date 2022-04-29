@@ -16,17 +16,16 @@ import pytz
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 from django.utils.timezone import make_aware
-from django_filters import BaseInFilter, NumberFilter, CharFilter, DateFilter
+from django_filters import BaseInFilter, CharFilter, DateFilter, NumberFilter
 from django_filters.rest_framework import FilterSet
-
 from seed.models import (
     Cycle,
     GreenAssessment,
     GreenAssessmentProperty,
     PropertyState,
-    PropertyView,
-    StatusLabel as Label
+    PropertyView
 )
+from seed.models import StatusLabel as Label
 
 # Oops! we override a builtin in some of the models
 property_decorator = property

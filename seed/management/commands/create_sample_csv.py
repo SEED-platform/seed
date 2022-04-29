@@ -7,10 +7,9 @@ from __future__ import unicode_literals
 
 import csv
 import random
-
 from math import floor
-from django.core.management.base import BaseCommand
 
+from django.core.management.base import BaseCommand
 from seed.test_helpers.fake import BaseFake
 
 

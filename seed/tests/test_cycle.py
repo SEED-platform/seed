@@ -8,7 +8,6 @@
 from datetime import date
 
 from django.test import TestCase
-
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle
 

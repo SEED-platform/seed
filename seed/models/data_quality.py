@@ -13,25 +13,22 @@ from random import randint
 
 import pytz
 from django.apps import apps
-from django.db import models, IntegrityError
+from django.db import IntegrityError, models
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
 from pint.errors import DimensionalityError
 from quantityfield.units import ureg
-
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     Column,
     DerivedColumn,
-    StatusLabel,
     PropertyView,
-    TaxLotView
+    StatusLabel,
+    TaxLotView,
+    obj_to_dict
 )
-from seed.models import obj_to_dict
 from seed.serializers.pint import pretty_units
-from seed.utils.cache import (
-    set_cache_raw, get_cache_raw
-)
+from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.time import convert_datestr
 
 _log = logging.getLogger(__name__)

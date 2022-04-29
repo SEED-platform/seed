@@ -6,7 +6,6 @@
 """
 from django.test import TestCase
 from django.urls import reverse
-
 from seed.landing.models import SEEDUser as User
 
 

@@ -6,21 +6,21 @@
 """
 from copy import deepcopy
 
-from django.http import JsonResponse
 import django.core.exceptions
-
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-
+from django.http import JsonResponse
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema, no_body
-
+from drf_yasg.utils import no_body, swagger_auto_schema
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import DerivedColumn, TaxLotView, PropertyView
+from seed.models import DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
-from seed.utils.api import api_endpoint_class, OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param, AutoSchemaHelper
+from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
 
 
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):

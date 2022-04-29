@@ -1,19 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
-from calendar import (
-    month_name,
-)
-
+from calendar import month_name
 from collections import defaultdict
 
 from config.settings.common import TIME_ZONE
-
-from django.db.models.functions import TruncMonth, TruncYear
 from django.db.models import Avg
-
+from django.db.models.functions import TruncMonth, TruncYear
 from pytz import timezone
-
 from seed.models import Sensor
 
 

@@ -5,7 +5,6 @@
 :author
 """
 from rest_framework import serializers
-
 from seed.models import StatusLabel as Label
 
 

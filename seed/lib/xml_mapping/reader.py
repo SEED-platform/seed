@@ -5,9 +5,9 @@
 :author
 """
 
-from io import BytesIO
 import os
 import zipfile
+from io import BytesIO
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map

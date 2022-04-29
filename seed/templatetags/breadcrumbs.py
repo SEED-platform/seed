@@ -13,8 +13,7 @@ https://bitbucket.org/Mathiasdm/django-simple-breadcrumbs/
 import logging
 
 from django import template
-from django.template import Node, Variable
-from django.template import VariableDoesNotExist
+from django.template import Node, Variable, VariableDoesNotExist
 from django.template.defaulttags import url
 from django.utils.translation import gettext as _
 

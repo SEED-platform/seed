@@ -9,20 +9,17 @@ All rights reserved.  # NOQA
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
-
 from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
-    ColumnListProfile,
-    Organization,
-    Column,
     VIEW_LIST,
     VIEW_LIST_INVENTORY_TYPE,
     VIEW_LIST_PROPERTY,
     VIEW_LOCATION_TYPES,
+    Column,
+    ColumnListProfile,
+    Organization
 )
-from seed.serializers.column_list_profiles import (
-    ColumnListProfileSerializer,
-)
+from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.utils.api import OrgValidateMixin
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 

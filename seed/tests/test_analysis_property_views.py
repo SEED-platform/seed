@@ -6,13 +6,12 @@
 """
 from django.test import TestCase
 from quantityfield.units import ureg
-
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisPropertyView, Analysis
+from seed.models import Analysis, AnalysisPropertyView
 from seed.test_helpers.fake import (
-    FakeCycleFactory,
-    FakePropertyViewFactory,
     FakeAnalysisFactory,
+    FakeCycleFactory,
+    FakePropertyViewFactory
 )
 from seed.utils.organizations import create_organization
 

@@ -4,8 +4,12 @@
 """
 from __future__ import absolute_import
 
-from config.settings.common import *  # noqa
+# use importlib module to find the local_untracked file rather than a hard-coded path
+import importlib
+import os
+
 from celery.utils import LOG_LEVELS
+from config.settings.common import INSTALLED_APPS  # noqa
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -75,8 +79,6 @@ LOGGING = {
     },
 }
 
-# use importlib module to find the local_untracked file rather than a hard-coded path
-import importlib
 
 local_untracked_spec = importlib.util.find_spec('config.settings.local_untracked')
 if local_untracked_spec is None:

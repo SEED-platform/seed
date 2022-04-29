@@ -7,7 +7,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
-
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict

@@ -9,10 +9,9 @@ import logging
 import os
 import re
 from collections import OrderedDict
-from os.path import realpath, join, dirname
+from os.path import dirname, join, realpath
 
 from past.builtins import basestring
-
 from unidecode import unidecode
 
 LINEAR_UNITS = set(['ft', 'm', 'in'])

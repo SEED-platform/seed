@@ -8,15 +8,13 @@ from datetime import datetime
 
 from django.urls import reverse
 from django.utils import timezone
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    PropertyView,
-    StatusLabel,
-)
+from seed.models import PropertyView, StatusLabel
 from seed.test_helpers.fake import (
-    FakeCycleFactory, FakeColumnFactory,
-    FakePropertyFactory, FakePropertyStateFactory,
+    FakeColumnFactory,
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
 from seed.tests.util import DeleteModelsTestCase

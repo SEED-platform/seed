@@ -8,15 +8,7 @@ from collections import namedtuple
 
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-
-from seed.models import (
-    Analysis,
-    Cycle,
-    Property,
-    PropertyState,
-    PropertyView
-)
-
+from seed.models import Analysis, Cycle, Property, PropertyState, PropertyView
 
 BatchCreateError = namedtuple('BatchCreateError', ['property_view_id', 'message'])
 

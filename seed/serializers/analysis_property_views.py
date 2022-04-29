@@ -5,7 +5,6 @@
 :author
 """
 from rest_framework import serializers
-
 from seed.models import AnalysisPropertyView
 from seed.serializers.analysis_output_files import AnalysisOutputFileSerializer
 from seed.serializers.properties import PropertyStateSerializer

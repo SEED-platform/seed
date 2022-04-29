@@ -5,9 +5,7 @@
 :author
 """
 from django.contrib.postgres.aggregates.general import ArrayAgg
-
 from django.db.models.aggregates import Count
-
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.models import (
     ASSESSED_RAW,
@@ -15,12 +13,12 @@ from seed.models import (
     PropertyState,
     PropertyView,
     TaxLotState,
-    TaxLotView,
+    TaxLotView
 )
 from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
     FakeCycleFactory,
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
 )
 from seed.tests.util import DataMappingBaseTestCase
 

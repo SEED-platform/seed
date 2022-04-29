@@ -7,15 +7,13 @@
 import json
 
 from django.urls import reverse, reverse_lazy
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Column,
-    PropertyState,
-    TaxLotState,
-    DATA_STATE_MATCHING,
-
+from seed.models import DATA_STATE_MATCHING, Column, PropertyState, TaxLotState
+from seed.test_helpers.fake import (
+    FakePropertyStateFactory,
+    FakeTaxLotStateFactory
 )
+from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -25,12 +23,6 @@ DEFAULT_CUSTOM_COLUMNS = [
     'city',
     'state_province',
 ]
-from seed.test_helpers.fake import (
-    FakePropertyStateFactory,
-    FakeTaxLotStateFactory,
-)
-
-from seed.tests.util import DeleteModelsTestCase
 
 
 class DefaultColumnsViewTests(DeleteModelsTestCase):
