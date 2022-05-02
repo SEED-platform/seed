@@ -26,7 +26,6 @@ angular.module('BE.seed.controller.sensors_upload_modal', [])
       data_logger,
       datasets
     ) {
-      console.log(data_logger)
       $scope.step = {
         number: 1
       };
