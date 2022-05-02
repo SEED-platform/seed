@@ -227,6 +227,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             self.properties.append(p.id)
 
         property_views = PropertyView.objects.filter(id__in=ids)
+        breakpoint()
         updated_initial = list(map(lambda pv: pv.property.updated, property_views))
 
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
@@ -234,6 +235,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         for i, p in enumerate(Property.objects.filter(id__in=ids)):
             self.assertGreater(p.updated, updated_initial[i])
+
+        
 
     def tearDown(self):
         for x in self.properties:
