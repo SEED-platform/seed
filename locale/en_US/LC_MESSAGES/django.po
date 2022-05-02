@@ -294,6 +294,9 @@ msgstr "Change the display name (that appears throughout the program) of a colum
 msgid "COL_CHANGE_NAME"
 msgstr "Specifies the underlying field name represented by the Display Name. These field names are not user defined, but are generated from imported user files as well as program-defined fields."
 
+msgid "COL_CHANGE_DESCRIPTION"
+msgstr "Provides a description of the column to assist in remembering the meaning of the column. This defaults to the display name if available, otherwise the column name is utilized."
+
 msgid "COL_CHANGE_NAME_EXT"
 msgstr "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section."
 

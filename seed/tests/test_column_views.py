@@ -135,6 +135,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'table_name': 'PropertyState',
             'column_name': 'pm_property_id',
             'display_name': 'PM Property ID',
+            'column_description': 'PM Property ID',
             'is_extra_data': False,
             'merge_protection': 'Favor New',
             'data_type': 'string',

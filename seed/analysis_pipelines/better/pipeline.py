@@ -455,6 +455,7 @@ def _process_results(self, analysis_id):
             is_extra_data=True,
             column_name=column_data_path.column_name,
             display_name=column_data_path.column_display_name,
+            column_description=column_data_path.column_description,
             organization=analysis.organization,
             table_name='PropertyState',
         )

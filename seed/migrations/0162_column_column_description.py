@@ -10,12 +10,12 @@ def forwards(apps, schema_editor):
     for org in Organization.objects.all():
         columns = Column.objects.filter(organization_id=org.id)
 
-            for col in columns:
-                if col.display_name is None or col.display_name == "":
-                    col.column_description = col.column_name
-                else:
-                    col.column_description = col.display_name
-                col.save()
+        for col in columns:
+            if col.display_name is None or col.display_name == "":
+                col.column_description = col.column_name
+            else:
+                col.column_description = col.display_name
+            col.save()
 
 class Migration(migrations.Migration):
 

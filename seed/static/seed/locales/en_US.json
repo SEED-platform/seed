@@ -91,6 +91,7 @@
     "COLUMN_NAME_EXISTS_WARNING": "Warning: Column name already exists.",
     "COL_CHANGE_DISPLAY": "Change the display name (that appears throughout the program) of a column. This is user-defined and can be any value (?)",
     "COL_CHANGE_NAME": "Specifies the underlying field name represented by the Display Name. These field names are not user defined, but are generated from imported user files as well as program-defined fields.",
+    "COL_CHANGE_DESCRIPTION": "Provides a description of the column to assist in remembering the meaning of the column. This defaults to the display name if available, otherwise the column name is utilized.",
     "COL_CHANGE_NAME_EXT": "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section.",
     "COL_GEOCODING_TOGGLE": "Check the appropriate fields, as well as their order for the program to concatenate a full address, which SEED will use to generate latitude and longitude values for each record",
     "COL_GEOCODING_TOGGLE_EXT": "Note, geocoding requires at least 1 column is used and populated to construct full addresses.",

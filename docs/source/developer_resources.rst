@@ -97,11 +97,13 @@ fields. Follow the steps below to add new fields to the SEED database:
                     'column_name': 'geocoding_confidence',
                     'table_name': 'PropertyState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }, {
                     'column_name': 'geocoding_confidence',
                     'table_name': 'TaxLotState',
                     'display_name': 'Geocoding Confidence',
+                    'column_description': 'Geocoding Confidence',
                     'data_type': 'number',
                 }
             ]

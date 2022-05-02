@@ -1312,6 +1312,14 @@ class Column(models.Model):
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
 
+            # If no column_description, use the column name (this is the display name as it was typed
+            # during mapping) or display name
+            if not new_c['column_description']:
+                if not new_c['display_name']:
+                    new_c['column_description'] = new_c['column_name']
+                else:
+                    new_c['column_description'] = new_c['display_name']   
+
             columns.append(new_c)
 
         # Sort by display name
@@ -1361,6 +1369,14 @@ class Column(models.Model):
             # during mapping)
             if not new_c['display_name']:
                 new_c['display_name'] = new_c['column_name']
+
+            # If no column_description, use the column name (this is the display name as it was typed
+            # during mapping) or display name
+            if not new_c['column_description']:
+                if not new_c['display_name']:
+                    new_c['column_description'] = new_c['column_name']
+                else:
+                    new_c['column_description'] = new_c['display_name']   
 
             # Related fields
             new_c['related'] = False
