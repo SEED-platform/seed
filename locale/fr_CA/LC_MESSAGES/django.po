@@ -290,6 +290,9 @@ msgstr "Erreur: Le nom de la nouvelle colonne ne peut pas correspondre au nom pr
 msgid "COLUMN_NAME_EXISTS_WARNING"
 msgstr "Attention: le nom de la colonne existe déjà."
 
+msgid "COL_CHANGE_DESCRIPTION"
+msgstr "Fournit une description de la colonne pour aider à se souvenir de la signification de la colonne. Il s'agit par défaut du nom d'affichage s'il est disponible, sinon le nom de la colonne est utilisé."
+
 #, fuzzy
 msgid "COL_CHANGE_DISPLAY"
 msgstr "Changer le nom d'affichage d'une colonne"
