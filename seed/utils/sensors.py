@@ -25,6 +25,7 @@ class PropertySensorReadingsExporter():
     Monthly and yearly aggregations are done here, and organization display
     settings are considered/used when returning actual reading magnitudes.
     """
+
     def __init__(self, property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings):
         self._cache_factors = None
         self._cache_org_country = None

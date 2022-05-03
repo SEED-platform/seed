@@ -7,16 +7,17 @@ def forwards(apps, schema_editor):
     Column = apps.get_model("seed", "Column")
     Organization = apps.get_model("orgs", "Organization")
 
-        # Go through all the organizations
+    # Go through all the organizations
     for org in Organization.objects.all():
         columns = Column.objects.filter(organization_id=org.id)
-        
+
         for col in columns:
             if col.display_name is None or col.display_name == "":
                 col.new_column = col.column_name
             else:
                 col.new_column = col.display_name
             col.save()
+
 
 class Migration(migrations.Migration):
 
