@@ -1066,7 +1066,7 @@ angular.module('BE.seed.controller.inventory_list', [])
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
                 if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
                 return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
+              }), 'id');
             },
             inventory_type: _.constant($scope.inventory_type),
           }

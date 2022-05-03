@@ -1155,19 +1155,20 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
     inventory_service.refresh_metadata = function (ids, inventory_type, progress_key) {
       return $http.post(`/api/v3/tax_lot_properties/refresh_metadata/`, {
-          params: {
-            ids: ids,
-            inventory_type: inventory_type,
-            progress_key: progress_key,
-          }
-        })
-    }
+        ids: ids,
+        inventory_type: inventory_type,
+        progress_key: progress_key,
+        organization_id: user_service.get_organization().id
+      });
+    };
 
     inventory_service.start_refresh_metadata = function() {
       return $http.get('/api/v3/tax_lot_properties/start_refresh_metadata/', {
-        params: {}
-      })
-    }
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      });
+    };
 
     return inventory_service;
 

@@ -51,6 +51,8 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
 from seed.tasks import update_inventory_metadata
 
+import logging
+_log = logging.getLogger(__name__)
 
 INVENTORY_MODELS = {'properties': PropertyView, 'taxlots': TaxLotView}
 
@@ -583,9 +585,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         return unique
 
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['GET'])
     def start_refresh_metadata(self, request):
         """
@@ -594,17 +596,17 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
         return progress_data.result()
 
-    @has_perm_class('can_modify_data')
     @api_endpoint_class
     @ajax_request_class
+    @has_perm_class('can_modify_data')
     @action(detail=False, methods=['POST'])
     def refresh_metadata(self, request):
         """
         Kick off celery task to refresh metadata of selected inventory
         """
-        ids = request.data['params'].get('ids')
-        inventory_type = request.data['params'].get('inventory_type')
-        progress_key = request.data['params'].get('progress_key')
+        ids = request.data.get('ids')
+        inventory_type = request.data.get('inventory_type')
+        progress_key = request.data.get('progress_key')
 
         update_inventory_metadata.subtask([ids, inventory_type, progress_key]).apply_async()
         return
