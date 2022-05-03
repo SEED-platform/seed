@@ -8,6 +8,7 @@ import ast
 import os
 import json
 import unittest
+from unittest import skip
 
 from config.settings.common import TIME_ZONE
 
@@ -1830,22 +1831,22 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(597478.9 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(548603.7 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': 100 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(100 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 100,
                 },
                 {
                     'month': 'May 2016',
-                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Electric - Grid - PM - 5766973-0': round(200 / 3.41, 2),
                     'Natural Gas - PM - 5766973-1': 200,
                 },
             ],
@@ -1943,6 +1944,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
+    @skip('Overlapping data is not valid through ESPM. This test is no longer valid')
     def test_property_meter_usage_can_return_monthly_meter_readings_and_column_defs_of_overlapping_submonthly_data_aggregating_monthly_data_to_maximize_total(self):
         # add initial meters and readings
         save_raw_data(self.import_file.id)
@@ -2059,7 +2061,6 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 },
             ]
         }
-
         self.assertCountEqual(result_dict['readings'], expectation['readings'])
         self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
 
@@ -2117,6 +2118,121 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'column_defs': [
                 {
                     'field': 'year',
+                    '_filter_type': 'datetime',
+                },
+                {
+                    'field': 'Electric - Grid - PM - 5766973-0',
+                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    '_filter_type': 'reading',
+                },
+                {
+                    'field': 'Natural Gas - PM - 5766973-1',
+                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    '_filter_type': 'reading',
+                },
+            ]
+        }
+
+        self.assertCountEqual(result_dict['readings'], expectation['readings'])
+        self.assertCountEqual(result_dict['column_defs'], expectation['column_defs'])
+
+    def test_property_meter_usage_can_filter_when_usages_span_a_single_month(self):
+        save_raw_data(self.import_file.id)
+
+        # add additional entries for the Electricity meter
+        tz_obj = timezone(TIME_ZONE)
+        meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup['Electric - Grid'])
+
+        # 2020 January-February reading has 1 full day in January 1 full day in February.
+        # The reading should be split 1/2 January (50) and 1/2 February (50)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 1, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 2, 2, 0, 0, 0), timezone=tz_obj),
+            'reading': 100 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        # 2020 March to April reading has 1 day in march, and 2 days in april.
+        # The reading should be split 1/3 march (100) and 2/3 april (200)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 3, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 4, 3, 0, 0, 0), timezone=tz_obj),
+            'reading': 300 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        # 2020 May to July shows readings can span multiple months.
+        # The reading should be split 1/32 May (10), 30/32 June (300), 1/32 July (10)
+        reading_details = {
+            'meter_id': meter.id,
+            'start_time': make_aware(datetime(2020, 5, 31, 0, 0, 0), timezone=tz_obj),
+            'end_time': make_aware(datetime(2020, 7, 2, 0, 0, 0), timezone=tz_obj),
+            'reading': 320 * 3.41,
+            'source_unit': 'kBtu (thousand Btu)',
+            'conversion_factor': 1
+        }
+        MeterReading.objects.create(**reading_details)
+
+        url = reverse('api:v3:properties-meter-usage', kwargs={'pk': self.property_view_1.id})
+        url += f'?organization_id={self.org.pk}'
+
+        post_params = json.dumps({
+            'interval': 'Month',
+            'excluded_meter_ids': [],
+        })
+        result = self.client.post(url, post_params, content_type="application/json")
+        result_dict = ast.literal_eval(result.content.decode("utf-8"))
+
+        expectation = {
+            'readings': [
+                {
+                    'Electric - Grid - PM - 5766973-0': 175213.75,
+                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'month': 'January 2016'
+                },
+                {
+                    'Electric - Grid - PM - 5766973-0': 160880.85,
+                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'month': 'February 2016'
+                },
+                {
+                    'month': 'January 2020',
+                    'Electric - Grid - PM - 5766973-0': 50,
+                },
+                {
+                    'month': 'February 2020',
+                    'Electric - Grid - PM - 5766973-0': 50,
+                },
+                {
+                    'month': 'March 2020',
+                    'Electric - Grid - PM - 5766973-0': 100,
+                },
+                {
+                    'month': 'April 2020',
+                    'Electric - Grid - PM - 5766973-0': 200,
+                },
+                {
+                    'month': 'May 2020',
+                    'Electric - Grid - PM - 5766973-0': 10,
+                },
+                {
+                    'month': 'June 2020',
+                    'Electric - Grid - PM - 5766973-0': 300,
+                },
+                {
+                    'month': 'July 2020',
+                    'Electric - Grid - PM - 5766973-0': 10,
+                },
+            ],
+            'column_defs': [
+                {
+                    'field': 'month',
                     '_filter_type': 'datetime',
                 },
                 {
