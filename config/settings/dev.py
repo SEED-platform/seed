@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import absolute_import
@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import importlib
 import os
 
-from config.settings.common import MIDDLEWARE  # noqa
+from config.settings.common import MIDDLEWARE
 
 DEBUG = True
 compress = False

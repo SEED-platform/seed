@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from collections import defaultdict
@@ -36,7 +36,7 @@ class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]
         try:
             start = int(start)
             end = int(end)
-        except ValueError as error:  # noqa
+        except ValueError:
             # assume string is JS date
             if isinstance(start, basestring):
                 start_datetime = dateutil.parser.parse(start)

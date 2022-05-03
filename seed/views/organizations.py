@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import logging
@@ -680,7 +680,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             warn_bad_pint_spec('area', desired_display_units_area)
 
         desired_display_decimal_places = posted_org.get('display_decimal_places')
-        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:  # noqa
+        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:
             org.display_decimal_places = desired_display_decimal_places
         elif desired_display_decimal_places is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(

@@ -1,5 +1,5 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 
 File contains settings needed to run SEED with docker
@@ -12,7 +12,8 @@ import os
 import sys
 
 from celery.utils import LOG_LEVELS
-from config.settings.common import INSTALLED_APPS, Exchange, Queue  # noqa
+from config.settings.common import INSTALLED_APPS
+from kombu import Exchange, Queue
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = '/media/'

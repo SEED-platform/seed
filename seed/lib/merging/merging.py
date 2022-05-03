@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author Dan Gunter <dkgunter@lbl.gov>
 """
 import logging
@@ -186,7 +186,6 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     default = state2
     state2_present_columns = None
     if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
-        null = None  # noqa
         state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns
