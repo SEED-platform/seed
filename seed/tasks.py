@@ -421,9 +421,9 @@ def update_inventory_metadata(ids, inventory_type, progress_key):
     batch_size = math.ceil(id_count / 100)
 
     if inventory_type == 'properties':
-        inventory = PropertyView.objects.filter(id__in=ids)
+        inventory = Property.objects.filter(id__in=ids)
     else:
-        inventory = TaxLotView.objects.filter(id__in=ids)
+        inventory = TaxLot.objects.filter(id__in=ids)
 
     for idx, inv in enumerate(inventory):
         inv.updated = now
