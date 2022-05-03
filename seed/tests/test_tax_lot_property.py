@@ -8,6 +8,7 @@ import json
 
 from django.urls import reverse_lazy
 from random import randint
+import time
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -228,6 +229,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         property_views = PropertyView.objects.filter(id__in=ids)
         updated_initial = list(map(lambda pv: pv.property.updated, property_views))
+        time.sleep(1)
 
         progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
         update_inventory_metadata(ids, 'properties', progress_data.key)
