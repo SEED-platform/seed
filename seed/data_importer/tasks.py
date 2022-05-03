@@ -6,6 +6,7 @@
 """
 
 from __future__ import absolute_import
+from bisect import bisect_left
 
 import collections
 import copy
@@ -21,6 +22,7 @@ from itertools import chain
 from math import ceil
 import zipfile
 import tempfile
+from dateutil import parser
 
 from celery import chord, shared_task, group
 from celery import chain as celery_chain
@@ -919,13 +921,17 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
     else:
         try:
             with transaction.atomic():
-                reading_strings = [
-                    f"({sensor.id}, '{timestamp}', '{value}')"
-                    for timestamp, value
-                    in readings_tuples
-                ]
+                is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
+                [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
+                occupied_timestamps = [datetime.fromisoformat(t) for t in occupied_timestamps]
+
+                reading_strings = []
+                for timestamp, value in readings_tuples:
+                    is_occupied = is_occupied_arr[bisect_left(occupied_timestamps, parser.parse(timestamp)) - 1]
+                    reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
+
                 sql = (
-                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading)' +
+                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)' +
                     ' VALUES ' + ', '.join(reading_strings) +
                     ' ON CONFLICT (sensor_id, timestamp)' +
                     ' DO UPDATE SET reading = EXCLUDED.reading' +

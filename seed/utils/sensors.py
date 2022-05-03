@@ -26,12 +26,13 @@ class PropertySensorReadingsExporter():
     settings are considered/used when returning actual reading magnitudes.
     """
 
-    def __init__(self, property_id, org_id, excluded_sensor_ids):
+    def __init__(self, property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings):
         self._cache_factors = None
         self._cache_org_country = None
 
         self.sensors = Sensor.objects.select_related('data_logger').filter(data_logger__property_id=property_id).exclude(pk__in=excluded_sensor_ids)
         self.org_id = org_id
+        self.showOnlyOccupiedReadings = showOnlyOccupiedReadings
         self.tz = timezone(TIME_ZONE)
 
     def readings_and_column_defs(self, interval):
@@ -64,7 +65,11 @@ class PropertySensorReadingsExporter():
         for sensor in self.sensors:
             field_name = self._build_column_def(sensor, column_defs)
 
-            for sensor_reading in sensor.sensor_readings.all():
+            sensor_readings = sensor.sensor_readings
+            if self.showOnlyOccupiedReadings:
+                sensor_readings = sensor_readings.filter(is_occupied=True)
+
+            for sensor_reading in sensor_readings.all():
                 timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
                 times_key = str(timestamp)
 
@@ -95,8 +100,12 @@ class PropertySensorReadingsExporter():
         for sensor in self.sensors:
             field_name = self._build_column_def(sensor, column_defs)
 
+            sensor_readings = sensor.sensor_readings
+            if self.showOnlyOccupiedReadings:
+                sensor_readings = sensor_readings.filter(is_occupied=True)
+
             # group by month and avg readings
-            readings_avg_by_month = sensor.sensor_readings \
+            readings_avg_by_month = sensor_readings \
                 .annotate(month=TruncMonth('timestamp')) \
                 .values('month').order_by('month') \
                 .annotate(avg=Avg('reading')) \
@@ -132,7 +141,11 @@ class PropertySensorReadingsExporter():
         for sensor in self.sensors:
             field_name = self._build_column_def(sensor, column_defs)
 
-            readings_avg_by_year = sensor.sensor_readings \
+            sensor_readings = sensor.sensor_readings
+            if self.showOnlyOccupiedReadings:
+                sensor_readings = sensor_readings.filter(is_occupied=True)
+
+            readings_avg_by_year = sensor_readings \
                 .annotate(year=TruncYear('timestamp')) \
                 .values('year').order_by('year') \
                 .annotate(avg=Avg('reading')) \
