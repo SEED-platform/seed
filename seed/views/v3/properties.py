@@ -251,6 +251,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         body = dict(request.data)
         interval = body['interval']
         excluded_sensor_ids = body['excluded_sensor_ids']
+        showOnlyOccupiedReadings = body.get('showOnlyOccupiedReadings', False)
         org_id = self.get_organization(request)
 
         property_view = PropertyView.objects.get(
@@ -259,7 +260,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         )
         property_id = property_view.property.id
 
-        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids)
+        exporter = PropertySensorReadingsExporter(property_id, org_id, excluded_sensor_ids, showOnlyOccupiedReadings)
 
         return exporter.readings_and_column_defs(interval)
 

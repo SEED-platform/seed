@@ -15,6 +15,7 @@ import os
 import tempfile
 import traceback
 import zipfile
+from bisect import bisect_left
 from builtins import str
 from collections import namedtuple
 from datetime import date, datetime
@@ -25,6 +26,7 @@ from _csv import Error
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
+from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
@@ -915,13 +917,17 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
     else:
         try:
             with transaction.atomic():
-                reading_strings = [
-                    f"({sensor.id}, '{timestamp}', '{value}')"
-                    for timestamp, value
-                    in readings_tuples
-                ]
+                is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
+                [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
+                occupied_timestamps = [datetime.fromisoformat(t) for t in occupied_timestamps]
+
+                reading_strings = []
+                for timestamp, value in readings_tuples:
+                    is_occupied = is_occupied_arr[bisect_left(occupied_timestamps, parser.parse(timestamp)) - 1]
+                    reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
+
                 sql = (
-                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading)' +
+                    'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)' +
                     ' VALUES ' + ', '.join(reading_strings) +
                     ' ON CONFLICT (sensor_id, timestamp)' +
                     ' DO UPDATE SET reading = EXCLUDED.reading' +

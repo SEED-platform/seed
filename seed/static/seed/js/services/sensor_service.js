@@ -35,13 +35,14 @@ angular.module('BE.seed.service.sensor', [])
         });
       };
 
-      sensor_factory.property_sensor_usage = function (property_view_id, organization_id, interval, excluded_sensor_ids) {
+      sensor_factory.property_sensor_usage = function (property_view_id, organization_id, interval, showOnlyOccupiedReadings, excluded_sensor_ids) {
         if (_.isUndefined(excluded_sensor_ids)) excluded_sensor_ids = [];
         return $http.post(
           '/api/v3/properties/' + property_view_id + '/sensor_usage/?organization_id=' + organization_id,
           {
             interval: interval,
-            excluded_sensor_ids: excluded_sensor_ids
+            excluded_sensor_ids: excluded_sensor_ids,
+            showOnlyOccupiedReadings: showOnlyOccupiedReadings,
           }
         ).then(function (response) {
           return response.data;
