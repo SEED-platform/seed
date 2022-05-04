@@ -55,6 +55,7 @@ RUN npm install --unsafe-perm
 WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
+RUN git config --system --add safe.directory /seed
 
 EXPOSE 80
 
