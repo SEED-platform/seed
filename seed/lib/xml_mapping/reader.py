@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
+from django.conf import settings
 from io import BytesIO
 import os
 import zipfile
@@ -24,6 +24,7 @@ class BuildingSyncParser(object):
         self._xpath_col_dict = {}
 
         filename = file_.name
+
         _, file_extension = os.path.splitext(filename)
         # grab the data from the zip or xml file
         self.data = []
@@ -57,7 +58,7 @@ class BuildingSyncParser(object):
         property_ = bs.process_property_xpaths(self._xpath_col_dict)
 
         # BuildingSync Asset Extractor (BAE) - automatically extract assets from BuildingSync file
-        bae = BAE(file_name)
+        bae = BAE(data=bsync_file)
         bae.extract()
         assets = bae.get_assets()
 
