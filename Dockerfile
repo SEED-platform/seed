@@ -62,6 +62,7 @@ RUN npm install --unsafe-perm
 WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
+RUN git config --system --add safe.directory /seed
 
 # nginx configuration - replace the root/default nginx config file
 COPY /docker/nginx-seed.conf /etc/nginx/nginx.conf
