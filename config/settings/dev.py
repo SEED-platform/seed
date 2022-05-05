@@ -8,7 +8,7 @@ from __future__ import absolute_import
 import importlib
 import os
 
-from config.settings.common import MIDDLEWARE
+from config.settings.common import *  # noqa
 
 DEBUG = True
 compress = False
@@ -33,7 +33,7 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE
+MIDDLEWARE = ('seed.utils.nocache.DisableClientSideCachingMiddleware',) + MIDDLEWARE # noqa F405
 
 LOGGING = {
     'version': 1,

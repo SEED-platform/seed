@@ -9,7 +9,7 @@ import importlib
 import os
 
 from celery.utils import LOG_LEVELS
-from config.settings.common import INSTALLED_APPS
+from config.settings.common import *  # noqa
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
@@ -38,7 +38,7 @@ CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
 
 # Testing
-INSTALLED_APPS += (
+INSTALLED_APPS += ( # noqa F405
     "django_nose",
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'

@@ -12,7 +12,7 @@ import os
 import sys
 
 from celery.utils import LOG_LEVELS
-from config.settings.common import INSTALLED_APPS
+from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
@@ -47,16 +47,16 @@ BETTER_HOST = os.environ.get('BETTER_HOST', 'https://better-lbnl-development.her
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': POSTGRES_DB,  # noqa: F821
-        'USER': POSTGRES_USER,  # noqa: F821
-        'PASSWORD': POSTGRES_PASSWORD,  # noqa: F821
-        'HOST': "db-postgres",  # noqa: F821
-        'PORT': POSTGRES_PORT,  # noqa: F821
+        'NAME': POSTGRES_DB, # noqa F405
+        'USER': POSTGRES_USER, # noqa F405
+        'PASSWORD': POSTGRES_PASSWORD, # noqa F405
+        'HOST': "db-postgres",
+        'PORT': POSTGRES_PORT, # noqa F405
     }
 }
 
 if SEED_TESTING:
-    INSTALLED_APPS += (
+    INSTALLED_APPS += (  # noqa F405
         "django_nose",
     )
     TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
