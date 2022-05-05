@@ -460,7 +460,7 @@ class MetersParser(object):
             for header_string in Meter.ENERGY_TYPE_BY_HEADER_STRING.keys():
                 if field.startswith(header_string):
                     provided_reading_types.append(field)
-                    continue;
+                    continue
 
         if not provided_reading_types:
             return []
