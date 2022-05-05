@@ -147,7 +147,7 @@ class PropertyMeterReadingsExporter():
                     range_seconds = round((range[1] - range[0]).total_seconds())
                     month_key = range[1].strftime('%B %Y')
                     reading = usage['reading'] / total_seconds * range_seconds / conversion_factor
-                    if reading:
+                    if reading is not None:
                         monthly_readings[month_key] = monthly_readings.get(month_key, {'month': month_key})
                         monthly_readings[month_key][field_name] = round(monthly_readings[month_key].get(field_name, 0) + reading, 2)
 
