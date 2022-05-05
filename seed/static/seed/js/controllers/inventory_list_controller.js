@@ -1060,13 +1060,15 @@ angular.module('BE.seed.controller.inventory_list', [])
         $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/refresh_metadata_modal.html',
           controller: 'refresh_metadata_modal_controller',
+          backdrop: 'static',
           resolve: {
             ids: function () {
               return _.map(_.filter($scope.gridApi.selection.getSelectedRows(), function (row) {
                 if ($scope.inventory_type === 'properties') return row.$$treeLevel == 0;
                 return !_.has(row, '$$treeLevel');
-              }), 'property_view_id');
-            }
+              }), 'id');
+            },
+            inventory_type: _.constant($scope.inventory_type),
           }
         });
       }
