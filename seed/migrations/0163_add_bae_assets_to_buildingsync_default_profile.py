@@ -31,7 +31,7 @@ def recreate_default_bsync_presets(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0161_alter_inventorydocument_file_type'),
+        ('seed', '0162_auto_20220418_2257'),
     ]
 
     operations = [
