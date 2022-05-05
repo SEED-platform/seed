@@ -57,6 +57,10 @@
                             <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="inventory.view_id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
                         </li>
 
+                        <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+                            <a ng-click="open_audit_template_login_modal()">{$:: 'The cooler update with BuildingSync' | translate $}</a>
+                        </li>
+
                         <li ng-if="::inventory_type === 'properties'" role="menuitem">
                             <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
                         </li>
