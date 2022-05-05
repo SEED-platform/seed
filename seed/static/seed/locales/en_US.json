@@ -541,6 +541,7 @@
     "Not Null": "Not Null",
     "Not all inventory items were successfully deleted": "Not all inventory items were successfully deleted",
     "Note:": "Note:",
+    "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\"": "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\"",
     "Note: Parent organization members are not automatically made members of sub-organizations.": "Note: Parent organization members are not automatically made members of sub-organizations.",
     "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit.": "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit.",
     "Notes": "Notes",

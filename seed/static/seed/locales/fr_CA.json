@@ -541,6 +541,7 @@
     "Not Null": "Pas nul",
     "Not all inventory items were successfully deleted": "Tous les éléments de l'inventaire n'ont pas été supprimés",
     "Note:": "Remarque:",
+    "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\"": "Remarque: Les compteurs sont étiquetés au format suivant: \"la catégorie - Source - Source ID\"",
     "Note: Parent organization members are not automatically made members of sub-organizations.": "Remarque: les membres de l'organisation parente ne sont pas automatiquement devenus membres de sous-organisations.",
     "Note: Passwords must be 8 or more characters, and must contain at least 1 uppercase character, 1 lowercase character, and 1 digit.": "Remarque: Les mots de passe doivent comporter 8 caractères ou plus et contenir au moins 1 caractère majuscule, 1 caractère minuscule et 1 chiffre.",
     "Notes": "Remarques",

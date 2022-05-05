@@ -1686,6 +1686,9 @@ msgstr "Tous les éléments de l'inventaire n'ont pas été supprimés"
 msgid "Note:"
 msgstr "Remarque:"
 
+msgid "Note:  Meters are labeled with the following format:  \"Type - Source - Source ID\""
+msgstr "Remarque: Les compteurs sont étiquetés au format suivant: \"la catégorie - Source - Source ID\""
+
 msgid "Note: Parent organization members are not automatically made members of sub-organizations."
 msgstr "Remarque: les membres de l'organisation parente ne sont pas automatiquement devenus membres de sous-organisations."
 

@@ -2357,6 +2357,7 @@ select {
     .grow {
       flex-grow: 1;
     }
+
   }
 
   .tab-content {
@@ -2874,6 +2875,10 @@ gs-input .tags .tag-item .remove-button {
   .grow {
     flex-grow: 1;
     width: 100%;
+  }
+
+  .pull-right {
+    justify-content: end;
   }
 }
 
