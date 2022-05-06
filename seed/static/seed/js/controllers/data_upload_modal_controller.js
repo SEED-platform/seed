@@ -548,6 +548,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
           } else {
             // successfully passed validation, save the data
             save_raw_assessed_data(file_id, cycle_id, false);
+
           }
         };
 
