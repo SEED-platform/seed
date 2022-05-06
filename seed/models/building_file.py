@@ -161,6 +161,7 @@ class BuildingFile(models.Model):
             parser_kwargs = {}
             # TODO: use table_mappings for BuildingSync process method
             data, messages = parser.process(*parser_args, **parser_kwargs)
+
         except ParsingError as e:
             return False, None, None, [str(e)]
 

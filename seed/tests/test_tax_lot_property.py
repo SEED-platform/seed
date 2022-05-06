@@ -7,6 +7,8 @@
 import json
 
 from django.urls import reverse_lazy
+from random import randint
+import time
 
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -15,6 +17,7 @@ from seed.models import (
     TaxLotProperty,
     Column,
     Note,
+    Property,
 )
 from seed.test_helpers.fake import (
     FakePropertyFactory,
@@ -25,6 +28,8 @@ from seed.test_helpers.fake import (
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
 from xlrd import open_workbook
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.tasks import update_inventory_metadata
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):
@@ -214,6 +219,23 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # ids 52 up to and including 102
         self.assertEqual(len(data['features']), 51)
+
+    def test_refresh_metadata(self):
+        ids = []
+        for i in range(50):
+            p = self.property_view_factory.get_property_view()
+            ids.append(p.id)
+            self.properties.append(p.id)
+
+        property_views = PropertyView.objects.filter(id__in=ids)
+        updated_initial = list(map(lambda pv: pv.property.updated, property_views))
+        time.sleep(1)
+
+        progress_data = ProgressData(func_name='refresh_metadata', unique_id=f'metadata{randint(10000,99999)}')
+        update_inventory_metadata(ids, 'properties', progress_data.key)
+
+        for i, p in enumerate(Property.objects.filter(id__in=ids)):
+            self.assertGreater(p.updated, updated_initial[i])
 
     def tearDown(self):
         for x in self.properties:

@@ -106,7 +106,7 @@ class GetDatasetsViewsTests(TestCase):
         import_record.super_organization = self.org
         import_record.save()
         response = self.client.get(reverse('api:v3:datasets-count'),
-                                   {'organization_id': 666})
+                                   {'organization_id': 6666})
         self.assertEqual(403, response.status_code)
         j = response.json()
         self.assertEqual(j['status'], 'error')

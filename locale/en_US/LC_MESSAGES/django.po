@@ -288,6 +288,9 @@ msgstr "Error: New column name cannot match previous name."
 msgid "COLUMN_NAME_EXISTS_WARNING"
 msgstr "Warning: Column name already exists."
 
+msgid "COL_CHANGE_DESCRIPTION"
+msgstr "Provides a description of the column to assist in remembering the meaning of the column. This defaults to the display name if available, otherwise the column name is utilized."
+
 msgid "COL_CHANGE_DISPLAY"
 msgstr "Change the display name (that appears throughout the program) of a column. This is user-defined and can be any value (?)"
 
@@ -2028,6 +2031,9 @@ msgstr "Recognize Empty"
 msgid "Record from Source"
 msgstr "Record from Source"
 
+msgid "Refresh Metadata of Selected Properties and Tax Lots"
+msgstr "Refresh Metadata of Selected Properties and Tax Lots"
+
 #: src/django-tos-master/tos/templates/tos/tos_check.html:18
 msgid "Reject"
 msgstr "Reject"
@@ -3107,6 +3113,9 @@ msgstr "property"
 #: seed/models/models.py:177
 msgid "red"
 msgstr "red"
+
+msgid "refresh metadata"
+msgstr "Refresh Metadata"
 
 msgid "save"
 msgstr "save"
