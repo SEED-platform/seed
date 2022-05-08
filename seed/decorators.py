@@ -176,7 +176,6 @@ def require_organization_id(func):
             int(request.GET['organization_id'])
         except (ValueError, KeyError):
             error = True
-            pass
 
         if error:
             format_type = 'application/json'

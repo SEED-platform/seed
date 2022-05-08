@@ -101,7 +101,6 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
     should instead extend SEEDOrgModelViewset and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
     """
-    pass
 
 
 class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
@@ -111,4 +110,3 @@ class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
     """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
     create, and destroy actions.
     """
-    pass

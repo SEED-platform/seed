@@ -13,7 +13,6 @@ from shapely import geometry, wkt
 
 class MapQuestAPIKeyError(Exception):
     """Your MapQuest API Key is either invalid or at its limit."""
-    pass
 
 
 def long_lat_wkt(state):

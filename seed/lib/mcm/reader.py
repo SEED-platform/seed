@@ -63,7 +63,6 @@ def clean_fieldnames(fieldnames):
 
 class SheetDoesNotExist(Exception):
     """Exception when parsing an Excel workbook and the specified sheet does not exist"""
-    pass
 
 
 class GreenButtonParser(object):
