@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import collections
 
 from celery.utils.log import get_task_logger
+
 from seed.models import PropertyState, TaxLotState
 
 _log = get_task_logger(__name__)

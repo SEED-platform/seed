@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.core.exceptions import ValidationError
 from past.builtins import basestring
 from rest_framework import serializers
+
 from seed.models import (
     GreenAssessment,
     GreenAssessmentProperty,

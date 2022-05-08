@@ -10,8 +10,9 @@ import itertools
 import logging
 from random import randint
 
-import seed.models
 from django.core.management.base import BaseCommand
+
+import seed.models
 from seed.lib.superperms.orgs.models import Organization
 from seed.test_helpers.fake import (
     BaseFake,

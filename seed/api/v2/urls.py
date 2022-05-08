@@ -6,6 +6,7 @@
 """
 from django.conf.urls import include, re_path
 from rest_framework import routers
+
 from seed.api.base.views import TestReverseViewSet, test_view_with_arg
 from seed.api.v2.views import ProgressViewSetV2
 from seed.data_importer.views import (

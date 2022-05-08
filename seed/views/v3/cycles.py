@@ -10,6 +10,7 @@ All rights reserved.
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
+
 from seed import tasks
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import Cycle, PropertyView, TaxLotView

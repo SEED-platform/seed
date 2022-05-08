@@ -1,6 +1,7 @@
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
+
 from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.models import Meter

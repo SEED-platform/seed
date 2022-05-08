@@ -24,6 +24,7 @@ from django.dispatch import receiver
 from django.forms.models import model_to_dict
 from past.builtins import basestring
 from quantityfield.fields import QuantityField
+
 from seed.data_importer.models import ImportFile
 # from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
@@ -603,12 +604,11 @@ class PropertyState(models.Model):
         :param state1: *State
         :param state2: *State - given priority over state1
         """
-        from seed.models.simulations import Simulation
         from seed.models.property_measures import PropertyMeasure
         from seed.models.scenarios import Scenario
+        from seed.models.simulations import Simulation
 
         # TODO: get some items off of this property view - labels and eventually notes
-
         # collect the relationships
         no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
         building_files = [x for x in state2.building_files.all()]

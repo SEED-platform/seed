@@ -14,6 +14,7 @@ from unittest import skip, skipIf
 import requests
 from django.test import TestCase
 from django.urls import reverse_lazy
+
 from seed.landing.models import SEEDUser as User
 from seed.utils.organizations import create_organization
 from seed.views.portfoliomanager import PortfolioManagerImport

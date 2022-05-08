@@ -15,13 +15,14 @@ from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from xlsxwriter import Workbook
+
 from seed.decorators import DecoratorMixin
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle, PropertyView
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import drf_api_endpoint
 from seed.utils.generic import median, round_down_hundred_thousand
-from xlsxwriter import Workbook
 
 
 class Report(DecoratorMixin(drf_api_endpoint), ViewSet):  # type: ignore[misc]

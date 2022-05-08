@@ -27,6 +27,8 @@ from past.builtins import basestring
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from xlsxwriter import Workbook
+
 from seed import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
@@ -76,7 +78,6 @@ from seed.utils.organizations import (
     create_suborganization
 )
 from seed.utils.properties import pair_unpair_property_taxlot
-from xlsxwriter import Workbook
 
 _log = logging.getLogger(__name__)
 

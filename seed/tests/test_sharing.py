@@ -7,6 +7,7 @@ Tests related to sharing of data between users, orgs, suborgs, etc.
 """
 
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,

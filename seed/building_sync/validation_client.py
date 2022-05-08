@@ -8,6 +8,7 @@ import pathlib
 import zipfile
 
 import requests
+
 from seed.building_sync.building_sync import BuildingSync
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"

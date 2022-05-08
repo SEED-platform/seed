@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import os
 
 from django.core.management.base import BaseCommand
+
 from seed.data_importer.models import ImportFile
 
 

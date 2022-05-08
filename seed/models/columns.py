@@ -18,6 +18,7 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.utils.translation import gettext_lazy as _
+
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
@@ -601,15 +602,15 @@ class Column(models.Model):
         :param force: boolean force the overwrite of data in the column?
         :return:
         """
-        from datetime import (
-            datetime as datetime_type,
-            date as date_type,
-        )
+        from datetime import date as date_type
+        from datetime import datetime as datetime_type
+
         from django.db.utils import DataError
         from pint.errors import DimensionalityError
-        from seed.models.properties import PropertyState
-        from seed.models.tax_lots import TaxLotState, DATA_STATE_MATCHING
         from quantityfield.units import ureg
+
+        from seed.models.properties import PropertyState
+        from seed.models.tax_lots import DATA_STATE_MATCHING, TaxLotState
         STR_TO_CLASS = {'TaxLotState': TaxLotState, 'PropertyState': PropertyState}
 
         def _serialize_for_extra_data(column_value):

@@ -12,6 +12,7 @@ import markdown
 import yaml
 from django.conf import settings
 from django.shortcuts import render
+
 from seed.views.main import _get_default_org
 
 YAML_DOC_BOUNDARY = re.compile(r"^-{3,}\s*$", re.MULTILINE)

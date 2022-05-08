@@ -10,6 +10,7 @@ All rights reserved.
 """
 
 from rest_framework import serializers
+
 from seed.models import Column
 from seed.serializers.base import ChoiceField
 

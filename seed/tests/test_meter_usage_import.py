@@ -6,7 +6,6 @@ import os
 import pathlib
 from datetime import datetime
 
-from config.settings.common import TIME_ZONE
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -14,6 +13,8 @@ from django.utils.timezone import \
     make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from django.utils.timezone import get_current_timezone
 from pytz import timezone
+
+from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User

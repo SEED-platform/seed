@@ -14,6 +14,7 @@ from celery.utils.log import get_task_logger
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
 from django.db.models import Subquery
+
 from seed.data_importer.models import ImportFile
 from seed.decorators import lock_and_track
 from seed.lib.merging import merging

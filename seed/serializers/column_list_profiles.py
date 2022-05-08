@@ -9,6 +9,7 @@ All rights reserved.
 
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
+
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     VIEW_LIST_INVENTORY_TYPE,

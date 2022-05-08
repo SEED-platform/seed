@@ -16,6 +16,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import ViewSet
+
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyStateFilterSet, PropertyViewFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class

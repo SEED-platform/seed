@@ -10,6 +10,7 @@ import os.path as osp
 import pathlib
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.models import (

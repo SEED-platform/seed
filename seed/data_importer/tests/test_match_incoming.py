@@ -9,9 +9,10 @@ import os.path as osp
 from datetime import datetime
 
 import pytz
-from config.settings.common import BASE_DIR
 from django.core.files.uploadedfile import SimpleUploadedFile
 from mock import patch
+
+from config.settings.common import BASE_DIR
 from seed.data_importer.match import filter_duplicate_states, save_state_match
 from seed.data_importer.models import ImportFile
 from seed.data_importer.tasks import (

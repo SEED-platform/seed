@@ -6,6 +6,7 @@
 """
 
 from rest_framework import serializers
+
 from seed.models import Measure, PropertyMeasure
 from seed.serializers.base import ChoiceField
 

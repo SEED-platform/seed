@@ -7,6 +7,7 @@
 import json
 
 from django.urls import reverse, reverse_lazy
+
 from seed.landing.models import SEEDUser as User
 from seed.models import DATA_STATE_MATCHING, Column, PropertyState, TaxLotState
 from seed.test_helpers.fake import (

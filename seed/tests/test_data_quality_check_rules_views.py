@@ -8,6 +8,7 @@ import json
 from copy import deepcopy
 
 from django.urls import reverse
+
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.models.models import ASSESSED_RAW
 from seed.tests.util import DataMappingBaseTestCase

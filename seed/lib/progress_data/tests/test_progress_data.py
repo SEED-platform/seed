@@ -7,6 +7,7 @@
 import logging
 
 from django.test import TestCase
+
 from seed.lib.progress_data.progress_data import ProgressData
 
 logger = logging.getLogger(__name__)

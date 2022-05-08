@@ -12,8 +12,9 @@ import os
 import sys
 
 from celery.utils import LOG_LEVELS
-from config.settings.common import *  # noqa
 from kombu import Exchange, Queue
+
+from config.settings.common import *  # noqa
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = '/media/'

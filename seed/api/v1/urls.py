@@ -7,6 +7,7 @@
 
 from django.conf.urls import include, re_path
 from rest_framework import routers
+
 from seed.views.main import (
     delete_organization_inventory,
     get_default_building_detail_columns,

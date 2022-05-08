@@ -13,6 +13,7 @@ import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone as tz
 from quantityfield.units import ureg
+
 from seed.data_importer import match, tasks
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,

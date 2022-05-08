@@ -8,7 +8,6 @@
 import json
 from datetime import datetime
 
-from config.settings.common import TIME_ZONE
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
@@ -16,6 +15,8 @@ from django.urls import reverse
 from django.utils.timezone import \
     make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 from pytz import timezone
+
+from config.settings.common import TIME_ZONE
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.models import (
     ASSESSED_RAW,

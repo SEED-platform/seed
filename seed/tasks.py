@@ -20,6 +20,7 @@ from django.template import Context, Template, loader
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+
 from seed.decorators import lock_and_track
 from seed.lib.mcm.utils import batch
 from seed.lib.progress_data.progress_data import ProgressData

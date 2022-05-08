@@ -10,6 +10,7 @@ import pathlib
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield.units import ureg
+
 from seed.data_importer import tasks
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper

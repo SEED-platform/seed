@@ -7,6 +7,7 @@
 import logging
 
 from django.test import TestCase
+
 from seed.data_importer import tasks
 from seed.landing.models import SEEDUser as User
 from seed.models import Column, ColumnMapping, Unit

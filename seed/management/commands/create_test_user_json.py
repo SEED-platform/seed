@@ -6,6 +6,7 @@
 import json
 
 from django.core.management.base import BaseCommand
+
 from seed.landing.models import SEEDUser as User
 
 

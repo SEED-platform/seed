@@ -10,6 +10,7 @@ import logging
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
+
 from seed.analysis_pipelines.better.buildingsync import (
     SEED_TO_BSYNC_RESOURCE_TYPE,
     _build_better_input
