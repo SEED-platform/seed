@@ -6,8 +6,8 @@ from __future__ import absolute_import
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib
-import os
 import logging
+import os
 
 from celery.utils import LOG_LEVELS
 from config.settings.common import *  # noqa
