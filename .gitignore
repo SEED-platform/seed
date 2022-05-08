@@ -1,6 +1,7 @@
 .DS_Store
 .cache
 .env
+.hypothesis
 .idea
 .project
 .pydevproject

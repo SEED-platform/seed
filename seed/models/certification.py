@@ -26,7 +26,7 @@ from seed.models.auditlog import (
 )
 from seed.utils.strings import titlecase
 
-# import logging
+
 DEFAULT_GREEN_ASSESSEMENT_VALIDITY_DURATION = getattr(
     settings, 'GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION', None
 )
