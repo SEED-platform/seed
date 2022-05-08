@@ -187,7 +187,7 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     state2_present_columns = None
     if state2.import_file is not None and state2.import_file.cached_mapped_columns is not None:
 		# null has to be defined, not sure why, probably the eval?
-        null = None  # noqa F841 
+        null = None  # noqa F841
         state2_present_columns = [column["to_field"] for column in eval(state2.import_file.cached_mapped_columns)]
     for attr in can_attrs:
         recognize_empty = attr in recognize_empty_columns

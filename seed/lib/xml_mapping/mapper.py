@@ -8,6 +8,7 @@
 from __future__ import absolute_import
 
 import logging
+
 from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import (
@@ -15,7 +16,6 @@ from seed.building_sync.mappings import (
     merge_mappings,
     xpath_to_column_map
 )
-
 
 _log = logging.getLogger(__name__)
 

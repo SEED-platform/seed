@@ -11,13 +11,8 @@ import os
 import re
 from io import BytesIO, StringIO
 
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
-
-from django.core.exceptions import FieldDoesNotExist
-from quantityfield.units import ureg
-from lxml import etree
-
 import xmlschema
+from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
 from config.settings.common import BASE_DIR
 from django.core.exceptions import FieldDoesNotExist
 from lxml import etree
