@@ -7,6 +7,7 @@ from __future__ import absolute_import
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib
 import os
+import logging
 
 from celery.utils import LOG_LEVELS
 from config.settings.common import *  # noqa
@@ -87,6 +88,6 @@ else:
     from config.settings.local_untracked import *  # noqa
 
 
-# suppress some logging -- only show warnings or greater
-# logging.getLogger('faker.factory').setLevel(logging.ERROR)
-# logging.disable(logging.WARNING)
+# suppress some logging on faker -- only show warnings or greater
+logging.getLogger('faker.factory').setLevel(logging.ERROR)
+logging.disable(logging.WARNING)
