@@ -1,12 +1,11 @@
-from tempfile import TemporaryDirectory, NamedTemporaryFile
 import json
 import logging
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import requests
 import polling
-
-from seed.analysis_pipelines.pipeline import AnalysisPipelineException
+import requests
 from django.conf import settings
+from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 
 logger = logging.getLogger(__name__)
 

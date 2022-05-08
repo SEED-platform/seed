@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
@@ -9,12 +9,15 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
-from django.urls import reverse_lazy, reverse
 from django.test import TestCase
+from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-
-from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    ROLE_OWNER,
+    Organization,
+    OrganizationUser
+)
 from seed.utils.organizations import create_organization
 
 # Custom user model compatibility

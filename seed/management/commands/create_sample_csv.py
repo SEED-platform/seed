@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import unicode_literals
 
 import csv
 import random
-
 from math import floor
-from django.core.management.base import BaseCommand
 
+from django.core.management.base import BaseCommand
 from seed.test_helpers.fake import BaseFake
 
 

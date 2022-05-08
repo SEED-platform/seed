@@ -1,14 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from io import BytesIO
+
 import os
 import zipfile
-from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+from io import BytesIO
 
+from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import xpath_to_column_map
 

@@ -1,16 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import os
 import zipfile
 from tempfile import NamedTemporaryFile
+
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from rest_framework import status
-
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models import BuildingFile, Cycle
 from seed.serializers.building_file import BuildingFileSerializer

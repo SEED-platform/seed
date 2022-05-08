@@ -1,15 +1,14 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 import os
+import pathlib
 import zipfile
 
 import requests
-import pathlib
 from seed.building_sync.building_sync import BuildingSync
-
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
 DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0

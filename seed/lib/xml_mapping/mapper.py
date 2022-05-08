@@ -1,16 +1,21 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from __future__ import absolute_import
+
 import logging
+
 from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import merge_mappings, xpath_to_column_map, BASE_MAPPING_V2
-
+from seed.building_sync.mappings import (
+    BASE_MAPPING_V2,
+    merge_mappings,
+    xpath_to_column_map
+)
 
 _log = logging.getLogger(__name__)
 

@@ -1,13 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author Nicholas Long <nicholas.long@nrel.gov>
 """
 import logging
+from functools import cmp_to_key
 
 from seed.lib.mcm import matchers
-from functools import cmp_to_key
 
 _log = logging.getLogger(__name__)
 

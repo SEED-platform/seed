@@ -3,15 +3,11 @@
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-
 from seed.decorators import ajax_request_class
-
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
-
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-
 from seed.utils.api import api_endpoint_class
 from seed.utils.geocode import geocode_buildings
 

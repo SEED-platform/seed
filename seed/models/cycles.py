@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 """
 
 from __future__ import unicode_literals
@@ -9,7 +9,6 @@ from datetime import date, datetime
 
 from django.db import models
 from django.utils import timezone
-
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 

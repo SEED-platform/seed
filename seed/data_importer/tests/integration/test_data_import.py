@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import copy
@@ -10,42 +10,41 @@ import datetime
 import json
 import logging
 import os.path as osp
+import pathlib
 import zipfile
 
+from config.settings.common import BASE_DIR
 from dateutil import parser
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from mock import patch
-import pathlib
-
-from config.settings.common import BASE_DIR
 from seed.data_importer import tasks
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.data_importer.tasks import save_raw_data, map_data
+from seed.data_importer.tasks import map_data, save_raw_data
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
+    FAKE_ROW
 )
+from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 from seed.models import (
-    ASSESSED_RAW,
     ASSESSED_BS,
+    ASSESSED_RAW,
     DATA_STATE_IMPORT,
     PORTFOLIO_RAW,
+    BuildingFile,
     Column,
-    PropertyState,
-    PropertyView,
-    TaxLotState,
     Cycle,
     Meter,
-    Scenario,
-    BuildingFile,
     PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    Scenario,
+    TaxLotState
 )
 from seed.models.models import DATA_STATE_MAPPING
 from seed.tests.util import DataMappingBaseTestCase
-from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
 
 _log = logging.getLogger(__name__)
 

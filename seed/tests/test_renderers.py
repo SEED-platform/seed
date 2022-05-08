@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Fable Turas <fable@raintechpdx.com>
 
 # TODO
@@ -18,10 +18,8 @@ import mock
 # Imports from Django
 from django.test import TestCase
 from django.views.generic import View
-
 # Local Imports
 from seed.renderers import SEEDJSONRenderer
-
 
 # Constants
 

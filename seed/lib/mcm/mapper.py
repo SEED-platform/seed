@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -11,13 +11,13 @@ import copy
 import itertools
 import logging
 import re
-from datetime import datetime, date
+from datetime import date, datetime
 
-from .cleaners import default_cleaner
 from django.apps import apps
 from past.builtins import basestring
-
 from seed.lib.mappings.mapping_columns import MappingColumns
+
+from .cleaners import default_cleaner
 
 _log = logging.getLogger(__name__)
 

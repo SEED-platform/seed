@@ -2,22 +2,18 @@
 # encoding: utf-8
 
 from django.http import JsonResponse
-
 from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework.decorators import action
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
+from rest_framework.viewsets import ViewSet
 from seed.lib.mcm import mapper
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
-from seed.models import (
-    Column,
-    ColumnMappingProfile,
+from seed.models import Column, ColumnMappingProfile
+from seed.serializers.column_mapping_profiles import (
+    ColumnMappingProfileSerializer
 )
-from seed.serializers.column_mapping_profiles import ColumnMappingProfileSerializer
-from seed.utils.api import api_endpoint_class, OrgMixin
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
-
-from rest_framework.viewsets import ViewSet
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 mappings_description = (
     "Each object in mappings must be in particular format:\n"

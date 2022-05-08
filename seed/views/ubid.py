@@ -3,7 +3,6 @@
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
-
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.models.properties import PropertyState

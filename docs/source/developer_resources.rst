@@ -4,6 +4,13 @@ Developer Resources
 General Notes
 -------------
 
+Pre-commit
+^^^^^^^^^^^^^^
+We use precommit commits for formatting. Set it up locally with
+```
+pre-commit install
+```
+
 Flake Settings
 ^^^^^^^^^^^^^^
 

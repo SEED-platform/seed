@@ -34,9 +34,9 @@ angular.module('BE.seed.controller.data_logger_upload_modal', [])
           $scope.data_logger_display_name_not_entered_alert = false
 
           sensor_service.create_data_logger(
-            $scope.view_id, 
-            $scope.organization_id, 
-            $scope.data_logger.display_name, 
+            $scope.view_id,
+            $scope.organization_id,
+            $scope.data_logger.display_name,
             $scope.data_logger.location_identifier
           ).then((result) => {
             $scope.data_logger = result;

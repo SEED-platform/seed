@@ -69,7 +69,7 @@ Building Energy
 Open Green Building Society
 - Ryan McCuaig (https://github.com/rgm/)
 
---- 
+---
 Devetry
 - Adrian Lara (https://github.com/adrian-lara)
 - Daniel Bressan (https://github.com/danielbressan)

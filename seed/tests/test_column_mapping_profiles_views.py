@@ -1,17 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 
+from json import dumps, loads
+
 from django.urls import reverse
-
-from json import loads, dumps
-
-from seed.tests.util import DataMappingBaseTestCase
-from seed.models import (
-    ASSESSED_RAW,
-    Column,
-    ColumnMappingProfile,
-)
 from seed.lib.xml_mapping.mapper import default_buildingsync_profile_mappings
+from seed.models import ASSESSED_RAW, Column, ColumnMappingProfile
+from seed.tests.util import DataMappingBaseTestCase
 
 
 class ColumnMappingProfileViewsCore(DataMappingBaseTestCase):

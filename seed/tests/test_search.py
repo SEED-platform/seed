@@ -3,10 +3,9 @@ from datetime import datetime
 
 from django.db import models
 from django.db.models import Q
-from django.db.models.functions import Cast, Replace, NullIf
+from django.db.models.functions import Cast, NullIf, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
-
 from seed.landing.models import SEEDUser as User
 from seed.models import Column, PropertyView
 from seed.search import FilterException, build_view_filters_and_sorts

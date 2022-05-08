@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -9,11 +9,10 @@ from os import path
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
-
 from seed.models import User
 from seed.models.building_file import BuildingFile
-from seed.models.scenarios import Scenario
 from seed.models.meters import Meter, MeterReading
+from seed.models.scenarios import Scenario
 from seed.utils.organizations import create_organization
 
 

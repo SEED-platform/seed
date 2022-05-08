@@ -4,20 +4,19 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Paul Munday <paul@paulmunday.net>
 """
 # pylint:disable=no-name-in-module
 import datetime
 
 from django.core.exceptions import ValidationError
-
 from seed.landing.models import SEEDUser as User
 from seed.models import GreenAssessment
 from seed.test_helpers.fake import (
     FakeGreenAssessmentFactory,
     FakeGreenAssessmentPropertyFactory,
-    FakeGreenAssessmentURLFactory,
+    FakeGreenAssessmentURLFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization

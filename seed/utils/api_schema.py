@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
-from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg import openapi
+from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg.utils import swagger_auto_schema
 
 

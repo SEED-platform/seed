@@ -1,30 +1,29 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from django.conf.urls import re_path, include
+from django.conf.urls import include, re_path
 from rest_framework import routers
-
-from seed.api.base.views import test_view_with_arg, TestReverseViewSet
+from seed.api.base.views import TestReverseViewSet, test_view_with_arg
 from seed.api.v2.views import ProgressViewSetV2
-from seed.data_importer.views import ImportFileViewSet
 from seed.data_importer.views import (
-    get_upload_details,
-    LocalUploaderViewSet
+    ImportFileViewSet,
+    LocalUploaderViewSet,
+    get_upload_details
 )
 from seed.views.api import get_api_schema
 from seed.views.building_file import BuildingFileViewSet
 from seed.views.certification import (
-    GreenAssessmentViewSet,
     GreenAssessmentPropertyViewSet,
-    GreenAssessmentURLViewSet
+    GreenAssessmentURLViewSet,
+    GreenAssessmentViewSet
 )
-from seed.views.columns import ColumnViewSet
-from seed.views.column_mappings import ColumnMappingViewSet
 from seed.views.column_list_settings import ColumnListingViewSet
 from seed.views.column_mapping_presets import ColumnMappingPresetViewSet
+from seed.views.column_mappings import ColumnMappingViewSet
+from seed.views.columns import ColumnViewSet
 from seed.views.cycles import CycleViewSet
 from seed.views.data_quality import DataQualityViews
 from seed.views.datasets import DatasetViewSet
@@ -35,8 +34,12 @@ from seed.views.measures import MeasureViewSet
 from seed.views.meters import MeterViewSet
 from seed.views.organizations import OrganizationViewSet
 from seed.views.projects import ProjectViewSet
-from seed.views.properties import (PropertyViewSet, PropertyStateViewSet,
-                                   PropertyViewViewSet, GBRPropertyViewSet)
+from seed.views.properties import (
+    GBRPropertyViewSet,
+    PropertyStateViewSet,
+    PropertyViewSet,
+    PropertyViewViewSet
+)
 from seed.views.reports import Report
 from seed.views.taxlots import TaxLotViewSet
 from seed.views.ubid import UbidViews

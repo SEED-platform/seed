@@ -1,21 +1,30 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
+from typing import Literal, Optional
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse, JsonResponse
 from rest_framework import status
 from rest_framework.request import Request
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (VIEW_LIST, VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT,
-                         Column, ColumnListProfile, ColumnListProfileColumn,
-                         Cycle, PropertyView)
-from seed.models import TaxLotProperty, TaxLotView
-from seed.search import build_view_filters_and_sorts, FilterException
-from seed.serializers.pint import (apply_display_unit_preferences)
-from typing import Optional, Literal
+from seed.models import (
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY,
+    VIEW_LIST_TAXLOT,
+    Column,
+    ColumnListProfile,
+    ColumnListProfileColumn,
+    Cycle,
+    PropertyView,
+    TaxLotProperty,
+    TaxLotView
+)
+from seed.search import FilterException, build_view_filters_and_sorts
+from seed.serializers.pint import apply_display_unit_preferences
 
 
 def get_filtered_results(request: Request, inventory_type: Literal['property', 'taxlot'], profile_id: int) -> HttpResponse:

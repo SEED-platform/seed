@@ -1,23 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
-
 from copy import deepcopy
 
 from django.urls import reverse
-
-from seed.models.data_quality import (
-    DataQualityCheck,
-    Rule,
-)
+from seed.models.data_quality import DataQualityCheck, Rule
 from seed.models.models import ASSESSED_RAW
-
 from seed.tests.util import DataMappingBaseTestCase
-
 from seed.utils.organizations import create_organization
 
 

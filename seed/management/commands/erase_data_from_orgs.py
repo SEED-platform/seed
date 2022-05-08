@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from __future__ import unicode_literals
@@ -8,11 +8,9 @@ from __future__ import unicode_literals
 import collections
 import logging
 
-from django.core.management.base import BaseCommand
-
 from _localtools import logging_info
-from seed.models import PropertyState
-from seed.models import TaxLotState
+from django.core.management.base import BaseCommand
+from seed.models import PropertyState, TaxLotState
 
 logging.basicConfig(level=logging.DEBUG)
 

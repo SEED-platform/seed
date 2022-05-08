@@ -22,8 +22,9 @@
 #     sticking around by future-proofing the API.
 
 import datetime
-from django.utils.dateparse import parse_datetime
+
 import pytz
+from django.utils.dateparse import parse_datetime
 
 REGISTRY = {}
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 
 Delete all organizations that are not part of the main 12.
@@ -10,11 +10,10 @@ from __future__ import unicode_literals
 
 import logging
 
-from django.core.management.base import BaseCommand
-
 import seed.models
 import seed.tasks
 from _localtools import get_core_organizations
+from django.core.management.base import BaseCommand
 
 logging.basicConfig(level=logging.DEBUG)
 

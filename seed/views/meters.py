@@ -2,22 +2,16 @@
 # encoding: utf-8
 
 from django.db.models import Q
-
 from rest_framework import viewsets
 from rest_framework.decorators import action
-
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import (
     kbtu_thermal_conversion_factors,
-    usage_point_id,
+    usage_point_id
 )
 from seed.decorators import ajax_request_class
 from seed.lib.mcm import reader
-from seed.models import (
-    Meter,
-    ImportFile,
-    PropertyView,
-)
+from seed.models import ImportFile, Meter, PropertyView
 from seed.utils.meters import PropertyMeterReadingsExporter
 
 

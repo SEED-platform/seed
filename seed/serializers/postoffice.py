@@ -4,11 +4,12 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 
 """
 from rest_framework import serializers
-from seed.models import PostOfficeEmail as Email, PostOfficeEmailTemplate as EmailTemplate
+from seed.models import PostOfficeEmail as Email
+from seed.models import PostOfficeEmailTemplate as EmailTemplate
 
 
 class PostOfficeSerializer(serializers.ModelSerializer):

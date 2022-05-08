@@ -4,7 +4,7 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 import re
@@ -20,16 +20,16 @@ from django.core.exceptions import (
 )
 from django.http import JsonResponse
 from past.builtins import basestring
-from rest_framework import status, exceptions
-
+from rest_framework import exceptions, status
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import (
+    VIEW_LIST,
+    VIEW_LIST_PROPERTY,
     Column,
     ColumnListProfile,
-    ColumnListProfileColumn,
-    VIEW_LIST,
-    VIEW_LIST_PROPERTY)
+    ColumnListProfileColumn
+)
 
 OrgValidator = namedtuple('OrgValidator', ['key', 'field'])
 

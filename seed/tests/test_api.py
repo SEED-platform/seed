@@ -1,25 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import base64
 import datetime
 import json
 import os
+import pathlib
 import time
 from unittest import skip
-import pathlib
 
-from django.urls import reverse_lazy, reverse
 from django.test import TestCase
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    Cycle,
-)
+from seed.models import Cycle
 from seed.utils.api import get_api_endpoints
 from seed.utils.organizations import create_organization
 

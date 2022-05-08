@@ -248,6 +248,4 @@ describe('When I visit the the parent org', function () {
     $$('[ng-click="save_settings()"]').first().click();
     browser.wait(EC.presenceOf($('.fa-check')), 10000);
   }, 60000);
-
 });
-

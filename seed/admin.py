@@ -1,15 +1,14 @@
 from django.contrib import admin
-
 from seed.models import (
     Column,
-    Property,
-    PropertyView,
-    PropertyState,
     Cycle,
+    Property,
+    PropertyState,
+    PropertyView,
     TaxLot,
-    TaxLotView,
-    TaxLotState,
     TaxLotProperty,
+    TaxLotState,
+    TaxLotView
 )
 
 admin.site.register(Column)

@@ -1,30 +1,20 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-import logging
 import copy
+import logging
 
-from django.db.models import Count
-from django.core.files.base import ContentFile
 from celery import chain, shared_task
-
-from seed.analysis_pipelines.pipeline import (
-    AnalysisPipeline,
-    AnalysisPipelineException,
-    task_create_analysis_property_views,
-    analysis_pipeline_task,
-    StopAnalysisTaskChain
-)
+from django.core.files.base import ContentFile
+from django.db.models import Count
 from seed.analysis_pipelines.better.buildingsync import (
     SEED_TO_BSYNC_RESOURCE_TYPE,
-    _build_better_input,
+    _build_better_input
 )
-from seed.analysis_pipelines.better.client import (
-    BETTERClient,
-)
+from seed.analysis_pipelines.better.client import BETTERClient
 from seed.analysis_pipelines.better.helpers import (
     BETTERPipelineContext,
     ExtraDataColumnPath,
@@ -33,22 +23,27 @@ from seed.analysis_pipelines.better.helpers import (
     _run_better_building_analyses,
     _run_better_portfolio_analysis,
     _store_better_building_analysis_results,
-    _store_better_portfolio_analysis_results,
+    _store_better_portfolio_analysis_results
+)
+from seed.analysis_pipelines.pipeline import (
+    AnalysisPipeline,
+    AnalysisPipelineException,
+    StopAnalysisTaskChain,
+    analysis_pipeline_task,
+    task_create_analysis_property_views
 )
 from seed.analysis_pipelines.utils import (
     calendarize_and_extrapolate_meter_readings,
-    get_json_path,
+    get_json_path
 )
-
 from seed.models import (
     Analysis,
     AnalysisInputFile,
     AnalysisMessage,
     AnalysisPropertyView,
     Column,
-    Meter,
+    Meter
 )
-
 
 logger = logging.getLogger(__name__)
 

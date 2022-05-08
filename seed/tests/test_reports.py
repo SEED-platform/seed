@@ -5,16 +5,9 @@ import datetime
 
 from django.urls import reverse
 from django.utils import timezone
-
-from seed.models import (
-    ASSESSED_RAW,
-    Property,
-    PropertyState,
-    PropertyView
-)
-from seed.tests.util import DataMappingBaseTestCase
+from seed.models import ASSESSED_RAW, Property, PropertyState, PropertyView
 from seed.test_helpers.fake import FakeCycleFactory
-
+from seed.tests.util import DataMappingBaseTestCase
 from xlrd import open_workbook
 
 
