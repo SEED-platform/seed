@@ -417,7 +417,7 @@
     "display_name": "Site EUI",
     "to_field": "site_eui",
     "to_table_name": "PropertyState",
-    "from_field": "Site EUI (kBtu/ft\u00b2)",
+    "from_field": "Site EUI (kBtu/ft²)",
     "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
@@ -471,7 +471,7 @@
     "display_name": "Source EUI",
     "to_field": "source_eui",
     "to_table_name": "PropertyState",
-    "from_field": "Source EUI (kBtu/ft\u00b2)",
+    "from_field": "Source EUI (kBtu/ft²)",
     "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
@@ -498,7 +498,7 @@
     "display_name": "Source EUI Weather Normalized",
     "to_field": "source_eui_weather_normalized",
     "to_table_name": "PropertyState",
-    "from_field": "Weather Normalized Source EUI (kBtu/ft\u00b2)",
+    "from_field": "Weather Normalized Source EUI (kBtu/ft²)",
     "units": "kBtu/ft**2/year",
     "type": "float",
     "schema": ""
