@@ -105,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tox_env: [docs, mypy]
+        tox_env: [docs, precommit, mypy]
     steps:
       -
         uses: actions/checkout@v2

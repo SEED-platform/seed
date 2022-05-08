@@ -40,7 +40,6 @@ jellyfish==0.8.2
 Markdown==3.1.1
 pyyaml==5.4.1
 polling==0.3.2
-pre-commit==2.18.1
 
 street-address==0.4.0
 unidecode==1.1.1
