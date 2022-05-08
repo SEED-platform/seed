@@ -7,6 +7,7 @@
 Unit tests for seed/views/labels.py
 """
 from django.db import IntegrityError, transaction
+
 from seed.models import ASSESSED_RAW, Property, PropertyView
 from seed.models import StatusLabel as Label
 from seed.models import TaxLot, TaxLotView

@@ -4,7 +4,6 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-from config.views import robots_txt
 from django.conf import settings
 from django.conf.urls import include, re_path
 from django.conf.urls.static import static
@@ -13,6 +12,8 @@ from django.urls import path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+
+from config.views import robots_txt
 from seed.api.base.urls import urlpatterns as api
 from seed.landing.views import (
     password_reset_complete,

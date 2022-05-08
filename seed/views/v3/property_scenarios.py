@@ -7,6 +7,7 @@
 from django.utils.decorators import method_decorator
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
+
 from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param

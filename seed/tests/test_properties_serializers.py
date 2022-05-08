@@ -14,6 +14,7 @@ import json
 from collections import OrderedDict
 
 import mock
+
 from seed.landing.models import SEEDUser as User
 from seed.models import PropertyView
 from seed.models.auditlog import AUDIT_USER_EDIT

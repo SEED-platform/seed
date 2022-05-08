@@ -10,6 +10,7 @@ from __future__ import absolute_import
 import logging
 
 from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
+
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import (
     BASE_MAPPING_V2,

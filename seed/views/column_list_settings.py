@@ -9,6 +9,7 @@ All rights reserved.
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
+
 from seed.filters import ColumnListProfileFilterBackend
 from seed.models import (
     VIEW_LIST,

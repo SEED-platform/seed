@@ -10,6 +10,7 @@ import logging
 
 from _localtools import logging_info
 from django.core.management.base import BaseCommand
+
 from seed.models import PropertyState, TaxLotState
 
 logging.basicConfig(level=logging.DEBUG)

@@ -15,6 +15,7 @@ from unittest import skip
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+
 from seed.landing.models import SEEDUser as User
 from seed.models import Cycle
 from seed.utils.api import get_api_endpoints

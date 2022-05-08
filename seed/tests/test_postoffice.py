@@ -6,6 +6,7 @@
 """
 
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models import PostOfficeEmailTemplate
 from seed.utils.organizations import create_organization

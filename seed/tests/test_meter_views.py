@@ -4,6 +4,7 @@
 import ast
 
 from django.urls import reverse
+
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.tests.util import DataMappingBaseTestCase

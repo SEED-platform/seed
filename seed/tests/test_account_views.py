@@ -9,6 +9,7 @@ from datetime import date
 
 from django.test import TestCase
 from django.urls import NoReverseMatch, reverse_lazy
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermission
 from seed.lib.superperms.orgs.models import (

@@ -5,6 +5,8 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+# Do not isort these since order is important
+# The precommit call has a skip for this file.
 
 # Import all the models in this folder
 from .analyses import *  # noqa

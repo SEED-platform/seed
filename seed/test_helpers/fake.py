@@ -23,6 +23,7 @@ import mock
 from django.db.models.fields.files import FieldFile
 from django.utils import timezone
 from faker import Factory
+
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,

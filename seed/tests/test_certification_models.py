@@ -11,6 +11,7 @@ All rights reserved.
 import datetime
 
 from django.core.exceptions import ValidationError
+
 from seed.landing.models import SEEDUser as User
 from seed.models import GreenAssessment
 from seed.test_helpers.fake import (

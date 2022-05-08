@@ -8,9 +8,10 @@ import json
 import os
 from unittest.mock import patch
 
-from config.settings.common import BASE_DIR
 from django.test import TestCase
 from requests.models import Response
+
+from config.settings.common import BASE_DIR
 from seed.building_sync.validation_client import (
     DEFAULT_SCHEMA_VERSION,
     DEFAULT_USE_CASE,

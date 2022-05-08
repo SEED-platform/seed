@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
+
 from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser

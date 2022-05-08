@@ -25,6 +25,7 @@ from rest_framework.mixins import (
 )
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+
 # Local Imports
 from seed.authentication import SEEDAuthentication
 from seed.decorators import DecoratorMixin
@@ -100,7 +101,6 @@ class SEEDOrgCreateUpdateModelViewSet(OrgCreateUpdateMixin, SEEDOrgModelViewSet)
     should instead extend SEEDOrgModelViewset and create perform_create
     and/or perform_update overrides appropriate to the model's needs.
     """
-    pass
 
 
 class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
@@ -110,4 +110,3 @@ class SEEDOrgNoPatchOrOrgCreateModelViewSet(SEEDOrgReadOnlyModelViewSet,
     """Extends SEEDOrgReadOnlyModelViewSet to include update (without patch),
     create, and destroy actions.
     """
-    pass

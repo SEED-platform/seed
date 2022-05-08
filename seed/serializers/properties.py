@@ -16,6 +16,7 @@ from django.db import models
 from past.builtins import basestring
 from rest_framework import serializers
 from rest_framework.fields import empty
+
 from seed.models import (
     AUDIT_USER_CREATE,
     AUDIT_USER_EDIT,

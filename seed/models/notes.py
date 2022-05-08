@@ -7,6 +7,7 @@
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import PropertyView, TaxLotView

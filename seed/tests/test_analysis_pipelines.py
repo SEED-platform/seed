@@ -12,7 +12,6 @@ from os import path
 from unittest.mock import patch
 from zipfile import ZipFile
 
-from config.settings.common import BASE_DIR, TIME_ZONE
 from django.db.models import Q
 from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
@@ -20,6 +19,8 @@ from lxml import etree
 from pytz import timezone as pytztimezone
 from quantityfield.units import ureg
 from requests import Response
+
+from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.analysis_pipelines.better.buildingsync import _build_better_input
 from seed.analysis_pipelines.bsyncr import (
     PREMISES_ID_NAME,
@@ -108,7 +109,9 @@ class TestAnalysisPipeline(TestCase):
 
     def test_all_analysis_pipeline_tasks_are_wrapped_with_analysis_pipeline_task_decorator(self):
         from inspect import getmembers
+
         from celery import Task
+
         from seed.analysis_pipelines import tasks
 
         def is_celery_task(v):

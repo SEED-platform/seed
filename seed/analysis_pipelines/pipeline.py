@@ -8,6 +8,7 @@ from celery import shared_task
 from django.db import transaction
 from django.db.utils import OperationalError
 from django.utils import timezone as tz
+
 from seed.decorators import get_prog_key
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView
@@ -237,14 +238,12 @@ def analysis_pipeline_task(expected_status):
 
 class AnalysisPipelineException(Exception):
     """An analysis pipeline specific exception"""
-    pass
 
 
 class StopAnalysisTaskChain(Exception):
     """Analysis pipeline tasks should raise this exception to stop the celery task
     chain.
     """
-    pass
 
 
 class AnalysisPipeline(abc.ABC):
@@ -264,10 +263,10 @@ class AnalysisPipeline(abc.ABC):
         :returns: An implementation of AnalysisPipeline, e.g. BsyncrPipeline
         """
         # import here to avoid circular dependencies
-        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.better import BETTERPipeline
-        from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
+        from seed.analysis_pipelines.eui import EUIPipeline
 
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
@@ -523,7 +522,6 @@ class AnalysisPipeline(abc.ABC):
             implementation to make sure this happens by calling `pipeline.start_analysis()`
         :returns: None
         """
-        pass
 
     @abc.abstractmethod
     def _start_analysis(self):
@@ -532,4 +530,3 @@ class AnalysisPipeline(abc.ABC):
 
         :returns: None
         """
-        pass

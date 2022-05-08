@@ -6,6 +6,7 @@
 """
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.aggregates import Count
+
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.models import (
     ASSESSED_RAW,

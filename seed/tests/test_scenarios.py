@@ -5,6 +5,7 @@
 :author
 """
 from django.utils.dateparse import parse_datetime
+
 from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Property, PropertyView, Scenario
 from seed.test_helpers.fake import (

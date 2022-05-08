@@ -11,6 +11,7 @@ import os
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
+
 from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

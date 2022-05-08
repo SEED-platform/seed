@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 from rest_framework import serializers
+
 from seed.models import ColumnMappingProfile
 from seed.serializers.base import ChoiceField
 

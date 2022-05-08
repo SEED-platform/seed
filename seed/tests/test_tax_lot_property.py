@@ -9,6 +9,8 @@ import time
 from random import randint
 
 from django.urls import reverse_lazy
+from xlrd import open_workbook
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
@@ -28,7 +30,6 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
-from xlrd import open_workbook
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):

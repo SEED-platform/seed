@@ -8,6 +8,7 @@ import json
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView
 from seed.test_helpers.fake import (

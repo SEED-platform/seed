@@ -3,6 +3,7 @@ import pathlib
 from collections import namedtuple
 
 from django.core.files.base import File as BaseFile
+
 from seed.analysis_pipelines.better.buildingsync import (
     _parse_analysis_property_view_id
 )

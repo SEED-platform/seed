@@ -34,6 +34,8 @@ from django.db.utils import ProgrammingError
 from django.utils import timezone as tz
 from django.utils.timezone import make_naive
 from past.builtins import basestring
+from unidecode import unidecode
+
 from seed.building_sync import validation_client
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer.equivalence_partitioner import EquivalencePartitioner
@@ -85,7 +87,6 @@ from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, geocode_buildings
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
-from unidecode import unidecode
 
 # from seed.utils.cprofile import cprofile
 

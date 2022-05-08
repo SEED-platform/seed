@@ -6,6 +6,7 @@
 """
 from django.conf.urls import include, re_path
 from rest_framework_nested import routers
+
 from seed.api.v2_1.views import PropertyViewSetV21
 from seed.views.notes import NoteViewSet
 from seed.views.portfoliomanager import PortfolioManagerViewSet

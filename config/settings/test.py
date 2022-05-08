@@ -10,6 +10,7 @@ import logging
 import os
 
 from celery.utils import LOG_LEVELS
+
 from config.settings.common import *  # noqa
 
 PASSWORD_HASHERS = (

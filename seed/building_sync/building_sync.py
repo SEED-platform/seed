@@ -13,10 +13,11 @@ from io import BytesIO, StringIO
 
 import xmlschema
 from buildingsync_asset_extractor.processor import BSyncProcessor as BAE
-from config.settings.common import BASE_DIR
 from django.core.exceptions import FieldDoesNotExist
 from lxml import etree
 from quantityfield.units import ureg
+
+from config.settings.common import BASE_DIR
 from seed.building_sync.mappings import (
     BASE_MAPPING_V2,
     BUILDINGSYNC_URI,

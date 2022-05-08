@@ -10,6 +10,7 @@ All rights reserved.
 # pylint:disable=no-name-in-module
 import mock
 from django.test import TestCase
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,

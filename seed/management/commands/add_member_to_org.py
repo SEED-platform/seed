@@ -4,6 +4,7 @@
 :author
 """
 from django.core.management.base import BaseCommand
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,

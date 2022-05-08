@@ -10,6 +10,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import transaction
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
+
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     Column,

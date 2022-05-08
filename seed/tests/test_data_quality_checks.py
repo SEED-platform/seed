@@ -6,6 +6,7 @@
 """
 from django.forms.models import model_to_dict
 from quantityfield.units import ureg
+
 from seed.models import Column, DerivedColumnParameter, PropertyView
 from seed.models.data_quality import (
     DataQualityCheck,

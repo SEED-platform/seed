@@ -9,6 +9,7 @@ from io import StringIO
 
 from django.test import TestCase
 from lxml import etree
+
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import (
     BUILDINGSYNC_URI,

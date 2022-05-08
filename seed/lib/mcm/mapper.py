@@ -15,6 +15,7 @@ from datetime import date, datetime
 
 from django.apps import apps
 from past.builtins import basestring
+
 from seed.lib.mappings.mapping_columns import MappingColumns
 
 from .cleaners import default_cleaner

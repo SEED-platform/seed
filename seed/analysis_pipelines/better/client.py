@@ -5,6 +5,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import polling
 import requests
 from django.conf import settings
+
 from seed.analysis_pipelines.pipeline import AnalysisPipelineException
 
 logger = logging.getLogger(__name__)

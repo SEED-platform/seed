@@ -7,6 +7,7 @@
 import itertools
 
 from django.test import TestCase
+
 from seed.utils.search import (
     NUMERIC_EXPRESSION_REGEX,
     is_numeric_expression,
