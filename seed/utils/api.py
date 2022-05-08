@@ -369,7 +369,6 @@ class OrgCreateUpdateMixin(OrgCreateMixin, OrgUpdateMixin):
     """
     Mixin to add organization when creating/updating model instance
     """
-    pass
 
 
 class OrgValidateMixin(object):

@@ -8,14 +8,11 @@
 
 class TooManyNestedOrgs(Exception):
     """We only support one level of nesting."""
-    pass
 
 
 class UserNotInOrganization(Exception):
     """Raised when a user does not exist, or does not belong to an org."""
-    pass
 
 
 class InsufficientPermission(Exception):
     """Raised when a user attempts an action for which they're not allowed."""
-    pass

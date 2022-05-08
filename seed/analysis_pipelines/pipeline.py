@@ -238,14 +238,12 @@ def analysis_pipeline_task(expected_status):
 
 class AnalysisPipelineException(Exception):
     """An analysis pipeline specific exception"""
-    pass
 
 
 class StopAnalysisTaskChain(Exception):
     """Analysis pipeline tasks should raise this exception to stop the celery task
     chain.
     """
-    pass
 
 
 class AnalysisPipeline(abc.ABC):
@@ -524,7 +522,6 @@ class AnalysisPipeline(abc.ABC):
             implementation to make sure this happens by calling `pipeline.start_analysis()`
         :returns: None
         """
-        pass
 
     @abc.abstractmethod
     def _start_analysis(self):
@@ -533,4 +530,3 @@ class AnalysisPipeline(abc.ABC):
 
         :returns: None
         """
-        pass
