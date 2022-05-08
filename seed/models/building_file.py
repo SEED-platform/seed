@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -9,24 +9,22 @@ from __future__ import unicode_literals
 import logging
 
 from django.db import models
-
 from seed.building_sync.building_sync import BuildingSync, ParsingError
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser
 from seed.lib.merging.merging import merge_state
 from seed.models import (
-    PropertyState,
-    Column,
-    PropertyMeasure,
-    Measure,
-    PropertyAuditLog,
     AUDIT_IMPORT,
-    Scenario,
+    MERGE_STATE_MERGED,
+    Column,
+    Measure,
     Meter,
     MeterReading,
-    MERGE_STATE_MERGED,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    Scenario
 )
-
 
 _log = logging.getLogger(__name__)
 

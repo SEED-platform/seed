@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import re
 import string
-from datetime import datetime, date
+from datetime import date, datetime
 
 import dateutil
 import dateutil.parser
@@ -16,7 +16,6 @@ from past.builtins import basestring
 # django orm gets confused unless we specifically use `ureg` from quantityfield
 # ie. don't try `import pint; ureg = pint.UnitRegistry()`
 from quantityfield.units import ureg
-
 from seed.lib.mcm.matchers import fuzzy_in_set
 
 NONE_SYNONYMS = (

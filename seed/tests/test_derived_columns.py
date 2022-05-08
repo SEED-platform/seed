@@ -1,24 +1,27 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from string import Template, ascii_letters, digits
 
 from django.core.exceptions import ValidationError
-
+from hypothesis import assume, example, given, settings
+from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
-from hypothesis import strategies as st, assume, given, example, settings
-
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import FakeDerivedColumnFactory, FakeColumnFactory, FakePropertyStateFactory
 from seed.models.columns import Column
 from seed.models.derived_columns import (
-    ExpressionEvaluator,
     DerivedColumn,
     DerivedColumnParameter,
-    InvalidExpression,
+    ExpressionEvaluator,
+    InvalidExpression
+)
+from seed.test_helpers.fake import (
+    FakeColumnFactory,
+    FakeDerivedColumnFactory,
+    FakePropertyStateFactory
 )
 from seed.utils.organizations import create_organization
 

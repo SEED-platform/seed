@@ -1,28 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author 'Piper Merriam <pmerriam@quickleft.com>'
 """
 from collections import namedtuple
 
 from django.apps import apps
 from django.db import IntegrityError
-from rest_framework import (
-    response,
-    status,
-)
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import response, status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
-
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (
-    StatusLabel as Label,
-    PropertyView,
-    TaxLotView,
-)
+from seed.models import PropertyView
+from seed.models import StatusLabel as Label
+from seed.models import TaxLotView
 from seed.utils.api_schema import AutoSchemaHelper
 
 ErrorState = namedtuple('ErrorState', ['status_code', 'message'])

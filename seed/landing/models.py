@@ -1,34 +1,33 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import base64
+import hmac
 import re
 import uuid
-import hmac
-import base64
+
+from django.contrib.auth.models import (  # SiteProfileNotAvailable
+    AbstractBaseUser,
+    PermissionsMixin,
+    UserManager
+)
+from django.core.mail import send_mail
+from django.db import models
+from django.utils import timezone
+from django.utils.http import urlquote
+from django.utils.translation import gettext_lazy as _
+from rest_framework import exceptions
+from seed.lib.superperms.orgs.models import Organization
+
 # sha1 used for api_key creation, but may vary by python version
 try:
     from hashlib import sha1
 except ImportError:
     import sha
     sha1 = sha.sha
-
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-    UserManager,
-    # SiteProfileNotAvailable
-)
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
-from django.db import models
-from django.utils.http import urlquote
-from django.core.mail import send_mail
-from rest_framework import exceptions
-
-from seed.lib.superperms.orgs.models import Organization
 
 
 class SEEDUser(AbstractBaseUser, PermissionsMixin):
@@ -148,7 +147,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         Creates and sets an API key for this user.
         Adapted from tastypie:
 
-        https://github.com/toastdriven/django-tastypie/blob/master/tastypie/models.py#L47  # noqa
+        https://github.com/toastdriven/django-tastypie/blob/master/tastypie/models.py#L47
         """
         new_uuid = uuid.uuid4()
         api_key = hmac.new(new_uuid.bytes, digestmod=sha1).hexdigest()

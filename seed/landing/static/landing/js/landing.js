@@ -69,4 +69,3 @@ $(function () {
   BEHome.actions.hide_all_forms();
   BEHome.util.bind_all_handlers();
 });
-

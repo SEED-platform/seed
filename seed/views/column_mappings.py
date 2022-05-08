@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -9,21 +9,19 @@ import logging
 
 import coreapi
 from django.db.models import Q
-from django.http import JsonResponse, Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import BaseFilterBackend
-from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
-
 from seed.decorators import ajax_request_class, require_organization_id_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.column_mappings import ColumnMapping
 from seed.serializers.column_mappings import ColumnMappingSerializer
-from seed.utils.api import OrgValidateMixin
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import OrgValidateMixin, api_endpoint_class
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 _log = logging.getLogger(__name__)

@@ -1,23 +1,22 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import datetime
 import logging
 
 from celery import chain, shared_task
-
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
     AnalysisPipelineException,
-    task_create_analysis_property_views,
-    analysis_pipeline_task
+    analysis_pipeline_task,
+    task_create_analysis_property_views
 )
 from seed.analysis_pipelines.utils import (
-    get_days_in_reading,
-    SimpleMeterReading
+    SimpleMeterReading,
+    get_days_in_reading
 )
 from seed.models import (
     Analysis,

@@ -1,15 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
 
 from rest_framework import filters
-
 from seed import search
-from seed.models import VIEW_LOCATION_TYPES, VIEW_LIST_INVENTORY_TYPE
+from seed.models import VIEW_LIST_INVENTORY_TYPE, VIEW_LOCATION_TYPES
 
 
 class ColumnListProfileFilterBackend(filters.BaseFilterBackend):

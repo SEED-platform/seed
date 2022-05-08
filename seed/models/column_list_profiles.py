@@ -1,20 +1,17 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from collections import OrderedDict
-from seed.models.derived_columns import DerivedColumn
 
 from django.apps import apps
 from django.db import models
-
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
-from seed.models import (
-    Column,
-)
+from seed.models import Column
+from seed.models.derived_columns import DerivedColumn
 
 VIEW_LIST = 0
 VIEW_DETAIL = 1

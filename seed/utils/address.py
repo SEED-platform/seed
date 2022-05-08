@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -146,7 +146,7 @@ def normalize_address_str(address_val):
 
         if 'StreetNamePreDirectional' in addr and addr['StreetNamePreDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
-                addr['StreetNamePreDirectional'])  # NOQA
+                addr['StreetNamePreDirectional'])
 
         if 'StreetName' in addr and addr['StreetName'] is not None:
             normalized_address = normalized_address + ' ' + addr['StreetName']
@@ -154,14 +154,14 @@ def normalize_address_str(address_val):
         if 'StreetNamePostType' in addr and addr['StreetNamePostType'] is not None:
             # remove any periods from abbreviations
             normalized_address = normalized_address + ' ' + _normalize_address_post_type(
-                addr['StreetNamePostType'])  # NOQA
+                addr['StreetNamePostType'])
 
         if 'StreetNamePostDirectional' in addr and addr['StreetNamePostDirectional'] is not None:
             normalized_address = normalized_address + ' ' + _normalize_address_direction(
-                addr['StreetNamePostDirectional'])  # NOQA
+                addr['StreetNamePostDirectional'])
 
         if 'SubaddressType' in addr and addr['SubaddressType'] is not None:
-            normalized_address = normalized_address + ' ' + _normalize_subaddress_type(addr['SubaddressType'])  # NOQA
+            normalized_address = normalized_address + ' ' + _normalize_subaddress_type(addr['SubaddressType'])
 
         if 'SubaddressIdentifier' in addr and addr['SubaddressIdentifier'] is not None:
             normalized_address = normalized_address + ' ' + addr['SubaddressIdentifier']

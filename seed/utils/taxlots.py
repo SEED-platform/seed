@@ -4,20 +4,20 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author
 """
 
 # Local Imports
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
+    VIEW_LIST,
+    VIEW_LIST_TAXLOT,
     Column,
     ColumnListProfile,
     ColumnListProfileColumn,
     TaxLotProperty,
-    TaxLotView,
-    VIEW_LIST,
-    VIEW_LIST_TAXLOT,
+    TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
 

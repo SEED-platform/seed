@@ -118,5 +118,3 @@ angular.module('BE.seed.service.postoffice', []).factory('postoffice_service', [
 
     return template_factory;
   }]);
-
-

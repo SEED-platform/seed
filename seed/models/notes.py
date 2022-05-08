@@ -1,19 +1,15 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import (
-    PropertyView,
-    TaxLotView,
-)
+from seed.models import PropertyView, TaxLotView
 from seed.models.projects import Project
 from seed.utils.generic import obj_to_dict
 

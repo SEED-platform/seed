@@ -4,15 +4,12 @@
 :copyright (c) 2014 - 2022, The Regents of the University of California,
 through Lawrence Berkeley National Laboratory (subject to receipt of any
 required approvals from the U.S. Department of Energy) and contributors.
-All rights reserved.  # NOQA
+All rights reserved.
 :author Katherine Fleming <katherine.fleming@nrel.gov>
 """
 
 from rest_framework import serializers
-
-from seed.models import (
-    InventoryDocument,
-)
+from seed.models import InventoryDocument
 from seed.serializers.base import ChoiceField
 
 

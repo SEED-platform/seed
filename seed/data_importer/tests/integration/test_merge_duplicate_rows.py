@@ -1,39 +1,38 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import datetime
 import logging
 import os.path as osp
+import pathlib
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone as tz
-import pathlib
 from quantityfield.units import ureg
-
-from seed.data_importer import tasks, match
+from seed.data_importer import match, tasks
 from seed.data_importer.tests.util import (
     FAKE_EXTRA_DATA,
     FAKE_MAPPINGS,
-    FAKE_ROW,
+    FAKE_ROW
 )
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
-    Column,
-    PropertyState,
-    PropertyView,
-    Property,
-    TaxLotState,
-    TaxLot,
+    ASSESSED_BS,
+    ASSESSED_RAW,
     DATA_STATE_IMPORT,
     DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
-    ASSESSED_RAW,
-    ASSESSED_BS,
     MERGE_STATE_MERGED,
+    Column,
+    Property,
+    PropertyState,
+    PropertyView,
+    TaxLot,
+    TaxLotState
 )
 from seed.tests.util import DataMappingBaseTestCase
 

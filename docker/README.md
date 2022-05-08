@@ -26,14 +26,14 @@ Make sure your server has docker installed:
 Install Docker Compose:
 
 * [Ubuntu](https://docs.docker.com/compose/install/#install-compose)
- 
+
 Add user to docker group.
 
 ```bash
 sudo usermod -a -G docker ubuntu
 ```
 
-The preferred way to deploy with Docker is using docker swarm and docker stack. 
+The preferred way to deploy with Docker is using docker swarm and docker stack.
 Look at the deploy.sh script in the root of this repository.
 
 The short version is to simply run the command below. Note that the passing of the docker-compose yml filename is not required if using docker-compose.local.yml.

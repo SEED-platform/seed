@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -10,10 +10,7 @@ from __future__ import absolute_import
 import collections
 
 from celery.utils.log import get_task_logger
-
-from seed.models import (
-    PropertyState,
-    TaxLotState)
+from seed.models import PropertyState, TaxLotState
 
 _log = get_task_logger(__name__)
 

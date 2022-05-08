@@ -1,7 +1,8 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
+import logging
 import os
 from collections import namedtuple
 
@@ -10,7 +11,7 @@ from django.http import HttpResponse, JsonResponse
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import status, viewsets, generics
+from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
@@ -19,38 +20,57 @@ from seed.data_importer.utils import usage_point_id
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import (AUDIT_USER_EDIT, DATA_STATE_MATCHING,
-                         MERGE_STATE_DELETE, MERGE_STATE_MERGED,
-                         MERGE_STATE_NEW,
-                         BuildingFile, Column,
-                         ColumnMappingProfile, Cycle, InventoryDocument,
-                         Meter, Note, Property, PropertyAuditLog,
-                         PropertyMeasure, PropertyState, PropertyView,
-                         Sensor, DataLogger, Simulation)
+from seed.models import (
+    AUDIT_USER_EDIT,
+    DATA_STATE_MATCHING,
+    MERGE_STATE_DELETE,
+    MERGE_STATE_MERGED,
+    MERGE_STATE_NEW,
+    BuildingFile,
+    Column,
+    ColumnMappingProfile,
+    Cycle,
+    DataLogger,
+    InventoryDocument,
+    Meter,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyMeasure,
+    PropertyState,
+    PropertyView,
+    Sensor,
+    Simulation
+)
 from seed.models import StatusLabel as Label
 from seed.models import TaxLotProperty, TaxLotView
-from seed.serializers.pint import (PintJSONEncoder)
-from seed.serializers.properties import (PropertySerializer,
-                                         PropertyStateSerializer,
-                                         PropertyViewAsStateSerializer,
-                                         PropertyViewSerializer,
-                                         UpdatePropertyPayloadSerializer)
+from seed.serializers.pint import PintJSONEncoder
+from seed.serializers.properties import (
+    PropertySerializer,
+    PropertyStateSerializer,
+    PropertyViewAsStateSerializer,
+    PropertyViewSerializer,
+    UpdatePropertyPayloadSerializer
+)
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from seed.utils.api_schema import (AutoSchemaHelper,
-                                   swagger_auto_schema_org_query_param)
+from seed.utils.api_schema import (
+    AutoSchemaHelper,
+    swagger_auto_schema_org_query_param
+)
+from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
+from seed.utils.properties import (
+    get_changed_fields,
+    pair_unpair_property_taxlot,
+    properties_across_cycles,
+    update_result_with_master
+)
 from seed.utils.sensors import PropertySensorReadingsExporter
-from seed.utils.properties import (get_changed_fields,
-                                   pair_unpair_property_taxlot,
-                                   properties_across_cycles,
-                                   update_result_with_master)
-from seed.utils.inventory_filter import get_filtered_results
 
-import logging
 logger = logging.getLogger(__name__)
 
 # Global toggle that controls whether or not to display the raw extra

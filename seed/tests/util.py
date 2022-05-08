@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 
@@ -10,34 +10,31 @@ import json
 
 from django.test import TestCase
 from django.utils import timezone
-
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import Organization, OrganizationUser
 from seed.models import (
+    ASSESSED_RAW,
+    DATA_STATE_IMPORT,
     Column,
     ColumnMapping,
     Cycle,
     DerivedColumn,
-    Property,
-    PropertyState,
-    PropertyView,
-    PropertyAuditLog,
-    Note,
-    Scenario,
-    StatusLabel,
-    TaxLotAuditLog,
-    TaxLotState,
-    TaxLot,
-    TaxLotView,
-    TaxLotProperty,
     GreenAssessment,
     GreenAssessmentProperty,
     GreenAssessmentURL,
-)
-from seed.models import (
-    DATA_STATE_IMPORT,
-    ASSESSED_RAW,
+    Note,
+    Property,
+    PropertyAuditLog,
+    PropertyState,
+    PropertyView,
+    Scenario,
+    StatusLabel,
+    TaxLot,
+    TaxLotAuditLog,
+    TaxLotProperty,
+    TaxLotState,
+    TaxLotView
 )
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.organizations import create_organization

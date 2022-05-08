@@ -20,7 +20,7 @@ angular.module('BE.seed.controller.document_upload_modal', [])
       uploader_service,
       view_id,
     ) {
-      
+
       $scope.step = {
         number: 1
       };
@@ -39,7 +39,7 @@ angular.module('BE.seed.controller.document_upload_modal', [])
       $scope.cancel = function () {
         $uibModalInstance.dismiss('cancel');
       };
-      
+
       $scope.uploaderfunc = function (event_message, file, progress) {
         switch (event_message) {
           case 'invalid_extension':

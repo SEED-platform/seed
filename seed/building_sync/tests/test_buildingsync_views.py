@@ -1,26 +1,23 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 import json
 from datetime import datetime
 from os import path
 
+from config.settings.common import BASE_DIR
 from django.urls import reverse
 from django.utils import timezone
-
-from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
-from seed.models import (
-    PropertyView,
-    StatusLabel,
-    ColumnMappingProfile,
-)
+from seed.models import ColumnMappingProfile, PropertyView, StatusLabel
 from seed.test_helpers.fake import (
-    FakeCycleFactory, FakeColumnFactory,
-    FakePropertyFactory, FakePropertyStateFactory,
+    FakeColumnFactory,
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
     FakeTaxLotStateFactory
 )
 from seed.tests.util import DeleteModelsTestCase

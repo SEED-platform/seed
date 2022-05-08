@@ -4,15 +4,13 @@ import inspect
 import json
 import logging
 
-from seed.decorators import get_prog_key
-from seed.lib.progress_data.progress_data import ProgressData
-from seed.models import Analysis, AnalysisPropertyView, AnalysisMessage
-
+from celery import shared_task
 from django.db import transaction
 from django.db.utils import OperationalError
 from django.utils import timezone as tz
-
-from celery import shared_task
+from seed.decorators import get_prog_key
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView
 
 logger = logging.getLogger(__name__)
 

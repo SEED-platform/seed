@@ -59,12 +59,10 @@ need to update your django sites object in the database.
     one.save()
 
 
-.. _staticfiles: 
+.. _staticfiles:
 
 Why aren't the static assets being served correctly?
 ----------------------------------------------------
 
 Make sure that your local_untracked.py file does not have STATICFILES_STORAGE set to anything. If so,
 then comment out that section and redeploy/recollect/compress your static assets.
-
-

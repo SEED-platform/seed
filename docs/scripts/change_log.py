@@ -113,7 +113,7 @@ for issue in repo.issues(state='closed'):
             if 'stale' in labels:
                 # issue closed due to staleness, it was not really addressed
                 continue
-            
+
             if 'Milestone' in labels:
                 # these are milestone tracking tickets and should not show up in changelog
                 continue

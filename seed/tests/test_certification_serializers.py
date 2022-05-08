@@ -14,19 +14,18 @@ from collections import OrderedDict
 
 import mock
 from django.core.exceptions import ValidationError
-
 from seed.landing.models import SEEDUser as User
 from seed.serializers.certification import (
+    GreenAssessmentPropertySerializer,
+    GreenAssessmentSerializer,
     GreenAssessmentURLField,
     PropertyViewField,
-    ValidityDurationField,
-    GreenAssessmentSerializer,
-    GreenAssessmentPropertySerializer
+    ValidityDurationField
 )
 from seed.test_helpers.fake import (
-    FakePropertyViewFactory,
     FakeGreenAssessmentFactory,
-    FakeGreenAssessmentPropertyFactory
+    FakeGreenAssessmentPropertyFactory,
+    FakePropertyViewFactory
 )
 from seed.tests.util import DeleteModelsTestCase
 from seed.utils.organizations import create_organization

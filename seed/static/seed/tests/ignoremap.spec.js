@@ -26,4 +26,3 @@ describe('The ignoremap filter', function () {
     expect(ignoremapFilter(null)).toBe('------ Ignore Row ------');
   });
 });
-

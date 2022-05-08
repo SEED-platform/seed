@@ -1,8 +1,9 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
-#!/usr/bin/env python
+import sys
+# !/usr/bin/env python
 # encoding: utf-8
 from subprocess import call
 
@@ -12,5 +13,4 @@ if c == 0:
 else:
     print("compression failed")
 
-import sys
 sys.exit(c)

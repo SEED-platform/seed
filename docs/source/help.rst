@@ -25,4 +25,3 @@ https://github.com/SEED-platform
 Please join the SEED-Platform Dev forum where you can connect with other developers.
 
 https://groups.google.com/forum/#!forum/seed-platform-dev
-

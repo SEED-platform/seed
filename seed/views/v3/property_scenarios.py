@@ -1,22 +1,16 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
 :author
 """
 from django.utils.decorators import method_decorator
-
-from rest_framework.parsers import JSONParser, FormParser
+from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
-
-from seed.models import (
-    Scenario,
-)
+from seed.models import Scenario
 from seed.serializers.scenarios import ScenarioSerializer
-from seed.utils.viewsets import (
-    SEEDOrgReadOnlyModelViewSet
-)
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
 @method_decorator(name='list', decorator=swagger_auto_schema_org_query_param)
