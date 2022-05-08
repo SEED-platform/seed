@@ -28,4 +28,4 @@ repos:
     rev: v5.10.1
     hooks:
       - id: isort
-        args: ["-m=VERTICAL_HANGING_INDENT"]
+        args: [-m=VERTICAL_HANGING_INDENT, --skip=seed/models/__init__.py, --filter-files]
